@@ -73,19 +73,9 @@ class GatewayClient(base.BaseClient):
     # streaming_mode is immutable and one-way: only set it when the user opts
     # in. An unset value means API Gateway selects the mode.
     if enable_streaming:
-      # streaming_mode is GOOGLE_INTERNAL-restricted on v1/v1beta, so the enum
-      # exists only on the v1alpha1 bindings. --enable-streaming is alpha-only,
-      # but guard here for programmatic callers that reach this method with a
-      # GA/beta (v1) client.
-      streaming_mode_enum = getattr(
-          self.messages.ApigatewayGateway, 'StreamingModeValueValuesEnum', None
+      gateway.streamingMode = (
+          self.messages.ApigatewayGateway.StreamingModeValueValuesEnum.STREAMING_MODE_ENABLED
       )
-      if streaming_mode_enum is None:
-        raise ValueError(
-            'enable_streaming is only supported on the alpha release track;'
-            ' the current API version does not define streaming_mode.'
-        )
-      gateway.streamingMode = streaming_mode_enum.STREAMING_MODE_ENABLED
 
     req = self.create_request(
         parent=gateway_ref.Parent().RelativeName(),

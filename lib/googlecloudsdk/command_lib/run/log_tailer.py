@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Helper class to stream/tail logs for Cloud Run dev sync."""
+"""Helper class to stream/tail logs for Cloud Run."""
 
 import json
 import re
@@ -21,8 +21,13 @@ import sys
 import threading
 from typing import Optional
 
-from googlecloudsdk.command_lib.run.sync import ssh_util
 from googlecloudsdk.core import log
+
+TAIL_LOGS_BIN = '/usr/local/gcp/bin/tail_logs'
+UNSUPPORTED_LIB = '/lib64/ld-linux-x86-64.so.2'
+LOG_TAILING_NOT_SUPPORTED_MSG = (
+    'Failed to stream logs: Log tailing is not supported for this instance'
+)
 
 _IGNORED_METADATA_PREFIXES = (
     'Project:',
@@ -123,10 +128,23 @@ def FormatLogLineForTail(line: str) -> str:
   return f'{timestamp} {source} {payload}\n'
 
 
+def IsUnsupportedLogTailingError(line: str) -> bool:
+  """Returns True if the line indicates log tailing is not supported."""
+  line_lower = line.lower()
+  has_bin = (
+      TAIL_LOGS_BIN.lower() in line_lower
+      or UNSUPPORTED_LIB.lower() in line_lower
+  )
+  has_not_found = (
+      'no such file or directory' in line_lower or 'not found' in line_lower
+  )
+  return has_bin and has_not_found
+
+
 class LogTailer:
   """Helper class to tail logs from a Cloud Run instance concurrently."""
 
-  def __init__(self, ssh_session: ssh_util.MultiplexedSshSession):
+  def __init__(self, ssh_session):
     self._ssh_session = ssh_session
     self._process = None
     self._thread = None
@@ -142,6 +160,9 @@ class LogTailer:
             line.startswith(prefix) for prefix in _IGNORED_METADATA_PREFIXES
         ):
           continue
+        if IsUnsupportedLogTailingError(line):
+          log.error(LOG_TAILING_NOT_SUPPORTED_MSG)
+          return
         line = FormatLogLineForDevSync(line)
         sys.stdout.write(line)
         sys.stdout.flush()
@@ -156,8 +177,8 @@ class LogTailer:
     try:
       ssh_cmd = self._ssh_session.GetSshCommand(
           remote_command=[
-              '/lib64/ld-linux-x86-64.so.2',
-              '/usr/local/gcp/bin/tail_logs',
+              UNSUPPORTED_LIB,
+              TAIL_LOGS_BIN,
           ]
       )
 

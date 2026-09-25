@@ -682,7 +682,7 @@ class Deploy(base.Command):
       )
     return changes
 
-  def _ConnectionContext(self, args):
+  def _ConnectionContext(self, args, custom_check_response_func=None):
     # Obtaining the connection context prompts the user to select a region if
     # one hasn't been provided. We want to do this prior to preparing a source
     # deploy so that we can use that region for the Artifact Registry repo.
@@ -691,6 +691,7 @@ class Deploy(base.Command):
         flags.Product.RUN,
         self.ReleaseTrack(),
         is_multiregion=self._IsMultiRegion(),
+        custom_check_response_func=custom_check_response_func,
     )
 
   def _GetTracker(
@@ -932,7 +933,9 @@ class Deploy(base.Command):
           project_id, required_apis
       )
 
-    conn_context = self._ConnectionContext(args)
+    conn_context = self._ConnectionContext(
+        args, custom_check_response_func=custom_check_response
+    )
 
     image = None
     pack = None

@@ -26,7 +26,7 @@ VERSION_MAP = {
 }
 
 
-def GetMessagesModule(release_track=base.ReleaseTrack.ALPHA):
+def GetMessagesModule(release_track=base.ReleaseTrack.GA):
   """Returns the Apitools messages module for the specified release track.
 
   Args:
@@ -43,7 +43,7 @@ def GetMessagesModule(release_track=base.ReleaseTrack.ALPHA):
   return apis.GetMessagesModule('apptopology', api_version)
 
 
-def GetClientInstance(release_track=base.ReleaseTrack.ALPHA, no_http=False):
+def GetClientInstance(release_track=base.ReleaseTrack.GA, no_http=False):
   """Returns the Apitools client instance for the specified release track.
 
   Args:

@@ -33,6 +33,7 @@ help_text = textwrap.dedent("""\
     To update a catalog `my-lakehouse-catalog` to catalog type lakehouse with restricted locations, run:
 
       $ {command} my-lakehouse-catalog --catalog-type=lakehouse --restricted-locations=gs://my-bucket1,gs://my-bucket2
+
     To update a catalog `my-lakehouse-catalog` to enable cross-cloud cache, run:
 
       $ {command} my-lakehouse-catalog --cross-cloud-cache=enabled

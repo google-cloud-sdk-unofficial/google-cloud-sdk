@@ -170,6 +170,20 @@
       spec:
       - api_field: key
       - api_field: value
+    - arg_name: authorization-mode
+      api_field: instance.authorizationMode
+      required: false
+      help_text: |-
+        Authorization mode of the instance.
+      choices:
+      - arg_value: auth-disabled
+        enum_value: AUTH_DISABLED
+        help_text: |-
+          Authorization disabled.
+      - arg_value: token-auth
+        enum_value: TOKEN_AUTH
+        help_text: |-
+          Token based authorization.
     - arg_name: shard-count
       api_field: instance.shardCount
       required: false

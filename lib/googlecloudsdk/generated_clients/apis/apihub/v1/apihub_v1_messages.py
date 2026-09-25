@@ -2741,6 +2741,11 @@ class GoogleCloudApihubV1ApiOperation(_messages.Message):
       `projects/{project}/locations/{location}/attributes/{attribute}`. The
       value is the attribute values associated with the resource.
     createTime: Output only. The time at which the operation was created.
+    deployments: Optional. The deployments linked directly to this API
+      operation. For operations parsed from a spec, `UpdateApiOperation`
+      returns `FAILED_PRECONDITION`; link the parent spec to the deployment
+      via `Spec.deployments` instead. Format is
+      `projects/{project}/locations/{location}/deployments/{deployment}`
     details: Optional. Operation details. Note: Even though this field is
       optional, it is required for CreateApiOperation API and we will fail the
       request if not provided.
@@ -2785,11 +2790,12 @@ class GoogleCloudApihubV1ApiOperation(_messages.Message):
 
   attributes = _messages.MessageField('AttributesValue', 1)
   createTime = _messages.StringField(2)
-  details = _messages.MessageField('GoogleCloudApihubV1OperationDetails', 3)
-  name = _messages.StringField(4)
-  sourceMetadata = _messages.MessageField('GoogleCloudApihubV1SourceMetadata', 5, repeated=True)
-  spec = _messages.StringField(6)
-  updateTime = _messages.StringField(7)
+  deployments = _messages.StringField(3, repeated=True)
+  details = _messages.MessageField('GoogleCloudApihubV1OperationDetails', 4)
+  name = _messages.StringField(5)
+  sourceMetadata = _messages.MessageField('GoogleCloudApihubV1SourceMetadata', 6, repeated=True)
+  spec = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
 
 
 class GoogleCloudApihubV1ApiView(_messages.Message):
@@ -3683,6 +3689,8 @@ class GoogleCloudApihubV1Deployment(_messages.Message):
       value is the attribute values associated with the resource.
 
   Fields:
+    apiOperations: Output only. The API operations linked directly to this
+      deployment.
     apiVersions: Output only. The API versions linked to this deployment.
       Note: A particular deployment could be linked to multiple different API
       versions (of same or different APIs).
@@ -3740,6 +3748,10 @@ class GoogleCloudApihubV1Deployment(_messages.Message):
     sourceProject: Optional. The project to which the deployment belongs. For
       Google Cloud gateways, this will refer to the project identifier. For
       others like Edge/OPDK, this will refer to the org identifier.
+    sourceRevision: Optional. A revision identifier for the underlying gateway
+      configuration that this deployment serves. For Apigee gateway variants,
+      this is typically the proxy revision number populated automatically when
+      the deployment is discovered.
     sourceUri: Optional. The uri where additional source specific information
       for this deployment can be found. This maps to the following system
       defined attribute:
@@ -3748,6 +3760,9 @@ class GoogleCloudApihubV1Deployment(_messages.Message):
       of the attribute. The same can be retrieved via GetAttribute API. The
       value of the attribute should be a valid URI, and in case of Cloud
       Storage URI, it should point to a Cloud Storage object, not a directory.
+    specs: Output only. The specs linked directly to this deployment. Note: a
+      deployment could serve multiple specs (e.g., across different revisions
+      of the same underlying gateway configuration).
     updateTime: Output only. The time at which the deployment was last
       updated.
   """
@@ -3779,24 +3794,27 @@ class GoogleCloudApihubV1Deployment(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  apiVersions = _messages.StringField(1, repeated=True)
-  attributes = _messages.MessageField('AttributesValue', 2)
-  createTime = _messages.StringField(3)
-  deploymentType = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 4)
-  description = _messages.StringField(5)
-  displayName = _messages.StringField(6)
-  documentation = _messages.MessageField('GoogleCloudApihubV1Documentation', 7)
-  endpoints = _messages.StringField(8, repeated=True)
-  environment = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 9)
-  managementUrl = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 10)
-  name = _messages.StringField(11)
-  resourceUri = _messages.StringField(12)
-  slo = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 13)
-  sourceEnvironment = _messages.StringField(14)
-  sourceMetadata = _messages.MessageField('GoogleCloudApihubV1SourceMetadata', 15, repeated=True)
-  sourceProject = _messages.StringField(16)
-  sourceUri = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 17)
-  updateTime = _messages.StringField(18)
+  apiOperations = _messages.StringField(1, repeated=True)
+  apiVersions = _messages.StringField(2, repeated=True)
+  attributes = _messages.MessageField('AttributesValue', 3)
+  createTime = _messages.StringField(4)
+  deploymentType = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 5)
+  description = _messages.StringField(6)
+  displayName = _messages.StringField(7)
+  documentation = _messages.MessageField('GoogleCloudApihubV1Documentation', 8)
+  endpoints = _messages.StringField(9, repeated=True)
+  environment = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 10)
+  managementUrl = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 11)
+  name = _messages.StringField(12)
+  resourceUri = _messages.StringField(13)
+  slo = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 14)
+  sourceEnvironment = _messages.StringField(15)
+  sourceMetadata = _messages.MessageField('GoogleCloudApihubV1SourceMetadata', 16, repeated=True)
+  sourceProject = _messages.StringField(17)
+  sourceRevision = _messages.StringField(18)
+  sourceUri = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 19)
+  specs = _messages.StringField(20, repeated=True)
+  updateTime = _messages.StringField(21)
 
 
 class GoogleCloudApihubV1DeploymentMetadata(_messages.Message):
@@ -6040,6 +6058,9 @@ class GoogleCloudApihubV1Spec(_messages.Message):
       value is the attribute values associated with the resource.
     contents: Optional. Input only. The contents of the uploaded spec.
     createTime: Output only. The time at which the spec was created.
+    deployments: Optional. The deployments linked directly to this spec.
+      Format is
+      `projects/{project}/locations/{location}/deployments/{deployment}`
     details: Output only. Details parsed from the spec.
     displayName: Required. The display name of the spec. This can contain the
       file name of the spec.
@@ -6109,16 +6130,17 @@ class GoogleCloudApihubV1Spec(_messages.Message):
   attributes = _messages.MessageField('AttributesValue', 2)
   contents = _messages.MessageField('GoogleCloudApihubV1SpecContents', 3)
   createTime = _messages.StringField(4)
-  details = _messages.MessageField('GoogleCloudApihubV1SpecDetails', 5)
-  displayName = _messages.StringField(6)
-  documentation = _messages.MessageField('GoogleCloudApihubV1Documentation', 7)
-  lintResponse = _messages.MessageField('GoogleCloudApihubV1LintResponse', 8)
-  name = _messages.StringField(9)
-  parsingMode = _messages.EnumField('ParsingModeValueValuesEnum', 10)
-  sourceMetadata = _messages.MessageField('GoogleCloudApihubV1SourceMetadata', 11, repeated=True)
-  sourceUri = _messages.StringField(12)
-  specType = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 13)
-  updateTime = _messages.StringField(14)
+  deployments = _messages.StringField(5, repeated=True)
+  details = _messages.MessageField('GoogleCloudApihubV1SpecDetails', 6)
+  displayName = _messages.StringField(7)
+  documentation = _messages.MessageField('GoogleCloudApihubV1Documentation', 8)
+  lintResponse = _messages.MessageField('GoogleCloudApihubV1LintResponse', 9)
+  name = _messages.StringField(10)
+  parsingMode = _messages.EnumField('ParsingModeValueValuesEnum', 11)
+  sourceMetadata = _messages.MessageField('GoogleCloudApihubV1SourceMetadata', 12, repeated=True)
+  sourceUri = _messages.StringField(13)
+  specType = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 14)
+  updateTime = _messages.StringField(15)
 
 
 class GoogleCloudApihubV1SpecContents(_messages.Message):
@@ -6152,6 +6174,12 @@ class GoogleCloudApihubV1SpecMetadata(_messages.Message):
   r"""The metadata associated with a spec of the API version.
 
   Fields:
+    deploymentResourceUris: Optional. The gateway-side URIs of deployments
+      that serve this spec. If provided, the API Hub service creates links
+      between this spec and the deployments identified by these URIs. URIs
+      that don't match any known deployment are ignored; a subsequent
+      ingestion cycle that includes the missing deployment will re-establish
+      the link. The maximum number of URIs allowed is 100.
     originalCreateTime: Optional. Timestamp indicating when the spec was
       created at the source.
     originalId: Optional. The unique identifier of the spec in the system
@@ -6162,10 +6190,11 @@ class GoogleCloudApihubV1SpecMetadata(_messages.Message):
       ID of the spec will be generated by Hub.
   """
 
-  originalCreateTime = _messages.StringField(1)
-  originalId = _messages.StringField(2)
-  originalUpdateTime = _messages.StringField(3)
-  spec = _messages.MessageField('GoogleCloudApihubV1Spec', 4)
+  deploymentResourceUris = _messages.StringField(1, repeated=True)
+  originalCreateTime = _messages.StringField(2)
+  originalId = _messages.StringField(3)
+  originalUpdateTime = _messages.StringField(4)
+  spec = _messages.MessageField('GoogleCloudApihubV1Spec', 5)
 
 
 class GoogleCloudApihubV1StringAttributeValues(_messages.Message):

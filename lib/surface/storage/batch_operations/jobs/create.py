@@ -89,7 +89,7 @@ class Create(calliope_base.Command):
 
           $ {command} my-job --target-project=my-project
           --insights-dataset-config=projects/my-project/locations/us-central1/datasetConfigs/my-config
-          --bucket-filters="bucket_name == 'my-bucket'" --object-filters="size > 100"
+          --bucket-filters="name == 'my-bucket'" --object-filters="size > 100"
           --put-metadata=Retain-Until=2025-01-01T00:00:00Z,Retention-Mode=locked
 
       The following example command creates a batch job, named `my-job`, that
@@ -208,7 +208,7 @@ class CreateAlpha(Create):
 
           $ {command} my-job --target-project=my-project
           --insights-dataset-config=projects/my-project/locations/us-central1/datasetConfigs/my-config
-          --bucket-filters="bucket_name == 'my-bucket'" --object-filters="size > 100"
+          --bucket-filters="name == 'my-bucket'" --object-filters="size > 100"
           --put-metadata=Retain-Until=2025-01-01T00:00:00Z,Retention-Mode=locked
 
       The following example command creates a batch job, named `my-job`, that

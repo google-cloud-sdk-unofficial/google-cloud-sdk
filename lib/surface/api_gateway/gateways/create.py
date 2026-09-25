@@ -25,7 +25,9 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a new gateway."""
@@ -45,6 +47,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     base.ASYNC_FLAG.AddToParser(parser)
     common_flags.AddDisplayNameArg(parser)
+    common_flags.AddEnableStreamingFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
     resource_args.AddGatewayApiConfigResourceArgs(parser, 'created')
 
@@ -52,19 +55,13 @@ class Create(base.CreateCommand):
     gateway_ref = args.CONCEPTS.gateway.Parse()
     api_config_ref = args.CONCEPTS.api_config.Parse()
 
-    enable_streaming = (
-        args.enable_streaming
-        if args.IsKnownAndSpecified('enable_streaming')
-        else None
-    )
-
     gateways_client = gateways.GatewayClient(release_track=self.ReleaseTrack())
     resp = gateways_client.Create(
         gateway_ref,
         api_config_ref,
         display_name=args.display_name,
         labels=args.labels,
-        enable_streaming=enable_streaming,
+        enable_streaming=args.enable_streaming,
     )
 
     wait = 'Waiting for API Gateway [{}] to be created with [{}] config'.format(
@@ -77,16 +74,3 @@ class Create(base.CreateCommand):
         wait_string=wait,
         is_async=args.async_,
     )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.DefaultUniverseOnly
-class CreateAlpha(Create):
-  """Create a new gateway."""
-
-  # The alpha track resolves to the v1alpha1 client (see base.VERSION_MAP),
-  # which exposes streaming_mode for the --enable-streaming flag.
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser)
-    common_flags.AddEnableStreamingFlag(parser)

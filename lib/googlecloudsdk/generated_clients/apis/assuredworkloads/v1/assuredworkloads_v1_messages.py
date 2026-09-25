@@ -929,6 +929,10 @@ class GoogleCloudAssuredworkloadsV1CloudControlAssessmentDetails(_messages.Messa
   Fields:
     evaluationState: Output only. The evaluation status of the cloud control.
     findingsCount: The number of findings for the cloud control.
+    orgPolicyFindingCount: Output only. Number of organization policy findings
+      for the cloud control.
+    resourceFindingCount: Output only. Number of resource findings for the
+      cloud control.
   """
 
   class EvaluationStateValueValuesEnum(_messages.Enum):
@@ -947,6 +951,8 @@ class GoogleCloudAssuredworkloadsV1CloudControlAssessmentDetails(_messages.Messa
 
   evaluationState = _messages.EnumField('EvaluationStateValueValuesEnum', 1)
   findingsCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  orgPolicyFindingCount = _messages.IntegerField(3)
+  resourceFindingCount = _messages.IntegerField(4)
 
 
 class GoogleCloudAssuredworkloadsV1CloudControlReport(_messages.Message):
@@ -1304,7 +1310,11 @@ class GoogleCloudAssuredworkloadsV1DbControlComplianceSummary(_messages.Message)
       created and mapped to cloud controls that don't belong to a control
       group.
     name: Identifier. The name of the control compliance summary.
+    orgPolicyFindingCount: Output only. Number of organization policy findings
+      for this control.
     overallEvaluationState: Output only. The overall evaluation status of the
+      control.
+    resourceFindingCount: Output only. Number of resource findings for this
       control.
     similarControls: The list of similar controls.
     totalFindingsCount: The total number of findings for the control.
@@ -1347,9 +1357,11 @@ class GoogleCloudAssuredworkloadsV1DbControlComplianceSummary(_messages.Message)
   displayName = _messages.StringField(6)
   isFakeControl = _messages.BooleanField(7)
   name = _messages.StringField(8)
-  overallEvaluationState = _messages.EnumField('OverallEvaluationStateValueValuesEnum', 9)
-  similarControls = _messages.MessageField('GoogleCloudAssuredworkloadsV1SimilarControls', 10, repeated=True)
-  totalFindingsCount = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  orgPolicyFindingCount = _messages.IntegerField(9)
+  overallEvaluationState = _messages.EnumField('OverallEvaluationStateValueValuesEnum', 10)
+  resourceFindingCount = _messages.IntegerField(11)
+  similarControls = _messages.MessageField('GoogleCloudAssuredworkloadsV1SimilarControls', 12, repeated=True)
+  totalFindingsCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudAssuredworkloadsV1DbFindingSummary(_messages.Message):

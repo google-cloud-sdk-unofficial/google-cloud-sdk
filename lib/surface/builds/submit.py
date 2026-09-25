@@ -74,6 +74,7 @@ def _CommonArgs(parser):
   worker_pools = flags.AddWorkerPoolFlag(parser)
 
   flags.AddNoCacheFlag(parser)
+  flags.AddWorkerReleaseFlag(parser)
   flags.AddAsyncFlag(parser)
   flags.AddSuppressLogsFlag(parser)
   parser.display_info.AddFormat("""
@@ -242,6 +243,7 @@ class Submit(base.CreateCommand):
         args.default_buckets_behavior,
         skip_set_source=True,
         client_tag='gcloudsubmits',
+        arg_worker_release=args.worker_release,
     )
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
@@ -343,6 +345,7 @@ class SubmitAlpha(SubmitBeta):
         args.default_buckets_behavior,
         skip_set_source=True,
         client_tag='gcloudsubmits',
+        arg_worker_release=args.worker_release,
     )
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)

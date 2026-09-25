@@ -57,6 +57,16 @@
     - api_field: connection.githubEnterpriseConfig.appInstallationId
       arg_name: app-installation-id
       help_text: Installation ID of the Cloud Build GitHub App.
+    - api_field: connection.disabled
+      arg_name: disabled
+      action: store_true_false
+      required: false
+      type: bool
+      release_tracks: [ALPHA]
+      help_text: |-
+        If disabled is set to true, functionality is disabled for this connection.
+        Repository based API methods and webhooks processing for repositories in
+        this connection will be disabled.
 
   output:
     # Print the installation instruction and link (if any) after updating.

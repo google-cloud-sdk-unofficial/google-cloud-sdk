@@ -982,6 +982,33 @@ class FileV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def CreateFromSource(self, request, global_params=None):
+      r"""Creates a volume in a volume pool from an existing data source (such as a Filestore backup).
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsVolumesCreateFromSourceRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('CreateFromSource')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CreateFromSource.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}/volumes:createFromSource',
+        http_method='POST',
+        method_id='file.projects.locations.volumePools.volumes.createFromSource',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta1/{+parent}/volumes:createFromSource',
+        request_field='createFromSourceRequest',
+        request_type_name='FileProjectsLocationsVolumePoolsVolumesCreateFromSourceRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Delete(self, request, global_params=None):
       r"""Deletes a volume.
 
@@ -1114,6 +1141,60 @@ class FileV1beta1(base_api.BaseApiClient):
         request_field='',
         request_type_name='FileProjectsLocationsVolumePoolsVolumesListRequest',
         response_type_name='ListVolumesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the settings of a specific volume.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsVolumesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Volume) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}/volumes/{volumesId}',
+        http_method='PATCH',
+        method_id='file.projects.locations.volumePools.volumes.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1beta1/{+name}',
+        request_field='volume',
+        request_type_name='FileProjectsLocationsVolumePoolsVolumesPatchRequest',
+        response_type_name='Volume',
+        supports_download=False,
+    )
+
+    def Unfreeze(self, request, global_params=None):
+      r"""Unfreezes a volume.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsVolumesUnfreezeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Unfreeze')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Unfreeze.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}/volumes/{volumesId}:unfreeze',
+        http_method='POST',
+        method_id='file.projects.locations.volumePools.volumes.unfreeze',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:unfreeze',
+        request_field='unfreezeVolumeRequest',
+        request_type_name='FileProjectsLocationsVolumePoolsVolumesUnfreezeRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

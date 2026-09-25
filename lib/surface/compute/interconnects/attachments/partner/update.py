@@ -62,7 +62,7 @@ class Update(base.UpdateCommand):
       labels_diff = labels_util.Diff.FromUpdateArgs(args)
       if labels_diff.MayHaveUpdates():
         old_attachment = interconnect_attachment.Describe()
-        labels_cls = holder.client.messages.InterconnectAttachment.LabelsValue
+        labels_cls = holder.client.messages.RegionSetLabelsRequest.LabelsValue
         labels = labels_diff.Apply(
             labels_cls, labels=old_attachment.labels
         ).GetOrNone()

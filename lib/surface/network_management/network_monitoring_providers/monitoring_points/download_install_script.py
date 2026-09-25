@@ -39,6 +39,7 @@ class DownloadInstallScript(base.Command):
 
           The command downloads a tarball for `--monitoring-point-type=container`
           or `--monitoring-point-type=helm`, or a zip file for
+          `--monitoring-point-type=aws-ec2`, `--monitoring-point-type=azure-vm`,
           `--monitoring-point-type=gce-vm`, `--monitoring-point-type=kvm` or
           `--monitoring-point-type=vmware`.
 
@@ -46,7 +47,9 @@ class DownloadInstallScript(base.Command):
           and `--hostname` arguments are required for all Monitoring Points.
           Additional arguments depend on the value of `--monitoring-point-type`.
 
-          If `--monitoring-point-type=container`, `--monitoring-point-type=gce-vm`,
+          If `--monitoring-point-type=aws-ec2`,
+          `--monitoring-point-type=azure-vm`,
+          `--monitoring-point-type=container`, `--monitoring-point-type=gce-vm`,
           or `--monitoring-point-type=helm` is specified, no other flags are
           required, and flags like `--password`, `--time-zone`, `--use-dhcp`, and
           `--static-ip-address` are not allowed.
@@ -91,7 +94,15 @@ class DownloadInstallScript(base.Command):
     parser.add_argument(
         '--monitoring-point-type',
         required=True,
-        choices=['container', 'gce-vm', 'helm', 'kvm', 'vmware'],
+        choices=[
+            'aws-ec2',
+            'azure-vm',
+            'container',
+            'gce-vm',
+            'helm',
+            'kvm',
+            'vmware',
+        ],
         help='The type of the Monitoring Point.',
     )
     parser.add_argument(
@@ -193,7 +204,7 @@ class DownloadInstallScript(base.Command):
     """Validates argument combinations based on monitoring_point_type."""
     mp_type = args.monitoring_point_type.upper().replace('-', '_')
 
-    if mp_type in ['CONTAINER', 'GCE_VM', 'HELM']:
+    if mp_type in ['AWS_EC2', 'AZURE_VM', 'CONTAINER', 'GCE_VM', 'HELM']:
       illegal_container_args = [
           'password',
           'time_zone',

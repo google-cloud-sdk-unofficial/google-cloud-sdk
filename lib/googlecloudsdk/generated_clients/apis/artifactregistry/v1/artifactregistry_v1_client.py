@@ -1929,6 +1929,33 @@ class ArtifactregistryV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Reconcile(self, request, global_params=None):
+      r"""Reconciles a repository.
+
+      Args:
+        request: (ArtifactregistryProjectsLocationsRepositoriesReconcileRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Reconcile')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Reconcile.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}:reconcile',
+        http_method='POST',
+        method_id='artifactregistry.projects.locations.repositories.reconcile',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:reconcile',
+        request_field='reconcileRepositoryRequest',
+        request_type_name='ArtifactregistryProjectsLocationsRepositoriesReconcileRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Reindex(self, request, global_params=None):
       r"""Updates the index files for an OS repository. Intended for use on remote repositories to check if the upstream has been updated, and if so pull the new index files.
 

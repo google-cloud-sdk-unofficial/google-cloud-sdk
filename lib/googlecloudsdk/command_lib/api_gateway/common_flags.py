@@ -35,9 +35,6 @@ def AddEnableStreamingFlag(parser):
       '--enable-streaming',
       action='store_true',
       default=None,
-      # Hidden until response streaming is generally available (b/533512118);
-      # the streaming_mode field is restricted to trusted testers until then.
-      hidden=True,
       help="""\
       Creates the gateway with response streaming enabled, which supports
       server-sent events, HTTP chunked transfer, WebSockets, and gRPC/HTTP2

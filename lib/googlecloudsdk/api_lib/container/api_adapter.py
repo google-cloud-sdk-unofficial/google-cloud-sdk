@@ -20,6 +20,9 @@ import operator
 import os
 import re
 import time
+from apitools.base.protorpclite import messages as protorpc_messages
+from typing import Optional
+
 
 from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
@@ -653,6 +656,85 @@ def ExpandScopeURIs(scopes):
   return scope_uris
 
 
+def _ApplyNetworkEgressCostAllocationCreate(
+    options: 'CreateClusterOptions',
+    cluster: protorpc_messages.Message,
+    messages,
+) -> None:
+  """Applies network egress cost allocation settings to the create config."""
+  if options.enable_network_egress_cost_allocation:
+    if not options.enable_cost_allocation:
+      raise util.Error(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-cost-allocation',
+              opt='enable-network-egress-cost-allocation',
+          )
+      )
+
+  if (
+      options.enable_cost_allocation
+      or options.enable_network_egress_cost_allocation
+  ):
+    if cluster.costManagementConfig is None:
+      cluster.costManagementConfig = messages.CostManagementConfig()
+    if options.enable_cost_allocation:
+      cluster.costManagementConfig.enabled = options.enable_cost_allocation
+    if options.enable_network_egress_cost_allocation:
+      cluster.costManagementConfig.networkEgressCostAllocationEnabled = (
+          options.enable_network_egress_cost_allocation
+      )
+
+
+def _ApplyNetworkEgressCostAllocationUpdate(
+    options: 'UpdateClusterOptions',
+    update: Optional[protorpc_messages.Message],
+    cluster_ref: cloud_resources.Resource,
+    adapter: 'APIAdapter',
+) -> Optional[protorpc_messages.Message]:
+  """Applies network egress cost allocation settings to the update message."""
+  messages = adapter.messages
+
+  if (
+      options.enable_cost_allocation is not None
+      and not options.enable_cost_allocation
+  ):
+    if update is None:
+      update = messages.ClusterUpdate()
+    if update.desiredCostManagementConfig is None:
+      update.desiredCostManagementConfig = messages.CostManagementConfig()
+    update.desiredCostManagementConfig.networkEgressCostAllocationEnabled = False
+
+  if options.enable_network_egress_cost_allocation:
+    cost_allocation_enabled = options.enable_cost_allocation
+    if cost_allocation_enabled is None:
+      try:
+        cluster = adapter.GetCluster(cluster_ref)
+        cost_allocation_enabled = (
+            cluster
+            and cluster.costManagementConfig
+            and cluster.costManagementConfig.enabled
+        )
+      except apitools_exceptions.HttpError:
+        cost_allocation_enabled = False
+    if not cost_allocation_enabled:
+      raise util.Error(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-cost-allocation',
+              opt='enable-network-egress-cost-allocation',
+          )
+      )
+
+  if options.enable_network_egress_cost_allocation is not None:
+    if update is None:
+      update = messages.ClusterUpdate()
+    if update.desiredCostManagementConfig is None:
+      update.desiredCostManagementConfig = messages.CostManagementConfig()
+    update.desiredCostManagementConfig.networkEgressCostAllocationEnabled = (
+        options.enable_network_egress_cost_allocation
+    )
+
+  return update
+
 class CreateClusterOptions(object):
   """Options to pass to CreateCluster."""
 
@@ -791,6 +873,7 @@ class CreateClusterOptions(object):
       maintenance_window_duration=None,
       maintenance_window_recurrence=None,
       enable_cost_allocation=None,
+      enable_network_egress_cost_allocation=None,
       gpudirect_strategy=None,
       max_surge_upgrade=None,
       max_unavailable_upgrade=None,
@@ -938,6 +1021,7 @@ class CreateClusterOptions(object):
       wiz_sensor_registry_secret_uri=None,
       wiz_sensor_api_key_secret_uri=None,
       wiz_sensor_proxy_secret_uri=None,
+      target_node_version=None,
   ):
     self.node_machine_type = node_machine_type
     self.node_source_image = node_source_image
@@ -1086,6 +1170,7 @@ class CreateClusterOptions(object):
     self.maintenance_window_duration = maintenance_window_duration
     self.maintenance_window_recurrence = maintenance_window_recurrence
     self.enable_cost_allocation = enable_cost_allocation
+    self.enable_network_egress_cost_allocation = enable_network_egress_cost_allocation
     self.gpudirect_strategy = gpudirect_strategy
     self.max_surge_upgrade = max_surge_upgrade
     self.max_unavailable_upgrade = max_unavailable_upgrade
@@ -1272,6 +1357,7 @@ class CreateClusterOptions(object):
     self.wiz_sensor_registry_secret_uri = wiz_sensor_registry_secret_uri
     self.wiz_sensor_api_key_secret_uri = wiz_sensor_api_key_secret_uri
     self.wiz_sensor_proxy_secret_uri = wiz_sensor_proxy_secret_uri
+    self.target_node_version = target_node_version
 
 
 class UpdateClusterOptions(object):
@@ -1339,6 +1425,7 @@ class UpdateClusterOptions(object):
       database_encryption_key=None,
       disable_database_encryption=None,
       enable_cost_allocation=None,
+      enable_network_egress_cost_allocation=None,
       enable_autoprovisioning=None,
       autoprovisioning_config_file=None,
       autoprovisioning_service_account=None,
@@ -1554,6 +1641,7 @@ class UpdateClusterOptions(object):
     self.database_encryption_key = database_encryption_key
     self.disable_database_encryption = disable_database_encryption
     self.enable_cost_allocation = enable_cost_allocation
+    self.enable_network_egress_cost_allocation = enable_network_egress_cost_allocation
     self.enable_autoprovisioning = enable_autoprovisioning
     self.autoprovisioning_config_file = autoprovisioning_config_file
     self.autoprovisioning_service_account = autoprovisioning_service_account
@@ -1840,6 +1928,7 @@ class CreateNodePoolOptions(object):
       threads_per_core=None,
       enable_blue_green_upgrade=None,
       enable_surge_upgrade=None,
+      enable_host_update_in_place=None,
       enable_upgrade_in_place=None,
       node_pool_soak_duration=None,
       standard_rollout_policy=None,
@@ -1964,6 +2053,7 @@ class CreateNodePoolOptions(object):
     self.performance_monitoring_unit = performance_monitoring_unit
     self.enable_blue_green_upgrade = enable_blue_green_upgrade
     self.enable_surge_upgrade = enable_surge_upgrade
+    self.enable_host_update_in_place = enable_host_update_in_place
     self.enable_upgrade_in_place = enable_upgrade_in_place
     self.node_pool_soak_duration = node_pool_soak_duration
     self.standard_rollout_policy = standard_rollout_policy
@@ -2054,6 +2144,7 @@ class UpdateNodePoolOptions(object):
       enable_image_streaming=None,
       enable_blue_green_upgrade=None,
       enable_surge_upgrade=None,
+      enable_host_update_in_place=None,
       enable_upgrade_in_place=None,
       node_pool_soak_duration=None,
       standard_rollout_policy=None,
@@ -2116,6 +2207,7 @@ class UpdateNodePoolOptions(object):
     self.enable_image_streaming = enable_image_streaming
     self.enable_blue_green_upgrade = enable_blue_green_upgrade
     self.enable_surge_upgrade = enable_surge_upgrade
+    self.enable_host_update_in_place = enable_host_update_in_place
     self.enable_upgrade_in_place = enable_upgrade_in_place
     self.node_pool_soak_duration = node_pool_soak_duration
     self.standard_rollout_policy = standard_rollout_policy
@@ -2198,6 +2290,7 @@ class UpdateNodePoolOptions(object):
         or self.enable_image_streaming is not None
         or self.enable_surge_upgrade is not None
         or self.enable_blue_green_upgrade is not None
+        or self.enable_host_update_in_place is not None
         or self.enable_upgrade_in_place is not None
         or self.node_pool_soak_duration is not None
         or self.standard_rollout_policy is not None
@@ -2697,6 +2790,8 @@ class APIAdapter(object):
       cluster.locations = sorted(options.node_locations)
     if options.cluster_version:
       cluster.initialClusterVersion = options.cluster_version
+    if options.target_node_version is not None:
+      cluster.targetNodeVersion = options.target_node_version
     if options.network:
       cluster.network = options.network
     if options.cluster_ipv4_cidr:
@@ -3485,10 +3580,7 @@ class APIAdapter(object):
           )
       )
 
-    if options.enable_cost_allocation:
-      cluster.costManagementConfig = self.messages.CostManagementConfig(
-          enabled=True
-      )
+    _ApplyNetworkEgressCostAllocationCreate(options, cluster, self.messages)
 
     if options.enable_multi_networking:
       if cluster.networkConfig is None:
@@ -5559,6 +5651,8 @@ class APIAdapter(object):
               enabled=options.enable_cost_allocation
           )
       )
+    update = _ApplyNetworkEgressCostAllocationUpdate(
+        options, update, cluster_ref, self)
     membership_types = {
         'LIGHTWEIGHT': (
             self.messages.Fleet.MembershipTypeValueValuesEnum.LIGHTWEIGHT
@@ -6986,16 +7080,7 @@ class APIAdapter(object):
           ),
       )
 
-      if (
-          options.control_node_pool
-          or options.enable_attestation
-          or options.tee_policy
-      ):
-        if not options.control_node_pool:
-          raise util.Error(
-              '--enable-attestation and --tee-policy can only be specified with'
-              ' --control-node-pool.'
-          )
+      if options.enable_attestation or options.tee_policy:
         attestation_mode = (
             self.messages.AttestationConfig.ModeValueValuesEnum.ENABLED
             if options.enable_attestation
@@ -7117,6 +7202,8 @@ class APIAdapter(object):
         or options.standard_rollout_policy is not None
         or options.autoscaled_rollout_policy is not None
         or options.node_pool_soak_duration is not None
+        or options.enable_host_update_in_place is not None
+        or options.enable_upgrade_in_place is not None
     ):
       pool.upgradeSettings = self.messages.UpgradeSettings()
       pool.upgradeSettings = self.UpdateUpgradeSettings(
@@ -7550,7 +7637,9 @@ class APIAdapter(object):
       upgrade_settings.strategy = (
           self.messages.UpgradeSettings.StrategyValueValuesEnum.BLUE_GREEN
       )
-    if options.enable_upgrade_in_place is not None:
+    if options.enable_host_update_in_place is not None:
+      upgrade_settings.updateInPlace = options.enable_host_update_in_place
+    elif options.enable_upgrade_in_place is not None:
       upgrade_settings.updateInPlace = options.enable_upgrade_in_place
     if (
         options.standard_rollout_policy is not None
@@ -7602,6 +7691,7 @@ class APIAdapter(object):
         or options.standard_rollout_policy is not None
         or options.node_pool_soak_duration is not None
         or options.autoscaled_rollout_policy is not None
+        or options.enable_host_update_in_place is not None
         or options.enable_upgrade_in_place is not None
     ):
       update_request.upgradeSettings = self.UpdateUpgradeSettings(
@@ -9295,10 +9385,7 @@ class V1Beta1Adapter(V1Adapter):
       if options.enable_experimental_vertical_pod_autoscaling:
         cluster.verticalPodAutoscaling.enabled = True
 
-    if options.enable_cost_allocation:
-      cluster.costManagementConfig = self.messages.CostManagementConfig(
-          enabled=True
-      )
+    _ApplyNetworkEgressCostAllocationCreate(options, cluster, self.messages)
 
     if options.stack_type is not None:
       if options.stack_type.lower() == gke_constants.IPV6_STACK_TYPE:
@@ -9916,6 +10003,10 @@ class V1Beta1Adapter(V1Adapter):
               enabled=options.enable_cost_allocation
           )
       )
+
+    update = _ApplyNetworkEgressCostAllocationUpdate(
+        options, update, cluster_ref, self
+    )
     membership_types = {
         'LIGHTWEIGHT': (
             self.messages.Fleet.MembershipTypeValueValuesEnum.LIGHTWEIGHT
@@ -10682,13 +10773,6 @@ class V1Beta1Adapter(V1Adapter):
       else:
         update = self.messages.ClusterUpdate(desiredDatapathProvider=provider)
 
-    if options.enable_cost_allocation is not None:
-      update = self.messages.ClusterUpdate(
-          desiredCostManagementConfig=self.messages.CostManagementConfig(
-              enabled=options.enable_cost_allocation
-          )
-      )
-
     if options.convert_to_autopilot is not None:
       update = self.messages.ClusterUpdate(
           desiredAutopilot=self.messages.Autopilot(enabled=True)
@@ -11227,11 +11311,7 @@ class V1Alpha1Adapter(V1Beta1Adapter):
     _AddNodePoolUpgradeConcurrencyConfig(cluster, options, self.messages)
 
     cluster.releaseChannel = _GetReleaseChannel(options, self.messages)
-    if options.enable_cost_allocation:
-      cluster.costManagementConfig = self.messages.CostManagementConfig(
-          enabled=True
-      )
-
+    _ApplyNetworkEgressCostAllocationCreate(options, cluster, self.messages)
     cluster_telemetry_type = self._GetClusterTelemetryType(
         options, cluster.loggingService, cluster.monitoringService
     )
@@ -11365,13 +11445,6 @@ class V1Alpha1Adapter(V1Beta1Adapter):
       update = self.messages.ClusterUpdate(
           desiredIdentityServiceConfig=self.messages.IdentityServiceConfig(
               enabled=options.enable_identity_service
-          )
-      )
-
-    if options.enable_cost_allocation is not None:
-      update = self.messages.ClusterUpdate(
-          desiredCostManagementConfig=self.messages.CostManagementConfig(
-              enabled=options.enable_cost_allocation
           )
       )
 

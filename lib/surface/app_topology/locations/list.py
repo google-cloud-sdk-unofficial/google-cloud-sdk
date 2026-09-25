@@ -27,7 +27,9 @@ _FORMAT = """
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class List(base.ListCommand):
   """List App Topology locations.
 
@@ -36,11 +38,7 @@ class List(base.ListCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': (
-          '{description}\n\n'
-          'Lists the Google Cloud locations and regions where the App'
-          ' Topology service is available.'
-      ),
+      'DESCRIPTION': '{description}',
       'EXAMPLES': (
           """\
           To list all available locations for the current project:

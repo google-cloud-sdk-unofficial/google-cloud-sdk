@@ -104,6 +104,7 @@ class FileUploadTask(copy_util.ObjectCopyTaskWithExitHandler):
         length=size,
         posix_to_set=self._posix_to_set,
         user_request_args=self._user_request_args,
+        expected_source_size=size,
     ).execute(task_status_queue)
     result_resource = task_util.get_first_matching_message_payload(
         task_output.messages, task.Topic.CREATED_RESOURCE
@@ -222,6 +223,7 @@ class FileUploadTask(copy_util.ObjectCopyTaskWithExitHandler):
           component_number=i,
           total_components=len(component_offsets_and_lengths),
           user_request_args=self._get_user_request_args_for_composite_upload_chunks(),
+          expected_source_size=size,
       )
 
       file_part_upload_tasks.append(upload_task)

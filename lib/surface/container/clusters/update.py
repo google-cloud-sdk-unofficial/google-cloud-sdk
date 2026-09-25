@@ -583,6 +583,9 @@ class Update(base.UpdateCommand):
     opts.undrain_additional_ip_ranges = args.undrain_additional_ip_ranges
     opts.stack_type = args.stack_type
     opts.enable_cost_allocation = args.enable_cost_allocation
+    opts.enable_network_egress_cost_allocation = (
+        args.enable_network_egress_cost_allocation
+    )
     opts.gateway_api = args.gateway_api
     opts.enable_managed_prometheus = args.enable_managed_prometheus
     opts.disable_managed_prometheus = args.disable_managed_prometheus
@@ -1556,6 +1559,9 @@ class UpdateBeta(Update):
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     opts.enable_cost_allocation = args.enable_cost_allocation
+    opts.enable_network_egress_cost_allocation = (
+        args.enable_network_egress_cost_allocation
+    )
     opts.binauthz_evaluation_mode = args.binauthz_evaluation_mode
     opts.binauthz_policy_bindings = args.binauthz_policy_bindings
     opts.stack_type = args.stack_type
@@ -1928,6 +1934,9 @@ class UpdateAlpha(Update):
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.disable_default_snat = args.disable_default_snat
     opts.enable_cost_allocation = args.enable_cost_allocation
+    opts.enable_network_egress_cost_allocation = (
+        args.enable_network_egress_cost_allocation
+    )
     opts.enable_master_global_access = args.enable_master_global_access
     opts.notification_config = args.notification_config
     opts.kubernetes_objects_changes_target = (

@@ -208,6 +208,59 @@ def _validate_chunk_integrity(crc32c_hash, data):
     return None
 
 
+def _process_response_ranges(
+    response,
+    download_stream,
+    digesters,
+    download_strategy,
+    progress_callback=None,
+    processed_bytes=0,
+):
+  """Processes and writes all data ranges in a BidiReadObjectResponse.
+
+  Args:
+    response: BidiReadObjectResponse containing object_data_ranges.
+    download_stream: Stream to write downloaded data to.
+    digesters: Checksum digesters dictionary.
+    download_strategy: Strategy for download (ONE_SHOT or RESUMABLE).
+    progress_callback: Optional callback invoked with total processed bytes.
+    processed_bytes (int): Total bytes processed before this response.
+
+  Returns:
+    tuple[int, bool]: (updated_processed_bytes, destination_pipe_is_broken).
+  """
+  if not response or not response.object_data_ranges:
+    return processed_bytes, False
+
+  for object_range_data in response.object_data_ranges:
+    data = object_range_data.checksummed_data.content
+    if not data:
+      continue
+
+    chunk_crc32c = None
+    if _should_validate_chunk_integrity(digesters):
+      chunk_crc32c = _validate_chunk_integrity(
+          object_range_data.checksummed_data.crc32c, data
+      )
+
+    try:
+      download_stream.write(data)
+    except BrokenPipeError:
+      if download_strategy == cloud_api.DownloadStrategy.ONE_SHOT:
+        log.info('Writing to download stream raised broken pipe error.')
+        return processed_bytes, True
+      raise
+
+    if digesters:
+      _update_digesters(digesters, data, chunk_crc32c)
+
+    processed_bytes += len(data)
+    if progress_callback:
+      progress_callback(processed_bytes)
+
+  return processed_bytes, False
+
+
 def _process_data_from_bidi_read_object_rpc(
     gapic_client,
     cloud_resource,
@@ -260,35 +313,17 @@ def _process_data_from_bidi_read_object_rpc(
           )
           break
         raise
-      else:
-        # This block executes only if the try block completes without an
-        # exception.
-        for object_range_data in bidi_read_object_response.object_data_ranges:
-          data = object_range_data.checksummed_data.content
-          if data:
-            chunk_crc32c = None
-            if _should_validate_chunk_integrity(digesters):
-              chunk_crc32c = _validate_chunk_integrity(
-                  object_range_data.checksummed_data.crc32c, data)
 
-            try:
-              download_stream.write(data)
-            except BrokenPipeError:
-              if download_strategy == cloud_api.DownloadStrategy.ONE_SHOT:
-                log.info('Writing to download stream raised broken pipe error.')
-                destination_pipe_is_broken = True
-                break
-              raise
-
-            if digesters:
-              _update_digesters(digesters, data, chunk_crc32c)
-
-            processed_bytes += len(data)
-            if progress_callback:
-              progress_callback(processed_bytes)
-
-        if destination_pipe_is_broken:
-          break
+      processed_bytes, destination_pipe_is_broken = _process_response_ranges(
+          bidi_read_object_response,
+          download_stream,
+          digesters,
+          download_strategy,
+          progress_callback=progress_callback,
+          processed_bytes=processed_bytes,
+      )
+      if destination_pipe_is_broken:
+        break
   finally:
     # Ensures the stream is closed even if an exception is raised.
     bidi_read_object_rpc.close()

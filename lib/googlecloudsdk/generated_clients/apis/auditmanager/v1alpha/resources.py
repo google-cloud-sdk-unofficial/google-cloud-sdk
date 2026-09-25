@@ -49,6 +49,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  FOLDERS_LOCATIONS_AUDITSCHEDULES = (
+      'folders.locations.auditSchedules',
+      '{+name}',
+      {
+          '':
+              'folders/{foldersId}/locations/{locationsId}/auditSchedules/'
+              '{auditSchedulesId}',
+      },
+      ['name'],
+      True
+  )
   FOLDERS_LOCATIONS_OPERATIONDETAILS = (
       'folders.locations.operationDetails',
       '{+name}',
@@ -103,6 +114,17 @@ class Collections(enum.Enum):
           '':
               'organizations/{organizationsId}/locations/{locationsId}/'
               'auditReports/{auditReportsId}',
+      },
+      ['name'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS_AUDITSCHEDULES = (
+      'organizations.locations.auditSchedules',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}/'
+              'auditSchedules/{auditSchedulesId}',
       },
       ['name'],
       True
@@ -175,6 +197,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/auditReports/'
               '{auditReportsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_AUDITSCHEDULES = (
+      'projects.locations.auditSchedules',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/auditSchedules/'
+              '{auditSchedulesId}',
       },
       ['name'],
       True

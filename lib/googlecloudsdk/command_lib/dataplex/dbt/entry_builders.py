@@ -18,7 +18,8 @@ One entry is emitted per dbt resource of interest (project, model, source,
 seed, snapshot, group, exposure, metric, macro, semantic_model, saved_query,
 test). Every entry carries the universal ``dbt-node`` aspect plus its
 resource-specific aspect; models/sources/seeds/snapshots additionally carry the
-core 1P ``schema`` aspect, tests and source freshness carry
+core 1P ``schema`` aspect built from their columns and semantic models one
+built from their entities/dimensions/measures, tests and source freshness carry
 ``dbt-data-quality``, and groups/exposures carry the ``contacts`` aspect
 required by their entry types. All aspect field names follow the canonical
 types verbatim (camelCase).
@@ -115,7 +116,8 @@ def _add_schema_aspect(
     aspects_map: the entry's aspect map, updated in place.
     catalog_columns: the catalog node/source ``columns`` mapping, or None.
     node: the dbt resource, read for its manifest columns and constraints.
-    resolve_target: maps a foreign key's raw ``to`` to a Dataplex entry name.
+    resolve_target: maps a foreign key's raw ``to`` to the referenced dbt
+      resource's fullyQualifiedName.
     stale_aspects: updated in place with the schema aspect key when the schema
       came from the manifest alone, so an update leaves a stored catalog-backed
       schema as it is.
@@ -169,32 +171,42 @@ def _as_dict(value: Any) -> dict[str, Any]:
   return value if isinstance(value, dict) else {}
 
 
-def _compiled_code(node: dict[str, Any]) -> str:
-  """Returns a node's compiled SQL, clipped, or '' when it carries none.
+def _compiled_code(node: dict[str, Any], result: dict[str, Any]) -> str:
+  """Returns a node's compiled SQL, clipped, or '' when neither source has it.
 
   Only a command that compiled the node writes ``compiled_code``; a parse-level
   manifest (what ``dbt parse`` and ``dbt source freshness`` leave behind)
   carries none, and that absence makes the whole payload a downgrade of one
-  built from a compiled manifest.
+  built from a compiled manifest. The v2 dbt engines never write it to the
+  manifest at all -- the key is absent from their schema -- but they do write it
+  to run_results.json for every node the run executed, which is where the
+  compiled test SQL has always come from.
 
   Args:
     node: the dbt resource to read ``compiled_code`` from.
+    result: the node's run_results.json row, or {} when the run did not cover
+      it.
 
   Returns:
     The node's compiled SQL, clipped to ``naming.MAX_CODE_BYTES``, or '' when
-    the node carries none.
+    neither the manifest node nor the run result carries any.
   """
-  return _truncate_bytes(node.get('compiled_code'), naming.MAX_CODE_BYTES)
+  return _truncate_bytes(
+      node.get('compiled_code') or result.get('compiled_code'),
+      naming.MAX_CODE_BYTES,
+  )
 
 
-def _set_code(data: dict[str, Any], node: dict[str, Any]) -> None:
+def _set_code(
+    data: dict[str, Any], node: dict[str, Any], result: dict[str, Any]
+) -> None:
   """Copies a node's raw and compiled SQL onto an aspect payload."""
   _set_if(
       data,
       'rawCode',
       _truncate_bytes(node.get('raw_code'), naming.MAX_CODE_BYTES),
   )
-  _set_if(data, 'compiledCode', _compiled_code(node))
+  _set_if(data, 'compiledCode', _compiled_code(node, result))
 
 
 def _truncate(value: Any, limit: int) -> str:
@@ -426,12 +438,14 @@ def _build_model_entry(
     unique_id: str,
     node: dict[str, Any],
     catalog_nodes: dict[str, Any],
+    run_results_map: dict[str, Any],
     resolve_target: Callable[[str], str | None] | None = None,
 ) -> dict[str, Any]:
   """Builds a dbt-model entry with node, model, schema and contract aspects."""
   config = node.get('config') or {}
   cat_node = catalog_nodes.get(unique_id) or {}
   stats = cat_node.get('stats') or {}
+  result = run_results_map.get(unique_id, {})
   enforced = bool((node.get('contract') or {}).get('enforced', False))
 
   model_data = {
@@ -445,8 +459,8 @@ def _build_model_entry(
   # supported.
   aspects.add_stat(model_data, 'rowCount', stats, 'num_rows')
   aspects.add_stat(model_data, 'byteCount', stats, 'num_bytes', 'bytes')
-  _set_code(model_data, node)
-  compiled = bool(_compiled_code(node))
+  _set_code(model_data, node, result)
+  compiled = bool(_compiled_code(node, result))
 
   aspects_map = aspects.base_aspects(
       ctx, unique_id, node, 'model', 'dbt-model', model_data
@@ -530,8 +544,11 @@ def _build_source_entry(
 
   fresh_res = sources_map.get(unique_id, {})
   if fresh_res:
+    # The v2 engines report `Pass` / `Error` where 1.x reports `pass` / `error`.
+    # Left as dbt writes it, the same source flips case on an engine upgrade.
+    status = fresh_res.get('status')
     dq = {
-        'status': fresh_res.get('status') or '',
+        'status': status.lower() if isinstance(status, str) else '',
         'testCategory': 'source',
     }
     _set_if(dq, 'maxLoadedAt', fresh_res.get('max_loaded_at'))
@@ -633,6 +650,7 @@ def _build_snapshot_entry(
     unique_id: str,
     node: dict[str, Any],
     catalog_nodes: dict[str, Any],
+    run_results_map: dict[str, Any],
     resolve_target: Callable[[str], str | None] | None = None,
 ) -> dict[str, Any]:
   """Builds a dbt-snapshot entry with node, snapshot and schema aspects."""
@@ -662,8 +680,9 @@ def _build_snapshot_entry(
       'targetSchema': node.get('schema') or '',
   }
   _set_if(data, 'strategy', strategy)
-  _set_code(data, node)
-  compiled = bool(_compiled_code(node))
+  result = run_results_map.get(unique_id, {})
+  _set_code(data, node, result)
+  compiled = bool(_compiled_code(node, result))
 
   aspects_map = aspects.base_aspects(
       ctx, unique_id, node, 'snapshot', 'dbt-snapshot', data
@@ -897,41 +916,12 @@ def _build_semantic_model_entry(
     ctx: naming.Context,
     unique_id: str,
     sm: dict[str, Any],
+    model_columns: list[dict[str, Any]] | None = None,
+    resolve_entity_target: Callable[[str], str | None] | None = None,
+    model_fqn: str | None = None,
 ) -> dict[str, Any]:
-  """Builds a dbt-semantic-model entry with node and semantic-model aspects."""
+  """Builds a dbt-semantic-model entry with node, semantic-model and schema."""
   relation = sm.get('node_relation') or {}
-  default_time_dim = (sm.get('defaults') or {}).get('agg_time_dimension')
-
-  measures = [
-      {
-          'name': m.get('name', ''),
-          'description': m.get('description') or '',
-          'aggType': m.get('agg', ''),
-          'expression': m.get('expr') or '',
-          'params': _json_or_empty(m.get('agg_params')),
-      }
-      for m in sm.get('measures') or []
-  ]
-  dimensions = [
-      {
-          'name': d.get('name', ''),
-          'description': d.get('description') or '',
-          'type': d.get('type', ''),
-          'expression': d.get('expr') or '',
-          'params': _json_or_empty(d.get('type_params')),
-          'isDefaultTimeDimension': d.get('name') == default_time_dim,
-      }
-      for d in sm.get('dimensions') or []
-  ]
-  entities = [
-      {
-          'name': e.get('name', ''),
-          'type': e.get('type', ''),
-          'expression': e.get('expr') or '',
-      }
-      for e in sm.get('entities') or []
-  ]
-
   aspects_map = {
       ctx.aspect_key('dbt-node'): aspects.node_aspect(
           ctx,
@@ -943,14 +933,17 @@ def _build_semantic_model_entry(
       ),
       ctx.aspect_key('dbt-semantic-model'): aspects.make_aspect(
           ctx.aspect_fqn('dbt-semantic-model'),
-          {
-              'modelReference': sm.get('model') or '',
-              'entities': entities,
-              'measures': measures,
-              'dimensions': dimensions,
-          },
+          {'modelReference': model_fqn or sm.get('model') or ''},
       ),
   }
+  # A semantic model's elements come from the manifest alone, so unlike a
+  # physical table's schema this one is complete without the catalog; only the
+  # element types degrade when it is missing.
+  schema = aspects.semantic_model_schema_aspect(
+      ctx, sm, model_columns, resolve_entity_target
+  )
+  if schema:
+    aspects_map[ctx.schema_key()] = schema
   project_name = sm.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = sm.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-semantic-model', project_name, resource_name)
@@ -1028,8 +1021,8 @@ def _build_saved_query_entry(
 # The statuses dbt reports for a test
 # (dbt.artifacts.schemas.results.TestStatus). Every other command shares
 # run_results.json with a status drawn from a different enum -- notably
-# `dbt compile` and, before Fusion dropped the command, `dbt docs generate`,
-# both of which record every test as the RunStatus `success`. Reading that back
+# `dbt compile` and `dbt docs generate`, both of which record every test as the
+# RunStatus `success`. Reading that back
 # as a test outcome reports the whole suite as having succeeded whether or not
 # it ever ran, so a status outside this set is treated as "this run carries no
 # verdict for this test".
@@ -1229,6 +1222,39 @@ def model_uids_by_name(nodes: dict[str, Any]) -> dict[str, str]:
   return index
 
 
+def primary_entity_uids(
+    semantic_models: dict[str, Any],
+) -> dict[str, str]:
+  """Indexes semantic models by the entity each declares as its primary key.
+
+  This is how MetricFlow resolves a join: a ``foreign`` entity joins to the
+  semantic model declaring the same-named entity as ``primary``. An entity name
+  claimed as primary by more than one semantic model makes that join ambiguous,
+  so it is left out rather than resolved to an arbitrary one of them.
+
+  Args:
+    semantic_models: the manifest ``semantic_models`` section.
+
+  Returns:
+    A dict of lowercased entity name -> semantic model unique_id.
+  """
+  index: dict[str, str] = {}
+  ambiguous = set()
+  for uid, sm in semantic_models.items():
+    for entity in aspects.semantic_entities(sm):
+      name = entity.get('name')
+      if not name or (entity.get('type') or '').strip().lower() != 'primary':
+        continue
+      name = name.lower()
+      if name in index:
+        ambiguous.add(name)
+        continue
+      index[name] = uid
+  for name in ambiguous:
+    del index[name]
+  return index
+
+
 def described_model(
     sm: dict[str, Any], model_uid_by_name: dict[str, str]
 ) -> str | None:
@@ -1362,8 +1388,9 @@ def build_entries(
   # the authored `to: ref('model')`, or -- once the model's contract is
   # enforced, which is when dbt renders the constraint into DDL -- the resolved
   # relation name (`` `project`.`dataset`.`model` ``). Both are indexed, since
-  # the 1P schema aspect wants a Dataplex entry name either way. Index by short
-  # name rather than rebuilding the unique_id, for the reasons in entry_links.
+  # the 1P schema aspect wants the referenced resource either way. Index by
+  # short name rather than rebuilding the unique_id, for the reasons in
+  # entry_links.
   # Foreign key resolution is best effort: dbt's `to` is free text, so a target
   # can be a ref(), a bare relation, a source() or something we don't model at
   # all. Anything that does not resolve to exactly one node is left off the
@@ -1393,6 +1420,33 @@ def build_entries(
     del uid_by_name[name]
   for relation in ambiguous_relations:
     del uid_by_relation[relation]
+
+  semantic_models = manifest.get('semantic_models') or {}
+
+  def node_fqn(unique_id: str) -> str | None:
+    """The dbt FQN of a resource, which is how a schema aspect names it.
+
+    A schema constraint names the resource it references the way the source
+    system names it -- the BigQuery, AlloyDB and BigLake converters all put
+    their own table reference in `referencedTable` -- so dbt puts the dbt FQN
+    there rather than the Dataplex entry it happens to be imported as.
+
+    Args:
+      unique_id: the dbt unique_id of the referenced resource.
+
+    Returns:
+      The resource's fullyQualifiedName, or None when it is not a resource we
+      emit an entry for.
+    """
+    node = nodes.get(unique_id) or semantic_models.get(unique_id)
+    resource_type = (node or {}).get('resource_type')
+    if not resource_type:
+      return None
+    return ctx.dbt_resource_fqn(
+        'dbt-{0}'.format(resource_type.replace('_', '-')),
+        node.get('package_name') or _DEFAULT_PROJECT_NAME,
+        node.get('name') or '',
+    )
 
   entries = []
   # entry_id -> unique_id, tracked as entries are added. This hands entry_links
@@ -1445,11 +1499,11 @@ def build_entries(
     return group_uid_by_name.get(name) if name else None
 
   def resolve_target(to: str) -> str | None:
-    """Maps a foreign key's raw `to` to its Dataplex entry name, if any."""
+    """Maps a foreign key's raw `to` to the referenced resource's FQN."""
     target = uid_by_name.get(naming.parse_ref(to) or '')
     if not target:
       target = uid_by_relation.get(_normalize_relation(to))
-    return ctx.entry_name(naming.entry_id(target)) if target else None
+    return node_fqn(target) if target else None
 
   # Emission order is the hierarchy order: a parent is always written before
   # its children so that `parentEntry` resolves at import time.
@@ -1494,7 +1548,9 @@ def build_entries(
   for unique_id, node in by_type['model']:
     add(
         unique_id,
-        _build_model_entry(ctx, unique_id, node, catalog_nodes, resolve_target),
+        _build_model_entry(
+            ctx, unique_id, node, catalog_nodes, run_results_map, resolve_target
+        ),
         group_uid(node),
     )
   for unique_id, node in by_type['seed']:
@@ -1507,18 +1563,42 @@ def build_entries(
     add(
         unique_id,
         _build_snapshot_entry(
-            ctx, unique_id, node, catalog_nodes, resolve_target
+            ctx, unique_id, node, catalog_nodes, run_results_map, resolve_target
         ),
         group_uid(node),
     )
 
   # A semantic model describes exactly one physical model, which is the most
   # informative parent; failing that, the group it declares, then the project.
-  for unique_id, sm in (manifest.get('semantic_models') or {}).items():
+  sm_uid_by_entity = primary_entity_uids(semantic_models)
+
+  def entity_resolver(sm_uid: str) -> Callable[[str], str | None]:
+    """The entity -> joined semantic model resolver for one semantic model."""
+
+    def resolve(name: str) -> str | None:
+      target = sm_uid_by_entity.get(name.lower())
+      if not target or target == sm_uid:
+        return None
+      return node_fqn(target)
+
+    return resolve
+
+  for unique_id, sm in semantic_models.items():
     model_uid = described_model(sm, model_uid_by_name)
+    model_columns = aspects.merged_columns(
+        (catalog_nodes.get(model_uid) or {}).get('columns'),
+        (nodes.get(model_uid) or {}).get('columns'),
+    )
     add(
         unique_id,
-        _build_semantic_model_entry(ctx, unique_id, sm),
+        _build_semantic_model_entry(
+            ctx,
+            unique_id,
+            sm,
+            model_columns,
+            entity_resolver(unique_id),
+            node_fqn(model_uid) if model_uid else None,
+        ),
         model_uid if model_uid in emitted else group_uid(sm),
     )
 

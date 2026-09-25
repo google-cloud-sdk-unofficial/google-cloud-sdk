@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
 )
 class ImageViews(base.Group):
   """Read image-view resources with regional context."""

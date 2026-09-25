@@ -44,7 +44,7 @@ class Update(base.UpdateCommand):
       Rapid Cache Ultra instance ``my-bucket/my-cache-id'':
 
         $ {command} my-bucket/my-cache-id --ttl=6h \\
-            --admission-policy=ADMIT_ON_SECOND_MISS
+            --admission-policy=admit-on-second-miss
 
       The following command updates cache entry's ttl of Rapid Cache Ultra
       instances in ``bucket-1/cache-1'' and ``bucket-2/cache-2'':

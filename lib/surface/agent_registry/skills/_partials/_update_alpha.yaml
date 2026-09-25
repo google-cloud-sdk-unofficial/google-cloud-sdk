@@ -117,6 +117,41 @@
       - arg_value: DECOMMISSIONED
         enum_value: TARGET_STATE_DECOMMISSIONED
         help_text: The skill is decommissioned.
+    - group:
+        mutex: true
+        help_text: |-
+          Scanning configuration for the skill.
+        params:
+        - arg_name: scanning-policy
+          api_field: skill.scanningConfig.policy
+          required: false
+          help_text: |-
+            Scanning policy for security analysis.
+          choices:
+          - arg_value: enabled-blocking
+            enum_value: ENABLED_BLOCKING
+            help_text: Scans skills and blocks revision download/promotion if findings are detected.
+          - arg_value: enabled-nonblocking
+            enum_value: ENABLED_NONBLOCKING
+            help_text: Scans skills and reports findings without blocking download/promotion.
+          - arg_value: disabled
+            enum_value: DISABLED
+            help_text: Bypasses security scanning entirely.
+        - arg_name: scanning-state
+          api_field: skill.scanningConfig.policy
+          required: false
+          help_text: |-
+            Scanning policy for security analysis (alias for --scanning-policy).
+          choices:
+          - arg_value: enabled-blocking
+            enum_value: ENABLED_BLOCKING
+            help_text: Scans skills and blocks revision download/promotion if findings are detected.
+          - arg_value: enabled-nonblocking
+            enum_value: ENABLED_NONBLOCKING
+            help_text: Scans skills and reports findings without blocking download/promotion.
+          - arg_value: disabled
+            enum_value: DISABLED
+            help_text: Bypasses security scanning entirely.
     - arg_name: default-revision
       help_text: |-
         The full resource name of the revision currently served by
@@ -170,6 +205,8 @@
     api_version: v1alpha
     collection:
     - agentregistry.projects.locations.skills
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.agent_registry.util:SetUpdateMaskInUpdate
   async:
     collection:
     - agentregistry.projects.locations.operations

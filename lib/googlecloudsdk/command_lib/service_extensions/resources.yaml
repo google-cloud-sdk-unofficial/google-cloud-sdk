@@ -61,6 +61,19 @@ lbRouteExtension:
     help: |
       The ID of the `LbRouteExtension`.
 
+cdnEdgeExtension:
+  name: CdnEdgeExtension
+  collection: networkservices.projects.locations.cdnEdgeExtensions
+  request_id_field: cdnEdgeExtensionId
+  attributes:
+  - *project
+  - *location
+  - &cdnEdgeExtension:
+    parameter_name: cdnEdgeExtensionsId
+    attribute_name: cdn_edge_extension
+    help: |
+      The ID of the `CdnEdgeExtension`.
+
 lbEdgeExtension:
   name: LbEdgeExtension
   collection: networkservices.projects.locations.lbEdgeExtensions

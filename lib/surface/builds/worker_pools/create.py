@@ -287,6 +287,8 @@ def _CreateWorkerPoolFirstGen(args, release_track):
     if args.worker_disk_size is not None:
       worker_config.diskSizeGb = compute_utils.BytesToGb(
           args.worker_disk_size)
+    if args.worker_release is not None:
+      worker_config.workerRelease = args.worker_release
     wp.privatePoolV1Config.workerConfig = worker_config
 
     if release_track == base.ReleaseTrack.ALPHA:

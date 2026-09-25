@@ -1,0 +1,38 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 ExtensionBindingMatchConditionToDestinationHeaderSet
+  export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- headers
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  headers:
+    description: |-
+      A list of headers to match against in http header. If multiple header
+      matches are provided, they will be evaluated as an AND, i.e. all header
+      matches must match for the request to match.
+    type: array
+    items:
+      $ref: ExtensionBindingMatchConditionHeaderMatch.yaml

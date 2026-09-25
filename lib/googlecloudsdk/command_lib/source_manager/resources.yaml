@@ -60,3 +60,17 @@ pull_request:
     attribute_name: pull_request
     help: Secure Source Manager pull request.
   disable_auto_completers: false
+
+pull_request_comment:
+  name: pull_request_comment
+  collection: securesourcemanager.projects.locations.repositories.pullRequests.pullRequestComments
+  attributes:
+  - *location
+  - *repository
+  - parameter_name: pullRequestsId
+    attribute_name: pull-request
+    help: Secure Source Manager pull request.
+  - parameter_name: pullRequestCommentsId
+    attribute_name: pull_request_comment
+    help: Secure Source Manager pull request comment.
+  disable_auto_completers: false

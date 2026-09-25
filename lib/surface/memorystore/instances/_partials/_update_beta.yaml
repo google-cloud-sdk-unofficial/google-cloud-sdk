@@ -622,8 +622,6 @@
         not supported (00000000-0000-0000-0000-000000000000).
   request:
     api_version: v1beta
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.memorystore.instances_update_util:UpdateAuthMode
     collection:
     - memorystore.projects.locations.instances
   async:

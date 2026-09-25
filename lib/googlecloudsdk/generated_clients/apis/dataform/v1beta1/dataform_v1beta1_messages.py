@@ -111,6 +111,50 @@ class BigQueryAction(_messages.Message):
   sqlScript = _messages.StringField(2)
 
 
+class BigQueryUnitTest(_messages.Message):
+  r"""Represents a BigQuery unit test.
+
+  Fields:
+    dependencyTargets: A list of actions that this action depends on.
+    disabled: Whether this action is disabled (i.e. should not be run).
+    displayName: The name of the unit test.
+    expectedOutputQuery: Expected output query to compare against the test
+      query.
+    tags: Arbitrary, user-defined tags on this action.
+    testQuery: Test query to execute.
+  """
+
+  dependencyTargets = _messages.MessageField('Target', 1, repeated=True)
+  disabled = _messages.BooleanField(2)
+  displayName = _messages.StringField(3)
+  expectedOutputQuery = _messages.StringField(4)
+  tags = _messages.StringField(5, repeated=True)
+  testQuery = _messages.StringField(6)
+
+
+class BigQueryUnitTestAction(_messages.Message):
+  r"""Represents a workflow action that will run a BigQuery unit test.
+
+  Fields:
+    actualResultsJobId: Output only. Job ID for the actual results.
+    actualResultsSqlScript: Output only. SQL script for the actual results.
+    expectedResultsJobId: Output only. Job ID for the expected results.
+    expectedResultsSqlScript: Output only. SQL script for the expected
+      results.
+    totalBilledBytes: Output only. Total bytes billed for this action.
+      Combined total for actual and expected jobs.
+    totalProcessedBytes: Output only. Total bytes processed for this action.
+      Combined total for actual and expected jobs.
+  """
+
+  actualResultsJobId = _messages.StringField(1)
+  actualResultsSqlScript = _messages.StringField(2)
+  expectedResultsJobId = _messages.StringField(3)
+  expectedResultsSqlScript = _messages.StringField(4)
+  totalBilledBytes = _messages.IntegerField(5)
+  totalProcessedBytes = _messages.IntegerField(6)
+
+
 class Binding(_messages.Message):
   r"""Associates `members`, or principals, with a `role`.
 
@@ -521,6 +565,7 @@ class CompilationResultAction(_messages.Message):
 
   Fields:
     assertion: The assertion executed by this action.
+    bigqueryUnitTest: The unit test executed by this action.
     canonicalTarget: The action's identifier if the project had been compiled
       without any overrides configured. Unique within the compilation result.
     dataPreparation: The data preparation executed by this action.
@@ -537,15 +582,16 @@ class CompilationResultAction(_messages.Message):
   """
 
   assertion = _messages.MessageField('Assertion', 1)
-  canonicalTarget = _messages.MessageField('Target', 2)
-  dataPreparation = _messages.MessageField('DataPreparation', 3)
-  declaration = _messages.MessageField('Declaration', 4)
-  filePath = _messages.StringField(5)
-  internalMetadata = _messages.StringField(6)
-  notebook = _messages.MessageField('Notebook', 7)
-  operations = _messages.MessageField('Operations', 8)
-  relation = _messages.MessageField('Relation', 9)
-  target = _messages.MessageField('Target', 10)
+  bigqueryUnitTest = _messages.MessageField('BigQueryUnitTest', 2)
+  canonicalTarget = _messages.MessageField('Target', 3)
+  dataPreparation = _messages.MessageField('DataPreparation', 4)
+  declaration = _messages.MessageField('Declaration', 5)
+  filePath = _messages.StringField(6)
+  internalMetadata = _messages.StringField(7)
+  notebook = _messages.MessageField('Notebook', 8)
+  operations = _messages.MessageField('Operations', 9)
+  relation = _messages.MessageField('Relation', 10)
+  target = _messages.MessageField('Target', 11)
 
 
 class ComputeRepositoryAccessTokenStatusResponse(_messages.Message):
@@ -2374,6 +2420,30 @@ class Empty(_messages.Message):
 
 
 
+class EndUserAuthConfig(_messages.Message):
+  r"""Includes configuration options for repository end user authentication.
+
+  Fields:
+    oauthConfig: Optional. OAuth configuration for repository end user
+      authentication.
+  """
+
+  oauthConfig = _messages.MessageField('OAuthConfig', 1)
+
+
+class EndUserAuthenticationConfig(_messages.Message):
+  r"""Includes configuration options for end user authentication.
+
+  Fields:
+    oauthConfig: Optional. OAuth configuration for end user authentication.
+    userEmail: Output only. Email address of the user to run workflow
+      invocations under.
+  """
+
+  oauthConfig = _messages.MessageField('OAuthConfig', 1)
+  userEmail = _messages.StringField(2)
+
+
 class ErrorTable(_messages.Message):
   r"""Error table information, used to write error data into a BigQuery table.
 
@@ -2771,11 +2841,17 @@ class InvocationConfig(_messages.Message):
   included.
 
   Enums:
+    ExecutionModeValueValuesEnum: Optional. Specifies the execution mode for
+      the workflow invocation.
     QueryPriorityValueValuesEnum: Optional. Specifies the priority for query
       execution in BigQuery. More information can be found at
       https://cloud.google.com/bigquery/docs/running-queries#queries.
 
   Fields:
+    endUserAuthConfig: Optional. Configuration for end user authentication.
+      Note that this should not be set when `service_account` is used.
+    executionMode: Optional. Specifies the execution mode for the workflow
+      invocation.
     fullyRefreshIncrementalTablesEnabled: Optional. When set to true, any
       incremental tables will be fully refreshed.
     includedTags: Optional. The set of tags to include.
@@ -2790,6 +2866,21 @@ class InvocationConfig(_messages.Message):
     transitiveDependentsIncluded: Optional. When set to true, transitive
       dependents of included actions will be executed.
   """
+
+  class ExecutionModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the execution mode for the workflow invocation.
+
+    Values:
+      EXECUTION_MODE_UNSPECIFIED: Default value.
+      DEFAULT: Default execution mode, which runs all actions except unit
+        tests. Same as ALL_EXCEPT_UNIT_TESTS.
+      ALL_EXCEPT_UNIT_TESTS: Run all actions except unit tests.
+      UNIT_TESTS_ONLY: Run unit tests only.
+    """
+    EXECUTION_MODE_UNSPECIFIED = 0
+    DEFAULT = 1
+    ALL_EXCEPT_UNIT_TESTS = 2
+    UNIT_TESTS_ONLY = 3
 
   class QueryPriorityValueValuesEnum(_messages.Enum):
     r"""Optional. Specifies the priority for query execution in BigQuery. More
@@ -2809,13 +2900,15 @@ class InvocationConfig(_messages.Message):
     INTERACTIVE = 1
     BATCH = 2
 
-  fullyRefreshIncrementalTablesEnabled = _messages.BooleanField(1)
-  includedTags = _messages.StringField(2, repeated=True)
-  includedTargets = _messages.MessageField('Target', 3, repeated=True)
-  queryPriority = _messages.EnumField('QueryPriorityValueValuesEnum', 4)
-  serviceAccount = _messages.StringField(5)
-  transitiveDependenciesIncluded = _messages.BooleanField(6)
-  transitiveDependentsIncluded = _messages.BooleanField(7)
+  endUserAuthConfig = _messages.MessageField('EndUserAuthenticationConfig', 1)
+  executionMode = _messages.EnumField('ExecutionModeValueValuesEnum', 2)
+  fullyRefreshIncrementalTablesEnabled = _messages.BooleanField(3)
+  includedTags = _messages.StringField(4, repeated=True)
+  includedTargets = _messages.MessageField('Target', 5, repeated=True)
+  queryPriority = _messages.EnumField('QueryPriorityValueValuesEnum', 6)
+  serviceAccount = _messages.StringField(7)
+  transitiveDependenciesIncluded = _messages.BooleanField(8)
+  transitiveDependentsIncluded = _messages.BooleanField(9)
 
 
 class ListCompilationResultsResponse(_messages.Message):
@@ -3165,6 +3258,18 @@ class NotebookRuntimeOptions(_messages.Message):
   aiPlatformNotebookRuntimeTemplate = _messages.StringField(1)
   gcsOutputBucket = _messages.StringField(2)
   gcsRepositorySnapshotDestination = _messages.MessageField('GcsRepositorySnapshotDestination', 3)
+
+
+class OAuthConfig(_messages.Message):
+  r"""OAuth configuration for end user authentication.
+
+  Fields:
+    additionalOauthScopes: Optional. Additional OAuth scopes to use for
+      BigQuery executions. Scopes always in use:
+      `https://www.googleapis.com/auth/bigquery`
+  """
+
+  additionalOauthScopes = _messages.StringField(1, repeated=True)
 
 
 class Operation(_messages.Message):
@@ -3883,6 +3988,8 @@ class Repository(_messages.Message):
     dataEncryptionState: Output only. A data encryption state of a Git
       repository if this Repository is protected by a KMS key.
     displayName: Optional. The repository's user-friendly name.
+    endUserAuthConfig: Optional. Includes configuration options for end user
+      authentication.
     gitRemoteSettings: Optional. If set, configures this repository to be
       linked to a Git remote.
     internalMetadata: Output only. All the metadata information that is used
@@ -3947,16 +4054,17 @@ class Repository(_messages.Message):
   createTime = _messages.StringField(2)
   dataEncryptionState = _messages.MessageField('DataEncryptionState', 3)
   displayName = _messages.StringField(4)
-  gitRemoteSettings = _messages.MessageField('GitRemoteSettings', 5)
-  internalMetadata = _messages.StringField(6)
-  kmsKeyName = _messages.StringField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  name = _messages.StringField(9)
-  npmrcEnvironmentVariablesSecretVersion = _messages.StringField(10)
-  serviceAccount = _messages.StringField(11)
-  setAuthenticatedUserAdmin = _messages.BooleanField(12)
-  teamFolderName = _messages.StringField(13)
-  workspaceCompilationOverrides = _messages.MessageField('WorkspaceCompilationOverrides', 14)
+  endUserAuthConfig = _messages.MessageField('EndUserAuthConfig', 5)
+  gitRemoteSettings = _messages.MessageField('GitRemoteSettings', 6)
+  internalMetadata = _messages.StringField(7)
+  kmsKeyName = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  name = _messages.StringField(10)
+  npmrcEnvironmentVariablesSecretVersion = _messages.StringField(11)
+  serviceAccount = _messages.StringField(12)
+  setAuthenticatedUserAdmin = _messages.BooleanField(13)
+  teamFolderName = _messages.StringField(14)
+  workspaceCompilationOverrides = _messages.MessageField('WorkspaceCompilationOverrides', 15)
 
 
 class ResetWorkspaceChangesRequest(_messages.Message):
@@ -4517,6 +4625,8 @@ class WorkflowInvocationAction(_messages.Message):
   Fields:
     bigqueryAction: Output only. The workflow action's bigquery action
       details.
+    bigqueryUnitTestAction: Output only. The workflow action's unit test
+      details.
     canonicalTarget: Output only. The action's identifier if the project had
       been compiled without any overrides configured. Unique within the
       compilation result.
@@ -4561,14 +4671,15 @@ class WorkflowInvocationAction(_messages.Message):
     FAILED = 6
 
   bigqueryAction = _messages.MessageField('BigQueryAction', 1)
-  canonicalTarget = _messages.MessageField('Target', 2)
-  dataPreparationAction = _messages.MessageField('DataPreparationAction', 3)
-  failureReason = _messages.StringField(4)
-  internalMetadata = _messages.StringField(5)
-  invocationTiming = _messages.MessageField('Interval', 6)
-  notebookAction = _messages.MessageField('NotebookAction', 7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  target = _messages.MessageField('Target', 9)
+  bigqueryUnitTestAction = _messages.MessageField('BigQueryUnitTestAction', 2)
+  canonicalTarget = _messages.MessageField('Target', 3)
+  dataPreparationAction = _messages.MessageField('DataPreparationAction', 4)
+  failureReason = _messages.StringField(5)
+  internalMetadata = _messages.StringField(6)
+  invocationTiming = _messages.MessageField('Interval', 7)
+  notebookAction = _messages.MessageField('NotebookAction', 8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  target = _messages.MessageField('Target', 10)
 
 
 class WorkflowTrigger(_messages.Message):

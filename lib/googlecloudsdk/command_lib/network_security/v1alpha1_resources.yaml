@@ -70,6 +70,7 @@ projects_locations_rate_limit_policies:
   name: rateLimitPolicy
   plural_name: rateLimitPolicies
   collection: networksecurity.projects.locations.rateLimitPolicies
+  request_id_field: rateLimitPolicyId
   attributes:
   - *project
   - *location

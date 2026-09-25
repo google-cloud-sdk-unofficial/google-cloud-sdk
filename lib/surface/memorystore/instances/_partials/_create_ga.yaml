@@ -269,6 +269,10 @@
         enum_value: IAM_AUTH
         help_text: |-
           IAM basic authorization.
+      - arg_value: token-auth
+        enum_value: TOKEN_AUTH
+        help_text: |-
+          Token based authorization.
     - arg_name: transit-encryption-mode
       api_field: instance.transitEncryptionMode
       required: false

@@ -366,6 +366,42 @@ def _range_element_type(data_type: str) -> str:
   return ''
 
 
+def _meta_annotations(meta: dict[str, Any] | None) -> dict[str, str]:
+  """Coerces a dbt `meta` mapping into the 1P `annotations` string map.
+
+  Args:
+    meta: a dbt `meta` mapping, or None.
+
+  Returns:
+    The annotations map, with non-string values JSON-encoded.
+  """
+  annotations = {}
+  for key, value in (meta or {}).items():
+    annotations[str(key)] = (
+        value if isinstance(value, str) else json.dumps(value, default=str)
+    )
+  return annotations
+
+
+def _put_annotation(annotations: dict[str, str], key: str, value: Any) -> None:
+  """Records one annotation, skipping anything dbt left unset or off.
+
+  Args:
+    annotations: the annotations map, updated in place.
+    key: the annotation key.
+    value: the dbt value; ``None``, ``''``, ``False`` and empty lists are the
+      forms dbt uses for "not set" and are all dropped.
+  """
+  if not value:
+    return
+  if isinstance(value, (list, tuple)):
+    annotations[key] = ', '.join(str(item) for item in value)
+  elif isinstance(value, str):
+    annotations[key] = value
+  else:
+    annotations[key] = json.dumps(value, default=str)
+
+
 def _field_annotations(column: dict[str, Any]) -> dict[str, str]:
   """The 1P `annotations` map, from dbt's per-column `meta` and `tags`.
 
@@ -379,11 +415,7 @@ def _field_annotations(column: dict[str, Any]) -> dict[str, str]:
   Returns:
     The annotations map, empty when the column declares neither.
   """
-  annotations = {}
-  for key, value in (column.get('meta') or {}).items():
-    annotations[str(key)] = (
-        value if isinstance(value, str) else json.dumps(value, default=str)
-    )
+  annotations = _meta_annotations(column.get('meta'))
   tags = column.get('tags') or []
   if tags:
     annotations['tags'] = ', '.join(str(tag) for tag in tags)
@@ -518,8 +550,9 @@ def foreign_keys(
 
   Args:
     node: the dbt model/seed/snapshot node.
-    resolve_target: maps a constraint's raw ``to`` to a Dataplex entry name, or
-      None when the caller cannot resolve targets (nothing is emitted then).
+    resolve_target: maps a constraint's raw ``to`` to the referenced dbt
+      resource's fullyQualifiedName, or None when the caller cannot resolve
+      targets (nothing is emitted then).
 
   Returns:
     The foreignKeys records, empty when the node declares none that resolve.
@@ -747,8 +780,8 @@ def system_schema_aspect(
     ctx: the naming.Context holding the naming coordinates for this run.
     columns: the merged columns from ``merged_columns``.
     node: the dbt node, read for its constraints.
-    resolve_target: maps a foreign key's raw ``to`` to a Dataplex entry name;
-      when absent, no foreign keys are emitted.
+    resolve_target: maps a foreign key's raw ``to`` to the referenced dbt
+      resource's fullyQualifiedName; when absent, no foreign keys are emitted.
 
   Returns:
     A `schema` aspect record, or None when there are no columns.
@@ -767,6 +800,346 @@ def system_schema_aspect(
   ):
     if records:
       data[field] = records
+  return make_aspect(ctx.schema_fqn(), data)
+
+
+# A semantic model's elements are the fields of its schema. `semantic` is the
+# 1P field the catalog UI renders them under: a dbt entity is a join key rather
+# than something to slice or aggregate by, which is what METADATA covers.
+_ENTITY_SEMANTIC = 'METADATA'
+_DIMENSION_SEMANTIC = 'DIMENSION'
+_MEASURE_SEMANTIC = 'MEASURE'
+
+# A counting aggregation returns a row count whatever it reads, so its field is
+# typed as the count and not as the column underneath it. Every other
+# aggregation returns a value of the column's own type.
+_COUNT_AGGREGATIONS = frozenset(['count', 'count_distinct'])
+_COUNT_DATA_TYPE = 'INT64'
+
+# Aggregations that are numeric regardless of what they read. Used only to
+# classify a measure whose column dbt gives no type for.
+_NUMERIC_AGGREGATIONS = frozenset(
+    ['sum', 'sum_boolean', 'average', 'median', 'percentile']
+)
+
+# A semantic element reads a column when its `expr` is a bare identifier, or
+# when it has no `expr` at all and so is named after the column directly.
+# Anything else is a SQL expression whose type dbt does not report.
+_BARE_COLUMN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+
+def _element_data_type(
+    element: dict[str, Any], columns_by_name: dict[str, dict[str, Any]]
+) -> str:
+  """The warehouse type of the column a semantic element reads, or ''."""
+  expr = (element.get('expr') or '').strip().strip('`"\'')
+  name = expr or element.get('name') or ''
+  if not _BARE_COLUMN.match(name):
+    return ''
+  column = columns_by_name.get(name.lower())
+  return _clean_data_type((column or {}).get('dataType'))
+
+
+def _element_meta(
+    element: dict[str, Any], inherited: dict[str, Any]
+) -> dict[str, str]:
+  """The element's own `meta`, minus what the semantic model gave it.
+
+  dbt copies a semantic model's ``config.meta`` onto every one of its elements,
+  and the entry already carries that as its labels, so repeating it on each
+  field would bury whatever the element itself declares.
+
+  Args:
+    element: the dbt entity, dimension or measure.
+    inherited: the semantic model's own ``config.meta``.
+
+  Returns:
+    The element's annotations from its `meta`.
+  """
+  meta = (element.get('config') or {}).get('meta') or {}
+  return _meta_annotations(
+      {k: v for k, v in meta.items() if inherited.get(k) != v}
+  )
+
+
+def _entity_annotations(
+    entity: dict[str, Any], inherited: dict[str, Any]
+) -> dict[str, str]:
+  """The annotations carrying everything an entity has beyond name/type."""
+  annotations = _element_meta(entity, inherited)
+  _put_annotation(annotations, 'entityType', entity.get('type'))
+  _put_annotation(annotations, 'role', entity.get('role'))
+  _put_annotation(annotations, 'expression', entity.get('expr'))
+  _put_annotation(annotations, 'label', entity.get('label'))
+  return annotations
+
+
+def _dimension_annotations(
+    dimension: dict[str, Any],
+    default_time_dimension: str | None,
+    inherited: dict[str, Any],
+) -> dict[str, str]:
+  """The annotations carrying everything a dimension has beyond name/type."""
+  type_params = dimension.get('type_params') or {}
+  validity = type_params.get('validity_params') or {}
+  annotations = _element_meta(dimension, inherited)
+  _put_annotation(annotations, 'dimensionType', dimension.get('type'))
+  _put_annotation(annotations, 'expression', dimension.get('expr'))
+  _put_annotation(annotations, 'label', dimension.get('label'))
+  _put_annotation(
+      annotations, 'timeGranularity', type_params.get('time_granularity')
+  )
+  _put_annotation(annotations, 'isPartition', dimension.get('is_partition'))
+  _put_annotation(
+      annotations,
+      'isDefaultTimeDimension',
+      bool(default_time_dimension)
+      and dimension.get('name') == default_time_dimension,
+  )
+  _put_annotation(annotations, 'isValidityStart', validity.get('is_start'))
+  _put_annotation(annotations, 'isValidityEnd', validity.get('is_end'))
+  return annotations
+
+
+def _measure_annotations(
+    measure: dict[str, Any], inherited: dict[str, Any]
+) -> dict[str, str]:
+  """The annotations carrying everything a measure has beyond name/type."""
+  agg_params = measure.get('agg_params') or {}
+  non_additive = measure.get('non_additive_dimension') or {}
+  annotations = _element_meta(measure, inherited)
+  _put_annotation(annotations, 'aggregation', measure.get('agg'))
+  _put_annotation(annotations, 'expression', measure.get('expr'))
+  _put_annotation(annotations, 'label', measure.get('label'))
+  _put_annotation(annotations, 'createsMetric', measure.get('create_metric'))
+  _put_annotation(
+      annotations, 'aggTimeDimension', measure.get('agg_time_dimension')
+  )
+  _put_annotation(annotations, 'percentile', agg_params.get('percentile'))
+  _put_annotation(
+      annotations,
+      'useDiscretePercentile',
+      agg_params.get('use_discrete_percentile'),
+  )
+  _put_annotation(
+      annotations,
+      'useApproximatePercentile',
+      agg_params.get('use_approximate_percentile'),
+  )
+  _put_annotation(annotations, 'nonAdditiveDimension', non_additive.get('name'))
+  _put_annotation(
+      annotations, 'nonAdditiveWindowChoice', non_additive.get('window_choice')
+  )
+  _put_annotation(
+      annotations,
+      'nonAdditiveWindowGroupings',
+      non_additive.get('window_groupings'),
+  )
+  return annotations
+
+
+def _semantic_field(
+    element: dict[str, Any],
+    semantic: str,
+    data_type: str,
+    fallback_metadata_type: str,
+    annotations: dict[str, str],
+) -> dict[str, Any]:
+  """Builds one 1P schema field from a semantic model element.
+
+  Args:
+    element: the dbt entity, dimension or measure.
+    semantic: the 1P ``semantic`` this element renders under.
+    data_type: the warehouse type of the column it reads, or '' when dbt does
+      not report one.
+    fallback_metadata_type: the ``metadataType`` to classify the element as when
+      ``data_type`` is empty.
+    annotations: everything about the element that has no 1P field of its own.
+
+  Returns:
+    A 1P schema field record.
+  """
+  field = {
+      'name': element.get('name') or '',
+      'dataType': data_type or UNKNOWN_DATA_TYPE,
+      'metadataType': (
+          metadata_type(data_type) if data_type else fallback_metadata_type
+      ),
+      'semantic': semantic,
+  }
+  if element.get('description'):
+    field['description'] = element['description']
+  if annotations:
+    field['annotations'] = annotations
+  return field
+
+
+def semantic_entities(sm: dict[str, Any]) -> list[dict[str, Any]]:
+  """A semantic model's entities, including the one ``primary_entity`` names.
+
+  A model can designate its primary entity by name instead of declaring it in
+  ``entities``. MetricFlow then reads that name as a primary entity over the
+  column of the same name, so it is one here too.
+
+  Args:
+    sm: the dbt semantic model.
+
+  Returns:
+    The declared entities, plus the designated primary one when it is absent.
+  """
+  entities = list(sm.get('entities') or [])
+  primary_entity = (sm.get('primary_entity') or '').strip()
+  declared = {(entity.get('name') or '').lower() for entity in entities}
+  if primary_entity and primary_entity.lower() not in declared:
+    entities.append({'name': primary_entity, 'type': 'primary'})
+  return entities
+
+
+def _semantic_fields(
+    sm: dict[str, Any],
+    entities: list[dict[str, Any]],
+    columns_by_name: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+  """The 1P schema fields for a semantic model, keys then slices then metrics.
+
+  Args:
+    sm: the dbt semantic model.
+    entities: the model's entities, from ``semantic_entities``.
+    columns_by_name: the backing model's merged columns, keyed by lowercased
+      column id.
+
+  Returns:
+    One field per element, in entity / dimension / measure order.
+  """
+  default_time_dimension = (sm.get('defaults') or {}).get('agg_time_dimension')
+  inherited = (sm.get('config') or {}).get('meta') or {}
+  fields = []
+  for entity in entities:
+    fields.append(
+        _semantic_field(
+            entity,
+            _ENTITY_SEMANTIC,
+            _element_data_type(entity, columns_by_name),
+            'OTHER',
+            _entity_annotations(entity, inherited),
+        )
+    )
+  for dimension in sm.get('dimensions') or []:
+    is_time = (dimension.get('type') or '').strip().lower() == 'time'
+    fields.append(
+        _semantic_field(
+            dimension,
+            _DIMENSION_SEMANTIC,
+            _element_data_type(dimension, columns_by_name),
+            'DATETIME' if is_time else 'OTHER',
+            _dimension_annotations(
+                dimension, default_time_dimension, inherited
+            ),
+        )
+    )
+  for measure in sm.get('measures') or []:
+    agg = (measure.get('agg') or '').strip().lower()
+    counting = agg in _COUNT_AGGREGATIONS
+    fields.append(
+        _semantic_field(
+            measure,
+            _MEASURE_SEMANTIC,
+            _COUNT_DATA_TYPE
+            if counting
+            else _element_data_type(measure, columns_by_name),
+            'NUMBER' if agg in _NUMERIC_AGGREGATIONS else 'OTHER',
+            _measure_annotations(measure, inherited),
+        )
+    )
+  # Two fields of the same name would collide on the entry's column paths, and
+  # MetricFlow already forbids it, so keep the first of any duplicate.
+  seen = set()
+  unique = []
+  for field in fields:
+    key = field['name'].lower()
+    if not field['name'] or key in seen:
+      continue
+    seen.add(key)
+    unique.append(field)
+  return unique
+
+
+def _entities_of(
+    entities: list[dict[str, Any]], entity_type: str
+) -> list[str]:
+  """The names of the entities of one dbt entity type."""
+  return [
+      entity['name']
+      for entity in entities
+      if entity.get('name')
+      and (entity.get('type') or '').strip().lower() == entity_type
+  ]
+
+
+def semantic_model_schema_aspect(
+    ctx: naming.Context,
+    sm: dict[str, Any],
+    model_columns: list[dict[str, Any]] | None = None,
+    resolve_entity_target: Callable[[str], str | None] | None = None,
+) -> dict[str, Any] | None:
+  """Builds the core 1P `schema` aspect for a dbt semantic model.
+
+  A semantic model's entities, dimensions and measures are the columns of the
+  analysis view it defines, so they belong in the same schema the catalog
+  renders for a physical table -- each tagged with the ``semantic`` that says
+  which of the three it is. dbt declares no type on any of them, so a type is
+  read from the backing model's column when the element names one outright.
+
+  The entities additionally state the model's keys: a ``primary`` entity is its
+  primary key, a ``unique`` one a unique constraint, and a ``foreign`` one a
+  join to whichever semantic model declares that entity as its primary key. A
+  ``natural`` entity is only unique within its validity window, so it stays a
+  field and yields no constraint. A model that designates its primary entity by
+  name rather than declaring it still gets both, via ``semantic_entities``.
+
+  Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
+    sm: the dbt semantic model.
+    model_columns: the backing model's merged columns, read for the element
+      types; the elements still land without them, untyped.
+    resolve_entity_target: maps an entity name to the fullyQualifiedName of
+      the semantic model that declares it as primary; when absent, no foreign
+      keys are emitted.
+
+  Returns:
+    A `schema` aspect record, or None when the semantic model declares no
+    elements.
+  """
+  columns_by_name = {
+      (column.get('columnId') or column.get('name') or '').lower(): column
+      for column in model_columns or []
+  }
+  entities = semantic_entities(sm)
+  fields = _semantic_fields(sm, entities, columns_by_name)
+  if not fields:
+    return None
+  data = {'fields': fields}
+
+  primary = _entities_of(entities, 'primary')
+  if primary:
+    data['primaryKey'] = {'fields': primary}
+
+  unique = [{'fields': [name]} for name in _entities_of(entities, 'unique')]
+  if unique:
+    data['uniqueConstraints'] = unique
+
+  foreign_keys_ = []
+  foreign = _entities_of(entities, 'foreign') if resolve_entity_target else []
+  for name in foreign:
+    referenced = resolve_entity_target(name)
+    if not referenced:
+      continue
+    foreign_keys_.append({
+        'referencedTable': referenced,
+        'fieldMappings': [{'field': name, 'referencedField': name}],
+    })
+  if foreign_keys_:
+    data['foreignKeys'] = foreign_keys_
   return make_aspect(ctx.schema_fqn(), data)
 
 

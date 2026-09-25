@@ -74,6 +74,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_FINDINGS = (
+      'projects.locations.findings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/findings/'
+              '{findingsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_MCPSERVERS = (
       'projects.locations.mcpServers',
       '{+name}',

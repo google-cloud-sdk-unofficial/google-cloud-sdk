@@ -147,7 +147,10 @@ def GetStyleMappings(console_attributes=None):
   elif (not is_screen_reader and
         console_attributes.SupportsAnsi() and
         properties.VALUES.core.color_theme.Get() != 'off'):
-    if console_attributes._term == 'xterm-256color':  # pylint: disable=protected-access
+    if console_attributes.GetTermIdentifier() in (
+        'xterm-256color',
+        'tmux-256color',
+    ):
       return STYLE_MAPPINGS_ANSI_256
     else:
       return STYLE_MAPPINGS_ANSI

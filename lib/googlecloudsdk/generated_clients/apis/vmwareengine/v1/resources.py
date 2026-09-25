@@ -52,6 +52,14 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_CAPACITYALLOCATIONS = (
+      'projects.locations.capacityAllocations',
+      'projects/{project}/locations/{location}/capacityAllocations/'
+      '{capacity_allocation}',
+      {},
+      ['project', 'location', 'capacity_allocation'],
+      True
+  )
   PROJECTS_LOCATIONS_DATASTORES = (
       'projects.locations.datastores',
       '{+name}',

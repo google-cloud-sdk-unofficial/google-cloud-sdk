@@ -20,7 +20,9 @@ from googlecloudsdk.command_lib.app_topology import resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Describe(base.DescribeCommand):
   """Describe the schema for an App Topology domain.
 
@@ -29,11 +31,7 @@ class Describe(base.DescribeCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': (
-          '{description}\n\n'
-          'Displays the node types, edge types, and supported property schemas'
-          ' available within the specified topology domain.'
-      ),
+      'DESCRIPTION': '{description}',
       'EXAMPLES': (
           """\
           To describe the schema for the `SRE` domain in the default global location:

@@ -321,6 +321,7 @@ def AddCrossCloudCacheArg(parser):
   """Adds argument for cross-cloud cache options."""
   parser.add_argument(
       '--cross-cloud-cache',
+      metavar='MODE',
       choices=['enabled', 'disabled'],
       help=(
           'Whether to enable caching of remote data on Google Cloud. '

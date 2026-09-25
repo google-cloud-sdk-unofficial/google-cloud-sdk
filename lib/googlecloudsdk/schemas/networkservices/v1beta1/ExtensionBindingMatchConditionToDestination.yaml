@@ -1,0 +1,62 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1beta1 ExtensionBindingMatchConditionToDestination export
+  schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  headerSet:
+    description: |-
+      A set of HTTP headers to match against. If not specified, requests with
+      any headers are matched.
+    $ref: ExtensionBindingMatchConditionToDestinationHeaderSet.yaml
+  hosts:
+    description: |-
+      A list of HTTP Hosts to match against. Limited to 10 hosts. If not
+      specified, any host is allowed. If specified, a match occurs if any of the
+      hosts matches the host value in the request.
+    type: array
+    items:
+      $ref: ExtensionBindingMatchConditionStringMatch.yaml
+  paths:
+    description: |-
+      A list of paths to match against. Limited to 10 paths. If not
+      specified, any path is allowed. Note that this path match includes the
+      query parameters. For gRPC services, this should be a fully- qualified
+      name of the form /package.service/method.
+    type: array
+    items:
+      $ref: ExtensionBindingMatchConditionStringMatch.yaml
+  resources:
+    description: |-
+      A list of non-empty strings whose value is matched against the
+      resource to which a request is sent (e.g., an Agent in
+      AiApplication). If not specified, any resource is allowed. If
+      specified, a match occurs if any of the resources matches the
+      resource value in the request. Limited to 5 resources. When
+      matching against resources in the AgentRegistry, use the URNs of
+      the registry resources.
+    type: array
+    items:
+      $ref: ExtensionBindingMatchConditionStringMatch.yaml

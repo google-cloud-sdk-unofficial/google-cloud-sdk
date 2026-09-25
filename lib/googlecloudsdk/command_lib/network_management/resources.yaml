@@ -29,3 +29,25 @@ operation:
     parameter_name: operationsId
     attribute_name: operation
     help: The operation of Network Management resources.
+
+location:
+  name: location
+  collection: hstprof.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The location of the {resource} resource.
+
+hstCollectionTask:
+  name: HST collection task
+  collection: hstprof.projects.locations.hstCollectionTasks
+  request_id_field: hstCollectionTaskId
+  attributes:
+  - *project
+  - *location
+  - &hstCollectionTask
+    parameter_name: hstCollectionTasksId
+    attribute_name: hst_collection_task
+    help: ID of the HST collection task.

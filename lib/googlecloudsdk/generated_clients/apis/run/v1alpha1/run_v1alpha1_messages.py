@@ -180,7 +180,7 @@ class ObjectMeta(_messages.Message):
       will be different depending on the resource type. *
       `autoscaling.knative.dev/maxScale`: Revision. *
       `autoscaling.knative.dev/minScale`: Revision. *
-      `run.googleapis.com/base-images`: Service, Revision . *
+      `run.googleapis.com/base-images`: Service, Revision. *
       `run.googleapis.com/binary-authorization-breakglass`: Service, Job, *
       `run.googleapis.com/binary-authorization`: Service, Job, Execution. *
       `run.googleapis.com/build-base-image`: Service. *
@@ -194,7 +194,7 @@ class ObjectMeta(_messages.Message):
       Service, Revision. * `run.googleapis.com/build-worker-pool`: Service. *
       `run.googleapis.com/client-name`: All resources. *
       `run.googleapis.com/cloudsql-instances`: Revision, Execution, Instance.
-      * `run.googleapis.com/container-dependencies`: Revision, Instance . *
+      * `run.googleapis.com/container-dependencies`: Revision, Instance. *
       `run.googleapis.com/cpu-throttling`: Revision. *
       `run.googleapis.com/custom-audiences`: Service. *
       `run.googleapis.com/default-url-disabled`: Service. *
@@ -211,7 +211,7 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/minScale`: Service. * `run.googleapis.com/maxScale`:
       Service. * `run.googleapis.com/manualInstanceCount`: Service. *
       `run.googleapis.com/network-interfaces`: Revision, Execution, Instance.
-      * `run.googleapis.com/post-key-revocation-action-type`: Revision.
+      * `run.googleapis.com/post-key-revocation-action-type`: Revision. *
       `run.googleapis.com/scalingMode`: Service. *
       `run.googleapis.com/secrets`: Revision, Execution. *
       `run.googleapis.com/secure-session-agent`: Revision. *
@@ -232,7 +232,7 @@ class ObjectMeta(_messages.Message):
       will be different depending on the resource type. *
       `autoscaling.knative.dev/maxScale`: Revision. *
       `autoscaling.knative.dev/minScale`: Revision. *
-      `run.googleapis.com/base-images`: Service, Revision . *
+      `run.googleapis.com/base-images`: Service, Revision. *
       `run.googleapis.com/binary-authorization-breakglass`: Service, Job, *
       `run.googleapis.com/binary-authorization`: Service, Job, Execution. *
       `run.googleapis.com/build-base-image`: Service. *
@@ -246,7 +246,7 @@ class ObjectMeta(_messages.Message):
       Service, Revision. * `run.googleapis.com/build-worker-pool`: Service. *
       `run.googleapis.com/client-name`: All resources. *
       `run.googleapis.com/cloudsql-instances`: Revision, Execution, Instance.
-      * `run.googleapis.com/container-dependencies`: Revision, Instance . *
+      * `run.googleapis.com/container-dependencies`: Revision, Instance. *
       `run.googleapis.com/cpu-throttling`: Revision. *
       `run.googleapis.com/custom-audiences`: Service. *
       `run.googleapis.com/default-url-disabled`: Service. *
@@ -263,7 +263,7 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/minScale`: Service. * `run.googleapis.com/maxScale`:
       Service. * `run.googleapis.com/manualInstanceCount`: Service. *
       `run.googleapis.com/network-interfaces`: Revision, Execution, Instance.
-      * `run.googleapis.com/post-key-revocation-action-type`: Revision.
+      * `run.googleapis.com/post-key-revocation-action-type`: Revision. *
       `run.googleapis.com/scalingMode`: Service. *
       `run.googleapis.com/secrets`: Revision, Execution. *
       `run.googleapis.com/secure-session-agent`: Revision. *
@@ -315,7 +315,7 @@ class ObjectMeta(_messages.Message):
     restricted, and the accepted annotations will be different depending on
     the resource type. * `autoscaling.knative.dev/maxScale`: Revision. *
     `autoscaling.knative.dev/minScale`: Revision. * `run.googleapis.com/base-
-    images`: Service, Revision . * `run.googleapis.com/binary-authorization-
+    images`: Service, Revision. * `run.googleapis.com/binary-authorization-
     breakglass`: Service, Job, * `run.googleapis.com/binary-authorization`:
     Service, Job, Execution. * `run.googleapis.com/build-base-image`: Service.
     * `run.googleapis.com/build-enable-automatic-updates`: Service. *
@@ -328,7 +328,7 @@ class ObjectMeta(_messages.Message):
     Service, Revision. * `run.googleapis.com/build-worker-pool`: Service. *
     `run.googleapis.com/client-name`: All resources. *
     `run.googleapis.com/cloudsql-instances`: Revision, Execution, Instance. *
-    `run.googleapis.com/container-dependencies`: Revision, Instance . *
+    `run.googleapis.com/container-dependencies`: Revision, Instance. *
     `run.googleapis.com/cpu-throttling`: Revision. *
     `run.googleapis.com/custom-audiences`: Service. *
     `run.googleapis.com/default-url-disabled`: Service. *
@@ -344,7 +344,7 @@ class ObjectMeta(_messages.Message):
     `run.googleapis.com/minScale`: Service. * `run.googleapis.com/maxScale`:
     Service. * `run.googleapis.com/manualInstanceCount`: Service. *
     `run.googleapis.com/network-interfaces`: Revision, Execution, Instance. *
-    `run.googleapis.com/post-key-revocation-action-type`: Revision.
+    `run.googleapis.com/post-key-revocation-action-type`: Revision. *
     `run.googleapis.com/scalingMode`: Service. * `run.googleapis.com/secrets`:
     Revision, Execution. * `run.googleapis.com/secure-session-agent`:
     Revision. * `run.googleapis.com/sessionAffinity`: Revision. *

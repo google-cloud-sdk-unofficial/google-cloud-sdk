@@ -17,9 +17,9 @@
 
 
 
-ACTIVE_CERT_LABEL = 'Active'
-NEXT_CERT_LABEL = 'Next'
-PREVIOUS_CERT_LABEL = 'Previous'
+ACTIVE_CERT_LABEL = 'ACTIVE'
+NEXT_CERT_LABEL = 'NEXT'
+PREVIOUS_CERT_LABEL = 'PREVIOUS'
 
 
 def ListEntraIdCertificates(sql_client, sql_messages, instance_ref):
@@ -81,8 +81,8 @@ def _GetPreviousEntraIdCertificate(list_entraid_certs_response):
 def GetAddedEntraIdCertificate(sql_client, sql_messages, instance_ref):
   """Returns the added Entra ID Cert.
 
-  If this is the first cert, that cert will be Active. Subsequent certs will be
-  Next.
+  If this is the first cert, that cert will be ACTIVE. Subsequent certs will be
+  NEXT.
 
   Args:
     sql_client: Sql client.
@@ -106,8 +106,8 @@ def GetAddedEntraIdCertificate(sql_client, sql_messages, instance_ref):
 def GetEntraIdCertificateTypeDict(list_entraid_certs_response):
   """Gets a dictionary mapping Entra ID Cert types to certs.
 
-  The keys to the dictionary returned will be some combination of 'Current',
-  'Next', and 'Previous'.
+  The keys to the dictionary returned will be some combination of 'ACTIVE',
+  'NEXT', and 'PREVIOUS'.
 
   Args:
     list_entraid_certs_response: InstancesListEntraIdCertificatesResponse

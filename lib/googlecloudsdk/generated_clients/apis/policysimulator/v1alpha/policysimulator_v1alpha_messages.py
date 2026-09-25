@@ -166,6 +166,8 @@ class GoogleCloudOrgpolicyV2CustomConstraint(_messages.Message):
       DELETE: Constraint applied when deleting the resource. Not supported.
       REMOVE_GRANT: Constraint applied when removing an IAM grant.
       GOVERN_TAGS: Constraint applied when enforcing forced tagging.
+      BIND_POLICY: Constraint applied when binding a policy to a target
+        resource.
     """
     METHOD_TYPE_UNSPECIFIED = 0
     CREATE = 1
@@ -173,6 +175,7 @@ class GoogleCloudOrgpolicyV2CustomConstraint(_messages.Message):
     DELETE = 3
     REMOVE_GRANT = 4
     GOVERN_TAGS = 5
+    BIND_POLICY = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ParametersValue(_messages.Message):

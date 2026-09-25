@@ -40,3 +40,11 @@ def GetDurationString(value):
   if value is None:
     return None
   return f'{value}s'
+
+
+def ParseCrossCloudCache(value):
+  """Return boolean for cross-cloud cache choice."""
+  if value is None:
+    return None
+  return value == 'enabled'
+

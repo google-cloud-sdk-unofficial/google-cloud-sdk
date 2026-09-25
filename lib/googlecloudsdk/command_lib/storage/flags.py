@@ -913,9 +913,19 @@ def add_admission_policy_flag(parser):
   parser.add_argument(
       '--admission-policy',
       choices=['ADMIT_ON_FIRST_MISS', 'ADMIT_ON_SECOND_MISS'],
+      hidden=True,
+      action=actions.DeprecationAction(
+          'admission-policy',
+          show_message=lambda val: val == 'ADMIT_ON_SECOND_MISS',
+          warn=(
+              'The `ADMIT_ON_SECOND_MISS` choice for flag {flag_name} is'
+              ' deprecated and will be mapped to `ADMIT_ON_FIRST_MISS`.'
+          ),
+      ),
       help=(
           'The cache admission policy decides for each cache miss, whether to'
-          ' insert the missed block or not.'
+          ' insert the missed block or not. Note: `ADMIT_ON_SECOND_MISS` is'
+          ' deprecated and will be mapped to `ADMIT_ON_FIRST_MISS`.'
       ),
   )
 
@@ -930,6 +940,14 @@ def add_rapid_cache_flags(parser):
   parser.add_argument(
       '--admission-policy',
       choices=[
+          'admit-on-first-miss',
+          'admit-on-second-miss',
+          'no-read-admission',
+          'ADMIT_ON_FIRST_MISS',
+          'ADMIT_ON_SECOND_MISS',
+          'NO_READ_ADMISSION',
+      ],
+      hidden_choices=[
           'ADMIT_ON_FIRST_MISS',
           'ADMIT_ON_SECOND_MISS',
           'NO_READ_ADMISSION',

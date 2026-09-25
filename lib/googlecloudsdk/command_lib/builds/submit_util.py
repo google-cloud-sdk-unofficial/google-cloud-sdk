@@ -636,6 +636,16 @@ def _SetServiceAccount(build_config, arg_service_account):
   return build_config
 
 
+def _SetWorkerRelease(build_config, messages, arg_worker_release):
+  """Set the worker release channel or version used to run the build."""
+  if arg_worker_release is not None:
+    if not build_config.options:
+      build_config.options = messages.BuildOptions()
+    build_config.options.workerRelease = arg_worker_release
+
+  return build_config
+
+
 def CreateBuildConfig(
     tag,
     no_cache,
@@ -661,6 +671,7 @@ def CreateBuildConfig(
     arg_bucket_behavior=None,
     skip_set_source=False,
     client_tag=None,
+    arg_worker_release=None,
 ):
   """Returns a build config."""
 
@@ -696,6 +707,7 @@ def CreateBuildConfig(
   build_config = _SetMachineType(build_config, messages, arg_machine_type)
   build_config = _SetDiskSize(build_config, messages, arg_disk_size)
   build_config = _SetWorkerPool(build_config, messages, arg_worker_pool)
+  build_config = _SetWorkerRelease(build_config, messages, arg_worker_release)
   build_config = _SetDefaultLogsBucketBehavior(
       build_config, messages, arg_bucket_behavior
   )
@@ -730,6 +742,7 @@ def CreateBuildConfigAlpha(
     arg_bucket_behavior=None,
     skip_set_source=False,
     client_tag=None,
+    arg_worker_release=None,
 ):
   """Returns a build config."""
   timeout_str = _GetBuildTimeout()
@@ -764,6 +777,7 @@ def CreateBuildConfigAlpha(
   build_config = _SetLogsBucket(build_config, arg_gcs_log_dir)
   build_config = _SetMachineType(build_config, messages, arg_machine_type)
   build_config = _SetWorkerPool(build_config, messages, arg_worker_pool)
+  build_config = _SetWorkerRelease(build_config, messages, arg_worker_release)
   build_config = _SetWorkerPoolConfig(
       build_config, messages, arg_disk_size, arg_memory, arg_vcpu_count
   )

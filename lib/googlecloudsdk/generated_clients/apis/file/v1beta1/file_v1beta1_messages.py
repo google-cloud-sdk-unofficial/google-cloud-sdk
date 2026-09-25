@@ -246,6 +246,27 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class CreateFromSourceRequest(_messages.Message):
+  r"""Request for creating a volume from an existing data source (such as a
+  backup).
+
+  Fields:
+    backup: The resource name of the backup to create from. Format:
+      projects/{project}/locations/{location}/backups/{backup}
+    ipAcls: Optional. IP ACLs defining permissions/ACLs to apply to the newly
+      created volume.
+    quota: Optional. The limit for how much data can be written to this
+      volume, in MiB.
+    volumeId: Required. Unique identifier for the volume which also appears in
+      the volumes resource name.
+  """
+
+  backup = _messages.StringField(1)
+  ipAcls = _messages.MessageField('NfsExportOptions', 2, repeated=True)
+  quota = _messages.IntegerField(3)
+  volumeId = _messages.StringField(4)
+
+
 class DailyCycle(_messages.Message):
   r"""Time window specified for daily operations.
 
@@ -934,6 +955,21 @@ class FileProjectsLocationsVolumePoolsPatchRequest(_messages.Message):
   volumePool = _messages.MessageField('VolumePool', 3)
 
 
+class FileProjectsLocationsVolumePoolsVolumesCreateFromSourceRequest(_messages.Message):
+  r"""A FileProjectsLocationsVolumePoolsVolumesCreateFromSourceRequest object.
+
+  Fields:
+    createFromSourceRequest: A CreateFromSourceRequest resource to be passed
+      as the request body.
+    parent: Required. The parent resource where this volume will be created.
+      Format:
+      projects/{project}/locations/{location}/volumePools/{volume_pool}
+  """
+
+  createFromSourceRequest = _messages.MessageField('CreateFromSourceRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class FileProjectsLocationsVolumePoolsVolumesCreateRequest(_messages.Message):
   r"""A FileProjectsLocationsVolumePoolsVolumesCreateRequest object.
 
@@ -1022,6 +1058,37 @@ class FileProjectsLocationsVolumePoolsVolumesListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class FileProjectsLocationsVolumePoolsVolumesPatchRequest(_messages.Message):
+  r"""A FileProjectsLocationsVolumePoolsVolumesPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the volume, in the format `projects
+      /{project}/locations/{location}/volumePools/{volume_pool}/volumes/{volum
+      e}`.
+    updateMask: Required. Mask of fields to update. At least one path must be
+      supplied in this field.
+    volume: A Volume resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  updateMask = _messages.StringField(2)
+  volume = _messages.MessageField('Volume', 3)
+
+
+class FileProjectsLocationsVolumePoolsVolumesUnfreezeRequest(_messages.Message):
+  r"""A FileProjectsLocationsVolumePoolsVolumesUnfreezeRequest object.
+
+  Fields:
+    name: Required. The name of the volume to unfreeze. Format: `projects/{pro
+      ject}/locations/{location}/volumePools/{volume_pool}/volumes/{volume}`.
+    unfreezeVolumeRequest: A UnfreezeVolumeRequest resource to be passed as
+      the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  unfreezeVolumeRequest = _messages.MessageField('UnfreezeVolumeRequest', 2)
 
 
 class FileShareConfig(_messages.Message):
@@ -3242,6 +3309,20 @@ class TimeOfDay(_messages.Message):
   seconds = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
+class UnfreezeVolumeRequest(_messages.Message):
+  r"""Request for unfreezing a volume.
+
+  Fields:
+    ipAcls: Optional. IP ACLs defining permissions/ACLs to apply to the
+      unfrozen volume
+    quota: Optional. The limit for how much data can be written to this
+      volume, in MiB.
+  """
+
+  ipAcls = _messages.MessageField('NfsExportOptions', 1, repeated=True)
+  quota = _messages.IntegerField(2)
+
+
 class UpdatePolicy(_messages.Message):
   r"""Maintenance policy applicable to instance updates.
 
@@ -3302,11 +3383,13 @@ class Volume(_messages.Message):
     createTime: Output only. The time when the volume was created.
     description: Optional. A description of the volume with 2048 characters or
       less. Requests with longer descriptions will be rejected.
+    ipAcls: Optional. User-defined permissions protecting mount points.
     labels: Optional. Resource labels to represent user provided metadata.
     mountPoint: Output only. The mount point of the volume.
     name: Identifier. The resource name of the volume, in the format `projects
       /{project}/locations/{location}/volumePools/{volume_pool}/volumes/{volum
       e}`.
+    quotaMib: Optional. The maximum size of the volume in mebibytes (MiB).
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -3335,13 +3418,18 @@ class Volume(_messages.Message):
 
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  mountPoint = _messages.MessageField('MountPoint', 4)
-  name = _messages.StringField(5)
+  ipAcls = _messages.MessageField('NfsExportOptions', 3, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 4)
+  mountPoint = _messages.MessageField('MountPoint', 5)
+  name = _messages.StringField(6)
+  quotaMib = _messages.IntegerField(7)
 
 
 class VolumePool(_messages.Message):
   r"""VolumePool representation of a Cloud Filestore volume pool.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the volume pool.
 
   Messages:
     LabelsValue: Optional. Resource labels to represent user provided
@@ -3351,8 +3439,8 @@ class VolumePool(_messages.Message):
     activeVolumeIops: Optional. The number of IOPs provisioned per active
       volume.
     createTime: Output only. The time when the volume pool was created.
-    defaultVolumeQuotaMib: Optional. The default quota per volume in MiB.
-      Default: 1024 MiB.
+    defaultVolumeQuotaMib: Optional. The default quota per volume in MiB. Must
+      be between 100 MiB and 102400 MiB (100 GiB). Default: 1024 MiB.
     description: Optional. A description of the volume pool with 2048
       characters or less.
     labels: Optional. Resource labels to represent user provided metadata.
@@ -3360,8 +3448,23 @@ class VolumePool(_messages.Message):
       `projects/{project}/locations/{location}/volumePools/{volume_pool}`.
     network: Required. The VPC network to which the VolumePool should be
       attached. Only Private Service Connect (PSC) is supported.
+    state: Output only. The state of the volume pool.
     uid: Output only. System-assigned unique identifier for the volume pool.
   """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the volume pool.
+
+    Values:
+      STATE_UNSPECIFIED: State is not specified.
+      READY: Volume pool is available for use.
+      DELETING: Volume pool is being deleted.
+      INVALID: Volume pool is in an invalid state.
+    """
+    STATE_UNSPECIFIED = 0
+    READY = 1
+    DELETING = 2
+    INVALID = 3
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -3394,7 +3497,8 @@ class VolumePool(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 5)
   name = _messages.StringField(6)
   network = _messages.StringField(7)
-  uid = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  uid = _messages.StringField(9)
 
 
 class WeeklyCycle(_messages.Message):

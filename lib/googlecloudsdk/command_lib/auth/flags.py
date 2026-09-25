@@ -223,15 +223,6 @@ def AddCommonEnterpriseCertConfigFlags(parser):
       ),
   )
   parser.add_argument(
-      '--tls-offload',
-      default=None,
-      help=(
-          'Provide a custom path to the enterprise-certificate-proxy shared tls'
-          ' offload library. This flag must be the full path to the shared'
-          ' library.'
-      ),
-  )
-  parser.add_argument(
       '--ecp-http-proxy',
       default=None,
       help=(

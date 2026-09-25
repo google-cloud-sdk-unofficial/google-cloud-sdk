@@ -90,6 +90,12 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def ValidateArgs(args):
+    if not properties.IsDefaultUniverse() and getattr(args, 'components', None):
+      raise exceptions.InvalidArgumentException(
+          '--optional-components',
+          'Optional components are not supported in non-default universes.',
+      )
+
     if constants.ALLOW_ZERO_WORKERS_PROPERTY in args.properties:
       raise exceptions.InvalidArgumentException(
           '--properties',

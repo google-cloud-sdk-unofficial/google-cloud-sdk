@@ -1522,6 +1522,8 @@ apis:
       discovery_doc: logging_v2.json
       gcloud_gapic_library: google/logging/v2:logging_v2_py
       default: true
+      skip:
+        bug: b/558690662
   looker:
     v1alpha2:
       discovery_doc: looker_v1alpha2.json
@@ -1545,6 +1547,9 @@ apis:
         projects.locations.caPools:
           path:
             projects/{projectsId}/locations/{locationsId}/caPools/{caPoolsId}
+        projects.regions.networkAttachments:
+          path:
+            projects/{projectsId}/regions/{regionsId}/networkAttachments/{networkAttachmentsId}
     v1alpha:
       discovery_doc: memorystore_v1alpha.json
       resources:
@@ -1554,6 +1559,9 @@ apis:
         projects.locations.caPools:
           path:
             projects/{projectsId}/locations/{locationsId}/caPools/{caPoolsId}
+        projects.regions.networkAttachments:
+          path:
+            projects/{projectsId}/regions/{regionsId}/networkAttachments/{networkAttachmentsId}
     v1beta:
       discovery_doc: memorystore_v1beta.json
       resources:
@@ -1563,6 +1571,9 @@ apis:
         projects.locations.caPools:
           path:
             projects/{projectsId}/locations/{locationsId}/caPools/{caPoolsId}
+        projects.regions.networkAttachments:
+          path:
+            projects/{projectsId}/regions/{regionsId}/networkAttachments/{networkAttachmentsId}
   metastore:
     v1alpha:
       discovery_doc: metastore_v1alpha.json
@@ -1864,6 +1875,8 @@ apis:
     v2:
       discovery_doc: run_v2.json
       gcloud_gapic_library: google/cloud/run/v2:run_v2_py
+      skip:
+        bug: b/558690633
   runtimeconfig:
     v1beta1:
       discovery_doc: runtimeconfig_v1beta1.json
@@ -1997,6 +2010,8 @@ apis:
       discovery_doc: serviceusage_v2alpha.json
     v2beta:
       discovery_doc: serviceusage_v2beta.json
+    v2:
+      discovery_doc: serviceusage_v2.json
   cloudquotas:
     v1:
       discovery_doc: cloudquotas_v1.json
@@ -2089,6 +2104,8 @@ apis:
         projects.locations.keyRings.cryptoKeys:
           path:
             projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
+      skip:
+        bug: b/558690151
   storagebatchoperations:
     v1:
       discovery_doc: storagebatchoperations_v1.json
@@ -2261,6 +2278,9 @@ apis:
         projects.locations.privateClouds.dnsForwarding:
           path:
             projects/{project}/locations/{location}/privateClouds/{private_cloud}/dnsForwarding
+        projects.locations.capacityAllocations:
+          path:
+            projects/{project}/locations/{location}/capacityAllocations/{capacity_allocation}
   ondemandscanning:
     v1beta1:
       discovery_doc: ondemandscanning_v1beta1.json
@@ -2325,8 +2345,8 @@ apis:
         projects.locations.skills.revisions:
           path:
             projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/revisions/{revisionsId}
-      skip:
-        bug: b/548051692
+        projects.locations.findings:
+          path: projects/{projectsId}/locations/{locationsId}/findings/{findingsId}
     v1:
       discovery_doc: agentregistry_v1.json
       default: true
@@ -2534,7 +2554,6 @@ canonical_surfaces:
   apptopology:
     name: apptopology
     command: app-topology
-    hidden: true
   artifactregistry:
     name: artifactregistry
     command: artifacts

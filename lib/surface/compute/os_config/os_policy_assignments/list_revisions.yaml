@@ -15,6 +15,7 @@
   command_type: LIST
   request:
     collection: osconfig.projects.locations.osPolicyAssignments
+    regional_endpoint_compatibility: SUPPORTED
     disable_pagination: true
     method: listRevisions
     ALPHA:

@@ -16,6 +16,7 @@
 
 import enum
 
+
 BASE_URL = 'https://assuredworkloads.googleapis.com/v2/'
 DOCS_URL = 'https://cloud.google.com/learnmoreurl'
 

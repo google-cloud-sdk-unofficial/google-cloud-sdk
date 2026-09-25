@@ -4054,6 +4054,7 @@ class WarmPoolOperationMetadata(_messages.Message):
         step is omitted.
       PREPARING_STORAGE_BUCKET: Preparing the storage bucket.
       CREATING_POOL: Creating the warm pool infrastructure.
+      UPDATING_POOL: Updating the warm pool infrastructure.
       WARMING_POOL: Warming up instances in the pool.
       ROLLING_BACK: Rolling back the warm pool infrastructure creation on
         failure.
@@ -4063,10 +4064,11 @@ class WarmPoolOperationMetadata(_messages.Message):
     WARM_POOL_STEP_UNSPECIFIED = 0
     PREPARING_STORAGE_BUCKET = 1
     CREATING_POOL = 2
-    WARMING_POOL = 3
-    ROLLING_BACK = 4
-    SUCCEEDED = 5
-    FAILED = 6
+    UPDATING_POOL = 3
+    WARMING_POOL = 4
+    ROLLING_BACK = 5
+    SUCCEEDED = 6
+    FAILED = 7
 
   step = _messages.EnumField('StepValueValuesEnum', 1)
 

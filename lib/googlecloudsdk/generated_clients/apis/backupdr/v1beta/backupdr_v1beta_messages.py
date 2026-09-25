@@ -6734,67 +6734,6 @@ class Operation(_messages.Message):
   response = _messages.MessageField('ResponseValue', 5)
 
 
-class OperationMetadata(_messages.Message):
-  r"""Represents the metadata of the long-running operation.
-
-  Messages:
-    AdditionalInfoValue: Output only. AdditionalInfo contains additional Info
-      related to backup plan association resource.
-
-  Fields:
-    additionalInfo: Output only. AdditionalInfo contains additional Info
-      related to backup plan association resource.
-    apiVersion: Output only. API version used to start the operation.
-    createTime: Output only. The time the operation was created.
-    endTime: Output only. The time the operation finished running.
-    requestedCancellation: Output only. Identifies whether the user has
-      requested cancellation of the operation. Operations that have
-      successfully been cancelled have google.longrunning.Operation.error
-      value with a google.rpc.Status.code of 1, corresponding to
-      'Code.CANCELLED'.
-    statusMessage: Output only. Human-readable status of the operation, if
-      any.
-    target: Output only. Server-defined resource path for the target of the
-      operation.
-    verb: Output only. Name of the verb executed by the operation.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class AdditionalInfoValue(_messages.Message):
-    r"""Output only. AdditionalInfo contains additional Info related to backup
-    plan association resource.
-
-    Messages:
-      AdditionalProperty: An additional property for a AdditionalInfoValue
-        object.
-
-    Fields:
-      additionalProperties: Additional properties of type AdditionalInfoValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a AdditionalInfoValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  additionalInfo = _messages.MessageField('AdditionalInfoValue', 1)
-  apiVersion = _messages.StringField(2)
-  createTime = _messages.StringField(3)
-  endTime = _messages.StringField(4)
-  requestedCancellation = _messages.BooleanField(5)
-  statusMessage = _messages.StringField(6)
-  target = _messages.StringField(7)
-  verb = _messages.StringField(8)
-
-
 class PitrSettings(_messages.Message):
   r"""Point in time recovery settings of the backup configuration resource.
 

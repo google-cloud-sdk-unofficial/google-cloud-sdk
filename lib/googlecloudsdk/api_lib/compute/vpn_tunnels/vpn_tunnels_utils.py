@@ -417,8 +417,9 @@ class VpnTunnelHelper(object):
               region=region,
               filter=filter_expr,
               pageToken=next_page_token,
-              returnPartialSuccess=True,
           )
+          if hasattr(request, 'returnPartialSuccess'):
+            request.returnPartialSuccess = True
           response = self._service.List(request)
           next_page_token = response.nextPageToken
           for vpn_tunnel in response.items:
@@ -429,8 +430,12 @@ class VpnTunnelHelper(object):
     next_page_token = None
     while True:
       request = self._messages.ComputeVpnTunnelsAggregatedListRequest(
-          project=project, filter=filter_expr, pageToken=next_page_token,
-          returnPartialSuccess=True)
+          project=project,
+          filter=filter_expr,
+          pageToken=next_page_token,
+      )
+      if hasattr(request, 'returnPartialSuccess'):
+        request.returnPartialSuccess = True
       response = self._service.AggregatedList(request)
       next_page_token = response.nextPageToken
       for scoped_vpn_tunnels in response.items.additionalProperties:

@@ -50,6 +50,12 @@ class Import(base.DescribeCommand):
   When using `--from-template`, any feature files referenced by the template
   must reside in the same directory as the template file.
 
+  For an overview of defining an API proxy in YAML, see
+  link:https://cloud.google.com/apigee/docs/api-platform/fundamentals/configure-proxy-with-yaml[Configuring a proxy with YAML].
+  For the complete set of fields supported in templates, features, and proxies,
+  see the
+  link:https://cloud.google.com/apigee/docs/api-platform/reference/api-proxy-yaml-configuration-reference[API proxy YAML configuration reference].
+
   To use this command, the active Cloud Platform project must have an associated
   Apigee organization, or an organization must be specified with
   `--organization` or by providing the fully qualified name (FQN) of the API
@@ -103,7 +109,15 @@ class Import(base.DescribeCommand):
             "an API proxy. Any feature files referenced by the template must "
             "reside in the same directory as the template file. The template "
             "is compiled into an API proxy bundle locally before being "
-            "uploaded to Apigee."
+            "uploaded to Apigee.\n\n"
+            "For an overview of defining an API proxy in YAML, see "
+            "link:https://cloud.google.com/apigee/docs/api-platform/"
+            "fundamentals/configure-proxy-with-yaml[Configuring a proxy with "
+            "YAML]. For the complete set of fields supported in templates, "
+            "features, and proxies, see the "
+            "link:https://cloud.google.com/apigee/docs/api-platform/reference/"
+            "api-proxy-yaml-configuration-reference[API proxy YAML "
+            "configuration reference]."
         ),
     )
     source_group.add_argument(
@@ -150,5 +164,8 @@ class Import(base.DescribeCommand):
       bundle = converter.proxy_to_bundle(compiled_proxy)
       return apigee.APIsClient.Create(identifiers, {}, bundle)
 
+    # Read the bundle into memory so both import paths hand APIsClient.Create a
+    # byte-string body. Bundles are small, and a byte body (rather than a file
+    # handle) keeps the request identical to the --from-template path above.
     with files.BinaryFileReader(bundle_path) as f:
-      return apigee.APIsClient.Create(identifiers, {}, f)
+      return apigee.APIsClient.Create(identifiers, {}, f.read())

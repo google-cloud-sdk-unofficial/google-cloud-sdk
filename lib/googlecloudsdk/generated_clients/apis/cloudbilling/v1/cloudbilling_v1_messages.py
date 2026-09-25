@@ -7,9 +7,290 @@ programmatically.
 
 from apitools.base.protorpclite import messages as _messages
 from apitools.base.py import encoding
+from apitools.base.py import extra_types
 
 
 package = 'cloudbilling'
+
+
+class APIKeySecurityScheme(_messages.Message):
+  r"""A APIKeySecurityScheme object.
+
+  Fields:
+    description: Description of this security scheme.
+    location: Location of the API key, valid values are "query", "header", or
+      "cookie"
+    name: Name of the header, query or cookie parameter to be used.
+  """
+
+  description = _messages.StringField(1)
+  location = _messages.StringField(2)
+  name = _messages.StringField(3)
+
+
+class AgentCapabilities(_messages.Message):
+  r"""Defines the A2A feature set supported by the agent
+
+  Fields:
+    extensions: Extensions supported by this agent.
+    pushNotifications: If the agent can send push notifications to the clients
+      webhook
+    streaming: If the agent will support streaming responses
+  """
+
+  extensions = _messages.MessageField('AgentExtension', 1, repeated=True)
+  pushNotifications = _messages.BooleanField(2)
+  streaming = _messages.BooleanField(3)
+
+
+class AgentCard(_messages.Message):
+  r"""AgentCard conveys key information: - Overall details (version, name,
+  description, uses) - Skills; a set of actions/solutions the agent can
+  perform - Default modalities/content types supported by the agent. -
+  Authentication requirements Next ID: 19
+
+  Messages:
+    SecuritySchemesValue: The security scheme details used for authenticating
+      with this agent.
+
+  Fields:
+    additionalInterfaces: Announcement of additional supported transports.
+      Client can use any of the supported transports.
+    capabilities: A2A Capability set supported by the agent.
+    defaultInputModes: protolint:enable REPEATED_FIELD_NAMES_PLURALIZED The
+      set of interaction modes that the agent supports across all skills. This
+      can be overridden per skill. Defined as mime types.
+    defaultOutputModes: The mime types supported as outputs from this agent.
+    description: A description of the agent's domain of action/solution space.
+      Example: "Agent that helps users with recipes and cooking."
+    documentationUrl: A url to provide additional documentation about the
+      agent.
+    iconUrl: An optional URL to an icon for the agent.
+    name: A human readable name for the agent. Example: "Recipe Agent"
+    preferredTransport: The transport of the preferred endpoint. If empty,
+      defaults to JSONRPC.
+    protocolVersion: The version of the A2A protocol this agent supports.
+    provider: The service provider of the agent.
+    security: protolint:disable REPEATED_FIELD_NAMES_PLURALIZED Security
+      requirements for contacting the agent. This list can be seen as an OR of
+      ANDs. Each object in the list describes one possible set of security
+      requirements that must be present on a request. This allows specifying,
+      for example, "callers must either use OAuth OR an API Key AND mTLS."
+      Example: security { schemes { key: "oauth" value { list: ["read"] } } }
+      security { schemes { key: "api-key" } schemes { key: "mtls" } }
+    securitySchemes: The security scheme details used for authenticating with
+      this agent.
+    signatures: JSON Web Signatures computed for this AgentCard.
+    skills: Skills represent a unit of ability an agent can perform. This may
+      somewhat abstract but represents a more focused set of actions that the
+      agent is highly likely to succeed at.
+    supportsAuthenticatedExtendedCard: Whether the agent supports providing an
+      extended agent card when the user is authenticated, i.e. is the card
+      from .well-known different than the card from GetAgentCard.
+    url: A URL to the address the agent is hosted at. This represents the
+      preferred endpoint as declared by the agent.
+    version: The version of the agent. Example: "1.0.0"
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class SecuritySchemesValue(_messages.Message):
+    r"""The security scheme details used for authenticating with this agent.
+
+    Messages:
+      AdditionalProperty: An additional property for a SecuritySchemesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type SecuritySchemesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a SecuritySchemesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A SecurityScheme attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('SecurityScheme', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  additionalInterfaces = _messages.MessageField('AgentInterface', 1, repeated=True)
+  capabilities = _messages.MessageField('AgentCapabilities', 2)
+  defaultInputModes = _messages.StringField(3, repeated=True)
+  defaultOutputModes = _messages.StringField(4, repeated=True)
+  description = _messages.StringField(5)
+  documentationUrl = _messages.StringField(6)
+  iconUrl = _messages.StringField(7)
+  name = _messages.StringField(8)
+  preferredTransport = _messages.StringField(9)
+  protocolVersion = _messages.StringField(10)
+  provider = _messages.MessageField('AgentProvider', 11)
+  security = _messages.MessageField('Security', 12, repeated=True)
+  securitySchemes = _messages.MessageField('SecuritySchemesValue', 13)
+  signatures = _messages.MessageField('AgentCardSignature', 14, repeated=True)
+  skills = _messages.MessageField('AgentSkill', 15, repeated=True)
+  supportsAuthenticatedExtendedCard = _messages.BooleanField(16)
+  url = _messages.StringField(17)
+  version = _messages.StringField(18)
+
+
+class AgentCardSignature(_messages.Message):
+  r"""AgentCardSignature represents a JWS signature of an AgentCard. This
+  follows the JSON format of an RFC 7515 JSON Web Signature (JWS).
+
+  Messages:
+    HeaderValue: The unprotected JWS header values.
+
+  Fields:
+    header: The unprotected JWS header values.
+    protected: Required. The protected JWS header for the signature. This is
+      always a base64url-encoded JSON object. Required.
+    signature: Required. The computed signature, base64url-encoded. Required.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class HeaderValue(_messages.Message):
+    r"""The unprotected JWS header values.
+
+    Messages:
+      AdditionalProperty: An additional property for a HeaderValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a HeaderValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  header = _messages.MessageField('HeaderValue', 1)
+  protected = _messages.StringField(2)
+  signature = _messages.StringField(3)
+
+
+class AgentExtension(_messages.Message):
+  r"""A declaration of an extension supported by an Agent.
+
+  Messages:
+    ParamsValue: Optional configuration for the extension.
+
+  Fields:
+    description: A description of how this agent uses this extension. Example:
+      "Google OAuth 2.0 authentication"
+    params: Optional configuration for the extension.
+    required: Whether the client must follow specific requirements of the
+      extension. Example: false
+    uri: The URI of the extension. Example:
+      "https://developers.google.com/identity/protocols/oauth2"
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParamsValue(_messages.Message):
+    r"""Optional configuration for the extension.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParamsValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParamsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  description = _messages.StringField(1)
+  params = _messages.MessageField('ParamsValue', 2)
+  required = _messages.BooleanField(3)
+  uri = _messages.StringField(4)
+
+
+class AgentInterface(_messages.Message):
+  r"""Defines additional transport information for the agent.
+
+  Fields:
+    tenant: Tenant to be set in the request when calling the agent.
+      Experimental, might still change for 1.0 release.
+    transport: The transport supported this url. This is an open form string,
+      to be easily extended for many transport protocols. The core ones
+      officially supported are JSONRPC, GRPC and HTTP+JSON.
+    url: The url this interface is found at.
+  """
+
+  tenant = _messages.StringField(1)
+  transport = _messages.StringField(2)
+  url = _messages.StringField(3)
+
+
+class AgentProvider(_messages.Message):
+  r"""Represents information about the service provider of an agent.
+
+  Fields:
+    organization: The providers organization name Example: "Google"
+    url: The providers reference url Example: "https://ai.google.dev"
+  """
+
+  organization = _messages.StringField(1)
+  url = _messages.StringField(2)
+
+
+class AgentSkill(_messages.Message):
+  r"""AgentSkill represents a unit of action/solution that the agent can
+  perform. One can think of this as a type of highly reliable solution that an
+  agent can be tasked to provide. Agents have the autonomy to choose how and
+  when to use specific skills, but clients should have confidence that if the
+  skill is defined that unit of action can be reliably performed.
+
+  Fields:
+    description: A human (or llm) readable description of the skill details
+      and behaviors.
+    examples: A set of example queries that this skill is designed to address.
+      These examples should help the caller to understand how to craft
+      requests to the agent to achieve specific goals. Example: ["I need a
+      recipe for bread"]
+    id: Unique identifier of the skill within this agent.
+    inputModes: Possible input modalities supported.
+    name: A human readable name for the skill.
+    outputModes: Possible output modalities produced
+    security: protolint:disable REPEATED_FIELD_NAMES_PLURALIZED Security
+      schemes necessary for the agent to leverage this skill. As in the
+      overall AgentCard.security, this list represents a logical OR of
+      security requirement objects. Each object is a set of security schemes
+      that must be used together (a logical AND). protolint:enable
+      REPEATED_FIELD_NAMES_PLURALIZED
+    tags: A set of tags for the skill to enhance categorization/utilization.
+      Example: ["cooking", "customer support", "billing"]
+  """
+
+  description = _messages.StringField(1)
+  examples = _messages.StringField(2, repeated=True)
+  id = _messages.StringField(3)
+  inputModes = _messages.StringField(4, repeated=True)
+  name = _messages.StringField(5)
+  outputModes = _messages.StringField(6, repeated=True)
+  security = _messages.MessageField('Security', 7, repeated=True)
+  tags = _messages.StringField(8, repeated=True)
 
 
 class AggregationInfo(_messages.Message):
@@ -55,6 +336,57 @@ class AggregationInfo(_messages.Message):
   aggregationCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   aggregationInterval = _messages.EnumField('AggregationIntervalValueValuesEnum', 2)
   aggregationLevel = _messages.EnumField('AggregationLevelValueValuesEnum', 3)
+
+
+class Artifact(_messages.Message):
+  r"""Artifacts are the container for task completed results. These are
+  similar to Messages but are intended to be the product of a task, as opposed
+  to point-to-point communication.
+
+  Messages:
+    MetadataValue: Optional metadata included with the artifact.
+
+  Fields:
+    artifactId: Unique identifier (e.g. UUID) for the artifact. It must be at
+      least unique within a task.
+    description: A human readable description of the artifact, optional.
+    extensions: The URIs of extensions that are present or contributed to this
+      Artifact.
+    metadata: Optional metadata included with the artifact.
+    name: A human readable name for the artifact.
+    parts: The content of the artifact.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Optional metadata included with the artifact.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  artifactId = _messages.StringField(1)
+  description = _messages.StringField(2)
+  extensions = _messages.StringField(3, repeated=True)
+  metadata = _messages.MessageField('MetadataValue', 4)
+  name = _messages.StringField(5)
+  parts = _messages.MessageField('Part', 6, repeated=True)
 
 
 class AuditConfig(_messages.Message):
@@ -118,6 +450,69 @@ class AuditLogConfig(_messages.Message):
 
   exemptedMembers = _messages.StringField(1, repeated=True)
   logType = _messages.EnumField('LogTypeValueValuesEnum', 2)
+
+
+class AuthenticationInfo(_messages.Message):
+  r"""Defines authentication details, used for push notifications.
+
+  Fields:
+    credentials: Optional credentials
+    schemes: Supported authentication schemes - e.g. Basic, Bearer, etc
+  """
+
+  credentials = _messages.StringField(1)
+  schemes = _messages.StringField(2, repeated=True)
+
+
+class AuthorizationCodeOAuthFlow(_messages.Message):
+  r"""A AuthorizationCodeOAuthFlow object.
+
+  Messages:
+    ScopesValue: The available scopes for the OAuth2 security scheme. A map
+      between the scope name and a short description for it. The map MAY be
+      empty.
+
+  Fields:
+    authorizationUrl: The authorization URL to be used for this flow. This
+      MUST be in the form of a URL. The OAuth2 standard requires the use of
+      TLS
+    refreshUrl: The URL to be used for obtaining refresh tokens. This MUST be
+      in the form of a URL. The OAuth2 standard requires the use of TLS.
+    scopes: The available scopes for the OAuth2 security scheme. A map between
+      the scope name and a short description for it. The map MAY be empty.
+    tokenUrl: The token URL to be used for this flow. This MUST be in the form
+      of a URL. The OAuth2 standard requires the use of TLS.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ScopesValue(_messages.Message):
+    r"""The available scopes for the OAuth2 security scheme. A map between the
+    scope name and a short description for it. The map MAY be empty.
+
+    Messages:
+      AdditionalProperty: An additional property for a ScopesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ScopesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ScopesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  authorizationUrl = _messages.StringField(1)
+  refreshUrl = _messages.StringField(2)
+  scopes = _messages.MessageField('ScopesValue', 3)
+  tokenUrl = _messages.StringField(4)
 
 
 class BillingAccount(_messages.Message):
@@ -251,6 +646,17 @@ class Binding(_messages.Message):
   role = _messages.StringField(3)
 
 
+class CancelTaskRequest(_messages.Message):
+  r"""A CancelTaskRequest object.
+
+  Fields:
+    tenant: Optional tenant, provided as a path parameter. Experimental, might
+      still change for 1.0 release.
+  """
+
+  tenant = _messages.StringField(1)
+
+
 class Category(_messages.Message):
   r"""Represents the category hierarchy of a SKU.
 
@@ -268,6 +674,53 @@ class Category(_messages.Message):
   resourceGroup = _messages.StringField(2)
   serviceDisplayName = _messages.StringField(3)
   usageType = _messages.StringField(4)
+
+
+class ClientCredentialsOAuthFlow(_messages.Message):
+  r"""A ClientCredentialsOAuthFlow object.
+
+  Messages:
+    ScopesValue: The available scopes for the OAuth2 security scheme. A map
+      between the scope name and a short description for it. The map MAY be
+      empty.
+
+  Fields:
+    refreshUrl: The URL to be used for obtaining refresh tokens. This MUST be
+      in the form of a URL. The OAuth2 standard requires the use of TLS.
+    scopes: The available scopes for the OAuth2 security scheme. A map between
+      the scope name and a short description for it. The map MAY be empty.
+    tokenUrl: The token URL to be used for this flow. This MUST be in the form
+      of a URL. The OAuth2 standard requires the use of TLS.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ScopesValue(_messages.Message):
+    r"""The available scopes for the OAuth2 security scheme. A map between the
+    scope name and a short description for it. The map MAY be empty.
+
+    Messages:
+      AdditionalProperty: An additional property for a ScopesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ScopesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ScopesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  refreshUrl = _messages.StringField(1)
+  scopes = _messages.MessageField('ScopesValue', 2)
+  tokenUrl = _messages.StringField(3)
 
 
 class CloudbillingBillingAccountsCreateRequest(_messages.Message):
@@ -460,6 +913,17 @@ class CloudbillingBillingAccountsTestIamPermissionsRequest(_messages.Message):
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
+class CloudbillingGetCardRequest(_messages.Message):
+  r"""A CloudbillingGetCardRequest object.
+
+  Fields:
+    tenant: Optional tenant, provided as a path parameter. Experimental, might
+      still change for 1.0 release.
+  """
+
+  tenant = _messages.StringField(1)
+
+
 class CloudbillingOrganizationsBillingAccountsListRequest(_messages.Message):
   r"""A CloudbillingOrganizationsBillingAccountsListRequest object.
 
@@ -579,6 +1043,166 @@ class CloudbillingServicesSkusListRequest(_messages.Message):
   startTime = _messages.StringField(6)
 
 
+class CloudbillingTasksCancelRequest(_messages.Message):
+  r"""A CloudbillingTasksCancelRequest object.
+
+  Fields:
+    cancelTaskRequest: A CancelTaskRequest resource to be passed as the
+      request body.
+    name: The resource name of the task to cancel. Format: tasks/{task_id}
+  """
+
+  cancelTaskRequest = _messages.MessageField('CancelTaskRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class CloudbillingTasksGetRequest(_messages.Message):
+  r"""A CloudbillingTasksGetRequest object.
+
+  Fields:
+    historyLength: The number of most recent messages from the task's history
+      to retrieve.
+    name: Required. The resource name of the task. Format: tasks/{task_id}
+    tenant: Optional tenant, provided as a path parameter. Experimental, might
+      still change for 1.0 release.
+  """
+
+  historyLength = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  name = _messages.StringField(2, required=True)
+  tenant = _messages.StringField(3)
+
+
+class CloudbillingTasksPushNotificationConfigsCreateRequest(_messages.Message):
+  r"""A CloudbillingTasksPushNotificationConfigsCreateRequest object.
+
+  Fields:
+    configId: Required. The ID for the new config.
+    parent: Required. The parent task resource for this config. Format:
+      tasks/{task_id}
+    taskPushNotificationConfig: A TaskPushNotificationConfig resource to be
+      passed as the request body.
+    tenant: Optional tenant, provided as a path parameter. Experimental, might
+      still change for 1.0 release.
+  """
+
+  configId = _messages.StringField(1)
+  parent = _messages.StringField(2, required=True)
+  taskPushNotificationConfig = _messages.MessageField('TaskPushNotificationConfig', 3)
+  tenant = _messages.StringField(4)
+
+
+class CloudbillingTasksPushNotificationConfigsDeleteRequest(_messages.Message):
+  r"""A CloudbillingTasksPushNotificationConfigsDeleteRequest object.
+
+  Fields:
+    name: The resource name of the config to delete. Format:
+      tasks/{task_id}/pushNotificationConfigs/{config_id}
+    tenant: Optional tenant, provided as a path parameter. Experimental, might
+      still change for 1.0 release.
+  """
+
+  name = _messages.StringField(1, required=True)
+  tenant = _messages.StringField(2)
+
+
+class CloudbillingTasksPushNotificationConfigsGetRequest(_messages.Message):
+  r"""A CloudbillingTasksPushNotificationConfigsGetRequest object.
+
+  Fields:
+    name: The resource name of the config to retrieve. Format:
+      tasks/{task_id}/pushNotificationConfigs/{config_id}
+    tenant: Optional tenant, provided as a path parameter. Experimental, might
+      still change for 1.0 release.
+  """
+
+  name = _messages.StringField(1, required=True)
+  tenant = _messages.StringField(2)
+
+
+class CloudbillingTasksPushNotificationConfigsListRequest(_messages.Message):
+  r"""A CloudbillingTasksPushNotificationConfigsListRequest object.
+
+  Fields:
+    pageSize: For AIP-158 these fields are present. Usually not used/needed.
+      The maximum number of configurations to return. If unspecified, all
+      configs will be returned.
+    pageToken: A page token received from a previous
+      ListTaskPushNotificationConfigRequest call. Provide this to retrieve the
+      subsequent page. When paginating, all other parameters provided to
+      `ListTaskPushNotificationConfigRequest` must match the call that
+      provided the page token.
+    parent: The parent task resource. Format: tasks/{task_id}
+    tenant: Optional tenant, provided as a path parameter. Experimental, might
+      still change for 1.0 release.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  tenant = _messages.StringField(4)
+
+
+class CloudbillingTasksSubscribeRequest(_messages.Message):
+  r"""A CloudbillingTasksSubscribeRequest object.
+
+  Fields:
+    name: The resource name of the task to subscribe to. Format:
+      tasks/{task_id}
+    tenant: Optional tenant, provided as a path parameter. Experimental, might
+      still change for 1.0 release.
+  """
+
+  name = _messages.StringField(1, required=True)
+  tenant = _messages.StringField(2)
+
+
+class DataPart(_messages.Message):
+  r"""DataPart represents a structured blob. This is most commonly a JSON
+  payload.
+
+  Messages:
+    DataValue: A DataValue object.
+
+  Fields:
+    data: A DataValue attribute.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DataValue(_messages.Message):
+    r"""A DataValue object.
+
+    Messages:
+      AdditionalProperty: An additional property for a DataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  data = _messages.MessageField('DataValue', 1)
+
+
+class Empty(_messages.Message):
+  r"""A generic empty message that you can re-use to avoid defining duplicated
+  empty messages in your APIs. A typical example is to use it as the request
+  or the response type of an API method. For instance: service Foo { rpc
+  Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
+  """
+
+
+
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
   syntax. CEL is a C-like expression language. The syntax and semantics of CEL
@@ -615,6 +1239,25 @@ class Expr(_messages.Message):
   title = _messages.StringField(4)
 
 
+class FilePart(_messages.Message):
+  r"""FilePart represents the different ways files can be provided. If files
+  are small, directly feeding the bytes is supported via file_with_bytes. If
+  the file is large, the agent should read the content as appropriate directly
+  from the file_with_uri source.
+
+  Fields:
+    fileWithBytes: A byte attribute.
+    fileWithUri: A string attribute.
+    mimeType: A string attribute.
+    name: A string attribute.
+  """
+
+  fileWithBytes = _messages.BytesField(1)
+  fileWithUri = _messages.StringField(2)
+  mimeType = _messages.StringField(3)
+  name = _messages.StringField(4)
+
+
 class GeoTaxonomy(_messages.Message):
   r"""Encapsulates the geographic taxonomy data for a sku.
 
@@ -646,6 +1289,73 @@ class GeoTaxonomy(_messages.Message):
 
   regions = _messages.StringField(1, repeated=True)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
+class HTTPAuthSecurityScheme(_messages.Message):
+  r"""A HTTPAuthSecurityScheme object.
+
+  Fields:
+    bearerFormat: A hint to the client to identify how the bearer token is
+      formatted. Bearer tokens are usually generated by an authorization
+      server, so this information is primarily for documentation purposes.
+    description: Description of this security scheme.
+    scheme: The name of the HTTP Authentication scheme to be used in the
+      Authorization header as defined in RFC7235. The values used SHOULD be
+      registered in the IANA Authentication Scheme registry. The value is
+      case-insensitive, as defined in RFC7235.
+  """
+
+  bearerFormat = _messages.StringField(1)
+  description = _messages.StringField(2)
+  scheme = _messages.StringField(3)
+
+
+class ImplicitOAuthFlow(_messages.Message):
+  r"""A ImplicitOAuthFlow object.
+
+  Messages:
+    ScopesValue: The available scopes for the OAuth2 security scheme. A map
+      between the scope name and a short description for it. The map MAY be
+      empty.
+
+  Fields:
+    authorizationUrl: The authorization URL to be used for this flow. This
+      MUST be in the form of a URL. The OAuth2 standard requires the use of
+      TLS
+    refreshUrl: The URL to be used for obtaining refresh tokens. This MUST be
+      in the form of a URL. The OAuth2 standard requires the use of TLS.
+    scopes: The available scopes for the OAuth2 security scheme. A map between
+      the scope name and a short description for it. The map MAY be empty.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ScopesValue(_messages.Message):
+    r"""The available scopes for the OAuth2 security scheme. A map between the
+    scope name and a short description for it. The map MAY be empty.
+
+    Messages:
+      AdditionalProperty: An additional property for a ScopesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ScopesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ScopesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  authorizationUrl = _messages.StringField(1)
+  refreshUrl = _messages.StringField(2)
+  scopes = _messages.MessageField('ScopesValue', 3)
 
 
 class ListBillingAccountsResponse(_messages.Message):
@@ -709,6 +1419,98 @@ class ListSkusResponse(_messages.Message):
   skus = _messages.MessageField('Sku', 2, repeated=True)
 
 
+class ListTaskPushNotificationConfigResponse(_messages.Message):
+  r"""A ListTaskPushNotificationConfigResponse object.
+
+  Fields:
+    configs: The list of push notification configurations.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  configs = _messages.MessageField('TaskPushNotificationConfig', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class Message(_messages.Message):
+  r"""Message is one unit of communication between client and server. It is
+  associated with a context and optionally a task. Since the server is
+  responsible for the context definition, it must always provide a context_id
+  in its messages. The client can optionally provide the context_id if it
+  knows the context to associate the message to. Similarly for task_id, except
+  the server decides if a task is created and whether to include the task_id.
+
+  Enums:
+    RoleValueValuesEnum: A role for the message.
+
+  Messages:
+    MetadataValue: protolint:enable REPEATED_FIELD_NAMES_PLURALIZED Any
+      optional metadata to provide along with the message.
+
+  Fields:
+    content: protolint:disable REPEATED_FIELD_NAMES_PLURALIZED Content is the
+      container of the message content.
+    contextId: The context id of the message. This is optional and if set, the
+      message will be associated with the given context.
+    extensions: The URIs of extensions that are present or contributed to this
+      Message.
+    messageId: The unique identifier (e.g. UUID)of the message. This is
+      required and created by the message creator.
+    metadata: protolint:enable REPEATED_FIELD_NAMES_PLURALIZED Any optional
+      metadata to provide along with the message.
+    role: A role for the message.
+    taskId: The task id of the message. This is optional and if set, the
+      message will be associated with the given task.
+  """
+
+  class RoleValueValuesEnum(_messages.Enum):
+    r"""A role for the message.
+
+    Values:
+      ROLE_UNSPECIFIED: <no description>
+      ROLE_USER: USER role refers to communication from the client to the
+        server.
+      ROLE_AGENT: AGENT role refers to communication from the server to the
+        client.
+    """
+    ROLE_UNSPECIFIED = 0
+    ROLE_USER = 1
+    ROLE_AGENT = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""protolint:enable REPEATED_FIELD_NAMES_PLURALIZED Any optional metadata
+    to provide along with the message.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  content = _messages.MessageField('Part', 1, repeated=True)
+  contextId = _messages.StringField(2)
+  extensions = _messages.StringField(3, repeated=True)
+  messageId = _messages.StringField(4)
+  metadata = _messages.MessageField('MetadataValue', 5)
+  role = _messages.EnumField('RoleValueValuesEnum', 6)
+  taskId = _messages.StringField(7)
+
+
 class Money(_messages.Message):
   r"""Represents an amount of money with its currency type.
 
@@ -739,6 +1541,154 @@ class MoveBillingAccountRequest(_messages.Message):
   """
 
   destinationParent = _messages.StringField(1)
+
+
+class MutualTlsSecurityScheme(_messages.Message):
+  r"""A MutualTlsSecurityScheme object.
+
+  Fields:
+    description: Description of this security scheme.
+  """
+
+  description = _messages.StringField(1)
+
+
+class OAuth2SecurityScheme(_messages.Message):
+  r"""A OAuth2SecurityScheme object.
+
+  Fields:
+    description: Description of this security scheme.
+    flows: An object containing configuration information for the flow types
+      supported
+    oauth2MetadataUrl: URL to the oauth2 authorization server metadata
+      [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is
+      required.
+  """
+
+  description = _messages.StringField(1)
+  flows = _messages.MessageField('OAuthFlows', 2)
+  oauth2MetadataUrl = _messages.StringField(3)
+
+
+class OAuthFlows(_messages.Message):
+  r"""A OAuthFlows object.
+
+  Fields:
+    authorizationCode: A AuthorizationCodeOAuthFlow attribute.
+    clientCredentials: A ClientCredentialsOAuthFlow attribute.
+    implicit: A ImplicitOAuthFlow attribute.
+    password: A PasswordOAuthFlow attribute.
+  """
+
+  authorizationCode = _messages.MessageField('AuthorizationCodeOAuthFlow', 1)
+  clientCredentials = _messages.MessageField('ClientCredentialsOAuthFlow', 2)
+  implicit = _messages.MessageField('ImplicitOAuthFlow', 3)
+  password = _messages.MessageField('PasswordOAuthFlow', 4)
+
+
+class OpenIdConnectSecurityScheme(_messages.Message):
+  r"""A OpenIdConnectSecurityScheme object.
+
+  Fields:
+    description: Description of this security scheme.
+    openIdConnectUrl: Well-known URL to discover the [[OpenID-Connect-
+      Discovery]] provider metadata.
+  """
+
+  description = _messages.StringField(1)
+  openIdConnectUrl = _messages.StringField(2)
+
+
+class Part(_messages.Message):
+  r"""Part represents a container for a section of communication content.
+  Parts can be purely textual, some sort of file (image, video, etc) or a
+  structured data blob (i.e. JSON).
+
+  Messages:
+    MetadataValue: Optional metadata associated with this part.
+
+  Fields:
+    data: A DataPart attribute.
+    file: A FilePart attribute.
+    metadata: Optional metadata associated with this part.
+    text: A string attribute.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Optional metadata associated with this part.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  data = _messages.MessageField('DataPart', 1)
+  file = _messages.MessageField('FilePart', 2)
+  metadata = _messages.MessageField('MetadataValue', 3)
+  text = _messages.StringField(4)
+
+
+class PasswordOAuthFlow(_messages.Message):
+  r"""A PasswordOAuthFlow object.
+
+  Messages:
+    ScopesValue: The available scopes for the OAuth2 security scheme. A map
+      between the scope name and a short description for it. The map MAY be
+      empty.
+
+  Fields:
+    refreshUrl: The URL to be used for obtaining refresh tokens. This MUST be
+      in the form of a URL. The OAuth2 standard requires the use of TLS.
+    scopes: The available scopes for the OAuth2 security scheme. A map between
+      the scope name and a short description for it. The map MAY be empty.
+    tokenUrl: The token URL to be used for this flow. This MUST be in the form
+      of a URL. The OAuth2 standard requires the use of TLS.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ScopesValue(_messages.Message):
+    r"""The available scopes for the OAuth2 security scheme. A map between the
+    scope name and a short description for it. The map MAY be empty.
+
+    Messages:
+      AdditionalProperty: An additional property for a ScopesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ScopesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ScopesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  refreshUrl = _messages.StringField(1)
+  scopes = _messages.MessageField('ScopesValue', 2)
+  tokenUrl = _messages.StringField(3)
 
 
 class Policy(_messages.Message):
@@ -921,6 +1871,156 @@ class ProjectBillingInfo(_messages.Message):
   projectId = _messages.StringField(4)
 
 
+class PushNotificationConfig(_messages.Message):
+  r"""Configuration for setting up push notifications for task updates.
+
+  Fields:
+    authentication: Information about the authentication to sent with the
+      notification
+    id: A unique identifier (e.g. UUID) for this push notification.
+    token: Token unique for this task/session
+    url: Url to send the notification too
+  """
+
+  authentication = _messages.MessageField('AuthenticationInfo', 1)
+  id = _messages.StringField(2)
+  token = _messages.StringField(3)
+  url = _messages.StringField(4)
+
+
+class Security(_messages.Message):
+  r"""A Security object.
+
+  Messages:
+    SchemesValue: A SchemesValue object.
+
+  Fields:
+    schemes: A SchemesValue attribute.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class SchemesValue(_messages.Message):
+    r"""A SchemesValue object.
+
+    Messages:
+      AdditionalProperty: An additional property for a SchemesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type SchemesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a SchemesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A StringList attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('StringList', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  schemes = _messages.MessageField('SchemesValue', 1)
+
+
+class SecurityScheme(_messages.Message):
+  r"""A SecurityScheme object.
+
+  Fields:
+    apiKeySecurityScheme: A APIKeySecurityScheme attribute.
+    httpAuthSecurityScheme: A HTTPAuthSecurityScheme attribute.
+    mtlsSecurityScheme: A MutualTlsSecurityScheme attribute.
+    oauth2SecurityScheme: A OAuth2SecurityScheme attribute.
+    openIdConnectSecurityScheme: A OpenIdConnectSecurityScheme attribute.
+  """
+
+  apiKeySecurityScheme = _messages.MessageField('APIKeySecurityScheme', 1)
+  httpAuthSecurityScheme = _messages.MessageField('HTTPAuthSecurityScheme', 2)
+  mtlsSecurityScheme = _messages.MessageField('MutualTlsSecurityScheme', 3)
+  oauth2SecurityScheme = _messages.MessageField('OAuth2SecurityScheme', 4)
+  openIdConnectSecurityScheme = _messages.MessageField('OpenIdConnectSecurityScheme', 5)
+
+
+class SendMessageConfiguration(_messages.Message):
+  r"""Configuration of a send message request.
+
+  Fields:
+    acceptedOutputModes: The output modes that the agent is expected to
+      respond with.
+    blocking: If true, the message will be blocking until the task is
+      completed. If false, the message will be non-blocking and the task will
+      be returned immediately. It is the caller's responsibility to check for
+      any task updates.
+    historyLength: The maximum number of messages to include in the history.
+      if 0, the history will be unlimited.
+    pushNotification: A configuration of a webhook that can be used to receive
+      updates
+  """
+
+  acceptedOutputModes = _messages.StringField(1, repeated=True)
+  blocking = _messages.BooleanField(2)
+  historyLength = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pushNotification = _messages.MessageField('PushNotificationConfig', 4)
+
+
+class SendMessageRequest(_messages.Message):
+  r"""/////////// Request Messages ///////////
+
+  Messages:
+    MetadataValue: Optional metadata for the request.
+
+  Fields:
+    configuration: Configuration for the send request.
+    message: Required. The message to send to the agent.
+    metadata: Optional metadata for the request.
+    tenant: Optional tenant, provided as a path parameter. Experimental, might
+      still change for 1.0 release.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Optional metadata for the request.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  configuration = _messages.MessageField('SendMessageConfiguration', 1)
+  message = _messages.MessageField('Message', 2)
+  metadata = _messages.MessageField('MetadataValue', 3)
+  tenant = _messages.StringField(4)
+
+
+class SendMessageResponse(_messages.Message):
+  r"""////// Response Messages ///////////
+
+  Fields:
+    message: A Message attribute.
+    task: A Task attribute.
+  """
+
+  message = _messages.MessageField('Message', 1)
+  task = _messages.MessageField('Task', 2)
+
+
 class Service(_messages.Message):
   r"""Encapsulates a single service in Google Cloud Platform.
 
@@ -1048,6 +2148,253 @@ class StandardQueryParameters(_messages.Message):
   trace = _messages.StringField(10)
   uploadType = _messages.StringField(11)
   upload_protocol = _messages.StringField(12)
+
+
+class StreamResponse(_messages.Message):
+  r"""The stream response for a message. The stream should be one of the
+  following sequences: If the response is a message, the stream should contain
+  one, and only one, message and then close If the response is a task
+  lifecycle, the first response should be a Task object followed by zero or
+  more TaskStatusUpdateEvents and TaskArtifactUpdateEvents. The stream should
+  complete when the Task if in an interrupted or terminal state. A stream that
+  ends before these conditions are met are
+
+  Fields:
+    artifactUpdate: A TaskArtifactUpdateEvent attribute.
+    message: A Message attribute.
+    statusUpdate: A TaskStatusUpdateEvent attribute.
+    task: A Task attribute.
+  """
+
+  artifactUpdate = _messages.MessageField('TaskArtifactUpdateEvent', 1)
+  message = _messages.MessageField('Message', 2)
+  statusUpdate = _messages.MessageField('TaskStatusUpdateEvent', 3)
+  task = _messages.MessageField('Task', 4)
+
+
+class StringList(_messages.Message):
+  r"""protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+
+  Fields:
+    list: A string attribute.
+  """
+
+  list = _messages.StringField(1, repeated=True)
+
+
+class Task(_messages.Message):
+  r"""Task is the core unit of action for A2A. It has a current status and
+  when results are created for the task they are stored in the artifact. If
+  there are multiple turns for a task, these are stored in history.
+
+  Messages:
+    MetadataValue: protolint:enable REPEATED_FIELD_NAMES_PLURALIZED A
+      key/value object to store custom metadata about a task.
+
+  Fields:
+    artifacts: A set of output artifacts for a Task.
+    contextId: Unique identifier (e.g. UUID) for the contextual collection of
+      interactions (tasks and messages). Created by the A2A server.
+    history: protolint:disable REPEATED_FIELD_NAMES_PLURALIZED The history of
+      interactions from a task.
+    id: Unique identifier (e.g. UUID) for the task, generated by the server
+      for a new task.
+    metadata: protolint:enable REPEATED_FIELD_NAMES_PLURALIZED A key/value
+      object to store custom metadata about a task.
+    status: The current status of a Task, including state and a message.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""protolint:enable REPEATED_FIELD_NAMES_PLURALIZED A key/value object to
+    store custom metadata about a task.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  artifacts = _messages.MessageField('Artifact', 1, repeated=True)
+  contextId = _messages.StringField(2)
+  history = _messages.MessageField('Message', 3, repeated=True)
+  id = _messages.StringField(4)
+  metadata = _messages.MessageField('MetadataValue', 5)
+  status = _messages.MessageField('TaskStatus', 6)
+
+
+class TaskArtifactUpdateEvent(_messages.Message):
+  r"""TaskArtifactUpdateEvent represents a task delta where an artifact has
+  been generated.
+
+  Messages:
+    MetadataValue: Optional metadata associated with the artifact update.
+
+  Fields:
+    append: Whether this should be appended to a prior one produced
+    artifact: The artifact itself
+    contextId: The id of the context that this task belongs too
+    lastChunk: Whether this represents the last part of an artifact
+    metadata: Optional metadata associated with the artifact update.
+    taskId: The id of the task for this artifact
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Optional metadata associated with the artifact update.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  append = _messages.BooleanField(1)
+  artifact = _messages.MessageField('Artifact', 2)
+  contextId = _messages.StringField(3)
+  lastChunk = _messages.BooleanField(4)
+  metadata = _messages.MessageField('MetadataValue', 5)
+  taskId = _messages.StringField(6)
+
+
+class TaskPushNotificationConfig(_messages.Message):
+  r"""A TaskPushNotificationConfig object.
+
+  Fields:
+    name: The resource name of the config. Format:
+      tasks/{task_id}/pushNotificationConfigs/{config_id}
+    pushNotificationConfig: The push notification configuration details.
+  """
+
+  name = _messages.StringField(1)
+  pushNotificationConfig = _messages.MessageField('PushNotificationConfig', 2)
+
+
+class TaskStatus(_messages.Message):
+  r"""A container for the status of a task
+
+  Enums:
+    StateValueValuesEnum: The current state of this task
+
+  Fields:
+    message: A message associated with the status.
+    state: The current state of this task
+    timestamp: Timestamp when the status was recorded. Example:
+      "2023-10-27T10:00:00Z"
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""The current state of this task
+
+    Values:
+      TASK_STATE_UNSPECIFIED: <no description>
+      TASK_STATE_SUBMITTED: Represents the status that acknowledges a task is
+        created
+      TASK_STATE_WORKING: Represents the status that a task is actively being
+        processed
+      TASK_STATE_COMPLETED: Represents the status a task is finished. This is
+        a terminal state
+      TASK_STATE_FAILED: Represents the status a task is done but failed. This
+        is a terminal state
+      TASK_STATE_CANCELLED: Represents the status a task was cancelled before
+        it finished. This is a terminal state.
+      TASK_STATE_INPUT_REQUIRED: Represents the status that the task requires
+        information to complete. This is an interrupted state.
+      TASK_STATE_REJECTED: Represents the status that the agent has decided to
+        not perform the task. This may be done during initial task creation or
+        later once an agent has determined it can't or won't proceed. This is
+        a terminal state.
+      TASK_STATE_AUTH_REQUIRED: Represents the state that some authentication
+        is needed from the upstream client. Authentication is expected to come
+        out-of-band thus this is not an interrupted or terminal state.
+    """
+    TASK_STATE_UNSPECIFIED = 0
+    TASK_STATE_SUBMITTED = 1
+    TASK_STATE_WORKING = 2
+    TASK_STATE_COMPLETED = 3
+    TASK_STATE_FAILED = 4
+    TASK_STATE_CANCELLED = 5
+    TASK_STATE_INPUT_REQUIRED = 6
+    TASK_STATE_REJECTED = 7
+    TASK_STATE_AUTH_REQUIRED = 8
+
+  message = _messages.MessageField('Message', 1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+  timestamp = _messages.StringField(3)
+
+
+class TaskStatusUpdateEvent(_messages.Message):
+  r"""TaskStatusUpdateEvent is a delta even on a task indicating that a task
+  has changed.
+
+  Messages:
+    MetadataValue: Optional metadata to associate with the task update.
+
+  Fields:
+    contextId: The id of the context that the task belongs to
+    final: Whether this is the last status update expected for this task.
+    metadata: Optional metadata to associate with the task update.
+    status: The new status of the task.
+    taskId: The id of the task that is changed
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Optional metadata to associate with the task update.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  contextId = _messages.StringField(1)
+  final = _messages.BooleanField(2)
+  metadata = _messages.MessageField('MetadataValue', 3)
+  status = _messages.MessageField('TaskStatus', 4)
+  taskId = _messages.StringField(5)
 
 
 class TestIamPermissionsRequest(_messages.Message):

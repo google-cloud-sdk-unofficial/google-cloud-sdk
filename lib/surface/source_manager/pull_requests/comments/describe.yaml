@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+  hidden: true
+
+  help_text:
+    brief: Describe a Secure Source Manager pull request comment.
+    description: Describe a Secure Source Manager pull request comment.
+    examples: |
+      To describe a comment 123 in pull request 1 of repository `my-repo` and location `us-central1`, run the following command:
+
+      $ {command} 123 --pull-request=1 --repository=my-repo --region=us-central1
+
+  request:
+    api_version: v1
+    collection: securesourcemanager.projects.locations.repositories.pullRequests.pullRequestComments
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The Secure Source Manager pull request comment to describe.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:pull_request_comment

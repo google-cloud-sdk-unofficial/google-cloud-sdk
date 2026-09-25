@@ -40,5 +40,15 @@
       arg_name: ssl-ca-file
       help_text: File containing the SSL_CA to be used.
       processor: googlecloudsdk.core.util.files:ReadFileContents
+    - api_field: connection.disabled
+      arg_name: disabled
+      action: store_true_false
+      required: false
+      type: bool
+      release_tracks: [ALPHA]
+      help_text: |-
+        If disabled is set to true, functionality is disabled for this connection.
+        Repository based API methods and webhooks processing for repositories in
+        this connection will be disabled.
   async:
     collection: cloudbuild.projects.locations.operations

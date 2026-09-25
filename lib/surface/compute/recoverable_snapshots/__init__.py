@@ -25,7 +25,6 @@ DETAILED_HELP = {  # Dict[str, str]
 }
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class RecoverableSnapshots(base.Group):

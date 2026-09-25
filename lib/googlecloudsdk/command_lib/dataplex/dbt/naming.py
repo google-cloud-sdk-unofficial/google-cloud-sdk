@@ -69,14 +69,14 @@ MAX_LABEL_LENGTH = 128
 
 # entryLinkType ids the transform emits. The fully-qualified name is built per
 # run against the resolved system-types project via ``Context.link_type_fqn``.
-# An edge is typed by what it asserts, not by where it came from: DEPENDS_ON
-# for a flow of data, REFERENCE for an association drawn from metadata.
-DEPENDS_ON_LINK_TYPE = 'depends-on'
+# An edge is typed by what it asserts. REFERENCE covers an association drawn
+# from metadata (parent_map dependencies, tests to models, metrics to semantic
+# models, and dbt nodes to the physical BigQuery tables they materialize to);
+# SCHEMA_JOIN covers a column-level join relationship between two schemas.
 REFERENCE_LINK_TYPE = 'reference'
 SCHEMA_JOIN_LINK_TYPE = 'schema-join'
 
 LINK_TYPE_IDS: tuple[str, ...] = (
-    DEPENDS_ON_LINK_TYPE,
     REFERENCE_LINK_TYPE,
     SCHEMA_JOIN_LINK_TYPE,
 )

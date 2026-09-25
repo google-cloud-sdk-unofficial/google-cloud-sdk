@@ -102,19 +102,19 @@ class EntraIdCertForPrint:
 
   Attrs:
     ssl_cert: The Entra ID certificate.
-    status: The status of the certificate.
+    state: The state of the certificate.
   """
 
   ssl_cert: Any
-  status: Any
+  state: Any
 
 
 # The class for printing a server certificate.
 class ServerCertForPrint:
 
-  def __init__(self, ssl_cert, status, ca_cert=None):
+  def __init__(self, ssl_cert, state, ca_cert=None):
     self.ssl_cert = ssl_cert
-    self.status = status
+    self.state = state
     self.ca_cert = ca_cert
 
 
@@ -2788,23 +2788,27 @@ CLIENT_CERTS_FORMAT = """
 SERVER_CA_CERTS_FORMAT = """
   table(
     sha1Fingerprint,
-    expirationTime.yesno(no="-"):label=EXPIRATION
+    createTime.yesno(no="-"):label=CREATE_TIME,
+    expirationTime.yesno(no="-"):label=EXPIRATION,
+    state
   )
 """
 
 SERVER_CERTS_FORMAT = """
   table(
     ssl_cert.sha1Fingerprint,
+    ssl_cert.createTime.yesno(no="-"):label=CREATE_TIME,
     ssl_cert.expirationTime.yesno(no="-"):label=EXPIRATION,
-    status
+    state
   )
 """
 
 ENTRAID_CERTS_FORMAT = """
   table(
     ssl_cert.sha1Fingerprint,
+    ssl_cert.createTime.yesno(no="-"):label=CREATE_TIME,
     ssl_cert.expirationTime.yesno(no="-"):label=EXPIRATION,
-    status
+    state
   )
 """
 

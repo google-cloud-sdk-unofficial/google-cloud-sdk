@@ -38,6 +38,7 @@ class LustreV1alpha(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.projects_locations_instances_directoryPolicies = self.ProjectsLocationsInstancesDirectoryPoliciesService(self)
+    self.projects_locations_instances_mirrors = self.ProjectsLocationsInstancesMirrorsService(self)
     self.projects_locations_instances = self.ProjectsLocationsInstancesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -239,6 +240,151 @@ class LustreV1alpha(base_api.BaseApiClient):
         request_field='testIamPermissionsRequest',
         request_type_name='LustreProjectsLocationsInstancesDirectoryPoliciesTestIamPermissionsRequest',
         response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsInstancesMirrorsService(base_api.BaseApiService):
+    """Service class for the projects_locations_instances_mirrors resource."""
+
+    _NAME = 'projects_locations_instances_mirrors'
+
+    def __init__(self, client):
+      super(LustreV1alpha.ProjectsLocationsInstancesMirrorsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new mirror in a given instance.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesMirrorsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/mirrors',
+        http_method='POST',
+        method_id='lustre.projects.locations.instances.mirrors.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['mirrorId', 'requestId'],
+        relative_path='v1alpha/{+parent}/mirrors',
+        request_field='mirror',
+        request_type_name='LustreProjectsLocationsInstancesMirrorsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single mirror.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesMirrorsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/mirrors/{mirrorsId}',
+        http_method='DELETE',
+        method_id='lustre.projects.locations.instances.mirrors.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesMirrorsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single mirror.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesMirrorsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Mirror) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/mirrors/{mirrorsId}',
+        http_method='GET',
+        method_id='lustre.projects.locations.instances.mirrors.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesMirrorsGetRequest',
+        response_type_name='Mirror',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Gets details of multiple mirrors under a given instance.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesMirrorsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListMirrorsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/mirrors',
+        http_method='GET',
+        method_id='lustre.projects.locations.instances.mirrors.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/mirrors',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesMirrorsListRequest',
+        response_type_name='ListMirrorsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single mirror.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesMirrorsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/mirrors/{mirrorsId}',
+        http_method='PATCH',
+        method_id='lustre.projects.locations.instances.mirrors.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='mirror',
+        request_type_name='LustreProjectsLocationsInstancesMirrorsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

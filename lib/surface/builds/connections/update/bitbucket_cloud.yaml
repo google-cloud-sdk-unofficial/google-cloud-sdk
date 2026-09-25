@@ -36,5 +36,15 @@
     - api_field: connection.bitbucketCloudConfig.webhookSecretSecretVersion
       arg_name: webhook-secret-secret-version
       help_text: Secret containing the webhook secret string for validating webhook events sent by Bitbucket Cloud.
+    - api_field: connection.disabled
+      arg_name: disabled
+      action: store_true_false
+      required: false
+      type: bool
+      release_tracks: [ALPHA]
+      help_text: |-
+        If disabled is set to true, functionality is disabled for this connection.
+        Repository based API methods and webhooks processing for repositories in
+        this connection will be disabled.
   async:
     collection: cloudbuild.projects.locations.operations

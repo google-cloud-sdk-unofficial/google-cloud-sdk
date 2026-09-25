@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.workstations.util import GetClientInstance
 from googlecloudsdk.api_lib.workstations.util import GetMessagesModule
 from googlecloudsdk.api_lib.workstations.util import VERSION_MAP
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
@@ -257,6 +258,7 @@ class Configs:
         config.allowedPorts.append(desired_port_range)
 
     # Persistent directory
+    disk_type = None
     if not args.no_persistent_storage:
       pd = self.messages.PersistentDirectory()
       pd.mountPath = '/home'
@@ -267,6 +269,8 @@ class Configs:
           or (args.IsKnownAndSpecified('disk_source_snapshot'))
           or (args.IsKnownAndSpecified('disk_reclaim_policy'))
           or (args.IsKnownAndSpecified('disk_archive_timeout'))
+          or (args.IsKnownAndSpecified('disk_provisioned_iops'))
+          or (args.IsKnownAndSpecified('disk_provisioned_throughput'))
       )
 
       if use_disk_flags:
@@ -290,13 +294,22 @@ class Configs:
         source_snapshot = args.pd_source_snapshot
         reclaim_policy = args.pd_reclaim_policy
 
+      if disk_type != 'hyperdisk-balanced-ha':
+        if is_specified(args, 'disk_provisioned_iops'):
+          raise exceptions.InvalidArgumentException(
+              '--disk-provisioned-iops',
+              'Can only be set when creating a hyperdisk type.',
+          )
+        if is_specified(args, 'disk_provisioned_throughput'):
+          raise exceptions.InvalidArgumentException(
+              '--disk-provisioned-throughput',
+              'Can only be set when creating a hyperdisk type.',
+          )
+
       # Not all instance types can take Hyperdisks, but this is validated on the
       # backend.
       archive_timeout_str = None
-      if (
-          args.IsKnownAndSpecified('disk_archive_timeout')
-          and args.disk_archive_timeout is not None
-      ):
+      if is_specified(args, 'disk_archive_timeout'):
         archive_timeout_str = f'{args.disk_archive_timeout}s'
 
       if disk_type == 'hyperdisk-balanced-ha':
@@ -310,6 +323,10 @@ class Configs:
             sourceSnapshot=source_snapshot,
             archiveTimeout=archive_timeout_str,
         )
+        if is_specified(args, 'disk_provisioned_iops'):
+          pd.gceHd.provisionedIops = args.disk_provisioned_iops
+        if is_specified(args, 'disk_provisioned_throughput'):
+          pd.gceHd.provisionedThroughput = args.disk_provisioned_throughput
       else:
         pd.gcePd = self.messages.GceRegionalPersistentDisk(
             sizeGb=0 if source_snapshot else disk_size,
@@ -324,6 +341,17 @@ class Configs:
             archiveTimeout=archive_timeout_str,
         )
       config.persistentDirectories.append(pd)
+    else:
+      if is_specified(args, 'disk_provisioned_iops'):
+        raise exceptions.InvalidArgumentException(
+            '--disk-provisioned-iops',
+            'Can only be set when creating a hyperdisk type.',
+        )
+      if is_specified(args, 'disk_provisioned_throughput'):
+        raise exceptions.InvalidArgumentException(
+            '--disk-provisioned-throughput',
+            'Can only be set when creating a hyperdisk type.',
+        )
 
     # Ephemeral directory
     if args.ephemeral_directory:
@@ -735,15 +763,18 @@ class Configs:
     use_source_snapshot = args.IsKnownAndSpecified(
         'disk_source_snapshot'
     ) or args.IsKnownAndSpecified('pd_source_snapshot')
-    use_disk_archive_timeout = (
-        args.IsKnownAndSpecified('disk_archive_timeout')
-        and args.disk_archive_timeout is not None
+    use_disk_archive_timeout = is_specified(args, 'disk_archive_timeout')
+    use_disk_provisioned_iops = is_specified(args, 'disk_provisioned_iops')
+    use_disk_provisioned_throughput = is_specified(
+        args, 'disk_provisioned_throughput'
     )
     update_disk = (
         use_disk_type
         or use_disk_size
         or use_source_snapshot
         or use_disk_archive_timeout
+        or use_disk_provisioned_iops
+        or use_disk_provisioned_throughput
     )
     if use_disk_type:
       disk_type: str = (
@@ -769,6 +800,17 @@ class Configs:
       )
     else:
       source_snapshot: str = extract_source_snapshot(old_config)
+    if disk_type != 'hyperdisk-balanced-ha':
+      if is_specified(args, 'disk_provisioned_iops'):
+        raise exceptions.InvalidArgumentException(
+            '--disk-provisioned-iops',
+            'Can only be set for a hyperdisk type.',
+        )
+      if is_specified(args, 'disk_provisioned_throughput'):
+        raise exceptions.InvalidArgumentException(
+            '--disk-provisioned-throughput',
+            'Can only be set for a hyperdisk type.',
+        )
     if (
         old_config.persistentDirectories
         and old_config.persistentDirectories[0].gcePd
@@ -796,6 +838,16 @@ class Configs:
     else:
       archive_timeout = extract_archive_timeout(old_config)
 
+    if use_disk_provisioned_iops:
+      provisioned_iops = args.disk_provisioned_iops
+    else:
+      provisioned_iops = extract_disk_provisioned_iops(old_config)
+
+    if use_disk_provisioned_throughput:
+      provisioned_throughput = args.disk_provisioned_throughput
+    else:
+      provisioned_throughput = extract_disk_provisioned_throughput(old_config)
+
     if use_source_snapshot:
       if disk_type == 'hyperdisk-balanced-ha':
         config.persistentDirectories[0].gceHd = (
@@ -805,6 +857,14 @@ class Configs:
                 archiveTimeout=archive_timeout,
             )
         )
+        if provisioned_iops is not None:
+          config.persistentDirectories[0].gceHd.provisionedIops = (
+              provisioned_iops
+          )
+        if provisioned_throughput is not None:
+          config.persistentDirectories[0].gceHd.provisionedThroughput = (
+              provisioned_throughput
+          )
       else:
         config.persistentDirectories[0].gcePd = (
             self.messages.GceRegionalPersistentDisk(
@@ -822,6 +882,12 @@ class Configs:
               archiveTimeout=archive_timeout,
           )
       )
+      if provisioned_iops is not None:
+        config.persistentDirectories[0].gceHd.provisionedIops = provisioned_iops
+      if provisioned_throughput is not None:
+        config.persistentDirectories[0].gceHd.provisionedThroughput = (
+            provisioned_throughput
+        )
     else:
       config.persistentDirectories[0].gcePd = (
           self.messages.GceRegionalPersistentDisk(
@@ -923,3 +989,32 @@ def extract_archive_timeout(old_config) -> str:
   ):
     return old_config.persistentDirectories[0].gcePd.archiveTimeout
   return None
+
+
+def extract_disk_provisioned_iops(old_config) -> int:
+  if (
+      old_config.persistentDirectories
+      and getattr(old_config.persistentDirectories[0], 'gceHd', False)
+      and hasattr(old_config.persistentDirectories[0].gceHd, 'provisionedIops')
+  ):
+    return old_config.persistentDirectories[0].gceHd.provisionedIops
+  return None
+
+
+def extract_disk_provisioned_throughput(old_config) -> int:
+  if (
+      old_config.persistentDirectories
+      and getattr(old_config.persistentDirectories[0], 'gceHd', False)
+      and hasattr(
+          old_config.persistentDirectories[0].gceHd, 'provisionedThroughput'
+      )
+  ):
+    return old_config.persistentDirectories[0].gceHd.provisionedThroughput
+  return None
+
+
+def is_specified(args, name: str) -> bool:
+  return (
+      args.IsKnownAndSpecified(name)
+      and getattr(args, name, None) is not None
+  )

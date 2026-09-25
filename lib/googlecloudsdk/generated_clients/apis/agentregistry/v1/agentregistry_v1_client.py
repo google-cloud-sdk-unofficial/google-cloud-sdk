@@ -38,6 +38,7 @@ class AgentregistryV1(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.projects_locations_agents = self.ProjectsLocationsAgentsService(self)
+    self.projects_locations_aiApplications = self.ProjectsLocationsAiApplicationsService(self)
     self.projects_locations_bindings = self.ProjectsLocationsBindingsService(self)
     self.projects_locations_endpoints = self.ProjectsLocationsEndpointsService(self)
     self.projects_locations_mcpServers = self.ProjectsLocationsMcpServersService(self)
@@ -134,6 +135,97 @@ class AgentregistryV1(base_api.BaseApiClient):
         request_field='searchAgentsRequest',
         request_type_name='AgentregistryProjectsLocationsAgentsSearchRequest',
         response_type_name='SearchAgentsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsAiApplicationsService(base_api.BaseApiService):
+    """Service class for the projects_locations_aiApplications resource."""
+
+    _NAME = 'projects_locations_aiApplications'
+
+    def __init__(self, client):
+      super(AgentregistryV1.ProjectsLocationsAiApplicationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}:getIamPolicy',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.aiApplications.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['options_requestedPolicyVersion'],
+        relative_path='v1/{+resource}:getIamPolicy',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsGetIamPolicyRequest',
+        response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}:setIamPolicy',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.aiApplications.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:setIamPolicy',
+        request_field='googleIamV1SetIamPolicyRequest',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsSetIamPolicyRequest',
+        response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may "fail open" without warning.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}:testIamPermissions',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.aiApplications.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:testIamPermissions',
+        request_field='googleIamV1TestIamPermissionsRequest',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsTestIamPermissionsRequest',
+        response_type_name='GoogleIamV1TestIamPermissionsResponse',
         supports_download=False,
     )
 

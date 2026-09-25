@@ -311,21 +311,20 @@ def GetBackendTypeArg(messages):
   Returns:
     The chosen backendType arg.
   """
-  backend_type_arg = (
-      arg_utils.ChoiceEnumMapper(
-          '--backend-type',
-          messages.Instance.BackendTypeValueValuesEnum,
-          help_str='The service backend type for the Cloud Filestore instance.',
-          custom_mappings={
-              'COMPUTE_BASED_BACKEND':
-                  ('compute-based-backend',
-                   'Compute based backend.'),
-              'FILESTORE_BACKEND':
-                  ('filestore-backend',
-                   'Filestore backend.'),
-          },
-          # This flag stays hidden in v1beta1 throughout its whole lifecycle.
-          hidden=True))
+  backend_type_arg = arg_utils.ChoiceEnumMapper(
+      '--backend-type',
+      messages.Instance.BackendTypeValueValuesEnum,
+      help_str='The service backend type for the Cloud Filestore instance.',
+      custom_mappings={
+          'COMPUTE_BASED_BACKEND': (
+              'compute-based-backend',
+              'Compute based backend.',
+          ),
+          'FILESTORE_BACKEND': ('filestore-backend', 'Filestore backend.'),
+      },
+      # This flag stays hidden in v1beta1 throughout its whole lifecycle.
+      hidden=True,
+  )
   return backend_type_arg
 
 
@@ -489,6 +488,7 @@ def AddNetworkArg(parser, api_version):
       'connect-mode': str,
       'address-mode': str,
       'psc-endpoint-project': str,
+      'psc-requested-ip-address': str,
   }
 
   network_arg_spec = {
@@ -549,6 +549,10 @@ def AddNetworkArg(parser, api_version):
         endpoint would be set up. This is optional, and only relevant in case
         the network is a shared VPC. If this is not specified, the psc endpoint
         would be setup in the VPC host project.
+        *psc-requested-ip-address*::: (Optional) IP address for the Filestore
+        instance. This IP must be within the subnetwork range configured in the
+        Service Connection Policy and must not already be in
+        use. If not specified, an IP will be automatically allocated.
   """
 
   network_help = {
@@ -593,7 +597,7 @@ def AddFileShareArg(
     include_snapshot_flags: bool, whether to include --source-snapshot flags.
     include_backup_flags: bool, whether to include --source-backup flags.
     include_backupdr_flags: bool, whether to include --source-backupdr-backup
-    flag.
+      flag.
     include_restore_path_patterns_flags: bool, whether to include
       --restore-path-patterns flags.
     clear_nfs_export_options_required: bool, whether to include
@@ -609,12 +613,12 @@ unit is specified, GB is assumed. Acceptable instance capacities for each tier a
 * BASIC_HDD: 1TB-63.9TB in 1GB increments or its multiples.
 * BASIC_SSD: 2.5TB-63.9TB in 1GB increments or its multiples.
 * HIGH_SCALE_SSD: 10TB-100TB in 2.5TB increments or its multiples.
-* ZONAL: 1TB-100TB:
-  - 1TB-9.75TB in 256GB increments or its multiples.
+* ZONAL: 100GB-100TB:
+  - 100GB-10239GB in 1GB increments or its multiples.
   - 10TB-100TB in 2.5TB increments or its multiples.
 * ENTERPRISE: 1TB-10TB in 256GB increments or its multiples.
-* REGIONAL: 1TB-100TB:
-  - 1TB-9.75TB in 256GB increments or its multiples.
+* REGIONAL: 1TB-100TB (100GB-100TB in supported regions):
+  - (100GB|1TB)-10239GB in 1GB increments or its multiples.
   - 10TB-100TB in 2.5TB increments or its multiples.
 
 *name*::: The desired logical name of the volume.
@@ -667,7 +671,8 @@ network specified in the `network.name` field.
 """
 
   file_share_help = {
-      filestore_client.V1_API_VERSION: """\
+      filestore_client.V1_API_VERSION: (
+          """\
 File share configuration for an instance.  Specifying both `name` and `capacity`
 is required.
 
@@ -676,12 +681,12 @@ unit is specified, GB is assumed. Acceptable instance capacities for each tier a
 * BASIC_HDD: 1TB-63.9TB in 1GB increments or its multiples.
 * BASIC_SSD: 2.5TB-63.9TB in 1GB increments or its multiples.
 * HIGH_SCALE_SSD: 10TB-100TB in 2.5TB increments or its multiples.
-* ZONAL: 1TB-100TB:
-  - 1TB-9.75TB in 256GB increments or its multiples.
+* ZONAL: 100GB-100TB:
+  - 100GB-10239GB in 1GB increments or its multiples.
   - 10TB-100TB in 2.5TB increments or its multiples.
 * ENTERPRISE: 1TB-10TB in 256GB increments or its multiples.
-* REGIONAL: 1TB-100TB:
-  - 1TB-9.75TB in 256GB increments or its multiples.
+* REGIONAL: 1TB-100TB (100GB-100TB in supported regions):
+  - (100GB|1TB)-10239GB in 1GB increments or its multiples.
   - 10TB-100TB in 2.5TB increments or its multiples.
 
 *name*::: The desired logical name of the volume.
@@ -717,7 +722,8 @@ The default value is 65534.
 Anon_gid may only be set when squash_mode is set to ROOT_SQUASH.
 If NO_ROOT_SQUASH is specified, an error will be returned.
 The default value is 65534.
-""",
+"""
+      ),
       filestore_client.ALPHA_API_VERSION: alpha_beta_help_text,
       filestore_client.BETA_API_VERSION: alpha_beta_help_text,
   }
@@ -789,7 +795,6 @@ that this file share has been restored from.
         + (source_snapshot_help if include_snapshot_flags else '')
         + (source_backup_help if include_backup_flags else '')
         + (source_backupdr_backup_help if include_backupdr_flags else ''),
-
     )
 
 

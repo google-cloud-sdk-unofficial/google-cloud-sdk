@@ -59,7 +59,7 @@ Container Flags
   group.AddArgument(flags.SourceAndImageFlags())
   group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
-  group.AddArgument(flags.CpuFlag())
+  group.AddArgument(flags.CpuFlag(allow_fractional_cpu=False))
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags_parser.SecretsFlags())

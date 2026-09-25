@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.orchestration_pipelines import gcp_deployer
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import registry
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import gcs_utils
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
+from googlecloudsdk.core import exceptions as core_exceptions
 
 
 def _validate_artifact_bucket(env, _, pipeline_models):
@@ -39,6 +40,13 @@ def _validate_artifact_bucket(env, _, pipeline_models):
 
 
 DEPLOYMENT_FILE_NAME = "deployment.yaml"
+_L1_VALIDATION_TIP = (
+    "Tip: If you encounter this error, please ensure you have updated to the"
+    " latest version of the Google Cloud CLI (gcloud), as older"
+    " installations may lack support for newly introduced pipeline fields."
+    " You can verify your available components and versions by running"
+    " `gcloud version` in your terminal."
+)
 
 
 @calliope_base.DefaultUniverseOnly
@@ -165,48 +173,58 @@ class Validate(calliope_base.Command):
       return
 
     # 3. Perform L1 syntax validation for each context.
-    for context in validation_contexts:
-      env = context["env"]
-      combined_vars = context["combined_vars"]
-      pipeline_paths = context["pipeline_paths"]
-      resources = context["resources"]
-      env_name = context["name"]
-      has_environment = env is not None
-      pipeline_models = []
+    try:
+      for context in validation_contexts:
+        env = context["env"]
+        combined_vars = context["combined_vars"]
+        pipeline_paths = context["pipeline_paths"]
+        resources = context["resources"]
+        env_name = context["name"]
+        has_environment = env is not None
+        pipeline_models = []
 
-      captured_vars = set()
-      if env:
-        for r in env.resources:
-          if isinstance(r, deployment_model.ResourceModel):
-            for c in r.capture:
-              captured_vars.add(c.variable)
+        captured_vars = set()
+        if env:
+          for r in env.resources:
+            if isinstance(r, deployment_model.ResourceModel):
+              for c in r.capture:
+                captured_vars.add(c.variable)
 
-      if pipeline_paths:
-        pipeline_models = yaml_processor.validate_pipeline_l1(
-            work_dir,
-            pipeline_paths,
-            combined_vars,
-            allowed_missing=captured_vars,
-        )
-      context["pipeline_models"] = pipeline_models
+        if pipeline_paths:
+          pipeline_models = yaml_processor.validate_pipeline_l1(
+              work_dir,
+              pipeline_paths,
+              combined_vars,
+              allowed_missing=captured_vars,
+          )
+        context["pipeline_models"] = pipeline_models
 
-      if has_environment:
-        for resource in resources:
-          if resource.type == "resourceProfile":
-            continue
-          handler = registry.GetHandler(resource, env)
-          gcp_deployer.validate_gcp_resource_l1(handler)
+        if has_environment:
+          for resource in resources:
+            if resource.type == "resourceProfile":
+              continue
+            handler = registry.GetHandler(resource, env)
+            gcp_deployer.validate_gcp_resource_l1(handler)
 
-      if has_environment:
-        print(
-            "Successfully finished syntax validation for pipelines and"
-            f" resources in deployment environment '{env_name}'."
-        )
-      elif args.pipeline_paths:
-        print(
-            "Successfully finished syntax validation for all provided"
-            " pipelines."
-        )
+        if has_environment:
+          print(
+              "Successfully finished syntax validation for pipelines and"
+              f" resources in deployment environment '{env_name}'."
+          )
+        elif args.pipeline_paths:
+          print(
+              "Successfully finished syntax validation for all provided"
+              " pipelines."
+          )
+    except Exception as e:
+      msg = f"{e}\n\n{_L1_VALIDATION_TIP}"
+      try:
+        new_exc = type(e)(msg)
+      except TypeError:
+        new_exc = core_exceptions.Error(msg)
+      if hasattr(e, "exit_code"):
+        new_exc.exit_code = e.exit_code
+      raise new_exc from e
 
     if error_environments:
       print("Errors found while parsing deployment file:")

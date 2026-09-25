@@ -591,7 +591,9 @@ class ConsoleAttr(object):
     if console_attr_os.ForceEnableAnsi():
       return True
     return (self._encoding != 'ascii' and
-            ('screen' in self._term or 'xterm' in self._term))
+            ('screen' in self._term
+             or 'xterm' in self._term
+             or 'tmux' in self._term))
 
 
 class Colorizer(object):

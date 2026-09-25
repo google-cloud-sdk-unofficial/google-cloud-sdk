@@ -20,7 +20,9 @@ from googlecloudsdk.command_lib.app_topology import resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Describe(base.DescribeCommand):
   """Describe an App Topology domain.
 
@@ -29,10 +31,7 @@ class Describe(base.DescribeCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': (
-          '{description}\n\nRetrieves and displays the configuration details'
-          ' and status of an App Topology domain.'
-      ),
+      'DESCRIPTION': '{description}',
       'EXAMPLES': (
           """\
           To describe a domain named `SRE` in default global location:
@@ -62,4 +61,4 @@ class Describe(base.DescribeCommand):
     """
     client = domains_api.DomainsClient()
     domain_ref = args.CONCEPTS.domain.Parse()
-    return client.Get(name=domain_ref.RelativeName())
+    return client.Get(domain_ref.RelativeName())

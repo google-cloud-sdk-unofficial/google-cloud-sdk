@@ -427,24 +427,57 @@ class DynamicField(str):
   """Represents dynamic fields in list managed instances output."""
 
   @staticmethod
+  def _HasHealthState(instance):
+    try:
+      return instance.instanceHealth[0].detailedHealthState is not None
+    except (AttributeError, IndexError, TypeError):
+      return False
+
+  @staticmethod
+  def _HasAction(instance):
+    try:
+      return (
+          instance.currentAction is not None
+          and str(instance.currentAction) != 'NONE'
+      )
+    except AttributeError:
+      return False
+
+  @staticmethod
+  def _HasVersionName(instance):
+    try:
+      return instance.version.name is not None
+    except AttributeError:
+      return False
+
+  @staticmethod
   def _HasGracefulShutdownTimestamp(instance):
-    scheduling = getattr(instance, 'scheduling', None)
-    return bool(
-        scheduling
-        and getattr(scheduling, 'gracefulShutdownTimestamp', None) is not None
-    )
+    try:
+      return instance.scheduling.gracefulShutdownTimestamp is not None
+    except AttributeError:
+      return False
 
   @staticmethod
   def _HasTerminationTimestamp(instance):
-    scheduling = getattr(instance, 'scheduling', None)
-    return bool(
-        scheduling
-        and getattr(scheduling, 'terminationTimestamp', None) is not None
-    )
+    try:
+      return instance.scheduling.terminationTimestamp is not None
+    except AttributeError:
+      return False
+
+  @staticmethod
+  def _HasLastError(instance):
+    try:
+      return bool(instance.lastAttempt.errors.errors)
+    except AttributeError:
+      return False
 
   _DYNAMIC_FIELD_VERIFIERS = {
+      'HEALTH_STATE': '_HasHealthState',
+      'ACTION': '_HasAction',
+      'VERSION_NAME': '_HasVersionName',
       'GRACEFUL_SHUTDOWN_TIMESTAMP': '_HasGracefulShutdownTimestamp',
       'TERMINATION_TIMESTAMP': '_HasTerminationTimestamp',
+      'LAST_ERROR': '_HasLastError',
   }
 
   def IsPresentInAny(self, instances) -> bool:
@@ -491,11 +524,11 @@ _LIST_INSTANCES_FORMAT_ALPHA = """\
               preservedState():label=PRESERVED_STATE,
               version.instanceTemplate.basename():label=INSTANCE_TEMPLATE,
               version.name:label=VERSION_NAME,
+              scheduling.gracefulShutdownTimestamp:label=GRACEFUL_SHUTDOWN_TIMESTAMP,
+              scheduling.terminationTimestamp:label=TERMINATION_TIMESTAMP,
               lastAttempt.errors.errors.map().format(
                 "Error {0}: {1}", code, message).list(separator=", ")
-                :label=LAST_ERROR,
-              scheduling.gracefulShutdownTimestamp:label=GRACEFUL_SHUTDOWN_TIMESTAMP,
-              scheduling.terminationTimestamp:label=TERMINATION_TIMESTAMP
+                :label=LAST_ERROR
         )"""
 
 _RELEASE_TRACK_TO_LIST_INSTANCES_FORMAT = {
@@ -521,14 +554,14 @@ _LIST_INSTANCES_FIELDS_ALPHA = (
     'NAME',
     'ZONE',
     'STATUS',
-    'HEALTH_STATE',
-    'ACTION',
+    DynamicField('HEALTH_STATE'),
+    DynamicField('ACTION'),
     'PRESERVED_STATE',
     'INSTANCE_TEMPLATE',
-    'VERSION_NAME',
-    'LAST_ERROR',
+    DynamicField('VERSION_NAME'),
     DynamicField('GRACEFUL_SHUTDOWN_TIMESTAMP'),
     DynamicField('TERMINATION_TIMESTAMP'),
+    DynamicField('LAST_ERROR'),
 )
 
 _RELEASE_TRACK_TO_LIST_INSTANCES_FIELDS = {

@@ -40,11 +40,15 @@ class CloudbillingV1(base_api.BaseApiClient):
     self.billingAccounts_projects = self.BillingAccountsProjectsService(self)
     self.billingAccounts_subAccounts = self.BillingAccountsSubAccountsService(self)
     self.billingAccounts = self.BillingAccountsService(self)
+    self.message = self.MessageService(self)
     self.organizations_billingAccounts = self.OrganizationsBillingAccountsService(self)
     self.organizations = self.OrganizationsService(self)
     self.projects = self.ProjectsService(self)
     self.services_skus = self.ServicesSkusService(self)
     self.services = self.ServicesService(self)
+    self.tasks_pushNotificationConfigs = self.TasksPushNotificationConfigsService(self)
+    self.tasks = self.TasksService(self)
+    self.v1 = self.V1Service(self)
 
   class BillingAccountsProjectsService(base_api.BaseApiService):
     """Service class for the billingAccounts_projects resource."""
@@ -371,6 +375,68 @@ class CloudbillingV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class MessageService(base_api.BaseApiService):
+    """Service class for the message resource."""
+
+    _NAME = 'message'
+
+    def __init__(self, client):
+      super(CloudbillingV1.MessageService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Send(self, request, global_params=None):
+      r"""Send a message to the agent. This is a blocking call that will return the task once it is completed, or a LRO if requested.
+
+      Args:
+        request: (SendMessageRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SendMessageResponse) The response message.
+      """
+      config = self.GetMethodConfig('Send')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Send.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='cloudbilling.message.send',
+        ordered_params=[],
+        path_params=[],
+        query_params=[],
+        relative_path='v1/message:send',
+        request_field='<request>',
+        request_type_name='SendMessageRequest',
+        response_type_name='SendMessageResponse',
+        supports_download=False,
+    )
+
+    def Stream(self, request, global_params=None):
+      r"""SendStreamingMessage is a streaming call that will return a stream of task update events until the Task is in an interrupted or terminal state.
+
+      Args:
+        request: (SendMessageRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (StreamResponse) The response message.
+      """
+      config = self.GetMethodConfig('Stream')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Stream.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='cloudbilling.message.stream',
+        ordered_params=[],
+        path_params=[],
+        query_params=[],
+        relative_path='v1/message:stream',
+        request_field='<request>',
+        request_type_name='SendMessageRequest',
+        response_type_name='StreamResponse',
+        supports_download=False,
+    )
+
   class OrganizationsBillingAccountsService(base_api.BaseApiService):
     """Service class for the organizations_billingAccounts resource."""
 
@@ -606,5 +672,250 @@ class CloudbillingV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='CloudbillingServicesListRequest',
         response_type_name='ListServicesResponse',
+        supports_download=False,
+    )
+
+  class TasksPushNotificationConfigsService(base_api.BaseApiService):
+    """Service class for the tasks_pushNotificationConfigs resource."""
+
+    _NAME = 'tasks_pushNotificationConfigs'
+
+    def __init__(self, client):
+      super(CloudbillingV1.TasksPushNotificationConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Set a push notification config for a task.
+
+      Args:
+        request: (CloudbillingTasksPushNotificationConfigsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TaskPushNotificationConfig) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/tasks/{tasksId}/pushNotificationConfigs',
+        http_method='POST',
+        method_id='cloudbilling.tasks.pushNotificationConfigs.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['configId', 'tenant'],
+        relative_path='v1/{+parent}',
+        request_field='taskPushNotificationConfig',
+        request_type_name='CloudbillingTasksPushNotificationConfigsCreateRequest',
+        response_type_name='TaskPushNotificationConfig',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Delete a push notification config for a task.
+
+      Args:
+        request: (CloudbillingTasksPushNotificationConfigsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/tasks/{tasksId}/pushNotificationConfigs/{pushNotificationConfigsId}',
+        http_method='DELETE',
+        method_id='cloudbilling.tasks.pushNotificationConfigs.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['tenant'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudbillingTasksPushNotificationConfigsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Get a push notification config for a task.
+
+      Args:
+        request: (CloudbillingTasksPushNotificationConfigsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TaskPushNotificationConfig) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/tasks/{tasksId}/pushNotificationConfigs/{pushNotificationConfigsId}',
+        http_method='GET',
+        method_id='cloudbilling.tasks.pushNotificationConfigs.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['tenant'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudbillingTasksPushNotificationConfigsGetRequest',
+        response_type_name='TaskPushNotificationConfig',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Get a list of push notifications configured for a task.
+
+      Args:
+        request: (CloudbillingTasksPushNotificationConfigsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListTaskPushNotificationConfigResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/tasks/{tasksId}/pushNotificationConfigs',
+        http_method='GET',
+        method_id='cloudbilling.tasks.pushNotificationConfigs.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken', 'tenant'],
+        relative_path='v1/{+parent}/pushNotificationConfigs',
+        request_field='',
+        request_type_name='CloudbillingTasksPushNotificationConfigsListRequest',
+        response_type_name='ListTaskPushNotificationConfigResponse',
+        supports_download=False,
+    )
+
+  class TasksService(base_api.BaseApiService):
+    """Service class for the tasks resource."""
+
+    _NAME = 'tasks'
+
+    def __init__(self, client):
+      super(CloudbillingV1.TasksService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Cancel a task from the agent. If supported one should expect no more task updates for the task.
+
+      Args:
+        request: (CloudbillingTasksCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Task) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/tasks/{tasksId}:cancel',
+        http_method='POST',
+        method_id='cloudbilling.tasks.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:cancel',
+        request_field='cancelTaskRequest',
+        request_type_name='CloudbillingTasksCancelRequest',
+        response_type_name='Task',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Get the current state of a task from the agent.
+
+      Args:
+        request: (CloudbillingTasksGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Task) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/tasks/{tasksId}',
+        http_method='GET',
+        method_id='cloudbilling.tasks.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['historyLength', 'tenant'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudbillingTasksGetRequest',
+        response_type_name='Task',
+        supports_download=False,
+    )
+
+    def Subscribe(self, request, global_params=None):
+      r"""TaskSubscription is a streaming call that will return a stream of task update events. This attaches the stream to an existing in process task. If the task is complete the stream will return the completed task (like GetTask) and close the stream.
+
+      Args:
+        request: (CloudbillingTasksSubscribeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (StreamResponse) The response message.
+      """
+      config = self.GetMethodConfig('Subscribe')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Subscribe.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/tasks/{tasksId}:subscribe',
+        http_method='GET',
+        method_id='cloudbilling.tasks.subscribe',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['tenant'],
+        relative_path='v1/{+name}:subscribe',
+        request_field='',
+        request_type_name='CloudbillingTasksSubscribeRequest',
+        response_type_name='StreamResponse',
+        supports_download=False,
+    )
+
+  class V1Service(base_api.BaseApiService):
+    """Service class for the v1 resource."""
+
+    _NAME = 'v1'
+
+    def __init__(self, client):
+      super(CloudbillingV1.V1Service, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def GetCard(self, request, global_params=None):
+      r"""GetAgentCard returns the agent card for the agent.
+
+      Args:
+        request: (CloudbillingGetCardRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AgentCard) The response message.
+      """
+      config = self.GetMethodConfig('GetCard')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetCard.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='cloudbilling.getCard',
+        ordered_params=[],
+        path_params=[],
+        query_params=['tenant'],
+        relative_path='v1/card',
+        request_field='',
+        request_type_name='CloudbillingGetCardRequest',
+        response_type_name='AgentCard',
         supports_download=False,
     )

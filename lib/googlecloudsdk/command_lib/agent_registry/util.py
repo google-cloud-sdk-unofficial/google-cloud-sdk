@@ -15,7 +15,10 @@
 """Common utilities for Agent Registry commands."""
 
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files
+from googlecloudsdk.generated_clients.apis.agentregistry.v1alpha import agentregistry_v1alpha_messages as ar_messages
 
 
 def SetDisplayNameAndDefaultsInCreate(resource_ref, args, request_msg):
@@ -114,3 +117,49 @@ def SkillDisplayNameHook(resource_ref, args):
       else 'private'
   )
   return f'{prefix}-{name}'
+
+
+_SkillsPatchRequest = (
+    ar_messages.AgentregistryProjectsLocationsSkillsPatchRequest
+)
+
+
+def SetUpdateMaskInUpdate(
+    resource_ref: resources.Resource | None,
+    args: parser_extensions.Namespace,
+    request_msg: _SkillsPatchRequest,
+) -> _SkillsPatchRequest:
+  """Normalizes updateMask for skills update, replacing sub-field paths.
+
+  Replaces sub-field paths like scanningConfig.policy with scanning_config or
+  scanningConfig so backend update validation succeeds.
+
+  Args:
+    resource_ref: The resource reference.
+    args: The command line arguments.
+    request_msg: The request message to modify.
+
+  Returns:
+    The modified request message.
+  """
+  del resource_ref, args
+  if request_msg.updateMask:
+    paths = [p.strip() for p in request_msg.updateMask.split(',')]
+    normalized_paths = []
+    for p in paths:
+      if p in (
+          'scanningConfig.policy',
+          'scanningConfig',
+          'scanning_config.policy',
+          'scanning_config',
+      ):
+        if (
+            'scanningConfig' not in normalized_paths
+            and 'scanning_config' not in normalized_paths
+        ):
+          normalized_paths.append('scanningConfig')
+      else:
+        normalized_paths.append(p)
+    request_msg.updateMask = ','.join(normalized_paths)
+  return request_msg
+

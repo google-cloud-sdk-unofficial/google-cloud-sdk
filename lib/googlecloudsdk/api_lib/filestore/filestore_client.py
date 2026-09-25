@@ -375,9 +375,10 @@ class FilestoreClient(object):
       # 'instance.PscConfig' is a member of 'instance' structure only in
       # Beta, V1 APIs.
       psc_endpoint_project = network.get('psc-endpoint-project')
-      if psc_endpoint_project:
-        self._adapter.ParsePscEndpointProject(
-            psc_endpoint_project, network_config
+      psc_requested_ip = network.get('psc-requested-ip-address')
+      if psc_endpoint_project or psc_requested_ip:
+        self._adapter.ParsePscConfig(
+            psc_endpoint_project, psc_requested_ip, network_config
         )
       instance.networks.append(network_config)
 
@@ -943,11 +944,19 @@ class BetaFilestoreAdapter(AlphaFilestoreAdapter):
         )
     )
 
-  def ParsePscEndpointProject(self, psc_endpoint_project, network_config):
+  def ParsePscConfig(
+      self, psc_endpoint_project, psc_requested_ip, network_config
+  ):
     """Parse and match the supplied PSC config."""
-    network_config.pscConfig = self.messages.PscConfig(
-        endpointProject=psc_endpoint_project
-    )
+    psc_config = self.messages.PscConfig()
+
+    if psc_endpoint_project:
+      psc_config.endpointProject = psc_endpoint_project
+
+    if psc_requested_ip:
+      psc_config.requestedIpAddress = psc_requested_ip
+
+    network_config.pscConfig = psc_config
 
   def ParseSourceInstanceIntoInstance(self, instance, source_instance):
     """Parses source_instance into a replication config and into an instance message.

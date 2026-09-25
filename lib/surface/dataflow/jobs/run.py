@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.command_lib.dataflow import flags
 from googlecloudsdk.command_lib.dataflow import job_utils
@@ -85,6 +86,18 @@ def _CommonArgs(parser):
       ),
   )
 
+  parser.add_argument(
+      '--additional-pipeline-options',
+      metavar='ADDITIONAL_PIPELINE_OPTIONS',
+      type=arg_parsers.ArgList(),
+      action=arg_parsers.UpdateAction,
+      help=(
+          'Additional pipeline options to pass to the job for launching a '
+          'Dataflow template. Example: '
+          '--additional-pipeline-options=option1=value1,option2=value2'
+      ),
+  )
+
   # TODO(b/139889563): Mark as required when default region is removed
   parser.add_argument(
       '--region',
@@ -119,6 +132,11 @@ def _CommonRun(args):
   Returns:
     A Job message.
   """
+  if args.update and args.additional_pipeline_options:
+    raise exceptions.ConflictingArgumentsException(
+        '--update', '--additional-pipeline-options'
+    )
+
   arguments = apis.TemplateArguments(
       project_id=properties.VALUES.core.project.Get(required=True),
       region_id=dataflow_util.GetRegion(args),
@@ -142,6 +160,7 @@ def _CommonRun(args):
       transform_name_mappings=args.transform_name_mappings,
       additional_experiments=args.additional_experiments,
       additional_user_labels=args.additional_user_labels,
+      additional_pipeline_options=args.additional_pipeline_options,
       turnkey_alerts_enabled=args.enable_turnkey_alerts,
   )
   if args.update:

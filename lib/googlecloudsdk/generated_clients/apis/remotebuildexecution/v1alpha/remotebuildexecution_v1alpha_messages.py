@@ -2210,6 +2210,28 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaGetWorkerPoolRequest(_messag
   name = _messages.StringField(1)
 
 
+class GoogleDevtoolsRemotebuildexecutionAdminV1alphaGroupProperties(_messages.Message):
+  r"""A collection of groups
+
+  Fields:
+    groupProperties: Required. Properties for a list of groups.
+  """
+
+  groupProperties = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaGroupProperty', 1, repeated=True)
+
+
+class GoogleDevtoolsRemotebuildexecutionAdminV1alphaGroupProperty(_messages.Message):
+  r"""Properties (e.g., weight) assigned to a group_id.
+
+  Fields:
+    groupId: Required. The group_id sent in CreateReservation requests.
+    weight: Required. The weight assigned to this group_id.
+  """
+
+  groupId = _messages.StringField(1)
+  weight = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
 class GoogleDevtoolsRemotebuildexecutionAdminV1alphaIAMBinding(_messages.Message):
   r"""Represents an IAM binding.
 
@@ -2260,6 +2282,8 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance(_messages.Message):
       used or how they can be used.
     githubEnterpriseAccess: Optional. GitHub Enterprise access configuration
       for the instance.
+    groupProperties: Optional. Properties (e.g., weight) assigned to instance
+      groups.
     location: The location is a GCP region. Currently only `us-central1` is
       supported.
     loggingEnabled: Output only. Whether stack driver logging is enabled for
@@ -2321,13 +2345,14 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance(_messages.Message):
   casRelations = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaRelationship', 7, repeated=True)
   featurePolicy = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaFeaturePolicy', 8)
   githubEnterpriseAccess = _messages.EnumField('GithubEnterpriseAccessValueValuesEnum', 9)
-  location = _messages.StringField(10)
-  loggingEnabled = _messages.BooleanField(11)
-  name = _messages.StringField(12)
-  schedulerNotificationConfig = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaSchedulerNotificationConfig', 13)
-  state = _messages.EnumField('StateValueValuesEnum', 14)
-  storageSettings = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaStorageSettings', 15)
-  zoneDrains = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaZoneDrain', 16, repeated=True)
+  groupProperties = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaGroupProperties', 10)
+  location = _messages.StringField(11)
+  loggingEnabled = _messages.BooleanField(12)
+  name = _messages.StringField(13)
+  schedulerNotificationConfig = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaSchedulerNotificationConfig', 14)
+  state = _messages.EnumField('StateValueValuesEnum', 15)
+  storageSettings = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaStorageSettings', 16)
+  zoneDrains = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaZoneDrain', 17, repeated=True)
 
 
 class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstancePermissions(_messages.Message):

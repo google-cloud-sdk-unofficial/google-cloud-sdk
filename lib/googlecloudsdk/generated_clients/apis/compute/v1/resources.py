@@ -129,6 +129,13 @@ class Collections(enum.Enum):
       ['project', 'forwardingRule'],
       True
   )
+  GLOBALFRONTENDSETTINGS = (
+      'globalFrontendSettings',
+      'projects/{project}/global/globalFrontendSettings',
+      {},
+      ['project'],
+      True
+  )
   GLOBALNETWORKENDPOINTGROUPS = (
       'globalNetworkEndpointGroups',
       'projects/{project}/global/networkEndpointGroups/{networkEndpointGroup}',
@@ -199,6 +206,13 @@ class Collections(enum.Enum):
       'projects/{project}/zones/{zone}/imageFamilyViews/{family}',
       {},
       ['project', 'zone', 'family'],
+      True
+  )
+  IMAGEVIEWS = (
+      'imageViews',
+      'projects/{project}/regions/{region}/imageViews/{resourceId}',
+      {},
+      ['project', 'region', 'resourceId'],
       True
   )
   IMAGES = (
@@ -338,6 +352,13 @@ class Collections(enum.Enum):
       'projects/{project}/zones/{zone}/machineTypes/{machineType}',
       {},
       ['project', 'zone', 'machineType'],
+      True
+  )
+  MANAGEDRULESETS = (
+      'managedRulesets',
+      'projects/{project}/global/managedRulesets/{managedRuleset}',
+      {},
+      ['project', 'managedRuleset'],
       True
   )
   NETWORKATTACHMENTS = (

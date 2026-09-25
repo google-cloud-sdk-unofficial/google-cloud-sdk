@@ -30,9 +30,10 @@
     - help_text: |-
         The name of the operation resource.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.number_registry.default_resources:projects_locations_operations
+      resource_spec: !REF googlecloudsdk.command_lib.number_registry.default_resources:organizations_or_projects_locations_operations
       required: true
   request:
     api_version: v1alpha
     collection:
+    - cloudnumberregistry.organizations.locations.operations
     - cloudnumberregistry.projects.locations.operations

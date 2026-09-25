@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA]
+  hidden: true
+
+  help_text:
+    brief: List Secure Source Manager comments under a pull request.
+    description: List Secure Source Manager comments under a pull request.
+    examples: |
+      To list comments in pull request `1` of repository `my-repo` and location `us-central1`, run the following command:
+
+      $ {command} --pull-request=1 --repository=my-repo --region=us-central1
+
+  request:
+    api_version: v1
+    collection: securesourcemanager.projects.locations.repositories.pullRequests.pullRequestComments
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The pull request you want to list the comments for.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:pull_request
+      arg_name: pull-request
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=COMMENT_ID:sort=1,
+        name.segment(3):label=LOCATION,
+        comment.body:label=BODY,
+        createTime.date()
+      )

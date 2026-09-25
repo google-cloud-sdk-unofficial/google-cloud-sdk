@@ -33,6 +33,7 @@ class Create(base.CreateCommand):
 
   support_falcon_policy_type = False
   support_security_profile_fallback_action = False
+  support_policy_source = False
   NETWORK_FIREWALL_POLICY_ARG = None
 
   @classmethod
@@ -44,6 +45,8 @@ class Create(base.CreateCommand):
     flags.AddArgNetworkFirewallPolicyCreation(parser)
     if cls.support_security_profile_fallback_action:
       flags.AddSecurityProfileFallbackAction(parser)
+    if cls.support_policy_source:
+      flags.AddPolicySource(parser)
     additional_policy_types = []
     if cls.support_falcon_policy_type:
       additional_policy_types.append('RDMA_FALCON_POLICY')
@@ -84,6 +87,12 @@ class Create(base.CreateCommand):
               args.policy_type
           )
       )
+    if self.support_policy_source and args.IsSpecified('policy_source'):
+      firewall_policy.policySource = (
+          holder.client.messages.FirewallPolicy.PolicySourceValueValuesEnum(
+              args.policy_source
+          )
+      )
 
     return network_firewall_policy.Create(
         firewall_policy=firewall_policy, only_generate_request=False
@@ -111,6 +120,7 @@ class CreateAlpha(Create):
 
   support_falcon_policy_type = True
   support_security_profile_fallback_action = True
+  support_policy_source = True
 
 
 Create.detailed_help = {

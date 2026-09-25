@@ -153,6 +153,14 @@ class Test(base.Command):
         action='store_true',
         help='Run a basic multiprocessing.Pool.map using spawn start method.',
     )
+    scenarios.add_argument(
+        '--prompt-choice',
+        action='store_true',
+        help=(
+            'Present a PromptChoice menu with fixed options and print the'
+            ' selected choice to stdout.'
+        ),
+    )
 
   def _RunArgDict(self, args):
     return args.arg_dict
@@ -269,6 +277,11 @@ class Test(base.Command):
       results = pool.map(abs, [-1, -2, -3, -4])
     print(results)
 
+  def _RunPromptChoice(self, args):
+    options = ['alpha', 'bravo', 'charlie']
+    idx = console_io.PromptChoice(options, message='Pick an option:')
+    print(options[idx])
+
   def _RunUncaughtException(self, args):
     raise ValueError('Catch me if you can.')
 
@@ -346,5 +359,8 @@ class Test(base.Command):
       r = None
     elif args.multiprocessing_spawn:
       self._RunMultiprocessingSpawn(args)
+      r = None
+    elif args.prompt_choice:
+      self._RunPromptChoice(args)
       r = None
     return r

@@ -77,21 +77,11 @@ class UseronboardingV1alpha(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates an onboarding session with required input.
-
-      The most recent snapshot of the session is returned. All fields of the
-      Session resource are optional. Making several calls with identical values
-      is allowed, in which case the first one is effective and subsequent ones
-      are no-ops. Changing values between calls is not recommended. The service
-      may be able to accept the update if it can be correctly processed within
-      the ongoing session. Otherwise, the update will be rejected with an error.
-      Returns NOT_FOUND error code if the specified session does not exist for
-      the authenticated user.
+      r"""Updates an onboarding session with required input. The most recent snapshot of the session is returned. All fields of the Session resource are optional. Making several calls with identical values is allowed, in which case the first one is effective and subsequent ones are no-ops. Changing values between calls is not recommended. The service may be able to accept the update if it can be correctly processed within the ongoing session. Otherwise, the update will be rejected with an error. Returns NOT_FOUND error code if the specified session does not exist for the authenticated user.
 
       Args:
         request: (UseronboardingSessionsPatchRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
-
       Returns:
         (Session) The response message.
       """

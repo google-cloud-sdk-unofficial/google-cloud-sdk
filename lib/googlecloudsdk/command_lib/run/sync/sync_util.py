@@ -19,8 +19,8 @@ import contextlib
 import os
 
 from googlecloudsdk.api_lib.run import ssh as run_ssh
+from googlecloudsdk.command_lib.run import log_tailer
 from googlecloudsdk.command_lib.run import stages
-from googlecloudsdk.command_lib.run.sync import log_tailer
 from googlecloudsdk.command_lib.run.sync import polling_watcher
 from googlecloudsdk.command_lib.run.sync import ssh_util
 from googlecloudsdk.command_lib.run.sync import sync_rule_util

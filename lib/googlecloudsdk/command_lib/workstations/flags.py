@@ -612,7 +612,7 @@ def AddPdDiskType(parser):
   )
 
 
-def AddNoPersistentStorageOrPdOrDisk(parser):
+def AddNoPersistentStorageOrPdOrDisk(parser, release_track=None):
   """Adds a --no-persistent-storage or group of persistent directory flags to the given parser."""
   top_level_mutex_group = parser.add_mutually_exclusive_group()
 
@@ -628,6 +628,9 @@ def AddNoPersistentStorageOrPdOrDisk(parser):
   AddDiskTypeFlag(disk_group)
   AddDiskReclaimPolicyFlag(disk_group)
   AddDiskArchiveTimeoutFlag(disk_group)
+  if release_track != base.ReleaseTrack.GA:
+    AddDiskProvisionedIopsFlag(disk_group)
+    AddDiskProvisionedThroughputFlag(disk_group)
   disk_size_snapshot_group = disk_group.add_mutually_exclusive_group()
   AddDiskSizeFlag(disk_size_snapshot_group)
   AddDiskSnapshotFlag(disk_size_snapshot_group)
@@ -696,9 +699,14 @@ def AddPdSourceSnapshotArg():
   )
 
 
-def AddPersistentDirectoriesOrHyperdisks(parser, use_default=True):
+def AddPersistentDirectoriesOrHyperdisks(
+    parser, use_default=True, release_track=None
+):
   """Adds a --pd-disk-size, --pd-disk-type, and --pd-source-snapshot flag to the given parser."""
   AddDiskArchiveTimeoutFlag(parser)
+  if release_track != base.ReleaseTrack.GA:
+    AddDiskProvisionedIopsFlag(parser)
+    AddDiskProvisionedThroughputFlag(parser)
   group = parser.add_mutually_exclusive_group()
   # OPTION 1: "--pd-source-snapshot"
   AddPdSourceSnapshotArg().AddToParser(group)
@@ -799,6 +807,32 @@ def AddDiskArchiveTimeoutFlag(parser):
   """
   parser.add_argument(
       '--disk-archive-timeout',
+      type=int,
+      help=help_text,
+  )
+
+
+def AddDiskProvisionedIopsFlag(parser):
+  """Adds a --disk-provisioned-iops flag to the given parser."""
+  help_text = """\
+  Number of I/O operations per second that the disk can handle. Values
+  must be between 3000 and 100,000.
+  """
+  parser.add_argument(
+      '--disk-provisioned-iops',
+      type=int,
+      help=help_text,
+  )
+
+
+def AddDiskProvisionedThroughputFlag(parser):
+  """Adds a --disk-provisioned-throughput flag to the given parser."""
+  help_text = """\
+  Throughput in MB per second that the disk can handle. Values must be
+  between 1 and 2,400.
+  """
+  parser.add_argument(
+      '--disk-provisioned-throughput',
       type=int,
       help=help_text,
   )

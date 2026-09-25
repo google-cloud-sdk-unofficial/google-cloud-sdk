@@ -38,6 +38,7 @@ class CloudLocation(_messages.Message):
       a zone is a region.
     displayName: Optional. The human-readable name of the cloud location.
       Example: us-east-2, us-east1.
+    gcpAttributes: Optional. GCP-specific attributes.
     name: Identifier. Name of the cloud location. Unique name of the cloud
       location including project and location using the form: `projects/{proje
       ct_id}/locations/{location}/cloudLocations/{cloud_location}`
@@ -83,8 +84,9 @@ class CloudLocation(_messages.Message):
   cloudProvider = _messages.EnumField('CloudProviderValueValuesEnum', 3)
   containingCloudLocation = _messages.StringField(4)
   displayName = _messages.StringField(5)
-  name = _messages.StringField(6)
-  territoryCode = _messages.StringField(7)
+  gcpAttributes = _messages.MessageField('GcpAttributes', 6)
+  name = _messages.StringField(7)
+  territoryCode = _messages.StringField(8)
 
 
 class CloudlocationfinderProjectsLocationsCloudLocationsGetRequest(_messages.Message):
@@ -187,6 +189,31 @@ class CloudlocationfinderProjectsLocationsListRequest(_messages.Message):
   name = _messages.StringField(3, required=True)
   pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(5)
+
+
+class GcpAttributes(_messages.Message):
+  r"""GCP-specific attributes.
+
+  Enums:
+    ZoneTypeValueValuesEnum: Optional. The type of the cloud zone.
+
+  Fields:
+    zoneType: Optional. The type of the cloud zone.
+  """
+
+  class ZoneTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The type of the cloud zone.
+
+    Values:
+      GCP_ZONE_TYPE_UNSPECIFIED: Default value. Unspecified zone type.
+      GENERAL_PURPOSE: General purpose zone type.
+      AI_ZONE: AI zone type.
+    """
+    GCP_ZONE_TYPE_UNSPECIFIED = 0
+    GENERAL_PURPOSE = 1
+    AI_ZONE = 2
+
+  zoneType = _messages.EnumField('ZoneTypeValueValuesEnum', 1)
 
 
 class ListCloudLocationsResponse(_messages.Message):

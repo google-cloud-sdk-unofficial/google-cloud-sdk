@@ -1,4 +1,6 @@
 - release_tracks: [BETA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: Display information about a Filestore snapshot.
     description: |

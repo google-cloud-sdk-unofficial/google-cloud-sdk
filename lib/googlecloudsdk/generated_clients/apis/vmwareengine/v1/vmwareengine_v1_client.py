@@ -38,6 +38,7 @@ class VmwareengineV1(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.projects_locations_announcements = self.ProjectsLocationsAnnouncementsService(self)
+    self.projects_locations_capacityAllocations = self.ProjectsLocationsCapacityAllocationsService(self)
     self.projects_locations_datastores = self.ProjectsLocationsDatastoresService(self)
     self.projects_locations_dnsBindPermission = self.ProjectsLocationsDnsBindPermissionService(self)
     self.projects_locations_networkPeerings_peeringRoutes = self.ProjectsLocationsNetworkPeeringsPeeringRoutesService(self)
@@ -124,6 +125,43 @@ class VmwareengineV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='VmwareengineProjectsLocationsAnnouncementsListRequest',
         response_type_name='ListAnnouncementsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsCapacityAllocationsService(base_api.BaseApiService):
+    """Service class for the projects_locations_capacityAllocations resource."""
+
+    _NAME = 'projects_locations_capacityAllocations'
+
+    def __init__(self, client):
+      super(VmwareengineV1.ProjectsLocationsCapacityAllocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists `CapacityAllocations` resources in a given project and location.
+
+      Args:
+        request: (VmwareengineProjectsLocationsCapacityAllocationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListCapacityAllocationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/capacityAllocations',
+        http_method='GET',
+        method_id='vmwareengine.projects.locations.capacityAllocations.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/capacityAllocations',
+        request_field='',
+        request_type_name='VmwareengineProjectsLocationsCapacityAllocationsListRequest',
+        response_type_name='ListCapacityAllocationsResponse',
         supports_download=False,
     )
 

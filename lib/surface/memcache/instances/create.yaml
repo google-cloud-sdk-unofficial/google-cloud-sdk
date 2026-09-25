@@ -36,8 +36,6 @@
           - api_field: key
           - api_field: value
     - arg_name: tags
-      # TODO(b/347173013): Remove hidden as part of GA launch.
-      hidden: true
       metavar: KEY=VALUE
       api_field: instance.tags.additionalProperties
       help_text: |

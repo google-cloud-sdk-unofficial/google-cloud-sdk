@@ -226,6 +226,8 @@ def _UpdateWorkerPoolFirstGen(args, release_track):
       worker_config.diskSizeGb = compute_utils.BytesToGb(
           args.worker_disk_size
       )
+    if args.worker_release is not None:
+      worker_config.workerRelease = args.worker_release
     wp.privatePoolV1Config.workerConfig = worker_config
 
     nc = messages.NetworkConfig()

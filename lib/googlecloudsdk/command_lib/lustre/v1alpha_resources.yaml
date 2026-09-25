@@ -89,3 +89,16 @@ projects_locations_instances_directory_policies:
     attribute_name: directory_policy
     help: The directoryPolicy id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_instances_mirrors:
+  name: mirror
+  plural_name: mirrors
+  collection: lustre.projects.locations.instances.mirrors
+  attributes:
+  - *project
+  - *location
+  - *instance
+  - &mirror
+    parameter_name: mirrorsId
+    attribute_name: mirror
+    help: The mirror id of the {resource} resource.
+  disable_auto_completers: false

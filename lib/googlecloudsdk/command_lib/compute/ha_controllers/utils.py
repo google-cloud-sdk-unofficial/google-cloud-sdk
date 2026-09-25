@@ -726,7 +726,7 @@ def _PerformCreateRegionalDisksOrRollbackStep(
   if errors:
     log.error(api_utils.GetFailedToCreateRegionalDisksErrorMessage(errors))
     log.status.Print("Performing rollback...")
-    _RemoveExistingRegionalDisksFromRollback(errors, zonal_disks)
+    _RemoveExistingRegionalDisksFromRollback(holder, errors, zonal_disks)
     RollbackRegionalDisksCreation(holder, project, region, zonal_disks)
     utils.RaiseToolException(
         problems=errors,
@@ -734,13 +734,13 @@ def _PerformCreateRegionalDisksOrRollbackStep(
     )
 
 
-def _RemoveExistingRegionalDisksFromRollback(errors, zonal_disks):
+def _RemoveExistingRegionalDisksFromRollback(holder, errors, zonal_disks):
   """Because _PerformCreateRegionalDisksOrRollbackStep might fail due to existing regional disks with the same name, this function removes those disks from the rollback list."""
   for error in errors:
     if isinstance(error, tuple) and len(error) > 1:
       if error[0] == 409 and error[1].endswith("already exists"):
         for disk in zonal_disks:
-          if disk.deviceName in error[1]:
+          if api_utils.CreateRegionalDiskName(holder, disk) in error[1]:
             zonal_disks.remove(disk)
             break
 

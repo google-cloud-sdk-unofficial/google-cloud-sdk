@@ -56,8 +56,6 @@ class Compute(base.Group):
     parser.display_info.AddTransforms(transforms.GetTransforms())
 
   def Filter(self, context, args):
-    # TODO(b/190528962):  Determine if command group works with project number
-    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()
 

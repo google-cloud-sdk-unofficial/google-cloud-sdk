@@ -72,9 +72,11 @@ class List(base.ListCommand):
       return itertools.chain.from_iterable(regional_generators)
 
     # Aggregated network policies for all regions defined in project
-    request = messages.ComputeRegionNetworkPoliciesAggregatedListRequest(
-        project=project, returnPartialSuccess=True
-    )
+    request_cls = messages.ComputeRegionNetworkPoliciesAggregatedListRequest
+    kwargs = {'project': project}
+    if hasattr(request_cls, 'returnPartialSuccess'):
+      kwargs['returnPartialSuccess'] = True
+    request = request_cls(**kwargs)
 
     network_policies, next_page_token = _GetListPage(client, request)
     while next_page_token:

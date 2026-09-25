@@ -63,6 +63,19 @@
           hidden: true
           help_text: |-
             Whether the IAM-based access control is enabled or not.
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  target version.
+        params:
+        - arg_name: target-version
+          api_field: instance.targetVersion
+          required: false
+          repeated: false
+          help_text: |-
+            The target version of the instance. Setting this field triggers a
+            self-service update to the specified version.
+            Format: `Lustre_YYYYMMDD.NN_pXX` or `latest`
     - help_text: |-
         Identifier.
         The name of the instance.

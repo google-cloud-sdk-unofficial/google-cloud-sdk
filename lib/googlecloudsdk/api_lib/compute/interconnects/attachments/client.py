@@ -229,8 +229,6 @@ class InterconnectAttachment(object):
       candidate_ipv6_subnets=None,
       cloud_router_ipv6_interface_id=None,
       customer_router_ipv6_interface_id=None,
-      labels=None,
-      label_fingerprint=None,
       candidate_cloud_router_ipv6_address=None,
       candidate_customer_router_ipv6_address=None,
       geneve_vni=None,
@@ -260,10 +258,6 @@ class InterconnectAttachment(object):
               stack_type
           )
       )
-    if labels is not None:
-      interconnect_attachment.labels = labels
-    if label_fingerprint is not None:
-      interconnect_attachment.labelFingerprint = label_fingerprint
     if candidate_ipv6_subnets is not None:
       interconnect_attachment.candidateIpv6Subnets = candidate_ipv6_subnets
     if cloud_router_ipv6_interface_id is not None:
@@ -306,6 +300,21 @@ class InterconnectAttachment(object):
                 region=self.ref.region,
                 interconnectAttachment=self.ref.Name(),
                 interconnectAttachmentResource=interconnect_attachment))
+
+  def _MakeSetLabelsRequestTuple(self, label_fingerprint, labels):
+    return (
+        self._client.interconnectAttachments,
+        'SetLabels',
+        self._messages.ComputeInterconnectAttachmentsSetLabelsRequest(
+            project=self.ref.project,
+            region=self.ref.region,
+            resource=self.ref.Name(),
+            regionSetLabelsRequest=self._messages.RegionSetLabelsRequest(
+                labelFingerprint=label_fingerprint,
+                labels=labels,
+            ),
+        ),
+    )
 
   def _MakeDescribeRequestTuple(self):
     return (self._client.interconnectAttachments, 'Get',
@@ -615,26 +624,50 @@ class InterconnectAttachment(object):
           portalUrl=partner_portal_url)
     else:
       partner_metadata = None
-    requests = [
-        self._MakePatchRequestTuple(
-            description,
-            admin_enabled,
-            bandwidth,
-            partner_metadata,
-            mtu,
-            stack_type,
-            candidate_ipv6_subnets,
-            cloud_router_ipv6_interface_id,
-            customer_router_ipv6_interface_id,
-            labels,
-            label_fingerprint,
-            candidate_cloud_router_ipv6_address,
-            candidate_customer_router_ipv6_address,
-            geneve_vni,
-            default_appliance_ip_address,
-            interconnect=interconnect,
-        )
-    ]
+
+    requests = []
+    has_patch_args = any([
+        description is not None,
+        interconnect is not None,
+        admin_enabled is not None,
+        bandwidth is not None,
+        partner_metadata is not None,
+        mtu is not None,
+        stack_type is not None,
+        candidate_ipv6_subnets is not None,
+        cloud_router_ipv6_interface_id is not None,
+        customer_router_ipv6_interface_id is not None,
+        candidate_cloud_router_ipv6_address is not None,
+        candidate_customer_router_ipv6_address is not None,
+        geneve_vni is not None,
+        default_appliance_ip_address is not None,
+    ])
+    if has_patch_args or labels is None:
+      requests.append(
+          self._MakePatchRequestTuple(
+              description,
+              admin_enabled,
+              bandwidth,
+              partner_metadata,
+              mtu,
+              stack_type,
+              candidate_ipv6_subnets,
+              cloud_router_ipv6_interface_id,
+              customer_router_ipv6_interface_id,
+              candidate_cloud_router_ipv6_address,
+              candidate_customer_router_ipv6_address,
+              geneve_vni,
+              default_appliance_ip_address,
+              interconnect=interconnect,
+          )
+      )
+    if labels is not None:
+      requests.append(
+          self._MakeSetLabelsRequestTuple(
+              label_fingerprint=label_fingerprint,
+              labels=labels,
+          )
+      )
     if not only_generate_request:
       resources = self._compute_client.MakeRequests(requests)
       return resources[0]

@@ -30,11 +30,12 @@
     - help_text: |-
         The name of the operation's parent resource.
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.number_registry.default_resources:projects_locations
+      resource_spec: !REF googlecloudsdk.command_lib.number_registry.default_resources:organizations_or_projects_locations
       required: true
   request:
     api_version: v1alpha
     collection:
+    - cloudnumberregistry.organizations.locations.operations
     - cloudnumberregistry.projects.locations.operations
   response:
     id_field: name

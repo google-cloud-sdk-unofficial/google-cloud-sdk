@@ -24,22 +24,20 @@ environment-specific system project (e.g., dataplex-staging-types), which is
 separate from the project hosting the dbt aspect / entry types (e.g.,
 dataplex-staging-3p-types).
 
-An edge is typed by what it asserts, never by where it came from:
-
-* ``depends-on`` -- a flow of data. Both ends hold data (model, seed, snapshot,
-  source), or the dependent is an exposure consuming it.
-* ``reference`` -- an association drawn from metadata: a test to the model it
-  validates, a semantic model to the model it describes, a metric to the
-  semantic model it is computed over, and a dbt node to the physical @bigquery
-  table it materializes to.
+The transform emits two entry link types:
+* ``reference`` -- an association where one resource depends on, represents, or
+  describes another (dbt parent_map dependencies, tests to models, metrics to
+  semantic models, a node to the macros it calls, and dbt nodes to physical
+  @bigquery tables they materialize to).
 * ``schema-join`` -- joinable columns, from a dbt ``relationships`` test.
 
 Physical @bigquery references are emitted only when
 ``build_entry_links(linkable_datasets=...)`` names the datasets to link. Entry
 links are same-region, so the @bigquery entries are named in the import location
 (``ctx.eg_location``); a link only resolves for a dataset that actually lives
-there, so the caller passes the set of co-located datasets. Every other edge is
-derived purely from the manifest's ``parent_map``.
+there, so the caller passes the set of co-located datasets. Macro references
+come from ``depends_on.macros``, which ``parent_map`` does not cover. Every
+other edge is derived purely from the manifest's ``parent_map``.
 """
 
 from __future__ import annotations
@@ -55,12 +53,7 @@ from googlecloudsdk.command_lib.dataplex.dbt import naming
 # ``parent_map``) holds resources the transform emits as entries; ``parent_map``
 # is the generic dependency graph.
 _NODES = 'nodes'
-_GROUPS = 'groups'
-_METRICS = 'metrics'
-_EXPOSURES = 'exposures'
 _PARENT_MAP = 'parent_map'
-_SAVED_QUERIES = 'saved_queries'
-_SEMANTIC_MODELS = 'semantic_models'
 _SOURCES = 'sources'
 
 
@@ -169,7 +162,7 @@ def _entry_link(
 
   Args:
     ctx: the naming.Context holding the naming coordinates for this run.
-    link_type_id: the entryLinkType id (e.g. 'depends-on').
+    link_type_id: the entryLinkType id (e.g. 'reference').
     source_fully_qualified_name: resource name of the SOURCE entry.
     target_fully_qualified_name: resource name of the TARGET entry.
     source_path: optional column path on the source entry.
@@ -256,94 +249,15 @@ def _sql_name(node: dict[str, Any]) -> str:
   return f'`{table}`' if table else ''
 
 
-# Manifest sections whose resources can appear in ``parent_map``.
-_DEPENDENCY_GRAPH_SECTIONS = (
-    _NODES,
-    _SOURCES,
-    _METRICS,
-    _EXPOSURES,
-    _SEMANTIC_MODELS,
-    _SAVED_QUERIES,
-)
-
-# dbt resource types whose entries hold data. An edge into one of these is a
-# flow of data; an edge into anything else (a metric, a semantic model, another
-# test) asserts a relationship read off the metadata instead.
-_DATA_BEARING_RESOURCE_TYPES = frozenset(
-    ['model', 'seed', 'snapshot', 'source']
-)
-
-# dbt resource types that consume data. Data-bearing resources read from their
-# upstreams; an exposure (a dashboard, an ML model) consumes without producing.
-# A test reads rows too, but it asserts a property of a model rather than
-# deriving anything from it, so it is deliberately excluded.
-_DATA_CONSUMING_RESOURCE_TYPES = _DATA_BEARING_RESOURCE_TYPES | frozenset(
-    ['exposure']
-)
-
-
-def _resource_types_by_uid(
-    manifest: abc.Mapping[str, Any],
-) -> dict[str, str]:
-  """Maps each dbt unique_id in the dependency graph to its resource type.
-
-  ``parent_map`` names resources by unique_id alone, and the link type depends
-  on what the two endpoints are. Every manifest section carries an explicit
-  ``resource_type``, so read it rather than splitting the unique_id, whose
-  layout varies by resource (a source is ``source.<pkg>.<source>.<table>``).
-
-  Args:
-    manifest: the parsed dbt manifest.json.
-
-  Returns:
-    A dict of dbt unique_id -> resource type (e.g. 'model', 'exposure').
-  """
-  resource_types: dict[str, str] = {}
-  for section in _DEPENDENCY_GRAPH_SECTIONS:
-    for uid, resource in (manifest.get(section) or {}).items():
-      if isinstance(resource, dict) and resource.get('resource_type'):
-        resource_types[uid] = resource['resource_type']
-  return resource_types
-
-
-def _dependency_link_type(
-    dependent_resource_type: str | None,
-    dependency_resource_type: str | None,
-) -> str:
-  """Returns the entryLinkType id for one ``parent_map`` edge.
-
-  Args:
-    dependent_resource_type: resource type of the dependent (the SOURCE).
-    dependency_resource_type: resource type of the dependency (the TARGET).
-
-  Returns:
-    ``depends-on`` when data moves from the dependency to the dependent,
-    ``reference`` otherwise.
-  """
-  if (
-      dependency_resource_type in _DATA_BEARING_RESOURCE_TYPES
-      and dependent_resource_type in _DATA_CONSUMING_RESOURCE_TYPES
-  ):
-    return naming.DEPENDS_ON_LINK_TYPE
-  return naming.REFERENCE_LINK_TYPE
-
-
 def _emit_dependencies(
     ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
 ) -> list[EntryLinkRecord]:
-  """Emits one entry link per ``parent_map`` edge, typed by its endpoints.
+  """Emits one ``reference`` entry link per ``parent_map`` edge.
 
-  The link is directed source -> target, where "the source entry depends on
-  the target entry" (see the ``depends-on`` entryLinkType definition).
-  ``parent_map`` maps each resource to the resources it depends on (its
-  parents), so the SOURCE is the map key (the dependent) and each TARGET is a
-  value (the dependency).
-
-  ``parent_map`` is the whole dbt dependency graph, and it mixes two kinds of
-  edge: data moving between relations (``model -> source``) and a resource
-  describing or validating another (``test -> model``,
-  ``metric -> semantic_model``). ``_dependency_link_type`` separates them, so
-  each pair is emitted exactly once under the type that fits it.
+  The link is directed source -> target, where the source entry depends on or
+  references the target entry. ``parent_map`` maps each resource to the
+  resources it depends on (its parents), so the SOURCE is the map key (the
+  dependent) and each TARGET is a value (the dependency).
 
   Args:
     ctx: the naming.Context holding the naming coordinates for this run.
@@ -354,7 +268,6 @@ def _emit_dependencies(
     A list of EntryLink records.
   """
   out: list[EntryLinkRecord] = []
-  resource_types = _resource_types_by_uid(manifest)
   parent_map = manifest.get(_PARENT_MAP) or {}
   for dependent_uid, dependency_uids in parent_map.items():
     dependent_id = naming.entry_id(dependent_uid)
@@ -368,12 +281,53 @@ def _emit_dependencies(
       out.append(
           _entry_link(
               ctx,
-              _dependency_link_type(
-                  resource_types.get(dependent_uid),
-                  resource_types.get(dependency_uid),
-              ),
+              naming.REFERENCE_LINK_TYPE,
               dependent_fully_qualified_name,
               ctx.entry_name(dependency_id),
+          )
+      )
+  return out
+
+
+def _emit_macro_references(
+    ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
+) -> list[EntryLinkRecord]:
+  """Emits ``reference`` links from a dbt node to the macros it calls.
+
+  The edge is a ``reference`` because the node calls the macro rather than
+  reading data from it.
+
+  ``parent_map`` holds no macro edges, so this reads ``depends_on.macros``
+  directly. The transform emits entries only for macros the project itself
+  defines (``entry_builders`` skips any macro whose ``package_name`` differs),
+  so the ``known_ids`` filter is what keeps this to first-party macros: it drops
+  the dbt-core and adapter macros every node pulls in, notably the
+  ``macro.dbt.test_*`` implementation behind each generic test.
+
+  Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
+    manifest: the parsed dbt manifest.json.
+    known_ids: the set of Dataplex entry ids the transform emitted.
+
+  Returns:
+    A list of ``reference`` EntryLink records.
+  """
+  out: list[EntryLinkRecord] = []
+  for uid, node in (manifest.get(_NODES) or {}).items():
+    node_id = naming.entry_id(uid)
+    if node_id not in known_ids:
+      continue
+    node_fully_qualified_name = ctx.entry_name(node_id)
+    for macro_uid in (node.get('depends_on') or {}).get('macros') or []:
+      macro_id = naming.entry_id(macro_uid)
+      if macro_id not in known_ids:
+        continue
+      out.append(
+          _entry_link(
+              ctx,
+              naming.REFERENCE_LINK_TYPE,
+              node_fully_qualified_name,
+              ctx.entry_name(macro_id),
           )
       )
   return out
@@ -641,8 +595,7 @@ def _emit_physical_reference(
   """Emits ``reference`` links from dbt nodes to their @bigquery tables.
 
   The dbt node and the BigQuery table describe the same relation from two
-  sides, which the manifest states outright -- no data moves along this edge,
-  so it is a ``reference`` rather than a ``depends-on``.
+  sides, which the manifest states outright, so the edge is a ``reference``.
 
   The target is the Dataplex system @bigquery entry for the BigQuery table dbt
   writes. Entry links are same-region, so the @bigquery entry is named in the
@@ -715,8 +668,8 @@ def build_entry_links(
   """
   links: list[EntryLinkRecord] = []
   links.extend(_emit_dependencies(ctx, manifest, known_ids))
-  # TODO(b/546009331): Implement schema-join emission once the backend-side
-  # issue is resolved.
+  links.extend(_emit_schema_join(ctx, manifest, known_ids))
+  links.extend(_emit_macro_references(ctx, manifest, known_ids))
   if linkable_datasets is not None:
     links.extend(
         _emit_physical_reference(ctx, manifest, known_ids, linkable_datasets)

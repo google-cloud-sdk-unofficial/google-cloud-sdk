@@ -38,6 +38,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.folders_locations_auditReports = self.FoldersLocationsAuditReportsService(self)
+    self.folders_locations_auditSchedules = self.FoldersLocationsAuditSchedulesService(self)
     self.folders_locations_auditScopeReports = self.FoldersLocationsAuditScopeReportsService(self)
     self.folders_locations_operationDetails = self.FoldersLocationsOperationDetailsService(self)
     self.folders_locations_operationIds = self.FoldersLocationsOperationIdsService(self)
@@ -47,6 +48,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
     self.folders_locations = self.FoldersLocationsService(self)
     self.folders = self.FoldersService(self)
     self.organizations_locations_auditReports = self.OrganizationsLocationsAuditReportsService(self)
+    self.organizations_locations_auditSchedules = self.OrganizationsLocationsAuditSchedulesService(self)
     self.organizations_locations_auditScopeReports = self.OrganizationsLocationsAuditScopeReportsService(self)
     self.organizations_locations_operationDetails = self.OrganizationsLocationsOperationDetailsService(self)
     self.organizations_locations_operationIds = self.OrganizationsLocationsOperationIdsService(self)
@@ -57,6 +59,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
     self.organizations_locations = self.OrganizationsLocationsService(self)
     self.organizations = self.OrganizationsService(self)
     self.projects_locations_auditReports = self.ProjectsLocationsAuditReportsService(self)
+    self.projects_locations_auditSchedules = self.ProjectsLocationsAuditSchedulesService(self)
     self.projects_locations_auditScopeReports = self.ProjectsLocationsAuditScopeReportsService(self)
     self.projects_locations_operationDetails = self.ProjectsLocationsOperationDetailsService(self)
     self.projects_locations_operationIds = self.ProjectsLocationsOperationIdsService(self)
@@ -155,6 +158,124 @@ class AuditmanagerV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='AuditmanagerFoldersLocationsAuditReportsListRequest',
         response_type_name='ListAuditReportsResponse',
+        supports_download=False,
+    )
+
+  class FoldersLocationsAuditSchedulesService(base_api.BaseApiService):
+    """Service class for the folders_locations_auditSchedules resource."""
+
+    _NAME = 'folders_locations_auditSchedules'
+
+    def __init__(self, client):
+      super(AuditmanagerV1.FoldersLocationsAuditSchedulesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new audit schedule in a given project and location.
+
+      Args:
+        request: (AuditmanagerFoldersLocationsAuditSchedulesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditSchedule) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/folders/{foldersId}/locations/{locationsId}/auditSchedules',
+        http_method='POST',
+        method_id='auditmanager.folders.locations.auditSchedules.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['auditScheduleId', 'validateOnly'],
+        relative_path='v1/{+parent}/auditSchedules',
+        request_field='auditSchedule',
+        request_type_name='AuditmanagerFoldersLocationsAuditSchedulesCreateRequest',
+        response_type_name='AuditSchedule',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single audit schedule.
+
+      Args:
+        request: (AuditmanagerFoldersLocationsAuditSchedulesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditSchedule) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/folders/{foldersId}/locations/{locationsId}/auditSchedules/{auditSchedulesId}',
+        http_method='GET',
+        method_id='auditmanager.folders.locations.auditSchedules.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AuditmanagerFoldersLocationsAuditSchedulesGetRequest',
+        response_type_name='AuditSchedule',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists audit schedules in a given project and location.
+
+      Args:
+        request: (AuditmanagerFoldersLocationsAuditSchedulesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAuditSchedulesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/folders/{foldersId}/locations/{locationsId}/auditSchedules',
+        http_method='GET',
+        method_id='auditmanager.folders.locations.auditSchedules.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/auditSchedules',
+        request_field='',
+        request_type_name='AuditmanagerFoldersLocationsAuditSchedulesListRequest',
+        response_type_name='ListAuditSchedulesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an existing audit schedule.
+
+      Args:
+        request: (AuditmanagerFoldersLocationsAuditSchedulesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditSchedule) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/folders/{foldersId}/locations/{locationsId}/auditSchedules/{auditSchedulesId}',
+        http_method='PATCH',
+        method_id='auditmanager.folders.locations.auditSchedules.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask', 'validateOnly'],
+        relative_path='v1/{+name}',
+        request_field='auditSchedule',
+        request_type_name='AuditmanagerFoldersLocationsAuditSchedulesPatchRequest',
+        response_type_name='AuditSchedule',
         supports_download=False,
     )
 
@@ -515,6 +636,124 @@ class AuditmanagerV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='AuditmanagerOrganizationsLocationsAuditReportsListRequest',
         response_type_name='ListAuditReportsResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsAuditSchedulesService(base_api.BaseApiService):
+    """Service class for the organizations_locations_auditSchedules resource."""
+
+    _NAME = 'organizations_locations_auditSchedules'
+
+    def __init__(self, client):
+      super(AuditmanagerV1.OrganizationsLocationsAuditSchedulesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new audit schedule in a given project and location.
+
+      Args:
+        request: (AuditmanagerOrganizationsLocationsAuditSchedulesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditSchedule) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/auditSchedules',
+        http_method='POST',
+        method_id='auditmanager.organizations.locations.auditSchedules.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['auditScheduleId', 'validateOnly'],
+        relative_path='v1/{+parent}/auditSchedules',
+        request_field='auditSchedule',
+        request_type_name='AuditmanagerOrganizationsLocationsAuditSchedulesCreateRequest',
+        response_type_name='AuditSchedule',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single audit schedule.
+
+      Args:
+        request: (AuditmanagerOrganizationsLocationsAuditSchedulesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditSchedule) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/auditSchedules/{auditSchedulesId}',
+        http_method='GET',
+        method_id='auditmanager.organizations.locations.auditSchedules.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AuditmanagerOrganizationsLocationsAuditSchedulesGetRequest',
+        response_type_name='AuditSchedule',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists audit schedules in a given project and location.
+
+      Args:
+        request: (AuditmanagerOrganizationsLocationsAuditSchedulesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAuditSchedulesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/auditSchedules',
+        http_method='GET',
+        method_id='auditmanager.organizations.locations.auditSchedules.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/auditSchedules',
+        request_field='',
+        request_type_name='AuditmanagerOrganizationsLocationsAuditSchedulesListRequest',
+        response_type_name='ListAuditSchedulesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an existing audit schedule.
+
+      Args:
+        request: (AuditmanagerOrganizationsLocationsAuditSchedulesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditSchedule) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/auditSchedules/{auditSchedulesId}',
+        http_method='PATCH',
+        method_id='auditmanager.organizations.locations.auditSchedules.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask', 'validateOnly'],
+        relative_path='v1/{+name}',
+        request_field='auditSchedule',
+        request_type_name='AuditmanagerOrganizationsLocationsAuditSchedulesPatchRequest',
+        response_type_name='AuditSchedule',
         supports_download=False,
     )
 
@@ -993,6 +1232,124 @@ class AuditmanagerV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='AuditmanagerProjectsLocationsAuditReportsListRequest',
         response_type_name='ListAuditReportsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsAuditSchedulesService(base_api.BaseApiService):
+    """Service class for the projects_locations_auditSchedules resource."""
+
+    _NAME = 'projects_locations_auditSchedules'
+
+    def __init__(self, client):
+      super(AuditmanagerV1.ProjectsLocationsAuditSchedulesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new audit schedule in a given project and location.
+
+      Args:
+        request: (AuditmanagerProjectsLocationsAuditSchedulesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditSchedule) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/auditSchedules',
+        http_method='POST',
+        method_id='auditmanager.projects.locations.auditSchedules.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['auditScheduleId', 'validateOnly'],
+        relative_path='v1/{+parent}/auditSchedules',
+        request_field='auditSchedule',
+        request_type_name='AuditmanagerProjectsLocationsAuditSchedulesCreateRequest',
+        response_type_name='AuditSchedule',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single audit schedule.
+
+      Args:
+        request: (AuditmanagerProjectsLocationsAuditSchedulesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditSchedule) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/auditSchedules/{auditSchedulesId}',
+        http_method='GET',
+        method_id='auditmanager.projects.locations.auditSchedules.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AuditmanagerProjectsLocationsAuditSchedulesGetRequest',
+        response_type_name='AuditSchedule',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists audit schedules in a given project and location.
+
+      Args:
+        request: (AuditmanagerProjectsLocationsAuditSchedulesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAuditSchedulesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/auditSchedules',
+        http_method='GET',
+        method_id='auditmanager.projects.locations.auditSchedules.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/auditSchedules',
+        request_field='',
+        request_type_name='AuditmanagerProjectsLocationsAuditSchedulesListRequest',
+        response_type_name='ListAuditSchedulesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an existing audit schedule.
+
+      Args:
+        request: (AuditmanagerProjectsLocationsAuditSchedulesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AuditSchedule) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/auditSchedules/{auditSchedulesId}',
+        http_method='PATCH',
+        method_id='auditmanager.projects.locations.auditSchedules.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask', 'validateOnly'],
+        relative_path='v1/{+name}',
+        request_field='auditSchedule',
+        request_type_name='AuditmanagerProjectsLocationsAuditSchedulesPatchRequest',
+        response_type_name='AuditSchedule',
         supports_download=False,
     )
 

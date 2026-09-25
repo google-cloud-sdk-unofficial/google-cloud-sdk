@@ -200,8 +200,9 @@ class VpnGatewayHelper(object):
               region=region,
               filter=filter_expr,
               pageToken=next_page_token,
-              returnPartialSuccess=True,
           )
+          if hasattr(request, 'returnPartialSuccess'):
+            request.returnPartialSuccess = True
           response = self._service.List(request)
           next_page_token = response.nextPageToken
           for vpn_gateway in response.items:
@@ -212,8 +213,12 @@ class VpnGatewayHelper(object):
     next_page_token = None
     while True:
       request = self._messages.ComputeVpnGatewaysAggregatedListRequest(
-          project=project, filter=filter_expr, pageToken=next_page_token,
-          returnPartialSuccess=True)
+          project=project,
+          filter=filter_expr,
+          pageToken=next_page_token,
+      )
+      if hasattr(request, 'returnPartialSuccess'):
+        request.returnPartialSuccess = True
       response = self._service.AggregatedList(request)
       next_page_token = response.nextPageToken
       for scoped_vpn_gateways in response.items.additionalProperties:

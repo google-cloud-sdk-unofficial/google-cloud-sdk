@@ -6008,7 +6008,7 @@ class GoogleCloudDialogflowCxV3Intent(_messages.Message):
 
   Fields:
     description: Human readable description for better understanding an intent
-      like its scope, content, result etc. Maximum character limit: 140
+      like its scope, content, result etc. Maximum character limit: 1000
       characters.
     displayName: Required. The human-readable name of the intent, unique
       within the agent.
@@ -8992,7 +8992,7 @@ class GoogleCloudDialogflowCxV3beta1Intent(_messages.Message):
 
   Fields:
     description: Human readable description for better understanding an intent
-      like its scope, content, result etc. Maximum character limit: 140
+      like its scope, content, result etc. Maximum character limit: 1000
       characters.
     displayName: Required. The human-readable name of the intent, unique
       within the agent.

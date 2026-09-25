@@ -616,7 +616,22 @@ class CreateAlpha(Create):
     ops.placement_policy = args.placement_policy
     ops.location_policy = args.location_policy
     ops.enable_blue_green_upgrade = args.enable_blue_green_upgrade
-    ops.enable_upgrade_in_place = args.enable_upgrade_in_place
+    if (
+        args.enable_host_update_in_place is not None
+        and args.enable_upgrade_in_place is not None
+        and args.enable_host_update_in_place != args.enable_upgrade_in_place
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--enable-host-update-in-place',
+          'Cannot specify both --enable-host-update-in-place and'
+          ' --enable-upgrade-in-place with conflicting values.',
+      )
+    ops.enable_host_update_in_place = (
+        args.enable_host_update_in_place
+        if args.enable_host_update_in_place is not None
+        else args.enable_upgrade_in_place
+    )
+    ops.enable_upgrade_in_place = ops.enable_host_update_in_place
     ops.enable_surge_upgrade = args.enable_surge_upgrade
     ops.node_pool_soak_duration = args.node_pool_soak_duration
     ops.standard_rollout_policy = args.standard_rollout_policy
@@ -721,7 +736,7 @@ class CreateAlpha(Create):
     flags.AddPlacementPolicyFlag(parser)
     flags.AddEnableSurgeUpgradeFlag(parser)
     flags.AddEnableBlueGreenUpgradeFlag(parser)
-    flags.AddEnableUpgradeInPlaceFlag(parser, hidden=True)
+    flags.AddEnableHostUpdateInPlaceFlag(parser, hidden=True)
     flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)
     flags.AddAutoscaledRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)

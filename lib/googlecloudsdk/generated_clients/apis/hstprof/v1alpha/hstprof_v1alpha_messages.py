@@ -63,13 +63,13 @@ class HstCollectionTask(_messages.Message):
       STATE_UNSPECIFIED: <no description>
       QUEUED: <no description>
       RUNNING: <no description>
-      SUCCEEDED: <no description>
+      DONE: <no description>
       FAILED: <no description>
     """
     STATE_UNSPECIFIED = 0
     QUEUED = 1
     RUNNING = 2
-    SUCCEEDED = 3
+    DONE = 3
     FAILED = 4
 
   @encoding.MapUnrecognizedFields('additionalProperties')

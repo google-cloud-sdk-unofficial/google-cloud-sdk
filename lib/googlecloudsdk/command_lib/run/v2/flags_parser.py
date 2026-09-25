@@ -680,11 +680,6 @@ def _GetWorkerPoolScalingChanges(
             f'Cannot specify both {manual_flag} and'
             ' --remove-scaling-pubsub-subscription.'
         )
-      if has_clear_pubsub:
-        raise exceptions.ConfigurationError(
-            f'Cannot specify both {manual_flag} and'
-            ' --clear-scaling-pubsub-subscriptions.'
-        )
 
     if has_cpu_scaling and has_clear_cpu_scaling:
       raise exceptions.ConfigurationError(

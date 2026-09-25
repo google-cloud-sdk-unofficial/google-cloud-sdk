@@ -1394,29 +1394,43 @@ class WorkerPoolCpuScalingChange(config_changes.NonTemplateConfigChanger):
     return resource
 
 
+_ALLOWED_CHARS = frozenset('-_.~+%')
+
+
+def _IsValidSubscriptionName(name: str) -> bool:
+  return (
+      3 <= len(name) <= 255
+      and name[0].isalpha()
+      and all(c.isalnum() or c in _ALLOWED_CHARS for c in name)
+  )
+
+
 def _QualifySubscription(subscription: str, project: str) -> str:
-  """Qualifies a subscription name to a full resource name."""
-  if subscription.startswith('projects/'):
-    parts = subscription.split('/')
-    if (
-        len(parts) == 4
-        and parts[0] == 'projects'
-        and parts[2] == 'subscriptions'
-    ):
-      sub_project = parts[1]
-      if sub_project != project:
-        raise exceptions.ConfigurationError(
-            f'Subscription [{subscription}] must be in the same project as the'
-            f' worker pool [{project}].'
-        )
-      return subscription
-    else:
-      raise exceptions.ConfigurationError(
-          f'Invalid subscription format [{subscription}]. Must be in the form'
-          ' projects/{project}/subscriptions/{id}'
-      )
-  else:
+  """Qualifies a subscription name or path to a full resource name."""
+  if _IsValidSubscriptionName(subscription):
     return f'projects/{project}/subscriptions/{subscription}'
+
+  parts = subscription.split('/')
+  if (
+      len(parts) == 4
+      and parts[0] == 'projects'
+      and parts[2] == 'subscriptions'
+      and _IsValidSubscriptionName(parts[3])
+  ):
+    if parts[1] != project:
+      raise exceptions.ConfigurationError(
+          f'Subscription [{subscription}] must be in the same project as the'
+          f' worker pool [{project}].'
+      )
+    return subscription
+
+  raise exceptions.ConfigurationError(
+      f'Invalid subscription [{subscription}]. Provide either a subscription'
+      ' name or a full path (projects/<project>/subscriptions/<subscription>).'
+      ' Subscription names must start with a letter and contain 3 to 255'
+      ' characters (letters, numbers, hyphens, underscores, periods, tildes,'
+      ' plus, or percent signs).'
+  )
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)

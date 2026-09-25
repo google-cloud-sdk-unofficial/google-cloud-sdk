@@ -35,6 +35,7 @@ help_text = textwrap.dedent("""\
     To create a catalog `my-lakehouse-catalog` with catalog type lakehouse, run:
 
       $ {command} my-lakehouse-catalog --catalog-type=lakehouse --default-location=gs://my-bucket
+
     To create a catalog `my-lakehouse-catalog` with cross-cloud cache enabled, run:
 
       $ {command} my-lakehouse-catalog --catalog-type=lakehouse --default-location=gs://my-bucket --cross-cloud-cache=enabled
@@ -43,12 +44,6 @@ help_text = textwrap.dedent("""\
 
       $ {command} my-lakehouse-catalog --catalog-type=lakehouse --default-location=gs://my-bucket --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-key
     """)
-# TODO(b/539807179): Uncomment when --kms-key flag visibility is updated.
-# To create a catalog `my-lakehouse-catalog` with CMEK encryption, run:
-#
-#   $ {command} my-lakehouse-catalog --catalog-type=lakehouse
-#     --default-location=gs://my-bucket
-#     --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-key
 
 help_text_preview = textwrap.dedent("""\
     To create a unity federated catalog `my-federated-catalog`, run:

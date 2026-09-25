@@ -3086,8 +3086,10 @@ class MigrationSummary(_messages.Message):
   Fields:
     catalogSummaries: Output only. Summary of results for each catalog
       involved in the migration.
-    createTime: Output only. The UTC time when this report was finalized.
+    createTime: Output only. The UTC time when the source metadata read was
+      initiated.
     dryRun: Output only. Whether the migration was a dry run.
+    endTime: Output only. The UTC time when the report was written.
     service: Output only. The Dataproc Metastore service name (format:
       projects/*/locations/*/services/*) on which the migration was executed.
   """
@@ -3095,7 +3097,8 @@ class MigrationSummary(_messages.Message):
   catalogSummaries = _messages.MessageField('CatalogSummary', 1, repeated=True)
   createTime = _messages.StringField(2)
   dryRun = _messages.BooleanField(3)
-  service = _messages.StringField(4)
+  endTime = _messages.StringField(4)
+  service = _messages.StringField(5)
 
 
 class MoveTableToDatabaseRequest(_messages.Message):

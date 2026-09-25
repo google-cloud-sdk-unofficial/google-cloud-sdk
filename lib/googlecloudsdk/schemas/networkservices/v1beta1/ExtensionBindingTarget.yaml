@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1beta1 ExtensionBindingTarget export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  resources:
+    description: |-
+      The reference to the target resource, to which this binding should attach.
+      Exactly one of `resources` or `scope` must be set.
+    type: array
+    items:
+      type: string
+  scope:
+    description: |-
+      Specifies the scope of resources to which this binding should attach.
+      Exactly one of `resources` or `scope` must be set.
+    $ref: ExtensionBindingTargetScope.yaml

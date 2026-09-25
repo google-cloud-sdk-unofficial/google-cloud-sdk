@@ -24,7 +24,9 @@ from googlecloudsdk.command_lib.app_topology import resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Generate(base.Command):
   """Generate a resource topology graph.
 
@@ -34,12 +36,7 @@ class Generate(base.Command):
   """
 
   detailed_help = {
-      'DESCRIPTION': (
-          '{description}\n\n'
-          'Queries the App Topology service to construct and return a directed'
-          ' graph of discovered cloud resources and their relationships across'
-          ' the specified domains.'
-      ),
+      'DESCRIPTION': '{description}',
       'EXAMPLES': (
           """\
           To generate a resource topology graph for the `SRE` domain:

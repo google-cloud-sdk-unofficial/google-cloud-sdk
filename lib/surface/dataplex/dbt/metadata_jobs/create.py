@@ -111,6 +111,24 @@ class Create(base.Command):
   format, uploads the result to Cloud Storage, and triggers a Dataplex metadata
   import job that ingests the metadata into the Knowledge Catalog.
 
+  One chain of dbt commands, run from the dbt project root against a single
+  profile and target, produces an artifact set that fills every field this
+  command imports. On dbt-core 2.x and Fusion:
+
+    dbt source freshness; dbt build; dbt parse --write-catalog
+
+  On dbt-core 1.x, where `dbt parse` writes no catalog and `dbt docs generate`
+  still does:
+
+    dbt source freshness; dbt build; dbt docs generate --no-compile
+
+  Separate the commands with `;` rather than `&&`: `dbt build` exits non-zero
+  when a test fails, and a run with failing tests is exactly the one whose
+  verdicts are worth importing. Whatever the chain omits is omitted from the
+  import too -- without catalog.json columns arrive untyped and tables carry no
+  row or byte counts, without run_results.json tests carry no verdict and
+  models no compiled SQL, and without sources.json sources carry no freshness.
+
   Only the entry group that receives the dbt entries must exist in the caller's
   project beforehand. The caller must also be able to USE the dbt connector
   types (dataplex.aspectTypes.use / the dbt-connector-types alternate-use
@@ -206,7 +224,8 @@ class Create(base.Command):
             Update only the metadata this dbt run observed, and leave the rest
             of the entry group untouched. No entry is created, deleted or
             re-parented, and an aspect whose dbt artifact was absent from this
-            run keeps the value a previous run gave it.
+            run keeps the value a previous run gave it. An aspects-only run
+            emits no entry links, so `--include-entry-links` has no effect here.
 
             Use this for routine ingestion, after whichever dbt command your
             pipeline already runs: `dbt build`, `dbt test`, `dbt source
@@ -227,18 +246,17 @@ class Create(base.Command):
     parser.add_argument(
         '--include-entry-links',
         action='store_true',
-        default=False,
-        hidden=True,
+        default=True,
         help="""Also emit EntryLink records capturing dbt relationships:
-        `depends-on` where data flows from one resource to another, and
-        `reference` where one resource describes another (a test, a semantic
-        model, a metric, or the physical BigQuery table a node writes).""",
+        `reference` where one resource describes or uses another (a test, a
+        semantic model, a metric, a macro the project defines and a node calls,
+        or the physical BigQuery table a node writes), and `schema-join`
+        for joinable columns declared by a dbt `relationships` test.""",
     )
     parser.add_argument(
         '--skip-bigquery-link',
         action='store_true',
         default=False,
-        hidden=True,
         help="""Skip physical `reference` links (dbt node -> physical BigQuery
         table entry). Otherwise a `reference` link is emitted for each
         materialized dbt node (model/seed/snapshot) whose BigQuery dataset lives
@@ -302,7 +320,11 @@ class Create(base.Command):
     # aspect-only run would also put entryLink items in a job whose entry sync
     # mode cannot act on them.
     include_entry_links = args.include_entry_links and not args.aspects_only
-    if args.aspects_only and args.IsSpecified('include_entry_links'):
+    if (
+        args.aspects_only
+        and args.IsSpecified('include_entry_links')
+        and args.include_entry_links
+    ):
       log.warning(
           'Ignoring --include-entry-links: --aspects-only updates aspects on '
           'existing entries and emits no entry links.'

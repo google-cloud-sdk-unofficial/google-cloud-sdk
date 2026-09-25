@@ -1162,6 +1162,8 @@ class DataSourceParameter(_messages.Message):
     recurse: Deprecated. This field has no effect.
     repeated: Deprecated. This field has no effect.
     required: Is parameter required.
+    secretManagerAllowed: Output only. If true, the parameter value can be
+      provided through Secret Manager.
     type: Parameter type.
     validationDescription: Description of the requirements for this field, in
       case the user input does not fulfill the regex pattern or min/max
@@ -1208,10 +1210,11 @@ class DataSourceParameter(_messages.Message):
   recurse = _messages.BooleanField(11)
   repeated = _messages.BooleanField(12)
   required = _messages.BooleanField(13)
-  type = _messages.EnumField('TypeValueValuesEnum', 14)
-  validationDescription = _messages.StringField(15)
-  validationHelpUrl = _messages.StringField(16)
-  validationRegex = _messages.StringField(17)
+  secretManagerAllowed = _messages.BooleanField(14)
+  type = _messages.EnumField('TypeValueValuesEnum', 15)
+  validationDescription = _messages.StringField(16)
+  validationHelpUrl = _messages.StringField(17)
+  validationRegex = _messages.StringField(18)
 
 
 class DataplexConfiguration(_messages.Message):
@@ -1472,6 +1475,20 @@ class MetadataDestination(_messages.Message):
   """
 
   dataplexConfiguration = _messages.MessageField('DataplexConfiguration', 1)
+
+
+class ParameterConfig(_messages.Message):
+  r"""Configuration for data source parameters.
+
+  Fields:
+    secretManagerManagedParams: Optional. The list of parameters that are
+      stored in Secret Manager. The value of a parameter included in this list
+      will be interpreted as a Secret Manager key version resource name
+      instead of a raw value. The raw value will be retrieved from Secret
+      Manager upon execution.
+  """
+
+  secretManagerManagedParams = _messages.StringField(1, repeated=True)
 
 
 class PartitionDetail(_messages.Message):
@@ -1819,6 +1836,7 @@ class TransferConfig(_messages.Message):
       used to transfer data. Populated only for `transferConfigs.get`
       requests. In case the user information is not available, this field will
       not be populated.
+    paramConfig: Optional. The config for values in `params`.
     params: Parameters specific to each data source. For more information see
       the bq tab in the 'Setting up a data transfer' section for each data
       source. For example the parameters for Cloud Storage transfers are
@@ -1921,13 +1939,14 @@ class TransferConfig(_messages.Message):
   nextRunTime = _messages.StringField(13)
   notificationPubsubTopic = _messages.StringField(14)
   ownerInfo = _messages.MessageField('UserInfo', 15)
-  params = _messages.MessageField('ParamsValue', 16)
-  schedule = _messages.StringField(17)
-  scheduleOptions = _messages.MessageField('ScheduleOptions', 18)
-  scheduleOptionsV2 = _messages.MessageField('ScheduleOptionsV2', 19)
-  state = _messages.EnumField('StateValueValuesEnum', 20)
-  updateTime = _messages.StringField(21)
-  userId = _messages.IntegerField(22)
+  paramConfig = _messages.MessageField('ParameterConfig', 16)
+  params = _messages.MessageField('ParamsValue', 17)
+  schedule = _messages.StringField(18)
+  scheduleOptions = _messages.MessageField('ScheduleOptions', 19)
+  scheduleOptionsV2 = _messages.MessageField('ScheduleOptionsV2', 20)
+  state = _messages.EnumField('StateValueValuesEnum', 21)
+  updateTime = _messages.StringField(22)
+  userId = _messages.IntegerField(23)
 
 
 class TransferMessage(_messages.Message):
@@ -2086,6 +2105,7 @@ class TransferRun(_messages.Message):
     notificationPubsubTopic: Output only. Pub/Sub topic where a notification
       will be sent after this transfer run finishes. The format for specifying
       a pubsub topic is: `projects/{project_id}/topics/{topic_id}`
+    parameterConfig: Output only. The parameter config of the transfer run.
     params: Output only. Parameters specific to each data source. For more
       information see the bq tab in the 'Setting up a data transfer' section
       for each data source. For example the parameters for Cloud Storage
@@ -2162,14 +2182,15 @@ class TransferRun(_messages.Message):
   errorStatus = _messages.MessageField('Status', 5)
   name = _messages.StringField(6)
   notificationPubsubTopic = _messages.StringField(7)
-  params = _messages.MessageField('ParamsValue', 8)
-  runTime = _messages.StringField(9)
-  schedule = _messages.StringField(10)
-  scheduleTime = _messages.StringField(11)
-  startTime = _messages.StringField(12)
-  state = _messages.EnumField('StateValueValuesEnum', 13)
-  updateTime = _messages.StringField(14)
-  userId = _messages.IntegerField(15)
+  parameterConfig = _messages.MessageField('ParameterConfig', 8)
+  params = _messages.MessageField('ParamsValue', 9)
+  runTime = _messages.StringField(10)
+  schedule = _messages.StringField(11)
+  scheduleTime = _messages.StringField(12)
+  startTime = _messages.StringField(13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  updateTime = _messages.StringField(15)
+  userId = _messages.IntegerField(16)
 
 
 class TransferRunBrief(_messages.Message):

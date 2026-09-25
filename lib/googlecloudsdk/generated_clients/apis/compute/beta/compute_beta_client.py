@@ -6197,6 +6197,33 @@ context.
         supports_download=False,
     )
 
+    def List(self, request, global_params=None):
+      r"""Returns a list of global ImageView resources, with a regional.
+context.
+
+      Args:
+        request: (ComputeImageViewsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ImageViewsListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.imageViews.list',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/regions/{region}/imageViews',
+        request_field='',
+        request_type_name='ComputeImageViewsListRequest',
+        response_type_name='ImageViewsListResponse',
+        supports_download=False,
+    )
+
   class ImagesService(base_api.BaseApiService):
     """Service class for the images resource."""
 
@@ -26344,7 +26371,7 @@ To prevent failure, Google recommends that you set the
         method_id='compute.routers.delete',
         ordered_params=['project', 'region', 'router'],
         path_params=['project', 'region', 'router'],
-        query_params=['requestId'],
+        query_params=['etag', 'requestId'],
         relative_path='projects/{project}/regions/{region}/routers/{router}',
         request_field='',
         request_type_name='ComputeRoutersDeleteRequest',

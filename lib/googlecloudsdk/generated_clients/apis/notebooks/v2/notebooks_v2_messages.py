@@ -662,6 +662,9 @@ class GceSetup(_messages.Message):
 
   Messages:
     MetadataValue: Optional. Custom metadata to apply to this instance.
+    SystemMetadataValue: Output only. Represents system-managed metadata for
+      this instance: the subset of `metadata` whose keys are recognized
+      Workbench system keys.
 
   Fields:
     acceleratorConfigs: Optional. The hardware accelerators used on this
@@ -699,6 +702,9 @@ class GceSetup(_messages.Message):
       supported Shielded VM
       features](https://cloud.google.com/compute/docs/instances/modifying-
       shielded-vm).
+    systemMetadata: Output only. Represents system-managed metadata for this
+      instance: the subset of `metadata` whose keys are recognized Workbench
+      system keys.
     tags: Optional. The Compute Engine network tags to add to runtime (see
       [Add network tags](https://cloud.google.com/vpc/docs/add-remove-network-
       tags)).
@@ -730,6 +736,32 @@ class GceSetup(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class SystemMetadataValue(_messages.Message):
+    r"""Output only. Represents system-managed metadata for this instance: the
+    subset of `metadata` whose keys are recognized Workbench system keys.
+
+    Messages:
+      AdditionalProperty: An additional property for a SystemMetadataValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type SystemMetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a SystemMetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   acceleratorConfigs = _messages.MessageField('AcceleratorConfig', 1, repeated=True)
   bootDisk = _messages.MessageField('BootDisk', 2)
   confidentialInstanceConfig = _messages.MessageField('ConfidentialInstanceConfig', 3)
@@ -746,8 +778,9 @@ class GceSetup(_messages.Message):
   reservationAffinity = _messages.MessageField('ReservationAffinity', 14)
   serviceAccounts = _messages.MessageField('ServiceAccount', 15, repeated=True)
   shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 16)
-  tags = _messages.StringField(17, repeated=True)
-  vmImage = _messages.MessageField('VmImage', 18)
+  systemMetadata = _messages.MessageField('SystemMetadataValue', 17)
+  tags = _messages.StringField(18, repeated=True)
+  vmImage = _messages.MessageField('VmImage', 19)
 
 
 class GenerateAccessTokenRequest(_messages.Message):

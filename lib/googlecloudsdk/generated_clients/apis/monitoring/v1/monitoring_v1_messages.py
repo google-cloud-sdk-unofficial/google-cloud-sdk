@@ -2997,6 +2997,20 @@ class Tile(_messages.Message):
   yPos = _messages.IntegerField(5, variant=_messages.Variant.INT32)
 
 
+class TimeRange(_messages.Message):
+  r"""Represents a time range.
+
+  Fields:
+    absoluteWindow: Optional. Represents a time range with absolute start and
+      end times. The start time is inclusive, and the end time is exclusive.
+    relativeDuration: Optional. Specifies the duration used to shift the data
+      relative to current time as the end time. The duration must be positive.
+  """
+
+  absoluteWindow = _messages.MessageField('Interval', 1)
+  relativeDuration = _messages.StringField(2)
+
+
 class TimeSeriesFilter(_messages.Message):
   r"""A filter that defines a subset of time series data that is displayed in
   a widget. Time series data is fetched using the ListTimeSeries (https://clou
@@ -3264,6 +3278,9 @@ class Widget(_messages.Message):
     singleViewGroup: A widget that groups the other widgets by using a
       dropdown menu.
     text: A raw string or markdown displaying textual content.
+    timeRange: Optional. Represents a time range for the widget. When set,
+      this time range will override the dashboard time range. Supported for
+      line, stacked area and stacked bar widgets only.
     timeSeriesTable: A widget that displays time series data in a tabular
       format.
     title: Optional. The title of the widget.
@@ -3286,11 +3303,12 @@ class Widget(_messages.Message):
   sectionHeader = _messages.MessageField('SectionHeader', 11)
   singleViewGroup = _messages.MessageField('SingleViewGroup', 12)
   text = _messages.MessageField('Text', 13)
-  timeSeriesTable = _messages.MessageField('TimeSeriesTable', 14)
-  title = _messages.StringField(15)
-  treemap = _messages.MessageField('Treemap', 16)
-  visibilityCondition = _messages.MessageField('VisibilityCondition', 17)
-  xyChart = _messages.MessageField('XyChart', 18)
+  timeRange = _messages.MessageField('TimeRange', 14)
+  timeSeriesTable = _messages.MessageField('TimeSeriesTable', 15)
+  title = _messages.StringField(16)
+  treemap = _messages.MessageField('Treemap', 17)
+  visibilityCondition = _messages.MessageField('VisibilityCondition', 18)
+  xyChart = _messages.MessageField('XyChart', 19)
 
 
 class XyChart(_messages.Message):

@@ -26,7 +26,6 @@ AppliedAutoProtectionPoliciesClient = (
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.Hidden
 class List(base.ListCommand):
   """List Backup and DR applied auto-protection policies."""
 

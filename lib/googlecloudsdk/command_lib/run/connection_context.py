@@ -538,6 +538,7 @@ def GetConnectionContext(
     platform=None,
     region_label=None,
     is_multiregion=False,
+    custom_check_response_func=None,
 ):
   """Gets the regional, kubeconfig, or GKE connection context.
 
@@ -551,6 +552,8 @@ def GetConnectionContext(
       the --platform flag will be used instead.
     region_label: A k8s label representing the intended region.
     is_multiregion: Whether we will use the managed Multi-region API.
+    custom_check_response_func: Optional custom check_response callback to use
+      for checking API errors.
 
   Raises:
     ArgumentError if region or cluster is not specified.
@@ -601,6 +604,7 @@ def GetConnectionContext(
           prompt=True,
           region_label=region_label,
           release_track=release_track,
+          custom_check_response_func=custom_check_response_func,
       )
       if not region:
         raise serverless_exceptions.ArgumentError(

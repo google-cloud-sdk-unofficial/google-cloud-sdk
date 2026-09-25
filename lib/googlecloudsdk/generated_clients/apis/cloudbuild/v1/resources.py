@@ -110,6 +110,39 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_PIPELINERUNS = (
+      'projects.locations.pipelineRuns',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/pipelineRuns/'
+              '{pipelineRunsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_PIPELINES = (
+      'projects.locations.pipelines',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/pipelines/'
+              '{pipelinesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_PIPELINES_TRIGGERS = (
+      'projects.locations.pipelines.triggers',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/pipelines/'
+              '{pipelinesId}/triggers/{triggersId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_TRIGGERS = (
       'projects.locations.triggers',
       '{+name}',

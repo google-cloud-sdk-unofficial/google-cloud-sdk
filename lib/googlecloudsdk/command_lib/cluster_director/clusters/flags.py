@@ -1189,13 +1189,36 @@ def AddSlurmConfig(
   flag_name = "slurm-config"
   if include_update_flags:
     flag_name = f"update-{flag_name}"
-  parser.add_argument(
-      f"--{flag_name}",
-      help=textwrap.dedent(f"""
+    help_text = f"""
+        Parameters to update slurm cluster config.
+
+        Supports both dot-notation (e.g. `schedulerParameters.bfBusyNodes=true` or `schedulerParameters.bf_busy_nodes=true`, `additionalSettings.MaxArraySize=10000`)
+        and sub-dictionary notation (e.g. `schedulerParameters="{{bfBusyNodes=true,bfInterval=30}}"` or `schedulerParameters="{{bf_busy_nodes=true,bf_interval=30}}"`, `additionalSettings="{{MaxArraySize=10000,TreeWidth=50}}"`).
+        Both camelCase and snake_case (matching native Slurm parameter names)
+        are supported for nested parameters.
+
+        For example:
+        --{flag_name} defMemPerCpu=2048,healthCheckInterval=10,schedulerParameters.bf_busy_nodes=true,preemptParameters.youngest_first=true,additionalSettings.MaxArraySize=10000
+        or
+        --{flag_name} defMemPerCpu=2048,schedulerParameters="{{bf_busy_nodes=true,bf_interval=30}}",preemptParameters="{{youngest_first=true,suspend_grace_time=60}}"
+    """
+  else:
+    help_text = f"""
         Parameters to define slurm cluster config.
 
-        For example --{flag_name} defMemPerCpu=2048,healthCheckInterval=10,schedulerParameters.bfBusyNodes=true,preemptParameters.youngestFirst=true
-      """),
+        Supports both dot-notation (e.g. `schedulerParameters.bfBusyNodes=true` or `schedulerParameters.bf_busy_nodes=true`, `additionalSettings.MaxArraySize=10000`)
+        and sub-dictionary notation (e.g. `schedulerParameters="{{bfBusyNodes=true,bfInterval=30}}"` or `schedulerParameters="{{bf_busy_nodes=true,bf_interval=30}}"`, `additionalSettings="{{MaxArraySize=10000,TreeWidth=50}}"`).
+        Both camelCase and snake_case (matching native Slurm parameter names)
+        are supported for nested parameters.
+
+        For example:
+        --{flag_name} defMemPerCpu=2048,healthCheckInterval=10,schedulerParameters.bf_busy_nodes=true,preemptParameters.youngest_first=true,additionalSettings.MaxArraySize=10000
+        or
+        --{flag_name} defMemPerCpu=2048,schedulerParameters="{{bf_busy_nodes=true,bf_interval=30}}",preemptParameters="{{youngest_first=true,suspend_grace_time=60}}"
+    """
+  parser.add_argument(
+      f"--{flag_name}",
+      help=textwrap.dedent(help_text),
       type=arg_parsers.ArgDict(),
       hidden=hidden,
   )
@@ -1219,7 +1242,8 @@ def AddSlurmConfFile(
         set configurations, and partition configurations:
         - Global directives in the file replace the existing cluster Slurm global
           configuration (omitted global settings or an empty file will clear
-          existing custom global config).
+          existing custom global config). Custom global directives not recognized
+          as first-class fields are passed through as additionalSettings.
         - NodeName and PartitionName directives in the file replace the
           configurations of matching existing node sets and partitions in the
           cluster (node sets or partitions not present in the file have their
@@ -1237,8 +1261,9 @@ def AddSlurmConfFile(
         including bracket ranges like compute-[0-99]), and partition
         configurations (PartitionName directives) defined in the file are
         applied to the cluster, replacing any default or flag-provided
-        configurations. Any configuration omitted from the file will remain
-        unset.
+        configurations. Custom global directives not recognized as first-class
+        fields are automatically passed through as additionalSettings. Any
+        configuration omitted from the file will remain unset.
 
         See https://slurm.schedmd.com/slurm.conf.html for more details.
 

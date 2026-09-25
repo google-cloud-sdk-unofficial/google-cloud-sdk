@@ -40,7 +40,6 @@ class AgentModeConfig(_messages.Message):
       DISABLED: Agent mode disabled.
       ENABLED: Agent mode enabled.
     """
-
     AGENT_MODE_UNSPECIFIED = 0
     DISABLED = 1
     ENABLED = 2
@@ -64,11 +63,9 @@ class AgentModeInfo(_messages.Message):
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. The current state of Agent Mode.
-
-    When the agent mode is turned on, it won't be effective if the cluster does
-    not have a primary instance. The state field indicates the state of
-    provisioning.
+    r"""Output only. The current state of Agent Mode. When the agent mode is
+    turned on, it won't be effective if the cluster does not have a primary
+    instance. The state field indicates the state of provisioning.
 
     Values:
       STATE_UNSPECIFIED: Unspecified.
@@ -77,7 +74,6 @@ class AgentModeInfo(_messages.Message):
       ACTIVE: Agent mode is enabled and active. Requires a primary instance.
       FAILED: Agent mode enablement failed.
     """
-
     STATE_UNSPECIFIED = 0
     DISABLED = 1
     PROVISIONING = 2
@@ -1727,10 +1723,9 @@ class CloudSQLBackupRunSource(_messages.Message):
 
 
 class Cluster(_messages.Message):
-  r"""A cluster is a collection of regional AlloyDB resources.
-
-  It can include a primary instance and one or more read pool instances. All
-  cluster resources share a storage layer, which scales as needed.
+  r"""A cluster is a collection of regional AlloyDB resources. It can include
+  a primary instance and one or more read pool instances. All cluster
+  resources share a storage layer, which scales as needed.
 
   Enums:
     ClusterTypeValueValuesEnum: Output only. The type of the cluster. This is
@@ -2085,12 +2080,8 @@ class Cluster(_messages.Message):
   initialUser = _messages.MessageField('UserPassword', 22)
   labels = _messages.MessageField('LabelsValue', 23)
   maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 24)
-  maintenanceUpdatePolicy = _messages.MessageField(
-      'MaintenanceUpdatePolicy', 25
-  )
-  maintenanceVersionSelectionPolicy = _messages.EnumField(
-      'MaintenanceVersionSelectionPolicyValueValuesEnum', 26
-  )
+  maintenanceUpdatePolicy = _messages.MessageField('MaintenanceUpdatePolicy', 25)
+  maintenanceVersionSelectionPolicy = _messages.EnumField('MaintenanceVersionSelectionPolicyValueValuesEnum', 26)
   migrationSource = _messages.MessageField('MigrationSource', 27)
   name = _messages.StringField(28)
   network = _messages.StringField(29)
@@ -2565,6 +2556,7 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
+
 
 
 class EncryptionConfig(_messages.Message):

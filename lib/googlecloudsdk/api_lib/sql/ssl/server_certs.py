@@ -15,9 +15,9 @@
 """Common command-agnostic utility functions for server-certs commands."""
 
 
-ACTIVE_CERT_LABEL = 'Active'
-NEXT_CERT_LABEL = 'Next'
-PREVIOUS_CERT_LABEL = 'Previous'
+ACTIVE_CERT_LABEL = 'ACTIVE'
+NEXT_CERT_LABEL = 'NEXT'
+PREVIOUS_CERT_LABEL = 'PREVIOUS'
 
 
 def ListServerCertificates(sql_client, sql_messages, instance_ref):
@@ -32,8 +32,8 @@ def ListServerCertificates(sql_client, sql_messages, instance_ref):
 def GetServerCertificateTypeDict(list_server_certs_response):
   """Gets a dictionary mapping Server Cert types to certs.
 
-  The keys to the dictionary returned will be some combinatiaon of 'Current',
-  'Next', and 'Previous'.
+  The keys to the dictionary returned will be some combination of 'ACTIVE',
+  'NEXT', and 'PREVIOUS'.
 
   Args:
     list_server_certs_response: InstancesListServerCertificatesResponse

@@ -134,6 +134,23 @@
                 Maximum number of instances within an autoscaling group underlying the connector.
                 Value must be between 3 and 10, inclusive. Must be higher than the value specified by
                 `--min-instances`.
+        - group:
+            release_tracks: [ALPHA, BETA]
+            hidden: true
+            help_text: |
+              Scaling settings of a VPC Access Connector can be specified in terms of throughput
+              capacity.
+            params:
+            - arg_name: throughput
+              api_field: connector.throughput
+              release_tracks: [ALPHA, BETA]
+              hidden: true
+              required: false
+              type: int
+              help_text: |
+                Throughput specifies the maximum throughput for the connector in Mbps.
+                When set to a nonzero number, it overrides any values configured for
+                machine-type, min-instances, and max-instances.
     - arg_name: machine-type
       api_field: connector.machineType
       release_tracks: [ALPHA, BETA, GA, PREVIEW]

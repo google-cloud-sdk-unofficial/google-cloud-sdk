@@ -368,6 +368,7 @@ class ApplicationAttemptInfo(_messages.Message):
     completed: A boolean attribute.
     durationMillis: A string attribute.
     endTime: A string attribute.
+    eventLogPath: Output only. The event log path for the application attempt.
     lastUpdated: A string attribute.
     sparkUser: A string attribute.
     startTime: A string attribute.
@@ -378,9 +379,10 @@ class ApplicationAttemptInfo(_messages.Message):
   completed = _messages.BooleanField(3)
   durationMillis = _messages.IntegerField(4)
   endTime = _messages.StringField(5)
-  lastUpdated = _messages.StringField(6)
-  sparkUser = _messages.StringField(7)
-  startTime = _messages.StringField(8)
+  eventLogPath = _messages.StringField(6)
+  lastUpdated = _messages.StringField(7)
+  sparkUser = _messages.StringField(8)
+  startTime = _messages.StringField(9)
 
 
 class ApplicationEnvironmentInfo(_messages.Message):
@@ -2303,9 +2305,8 @@ class DataprocProjectsLocationsAttachmentsVirtualClustersCreateRequest(_messages
       body.
     virtualClusterId: Required. The ID to use for the VirtualCluster, which
       will become the final component of the VirtualCluster's resource name.
-      This value must be 4-63 characters, and valid characters are [a-z0-9-].
-      The first character must be a letter, and the last character cannot be a
-      hyphen.
+      This value must be 1 to 59 characters, and match regex
+      ^[a-z]([a-z0-9-]{0,57}[a-z0-9])?$.
   """
 
   parent = _messages.StringField(1, required=True)
@@ -7989,6 +7990,9 @@ class KubernetesClusterConfig(_messages.Message):
 class KubernetesJob(_messages.Message):
   r"""Message describing KubernetesJob object
 
+  Enums:
+    StateValueValuesEnum: Output only. The state of the job.
+
   Messages:
     LabelsValue: Optional. The labels to associate with this job. Label keys
       must contain 1 to 63 characters, and must conform to RFC 1035
@@ -7999,12 +8003,8 @@ class KubernetesJob(_messages.Message):
 
   Fields:
     createTime: Output only. Create time stamp.
-    environmentConfig: Optional. The environment configuration for job
-      execution.This includes things like managed spark version, custom image
-      etc..
     errorDetails: Output only. Error details.
     executionConfig: Optional. The execution configuration for the job.
-    jobState: Output only. The state of the job.
     labels: Optional. The labels to associate with this job. Label keys must
       contain 1 to 63 characters, and must conform to RFC 1035
       (https://www.ietf.org/rfc/rfc1035.txt). Label values may be empty, but,
@@ -8013,13 +8013,39 @@ class KubernetesJob(_messages.Message):
       be associated with a job.
     name: Identifier. The resource name of the kubernetes job, in the format:
       projects/{project}/locations/{location}/kubernetesJobs/{kubernetes_job}
-    pySparkJob: Optional. A job to execute a PySpark job.
-    sparkJob: Optional. A job to execute a Spark job.
-    sparkRJob: Optional. A job to execute a SparkR job.
-    sparkSqlJob: Optional. A job to execute a SparkSql job.
+    pysparkJob: Optional. A job to execute a PySpark application.
+    runtimeConfig: Optional. The runtime configuration for job execution.This
+      includes things like managed spark version, custom image etc..
+    sparkJob: Optional. A job to execute a Spark application.
+    sparkSqlJob: Optional. A job to execute a Spark SQL query.
+    state: Output only. The state of the job.
     updateTime: Output only. Update time stamp.
-    virtualCluster: Optional. The virtual cluster.
+    virtualCluster: Optional. The virtual cluster. Format: projects/{project}/
+      locations/{location}/attachments/{attachment}/virtualClusters/{virtual_c
+      luster}
   """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the job.
+
+    Values:
+      STATE_UNSPECIFIED: The state is unspecified or unknown.
+      PENDING: The job is pending.
+      CREATING: The job is being created.
+      RUNNING: The job is running.
+      CANCELLING: The job is being cancelled.
+      SUCCEEDED: The job succeeded.
+      FAILED: The job failed.
+      CANCELLED: The job was cancelled.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING = 1
+    CREATING = 2
+    RUNNING = 3
+    CANCELLING = 4
+    SUCCEEDED = 5
+    FAILED = 6
+    CANCELLED = 7
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -8051,75 +8077,32 @@ class KubernetesJob(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   createTime = _messages.StringField(1)
-  environmentConfig = _messages.MessageField('KubernetesJobEnvironmentConfig', 2)
-  errorDetails = _messages.MessageField('Status', 3)
-  executionConfig = _messages.MessageField('KubernetesJobExecutionConfig', 4)
-  jobState = _messages.MessageField('KubernetesJobState', 5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  pySparkJob = _messages.MessageField('PySparkJob', 8)
-  sparkJob = _messages.MessageField('SparkJob', 9)
-  sparkRJob = _messages.MessageField('SparkRJob', 10)
-  sparkSqlJob = _messages.MessageField('SparkSqlJob', 11)
-  updateTime = _messages.StringField(12)
-  virtualCluster = _messages.StringField(13)
+  errorDetails = _messages.MessageField('Status', 2)
+  executionConfig = _messages.MessageField('KubernetesJobExecutionConfig', 3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  pysparkJob = _messages.MessageField('KubernetesPySparkJob', 6)
+  runtimeConfig = _messages.MessageField('KubernetesJobRuntimeConfig', 7)
+  sparkJob = _messages.MessageField('KubernetesSparkJob', 8)
+  sparkSqlJob = _messages.MessageField('KubernetesSparkSqlJob', 9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
+  virtualCluster = _messages.StringField(12)
 
 
-class KubernetesJobEnvironmentConfig(_messages.Message):
-  r"""KubernetesJobEnvironmentConfig specifies the environment configuration
-  for the job.
-
-  Messages:
-    PropertiesValue: Optional. The cluster properties to set.Property keys are
-      specified in prefix:property format, for example
-      spark:spark.executor.instances.These properties will be passed as is to
-      the kubernetes pod during execution.For more information, see Cluster
-      properties (https://cloud.google.com/dataproc/docs/concepts/cluster-
-      properties).
+class KubernetesJobConfig(_messages.Message):
+  r"""Configurations for KubernetesJob execution. Reuses
+  KubernetesJobRuntimeConfig and KubernetesJobExecutionConfig from
+  google.cloud.dataproc.v1.KubernetesJob (see kubernetes_job.proto).
 
   Fields:
-    imageUri: Optional. The custom image URI. If empty a default image
-      associated with the version will be used.
-    properties: Optional. The cluster properties to set.Property keys are
-      specified in prefix:property format, for example
-      spark:spark.executor.instances.These properties will be passed as is to
-      the kubernetes pod during execution.For more information, see Cluster
-      properties (https://cloud.google.com/dataproc/docs/concepts/cluster-
-      properties).
-    version: Optional. The managed spark(formerly dataproc) version.
+    executionConfig: Optional. Config containing driver/exec configs,
+      lifecycle and placement configs.
+    runtimeConfig: Optional. Config containing version, image, and properties.
   """
 
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class PropertiesValue(_messages.Message):
-    r"""Optional. The cluster properties to set.Property keys are specified in
-    prefix:property format, for example spark:spark.executor.instances.These
-    properties will be passed as is to the kubernetes pod during execution.For
-    more information, see Cluster properties
-    (https://cloud.google.com/dataproc/docs/concepts/cluster-properties).
-
-    Messages:
-      AdditionalProperty: An additional property for a PropertiesValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type PropertiesValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a PropertiesValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  imageUri = _messages.StringField(1)
-  properties = _messages.MessageField('PropertiesValue', 2)
-  version = _messages.StringField(3)
+  executionConfig = _messages.MessageField('KubernetesJobExecutionConfig', 1)
+  runtimeConfig = _messages.MessageField('KubernetesJobRuntimeConfig', 2)
 
 
 class KubernetesJobExecutionConfig(_messages.Message):
@@ -8156,46 +8139,61 @@ class KubernetesJobLifecycleConfig(_messages.Message):
   ttl = _messages.StringField(3)
 
 
-class KubernetesJobState(_messages.Message):
-  r"""KubernetesJobState represents the state of a Kubernetes job.
+class KubernetesJobRuntimeConfig(_messages.Message):
+  r"""KubernetesJobRuntimeConfig specifies the runtime configuration for the
+  job.
 
-  Enums:
-    StateValueValuesEnum: Output only. A state message specifying the overall
-      job state.
+  Messages:
+    PropertiesValue: Optional. The runtime properties to set.Property keys are
+      specified in prefix:property format, for example
+      spark:spark.executor.instances.These properties will be passed to the
+      kubernetes pod during execution.For more information, see Cluster
+      properties (https://cloud.google.com/dataproc/docs/concepts/cluster-
+      properties).
 
   Fields:
-    errorDetails: Output only. Error details.
-    state: Output only. A state message specifying the overall job state.
-    stateDetails: Output only. Details about the state.
-    stateStartTime: Output only. The time when this state was entered.
+    imageUri: Optional. The custom image URI. If empty a default image
+      associated with the version will be used.
+    properties: Optional. The runtime properties to set.Property keys are
+      specified in prefix:property format, for example
+      spark:spark.executor.instances.These properties will be passed to the
+      kubernetes pod during execution.For more information, see Cluster
+      properties (https://cloud.google.com/dataproc/docs/concepts/cluster-
+      properties).
+    version: Optional. The managed spark(formerly dataproc) version.
   """
 
-  class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. A state message specifying the overall job state.
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PropertiesValue(_messages.Message):
+    r"""Optional. The runtime properties to set.Property keys are specified in
+    prefix:property format, for example spark:spark.executor.instances.These
+    properties will be passed to the kubernetes pod during execution.For more
+    information, see Cluster properties
+    (https://cloud.google.com/dataproc/docs/concepts/cluster-properties).
 
-    Values:
-      STATE_UNSPECIFIED: The state is unspecified or unknown.
-      PENDING: The job is pending.
-      CREATING: The job is being created.
-      RUNNING: The job is running.
-      CANCELLING: The job is being cancelled.
-      SUCCEEDED: The job succeeded.
-      FAILED: The job failed.
-      CANCELLED: The job was cancelled.
+    Messages:
+      AdditionalProperty: An additional property for a PropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PropertiesValue
     """
-    STATE_UNSPECIFIED = 0
-    PENDING = 1
-    CREATING = 2
-    RUNNING = 3
-    CANCELLING = 4
-    SUCCEEDED = 5
-    FAILED = 6
-    CANCELLED = 7
 
-  errorDetails = _messages.MessageField('Status', 1)
-  state = _messages.EnumField('StateValueValuesEnum', 2)
-  stateDetails = _messages.StringField(3)
-  stateStartTime = _messages.StringField(4)
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  imageUri = _messages.StringField(1)
+  properties = _messages.MessageField('PropertiesValue', 2)
+  version = _messages.StringField(3)
 
 
 class KubernetesPodConfig(_messages.Message):
@@ -8208,6 +8206,35 @@ class KubernetesPodConfig(_messages.Message):
 
   computeClass = _messages.StringField(1)
   nodePool = _messages.StringField(2)
+
+
+class KubernetesPySparkJob(_messages.Message):
+  r"""KubernetesPySparkJob encapsulates the configuration for a PySpark
+  (Python) job.
+
+  Fields:
+    archiveUris: Optional. URIs of archives to be extracted into the working
+      directory of each executor. Supported file types: .jar, .tar, .tar.gz,
+      .tgz, and .zip.
+    args: Optional. The arguments to pass to the driver.
+    fileUris: Optional. URIs of files to be placed in the working directory of
+      each executor. Useful for naively parallel tasks.
+    jarFileUris: Optional. URIs of jar files to add to the CLASSPATHs of the
+      Python driver and tasks.
+    loggingConfig: Optional. The runtime log config for job execution.
+    mainPythonFileUri: Required. The URI of the main Python file to use as the
+      driver. Must be a .py file.
+    pythonFileUris: Optional. URIs of Python files to pass to the PySpark
+      framework. Supported file types: .py, .egg, and .zip.
+  """
+
+  archiveUris = _messages.StringField(1, repeated=True)
+  args = _messages.StringField(2, repeated=True)
+  fileUris = _messages.StringField(3, repeated=True)
+  jarFileUris = _messages.StringField(4, repeated=True)
+  loggingConfig = _messages.MessageField('LoggingConfig', 5)
+  mainPythonFileUri = _messages.StringField(6)
+  pythonFileUris = _messages.StringField(7, repeated=True)
 
 
 class KubernetesSoftwareConfig(_messages.Message):
@@ -8299,6 +8326,87 @@ class KubernetesSoftwareConfig(_messages.Message):
 
   componentVersion = _messages.MessageField('ComponentVersionValue', 1)
   properties = _messages.MessageField('PropertiesValue', 2)
+
+
+class KubernetesSparkJob(_messages.Message):
+  r"""KubernetesSparkJob encapsulates the configuration for a Spark (Java /
+  Scala) job.
+
+  Fields:
+    archiveUris: Optional. URIs of archives to be extracted into the working
+      directory of each executor. Supported file types: .jar, .tar, .tar.gz,
+      .tgz, and .zip.
+    args: Optional. The arguments to pass to the driver.
+    fileUris: Optional. URIs of files to be placed in the working directory of
+      each executor. Useful for naively parallel tasks.
+    jarFileUris: Optional. URIs of jar files to add to the CLASSPATHs of the
+      Spark driver and tasks.
+    loggingConfig: Optional. The runtime log config for job execution.
+    mainClass: Optional. The name of the driver's main class. The jar file
+      that contains the class must be in the default CLASSPATH or specified in
+      jar_file_uris.
+    mainJarFileUri: Optional. The URI of the jar file that contains the main
+      class.
+  """
+
+  archiveUris = _messages.StringField(1, repeated=True)
+  args = _messages.StringField(2, repeated=True)
+  fileUris = _messages.StringField(3, repeated=True)
+  jarFileUris = _messages.StringField(4, repeated=True)
+  loggingConfig = _messages.MessageField('LoggingConfig', 5)
+  mainClass = _messages.StringField(6)
+  mainJarFileUri = _messages.StringField(7)
+
+
+class KubernetesSparkSqlJob(_messages.Message):
+  r"""KubernetesSparkSqlJob encapsulates the configuration for a Spark SQL
+  job.
+
+  Messages:
+    ScriptVariablesValue: Optional. Mapping of query variable names to values
+      (equivalent to the Spark SQL command: SET name="value";).
+
+  Fields:
+    jarFileUris: Optional. URIs of jar files to be added to the Spark
+      CLASSPATH.
+    loggingConfig: Optional. The runtime log config for job execution.
+    queryFileUri: Optional. The URI of the script that contains SQL queries.
+    queryList: Optional. A list of queries.
+    scriptVariables: Optional. Mapping of query variable names to values
+      (equivalent to the Spark SQL command: SET name="value";).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ScriptVariablesValue(_messages.Message):
+    r"""Optional. Mapping of query variable names to values (equivalent to the
+    Spark SQL command: SET name="value";).
+
+    Messages:
+      AdditionalProperty: An additional property for a ScriptVariablesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type ScriptVariablesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ScriptVariablesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  jarFileUris = _messages.StringField(1, repeated=True)
+  loggingConfig = _messages.MessageField('LoggingConfig', 2)
+  queryFileUri = _messages.StringField(3)
+  queryList = _messages.MessageField('QueryList', 4)
+  scriptVariables = _messages.MessageField('ScriptVariablesValue', 5)
 
 
 class LifecycleConfig(_messages.Message):
@@ -10937,12 +11045,11 @@ class Session(_messages.Message):
     name: Identifier. The resource name of the session.
     runtimeConfig: Optional. Runtime configuration for the session execution.
     runtimeInfo: Output only. Runtime information about session execution.
-    sessionTemplate: Optional. The session template used by the session.Only
-      resource names, including project ID and location, are valid.Example: *
-      https://www.googleapis.com/compute/v1/projects/[project_id]/locations/[d
-      ataproc_region]/sessionTemplates/[template_id] * projects/[project_id]/l
-      ocations/[dataproc_region]/sessionTemplates/[template_id]The template
-      must be in the same project and Dataproc region as the session.
+    sessionTemplate: Optional. The session template used by the
+      session.Resource names and short template IDs are valid. Examples: * pro
+      jects/[project_id]/locations/[dataproc_region]/sessionTemplates/[templat
+      e_id] * [template_id]The template must be in the same project and
+      Dataproc region as the session.
     sparkConnectSession: Optional. Spark connect session config.
     state: Output only. A state of the session.
     stateHistory: Output only. Historical state information for the session.
@@ -14041,20 +14148,53 @@ class ValueValidation(_messages.Message):
 class VirtualCluster(_messages.Message):
   r"""Message describing VirtualCluster object
 
+  Enums:
+    StateValueValuesEnum: Output only. Current operational state of the
+      Virtual Cluster.
+
   Messages:
     LabelsValue: Optional. User-provided labels for the virtual cluster.
 
   Fields:
     createTime: Output only. The time when the virtual cluster was created.
+    defaultKubernetesJobConfig: Optional. Default configs for KubernetesJob
+      targeting this VirtualCluster.
+    errorDetails: Output only. Error details populated if state is FAILED.
+    kubernetesNamespace: Optional. Immutable. Target Kubernetes namespace on
+      the attached GKE cluster. When specified, it must conform to the
+      Kubernetes RFC 1123 DNS label specification: 1 to 63 characters matching
+      regex ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$. If omitted, Managed Spark on
+      GKE provisions a managed namespace (msg-).
     labels: Optional. User-provided labels for the virtual cluster.
     name: Identifier. The resource name of the virtual cluster, in the format:
       projects/{project}/locations/{location}/attachments/{attachment}/virtual
       Clusters/{virtual_cluster}
+    state: Output only. Current operational state of the Virtual Cluster.
     uid: Output only. The unique identifier for the virtual cluster. The
       service generates this value when it creates the virtual cluster.
     updateTime: Output only. The time when the virtual cluster was last
       updated.
+    workloadIdentityConfig: Optional. Workload Identity Federation
+      configuration.
   """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Current operational state of the Virtual Cluster.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      CREATING: The virtual cluster is being created.
+      ACTIVE: The virtual cluster is active and ready to accept workloads.
+      UPDATING: The virtual cluster is undergoing modification.
+      DELETING: The virtual cluster is being deleted.
+      FAILED: The virtual cluster creation or modification failed.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    UPDATING = 3
+    DELETING = 4
+    FAILED = 5
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -14081,10 +14221,15 @@ class VirtualCluster(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   createTime = _messages.StringField(1)
-  labels = _messages.MessageField('LabelsValue', 2)
-  name = _messages.StringField(3)
-  uid = _messages.StringField(4)
-  updateTime = _messages.StringField(5)
+  defaultKubernetesJobConfig = _messages.MessageField('KubernetesJobConfig', 2)
+  errorDetails = _messages.MessageField('Status', 3)
+  kubernetesNamespace = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  uid = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
+  workloadIdentityConfig = _messages.MessageField('WorkloadIdentityConfig', 10)
 
 
 class VirtualClusterConfig(_messages.Message):
@@ -14442,6 +14587,23 @@ class WorkflowTemplatePlacement(_messages.Message):
 
   clusterSelector = _messages.MessageField('ClusterSelector', 1)
   managedCluster = _messages.MessageField('ManagedCluster', 2)
+
+
+class WorkloadIdentityConfig(_messages.Message):
+  r"""Configuration for Workload Identity Federation for GKE.
+
+  Fields:
+    googleServiceAccount: Optional. The email address of the customer Google
+      Service Account (GSA). Dataproc annotates the KSA (iam.gke.io/gcp-
+      service-account) with this service account to enable Workload Identity
+      Federation. Format:
+      {service_account}@{project_id}.iam.gserviceaccount.com
+    kubernetesServiceAccount: Optional. Dedicated KSA. If omitted, Dataproc
+      provisions 'msg-sa'.
+  """
+
+  googleServiceAccount = _messages.StringField(1)
+  kubernetesServiceAccount = _messages.StringField(2)
 
 
 class WriteSessionSparkApplicationContextRequest(_messages.Message):

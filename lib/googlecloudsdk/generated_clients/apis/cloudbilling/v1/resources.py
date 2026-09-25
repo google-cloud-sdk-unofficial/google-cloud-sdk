@@ -41,6 +41,27 @@ class Collections(enum.Enum):
       ['projectsId'],
       True
   )
+  TASKS = (
+      'tasks',
+      '{+name}',
+      {
+          '':
+              'tasks/{tasksId}',
+      },
+      ['name'],
+      True
+  )
+  TASKS_PUSHNOTIFICATIONCONFIGS = (
+      'tasks.pushNotificationConfigs',
+      '{+name}',
+      {
+          '':
+              'tasks/{tasksId}/pushNotificationConfigs/'
+              '{pushNotificationConfigsId}',
+      },
+      ['name'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

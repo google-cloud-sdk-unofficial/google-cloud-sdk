@@ -26,6 +26,13 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
+from googlecloudsdk.core.util import retry
+
+_PRIME_CONNECTION_MAX_RETRIALS = 10
+_PRIME_CONNECTION_SLEEP_MS = 1000
+_PRIME_CONNECTION_MAX_WAIT_MS = 60000
+_PRIME_CONNECTION_EXPONENTIAL_MULTIPLIER = 1.5
+_PRIME_CONNECTION_WAIT_CEILING_MS = 5000
 
 
 class SshError(exceptions.Error):
@@ -58,7 +65,27 @@ class MultiplexedSshSession:
     This can be called once at the start of sync to prime the SSH connection to
     reduce latency when syncing files.
     """
-    self.ExecuteCommand(['true'])
+    retryer = retry.Retryer(
+        max_retrials=_PRIME_CONNECTION_MAX_RETRIALS,
+        max_wait_ms=_PRIME_CONNECTION_MAX_WAIT_MS,
+        exponential_sleep_multiplier=_PRIME_CONNECTION_EXPONENTIAL_MULTIPLIER,
+        wait_ceiling_ms=_PRIME_CONNECTION_WAIT_CEILING_MS,
+    )
+    try:
+      retryer.RetryOnException(
+          self.ExecuteCommand,
+          args=[['true']],
+          should_retry_if=lambda exc_type, *args: issubclass(
+              exc_type, SshError
+          ),
+          sleep_ms=_PRIME_CONNECTION_SLEEP_MS,
+      )
+    except retry.RetryException as e:
+      if e.last_result and e.last_result[1]:
+        unused_exc_type, exc_val, _ = e.last_result[1]
+        if exc_val:
+          raise exc_val from e
+      raise SshError('Failed to establish SSH connection.') from e
 
   def Close(self):
     """Closes the multiplexed SSH master connection."""

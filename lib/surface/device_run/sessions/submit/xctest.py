@@ -124,6 +124,17 @@ class XcTest(base.Command):
     )
 
     parser.add_argument(
+        '--xcode-version',
+        type=str,
+        help=(
+            'The catalog ID or version string of the Xcode version to use for'
+            ' the test run (e.g. `xcode-16-4` or `16.4`). If not specified, a'
+            ' system default Xcode version is used. Available versions can be'
+            ' queried using `gcloud alpha device-run catalog software-versions'
+            ' list`.'
+        ),
+    )
+    parser.add_argument(
         '--xctest-timeout',
         type=arg_parsers.Duration(lower_bound='1m', upper_bound='1h'),
         help=(
@@ -156,15 +167,6 @@ class XcTest(base.Command):
         help=(
             'A list of file or directory paths to pull from the device'
             ' following test completion, in the format BUNDLE_ID:DEVICE_PATH.'
-        ),
-    )
-    parser.add_argument(
-        '--video',
-        type=str,
-        choices=['always', 'on-failure'],
-        help=(
-            'Specify when to record video of the device screen during the'
-            ' test run. Accepted values are `always` or `on-failure`.'
         ),
     )
     parser.add_argument(
@@ -307,17 +309,10 @@ class XcTest(base.Command):
       )
       device_actions.append(push_action)
 
-    if args.video:
-      video_action = messages.DeviceAction(
-          iosRecordVideo=messages.IosRecordVideoDeviceAction(
-              discardOnPass=(args.video == 'on-failure')
-          )
-      )
-      device_actions.append(video_action)
-
     xctest_timeout = (
         f'{args.xctest_timeout}s' if args.xctest_timeout is not None else None
     )
+    xcode_version = args.xcode_version if args.xcode_version else None
 
     test_zip_file = messages.InputFile(
         gcsInputFile=messages.GcsPath(path=test_gcs)
@@ -331,6 +326,7 @@ class XcTest(base.Command):
     ios_xc_test = messages.IosXcTest(
         testsZip=test_zip_file,
         xctestrun=xctestrun_file,
+        xcodeVersion=xcode_version,
         xcTestTimeout=xctest_timeout,
     )
 

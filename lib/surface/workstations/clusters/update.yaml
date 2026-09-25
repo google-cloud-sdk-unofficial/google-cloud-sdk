@@ -36,6 +36,12 @@
       type: str
       help_text: |
         The launch URL for workstations.
+    - arg_name: console-base-url
+      release_tracks: [BETA, ALPHA]
+      api_field: workstationCluster.consoleBaseUrl
+      type: str
+      help_text: |
+        Cloud Console Base URL to be used for workstations in this cluster.
     labels:
       api_field: workstationCluster.labels
 

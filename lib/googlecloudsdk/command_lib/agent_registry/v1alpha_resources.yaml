@@ -30,18 +30,6 @@ projects_locations:
     attribute_name: location
     help: The location id of the {resource} resource.
   disable_auto_completers: true
-projects_locations_agents:
-  name: agent
-  plural_name: agents
-  collection: agentregistry.projects.locations.agents
-  attributes:
-  - *project
-  - *location
-  - &agent
-    parameter_name: agentsId
-    attribute_name: agent
-    help: The agent id of the {resource} resource.
-  disable_auto_completers: false
 projects_locations_bindings:
   name: binding
   plural_name: bindings
@@ -66,17 +54,17 @@ projects_locations_endpoints:
     attribute_name: endpoint
     help: The endpoint id of the {resource} resource.
   disable_auto_completers: false
-projects_locations_mcp_servers:
-  name: mcpServer
-  plural_name: mcpServers
-  collection: agentregistry.projects.locations.mcpServers
+projects_locations_findings:
+  name: finding
+  plural_name: findings
+  collection: agentregistry.projects.locations.findings
   attributes:
   - *project
   - *location
-  - &mcpServer
-    parameter_name: mcpServersId
-    attribute_name: mcp_server
-    help: The mcpServer id of the {resource} resource.
+  - &finding
+    parameter_name: findingsId
+    attribute_name: finding
+    help: The finding id of the {resource} resource.
   disable_auto_completers: false
 projects_locations_publishers:
   name: publisher
@@ -114,6 +102,75 @@ projects_locations_skills:
     attribute_name: skill
     help: The skill id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_agents:
+  name: agent
+  plural_name: agents
+  collection: agentregistry.projects.locations.agents
+  attributes:
+  - *project
+  - *location
+  - &agent
+    parameter_name: agentsId
+    attribute_name: agent
+    help: The agent id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_mcp_servers:
+  name: mcpServer
+  plural_name: mcpServers
+  collection: agentregistry.projects.locations.mcpServers
+  attributes:
+  - *project
+  - *location
+  - &mcpServer
+    parameter_name: mcpServersId
+    attribute_name: mcp_server
+    help: The mcpServer id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_or_projects_ai_applications_or_locations_agents:
+  name: agent
+  plural_name: agents
+  resources:
+  - name: agent
+    plural_name: agents
+    collection: agentregistry.projects.locations.agents
+    attributes:
+    - *project
+    - *location
+    - *agent
+    disable_auto_completers: true
+  - name: agent
+    plural_name: agents
+    collection: agentregistry.projects.locations.aiApplications.agents
+    attributes:
+    - *project
+    - *location
+    - &aiApplication
+      parameter_name: aiApplicationsId
+      attribute_name: ai_application
+      help: The aiApplication id of the {resource} resource.
+    - *agent
+    disable_auto_completers: true
+projects_locations_or_projects_ai_applications_or_locations_mcp_servers:
+  name: mcpServer
+  plural_name: mcpServers
+  resources:
+  - name: mcpServer
+    plural_name: mcpServers
+    collection: agentregistry.projects.locations.aiApplications.mcpServers
+    attributes:
+    - *project
+    - *location
+    - *aiApplication
+    - *mcpServer
+    disable_auto_completers: true
+  - name: mcpServer
+    plural_name: mcpServers
+    collection: agentregistry.projects.locations.mcpServers
+    attributes:
+    - *project
+    - *location
+    - *mcpServer
+    disable_auto_completers: true
 projects_locations_skills_revisions:
   name: revision
   plural_name: revisions

@@ -16,9 +16,11 @@
 
 
 import datetime
+from typing import Any
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
@@ -185,3 +187,15 @@ def _ConstructThresholdsMessage(thresholds, thresholds_message_class):
   thresholds_message.scaleIn = thresholds.scale_in
   thresholds_message.scaleOut = thresholds.scale_out
   return thresholds_message
+
+
+def GetFieldAndLogUnreachable(message: Any, attribute: str) -> Any:
+  """Response callback to log unreachable locations while generating fields of the message."""
+  if hasattr(message, 'unreachable') and message.unreachable:
+    log.warning(
+        'The following locations were unreachable: %s. '
+        'List results may be incomplete.',
+        ', '.join(sorted(message.unreachable)),
+    )
+  return getattr(message, attribute)
+

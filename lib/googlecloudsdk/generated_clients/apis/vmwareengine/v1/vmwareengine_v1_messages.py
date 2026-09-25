@@ -390,6 +390,30 @@ class Binding(_messages.Message):
   role = _messages.StringField(3)
 
 
+class CapacityAllocation(_messages.Message):
+  r"""Represents a capacity allocation. Capacity allocation is zonal.
+
+  Fields:
+    allocatedCapacityCount: Output only. The allocated capacity for the
+      capacity allocation.
+    consumedCapacityCount: Output only. The consumed capacity for the capacity
+      allocation.
+    machineFamily: Output only. The machine family of the capacity allocation.
+    name: Output only. Identifier. The resource name of the capacity
+      allocation. The last segment of the name is the placement group name.
+      For example: `projects/my-project/locations/us-
+      central1-a/capacityAllocations/pg-123`
+    privateClouds: Output only. The private cloud names using the capacity
+      allocation.
+  """
+
+  allocatedCapacityCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  consumedCapacityCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  machineFamily = _messages.StringField(3)
+  name = _messages.StringField(4)
+  privateClouds = _messages.StringField(5, repeated=True)
+
+
 class Cluster(_messages.Message):
   r"""A cluster in a private cloud.
 
@@ -1290,6 +1314,22 @@ class ListAnnouncementsResponse(_messages.Message):
   """
 
   announcements = _messages.MessageField('Announcement', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListCapacityAllocationsResponse(_messages.Message):
+  r"""Response message for VmwareEngine.ListCapacityAllocations
+
+  Fields:
+    capacityAllocations: A list of capacity allocations.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. Locations that could not be reached when
+      making an aggregated query using wildcards.
+  """
+
+  capacityAllocations = _messages.MessageField('CapacityAllocation', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -4183,6 +4223,50 @@ class VmwareengineProjectsLocationsAnnouncementsListRequest(_messages.Message):
       announcements. Resource names are schemeless URIs that follow the
       conventions in https://cloud.google.com/apis/design/resource_names. For
       example: `projects/my-project/locations/us-west1-a`
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class VmwareengineProjectsLocationsCapacityAllocationsListRequest(_messages.Message):
+  r"""A VmwareengineProjectsLocationsCapacityAllocationsListRequest object.
+
+  Fields:
+    filter: Optional. A filter expression that matches resources returned in
+      the response. The expression must specify the field name, a comparison
+      operator, and the value that you want to use for filtering. The value
+      must be a string, a number, or a boolean. The comparison operator must
+      be `=`, `!=`, `>`, or `<`. For example, if you are filtering a list of
+      capacity allocations, you can exclude the ones named `example-capacity-
+      allocation` by specifying `name != "example-capacity-allocation"`. You
+      can also filter on other fields. For example, you could specify
+      `machineFamily = "standard-72"` to include capacity allocations only if
+      they have a matching machine family. To filter on multiple expressions,
+      provide each separate expression within parentheses. For example: ```
+      (machineFamily = "standard-72") (allocatedCapacity > 10) ``` By default,
+      each expression is an `AND` expression. However, you can include `AND`
+      and `OR` expressions explicitly. For example: ``` (machineFamily =
+      "standard-72") AND (allocatedCapacity > 10) OR (netDemand > 0) ```
+    orderBy: Optional. Sorts list results by a certain order. By default,
+      returned results are ordered by `name` in ascending order. You can also
+      sort results in descending order based on the `name` value using
+      `orderBy="name desc"`. Currently, only ordering by `name` is supported.
+    pageSize: Optional. The maximum number of capacity allocations to return
+      in one page. The service may return fewer than this value. The maximum
+      value is coerced to 1000. The default value of this field is 500.
+    pageToken: Optional. A page token, received from a previous
+      `ListCapacityAllocations` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListCapacityAllocations` must match the call that provided the page
+      token.
+    parent: Required. The resource name of the location to query for capacity
+      allocations. Resource names are schemeless URIs that follow the
+      conventions in https://cloud.google.com/apis/design/resource_names. For
+      example: `projects/my-project/locations/us-central1-a`
   """
 
   filter = _messages.StringField(1)

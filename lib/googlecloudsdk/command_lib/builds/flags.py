@@ -353,3 +353,21 @@ def AddServiceAccountFlag(parser, hidden=False, required=False):
       required=required,
       help='The service account to use with this build. \n'
       'If unset, the default service account will be used.')
+
+
+def AddWorkerReleaseFlag(parser):
+  """Adds a flag to specify the worker release channel or version.
+
+  Args:
+    parser: The argparse parser to add the arg to.
+  """
+  parser.add_argument(
+      '--worker-release',
+      hidden=True,
+      help=(
+          'Specifies the release channel or version to use for the build'
+          ' worker image. Accepts release channel names (`rapid`, `regular`,'
+          ' `stable`) or specific release versions (for example, `2026.09`,'
+          ' `legacy`).'
+      ),
+  )

@@ -5275,8 +5275,8 @@ class MigrationJob(_messages.Message):
       migrations.
     originalMigrationName: Optional. A failback replication pointer to the
       resource name (URI) of the original migration job.
-    performanceConfig: Optional. Data dump parallelism settings used by the
-      migration.
+    performanceConfig: Optional. Data dump and load parallelism settings used
+      by the migration.
     phase: Output only. The current migration job phase.
     postgresHomogeneousConfig: Optional. Configuration for PostgreSQL
       homogeneous migration.
@@ -6105,9 +6105,12 @@ class PerformanceConfig(_messages.Message):
 
   Enums:
     DumpParallelLevelValueValuesEnum: Initial dump parallelism level.
+    LoadParallelLevelValueValuesEnum: Optional. Initial load parallelism
+      level.
 
   Fields:
     dumpParallelLevel: Initial dump parallelism level.
+    loadParallelLevel: Optional. Initial load parallelism level.
   """
 
   class DumpParallelLevelValueValuesEnum(_messages.Enum):
@@ -6125,7 +6128,22 @@ class PerformanceConfig(_messages.Message):
     OPTIMAL = 2
     MAX = 3
 
+  class LoadParallelLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. Initial load parallelism level.
+
+    Values:
+      LOAD_PARALLEL_LEVEL_UNSPECIFIED: Unknown load parallel level.
+      LOAD_MIN: Minimal parallel level.
+      LOAD_OPTIMAL: Optimal parallel level.
+      LOAD_MAX: Maximum parallel level.
+    """
+    LOAD_PARALLEL_LEVEL_UNSPECIFIED = 0
+    LOAD_MIN = 1
+    LOAD_OPTIMAL = 2
+    LOAD_MAX = 3
+
   dumpParallelLevel = _messages.EnumField('DumpParallelLevelValueValuesEnum', 1)
+  loadParallelLevel = _messages.EnumField('LoadParallelLevelValueValuesEnum', 2)
 
 
 class Policy(_messages.Message):

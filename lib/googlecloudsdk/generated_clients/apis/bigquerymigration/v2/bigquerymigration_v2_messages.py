@@ -1091,11 +1091,10 @@ class GoogleCloudBigqueryMigrationV2LineageOutput(_messages.Message):
     processingProgressReports: Output only. Work processing progress reports
       broken up by processing stage.
     recognizedInputs: Output only. Recognized lineage inputs. All inputs are
-      processed only if the task succeeds and all work is in state
-      [SUCCEEDED](ProgressReport.WorkSummary.State.SUCCEEDED) (in particular,
-      nothing is [SKIPPED](ProgressReport.WorkSummary.State.SKIPPED)). Even
-      with all inputs processed successfully, there may be transpiler errors
-      present leading to inaccurate lineage.
+      processed only if the task succeeds and all work is in state `SUCCEEDED`
+      (in particular, nothing is `SKIPPED`). Even with all inputs processed
+      successfully, there may be transpiler errors present leading to
+      inaccurate lineage.
     webappUri: The URI of the webapp that visualizes the lineage. The user
       needs the `bigquerymigration.googleapis.com/lineageDbs.query` IAM
       permission to use the webapp.

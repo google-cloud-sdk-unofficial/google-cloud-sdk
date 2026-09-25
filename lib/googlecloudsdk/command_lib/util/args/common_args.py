@@ -43,10 +43,10 @@ be listed using `gcloud config list --format='text(core.project)'`
 and can be set using `gcloud config set project PROJECTID`.
 
 `--project` and its fallback `{core_project}` property play two roles
-in the invocation. It specifies the project of the resource to
-operate on. It also specifies the project for API enablement check,
-quota, and billing. To specify a different project for quota and
-billing, use `--billing-project` or `{billing_project}` property.
+in the invocation: they specify both the project of the resource to
+operate on, and the project for API enablement checks, quota, and
+billing. To specify a different project for quota and billing, use
+the `--billing-project` flag or the `{billing_project}` property.
     """.format(
         core_project=properties.VALUES.core.project,
         billing_project=properties.VALUES.billing.quota_project)

@@ -270,6 +270,7 @@ def ParseCreateOptionsBase(
       cluster_version=get_default('cluster_version'),
       cloud_run_config=cloud_run_config,
       node_version=get_default('node_version'),
+      target_node_version=get_default('target_node_version'),
       create_subnetwork=get_default('create_subnetwork'),
       disable_default_snat=get_default('disable_default_snat'),
       dataplane_v2=get_default('enable_dataplane_v2'),
@@ -501,6 +502,9 @@ def ParseCreateOptionsBase(
       gateway_api=get_default('gateway_api'),
       logging_variant=get_default('logging_variant'),
       enable_cost_allocation=get_default('enable_cost_allocation'),
+      enable_network_egress_cost_allocation=get_default(
+          'enable_network_egress_cost_allocation'
+      ),
       enable_multi_networking=get_default('enable_multi_networking'),
       placement_type=get_default('placement_type'),
       placement_policy=get_default('placement_policy'),
@@ -1015,6 +1019,9 @@ flags_to_add = {
         ),
         'nodeidentity': flags.AddClusterNodeIdentityFlags,
         'nodeversion': flags.AddNodeVersionFlag,
+        'targetnodeversion': lambda p: flags.AddTargetNodeVersionFlags(
+            p, hidden=True, is_update=False
+        ),
         'nodelabels': flags.AddNodeLabelsFlag,
         'notificationconfig': flags.AddNotificationConfigFlag,
         'nodepoolupgradeconcurrencyconfig': (
@@ -1269,6 +1276,9 @@ flags_to_add = {
         ),
         'nodeidentity': flags.AddClusterNodeIdentityFlags,
         'nodeversion': flags.AddNodeVersionFlag,
+        'targetnodeversion': lambda p: flags.AddTargetNodeVersionFlags(
+            p, hidden=True, is_update=False
+        ),
         'nodelabels': flags.AddNodeLabelsFlag,
         'notificationconfig': flags.AddNotificationConfigFlag,
         'nodepoolupgradeconcurrencyconfig': (
@@ -1432,12 +1442,31 @@ def AddFlags(channel, parser, flag_defaults, allowlist=None):
   """
   add_flag_for_channel = flags_to_add[channel]
 
+  node_version_group = None
+  if (
+      'nodeversion' in add_flag_for_channel
+      and 'targetnodeversion' in add_flag_for_channel
+      and (
+          allowlist is None
+          or ('nodeversion' in allowlist and 'targetnodeversion' in allowlist)
+      )
+  ):
+    node_version_group = parser.add_group(mutex=True)
+
   for flagname in add_flag_for_channel:
     if allowlist is None or (flagname in allowlist):
+      target_parser = parser
+      if node_version_group is not None and flagname in (
+          'nodeversion',
+          'targetnodeversion',
+      ):
+        target_parser = node_version_group
       if flagname in flag_defaults:
-        add_flag_for_channel[flagname](parser, default=flag_defaults[flagname])
+        add_flag_for_channel[flagname](
+            target_parser, default=flag_defaults[flagname]
+        )
       else:
-        add_flag_for_channel[flagname](parser)
+        add_flag_for_channel[flagname](target_parser)
 
 
 base_flag_defaults = {
@@ -1739,6 +1768,9 @@ class CreateBeta(Create):
         'enable_workload_vulnerability_scanning'
     )
     ops.enable_cost_allocation = get_default('enable_cost_allocation')
+    ops.enable_network_egress_cost_allocation = get_default(
+        'enable_network_egress_cost_allocation'
+    )
     ops.managed_config = get_default('managed_config')
     ops.fleet_project = get_default('fleet_project')
     ops.enable_fleet = get_default('enable_fleet')
@@ -1872,6 +1904,9 @@ class CreateAlpha(Create):
     ops.disable_default_snat = get_default('disable_default_snat')
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.enable_cost_allocation = get_default('enable_cost_allocation')
+    ops.enable_network_egress_cost_allocation = get_default(
+        'enable_network_egress_cost_allocation'
+    )
     ops.enable_logging_monitoring_system_only = get_default(
         'enable_logging_monitoring_system_only'
     )

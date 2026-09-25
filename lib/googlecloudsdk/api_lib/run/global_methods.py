@@ -39,8 +39,14 @@ _ALL_REGIONS = '-'
 CLOUDRUN_FEATURE = 'appdevexperience'
 
 
-def GetServerlessClientInstance(api_version=SERVERLESS_API_VERSION):
-  return apis.GetClientInstance(SERVERLESS_API_NAME, api_version)
+def GetServerlessClientInstance(
+    api_version=SERVERLESS_API_VERSION,
+    custom_check_response_func=None,
+):
+  client = apis.GetClientInstance(SERVERLESS_API_NAME, api_version)
+  if custom_check_response_func is not None:
+    client.check_response_func = custom_check_response_func
+  return client
 
 
 def ListRegions(client):

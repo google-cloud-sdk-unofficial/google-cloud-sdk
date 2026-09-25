@@ -583,6 +583,9 @@ class _LogManager(object):
   def Reset(self, stdout, stderr):
     """Resets all logging functionality to its default state."""
     # Clears any existing logging handlers.
+    for handler in self._root_logger.handlers:
+      if isinstance(handler, logging.FileHandler):
+        handler.close()
     self._root_logger.handlers[:] = []
 
     # Refresh the streams for the console writers.
@@ -610,6 +613,7 @@ class _LogManager(object):
     self.file_only_logger.handlers[:] = []
     self.file_only_logger.addHandler(_NullHandler())
     self.file_only_logger.setLevel(logging.NOTSET)
+    self._logs_dirs = []
 
     # Reset verbosity and output settings.
     self.SetVerbosity(None)

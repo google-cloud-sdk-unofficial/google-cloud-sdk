@@ -55,7 +55,7 @@ VALID_SOURCE_TRANSFER_SCHEMES = COMMON_VALID_TRANSFER_SCHEMES + (
     storage_url.ProviderPrefix.HDFS,
 )
 VALID_DESTINATION_TRANSFER_SCHEMES = COMMON_VALID_TRANSFER_SCHEMES
-VALID_REPLICATON_SCHEMES = [storage_url.ProviderPrefix.GCS]
+VALID_REPLICATION_SCHEMES = [storage_url.ProviderPrefix.GCS]
 
 
 def _prompt_user_and_add_valid_scheme(url, valid_schemes):
@@ -270,6 +270,7 @@ def _create_or_modify_object_conditions(transfer_spec, args, messages):
       or getattr(args, 'include_modified_after_absolute', None)
       or getattr(args, 'include_modified_before_relative', None)
       or getattr(args, 'include_modified_after_relative', None)
+      or getattr(args, 'include_storage_classes', None)
   ):
     return
   if not transfer_spec.objectConditions:
@@ -295,6 +296,10 @@ def _create_or_modify_object_conditions(transfer_spec, args, messages):
   if getattr(args, 'include_modified_after_relative', None):
     transfer_spec.objectConditions.maxTimeElapsedSinceLastModification = '{}s'.format(
         args.include_modified_after_relative)
+  if getattr(args, 'include_storage_classes', None):
+    transfer_spec.objectConditions.includeStorageClasses = (
+        args.include_storage_classes
+    )
 
 
 def _create_or_modify_creds(transfer_spec, args, messages):
@@ -676,7 +681,7 @@ def _create_or_modify_replication_spec(
     job.replicationSpec.gcsDataSource = None
 
     source_url = storage_url.storage_url_from_string(args.source)
-    if source_url.scheme not in VALID_REPLICATON_SCHEMES:
+    if source_url.scheme not in VALID_REPLICATION_SCHEMES:
       raise errors.Error(
           'Replication feature is currently available for Google Cloud Storage'
           ' buckets only.'
@@ -686,7 +691,7 @@ def _create_or_modify_replication_spec(
         args,
         messages,
         source_url,
-        VALID_REPLICATON_SCHEMES,
+        VALID_REPLICATION_SCHEMES,
     )
 
   if getattr(args, 'destination', None):
@@ -694,13 +699,16 @@ def _create_or_modify_replication_spec(
     job.replicationSpec.gcsDataSink = None
 
     destination_url = storage_url.storage_url_from_string(args.destination)
-    if destination_url.scheme not in VALID_REPLICATON_SCHEMES:
+    if destination_url.scheme not in VALID_REPLICATION_SCHEMES:
       raise errors.Error(
           'Replication feature is currently available for Google Cloud Storage'
           ' buckets only.'
       )
     validate_and_add_destination_url(
-        job.replicationSpec, messages, destination_url, VALID_REPLICATON_SCHEMES
+        job.replicationSpec,
+        messages,
+        destination_url,
+        VALID_REPLICATION_SCHEMES,
     )
 
   _create_or_modify_object_conditions(job.replicationSpec, args, messages)

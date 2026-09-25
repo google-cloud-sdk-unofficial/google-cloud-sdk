@@ -26,6 +26,7 @@ from surface.container.clusters import create
 auto_flags = [
     'args',
     'clusterversion',
+    'targetnodeversion',
     'masterauth',
     'nodeidentity',
     'privatecluster',

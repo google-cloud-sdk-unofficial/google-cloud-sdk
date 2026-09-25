@@ -638,13 +638,18 @@ def AddMinCpuPlatformArgs(parser, include_driver_pool_args=False):
 
 def AddComponentFlag(parser):
   """Add optional components flag."""
-  help_text = """\
+  help_text = arg_parsers.UniverseHelpText(
+      default="""\
       List of optional components to be installed on cluster machines.
 
       The following page documents the optional components that can be
       installed:
       https://cloud.google.com/dataproc/docs/concepts/configuring-clusters/optional-components.
-      """
+      """,
+      universe_help="""\
+      Optional components are only supported in the default universe.
+      """,
+  )
   parser.add_argument(
       '--optional-components',
       metavar='COMPONENT',

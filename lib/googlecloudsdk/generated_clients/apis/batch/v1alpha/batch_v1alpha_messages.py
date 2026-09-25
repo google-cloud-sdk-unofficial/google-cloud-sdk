@@ -1116,10 +1116,13 @@ class InstanceSelection(_messages.Message):
   r"""Defines an instance selection for a given instance flexibility policy.
 
   Fields:
+    bootDisk: Optional. Boot disk to be created and attached to instances
+      created from this selection. It overrides the boot disk specified in the
+      instance properties. (e.g., overriding `boot` disk type to Hyperdisk for
+      4th-gen machine types)
     disks: Optional. List of disks to be attached to instances created from
       this selection. They override the disks specified in the instance
-      properties. (e.g., overriding `boot` disk type to Hyperdisk for 4th-gen
-      machine types)
+      properties.
     machineTypes: Required. The Compute Engine machine type IDs. Only the
       machine type ID is supported, such as `n1-standard-16`. Full or partial
       URLs are not accepted. The total maximum number of machine types across
@@ -1132,9 +1135,10 @@ class InstanceSelection(_messages.Message):
       have the same preference.
   """
 
-  disks = _messages.MessageField('AttachedDisk', 1, repeated=True)
-  machineTypes = _messages.StringField(2, repeated=True)
-  rank = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  bootDisk = _messages.MessageField('Disk', 1)
+  disks = _messages.MessageField('AttachedDisk', 2, repeated=True)
+  machineTypes = _messages.StringField(3, repeated=True)
+  rank = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class InstanceStatus(_messages.Message):

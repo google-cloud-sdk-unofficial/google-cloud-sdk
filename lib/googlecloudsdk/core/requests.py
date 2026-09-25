@@ -24,9 +24,9 @@ import os
 from typing import Optional
 
 from google.auth.transport import requests as google_auth_requests
-from google.auth.transport.requests import _MutualTlsOffloadAdapter
 from googlecloudsdk.core import context_aware
 from googlecloudsdk.core import ecp_proxy_manager
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import transport
@@ -284,51 +284,33 @@ class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
     return response
 
 
-def _CreateMutualTlsOffloadAdapter(
+def _CreateECPTlsAdapter(
     ca_config: context_aware._EnterpriseCertConfigImpl,
 ) -> requests.adapters.BaseAdapter:
-  """Creates a requests adapter for mTLS offloading via ECP.
-
-  This function decides which adapter to use based on the provided
-  configuration:
-  - If `ca_config.use_local_proxy` is True, it returns a
-    `_LocalECPProxyAdapter`, which routes traffic through a local ECP proxy
-    subprocess.
-  - Otherwise, it returns a `_MutualTlsOffloadAdapter` from the google-auth
-    library, which uses the ECP binary for TLS offloading without a local proxy.
+  """Creates a requests adapter for mTLS via ECP HTTP Proxy.
 
   Args:
       ca_config: The enterprise certificate configuration object.
 
   Returns:
-      An instance of a requests adapter for mTLS offloading.
+      An instance of a requests adapter for mTLS.
 
   Raises:
       ValueError: If the certificate configuration file path is not provided.
+      exceptions.Error: If local ECP proxy is disabled or unavailable.
   """
   if not ca_config or not ca_config.certificate_config_file_path:
     raise ValueError('Certificate config file path must be provided.')
 
-  if ca_config.use_local_proxy:
-    return _LocalECPProxyAdapter(
-        certificate_config_file_path=ca_config.certificate_config_file_path,
+  if not ca_config.use_local_proxy:
+    raise exceptions.Error(
+        'The legacy ECP TLS Offload Engine has been deprecated and removed. '
+        'ECP HTTP Proxy is required for Certificate-Based Access.'
     )
-  else:
-    try:
-      return _MutualTlsOffloadAdapter(ca_config.certificate_config_file_path)
-    except ImportError as e:
-      raise ImportError(
-          (
-              '{error}\nFailed to load the mTLS offload adapter. '
-              'This is due to a missing module required for mTLS support.\n'
-              'Please try one of the following solutions:\n'
-              '1. Reinstall the Google Cloud CLI\n'
-              '2. Initialize the gcloud virtualenv by running:\n'
-              '\tgcloud config virtualenv create\n'
-              '3. Install the missing module using pip and set the environment'
-              ' variable CLOUDSDK_PYTHON_SITEPACKAGES=1'
-          ).format(error=e)
-      ) from e
+
+  return _LocalECPProxyAdapter(
+      certificate_config_file_path=ca_config.certificate_config_file_path,
+  )
 
 
 def Session(
@@ -419,7 +401,7 @@ def Session(
           ca_config.config_type
           == context_aware.ConfigType.ENTERPRISE_CERTIFICATE
       ):
-        adapter = _CreateMutualTlsOffloadAdapter(ca_config)
+        adapter = _CreateECPTlsAdapter(ca_config)
       elif (
           ca_config.config_type == context_aware.ConfigType.ON_DISK_CERTIFICATE
       ):

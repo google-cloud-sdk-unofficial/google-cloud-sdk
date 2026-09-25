@@ -246,6 +246,26 @@ class AgentregistryProjectsLocationsAgentsListRequest(_messages.Message):
   parent = _messages.StringField(5, required=True)
 
 
+class AgentregistryProjectsLocationsAgentsPatchRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAgentsPatchRequest object.
+
+  Fields:
+    agent: A Agent resource to be passed as the request body.
+    name: Identifier. The resource name of an Agent. Format:
+      `projects/{project}/locations/{location}/agents/{agent}`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the Agent resource by the update. The fields specified in
+      the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask. If the user does not
+      provide a mask then all fields present in the request will be
+      overwritten.
+  """
+
+  agent = _messages.MessageField('Agent', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class AgentregistryProjectsLocationsAgentsSearchRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsAgentsSearchRequest object.
 
@@ -258,6 +278,68 @@ class AgentregistryProjectsLocationsAgentsSearchRequest(_messages.Message):
 
   parent = _messages.StringField(1, required=True)
   searchAgentsRequest = _messages.MessageField('SearchAgentsRequest', 2)
+
+
+class AgentregistryProjectsLocationsAiApplicationsGetIamPolicyRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsGetIamPolicyRequest
+  object.
+
+  Fields:
+    options_requestedPolicyVersion: Optional. The maximum policy version that
+      will be used to format the policy. Valid values are 0, 1, and 3.
+      Requests specifying an invalid value will be rejected. Requests for
+      policies with any conditional role bindings must specify version 3.
+      Policies with no conditional role bindings may specify any valid value
+      or leave the field unset. The policy in the response might use the
+      policy version that you specified, or it might use a lower policy
+      version. For example, if you specify version 3, but the policy has no
+      conditional role bindings, the response uses version 1. To learn which
+      resources support conditions in their IAM policies, see the [IAM
+      documentation](https://cloud.google.com/iam/help/conditions/resource-
+      policies).
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  resource = _messages.StringField(2, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsSetIamPolicyRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsSetIamPolicyRequest
+  object.
+
+  Fields:
+    googleIamV1SetIamPolicyRequest: A GoogleIamV1SetIamPolicyRequest resource
+      to be passed as the request body.
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  googleIamV1SetIamPolicyRequest = _messages.MessageField('GoogleIamV1SetIamPolicyRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsTestIamPermissionsRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsTestIamPermissionsRequest
+  object.
+
+  Fields:
+    googleIamV1TestIamPermissionsRequest: A
+      GoogleIamV1TestIamPermissionsRequest resource to be passed as the
+      request body.
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
+  resource = _messages.StringField(2, required=True)
 
 
 class AgentregistryProjectsLocationsBindingsCreateRequest(_messages.Message):
@@ -442,6 +524,58 @@ class AgentregistryProjectsLocationsEndpointsListRequest(_messages.Message):
   parent = _messages.StringField(4, required=True)
 
 
+class AgentregistryProjectsLocationsEndpointsPatchRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsEndpointsPatchRequest object.
+
+  Fields:
+    endpoint: A Endpoint resource to be passed as the request body.
+    name: Identifier. The resource name of the Endpoint. Format:
+      `projects/{project}/locations/{location}/endpoints/{endpoint}`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the Endpoint resource by the update. The fields specified
+      in the `update_mask` are relative to the resource, not the full request.
+      A field will be overwritten if it is in the mask. If the user does not
+      provide a mask then all fields that are populated (have a non-empty
+      value) will be overwritten.
+  """
+
+  endpoint = _messages.MessageField('Endpoint', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
+class AgentregistryProjectsLocationsFindingsGetRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsFindingsGetRequest object.
+
+  Fields:
+    name: Required. The name of the Finding to retrieve. Format:
+      `projects/{project}/locations/{location}/findings/{finding}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AgentregistryProjectsLocationsFindingsListRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsFindingsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListFindingsRequest. Format:
+      `projects/{project}/locations/{location}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
 class AgentregistryProjectsLocationsGetRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsGetRequest object.
 
@@ -504,6 +638,26 @@ class AgentregistryProjectsLocationsMcpServersListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class AgentregistryProjectsLocationsMcpServersPatchRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsMcpServersPatchRequest object.
+
+  Fields:
+    mcpServer: A McpServer resource to be passed as the request body.
+    name: Identifier. The resource name of the MCP Server. Format:
+      `projects/{project}/locations/{location}/mcpServers/{mcp_server}`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the McpServer resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields present in the request will be
+      overwritten.
+  """
+
+  mcpServer = _messages.MessageField('McpServer', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class AgentregistryProjectsLocationsMcpServersSearchRequest(_messages.Message):
@@ -1348,6 +1502,81 @@ class FetchAvailableBindingsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class File(_messages.Message):
+  r"""File location of the finding.
+
+  Fields:
+    lineNumber: Optional. Line number (1-based), or 0 if whole File / unknown.
+    path: Optional. Relative path of the file containing the finding.
+  """
+
+  lineNumber = _messages.IntegerField(1)
+  path = _messages.StringField(2)
+
+
+class Finding(_messages.Message):
+  r"""Represents a security Finding.
+
+  Enums:
+    FindingClassValueValuesEnum: Optional. Class of the finding.
+    SeverityValueValuesEnum: Optional. Severity of the finding.
+
+  Fields:
+    category: Optional. Category of the finding.
+    createTime: Output only. Create time.
+    files: Optional. File associated with the finding.
+    findingClass: Optional. Class of the finding.
+    name: Identifier. Resource name of the Finding. Format:
+      `projects/{project}/locations/{location}/findings/{finding}`.
+    severity: Optional. Severity of the finding.
+    uid: Output only. Universally unique identifier (UUID4) for the Finding.
+    updateTime: Output only. Update time.
+  """
+
+  class FindingClassValueValuesEnum(_messages.Enum):
+    r"""Optional. Class of the finding.
+
+    Values:
+      FINDING_CLASS_UNSPECIFIED: Unspecified finding class.
+      VULNERABILITY: Describes a potential weakness in software that increases
+        risk to Confidentiality & Integrity & Availability.
+      OBSERVATION: Describes a security observation that is for informational
+        purposes.
+      SECRET: Describes a potential security risk due to plaintext
+        credentials, keys, or tokens being exposed in an asset or workload.
+    """
+    FINDING_CLASS_UNSPECIFIED = 0
+    VULNERABILITY = 1
+    OBSERVATION = 2
+    SECRET = 3
+
+  class SeverityValueValuesEnum(_messages.Enum):
+    r"""Optional. Severity of the finding.
+
+    Values:
+      SEVERITY_UNSPECIFIED: This value is used for findings when a source
+        doesn't write a severity value.
+      SEVERITY_CRITICAL: Critical severity.
+      SEVERITY_HIGH: High severity.
+      SEVERITY_MEDIUM: Medium severity.
+      SEVERITY_LOW: Low severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    SEVERITY_CRITICAL = 1
+    SEVERITY_HIGH = 2
+    SEVERITY_MEDIUM = 3
+    SEVERITY_LOW = 4
+
+  category = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  files = _messages.MessageField('File', 3, repeated=True)
+  findingClass = _messages.EnumField('FindingClassValueValuesEnum', 4)
+  name = _messages.StringField(5)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 6)
+  uid = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
+
+
 class Frontmatter(_messages.Message):
   r"""Structured metadata attributes extracted from the package's local
   SKILL.md frontmatter.
@@ -1750,6 +1979,19 @@ class ListEndpointsResponse(_messages.Message):
   """
 
   endpoints = _messages.MessageField('Endpoint', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListFindingsResponse(_messages.Message):
+  r"""Message for response to listing Findings.
+
+  Fields:
+    findings: The list of Findings.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  findings = _messages.MessageField('Finding', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
 
 
@@ -2315,6 +2557,36 @@ class Publisher(_messages.Message):
   verifiedPrefix = _messages.StringField(6)
 
 
+class ScanningConfig(_messages.Message):
+  r"""Configuration for scanning of the skill.
+
+  Enums:
+    PolicyValueValuesEnum: Optional. The security scanning policy.
+
+  Fields:
+    policy: Optional. The security scanning policy.
+  """
+
+  class PolicyValueValuesEnum(_messages.Enum):
+    r"""Optional. The security scanning policy.
+
+    Values:
+      POLICY_UNSPECIFIED: Default value. Inherits system default
+        (ENABLED_BLOCKING).
+      DISABLED: Bypasses scanning.
+      ENABLED_BLOCKING: Scans the skill package and blocks download if
+        security or safety issues are found.
+      ENABLED_NONBLOCKING: Scans the skill package in audit mode without
+        blocking downloads.
+    """
+    POLICY_UNSPECIFIED = 0
+    DISABLED = 1
+    ENABLED_BLOCKING = 2
+    ENABLED_NONBLOCKING = 3
+
+  policy = _messages.EnumField('PolicyValueValuesEnum', 1)
+
+
 class SearchAgentsRequest(_messages.Message):
   r"""Message for searching Agents
 
@@ -2498,6 +2770,8 @@ class Skill(_messages.Message):
     defaultRevision: Optional. The full resource name of the revision
       currently served by default (floating track). Format: `projects/{project
       }/locations/{location}/skills/{skill}/revisions/{revision}`
+    defaultRevisionFindingCount: Output only. The number of findings in the
+      default revision of the skill.
     description: Optional. Brief summary describing the capabilities of the
       skill. Maximum length is 2048 characters.
     displayName: Required. Human-readable display name of the skill. Maximum
@@ -2517,6 +2791,7 @@ class Skill(_messages.Message):
       The publisher dictates the allowed namespace prefixes for the skill's
       name and logical `skill_id` (e.g., Publisher `google` authorizes the
       `google-*` prefix).
+    scanningConfig: Optional. Optional. Scanning configuration for the skill.
     skillId: Output only. A stable, globally unique logical identifier for the
       skill. It is securely constructed by the backend by combining the
       associated `publisher`'s verified namespace and the skill's resource ID
@@ -2590,18 +2865,20 @@ class Skill(_messages.Message):
 
   createTime = _messages.StringField(1)
   defaultRevision = _messages.StringField(2)
-  description = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  frontmatter = _messages.MessageField('Frontmatter', 5)
-  initialRevision = _messages.MessageField('SkillRevision', 6)
-  name = _messages.StringField(7)
-  publisher = _messages.StringField(8)
-  skillId = _messages.StringField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  targetState = _messages.EnumField('TargetStateValueValuesEnum', 11)
-  type = _messages.EnumField('TypeValueValuesEnum', 12)
-  uid = _messages.StringField(13)
-  updateTime = _messages.StringField(14)
+  defaultRevisionFindingCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  description = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  frontmatter = _messages.MessageField('Frontmatter', 6)
+  initialRevision = _messages.MessageField('SkillRevision', 7)
+  name = _messages.StringField(8)
+  publisher = _messages.StringField(9)
+  scanningConfig = _messages.MessageField('ScanningConfig', 10)
+  skillId = _messages.StringField(11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  targetState = _messages.EnumField('TargetStateValueValuesEnum', 13)
+  type = _messages.EnumField('TypeValueValuesEnum', 14)
+  uid = _messages.StringField(15)
+  updateTime = _messages.StringField(16)
 
 
 class SkillRevision(_messages.Message):
@@ -2814,5 +3091,7 @@ encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_1', '1')
 encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
+encoding.AddCustomJsonFieldMapping(
+    AgentregistryProjectsLocationsAiApplicationsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(
     AgentregistryProjectsLocationsSkillsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')

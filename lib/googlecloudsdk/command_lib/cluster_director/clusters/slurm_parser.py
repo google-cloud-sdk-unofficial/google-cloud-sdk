@@ -196,11 +196,39 @@ def _CoerceValue(field_name: str, value: Any) -> Any:
   return value_str
 
 
+def _ParseSubDict(val: Any) -> dict[str, str]:
+  """Parses a sub-dict value which may be a dict, JSON string, or '{k=v,k2=v2}'."""
+  if isinstance(val, dict):
+    return {str(k): str(v) for k, v in val.items()}
+  if not isinstance(val, str):
+    return {}
+  val_str = val.strip()
+  if val_str.startswith('{') and val_str.endswith('}'):
+    val_str = val_str[1:-1].strip()
+  if not val_str:
+    return {}
+  sub_dict = {}
+  tokens = [t.strip() for t in val_str.split(',') if t.strip()]
+  for token in tokens:
+    if '=' in token:
+      k, v = token.split('=', 1)
+      sub_dict[k.strip()] = v.strip()
+    elif ':' in token:
+      k, v = token.split(':', 1)
+      sub_dict[k.strip()] = v.strip()
+    else:
+      sub_dict[token.strip()] = 'true'
+  return sub_dict
+
+
 def ParseSlurmConfigDict(arg_dict: dict[str, Any]) -> dict[str, Any]:
   """Parses and validates an inline ArgDict of Slurm parameters in camelCase.
 
   Supports dot-notation for nested fields like
-  'schedulerParameters.bfBusyNodes=true'.
+  'schedulerParameters.bfBusyNodes=true' and sub-dictionary notation like
+  'schedulerParameters="{bfBusyNodes=true,bfInterval=30}"'. Both camelCase and
+  snake_case (matching native Slurm parameter names) are supported for nested
+  parameters.
 
   Args:
     arg_dict: Dictionary of key-value pairs from ArgDict.
@@ -218,34 +246,58 @@ def ParseSlurmConfigDict(arg_dict: dict[str, Any]) -> dict[str, Any]:
   result: dict[str, Any] = {}
   scheduler_params: dict[str, Any] = {}
   preempt_params: dict[str, Any] = {}
+  additional_settings: dict[str, Any] = {}
 
   for raw_key, raw_val in arg_dict.items():
     clean_key = raw_key.strip()
     if '.' in clean_key:
       parent_key, sub_key = clean_key.split('.', 1)
-      if parent_key == 'schedulerParameters':
-        if sub_key not in SCHEDULER_PARAMS:
+      norm_parent = _SlurmConfKeyToCamelCase(parent_key)
+      norm_sub = _SlurmConfKeyToCamelCase(sub_key)
+      if norm_parent == 'schedulerParameters':
+        if norm_sub not in SCHEDULER_PARAMS:
           raise errors.ClusterDirectorError(
               f'Unrecognized scheduler parameter: {sub_key!r}'
           )
-        scheduler_params[sub_key] = _CoerceValue(sub_key, raw_val)
-      elif parent_key == 'preemptParameters':
-        if sub_key not in PREEMPT_PARAMS:
+        scheduler_params[norm_sub] = _CoerceValue(norm_sub, raw_val)
+      elif norm_parent == 'preemptParameters':
+        if norm_sub not in PREEMPT_PARAMS:
           raise errors.ClusterDirectorError(
               f'Unrecognized preempt parameter: {sub_key!r}'
           )
-        preempt_params[sub_key] = _CoerceValue(sub_key, raw_val)
+        preempt_params[norm_sub] = _CoerceValue(norm_sub, raw_val)
+      elif norm_parent == 'additionalSettings':
+        additional_settings[sub_key] = str(raw_val)
       else:
         raise errors.ClusterDirectorError(
             f'Unsupported nested Slurm parameter prefix: {parent_key!r}'
         )
     else:
-      if clean_key in SCHEDULER_PARAMS:
-        scheduler_params[clean_key] = _CoerceValue(clean_key, raw_val)
-      elif clean_key in PREEMPT_PARAMS:
-        preempt_params[clean_key] = _CoerceValue(clean_key, raw_val)
-      elif clean_key in GLOBAL_SLURM_PARAMS:
-        result[clean_key] = _CoerceValue(clean_key, raw_val)
+      norm_key = _SlurmConfKeyToCamelCase(clean_key)
+      if norm_key == 'schedulerParameters':
+        for sk, sv in _ParseSubDict(raw_val).items():
+          norm_sk = _SlurmConfKeyToCamelCase(sk)
+          if norm_sk not in SCHEDULER_PARAMS:
+            raise errors.ClusterDirectorError(
+                f'Unrecognized scheduler parameter: {sk!r}'
+            )
+          scheduler_params[norm_sk] = _CoerceValue(norm_sk, sv)
+      elif norm_key == 'preemptParameters':
+        for pk, pv in _ParseSubDict(raw_val).items():
+          norm_pk = _SlurmConfKeyToCamelCase(pk)
+          if norm_pk not in PREEMPT_PARAMS:
+            raise errors.ClusterDirectorError(
+                f'Unrecognized preempt parameter: {pk!r}'
+            )
+          preempt_params[norm_pk] = _CoerceValue(norm_pk, pv)
+      elif norm_key == 'additionalSettings':
+        additional_settings.update(_ParseSubDict(raw_val))
+      elif norm_key in SCHEDULER_PARAMS:
+        scheduler_params[norm_key] = _CoerceValue(norm_key, raw_val)
+      elif norm_key in PREEMPT_PARAMS:
+        preempt_params[norm_key] = _CoerceValue(norm_key, raw_val)
+      elif norm_key in GLOBAL_SLURM_PARAMS:
+        result[norm_key] = _CoerceValue(norm_key, raw_val)
       else:
         raise errors.ClusterDirectorError(
             f'Unrecognized Slurm configuration parameter: {raw_key!r}'
@@ -255,6 +307,8 @@ def ParseSlurmConfigDict(arg_dict: dict[str, Any]) -> dict[str, Any]:
     result['schedulerParameters'] = scheduler_params
   if preempt_params:
     result['preemptParameters'] = preempt_params
+  if additional_settings:
+    result['additionalSettings'] = additional_settings
 
   return result
 
@@ -395,6 +449,7 @@ def ParseSlurmConfFile(file_path: str) -> dict[str, Any]:
   config_dict: dict[str, Any] = {}
   scheduler_params: dict[str, Any] = {}
   preempt_params: dict[str, Any] = {}
+  additional_settings: dict[str, Any] = {}
   node_sets_dict: dict[str, Any] = {}
   partitions_dict: dict[str, Any] = {}
 
@@ -493,18 +548,28 @@ def ParseSlurmConfFile(file_path: str) -> dict[str, Any]:
               f'Unrecognized preempt parameter in slurm.conf: {sk!r}'
           )
         preempt_params[norm_sk] = _CoerceValue(norm_sk, sv)
+    elif norm_key == 'additionalSettings':
+      sub_parts = val.split(',')
+      for sub in sub_parts:
+        sub = sub.strip()
+        if not sub:
+          continue
+        if '=' in sub:
+          ak, av = sub.split('=', 1)
+        else:
+          ak, av = sub, 'true'
+        additional_settings[ak.strip()] = av.strip()
     elif norm_key in GLOBAL_SLURM_PARAMS:
       config_dict[norm_key] = _CoerceValue(norm_key, val)
     else:
-      raise errors.ClusterDirectorError(
-          'Unrecognized Slurm global configuration parameter in slurm.conf:'
-          f' {key!r}'
-      )
+      additional_settings[key] = val
 
   if scheduler_params:
     config_dict['schedulerParameters'] = scheduler_params
   if preempt_params:
     config_dict['preemptParameters'] = preempt_params
+  if additional_settings:
+    config_dict['additionalSettings'] = additional_settings
 
   result: dict[str, Any] = {}
   if config_dict:

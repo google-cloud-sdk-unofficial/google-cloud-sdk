@@ -86,10 +86,9 @@ class WindowsBinaryPathConfig(object):
     ecp: Path to the ECP binary.
     ecp_http_proxy: Path to the ECP HTTP proxy binary.
     ecp_client: Path to the ECP client library.
-    tls_offload: Path to the TLS offload library.
   """
 
-  def __init__(self, ecp, ecp_client, tls_offload, ecp_http_proxy):
+  def __init__(self, ecp, ecp_client, ecp_http_proxy):
     self.ecp = ecp if ecp else os.path.join(get_bin_folder(), 'ecp.exe')
     self.ecp_http_proxy = (
         ecp_http_proxy
@@ -101,11 +100,6 @@ class WindowsBinaryPathConfig(object):
         if ecp_client
         else os.path.join(get_platform_folder(), 'libecp.dll')
     )
-    self.tls_offload = (
-        tls_offload
-        if tls_offload
-        else os.path.join(get_platform_folder(), 'libtls_offload.dll')
-    )
 
 
 class LinuxPathConfig(object):
@@ -115,10 +109,9 @@ class LinuxPathConfig(object):
     ecp: Path to the ECP binary.
     ecp_http_proxy: Path to the ECP HTTP proxy binary.
     ecp_client: Path to the ECP client library.
-    tls_offload: Path to the TLS offload library.
   """
 
-  def __init__(self, ecp, ecp_client, tls_offload, ecp_http_proxy):
+  def __init__(self, ecp, ecp_client, ecp_http_proxy):
     self.ecp = ecp if ecp else os.path.join(get_bin_folder(), 'ecp')
     self.ecp_http_proxy = (
         ecp_http_proxy
@@ -130,11 +123,6 @@ class LinuxPathConfig(object):
         if ecp_client
         else os.path.join(get_platform_folder(), 'libecp.so')
     )
-    self.tls_offload = (
-        tls_offload
-        if tls_offload
-        else os.path.join(get_platform_folder(), 'libtls_offload.so')
-    )
 
 
 class MacOSBinaryPathConfig(object):
@@ -144,10 +132,9 @@ class MacOSBinaryPathConfig(object):
     ecp: Path to the ECP binary.
     ecp_http_proxy: Path to the ECP HTTP proxy binary.
     ecp_client: Path to the ECP client library.
-    tls_offload: Path to the TLS offload library.
   """
 
-  def __init__(self, ecp, ecp_client, tls_offload, ecp_http_proxy):
+  def __init__(self, ecp, ecp_client, ecp_http_proxy):
     self.ecp = ecp if ecp else os.path.join(get_bin_folder(), 'ecp')
     self.ecp_http_proxy = (
         ecp_http_proxy
@@ -158,11 +145,6 @@ class MacOSBinaryPathConfig(object):
         ecp_client
         if ecp_client
         else os.path.join(get_platform_folder(), 'libecp.dylib')
-    )
-    self.tls_offload = (
-        tls_offload
-        if tls_offload
-        else os.path.join(get_platform_folder(), 'libtls_offload.dylib')
     )
 
 
@@ -228,8 +210,6 @@ def create_linux_config(base_config, **kwargs):
       kwargs.get('ecp', None) or base_libs_config.get('ecp', None),
       kwargs.get('ecp_client', None)
       or base_libs_config.get('ecp_client', None),
-      kwargs.get('tls_offload', None)
-      or base_libs_config.get('tls_offload', None),
       kwargs.get('ecp_http_proxy', None)
       or base_libs_config.get('ecp_http_proxy', None),
   )
@@ -264,8 +244,6 @@ def create_macos_config(base_config, **kwargs):
       kwargs.get('ecp', None) or base_libs_config.get('ecp', None),
       kwargs.get('ecp_client', None)
       or base_libs_config.get('ecp_client', None),
-      kwargs.get('tls_offload', None)
-      or base_libs_config.get('tls_offload', None),
       kwargs.get('ecp_http_proxy', None)
       or base_libs_config.get('ecp_http_proxy', None),
   )
@@ -300,8 +278,6 @@ def create_windows_config(base_config, **kwargs):
       kwargs.get('ecp', None) or base_libs_config.get('ecp', None),
       kwargs.get('ecp_client', None)
       or base_libs_config.get('ecp_client', None),
-      kwargs.get('tls_offload', None)
-      or base_libs_config.get('tls_offload', None),
       kwargs.get('ecp_http_proxy', None)
       or base_libs_config.get('ecp_http_proxy', None),
   )

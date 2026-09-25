@@ -63,7 +63,7 @@ class Update(base.UpdateCommand):
       labels_diff = labels_util.Diff.FromUpdateArgs(args)
       if labels_diff.MayHaveUpdates():
         old_attachment = interconnect_attachment.Describe()
-        labels_cls = holder.client.messages.InterconnectAttachment.LabelsValue
+        labels_cls = holder.client.messages.RegionSetLabelsRequest.LabelsValue
         labels = labels_diff.Apply(
             labels_cls, labels=old_attachment.labels
         ).GetOrNone()
@@ -74,7 +74,11 @@ class Update(base.UpdateCommand):
     cloud_router_ipv6_interface_id = None
     customer_router_ipv6_interface_id = None
     if self._support_partner_ipv6_byoip:
-      candidate_ipv6_subnets = getattr(args, 'candidate_ipv6_subnets', None)
+      candidate_ipv6_subnets = (
+          args.candidate_ipv6_subnets
+          if args.IsSpecified('candidate_ipv6_subnets')
+          else None
+      )
       cloud_router_ipv6_interface_id = getattr(
           args, 'cloud_router_ipv6_interface_id', None
       )

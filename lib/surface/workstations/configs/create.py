@@ -78,7 +78,9 @@ class Create(base.CreateCommand):
     workstations_flags.AddMachineTypeFlag(parser)
     workstations_flags.AddMaxUsableWorkstationsCount(parser)
     workstations_flags.AddNetworkTags(parser)
-    workstations_flags.AddNoPersistentStorageOrPdOrDisk(parser)
+    workstations_flags.AddNoPersistentStorageOrPdOrDisk(
+        parser, release_track=cls.ReleaseTrack()
+    )
     workstations_flags.AddPoolSize(parser)
     workstations_flags.AddReplicaZones(parser)
     workstations_flags.AddRunningTimeoutFlag(parser)

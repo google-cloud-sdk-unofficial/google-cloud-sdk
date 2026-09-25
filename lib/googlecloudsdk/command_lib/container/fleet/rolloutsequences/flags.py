@@ -170,58 +170,56 @@ class RolloutSequenceFlags:
             ' first stage of the sequence.'
         ),
     )
-    if self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
-      self.parser.add_argument(
-          '--ignore-maintenance-policies',
-          action='store_true',
-          default=False,
-          help=textwrap.dedent("""\
-              If set, the rollout will ignore any maintenance policies
-              (Maintenance Windows and Maintenance Exclusions) set on the
-              clusters.
-          """),
-      )
-      self.parser.add_argument(
-          '--ignore-cluster-disruption-budgets',
-          action='store_true',
-          default=False,
-          help=textwrap.dedent("""\
-              If set, the rollout will ignore the disruption budgets
-              of the clusters.
-          """),
-      )
-      soak_override_group = self.parser.add_mutually_exclusive_group(
-          required=False
-      )
-      soak_override_group.add_argument(
-          '--soak-duration-overrides-per-stage',
-          type=arg_parsers.ArgDict(value_type=arg_parsers.Duration()),
-          default=None,
-          metavar='STAGE_NUMBER=DURATION',
-          help=textwrap.dedent("""\
-              Overrides the soak duration for specific stages of the rollout,
-              in the format STAGE_NUMBER=DURATION (e.g., 1=1h,2=30m).
-          """),
-      )
-      soak_override_group.add_argument(
-          '--soak-duration-override-all-stages',
-          type=arg_parsers.Duration(),
-          default=None,
-          help=textwrap.dedent("""\
-              Overrides the soak duration for all stages of the rollout.
-          """),
-      )
-    if self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
-      self.parser.add_argument(
-          '--patch-only',
-          action='store_true',
-          default=False,
-          help=textwrap.dedent("""\
-              If set, the rollout will only upgrade clusters that are already on
-              the minor version of the target version, but are on an earlier
-              patch version.
-          """),
-      )
+    self.parser.add_argument(
+        '--ignore-maintenance-policies',
+        action='store_true',
+        default=False,
+        help=textwrap.dedent("""\
+            If set, the rollout will ignore any maintenance policies
+            (Maintenance Windows and Maintenance Exclusions) set on the
+            clusters.
+        """),
+    )
+    self.parser.add_argument(
+        '--ignore-cluster-disruption-budgets',
+        action='store_true',
+        default=False,
+        help=textwrap.dedent("""\
+            If set, the rollout will ignore the disruption budgets
+            of the clusters.
+        """),
+    )
+    soak_override_group = self.parser.add_mutually_exclusive_group(
+        required=False
+    )
+    soak_override_group.add_argument(
+        '--soak-duration-overrides-per-stage',
+        type=arg_parsers.ArgDict(value_type=arg_parsers.Duration()),
+        default=None,
+        metavar='STAGE_NUMBER=DURATION',
+        help=textwrap.dedent("""\
+            Overrides the soak duration for specific stages of the rollout,
+            in the format STAGE_NUMBER=DURATION (e.g., 1=1h,2=30m).
+        """),
+    )
+    soak_override_group.add_argument(
+        '--soak-duration-override-all-stages',
+        type=arg_parsers.Duration(),
+        default=None,
+        help=textwrap.dedent("""\
+            Overrides the soak duration for all stages of the rollout.
+        """),
+    )
+    self.parser.add_argument(
+        '--patch-only',
+        action='store_true',
+        default=False,
+        help=textwrap.dedent("""\
+            If set, the rollout will only upgrade clusters that are already on
+            the minor version of the target version, but are on an earlier
+            patch version.
+        """),
+    )
 
   def AddRolloutSequenceResourceArg(self):
     fleet_resources.AddRolloutSequenceResourceArg(

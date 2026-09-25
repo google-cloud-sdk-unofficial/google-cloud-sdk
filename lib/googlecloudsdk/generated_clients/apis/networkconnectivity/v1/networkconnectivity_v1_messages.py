@@ -7485,6 +7485,10 @@ class Transport(_messages.Message):
   Fields:
     advertisedRoutes: Optional. List of IP Prefixes that will be advertised to
       the remote provider. Both IPv4 and IPv6 addresses are supported.
+    autoAccept: Optional. Immutable. Controls whether resources proposed by
+      the Transport are automatically accepted on behalf of the user. List of
+      actions that can be automatically accepted are: 1. VPC Peering creation
+      2. Routing VPC Spoke creation 3. Hybrid Spoke creation
     bandwidth: Optional. Bandwidth of the Transport. This must be one of the
       supported bandwidths for the remote profile, and must be set when no
       activation key is being provided.
@@ -7495,6 +7499,9 @@ class Transport(_messages.Message):
       Inputting this to the provider is only valid while the resource is in a
       PENDING_KEY state. Once the provider has accepted the key, the resource
       will move to the CONFIGURING state.
+    hub: Optional. Immutable. The NCC Hub that the Transport should attach to.
+      The hub must be in the same project as the Transport. Format: `{hub}` or
+      `projects/{project}/locations/global/hubs/{hub}`
     labels: Optional. Labels as key value pairs.
     mtuLimit: Output only. The maximum transmission unit (MTU) of a packet
       that can be sent over this transport.
@@ -7509,6 +7516,10 @@ class Transport(_messages.Message):
       connection with the remote transport. This key can only be provided if
       the profile supports an INPUT key flow and the resource is in the
       PENDING_KEY state.
+    pscRoutingEnabled: Optional. Immutable. Controls whether a Routing VPC
+      Spoke should be created and attached to the NCC Hub. This will provide
+      Private Service Connect (PSC) connectivity through NCC. This can only be
+      set when the Transport is first created.
     remoteAccountId: Optional. Immutable. The user supplied account id for the
       CSP associated with the remote profile.
     remoteProfile: Optional. Immutable. Name of the remoteTransportProfile
@@ -7624,21 +7635,24 @@ class Transport(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   advertisedRoutes = _messages.StringField(1, repeated=True)
-  bandwidth = _messages.EnumField('BandwidthValueValuesEnum', 2)
-  createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  generatedActivationKey = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  mtuLimit = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  name = _messages.StringField(8)
-  network = _messages.StringField(9)
-  peeringNetwork = _messages.StringField(10)
-  providedActivationKey = _messages.StringField(11)
-  remoteAccountId = _messages.StringField(12)
-  remoteProfile = _messages.StringField(13)
-  stackType = _messages.EnumField('StackTypeValueValuesEnum', 14)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  updateTime = _messages.StringField(16)
+  autoAccept = _messages.BooleanField(2)
+  bandwidth = _messages.EnumField('BandwidthValueValuesEnum', 3)
+  createTime = _messages.StringField(4)
+  description = _messages.StringField(5)
+  generatedActivationKey = _messages.StringField(6)
+  hub = _messages.StringField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  mtuLimit = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  name = _messages.StringField(10)
+  network = _messages.StringField(11)
+  peeringNetwork = _messages.StringField(12)
+  providedActivationKey = _messages.StringField(13)
+  pscRoutingEnabled = _messages.BooleanField(14)
+  remoteAccountId = _messages.StringField(15)
+  remoteProfile = _messages.StringField(16)
+  stackType = _messages.EnumField('StackTypeValueValuesEnum', 17)
+  state = _messages.EnumField('StateValueValuesEnum', 18)
+  updateTime = _messages.StringField(19)
 
 
 class VirtualMachine(_messages.Message):

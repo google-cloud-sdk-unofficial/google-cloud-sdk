@@ -138,6 +138,13 @@ class AbortInfo(_messages.Message):
         endpoint location is unknown. This is often the case for "Pending"
         Pods, which don't have assigned IP addresses yet.
       RESPONSE_TOO_LARGE: Aborted because the response size exceeds the limit.
+      DESTINATION_CLOUD_RUN_SERVICE_REVISION_UNSUPPORTED: Aborted because
+        revisions of Cloud Run Services are not supported as destinations.
+      DESTINATION_CLOUD_RUN_VPC_CONNECTOR_UNSUPPORTED: Aborted because
+        serverless endpoints having Cloud Run VPC connectors configured are
+        not supported as destinations.
+      CLOUD_RUN_RESOURCE_NOT_CONNECTED_TO_VPC: Aborted because Cloud Run
+        destination resource is not connected to the VPC network.
     """
     CAUSE_UNSPECIFIED = 0
     UNKNOWN_NETWORK = 1
@@ -184,6 +191,9 @@ class AbortInfo(_messages.Message):
     IP_VERSION_PROTOCOL_MISMATCH = 42
     GKE_POD_UNKNOWN_ENDPOINT_LOCATION = 43
     RESPONSE_TOO_LARGE = 44
+    DESTINATION_CLOUD_RUN_SERVICE_REVISION_UNSUPPORTED = 45
+    DESTINATION_CLOUD_RUN_VPC_CONNECTOR_UNSUPPORTED = 46
+    CLOUD_RUN_RESOURCE_NOT_CONNECTED_TO_VPC = 47
 
   cause = _messages.EnumField('CauseValueValuesEnum', 1)
   ipAddress = _messages.StringField(2)
@@ -706,6 +716,28 @@ class DirectVpcEgressConnectionInfo(_messages.Message):
       range.
     selectedIpRange: Selected IP range.
     subnetworkUri: URI of the subnetwork for direct egress. Format:
+      `projects/{project_id}/regions/{region}/subnetworks/{subnetwork_id}`
+  """
+
+  networkUri = _messages.StringField(1)
+  region = _messages.StringField(2)
+  selectedIpAddress = _messages.StringField(3)
+  selectedIpRange = _messages.StringField(4)
+  subnetworkUri = _messages.StringField(5)
+
+
+class DirectVpcIngressConnectionInfo(_messages.Message):
+  r"""For display only. Metadata associated with a serverless direct VPC
+  ingress connection.
+
+  Fields:
+    networkUri: URI of the VPC network for direct ingress. Format:
+      `projects/{project_id}/global/networks/{network_id}`
+    region: Region in which the Direct VPC ingress is deployed.
+    selectedIpAddress: Selected destination IP address, from the selected IP
+      range.
+    selectedIpRange: Selected IP range.
+    subnetworkUri: URI of the subnetwork for direct ingress. Format:
       `projects/{project_id}/regions/{region}/subnetworks/{subnetwork_id}`
   """
 
@@ -4165,6 +4197,8 @@ class Step(_messages.Message):
       state.
     directVpcEgressConnection: Display information of a serverless direct VPC
       egress connection.
+    directVpcIngressConnection: Display information of a serverless direct VPC
+      ingress connection.
     dmsPrivateConnection: Display information of a DMS Private Connection.
     drop: Display information of the final state "drop" and reason.
     endpoint: Display information of the source and destination under
@@ -4296,6 +4330,8 @@ class Step(_messages.Message):
         interconnect attachment.
       ARRIVE_AT_VPC_CONNECTOR: Forwarding state: arriving at a VPC connector.
       ARRIVE_AT_GKE_POD: Forwarding state: arriving at a GKE Pod.
+      ARRIVE_AT_DIRECT_VPC_INGRESS_CONNECTION: Forwarding state: arriving at a
+        direct VPC ingress connection.
       DIRECT_VPC_EGRESS_CONNECTION: Forwarding state: for packets originating
         from a serverless endpoint forwarded through Direct VPC egress.
       SERVERLESS_EXTERNAL_CONNECTION: Forwarding state: for packets
@@ -4362,21 +4398,22 @@ class Step(_messages.Message):
     ARRIVE_AT_INTERCONNECT_ATTACHMENT = 31
     ARRIVE_AT_VPC_CONNECTOR = 32
     ARRIVE_AT_GKE_POD = 33
-    DIRECT_VPC_EGRESS_CONNECTION = 34
-    SERVERLESS_EXTERNAL_CONNECTION = 35
-    NGFW_PACKET_INSPECTION = 36
-    NAT = 37
-    SKIP_GKE_POD_IP_MASQUERADING = 38
-    SKIP_GKE_INGRESS_NETWORK_POLICY = 39
-    SKIP_GKE_EGRESS_NETWORK_POLICY = 40
-    APPLY_INGRESS_GKE_NETWORK_POLICY = 41
-    APPLY_EGRESS_GKE_NETWORK_POLICY = 42
-    PROXY_CONNECTION = 43
-    DELIVER = 44
-    DROP = 45
-    FORWARD = 46
-    ABORT = 47
-    VIEWER_PERMISSION_MISSING = 48
+    ARRIVE_AT_DIRECT_VPC_INGRESS_CONNECTION = 34
+    DIRECT_VPC_EGRESS_CONNECTION = 35
+    SERVERLESS_EXTERNAL_CONNECTION = 36
+    NGFW_PACKET_INSPECTION = 37
+    NAT = 38
+    SKIP_GKE_POD_IP_MASQUERADING = 39
+    SKIP_GKE_INGRESS_NETWORK_POLICY = 40
+    SKIP_GKE_EGRESS_NETWORK_POLICY = 41
+    APPLY_INGRESS_GKE_NETWORK_POLICY = 42
+    APPLY_EGRESS_GKE_NETWORK_POLICY = 43
+    PROXY_CONNECTION = 44
+    DELIVER = 45
+    DROP = 46
+    FORWARD = 47
+    ABORT = 48
+    VIEWER_PERMISSION_MISSING = 49
 
   abort = _messages.MessageField('AbortInfo', 1)
   appEngineVersion = _messages.MessageField('AppEngineVersionInfo', 2)
@@ -4389,39 +4426,40 @@ class Step(_messages.Message):
   deliver = _messages.MessageField('DeliverInfo', 9)
   description = _messages.StringField(10)
   directVpcEgressConnection = _messages.MessageField('DirectVpcEgressConnectionInfo', 11)
-  dmsPrivateConnection = _messages.MessageField('PrivateConnectionInfo', 12)
-  drop = _messages.MessageField('DropInfo', 13)
-  endpoint = _messages.MessageField('EndpointInfo', 14)
-  firewall = _messages.MessageField('FirewallInfo', 15)
-  forward = _messages.MessageField('ForwardInfo', 16)
-  forwardingRule = _messages.MessageField('ForwardingRuleInfo', 17)
-  gkeMaster = _messages.MessageField('GKEMasterInfo', 18)
-  gkeNetworkPolicy = _messages.MessageField('GkeNetworkPolicyInfo', 19)
-  gkeNetworkPolicySkipped = _messages.MessageField('GkeNetworkPolicySkippedInfo', 20)
-  gkePod = _messages.MessageField('GkePodInfo', 21)
-  googleService = _messages.MessageField('GoogleServiceInfo', 22)
-  hybridSubnet = _messages.MessageField('HybridSubnetInfo', 23)
-  instance = _messages.MessageField('InstanceInfo', 24)
-  interconnectAttachment = _messages.MessageField('InterconnectAttachmentInfo', 25)
-  ipMasqueradingSkipped = _messages.MessageField('IpMasqueradingSkippedInfo', 26)
-  loadBalancer = _messages.MessageField('LoadBalancerInfo', 27)
-  loadBalancerBackendInfo = _messages.MessageField('LoadBalancerBackendInfo', 28)
-  nat = _messages.MessageField('NatInfo', 29)
-  network = _messages.MessageField('NetworkInfo', 30)
-  ngfwPacketInspection = _messages.MessageField('NgfwPacketInspectionInfo', 31)
-  projectId = _messages.StringField(32)
-  proxyConnection = _messages.MessageField('ProxyConnectionInfo', 33)
-  redisCluster = _messages.MessageField('RedisClusterInfo', 34)
-  redisInstance = _messages.MessageField('RedisInstanceInfo', 35)
-  route = _messages.MessageField('RouteInfo', 36)
-  serverlessExternalConnection = _messages.MessageField('ServerlessExternalConnectionInfo', 37)
-  serverlessNeg = _messages.MessageField('ServerlessNegInfo', 38)
-  state = _messages.EnumField('StateValueValuesEnum', 39)
-  storageBucket = _messages.MessageField('StorageBucketInfo', 40)
-  viewerPermissionMissingInfo = _messages.MessageField('ViewerPermissionMissingInfo', 41)
-  vpcConnector = _messages.MessageField('VpcConnectorInfo', 42)
-  vpnGateway = _messages.MessageField('VpnGatewayInfo', 43)
-  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 44)
+  directVpcIngressConnection = _messages.MessageField('DirectVpcIngressConnectionInfo', 12)
+  dmsPrivateConnection = _messages.MessageField('PrivateConnectionInfo', 13)
+  drop = _messages.MessageField('DropInfo', 14)
+  endpoint = _messages.MessageField('EndpointInfo', 15)
+  firewall = _messages.MessageField('FirewallInfo', 16)
+  forward = _messages.MessageField('ForwardInfo', 17)
+  forwardingRule = _messages.MessageField('ForwardingRuleInfo', 18)
+  gkeMaster = _messages.MessageField('GKEMasterInfo', 19)
+  gkeNetworkPolicy = _messages.MessageField('GkeNetworkPolicyInfo', 20)
+  gkeNetworkPolicySkipped = _messages.MessageField('GkeNetworkPolicySkippedInfo', 21)
+  gkePod = _messages.MessageField('GkePodInfo', 22)
+  googleService = _messages.MessageField('GoogleServiceInfo', 23)
+  hybridSubnet = _messages.MessageField('HybridSubnetInfo', 24)
+  instance = _messages.MessageField('InstanceInfo', 25)
+  interconnectAttachment = _messages.MessageField('InterconnectAttachmentInfo', 26)
+  ipMasqueradingSkipped = _messages.MessageField('IpMasqueradingSkippedInfo', 27)
+  loadBalancer = _messages.MessageField('LoadBalancerInfo', 28)
+  loadBalancerBackendInfo = _messages.MessageField('LoadBalancerBackendInfo', 29)
+  nat = _messages.MessageField('NatInfo', 30)
+  network = _messages.MessageField('NetworkInfo', 31)
+  ngfwPacketInspection = _messages.MessageField('NgfwPacketInspectionInfo', 32)
+  projectId = _messages.StringField(33)
+  proxyConnection = _messages.MessageField('ProxyConnectionInfo', 34)
+  redisCluster = _messages.MessageField('RedisClusterInfo', 35)
+  redisInstance = _messages.MessageField('RedisInstanceInfo', 36)
+  route = _messages.MessageField('RouteInfo', 37)
+  serverlessExternalConnection = _messages.MessageField('ServerlessExternalConnectionInfo', 38)
+  serverlessNeg = _messages.MessageField('ServerlessNegInfo', 39)
+  state = _messages.EnumField('StateValueValuesEnum', 40)
+  storageBucket = _messages.MessageField('StorageBucketInfo', 41)
+  viewerPermissionMissingInfo = _messages.MessageField('ViewerPermissionMissingInfo', 42)
+  vpcConnector = _messages.MessageField('VpcConnectorInfo', 43)
+  vpnGateway = _messages.MessageField('VpnGatewayInfo', 44)
+  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 45)
 
 
 class StorageBucketInfo(_messages.Message):

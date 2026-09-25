@@ -81,6 +81,92 @@ class AuditReport(_messages.Message):
   scopeId = _messages.StringField(11)
 
 
+class AuditSchedule(_messages.Message):
+  r"""An audit schedule, in one of the following formats: *
+  `projects/{project}/locations/{location}/auditSchedules/{audit_schedule}` *
+  `folders/{folder}/locations/{location}/auditSchedules/{audit_schedule}`
+
+  Enums:
+    ReportFormatValueValuesEnum: Required. Format for the audit report.
+    StateValueValuesEnum: Optional. State of the audit schedule. While most
+      states are managed by the system, you can use UpdateAuditSchedule to
+      start, pause, or delete the schedule.
+
+  Fields:
+    complianceFramework: Required. Framework (set of controls) that the audit
+      scope report is generated against. For example, `NIST_800_53`.
+    createTime: Output only. Timestamp when the schedule was created.
+    displayName: Optional. Display name for the audit schedule.
+    errorMessage: Output only. Describes the error if the schedule is in an
+      error state.
+    gcsUri: Required. Cloud Storage bucket where Audit Manager can upload the
+      audit report and evidence. The format is `gs://{bucket_name}`.
+    lastTriggerTime: Output only. Timestamp when the audit run was last
+      triggered.
+    name: Identifier. Unique identifier for the audit schedule. Format:
+      projects/{project}/locations/{location}/auditSchedules/{audit_schedule}
+      folders/{folder}/locations/{location}/auditSchedules/{audit_schedule} or
+      ganizations/{organization}/locations/{location}/auditSchedules/{audit_sc
+      hedule}
+    nextRunTime: Output only. Calculated timestamp for the next scheduled run.
+    reportFormat: Required. Format for the audit report.
+    scheduleConfig: Required. Configuration that defines when and how often
+      audit runs are automatically triggered for this schedule.
+    state: Optional. State of the audit schedule. While most states are
+      managed by the system, you can use UpdateAuditSchedule to start, pause,
+      or delete the schedule.
+    updateTime: Output only. Timestamp when the schedule was last updated.
+  """
+
+  class ReportFormatValueValuesEnum(_messages.Enum):
+    r"""Required. Format for the audit report.
+
+    Values:
+      AUDIT_REPORT_FORMAT_UNSPECIFIED: Default value. This value is unused.
+      AUDIT_REPORT_FORMAT_ODF: Open Document Format (ODF).
+    """
+    AUDIT_REPORT_FORMAT_UNSPECIFIED = 0
+    AUDIT_REPORT_FORMAT_ODF = 1
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Optional. State of the audit schedule. While most states are managed
+    by the system, you can use UpdateAuditSchedule to start, pause, or delete
+    the schedule.
+
+    Values:
+      SCHEDULE_STATE_UNSPECIFIED: Default value. This value is unused.
+      SCHEDULE_STATE_ACTIVE: Schedule is active and will trigger runs.
+      SCHEDULE_STATE_PAUSED: Schedule is paused and will not trigger runs.
+      SCHEDULE_STATE_COMPLETED: Schedule end time has passed.
+      SCHEDULE_STATE_FAILED_SETUP: Schedule setup failed during creation or
+        update.
+      SCHEDULE_STATE_ERROR: Schedule is in an error state due to persistent
+        failure to trigger an audit. Manual intervention is required.
+      SCHEDULE_STATE_DELETED: Schedule has been marked for deletion by the
+        user.
+    """
+    SCHEDULE_STATE_UNSPECIFIED = 0
+    SCHEDULE_STATE_ACTIVE = 1
+    SCHEDULE_STATE_PAUSED = 2
+    SCHEDULE_STATE_COMPLETED = 3
+    SCHEDULE_STATE_FAILED_SETUP = 4
+    SCHEDULE_STATE_ERROR = 5
+    SCHEDULE_STATE_DELETED = 6
+
+  complianceFramework = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  errorMessage = _messages.StringField(4)
+  gcsUri = _messages.StringField(5)
+  lastTriggerTime = _messages.StringField(6)
+  name = _messages.StringField(7)
+  nextRunTime = _messages.StringField(8)
+  reportFormat = _messages.EnumField('ReportFormatValueValuesEnum', 9)
+  scheduleConfig = _messages.MessageField('ScheduleConfig', 10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  updateTime = _messages.StringField(12)
+
+
 class AuditScopeReport(_messages.Message):
   r"""Audit scope report.
 
@@ -148,6 +234,100 @@ class AuditmanagerFoldersLocationsAuditReportsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class AuditmanagerFoldersLocationsAuditSchedulesCreateRequest(_messages.Message):
+  r"""A AuditmanagerFoldersLocationsAuditSchedulesCreateRequest object.
+
+  Fields:
+    auditSchedule: A AuditSchedule resource to be passed as the request body.
+    auditScheduleId: Required. ID to use for the audit schedule, which becomes
+      the final component of the audit schedule's resource name.
+    parent: Required. Project or folder that this audit schedule is for, in
+      one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}`
+    validateOnly: Optional. If `true`, only validates the request and does not
+      create the audit schedule. This executes standard request validation
+      (such as schema, framework existence, scope, and IAM checks) and skips
+      the apply phase. Use this field for the following purposes: *
+      **Infrastructure as Code (IaC)**: Allow tools like Terraform to run dry-
+      run mutations (e.g., `terraform plan`) without creating real resources
+      or incurring costs. * **User Interface Validation**: Enable real-time
+      form and permission validation in custom UIs before submitting requests.
+      * **CI/CD & Automation**: Test your scripts, permissions, and parameters
+      safely without consuming resource quotas.
+  """
+
+  auditSchedule = _messages.MessageField('AuditSchedule', 1)
+  auditScheduleId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  validateOnly = _messages.BooleanField(4)
+
+
+class AuditmanagerFoldersLocationsAuditSchedulesGetRequest(_messages.Message):
+  r"""A AuditmanagerFoldersLocationsAuditSchedulesGetRequest object.
+
+  Fields:
+    name: Required. Name of the audit schedule to retrieve, in one of the
+      following formats: * `projects/{project}/locations/{location}/auditSched
+      ules/{audit_schedule}` *
+      `folders/{folder}/locations/{location}/auditSchedules/{audit_schedule}`
+      * `organizations/{organization}/locations/{location}/auditSchedules/{aud
+      it_schedule}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AuditmanagerFoldersLocationsAuditSchedulesListRequest(_messages.Message):
+  r"""A AuditmanagerFoldersLocationsAuditSchedulesListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of items to return in a single page.
+      The service might return fewer items than this value. If unspecified,
+      the service picks an appropriate default. The maximum value is 100;
+      values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. Parent for the audit schedule, in one of the following
+      formats: * `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class AuditmanagerFoldersLocationsAuditSchedulesPatchRequest(_messages.Message):
+  r"""A AuditmanagerFoldersLocationsAuditSchedulesPatchRequest object.
+
+  Fields:
+    auditSchedule: A AuditSchedule resource to be passed as the request body.
+    name: Identifier. Unique identifier for the audit schedule. Format:
+      projects/{project}/locations/{location}/auditSchedules/{audit_schedule}
+      folders/{folder}/locations/{location}/auditSchedules/{audit_schedule} or
+      ganizations/{organization}/locations/{location}/auditSchedules/{audit_sc
+      hedule}
+    updateMask: Optional. List of fields to update.
+    validateOnly: Optional. If `true`, only validates the request and does not
+      update the audit schedule. This executes standard request validation
+      (such as schema, framework existence, scope, and IAM checks) and skips
+      the apply phase. Use this field for the following purposes: *
+      **Infrastructure as Code (IaC)**: Allow tools like Terraform to run dry-
+      run mutations (e.g., `terraform plan`) without creating real resources
+      or incurring costs. * **User Interface Validation**: Enable real-time
+      form and permission validation in custom UIs before submitting requests.
+      * **CI/CD & Automation**: Test your scripts, permissions, and parameters
+      safely without consuming resource quotas.
+  """
+
+  auditSchedule = _messages.MessageField('AuditSchedule', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
 
 
 class AuditmanagerFoldersLocationsAuditScopeReportsGenerateRequest(_messages.Message):
@@ -315,6 +495,100 @@ class AuditmanagerOrganizationsLocationsAuditReportsListRequest(_messages.Messag
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class AuditmanagerOrganizationsLocationsAuditSchedulesCreateRequest(_messages.Message):
+  r"""A AuditmanagerOrganizationsLocationsAuditSchedulesCreateRequest object.
+
+  Fields:
+    auditSchedule: A AuditSchedule resource to be passed as the request body.
+    auditScheduleId: Required. ID to use for the audit schedule, which becomes
+      the final component of the audit schedule's resource name.
+    parent: Required. Project or folder that this audit schedule is for, in
+      one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}`
+    validateOnly: Optional. If `true`, only validates the request and does not
+      create the audit schedule. This executes standard request validation
+      (such as schema, framework existence, scope, and IAM checks) and skips
+      the apply phase. Use this field for the following purposes: *
+      **Infrastructure as Code (IaC)**: Allow tools like Terraform to run dry-
+      run mutations (e.g., `terraform plan`) without creating real resources
+      or incurring costs. * **User Interface Validation**: Enable real-time
+      form and permission validation in custom UIs before submitting requests.
+      * **CI/CD & Automation**: Test your scripts, permissions, and parameters
+      safely without consuming resource quotas.
+  """
+
+  auditSchedule = _messages.MessageField('AuditSchedule', 1)
+  auditScheduleId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  validateOnly = _messages.BooleanField(4)
+
+
+class AuditmanagerOrganizationsLocationsAuditSchedulesGetRequest(_messages.Message):
+  r"""A AuditmanagerOrganizationsLocationsAuditSchedulesGetRequest object.
+
+  Fields:
+    name: Required. Name of the audit schedule to retrieve, in one of the
+      following formats: * `projects/{project}/locations/{location}/auditSched
+      ules/{audit_schedule}` *
+      `folders/{folder}/locations/{location}/auditSchedules/{audit_schedule}`
+      * `organizations/{organization}/locations/{location}/auditSchedules/{aud
+      it_schedule}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AuditmanagerOrganizationsLocationsAuditSchedulesListRequest(_messages.Message):
+  r"""A AuditmanagerOrganizationsLocationsAuditSchedulesListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of items to return in a single page.
+      The service might return fewer items than this value. If unspecified,
+      the service picks an appropriate default. The maximum value is 100;
+      values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. Parent for the audit schedule, in one of the following
+      formats: * `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class AuditmanagerOrganizationsLocationsAuditSchedulesPatchRequest(_messages.Message):
+  r"""A AuditmanagerOrganizationsLocationsAuditSchedulesPatchRequest object.
+
+  Fields:
+    auditSchedule: A AuditSchedule resource to be passed as the request body.
+    name: Identifier. Unique identifier for the audit schedule. Format:
+      projects/{project}/locations/{location}/auditSchedules/{audit_schedule}
+      folders/{folder}/locations/{location}/auditSchedules/{audit_schedule} or
+      ganizations/{organization}/locations/{location}/auditSchedules/{audit_sc
+      hedule}
+    updateMask: Optional. List of fields to update.
+    validateOnly: Optional. If `true`, only validates the request and does not
+      update the audit schedule. This executes standard request validation
+      (such as schema, framework existence, scope, and IAM checks) and skips
+      the apply phase. Use this field for the following purposes: *
+      **Infrastructure as Code (IaC)**: Allow tools like Terraform to run dry-
+      run mutations (e.g., `terraform plan`) without creating real resources
+      or incurring costs. * **User Interface Validation**: Enable real-time
+      form and permission validation in custom UIs before submitting requests.
+      * **CI/CD & Automation**: Test your scripts, permissions, and parameters
+      safely without consuming resource quotas.
+  """
+
+  auditSchedule = _messages.MessageField('AuditSchedule', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
 
 
 class AuditmanagerOrganizationsLocationsAuditScopeReportsGenerateRequest(_messages.Message):
@@ -541,6 +815,100 @@ class AuditmanagerProjectsLocationsAuditReportsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class AuditmanagerProjectsLocationsAuditSchedulesCreateRequest(_messages.Message):
+  r"""A AuditmanagerProjectsLocationsAuditSchedulesCreateRequest object.
+
+  Fields:
+    auditSchedule: A AuditSchedule resource to be passed as the request body.
+    auditScheduleId: Required. ID to use for the audit schedule, which becomes
+      the final component of the audit schedule's resource name.
+    parent: Required. Project or folder that this audit schedule is for, in
+      one of the following formats: *
+      `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}`
+    validateOnly: Optional. If `true`, only validates the request and does not
+      create the audit schedule. This executes standard request validation
+      (such as schema, framework existence, scope, and IAM checks) and skips
+      the apply phase. Use this field for the following purposes: *
+      **Infrastructure as Code (IaC)**: Allow tools like Terraform to run dry-
+      run mutations (e.g., `terraform plan`) without creating real resources
+      or incurring costs. * **User Interface Validation**: Enable real-time
+      form and permission validation in custom UIs before submitting requests.
+      * **CI/CD & Automation**: Test your scripts, permissions, and parameters
+      safely without consuming resource quotas.
+  """
+
+  auditSchedule = _messages.MessageField('AuditSchedule', 1)
+  auditScheduleId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  validateOnly = _messages.BooleanField(4)
+
+
+class AuditmanagerProjectsLocationsAuditSchedulesGetRequest(_messages.Message):
+  r"""A AuditmanagerProjectsLocationsAuditSchedulesGetRequest object.
+
+  Fields:
+    name: Required. Name of the audit schedule to retrieve, in one of the
+      following formats: * `projects/{project}/locations/{location}/auditSched
+      ules/{audit_schedule}` *
+      `folders/{folder}/locations/{location}/auditSchedules/{audit_schedule}`
+      * `organizations/{organization}/locations/{location}/auditSchedules/{aud
+      it_schedule}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AuditmanagerProjectsLocationsAuditSchedulesListRequest(_messages.Message):
+  r"""A AuditmanagerProjectsLocationsAuditSchedulesListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of items to return in a single page.
+      The service might return fewer items than this value. If unspecified,
+      the service picks an appropriate default. The maximum value is 100;
+      values above 100 are reduced to 100.
+    pageToken: Optional. A page token, received from a previous call, to
+      retrieve the next page of results.
+    parent: Required. Parent for the audit schedule, in one of the following
+      formats: * `projects/{project}/locations/{location}` *
+      `folders/{folder}/locations/{location}` *
+      `organizations/{organization}/locations/{location}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class AuditmanagerProjectsLocationsAuditSchedulesPatchRequest(_messages.Message):
+  r"""A AuditmanagerProjectsLocationsAuditSchedulesPatchRequest object.
+
+  Fields:
+    auditSchedule: A AuditSchedule resource to be passed as the request body.
+    name: Identifier. Unique identifier for the audit schedule. Format:
+      projects/{project}/locations/{location}/auditSchedules/{audit_schedule}
+      folders/{folder}/locations/{location}/auditSchedules/{audit_schedule} or
+      ganizations/{organization}/locations/{location}/auditSchedules/{audit_sc
+      hedule}
+    updateMask: Optional. List of fields to update.
+    validateOnly: Optional. If `true`, only validates the request and does not
+      update the audit schedule. This executes standard request validation
+      (such as schema, framework existence, scope, and IAM checks) and skips
+      the apply phase. Use this field for the following purposes: *
+      **Infrastructure as Code (IaC)**: Allow tools like Terraform to run dry-
+      run mutations (e.g., `terraform plan`) without creating real resources
+      or incurring costs. * **User Interface Validation**: Enable real-time
+      form and permission validation in custom UIs before submitting requests.
+      * **CI/CD & Automation**: Test your scripts, permissions, and parameters
+      safely without consuming resource quotas.
+  """
+
+  auditSchedule = _messages.MessageField('AuditSchedule', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
 
 
 class AuditmanagerProjectsLocationsAuditScopeReportsGenerateRequest(_messages.Message):
@@ -907,9 +1275,20 @@ class EnrollResourceRequest(_messages.Message):
       project level using the service agent at the organization or folder
       level, all the buckets that are associated with the service agent are
       available.
+    validateOnly: Optional. If `true`, only validates the request and does not
+      enroll the resource. This executes standard request validation (such as
+      schema, IAM, and destination checks) and skips the apply phase. Use this
+      field for the following purposes: * **Infrastructure as Code (IaC)**:
+      Allow tools like Terraform to run dry-run mutations (e.g., `terraform
+      plan`) without creating real resources or incurring costs. * **User
+      Interface Validation**: Enable real-time form and permission validation
+      in custom UIs before submitting requests. * **CI/CD & Automation**: Test
+      your scripts, permissions, and parameters safely without consuming
+      resource quotas.
   """
 
   destinations = _messages.MessageField('EligibleDestination', 1, repeated=True)
+  validateOnly = _messages.BooleanField(2)
 
 
 class Enrollment(_messages.Message):
@@ -1027,6 +1406,22 @@ class ListAuditReportsResponse(_messages.Message):
 
   auditReports = _messages.MessageField('AuditReport', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+
+
+class ListAuditSchedulesResponse(_messages.Message):
+  r"""Response message for ListAuditSchedules.
+
+  Fields:
+    auditSchedules: List of audit schedules.
+    nextPageToken: A token that you can send as the `page_token` in a
+      subsequent request to retrieve the next page of results. If this field
+      is empty, there are no subsequent pages.
+    unreachable: Locations that can't be reached.
+  """
+
+  auditSchedules = _messages.MessageField('AuditSchedule', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListControlsResponse(_messages.Message):
@@ -1430,6 +1825,52 @@ class ResourceEnrollmentStatus(_messages.Message):
   enrollment = _messages.MessageField('Enrollment', 3)
   enrollmentState = _messages.EnumField('EnrollmentStateValueValuesEnum', 4)
   name = _messages.StringField(5)
+
+
+class ScheduleConfig(_messages.Message):
+  r"""Timing and frequency parameters for recurring audit runs.
+
+  Enums:
+    FrequencyValueValuesEnum: Required. Frequency of audit runs.
+
+  Fields:
+    endTime: Optional. Date that the schedule stops. If not specified, the
+      schedule runs indefinitely.
+    frequency: Required. Frequency of audit runs.
+    startTime: Required. Date and time when the first audit run is triggered.
+      Subsequent runs are based on this time and the chosen frequency.
+    timeZone: Optional. Time zone for the audit schedule in IANA format (for
+      example, `America/New_York`). The time zone is used to interpret the
+      `start_time` and the `end_time`, and to calculate subsequent run dates.
+      If not specified, the time zone default is UTC.
+  """
+
+  class FrequencyValueValuesEnum(_messages.Enum):
+    r"""Required. Frequency of audit runs.
+
+    Values:
+      FREQUENCY_UNSPECIFIED: Default value. This value is unused.
+      DAILY: The audit runs every day.
+      WEEKLY: The audit runs weekly on the same day of the week as
+        `start_time`.
+      MONTHLY: The audit runs monthly on the same day of the month as
+        `start_time`.
+      QUARTERLY: The audit runs quarterly (every 3 months) on the same day of
+        the month as `start_time`.
+      ANNUALLY: The audit runs annually on the same month and day as
+        `start_time`.
+    """
+    FREQUENCY_UNSPECIFIED = 0
+    DAILY = 1
+    WEEKLY = 2
+    MONTHLY = 3
+    QUARTERLY = 4
+    ANNUALLY = 5
+
+  endTime = _messages.StringField(1)
+  frequency = _messages.EnumField('FrequencyValueValuesEnum', 2)
+  startTime = _messages.StringField(3)
+  timeZone = _messages.StringField(4)
 
 
 class StandardQueryParameters(_messages.Message):

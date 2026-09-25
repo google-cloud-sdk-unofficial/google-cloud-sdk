@@ -45,7 +45,7 @@ Container Flags
   group.AddArgument(flags.ImageArg(required=False))
   group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
-  group.AddArgument(flags.CpuFlag())
+  group.AddArgument(flags.CpuFlag(allow_fractional_cpu=False))
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.WorkdirFlag())

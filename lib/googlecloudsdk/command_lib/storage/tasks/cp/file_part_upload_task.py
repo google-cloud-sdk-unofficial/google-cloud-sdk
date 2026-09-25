@@ -62,6 +62,7 @@ class FilePartUploadTask(file_part_task.FilePartTask):
       posix_to_set=None,
       total_components=None,
       user_request_args=None,
+      expected_source_size=None,
   ):
     """Initializes task.
 
@@ -84,12 +85,15 @@ class FilePartUploadTask(file_part_task.FilePartTask):
       total_components (int|None): If a multipart operation, indicates the total
         number of components.
       user_request_args (UserRequestArgs|None): Values for RequestConfig.
+      expected_source_size (int|None): The expected total size of the source
+        file in bytes, if known. Used to detect post-initiation file
+        modifications.
     """
     super(FilePartUploadTask,
           self).__init__(source_resource, destination_resource, offset, length,
                          component_number, total_components)
     self._source_path = source_path
-
+    self._expected_source_size = expected_source_size
     self._posix_to_set = posix_to_set
     self._user_request_args = user_request_args
 
@@ -135,6 +139,16 @@ class FilePartUploadTask(file_part_task.FilePartTask):
         self._source_resource, self._destination_resource)
     destination_url = self._destination_resource.storage_url
     def final_headers_callback():
+      if (
+          self._source_path
+          and self._expected_source_size is not None
+          and os.path.exists(self._source_path)
+          and os.path.isfile(self._source_path)
+          and os.path.getsize(self._source_path) != self._expected_source_size
+      ):
+        raise api_errors.ResumableUploadAbortError(
+            'Source file size changed post-initiation.'
+        )
       if not digesters:
         return None
       header_value = hash_util.get_x_goog_hash_header_value(digesters)
@@ -196,20 +210,45 @@ class FilePartUploadTask(file_part_task.FilePartTask):
         tracker_file_path = tracker_file_util.get_tracker_file_path(
             self._destination_resource.storage_url,
             tracker_file_util.TrackerFileType.UPLOAD,
-            component_number=self._component_number)
+            component_number=self._component_number,
+        )
 
         complete = False
         encryption_key_hash_sha256 = getattr(
-            encryption_util.get_encryption_key(), 'sha256', None)
+            encryption_util.get_encryption_key(), 'sha256', None
+        )
         tracker_callback = functools.partial(
             tracker_file_util.write_resumable_upload_tracker_file,
-            tracker_file_path, complete, encryption_key_hash_sha256)
+            tracker_file_path,
+            complete,
+            encryption_key_hash_sha256,
+        )
 
         tracker_data = tracker_file_util.read_resumable_upload_tracker_file(
-            tracker_file_path)
+            tracker_file_path
+        )
 
-        if (tracker_data is None or
-            tracker_data.encryption_key_sha256 != encryption_key_hash_sha256):
+        tracker_size_mismatches = bool(
+            tracker_data
+            and tracker_data.serialization_data
+            and tracker_data.serialization_data.get('total_size') is not None
+            and tracker_data.serialization_data.get('total_size')
+            != self._length
+        )
+
+        if (
+            tracker_data is None
+            or tracker_data.encryption_key_sha256 != encryption_key_hash_sha256
+            or tracker_size_mismatches
+        ):
+          if tracker_size_mismatches:
+            log.debug(
+                'Tracker file total size %s does not match expected length %s.'
+                ' Deleting tracker file.',
+                tracker_data.serialization_data.get('total_size'),
+                self._length,
+            )
+            tracker_file_util.delete_tracker_file(tracker_file_path)
           serialization_data = None
         else:
           # TODO(b/190093425): Print a better message for component uploads once
@@ -371,4 +410,5 @@ class FilePartUploadTask(file_part_task.FilePartTask):
         and self._total_components == other._total_components
         and self._posix_to_set == other._posix_to_set
         and self._user_request_args == other._user_request_args
+        and self._expected_source_size == other._expected_source_size
     )

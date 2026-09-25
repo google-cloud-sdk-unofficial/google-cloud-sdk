@@ -53,6 +53,7 @@ class ComputeV1(base_api.BaseApiClient):
     self.futureReservations = self.FutureReservationsService(self)
     self.globalAddresses = self.GlobalAddressesService(self)
     self.globalForwardingRules = self.GlobalForwardingRulesService(self)
+    self.globalFrontendSettings = self.GlobalFrontendSettingsService(self)
     self.globalNetworkEndpointGroups = self.GlobalNetworkEndpointGroupsService(self)
     self.globalOperations = self.GlobalOperationsService(self)
     self.globalOrganizationOperations = self.GlobalOrganizationOperationsService(self)
@@ -63,6 +64,7 @@ class ComputeV1(base_api.BaseApiClient):
     self.httpHealthChecks = self.HttpHealthChecksService(self)
     self.httpsHealthChecks = self.HttpsHealthChecksService(self)
     self.imageFamilyViews = self.ImageFamilyViewsService(self)
+    self.imageViews = self.ImageViewsService(self)
     self.images = self.ImagesService(self)
     self.instanceGroupManagerResizeRequests = self.InstanceGroupManagerResizeRequestsService(self)
     self.instanceGroupManagers = self.InstanceGroupManagersService(self)
@@ -82,6 +84,7 @@ class ComputeV1(base_api.BaseApiClient):
     self.licenses = self.LicensesService(self)
     self.machineImages = self.MachineImagesService(self)
     self.machineTypes = self.MachineTypesService(self)
+    self.managedRulesets = self.ManagedRulesetsService(self)
     self.networkAttachments = self.NetworkAttachmentsService(self)
     self.networkEdgeSecurityServices = self.NetworkEdgeSecurityServicesService(self)
     self.networkEndpointGroups = self.NetworkEndpointGroupsService(self)
@@ -4140,6 +4143,68 @@ should be of the same type as the old target.
         supports_download=False,
     )
 
+  class GlobalFrontendSettingsService(base_api.BaseApiService):
+    """Service class for the globalFrontendSettings resource."""
+
+    _NAME = 'globalFrontendSettings'
+
+    def __init__(self, client):
+      super(ComputeV1.GlobalFrontendSettingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets the Global Frontend Billing Bundle Settings for a project.
+
+      Args:
+        request: (ComputeGlobalFrontendSettingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GlobalFrontendSettings) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.globalFrontendSettings.get',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=[],
+        relative_path='projects/{project}/global/globalFrontendSettings',
+        request_field='',
+        request_type_name='ComputeGlobalFrontendSettingsGetRequest',
+        response_type_name='GlobalFrontendSettings',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the Global Frontend Billing Bundle Settings for a project.
+
+      Args:
+        request: (ComputeGlobalFrontendSettingsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GlobalFrontendSettingsPatchResponse) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.globalFrontendSettings.patch',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='projects/{project}/global/globalFrontendSettings',
+        request_field='globalFrontendSettings',
+        request_type_name='ComputeGlobalFrontendSettingsPatchRequest',
+        response_type_name='GlobalFrontendSettingsPatchResponse',
+        supports_download=False,
+    )
+
   class GlobalNetworkEndpointGroupsService(base_api.BaseApiService):
     """Service class for the globalNetworkEndpointGroups resource."""
 
@@ -5663,6 +5728,70 @@ deprecated and is rolled out in the specified zone.
         request_field='',
         request_type_name='ComputeImageFamilyViewsGetRequest',
         response_type_name='ImageFamilyView',
+        supports_download=False,
+    )
+
+  class ImageViewsService(base_api.BaseApiService):
+    """Service class for the imageViews resource."""
+
+    _NAME = 'imageViews'
+
+    def __init__(self, client):
+      super(ComputeV1.ImageViewsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified global ImageView resource, with a regional.
+context.
+
+      Args:
+        request: (ComputeImageViewsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ImageView) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.imageViews.get',
+        ordered_params=['project', 'region', 'resourceId'],
+        path_params=['project', 'region', 'resourceId'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/imageViews/{resourceId}',
+        request_field='',
+        request_type_name='ComputeImageViewsGetRequest',
+        response_type_name='ImageView',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Returns a list of global ImageView resources, with a regional.
+context.
+
+      Args:
+        request: (ComputeImageViewsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ImageViewsListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.imageViews.list',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/regions/{region}/imageViews',
+        request_field='',
+        request_type_name='ComputeImageViewsListRequest',
+        response_type_name='ImageViewsListResponse',
         supports_download=False,
     )
 
@@ -11211,6 +11340,68 @@ project.
         request_field='',
         request_type_name='ComputeMachineTypesListRequest',
         response_type_name='MachineTypeList',
+        supports_download=False,
+    )
+
+  class ManagedRulesetsService(base_api.BaseApiService):
+    """Service class for the managedRulesets resource."""
+
+    _NAME = 'managedRulesets'
+
+    def __init__(self, client):
+      super(ComputeV1.ManagedRulesetsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets the details for the specified managed ruleset name.
+
+      Args:
+        request: (ComputeManagedRulesetsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ManagedRuleset) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.managedRulesets.get',
+        ordered_params=['project', 'managedRuleset'],
+        path_params=['managedRuleset', 'project'],
+        query_params=[],
+        relative_path='projects/{project}/global/managedRulesets/{managedRuleset}',
+        request_field='',
+        request_type_name='ComputeManagedRulesetsGetRequest',
+        response_type_name='ManagedRuleset',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves the list of all the managed rulesets available.
+
+      Args:
+        request: (ComputeManagedRulesetsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ManagedRulesetList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.managedRulesets.list',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/global/managedRulesets',
+        request_field='',
+        request_type_name='ComputeManagedRulesetsListRequest',
+        response_type_name='ManagedRulesetList',
         supports_download=False,
     )
 
@@ -19695,7 +19886,7 @@ specified project in the given region.
         method_id='compute.regionNetworkFirewallPolicies.addAssociation',
         ordered_params=['project', 'region', 'firewallPolicy'],
         path_params=['firewallPolicy', 'project', 'region'],
-        query_params=['replaceExistingAssociation', 'requestId'],
+        query_params=['associatedPolicyToBeReplaced', 'replaceExistingAssociation', 'requestId'],
         relative_path='projects/{project}/regions/{region}/firewallPolicies/{firewallPolicy}/addAssociation',
         request_field='firewallPolicyAssociation',
         request_type_name='ComputeRegionNetworkFirewallPoliciesAddAssociationRequest',
@@ -19987,6 +20178,32 @@ for the specified project in the given region.
         relative_path='projects/{project}/regions/{region}/firewallPolicies/{firewallPolicy}',
         request_field='firewallPolicyResource',
         request_type_name='ComputeRegionNetworkFirewallPoliciesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def PatchAssociation(self, request, global_params=None):
+      r"""Updates an association for the specified network firewall policy.
+
+      Args:
+        request: (ComputeRegionNetworkFirewallPoliciesPatchAssociationRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('PatchAssociation')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PatchAssociation.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.regionNetworkFirewallPolicies.patchAssociation',
+        ordered_params=['project', 'region', 'firewallPolicy'],
+        path_params=['firewallPolicy', 'project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/firewallPolicies/{firewallPolicy}/patchAssociation',
+        request_field='firewallPolicyAssociation',
+        request_type_name='ComputeRegionNetworkFirewallPoliciesPatchAssociationRequest',
         response_type_name='Operation',
         supports_download=False,
     )

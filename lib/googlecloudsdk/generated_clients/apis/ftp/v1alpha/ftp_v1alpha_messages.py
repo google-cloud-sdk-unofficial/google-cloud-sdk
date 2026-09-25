@@ -791,10 +791,8 @@ class Server(_messages.Message):
     internalConfig: Configuration for internal access.
     labels: Optional. Labels as key value pairs
     name: Identifier. name of resource
-    satisfiesPzi: Output only. Whether the Server satisfies Physical Zone
-      Isolation (PZI) requirements.
-    satisfiesPzs: Output only. Whether the Server satisfies Physical Zone
-      Separation (PZS) requirements.
+    satisfiesPzi: Output only. Reserved for future use.
+    satisfiesPzs: Output only. Reserved for future use.
     serviceAgent: Output only. Service agent used to access the customer
       bucket.
     state: Output only. The state of the server.

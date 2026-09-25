@@ -878,9 +878,7 @@ class _SectionApiEndpointOverrides(_Section):
     )
     self.appengine = self._Add('appengine', command='gcloud app')
     self.apphub = self._Add('apphub', command='gcloud apphub')
-    self.apptopology = self._Add(
-        'apptopology', command='gcloud app-topology', hidden=True
-    )
+    self.apptopology = self._Add('apptopology', command='gcloud app-topology')
     self.appoptimize = self._Add('appoptimize', command='gcloud app-optimize')
     self.artifactregistry = self._Add(
         'artifactregistry', command='gcloud artifacts'

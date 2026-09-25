@@ -21,7 +21,9 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Describe(base.DescribeCommand):
   """Describe an App Topology location.
 
@@ -30,11 +32,7 @@ class Describe(base.DescribeCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': (
-          '{description}\n\n'
-          'Retrieves and displays details and supported capabilities for a'
-          ' specific App Topology location.'
-      ),
+      'DESCRIPTION': '{description}',
       'EXAMPLES': (
           """\
           To describe the `global` location:

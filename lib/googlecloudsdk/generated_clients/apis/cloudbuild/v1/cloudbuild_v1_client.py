@@ -61,6 +61,9 @@ class CloudbuildV1(base_api.BaseApiClient):
     self.projects_locations_githubEnterpriseConfigs = self.ProjectsLocationsGithubEnterpriseConfigsService(self)
     self.projects_locations_installations = self.ProjectsLocationsInstallationsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_pipelineRuns = self.ProjectsLocationsPipelineRunsService(self)
+    self.projects_locations_pipelines_triggers = self.ProjectsLocationsPipelinesTriggersService(self)
+    self.projects_locations_pipelines = self.ProjectsLocationsPipelinesService(self)
     self.projects_locations_triggers = self.ProjectsLocationsTriggersService(self)
     self.projects_locations_workerPools = self.ProjectsLocationsWorkerPoolsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -1851,6 +1854,441 @@ class CloudbuildV1(base_api.BaseApiClient):
         relative_path='v1/{+name}',
         request_field='',
         request_type_name='CloudbuildProjectsLocationsOperationsGetRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsPipelineRunsService(base_api.BaseApiService):
+    """Service class for the projects_locations_pipelineRuns resource."""
+
+    _NAME = 'projects_locations_pipelineRuns'
+
+    def __init__(self, client):
+      super(CloudbuildV1.ProjectsLocationsPipelineRunsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Cancels a PipelineRun in progress.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelineRunsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelineRuns/{pipelineRunsId}:cancel',
+        http_method='POST',
+        method_id='cloudbuild.projects.locations.pipelineRuns.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:cancel',
+        request_field='cancelPipelineRunRequest',
+        request_type_name='CloudbuildProjectsLocationsPipelineRunsCancelRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Create(self, request, global_params=None):
+      r"""========================================================================== # PipelineRun Resources Creates a `PipelineRun`.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelineRunsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelineRuns',
+        http_method='POST',
+        method_id='cloudbuild.projects.locations.pipelineRuns.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pipelineRunId'],
+        relative_path='v1/{+parent}/pipelineRuns',
+        request_field='pipelineRun',
+        request_type_name='CloudbuildProjectsLocationsPipelineRunsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single PipelineRun.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelineRunsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PipelineRun) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelineRuns/{pipelineRunsId}',
+        http_method='GET',
+        method_id='cloudbuild.projects.locations.pipelineRuns.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudbuildProjectsLocationsPipelineRunsGetRequest',
+        response_type_name='PipelineRun',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists PipelineRuns in a given project and location.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelineRunsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPipelineRunsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelineRuns',
+        http_method='GET',
+        method_id='cloudbuild.projects.locations.pipelineRuns.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/pipelineRuns',
+        request_field='',
+        request_type_name='CloudbuildProjectsLocationsPipelineRunsListRequest',
+        response_type_name='ListPipelineRunsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsPipelinesTriggersService(base_api.BaseApiService):
+    """Service class for the projects_locations_pipelines_triggers resource."""
+
+    _NAME = 'projects_locations_pipelines_triggers'
+
+    def __init__(self, client):
+      super(CloudbuildV1.ProjectsLocationsPipelinesTriggersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new PipelineTrigger in a given project and location.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesTriggersCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}/triggers',
+        http_method='POST',
+        method_id='cloudbuild.projects.locations.pipelines.triggers.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pipelineTriggerId', 'validateOnly'],
+        relative_path='v1/{+parent}/triggers',
+        request_field='pipelineTrigger',
+        request_type_name='CloudbuildProjectsLocationsPipelinesTriggersCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single PipelineTrigger.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesTriggersDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}/triggers/{triggersId}',
+        http_method='DELETE',
+        method_id='cloudbuild.projects.locations.pipelines.triggers.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'validateOnly'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudbuildProjectsLocationsPipelinesTriggersDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the details of a PipelineTrigger.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesTriggersGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PipelineTrigger) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}/triggers/{triggersId}',
+        http_method='GET',
+        method_id='cloudbuild.projects.locations.pipelines.triggers.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudbuildProjectsLocationsPipelinesTriggersGetRequest',
+        response_type_name='PipelineTrigger',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists PipelineTriggers in a given project and location.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesTriggersListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPipelineTriggersResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}/triggers',
+        http_method='GET',
+        method_id='cloudbuild.projects.locations.pipelines.triggers.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/triggers',
+        request_field='',
+        request_type_name='CloudbuildProjectsLocationsPipelinesTriggersListRequest',
+        response_type_name='ListPipelineTriggersResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the details of a single PipelineTrigger.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesTriggersPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}/triggers/{triggersId}',
+        http_method='PATCH',
+        method_id='cloudbuild.projects.locations.pipelines.triggers.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['allowMissing', 'updateMask', 'validateOnly'],
+        relative_path='v1/{+name}',
+        request_field='pipelineTrigger',
+        request_type_name='CloudbuildProjectsLocationsPipelinesTriggersPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Receive(self, request, global_params=None):
+      r"""Receives a webhook event for a PipelineTrigger.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesTriggersReceiveRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ReceivePipelineTriggerWebhookResponse) The response message.
+      """
+      config = self.GetMethodConfig('Receive')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Receive.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}/triggers/{triggersId}:receive',
+        http_method='POST',
+        method_id='cloudbuild.projects.locations.pipelines.triggers.receive',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['secretToken'],
+        relative_path='v1/{+name}:receive',
+        request_field='httpBody',
+        request_type_name='CloudbuildProjectsLocationsPipelinesTriggersReceiveRequest',
+        response_type_name='ReceivePipelineTriggerWebhookResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsPipelinesService(base_api.BaseApiService):
+    """Service class for the projects_locations_pipelines resource."""
+
+    _NAME = 'projects_locations_pipelines'
+
+    def __init__(self, client):
+      super(CloudbuildV1.ProjectsLocationsPipelinesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a `Pipeline`.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines',
+        http_method='POST',
+        method_id='cloudbuild.projects.locations.pipelines.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pipelineId', 'validateOnly'],
+        relative_path='v1/{+parent}/pipelines',
+        request_field='pipeline',
+        request_type_name='CloudbuildProjectsLocationsPipelinesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single Pipeline.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}',
+        http_method='DELETE',
+        method_id='cloudbuild.projects.locations.pipelines.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'validateOnly'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudbuildProjectsLocationsPipelinesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single Pipeline.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Pipeline) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}',
+        http_method='GET',
+        method_id='cloudbuild.projects.locations.pipelines.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudbuildProjectsLocationsPipelinesGetRequest',
+        response_type_name='Pipeline',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Pipelines in a given project and location.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPipelinesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines',
+        http_method='GET',
+        method_id='cloudbuild.projects.locations.pipelines.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/pipelines',
+        request_field='',
+        request_type_name='CloudbuildProjectsLocationsPipelinesListRequest',
+        response_type_name='ListPipelinesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single Pipeline.
+
+      Args:
+        request: (CloudbuildProjectsLocationsPipelinesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}',
+        http_method='PATCH',
+        method_id='cloudbuild.projects.locations.pipelines.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['allowMissing', 'updateMask', 'validateOnly'],
+        relative_path='v1/{+name}',
+        request_field='pipeline',
+        request_type_name='CloudbuildProjectsLocationsPipelinesPatchRequest',
         response_type_name='Operation',
         supports_download=False,
     )

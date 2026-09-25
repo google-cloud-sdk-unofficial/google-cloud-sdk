@@ -1,0 +1,4 @@
+- release_tracks: [GA]
+  is_python_command: true
+  hints:
+    read_only: false

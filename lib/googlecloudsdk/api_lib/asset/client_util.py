@@ -14,8 +14,6 @@
 # limitations under the License.
 """Shared utilities for access the CloudAsset API client."""
 
-
-
 from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
@@ -32,7 +30,6 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import times
 import six
 
-
 API_NAME = 'cloudasset'
 DEFAULT_API_VERSION = 'v1'
 V1P1BETA1_API_VERSION = 'v1p1beta1'
@@ -40,10 +37,11 @@ V1P5BETA1_API_VERSION = 'v1p5beta1'
 V1P7BETA1_API_VERSION = 'v1p7beta1'
 _HEADERS = {
     'Content-Type': 'application/x-www-form-urlencoded',
-    'X-HTTP-Method-Override': 'GET'
+    'X-HTTP-Method-Override': 'GET',
 }
-_HTTP_ERROR_FORMAT = ('HTTP request failed with status code {}. '
-                      'Response content: {}')
+_HTTP_ERROR_FORMAT = (
+    'HTTP request failed with status code {}. Response content: {}'
+)
 
 
 class MessageDecodeError(core_exceptions.Error):
@@ -106,17 +104,19 @@ def PartitionKeyTranslation(partition_key):
   return 'PARTITION_KEY_UNSPECIFIED'
 
 
-def MakeGetAssetsHistoryHttpRequests(args,
-                                     service,
-                                     api_version=DEFAULT_API_VERSION):
+def MakeGetAssetsHistoryHttpRequests(
+    args, service, api_version=DEFAULT_API_VERSION
+):
   """Manually make the get assets history request."""
   messages = GetMessages(api_version)
 
   content_type = arg_utils.ChoiceToEnum(
-      args.content_type, messages.CloudassetBatchGetAssetsHistoryRequest
-      .ContentTypeValueValuesEnum)
-  parent = asset_utils.GetParentNameForGetHistory(args.organization,
-                                                  args.project)
+      args.content_type,
+      messages.CloudassetBatchGetAssetsHistoryRequest.ContentTypeValueValuesEnum,
+  )
+  parent = asset_utils.GetParentNameForGetHistory(
+      args.organization, args.project
+  )
   start_time = times.FormatDateTime(args.start_time)
   end_time = None
   if args.IsSpecified('end_time'):
@@ -130,14 +130,16 @@ def MakeGetAssetsHistoryHttpRequests(args,
           parent=parent,
           readTimeWindow_endTime=end_time,
           readTimeWindow_startTime=start_time,
-      ))
+      )
+  )
 
   for asset in response.assets:
     yield asset
 
 
-def _RenderAnalysisforAnalyzeIamPolicy(analysis,
-                                       api_version=DEFAULT_API_VERSION):
+def _RenderAnalysisforAnalyzeIamPolicy(
+    analysis, api_version=DEFAULT_API_VERSION
+):
   """Renders the analysis query and results of the AnalyzeIamPolicy request."""
 
   for analysis_result in analysis.analysisResults:
@@ -156,8 +158,9 @@ def _RenderAnalysisforAnalyzeIamPolicy(analysis,
       acls['accesses'] = acl.accesses
       acls['resources'] = acl.resources
       if api_version == DEFAULT_API_VERSION and acl.conditionEvaluation:
-        acls[
-            'conditionEvaluationValue'] = acl.conditionEvaluation.evaluationValue
+        acls['conditionEvaluationValue'] = (
+            acl.conditionEvaluation.evaluationValue
+        )
       entry['ACLs'].append(acls)
 
     yield entry
@@ -185,22 +188,28 @@ def _RenderAnalysisforAnalyzeIamPolicy(analysis,
     yield entry
 
 
-def _RenderResponseforAnalyzeIamPolicy(response,
-                                       analyze_service_account_impersonation,
-                                       api_version=DEFAULT_API_VERSION):
+def _RenderResponseforAnalyzeIamPolicy(
+    response,
+    analyze_service_account_impersonation,
+    api_version=DEFAULT_API_VERSION,
+):
   """Renders the response of the AnalyzeIamPolicy request."""
 
   if response.fullyExplored:
     msg = 'Your analysis request is fully explored. '
   else:
-    msg = ('Your analysis request is NOT fully explored. You can use the '
-           '--show-response option to see the unexplored part. ')
+    msg = (
+        'Your analysis request is NOT fully explored. You can use the '
+        '--show-response option to see the unexplored part. '
+    )
 
   has_results = False
   if response.mainAnalysis.analysisResults:
     has_results = True
   if (not has_results) and analyze_service_account_impersonation:
-    for sa_impersonation_analysis in response.serviceAccountImpersonationAnalysis:
+    for (
+        sa_impersonation_analysis
+    ) in response.serviceAccountImpersonationAnalysis:
       if sa_impersonation_analysis.analysisResults:
         has_results = True
         break
@@ -208,11 +217,14 @@ def _RenderResponseforAnalyzeIamPolicy(response,
   if not has_results:
     msg += 'No matching ACL is found.'
   else:
-    msg += ('The ACLs matching your requests are listed per IAM policy binding'
-            ', so there could be duplications.')
+    msg += (
+        'The ACLs matching your requests are listed per IAM policy binding'
+        ', so there could be duplications.'
+    )
 
-  for entry in _RenderAnalysisforAnalyzeIamPolicy(response.mainAnalysis,
-                                                  api_version):
+  for entry in _RenderAnalysisforAnalyzeIamPolicy(
+      response.mainAnalysis, api_version
+  ):
     yield entry
 
   if analyze_service_account_impersonation:
@@ -227,17 +239,19 @@ def _RenderResponseforAnalyzeIamPolicy(response,
   log.status.Print(msg)
 
 
-def MakeAnalyzeIamPolicyHttpRequests(args,
-                                     service,
-                                     messages,
-                                     api_version=DEFAULT_API_VERSION):
+def MakeAnalyzeIamPolicyHttpRequests(
+    args, service, messages, api_version=DEFAULT_API_VERSION
+):
   """Manually make the analyze IAM policy request."""
-  parent = asset_utils.GetParentNameForAnalyzeIamPolicy(args.organization,
-                                                        args.project,
-                                                        args.folder)
+  parent = asset_utils.GetParentNameForAnalyzeIamPolicy(
+      args.organization, args.project, args.folder
+  )
 
-  full_resource_name = args.full_resource_name if args.IsSpecified(
-      'full_resource_name') else None
+  full_resource_name = (
+      args.full_resource_name
+      if args.IsSpecified('full_resource_name')
+      else None
+  )
 
   identity = args.identity if args.IsSpecified('identity') else None
 
@@ -251,9 +265,15 @@ def MakeAnalyzeIamPolicyHttpRequests(args,
 
   expand_roles = args.expand_roles if args.expand_roles else None
 
-  saved_analysis_query = args.saved_analysis_query if args.saved_analysis_query else None
+  saved_analysis_query = (
+      args.saved_analysis_query if args.saved_analysis_query else None
+  )
 
-  analyze_service_account_impersonation = args.analyze_service_account_impersonation if args.analyze_service_account_impersonation else None
+  analyze_service_account_impersonation = (
+      args.analyze_service_account_impersonation
+      if args.analyze_service_account_impersonation
+      else None
+  )
 
   include_deny_policy_analysis = (
       args.include_deny_policy_analysis
@@ -266,7 +286,8 @@ def MakeAnalyzeIamPolicyHttpRequests(args,
     if not args.show_response:
       raise gcloud_exceptions.InvalidArgumentException(
           '--output-resource-edges',
-          'Must be set together with --show-response to take effect.')
+          'Must be set together with --show-response to take effect.',
+      )
     output_resource_edges = args.output_resource_edges
 
   output_group_edges = None
@@ -274,7 +295,8 @@ def MakeAnalyzeIamPolicyHttpRequests(args,
     if not args.show_response:
       raise gcloud_exceptions.InvalidArgumentException(
           '--output-group-edges',
-          'Must be set together with --show-response to take effect.')
+          'Must be set together with --show-response to take effect.',
+      )
     output_group_edges = args.output_group_edges
 
   execution_timeout = None
@@ -306,7 +328,8 @@ def MakeAnalyzeIamPolicyHttpRequests(args,
   )
   if not args.show_response:
     return _RenderResponseforAnalyzeIamPolicy(
-        response, analyze_service_account_impersonation, api_version)
+        response, analyze_service_account_impersonation, api_version
+    )
   return response
 
 
@@ -322,8 +345,9 @@ class AnalyzeIamPolicyClient(object):
   def Analyze(self, args):
     """Calls MakeAnalyzeIamPolicy method."""
     messages = GetMessages(self.api_version)
-    return MakeAnalyzeIamPolicyHttpRequests(args, self.service, messages,
-                                            self.api_version)
+    return MakeAnalyzeIamPolicyHttpRequests(
+        args, self.service, messages, self.api_version
+    )
 
 
 class AssetExportClient(object):
@@ -341,43 +365,55 @@ class AssetExportClient(object):
     partition_key = PartitionKeyTranslation(args.partition_key)
     partition_key = getattr(
         self.message_module.PartitionSpec.PartitionKeyValueValuesEnum,
-        partition_key)
+        partition_key,
+    )
     if args.output_path or args.output_path_prefix:
       output_config = self.message_module.OutputConfig(
           gcsDestination=self.message_module.GcsDestination(
-              uri=args.output_path, uriPrefix=args.output_path_prefix))
+              uri=args.output_path, uriPrefix=args.output_path_prefix
+          )
+      )
     else:
       source_ref = args.CONCEPTS.bigquery_table.Parse()
       output_config = self.message_module.OutputConfig(
           bigqueryDestination=self.message_module.BigQueryDestination(
-              dataset='projects/' + source_ref.projectId + '/datasets/' +
-              source_ref.datasetId,
+              dataset='projects/'
+              + source_ref.projectId
+              + '/datasets/'
+              + source_ref.datasetId,
               table=source_ref.tableId,
               force=args.force_,
               partitionSpec=self.message_module.PartitionSpec(
-                  partitionKey=partition_key),
-              separateTablesPerAssetType=args.per_type_))
+                  partitionKey=partition_key
+              ),
+              separateTablesPerAssetType=args.per_type_,
+          )
+      )
     snapshot_time = None
     if args.snapshot_time:
       snapshot_time = times.FormatDateTime(args.snapshot_time)
     content_type = getattr(
         self.message_module.ExportAssetsRequest.ContentTypeValueValuesEnum,
-        content_type)
+        content_type,
+    )
     export_assets_request = self.message_module.ExportAssetsRequest(
         assetTypes=args.asset_types,
         contentType=content_type,
         outputConfig=output_config,
         readTime=snapshot_time,
-        relationshipTypes=args.relationship_types)
+        relationshipTypes=args.relationship_types,
+    )
     request_message = self.message_module.CloudassetExportAssetsRequest(
-        parent=self.parent, exportAssetsRequest=export_assets_request)
+        parent=self.parent, exportAssetsRequest=export_assets_request
+    )
     try:
       operation = self.service.ExportAssets(request_message)
     except apitools_exceptions.HttpBadRequestError as bad_request:
       raise exceptions.HttpException(bad_request, error_format='{error_info}')
     except apitools_exceptions.HttpForbiddenError as permission_deny:
       raise exceptions.HttpException(
-          permission_deny, error_format='{error_info}')
+          permission_deny, error_format='{error_info}'
+      )
     return operation
 
 
@@ -397,21 +433,27 @@ class AssetSavedQueriesClient(object):
           'Query file [{0}] is not a properly formatted YAML or JSON '
           'query file. Supported query type: {1}.'.format(
               file_path,
-              self.DictKeysToString(self.supported_query_types.keys())))
+              self.DictKeysToString(self.supported_query_types.keys()),
+          )
+      )
     if query_type_str not in self.supported_query_types.keys():
       raise Exception(
           'query type {0} not supported. supported query type: {1}'.format(
               query_type_str,
-              self.DictKeysToString(self.supported_query_types.keys())))
+              self.DictKeysToString(self.supported_query_types.keys()),
+          )
+      )
     query_content = file_content[query_type_str]
     try:
       query_obj = encoding.PyValueToMessage(
-          self.supported_query_types[query_type_str], query_content)
+          self.supported_query_types[query_type_str], query_content
+      )
     except:
       # Raised when the input file is not properly formatted YAML policy file.
       raise gcloud_exceptions.BadFileException(
           'Query file [{0}] is not a properly formatted YAML or JSON '
-          'query file.'.format(file_path))
+          'query file.'.format(file_path)
+      )
 
     return query_obj
 
@@ -426,37 +468,43 @@ class AssetSavedQueriesClient(object):
 
   def Create(self, args):
     """Create a SavedQuery."""
-    query_obj = self.GetQueryContentFromFile(
-        args.query_file_path)
+    query_obj = self.GetQueryContentFromFile(args.query_file_path)
     saved_query_content = self.message_module.QueryContent(
-        iamPolicyAnalysisQuery=query_obj)
+        iamPolicyAnalysisQuery=query_obj
+    )
     arg_labels = labels_util.ParseCreateArgs(
-        args, self.message_module.SavedQuery.LabelsValue)
+        args, self.message_module.SavedQuery.LabelsValue
+    )
     saved_query = self.message_module.SavedQuery(
         content=saved_query_content,
         description=args.description,
-        labels=arg_labels)
+        labels=arg_labels,
+    )
 
     request_message = self.message_module.CloudassetSavedQueriesCreateRequest(
-        parent=self.parent, savedQuery=saved_query, savedQueryId=args.query_id)
+        parent=self.parent, savedQuery=saved_query, savedQueryId=args.query_id
+    )
     return self.service.Create(request_message)
 
   def Describe(self, args):
     """Describe a saved query."""
     request_message = self.message_module.CloudassetSavedQueriesGetRequest(
-        name='{}/savedQueries/{}'.format(self.parent, args.query_id))
+        name='{}/savedQueries/{}'.format(self.parent, args.query_id)
+    )
     return self.service.Get(request_message)
 
   def Delete(self, args):
     """Delete a saved query."""
     request_message = self.message_module.CloudassetSavedQueriesDeleteRequest(
-        name='{}/savedQueries/{}'.format(self.parent, args.query_id))
+        name='{}/savedQueries/{}'.format(self.parent, args.query_id)
+    )
     self.service.Delete(request_message)
 
   def List(self):
     """List saved queries under a parent."""
     request_message = self.message_module.CloudassetSavedQueriesListRequest(
-        parent=self.parent)
+        parent=self.parent
+    )
     return self.service.List(request_message)
 
   def GetUpdatedLabels(self, args):
@@ -466,7 +514,8 @@ class AssetSavedQueriesClient(object):
     if labels_diff.MayHaveUpdates():
       orig_resource = self.Describe(args)
       labels_update = labels_diff.Apply(
-          self.message_module.SavedQuery.LabelsValue, orig_resource.labels)
+          self.message_module.SavedQuery.LabelsValue, orig_resource.labels
+      )
       if labels_update.needs_update:
         labels = labels_update.labels
         return labels, True
@@ -477,11 +526,11 @@ class AssetSavedQueriesClient(object):
     update_mask = ''
     saved_query_content = None
     if args.query_file_path:
-      query_obj = self.GetQueryContentFromFile(
-          args.query_file_path)
+      query_obj = self.GetQueryContentFromFile(args.query_file_path)
       update_mask += 'content'
       saved_query_content = self.message_module.QueryContent(
-          iamPolicyAnalysisQuery=query_obj)
+          iamPolicyAnalysisQuery=query_obj
+      )
     updated_description = None
     if args.description:
       updated_description = args.description
@@ -498,7 +547,8 @@ class AssetSavedQueriesClient(object):
     request_message = self.message_module.CloudassetSavedQueriesPatchRequest(
         name='{}/savedQueries/{}'.format(self.parent, args.query_id),
         savedQuery=saved_query,
-        updateMask=update_mask)
+        updateMask=update_mask,
+    )
     return self.service.Patch(request_message)
 
 
@@ -513,52 +563,63 @@ class AssetFeedClient(object):
   def Create(self, args):
     """Create a feed."""
     content_type = ContentTypeTranslation(args.content_type)
-    content_type = getattr(self.message_module.Feed.ContentTypeValueValuesEnum,
-                           content_type)
+    content_type = getattr(
+        self.message_module.Feed.ContentTypeValueValuesEnum, content_type
+    )
     feed_output_config = self.message_module.FeedOutputConfig(
         pubsubDestination=self.message_module.PubsubDestination(
-            topic=args.pubsub_topic))
+            topic=args.pubsub_topic
+        )
+    )
     feed_condition = self.message_module.Expr(
         expression=args.condition_expression,
         title=args.condition_title,
-        description=args.condition_description)
+        description=args.condition_description,
+    )
     feed = self.message_module.Feed(
         assetNames=args.asset_names,
         assetTypes=args.asset_types,
         contentType=content_type,
         feedOutputConfig=feed_output_config,
         condition=feed_condition,
-        relationshipTypes=args.relationship_types)
+        relationshipTypes=args.relationship_types,
+    )
     create_feed_request = self.message_module.CreateFeedRequest(
-        feed=feed, feedId=args.feed)
+        feed=feed, feedId=args.feed
+    )
     request_message = self.message_module.CloudassetFeedsCreateRequest(
-        parent=self.parent, createFeedRequest=create_feed_request)
+        parent=self.parent, createFeedRequest=create_feed_request
+    )
     return self.service.Create(request_message)
 
   def Describe(self, args):
     """Describe a feed."""
     request_message = self.message_module.CloudassetFeedsGetRequest(
-        name='{}/feeds/{}'.format(self.parent, args.feed))
+        name='{}/feeds/{}'.format(self.parent, args.feed)
+    )
     return self.service.Get(request_message)
 
   def Delete(self, args):
     """Delete a feed."""
     request_message = self.message_module.CloudassetFeedsDeleteRequest(
-        name='{}/feeds/{}'.format(self.parent, args.feed))
+        name='{}/feeds/{}'.format(self.parent, args.feed)
+    )
     self.service.Delete(request_message)
 
   def List(self):
     """List feeds under a parent."""
     request_message = self.message_module.CloudassetFeedsListRequest(
-        parent=self.parent)
+        parent=self.parent
+    )
     return self.service.List(request_message)
 
   def Update(self, args):
     """Update a feed."""
     update_masks = []
     content_type = ContentTypeTranslation(args.content_type)
-    content_type = getattr(self.message_module.Feed.ContentTypeValueValuesEnum,
-                           content_type)
+    content_type = getattr(
+        self.message_module.Feed.ContentTypeValueValuesEnum, content_type
+    )
     feed_name = '{}/feeds/{}'.format(self.parent, args.feed)
     if args.content_type or args.clear_content_type:
       update_masks.append('content_type')
@@ -570,48 +631,62 @@ class AssetFeedClient(object):
       update_masks.append('condition.title')
     if args.condition_description or args.clear_condition_description:
       update_masks.append('condition.description')
-    asset_names, asset_types, relationship_types = self.UpdateAssetNamesTypesAndRelationships(
-        args, feed_name, update_masks)
+    asset_names, asset_types, relationship_types = (
+        self.UpdateAssetNamesTypesAndRelationships(
+            args, feed_name, update_masks
+        )
+    )
     update_mask = ','.join(update_masks)
     feed_output_config = self.message_module.FeedOutputConfig(
         pubsubDestination=self.message_module.PubsubDestination(
-            topic=args.pubsub_topic))
+            topic=args.pubsub_topic
+        )
+    )
     feed_condition = self.message_module.Expr(
         expression=args.condition_expression,
         title=args.condition_title,
-        description=args.condition_description)
+        description=args.condition_description,
+    )
     feed = self.message_module.Feed(
         assetNames=asset_names,
         assetTypes=asset_types,
         contentType=content_type,
         feedOutputConfig=feed_output_config,
         condition=feed_condition,
-        relationshipTypes=relationship_types)
+        relationshipTypes=relationship_types,
+    )
     update_feed_request = self.message_module.UpdateFeedRequest(
-        feed=feed, updateMask=update_mask)
+        feed=feed, updateMask=update_mask
+    )
     request_message = self.message_module.CloudassetFeedsPatchRequest(
-        name=feed_name, updateFeedRequest=update_feed_request)
+        name=feed_name, updateFeedRequest=update_feed_request
+    )
     return self.service.Patch(request_message)
 
-  def UpdateAssetNamesTypesAndRelationships(self, args, feed_name,
-                                            update_masks):
+  def UpdateAssetNamesTypesAndRelationships(
+      self, args, feed_name, update_masks
+  ):
     """Get Updated assetNames, assetTypes and relationshipTypes."""
     feed = self.service.Get(
-        self.message_module.CloudassetFeedsGetRequest(name=feed_name))
-    asset_names = repeated.ParsePrimitiveArgs(args, 'asset_names',
-                                              lambda: feed.assetNames)
+        self.message_module.CloudassetFeedsGetRequest(name=feed_name)
+    )
+    asset_names = repeated.ParsePrimitiveArgs(
+        args, 'asset_names', lambda: feed.assetNames
+    )
     if asset_names is not None:
       update_masks.append('asset_names')
     else:
       asset_names = []
-    asset_types = repeated.ParsePrimitiveArgs(args, 'asset_types',
-                                              lambda: feed.assetTypes)
+    asset_types = repeated.ParsePrimitiveArgs(
+        args, 'asset_types', lambda: feed.assetTypes
+    )
     if asset_types is not None:
       update_masks.append('asset_types')
     else:
       asset_types = []
     relationship_types = repeated.ParsePrimitiveArgs(
-        args, 'relationship_types', lambda: feed.relationshipTypes)
+        args, 'relationship_types', lambda: feed.relationshipTypes
+    )
     if relationship_types is not None:
       update_masks.append('relationship_types')
     else:
@@ -630,17 +705,25 @@ class AssetSearchClient(object):
     if api_version == V1P1BETA1_API_VERSION:
       self.resource_service = GetClient(api_version).resources
       self.search_all_resources_method = 'SearchAll'
-      self.search_all_resources_request = self.message_module.CloudassetResourcesSearchAllRequest
+      self.search_all_resources_request = (
+          self.message_module.CloudassetResourcesSearchAllRequest
+      )
       self.policy_service = GetClient(api_version).iamPolicies
       self.search_all_iam_policies_method = 'SearchAll'
-      self.search_all_iam_policies_request = self.message_module.CloudassetIamPoliciesSearchAllRequest
+      self.search_all_iam_policies_request = (
+          self.message_module.CloudassetIamPoliciesSearchAllRequest
+      )
     else:
       self.resource_service = GetClient(api_version).v1
       self.search_all_resources_method = 'SearchAllResources'
-      self.search_all_resources_request = self.message_module.CloudassetSearchAllResourcesRequest
+      self.search_all_resources_request = (
+          self.message_module.CloudassetSearchAllResourcesRequest
+      )
       self.policy_service = GetClient(api_version).v1
       self.search_all_iam_policies_method = 'SearchAllIamPolicies'
-      self.search_all_iam_policies_request = self.message_module.CloudassetSearchAllIamPoliciesRequest
+      self.search_all_iam_policies_request = (
+          self.message_module.CloudassetSearchAllIamPoliciesRequest
+      )
 
   def SearchAllResources(self, args):
     """Calls SearchAllResources method."""
@@ -653,7 +736,8 @@ class AssetSearchClient(object):
         query=args.query,
         assetTypes=args.asset_types,
         orderBy=args.order_by,
-        **optional_extra_args)
+        **optional_extra_args
+    )
     return list_pager.YieldFromList(
         self.resource_service,
         request,
@@ -662,19 +746,22 @@ class AssetSearchClient(object):
         batch_size=args.page_size or self._DEFAULT_PAGE_SIZE,
         batch_size_attribute='pageSize',
         current_token_attribute='pageToken',
-        next_token_attribute='nextPageToken')
+        next_token_attribute='nextPageToken',
+    )
 
   def SearchAllIamPolicies(self, args):
     """Calls SearchAllIamPolicies method."""
     if self.api_version == V1P1BETA1_API_VERSION:
       request = self.search_all_iam_policies_request(
-          scope=asset_utils.GetDefaultScopeIfEmpty(args), query=args.query)
+          scope=asset_utils.GetDefaultScopeIfEmpty(args), query=args.query
+      )
     else:
       request = self.search_all_iam_policies_request(
           scope=asset_utils.GetDefaultScopeIfEmpty(args),
           query=args.query,
           assetTypes=args.asset_types,
-          orderBy=args.order_by)
+          orderBy=args.order_by,
+      )
     return list_pager.YieldFromList(
         self.policy_service,
         request,
@@ -683,7 +770,8 @@ class AssetSearchClient(object):
         batch_size=args.page_size or self._DEFAULT_PAGE_SIZE,
         batch_size_attribute='pageSize',
         current_token_attribute='pageToken',
-        next_token_attribute='nextPageToken')
+        next_token_attribute='nextPageToken',
+    )
 
 
 class AssetListClient(object):
@@ -703,11 +791,13 @@ class AssetListClient(object):
     list_assets_request = self.message_module.CloudassetAssetsListRequest(
         parent=self.parent,
         contentType=getattr(
-            self.message_module.CloudassetAssetsListRequest
-            .ContentTypeValueValuesEnum, content_type),
+            self.message_module.CloudassetAssetsListRequest.ContentTypeValueValuesEnum,
+            content_type,
+        ),
         assetTypes=args.asset_types,
         readTime=snapshot_time,
-        relationshipTypes=args.relationship_types)
+        relationshipTypes=args.relationship_types,
+    )
     return list_pager.YieldFromList(
         self.service,
         list_assets_request,
@@ -717,7 +807,8 @@ class AssetListClient(object):
         batch_size_attribute='pageSize',
         current_token_attribute='pageToken',
         next_token_attribute='nextPageToken',
-        predicate=args.filter_func if do_filter else None)
+        predicate=args.filter_func if do_filter else None,
+    )
 
 
 class AssetOperationClient(object):
@@ -741,8 +832,9 @@ class GetHistoryClient(object):
     self.service = self.client.v1
 
   def GetHistory(self, args):
-    return MakeGetAssetsHistoryHttpRequests(args, self.service,
-                                            self.api_version)
+    return MakeGetAssetsHistoryHttpRequests(
+        args, self.service, self.api_version
+    )
 
 
 class IamPolicyAnalysisLongrunningClient(object):
@@ -758,10 +850,12 @@ class IamPolicyAnalysisLongrunningClient(object):
     analysis_query.scope = scope
     if args.IsSpecified('full_resource_name'):
       analysis_query.resourceSelector = self.message_module.ResourceSelector(
-          fullResourceName=args.full_resource_name)
+          fullResourceName=args.full_resource_name
+      )
     if args.IsSpecified('identity'):
       analysis_query.identitySelector = self.message_module.IdentitySelector(
-          identity=args.identity)
+          identity=args.identity
+      )
     if args.IsSpecified('roles') or args.IsSpecified('permissions'):
       analysis_query.accessSelector = self.message_module.AccessSelector()
       if args.IsSpecified('roles'):
@@ -773,19 +867,25 @@ class IamPolicyAnalysisLongrunningClient(object):
     if args.gcs_output_path:
       output_config = self.message_module.IamPolicyAnalysisOutputConfig(
           gcsDestination=self.message_module.GoogleCloudAssetV1GcsDestination(
-              uri=args.gcs_output_path))
+              uri=args.gcs_output_path
+          )
+      )
     else:
       output_config = self.message_module.IamPolicyAnalysisOutputConfig(
-          bigqueryDestination=self.message_module
-          .GoogleCloudAssetV1BigQueryDestination(
+          bigqueryDestination=self.message_module.GoogleCloudAssetV1BigQueryDestination(
               dataset=args.bigquery_dataset,
-              tablePrefix=args.bigquery_table_prefix))
+              tablePrefix=args.bigquery_table_prefix,
+          )
+      )
       if args.IsSpecified('bigquery_partition_key'):
         output_config.bigqueryDestination.partitionKey = getattr(
-            self.message_module.GoogleCloudAssetV1BigQueryDestination
-            .PartitionKeyValueValuesEnum, args.bigquery_partition_key)
+            self.message_module.GoogleCloudAssetV1BigQueryDestination.PartitionKeyValueValuesEnum,
+            args.bigquery_partition_key,
+        )
       if args.IsSpecified('bigquery_write_disposition'):
-        output_config.bigqueryDestination.writeDisposition = args.bigquery_write_disposition
+        output_config.bigqueryDestination.writeDisposition = (
+            args.bigquery_write_disposition
+        )
 
     options = self.message_module.Options()
     if args.expand_groups:
@@ -799,7 +899,9 @@ class IamPolicyAnalysisLongrunningClient(object):
     if args.output_group_edges:
       options.outputGroupEdges = args.output_group_edges
     if args.analyze_service_account_impersonation:
-      options.analyzeServiceAccountImpersonation = args.analyze_service_account_impersonation
+      options.analyzeServiceAccountImpersonation = (
+          args.analyze_service_account_impersonation
+      )
     if args.IsKnownAndSpecified('include_deny_policy_analysis'):
       options.includeDenyPolicyAnalysis = args.include_deny_policy_analysis
 
@@ -807,11 +909,16 @@ class IamPolicyAnalysisLongrunningClient(object):
     analysis_query.options = options
     if args.IsKnownAndSpecified('access_time'):
       analysis_query.conditionContext = self.message_module.ConditionContext(
-          accessTime=times.FormatDateTime(args.access_time))
+          accessTime=times.FormatDateTime(args.access_time)
+      )
     request = self.message_module.AnalyzeIamPolicyLongrunningRequest(
-        analysisQuery=analysis_query, outputConfig=output_config)
-    request_message = self.message_module.CloudassetAnalyzeIamPolicyLongrunningRequest(
-        scope=scope, analyzeIamPolicyLongrunningRequest=request)
+        analysisQuery=analysis_query, outputConfig=output_config
+    )
+    request_message = (
+        self.message_module.CloudassetAnalyzeIamPolicyLongrunningRequest(
+            scope=scope, analyzeIamPolicyLongrunningRequest=request
+        )
+    )
     operation = self.service.AnalyzeIamPolicyLongrunning(request_message)
 
     return operation
@@ -827,19 +934,27 @@ class AnalyzeMoveClient(object):
 
   def AnalyzeMove(self, args):
     """Analyze resource move."""
-    project = 'projects/' + args.project
+    if args.IsSpecified('project'):
+      resource = 'projects/' + args.project
+    else:
+      resource = 'folders/' + args.folder
 
     if args.IsSpecified('destination_folder'):
       destination = 'folders/' + args.destination_folder
     else:
       destination = 'organizations/' + args.destination_organization
 
-    scope = self.message_module.CloudassetAnalyzeMoveRequest.ViewValueValuesEnum.FULL
+    scope = (
+        self.message_module.CloudassetAnalyzeMoveRequest.ViewValueValuesEnum.FULL
+    )
     if args.blockers_only:
-      scope = self.message_module.CloudassetAnalyzeMoveRequest.ViewValueValuesEnum.BASIC
+      scope = (
+          self.message_module.CloudassetAnalyzeMoveRequest.ViewValueValuesEnum.BASIC
+      )
 
     request_message = self.message_module.CloudassetAnalyzeMoveRequest(
-        destinationParent=destination, resource=project, view=scope)
+        destinationParent=destination, resource=resource, view=scope
+    )
 
     return self.service.AnalyzeMove(request_message)
 
@@ -864,23 +979,28 @@ class AssetQueryClient(object):
       if not bigquery_table:
         raise gcloud_exceptions.InvalidArgumentException(
             '--bigquery-table',
-            '--bigquery-table should have the format of `projects/<ProjectId>/datasets/<DatasetId>/tables/<TableId>`'
+            '--bigquery-table should have the format of'
+            ' `projects/<ProjectId>/datasets/<DatasetId>/tables/<TableId>`',
         )
 
       write_disposition = None
       if args.IsSpecified('write_disposition'):
         write_disposition = args.write_disposition.replace('-', '_')
       output_config = self.message_module.QueryAssetsOutputConfig(
-          bigqueryDestination=self.message_module
-          .GoogleCloudAssetV1QueryAssetsOutputConfigBigQueryDestination(
-              dataset='projects/' + bigquery_table.projectId + '/datasets/' +
-              bigquery_table.datasetId,
+          bigqueryDestination=self.message_module.GoogleCloudAssetV1QueryAssetsOutputConfigBigQueryDestination(
+              dataset='projects/'
+              + bigquery_table.projectId
+              + '/datasets/'
+              + bigquery_table.datasetId,
               table=bigquery_table.tableId,
-              writeDisposition=write_disposition))
+              writeDisposition=write_disposition,
+          )
+      )
     elif args.IsSpecified('write_disposition'):
       raise gcloud_exceptions.InvalidArgumentException(
           '--write_disposition',
-          'Must be set together with --bigquery-table to take effect.')
+          'Must be set together with --bigquery-table to take effect.',
+      )
     end_time = None
     readtime_window = None
     if args.IsSpecified('end_time'):
@@ -889,7 +1009,8 @@ class AssetQueryClient(object):
     if args.IsSpecified('start_time'):
       start_time = times.FormatDateTime(args.start_time)
       readtime_window = self.message_module.TimeWindow(
-          endTime=end_time, startTime=start_time)
+          endTime=end_time, startTime=start_time
+      )
     read_time = None
     if args.IsSpecified('snapshot_time'):
       read_time = times.FormatDateTime(args.snapshot_time)
@@ -903,7 +1024,9 @@ class AssetQueryClient(object):
             timeout=timeout,
             readTime=read_time,
             readTimeWindow=readtime_window,
-            outputConfig=output_config))
+            outputConfig=output_config,
+        ),
+    )
     return self.service.QueryAssets(query_assets_request)
 
 
@@ -918,8 +1041,11 @@ class OrgPolicyAnalyzerClient(object):
 
   def AnalyzeOrgPolicyGovernedAssets(self, args):
     """Calls AnalyzeOrgPolicyGovernedAssets method."""
-    request = self.message_module.CloudassetAnalyzeOrgPolicyGovernedAssetsRequest(
-        scope=args.scope, constraint=args.constraint)
+    request = (
+        self.message_module.CloudassetAnalyzeOrgPolicyGovernedAssetsRequest(
+            scope=args.scope, constraint=args.constraint
+        )
+    )
     return list_pager.YieldFromList(
         self.service,
         request,
@@ -928,12 +1054,16 @@ class OrgPolicyAnalyzerClient(object):
         batch_size=args.page_size or self._DEFAULT_PAGE_SIZE,
         batch_size_attribute='pageSize',
         current_token_attribute='pageToken',
-        next_token_attribute='nextPageToken')
+        next_token_attribute='nextPageToken',
+    )
 
   def AnalyzeOrgPolicyGovernedContainers(self, args):
     """Calls AnalyzeOrgPolicyGovernedContainers method."""
-    request = self.message_module.CloudassetAnalyzeOrgPolicyGovernedContainersRequest(
-        scope=args.scope, constraint=args.constraint)
+    request = (
+        self.message_module.CloudassetAnalyzeOrgPolicyGovernedContainersRequest(
+            scope=args.scope, constraint=args.constraint
+        )
+    )
     return list_pager.YieldFromList(
         self.service,
         request,
@@ -942,12 +1072,14 @@ class OrgPolicyAnalyzerClient(object):
         batch_size=args.page_size or self._DEFAULT_PAGE_SIZE,
         batch_size_attribute='pageSize',
         current_token_attribute='pageToken',
-        next_token_attribute='nextPageToken')
+        next_token_attribute='nextPageToken',
+    )
 
   def AnalyzeOrgPolicies(self, args):
     """Calls AnalyzeOrgPolicies method."""
     request = self.message_module.CloudassetAnalyzeOrgPoliciesRequest(
-        scope=args.scope, constraint=args.constraint)
+        scope=args.scope, constraint=args.constraint
+    )
     return list_pager.YieldFromList(
         self.service,
         request,
@@ -956,7 +1088,8 @@ class OrgPolicyAnalyzerClient(object):
         batch_size=args.page_size or self._DEFAULT_PAGE_SIZE,
         batch_size_attribute='pageSize',
         current_token_attribute='pageToken',
-        next_token_attribute='nextPageToken')
+        next_token_attribute='nextPageToken',
+    )
 
 
 class EffectiveIAMPolicyClient(object):
@@ -969,5 +1102,6 @@ class EffectiveIAMPolicyClient(object):
   def BatchGetEffectiveIAMPolicies(self, args):
     """Calls BatchGetEffectiveIAMPolicies method."""
     request = self.message_module.CloudassetEffectiveIamPoliciesBatchGetRequest(
-        names=args.names, scope=args.scope)
+        names=args.names, scope=args.scope
+    )
     return self.service.BatchGet(request)

@@ -194,11 +194,16 @@ class Update(base.UpdateCommand):
       flags.AddSlurmTaskEpilogBashScripts(
           parser=flag_group, api_version=api_version, include_update_flags=True
       )
+      slurm_config_group = flag_group.add_group(mutex=True)
       flags.AddSlurmConfig(
-          parser=flag_group, api_version=api_version, include_update_flags=True
+          parser=slurm_config_group,
+          api_version=api_version,
+          include_update_flags=True,
       )
       flags.AddSlurmConfFile(
-          parser=flag_group, api_version=api_version, include_update_flags=True
+          parser=slurm_config_group,
+          api_version=api_version,
+          include_update_flags=True,
       )
       flags.AddSlurmDisableHealthCheckProgram(
           parser=flag_group, api_version=api_version, include_update_flags=True

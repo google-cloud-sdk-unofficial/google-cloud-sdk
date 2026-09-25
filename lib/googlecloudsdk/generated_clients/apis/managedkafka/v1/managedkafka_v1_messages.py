@@ -260,8 +260,9 @@ class Cluster(_messages.Message):
       requested. The effective capacity configuration of the cluster.
     gcpConfig: Required. Configuration properties for a Kafka cluster deployed
       to Google Cloud Platform.
-    kafkaVersion: Output only. Only populated when FULL view is requested. The
-      Kafka version of the cluster.
+    kafkaVersion: Optional. The Apache Kafka version of the cluster (for
+      example, `3.7.x`, `4.3.x`). If not specified during cluster creation,
+      defaults to `3.7.x`.
     labels: Optional. Labels as key value pairs.
     name: Identifier. The name of the cluster. Structured like:
       projects/{project_number}/locations/{location}/clusters/{cluster_id}

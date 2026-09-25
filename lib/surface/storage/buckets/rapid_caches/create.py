@@ -50,11 +50,11 @@ class Create(base.CreateCommand):
 
       The following command creates Rapid Cache Ultra instances for bucket
       in ``us-central1-a'' and ``us-central1-b'' zones with ttl of 6 hours and
-      admission policy as ``ADMIT_ON_SECOND_MISS'':
+      admission policy as ``admit-on-second-miss'':
 
         $ {command} gs://my-bucket us-central1-a us-central1-b \\
             --cache-type=rapid-cache-ultra --ttl=6h \\
-            --admission-policy=ADMIT_ON_SECOND_MISS
+            --admission-policy=admit-on-second-miss
       """
       ),
   }

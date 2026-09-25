@@ -771,3 +771,18 @@ def AddSecurityProfileFallbackAction(parser, required=False):
           ' output unless explicitly set.'
       ),
   )
+
+
+def AddPolicySource(parser, required=False):
+  """Adds policy source argument."""
+  parser.add_argument(
+      '--policy-source',
+      choices=['SYSTEM', 'USER_DEFINED'],
+      type=lambda x: x.upper(),
+      required=required,
+      hidden=True,
+      help=(
+          'Policy source for the network firewall policy. If not specified, the'
+          ' default implicit value is USER_DEFINED.'
+      ),
+  )

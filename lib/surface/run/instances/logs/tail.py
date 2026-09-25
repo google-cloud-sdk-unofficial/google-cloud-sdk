@@ -21,7 +21,8 @@ from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.command_lib.run.sync import log_tailer
+from googlecloudsdk.command_lib.run import log_tailer
+from googlecloudsdk.core import exceptions as core_exceptions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -71,6 +72,8 @@ class Tail(base.Command):
     )
     try:
       for line in iter(process.stdout.readline, ''):
+        if log_tailer.IsUnsupportedLogTailingError(line):
+          raise core_exceptions.Error(log_tailer.LOG_TAILING_NOT_SUPPORTED_MSG)
         line = log_tailer.FormatLogLineForTail(line)
         sys.stdout.write(line)
         sys.stdout.flush()
@@ -111,8 +114,8 @@ class Tail(base.Command):
         options=components.options,
         identity_file=components.identity_file,
         remote_command=[
-            '/lib64/ld-linux-x86-64.so.2',
-            '/usr/local/gcp/bin/tail_logs',
+            log_tailer.UNSUPPORTED_LIB,
+            log_tailer.TAIL_LOGS_BIN,
         ],
     )
     return self._StreamLogs(ssh_cmd, components.env)

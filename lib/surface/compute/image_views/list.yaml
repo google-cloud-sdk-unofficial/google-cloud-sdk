@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: List Compute Engine image-view resources.
@@ -18,6 +18,10 @@
     collection: compute.imageViews
     ALPHA:
       api_version: alpha
+    BETA:
+      api_version: beta
+    GA:
+      api_version: v1
     method: list
 
   arguments:
@@ -31,6 +35,7 @@
       table(
         image.name:label=NAME,
         image.selfLink.map().scope(projects).segment(0):label=PROJECT,
+        image.family:label=FAMILY,
         image.deprecated.state:label=DEPRECATED,
         image.status:label=STATUS
       )

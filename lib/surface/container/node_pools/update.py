@@ -458,7 +458,7 @@ class UpdateAlpha(Update):
     flags.AddSurgeUpgradeFlag(upgrade_settings_group, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(
         upgrade_settings_group, for_node_pool=True)
-    flags.AddEnableUpgradeInPlaceFlag(upgrade_settings_group, hidden=True)
+    flags.AddEnableHostUpdateInPlaceFlag(upgrade_settings_group, hidden=True)
 
     flags.AddEnableBlueGreenUpgradeFlag(upgrade_settings_group)
     flags.AddStandardRolloutPolicyFlag(
@@ -519,6 +519,22 @@ class UpdateAlpha(Update):
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
 
+    if (
+        args.enable_host_update_in_place is not None
+        and args.enable_upgrade_in_place is not None
+        and args.enable_host_update_in_place != args.enable_upgrade_in_place
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--enable-host-update-in-place',
+          'Cannot specify both --enable-host-update-in-place and'
+          ' --enable-upgrade-in-place with conflicting values.',
+      )
+    enable_host_update_in_place = (
+        args.enable_host_update_in_place
+        if args.enable_host_update_in_place is not None
+        else args.enable_upgrade_in_place
+    )
+
     ops = api_adapter.UpdateNodePoolOptions(
         accelerators=args.accelerator,
         enable_autorepair=args.enable_autorepair,
@@ -545,7 +561,8 @@ class UpdateAlpha(Update):
         gvnic=args.enable_gvnic,
         enable_image_streaming=args.enable_image_streaming,
         enable_blue_green_upgrade=args.enable_blue_green_upgrade,
-        enable_upgrade_in_place=args.enable_upgrade_in_place,
+        enable_host_update_in_place=enable_host_update_in_place,
+        enable_upgrade_in_place=enable_host_update_in_place,
         enable_surge_upgrade=args.enable_surge_upgrade,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,

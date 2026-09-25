@@ -43,6 +43,17 @@
       help_text: The interval for refreshing metadata from the remote catalog (e.g. 300s or 5m).
       type: "googlecloudsdk.calliope.arg_parsers:Duration:"
       processor: googlecloudsdk.command_lib.biglake.delta_sharing:GetDurationString
+    - arg_name: cross-cloud-cache
+      api_field: deltaSharingCatalog.federatedCatalogOptions.crossCloudCacheOptions.enabled
+      help_text: |-
+        Whether to enable caching of remote data on Google Cloud.
+        This may result in data being temporarily persisted on Google Cloud.
+      type: str
+      metavar: MODE
+      choices:
+      - arg_value: enabled
+      - arg_value: disabled
+      processor: googlecloudsdk.command_lib.biglake.delta_sharing:ParseCrossCloudCache
 - release_tracks: [ALPHA]
   help_text:
     brief: Update a BigLake Delta Sharing catalog.
@@ -88,3 +99,14 @@
       help_text: The interval for refreshing metadata from the remote catalog (e.g. 300s or 5m).
       type: "googlecloudsdk.calliope.arg_parsers:Duration:"
       processor: googlecloudsdk.command_lib.biglake.delta_sharing:GetDurationString
+    - arg_name: cross-cloud-cache
+      api_field: deltaSharingCatalog.federatedCatalogOptions.crossCloudCacheOptions.enabled
+      help_text: |-
+        Whether to enable caching of remote data on Google Cloud.
+        This may result in data being temporarily persisted on Google Cloud.
+      type: str
+      metavar: MODE
+      choices:
+      - arg_value: enabled
+      - arg_value: disabled
+      processor: googlecloudsdk.command_lib.biglake.delta_sharing:ParseCrossCloudCache

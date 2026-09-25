@@ -459,6 +459,7 @@ class CatalogDevice(_messages.Message):
   r"""A single routable device configuration in the catalog.
 
   Enums:
+    AccessDeniedReasonsValueListEntryValuesEnum:
     FormFactorValueValuesEnum: Output only. Specifies the form factor of the
       device.
     HardwareTypeValueValuesEnum: Output only. Indicates whether the device is
@@ -471,6 +472,9 @@ class CatalogDevice(_messages.Message):
       change over the lifecycle of a device.
 
   Fields:
+    accessDeniedReasons: Output only. Reasons for access denial. This model is
+      accessible/usable if this list is empty, otherwise the model is viewable
+      only.
     androidDetails: Output only. Contains Android-specific attributes (set
       when platform == ANDROID).
     availability: Output only. Reports the current fleet availability for this
@@ -482,6 +486,7 @@ class CatalogDevice(_messages.Message):
       virtual.
     iosDetails: Output only. Contains iOS-specific attributes (set when
       platform == IOS).
+    labInfo: Output only. The lab hosting this device.
     labels: Output only. Additional information. Informational only. May
       change over the lifecycle of a device.
     lifecycle: Output only. The device lifecycle (maturity stage and removal
@@ -507,6 +512,17 @@ class CatalogDevice(_messages.Message):
     supportedProducts: Output only. Products/Services supported by this
       device.
   """
+
+  class AccessDeniedReasonsValueListEntryValuesEnum(_messages.Enum):
+    r"""AccessDeniedReasonsValueListEntryValuesEnum enum type.
+
+    Values:
+      ACCESS_DENIED_REASON_UNSPECIFIED: Reason not specified.
+      EULA_NOT_ACCEPTED: The device is hosted in a partner lab whose end user
+        license agreement the project has not accepted.
+    """
+    ACCESS_DENIED_REASON_UNSPECIFIED = 0
+    EULA_NOT_ACCEPTED = 1
 
   class FormFactorValueValuesEnum(_messages.Enum):
     r"""Output only. Specifies the form factor of the device.
@@ -573,21 +589,23 @@ class CatalogDevice(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  androidDetails = _messages.MessageField('CatalogAndroidDeviceDetails', 1)
-  availability = _messages.MessageField('CatalogDeviceAvailability', 2)
-  displayName = _messages.StringField(3)
-  formFactor = _messages.EnumField('FormFactorValueValuesEnum', 4)
-  hardwareType = _messages.EnumField('HardwareTypeValueValuesEnum', 5)
-  iosDetails = _messages.MessageField('CatalogIosDeviceDetails', 6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  lifecycle = _messages.MessageField('CatalogLifecycle', 8)
-  manufacturer = _messages.StringField(9)
-  modelCode = _messages.StringField(10)
-  name = _messages.StringField(11)
-  osVersion = _messages.StringField(12)
-  platform = _messages.EnumField('PlatformValueValuesEnum', 13)
-  primaryScreen = _messages.MessageField('CatalogScreenMetrics', 14)
-  supportedProducts = _messages.MessageField('CatalogSupportedProduct', 15, repeated=True)
+  accessDeniedReasons = _messages.EnumField('AccessDeniedReasonsValueListEntryValuesEnum', 1, repeated=True)
+  androidDetails = _messages.MessageField('CatalogAndroidDeviceDetails', 2)
+  availability = _messages.MessageField('CatalogDeviceAvailability', 3)
+  displayName = _messages.StringField(4)
+  formFactor = _messages.EnumField('FormFactorValueValuesEnum', 5)
+  hardwareType = _messages.EnumField('HardwareTypeValueValuesEnum', 6)
+  iosDetails = _messages.MessageField('CatalogIosDeviceDetails', 7)
+  labInfo = _messages.MessageField('CatalogLabInfo', 8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  lifecycle = _messages.MessageField('CatalogLifecycle', 10)
+  manufacturer = _messages.StringField(11)
+  modelCode = _messages.StringField(12)
+  name = _messages.StringField(13)
+  osVersion = _messages.StringField(14)
+  platform = _messages.EnumField('PlatformValueValuesEnum', 15)
+  primaryScreen = _messages.MessageField('CatalogScreenMetrics', 16)
+  supportedProducts = _messages.MessageField('CatalogSupportedProduct', 17, repeated=True)
 
 
 class CatalogDeviceAvailability(_messages.Message):
@@ -697,6 +715,21 @@ class CatalogDeviceStreamingSupport(_messages.Message):
 
 class CatalogIosDeviceDetails(_messages.Message):
   r"""iOS-specific device attributes. Reserved for future iOS-only fields."""
+
+
+class CatalogLabInfo(_messages.Message):
+  r"""The lab hosting a device.
+
+  Fields:
+    displayName: Output only. Display name of the lab where the device is
+      hosted. If empty, the device is hosted in a Google owned lab.
+    regionCode: Output only. The Unicode country/region code (CLDR) of the lab
+      where the device is hosted, e.g. "US" for United States, "KR" for South
+      Korea. Empty when the hosting region is not published.
+  """
+
+  displayName = _messages.StringField(1)
+  regionCode = _messages.StringField(2)
 
 
 class CatalogLifecycle(_messages.Message):

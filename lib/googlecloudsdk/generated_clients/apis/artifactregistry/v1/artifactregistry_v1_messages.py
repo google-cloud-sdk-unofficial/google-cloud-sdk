@@ -1105,6 +1105,20 @@ class ArtifactregistryProjectsLocationsRepositoriesPythonPackagesListRequest(_me
   parent = _messages.StringField(3, required=True)
 
 
+class ArtifactregistryProjectsLocationsRepositoriesReconcileRequest(_messages.Message):
+  r"""A ArtifactregistryProjectsLocationsRepositoriesReconcileRequest object.
+
+  Fields:
+    name: Required. The name of the repository to reconcile. Format:
+      projects/{project}/locations/{location}/repositories/{repository}
+    reconcileRepositoryRequest: A ReconcileRepositoryRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  reconcileRepositoryRequest = _messages.MessageField('ReconcileRepositoryRequest', 2)
+
+
 class ArtifactregistryProjectsLocationsRepositoriesReindexRequest(_messages.Message):
   r"""A ArtifactregistryProjectsLocationsRepositoriesReindexRequest object.
 
@@ -3485,6 +3499,10 @@ class PythonRepository(_messages.Message):
   artifactRegistryRepository = _messages.MessageField('GoogleDevtoolsArtifactregistryV1RemoteRepositoryConfigPythonRepositoryArtifactRegistryRepository', 1)
   customRepository = _messages.MessageField('GoogleDevtoolsArtifactregistryV1RemoteRepositoryConfigPythonRepositoryCustomRepository', 2)
   publicRepository = _messages.EnumField('PublicRepositoryValueValuesEnum', 3)
+
+
+class ReconcileRepositoryRequest(_messages.Message):
+  r"""The request for ReconcileRepository operation."""
 
 
 class ReindexRepositoryRequest(_messages.Message):

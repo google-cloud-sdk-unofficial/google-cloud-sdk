@@ -4347,7 +4347,7 @@ class OauthClient(_messages.Message):
     StateValueValuesEnum: Output only. The state of the OauthClient.
 
   Fields:
-    allowedGrantTypes: Required. The list of OAuth grant types is allowed for
+    allowedGrantTypes: Optional. The list of OAuth grant types is allowed for
       the OauthClient.
     allowedRedirectUris: Required. The list of redirect uris that is allowed
       to redirect back when authorization process is completed.
@@ -6013,11 +6013,11 @@ class WorkforcePoolProvider(_messages.Message):
     identity pool provider will produce an error.
 
     Values:
-      SCIM_USAGE_UNSPECIFIED: Gemini Enterprise only. Do not use SCIM data.
+      SCIM_USAGE_UNSPECIFIED: Indicates that SCIM data is not used.
       ENABLED_FOR_GROUPS: Gemini Enterprise only. SCIM sync is enabled and
         SCIM-managed groups are used for authorization checks.
-      ENABLED_FOR_USERS_GROUPS: SCIM sync is enabled, and SCIM-managed user
-        claims and groups are used for authorization checks.
+      ENABLED_FOR_USERS_GROUPS: Looker only. SCIM sync is enabled, and SCIM-
+        managed user claims and groups are used for authorization checks.
     """
     SCIM_USAGE_UNSPECIFIED = 0
     ENABLED_FOR_GROUPS = 1
@@ -6296,6 +6296,8 @@ class WorkforcePoolProviderScimTenant(_messages.Message):
     serviceAgent: Output only. Service Agent created by SCIM Tenant API. SCIM
       tokens created under this tenant will be attached to this service agent.
     state: Output only. Gemini Enterprise only. The state of the tenant.
+    workloadIdentityFederationConfig: Optional. Workload Identity Federation
+      configuration.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -6363,6 +6365,7 @@ class WorkforcePoolProviderScimTenant(_messages.Message):
   purgeTime = _messages.StringField(6)
   serviceAgent = _messages.StringField(7)
   state = _messages.EnumField('StateValueValuesEnum', 8)
+  workloadIdentityFederationConfig = _messages.MessageField('WorkloadIdentityFederationConfig', 9)
 
 
 class WorkforcePoolProviderScimToken(_messages.Message):
@@ -6405,6 +6408,23 @@ class WorkforcePoolProviderScimToken(_messages.Message):
   name = _messages.StringField(2)
   securityToken = _messages.StringField(3)
   state = _messages.EnumField('StateValueValuesEnum', 4)
+
+
+class WorkloadIdentityFederationConfig(_messages.Message):
+  r"""Configuration for automated Workload Identity Federation provisioning.
+
+  Fields:
+    audience: Output only. The intended audience that the user must configure
+      in the IdP.
+    clientId: Required. The client ID associated with the Enterprise
+      Application.
+    issuerUri: Required. The OIDC Issuer URI of the external Identity
+      Provider.
+  """
+
+  audience = _messages.StringField(1)
+  clientId = _messages.StringField(2)
+  issuerUri = _messages.StringField(3)
 
 
 class WorkloadIdentityPool(_messages.Message):

@@ -19,6 +19,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
@@ -38,4 +39,4 @@ class Firebase(base.Group):
     # TODO(b/190534055):  Determine if command group works with project number
     base.RequireProjectID(args)
     del context, args
-    base.DisableUserProjectQuota()
+    base.EnableUserProjectQuota()

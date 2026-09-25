@@ -1384,7 +1384,7 @@ class ApigeeOrganizationsDeleteRequest(_messages.Message):
   Fields:
     hardDelete: Optional. Access to Apigee for internal purposes only. This
       flag can be used to hard delete the organizations when the BillingType
-      is not EVALUATION
+      is not `EVALUATION`
     name: Required. Name of the organization. Use the following structure in
       your request: `organizations/{org}`
     retention: Optional. This setting is applicable only for organizations
@@ -1412,9 +1412,12 @@ class ApigeeOrganizationsDeleteRequest(_messages.Message):
         days will be applied.
       MINIMUM: Organization data will be retained for the minimum period of 24
         hours.
+      NO_RETENTION: Does not retain organization data and permanently deletes
+        the organization immediately.
     """
     DELETION_RETENTION_UNSPECIFIED = 0
     MINIMUM = 1
+    NO_RETENTION = 2
 
   hardDelete = _messages.BooleanField(1)
   name = _messages.StringField(2, required=True)
@@ -8203,11 +8206,14 @@ class GoogleCloudApigeeV1ControlPlaneAccess(_messages.Message):
       also [Create service
       accounts](https://cloud.google.com/apigee/docs/hybrid/latest/sa-
       about#create-the-service-accounts).
+    watcherIdentities: Optional. Service accounts granted access to control
+      plane resources for the apigee-watcher component.
   """
 
   analyticsPublisherIdentities = _messages.StringField(1, repeated=True)
   name = _messages.StringField(2)
   synchronizerIdentities = _messages.StringField(3, repeated=True)
+  watcherIdentities = _messages.StringField(4, repeated=True)
 
 
 class GoogleCloudApigeeV1Credential(_messages.Message):

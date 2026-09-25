@@ -2123,8 +2123,8 @@ class ExtensionChain(_messages.Message):
     extensions: Required. A set of extensions to execute for the matching
       request. At least one extension is required. Up to 3 extensions can be
       defined for each extension chain for `LbTrafficExtension` resource.
-      `LbRouteExtension` and `LbEdgeExtension` chains are limited to 1
-      extension per extension chain.
+      `LbRouteExtension`, `LbEdgeExtension`, and `LbTcpExtension` chains are
+      limited to 1 extension per extension chain.
     matchCondition: Required. Conditions under which this chain is invoked for
       a request.
     name: Required. The name for this extension chain. The name is logged as
@@ -2475,11 +2475,13 @@ class FlexShieldingOptions(_messages.Message):
         west3`.
       ME_CENTRAL1: Content is fetched from an origin or cache near `me-
         central1`.
+      US_EAST5: Content is fetched from an origin or cache near `us-east5`.
     """
     FLEX_SHIELDING_REGION_UNSPECIFIED = 0
     AFRICA_SOUTH1 = 1
     EUROPE_WEST3 = 2
     ME_CENTRAL1 = 3
+    US_EAST5 = 4
 
   flexShieldingRegions = _messages.EnumField('FlexShieldingRegionsValueListEntryValuesEnum', 1, repeated=True)
 
@@ -5245,14 +5247,14 @@ class MulticastConsumerAssociation(_messages.Message):
       of the multicast consumer association. Use the state field instead.
 
   Messages:
-    LabelsValue: Optional. Labels as key-value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     createTime: Output only. [Output only] The timestamp when the multicast
       consumer association was created.
     description: Optional. An optional text description of the multicast
       consumer association.
-    labels: Optional. Labels as key-value pairs
+    labels: Optional. Labels as key-value pairs.
     multicastDomainActivation: Optional. The resource name of the multicast
       domain activation that is in the same zone as this multicast consumer
       association. Use the following format:
@@ -5273,9 +5275,9 @@ class MulticastConsumerAssociation(_messages.Message):
     state: Output only. [Output only] The state of the resource.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all multicast consumer association
-      resources. If a consumer association is deleted and another with the
-      same name is created, the new consumer association is assigned a
-      different unique_id.
+      resources. If a multicast consumer association is deleted and another
+      with the same name is created, the new multicast consumer association is
+      assigned a different unique_id.
     updateTime: Output only. [Output only] The timestamp when the Multicast
       Consumer Association was most recently updated.
   """
@@ -5297,7 +5299,7 @@ class MulticastConsumerAssociation(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -5359,8 +5361,8 @@ class MulticastDomain(_messages.Message):
       allowlisted projects.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all multicast domain resources. If
-      a domain is deleted and another with the same name is created, the new
-      domain is assigned a different unique_id.
+      a multicast domain is deleted and another with the same name is created,
+      the new multicast domain is assigned a different unique_id.
     updateTime: Output only. [Output only] The timestamp when the multicast
       domain was most recently updated.
   """
@@ -5406,7 +5408,7 @@ class MulticastDomainActivation(_messages.Message):
   r"""Multicast domain activation resource.
 
   Messages:
-    LabelsValue: Optional. Labels as key-value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     adminNetwork: Output only. [Output only] The URL of the admin network.
@@ -5417,7 +5419,7 @@ class MulticastDomainActivation(_messages.Message):
     disablePlacementPolicy: Optional. Option to allow disabling placement
       policy for multicast infrastructure. Only applicable if the activation
       is for a domain associating with a multicast domain group.
-    labels: Optional. Labels as key-value pairs
+    labels: Optional. Labels as key-value pairs.
     multicastConsumerAssociations: Output only. The resource names of
       associated multicast consumer associations. Use the following format:
       `projects/*/locations/*/multicastConsumerAssociations/*`.
@@ -5432,16 +5434,16 @@ class MulticastDomainActivation(_messages.Message):
       activation.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all multicast domain activation
-      resources. If a domain activation is deleted and another with the same
-      name is created, the new domain activation is assigned a different
-      unique_id.
+      resources. If a multicast domain activation is deleted and another with
+      the same name is created, the new multicast domain activation is
+      assigned a different unique_id.
     updateTime: Output only. [Output only] The timestamp when the multicast
       domain activation was most recently updated.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -5496,8 +5498,9 @@ class MulticastDomainGroup(_messages.Message):
     state: Output only. [Output only] The state of the resource.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all multicast domain group
-      resources. If a domain is deleted and another with the same name is
-      created, the new domain is assigned a different unique_id.
+      resources. If a multicast domain group is deleted and another with the
+      same name is created, the new multicast domain group is assigned a
+      different unique_id.
     updateTime: Output only. [Output only] The timestamp when the multicast
       domain group was most recently updated.
   """
@@ -5544,14 +5547,14 @@ class MulticastGroupConsumerActivation(_messages.Message):
       of the multicast group consumer activation. Use the state field instead.
 
   Messages:
-    LabelsValue: Optional. Labels as key-value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     createTime: Output only. [Output only] The timestamp when the multicast
       group consumer activation was created.
     description: Optional. An optional text description of the multicast group
       consumer activation.
-    labels: Optional. Labels as key-value pairs
+    labels: Optional. Labels as key-value pairs.
     logConfig: Optional. Specifies the logging options for the activities
       performed related to the multicast group consumer activation. Defaults
       to false. If logging is enabled, logs are exported to Cloud Logging.
@@ -5561,13 +5564,13 @@ class MulticastGroupConsumerActivation(_messages.Message):
       `projects/*/locations/*/multicastConsumerAssociations/*`.
     multicastGroup: Optional. The resource name of the multicast group created
       by the admin in the same zone as this multicast group consumer
-      activation. Use the following format: //
+      activation. Use the following format:
       `projects/*/locations/*/multicastGroups/*`. This field is deprecated.
       Use multicast_group_range_activation instead.
     multicastGroupRangeActivation: Required. The resource name of the
       multicast group range activation created by the admin in the same zone
       as this multicast group consumer activation. Use the following format:
-      // `projects/*/locations/*/multicastGroupRangeActivations/*`.
+      `projects/*/locations/*/multicastGroupRangeActivations/*`.
     name: Identifier. The resource name of the multicast group consumer
       activation. Use the following format:
       `projects/*/locations/*/multicastGroupConsumerActivations/*`.
@@ -5576,9 +5579,9 @@ class MulticastGroupConsumerActivation(_messages.Message):
     state: Output only. [Output only] The state of the resource.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all multicast group consumer
-      activation resources. If a group consumer activation is deleted and
-      another with the same name is created, the new group consumer activation
-      is assigned a different unique_id.
+      activation resources. If a multicast group consumer activation is
+      deleted and another with the same name is created, the new multicast
+      group consumer activation is assigned a different unique_id.
     updateTime: Output only. [Output only] The timestamp when the multicast
       group consumer activation was most recently updated.
   """
@@ -5600,7 +5603,7 @@ class MulticastGroupConsumerActivation(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -5640,22 +5643,22 @@ class MulticastGroupProducerActivation(_messages.Message):
   r"""Multicast group producer activation resource.
 
   Messages:
-    LabelsValue: Optional. Labels as key-value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     createTime: Output only. [Output only] The timestamp when the multicast
       group producer activation was created.
     description: Optional. An optional text description of the multicast group
       producer activation.
-    labels: Optional. Labels as key-value pairs
+    labels: Optional. Labels as key-value pairs.
     multicastGroup: Optional. The resource name of the multicast group created
       by the admin in the same zone as this multicast group producer
-      activation. Use the following format: //
+      activation. Use the following format:
       `projects/*/locations/*/multicastGroups/*`. This field is deprecated.
       Use multicast_group_range_activation instead.
     multicastGroupRangeActivation: Required. The resource name of the
-      multicast group range activationcreated by the admin in the same zone as
-      this multicast group producer activation. Use the following format: //
+      multicast group range activation created by the admin in the same zone
+      as this multicast group producer activation. Use the following format:
       `projects/*/locations/*/multicastGroupRangeActivations/*`.
     multicastProducerAssociation: Required. The resource name of the multicast
       producer association that is in the same zone as this multicast group
@@ -5667,16 +5670,16 @@ class MulticastGroupProducerActivation(_messages.Message):
     state: Output only. [Output only] The state of the resource.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all multicast group producer
-      activation resources. If a group producer activation is deleted and
-      another with the same name is created, the new group producer activation
-      is assigned a different unique_id.
+      activation resources. If a multicast group producer activation is
+      deleted and another with the same name is created, the new multicast
+      group producer activation is assigned a different unique_id.
     updateTime: Output only. [Output only] The timestamp when the multicast
       group producer activation was most recently updated.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -5759,8 +5762,9 @@ class MulticastGroupRange(_messages.Message):
     state: Output only. [Output only] The state of the resource.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all multicast group range
-      resources. If a group range is deleted and another with the same name is
-      created, the new group range is assigned a different unique_id.
+      resources. If a multicast group range is deleted and another with the
+      same name is created, the new multicast group range is assigned a
+      different unique_id.
     updateTime: Output only. [Output only] The timestamp when the multicast
       group range was most recently updated.
   """
@@ -5843,24 +5847,25 @@ class MulticastGroupRangeActivation(_messages.Message):
       to Cloud Logging. If the log config is explicitly set for the multicast
       group range activation, regardless if it is enabled or not, the value
       overrides what is configured by the multicast group range resource.
-    multicastDomainActivation: Optional. The resource name of a multicast
-      domain activation that is in the same zone as this multicast group. Use
-      the following format:
-      `projects/*/locations/*/multicastDomainActivations/*`
+    multicastDomainActivation: Optional. The resource name of the multicast
+      domain activation that is in the same zone as this multicast group range
+      activation. Use the following format:
+      `projects/*/locations/*/multicastDomainActivations/*`.
     multicastGroupConsumerActivations: Output only. The resource names of
       associated multicast group consumer activations. Use the following
       format: `projects/*/locations/*/multicastGroupConsumerActivations/*`.
-    multicastGroupRange: Optional. The resource name of the global multicast
-      group range for the group. Use the following format:
-      `projects/*/locations/global/multicastGroupRanges/*`
+    multicastGroupRange: Optional. The resource name of the multicast group
+      range for the group. Use the following format:
+      `projects/*/locations/global/multicastGroupRanges/*`.
     name: Identifier. The resource name of the multicast group range
       activation. Use the following format:
       `projects/*/locations/*/multicastGroupRangeActivations/*`.
     state: Output only. [Output only] The state of the resource.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
-      resource. This value is unique across all multicast group resources. If
-      a group is deleted and another with the same name is created, the new
-      group is assigned a different unique_id.
+      resource. This value is unique across all multicast group range
+      activation resources. If a multicast group range activation is deleted
+      and another with the same name is created, the new multicast group range
+      activation is assigned a different unique_id.
     updateTime: Output only. [Output only] The timestamp when the multicast
       group range activation was most recently updated.
   """
@@ -5917,14 +5922,14 @@ class MulticastProducerAssociation(_messages.Message):
   r"""Multicast producer association resource.
 
   Messages:
-    LabelsValue: Optional. Labels as key-value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     createTime: Output only. [Output only] The timestamp when the multicast
       producer association was created.
     description: Optional. An optional text description of the multicast
       producer association.
-    labels: Optional. Labels as key-value pairs
+    labels: Optional. Labels as key-value pairs.
     multicastDomainActivation: Optional. The resource name of the multicast
       domain activation that is in the same zone as this multicast producer
       association. Use the following format:
@@ -5938,16 +5943,16 @@ class MulticastProducerAssociation(_messages.Message):
     state: Output only. [Output only] The state of the resource.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all multicast producer association
-      resources. If a producer association is deleted and another with the
-      same name is created, the new producer association is assigned a
-      different unique_id.
+      resources. If a multicast producer association is deleted and another
+      with the same name is created, the new multicast producer association is
+      assigned a different unique_id.
     updateTime: Output only. [Output only] The timestamp when the Multicast
       Producer Association was most recently updated.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -9866,6 +9871,16 @@ class NetworkservicesProjectsLocationsServiceBindingsCreateRequest(_messages.Mes
   Fields:
     parent: Required. The parent resource of the ServiceBinding. Must be in
       the format `projects/*/locations/*`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      can ignore the request if it has already been completed. The server
+      guarantees this for 60 minutes after the first request. For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID version 4 with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
     serviceBinding: A ServiceBinding resource to be passed as the request
       body.
     serviceBindingId: Required. Short name of the ServiceBinding resource to
@@ -9873,8 +9888,9 @@ class NetworkservicesProjectsLocationsServiceBindingsCreateRequest(_messages.Mes
   """
 
   parent = _messages.StringField(1, required=True)
-  serviceBinding = _messages.MessageField('ServiceBinding', 2)
-  serviceBindingId = _messages.StringField(3)
+  requestId = _messages.StringField(2)
+  serviceBinding = _messages.MessageField('ServiceBinding', 3)
+  serviceBindingId = _messages.StringField(4)
 
 
 class NetworkservicesProjectsLocationsServiceBindingsDeleteRequest(_messages.Message):
@@ -9883,9 +9899,20 @@ class NetworkservicesProjectsLocationsServiceBindingsDeleteRequest(_messages.Mes
   Fields:
     name: Required. A name of the ServiceBinding to delete. Must be in the
       format `projects/*/locations/*/serviceBindings/*`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      can ignore the request if it has already been completed. The server
+      guarantees this for 60 minutes after the first request. For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID version 4 with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
   """
 
   name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
 
 
 class NetworkservicesProjectsLocationsServiceBindingsGetRequest(_messages.Message):
@@ -9922,6 +9949,16 @@ class NetworkservicesProjectsLocationsServiceBindingsPatchRequest(_messages.Mess
   Fields:
     name: Identifier. Name of the ServiceBinding resource. It matches pattern
       `projects/*/locations/*/serviceBindings/`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      can ignore the request if it has already been completed. The server
+      guarantees this for 60 minutes after the first request. For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID version 4 with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
     serviceBinding: A ServiceBinding resource to be passed as the request
       body.
     updateMask: Optional. Field mask is used to specify the fields to be
@@ -9932,8 +9969,9 @@ class NetworkservicesProjectsLocationsServiceBindingsPatchRequest(_messages.Mess
   """
 
   name = _messages.StringField(1, required=True)
-  serviceBinding = _messages.MessageField('ServiceBinding', 2)
-  updateMask = _messages.StringField(3)
+  requestId = _messages.StringField(2)
+  serviceBinding = _messages.MessageField('ServiceBinding', 3)
+  updateMask = _messages.StringField(4)
 
 
 class NetworkservicesProjectsLocationsServiceLbPoliciesCreateRequest(_messages.Message):
@@ -10895,7 +10933,7 @@ class RegionalMulticastConsumerAssociation(_messages.Message):
   r"""Regional multicast consumer association resource.
 
   Messages:
-    LabelsValue: Optional. Labels as key-value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     createTime: Output only. [Output only] The timestamp when the regional
@@ -10905,7 +10943,7 @@ class RegionalMulticastConsumerAssociation(_messages.Message):
     hybridSpokes: Optional. Network Connectivity Center (NCC) hybrid spokes
       associated with this regional consumer association. Format:
       `projects/{project}/locations/{location}/spokes/{spoke}`.
-    labels: Optional. Labels as key-value pairs
+    labels: Optional. Labels as key-value pairs.
     name: Identifier. The resource name of the regional multicast consumer
       association. Use the following format:
       `projects/*/locations/*/regionalMulticastConsumerAssociations/*`.
@@ -10928,7 +10966,7 @@ class RegionalMulticastConsumerAssociation(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -10966,7 +11004,7 @@ class RegionalMulticastDomainActivation(_messages.Message):
   r"""Regional multicast domain activation resource.
 
   Messages:
-    LabelsValue: Optional. Labels as key-value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     adminNetwork: Output only. [Output only] The URL of the admin network.
@@ -10974,7 +11012,7 @@ class RegionalMulticastDomainActivation(_messages.Message):
       multicast domain activation was created.
     description: Optional. An optional text description of the regional
       multicast domain activation.
-    labels: Optional. Labels as key-value pairs
+    labels: Optional. Labels as key-value pairs.
     multicastDomain: Required. Immutable. The resource name of the multicast
       domain to activate. Use the following format:
       `projects/*/locations/global/multicastDomains/*`.
@@ -10999,7 +11037,7 @@ class RegionalMulticastDomainActivation(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -11038,7 +11076,7 @@ class RegionalMulticastGroupConsumerActivation(_messages.Message):
   r"""Regional multicast group consumer activation resource.
 
   Messages:
-    LabelsValue: Optional. Labels as key-value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     createTime: Output only. [Output only] The timestamp when the regional
@@ -11051,7 +11089,7 @@ class RegionalMulticastGroupConsumerActivation(_messages.Message):
       multicast traffic. These attachments must have multicast functionality
       enabled. Use the following format:
       `projects/*/regions/*/interconnectAttachments/*`.
-    labels: Optional. Labels as key-value pairs
+    labels: Optional. Labels as key-value pairs.
     logConfig: Optional. Specifies the logging options for the activities
       performed related to the regional multicast group consumer activation.
       Defaults to false. If logging is enabled, logs are exported to Cloud
@@ -11082,7 +11120,7 @@ class RegionalMulticastGroupConsumerActivation(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -11121,7 +11159,7 @@ class RegionalMulticastGroupProducerActivation(_messages.Message):
   r"""Regional multicast group producer activation resource.
 
   Messages:
-    LabelsValue: Optional. Labels as key-value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     createTime: Output only. [Output only] The timestamp when the regional
@@ -11133,7 +11171,7 @@ class RegionalMulticastGroupProducerActivation(_messages.Message):
       producer activation and are used with the on-premises multicast source.
       These attachments must have multicast functionality enabled. Use the
       following format: `projects/*/regions/*/interconnectAttachments/*`.
-    labels: Optional. Labels as key-value pairs
+    labels: Optional. Labels as key-value pairs.
     name: Identifier. The resource name of the regional multicast group
       producer activation. Use the following format:
       `projects/*/locations/*/regionalMulticastGroupProducerActivations/*`.
@@ -11160,7 +11198,7 @@ class RegionalMulticastGroupProducerActivation(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -11286,7 +11324,7 @@ class RegionalMulticastProducerAssociation(_messages.Message):
   r"""Regional multicast producer association resource.
 
   Messages:
-    LabelsValue: Optional. Labels as key-value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     createTime: Output only. [Output only] The timestamp when the regional
@@ -11296,7 +11334,7 @@ class RegionalMulticastProducerAssociation(_messages.Message):
     hybridSpokes: Optional. Network Connectivity Center (NCC) hybrid spokes
       associated with this regional producer association. Format:
       `projects/{project}/locations/{location}/spokes/{spoke}`.
-    labels: Optional. Labels as key-value pairs
+    labels: Optional. Labels as key-value pairs.
     name: Identifier. The resource name of the regional multicast producer
       association. Use the following format:
       `projects/*/locations/*/regionalMulticastProducerAssociations/*`.
@@ -11319,7 +11357,7 @@ class RegionalMulticastProducerAssociation(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.

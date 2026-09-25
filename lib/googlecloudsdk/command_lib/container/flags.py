@@ -3292,31 +3292,27 @@ End time of the exclusion window is the end of the cluster's support.
   )
 
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    scope_validator = arg_parsers.RegexpValidator(
-        r'^(no_upgrades|no_minor_upgrades|no_minor_or_node_upgrades|no_target_node_version_update)$',
-        'Must be in one of "no_upgrades", "no_minor_upgrades",'
-        ' "no_minor_or_node_upgrades" or "no_target_node_version_update"',
-    )
-    scope_help = """\
-Scope of the exclusion window to specify the type of upgrades that the exclusion
-will apply to. Must be in one of no_upgrades, no_minor_upgrades, no_minor_or_node_upgrades or no_target_node_version_update.
-If not specified in an exclusion, defaults to no_upgrades.
-"""
+    scope_choices = [
+        'no_upgrades',
+        'no_minor_upgrades',
+        'no_minor_or_node_upgrades',
+        'no_target_node_version_update',
+    ]
   else:
-    scope_validator = arg_parsers.RegexpValidator(
-        r'^(no_upgrades|no_minor_upgrades|no_minor_or_node_upgrades)$',
-        'Must be in one of "no_upgrades", "no_minor_upgrades",'
-        ' or "no_minor_or_node_upgrades"',
-    )
-    scope_help = """\
+    scope_choices = [
+        'no_upgrades',
+        'no_minor_upgrades',
+        'no_minor_or_node_upgrades',
+    ]
+
+  scope_help = """\
 Scope of the exclusion window to specify the type of upgrades that the exclusion
-will apply to. Must be in one of no_upgrades, no_minor_upgrades, or no_minor_or_node_upgrades.
-If not specified in an exclusion, defaults to no_upgrades.
+will apply to. If not specified in an exclusion, defaults to no_upgrades.
 """
 
   group.add_argument(
       '--add-maintenance-exclusion-scope',
-      type=scope_validator,
+      choices=scope_choices,
       required=False,
       metavar='SCOPE',
       help=scope_help,
@@ -5500,12 +5496,19 @@ Changes node pool upgrade strategy to blue-green upgrade.
   )
 
 
-def AddEnableUpgradeInPlaceFlag(parser, hidden=True):
-  """Adds --enable-upgrade-in-place flag to the parser."""
+def AddEnableHostUpdateInPlaceFlag(parser, hidden=True):
+  """Adds --enable-host-update-in-place flag (and legacy alias) to the parser."""
   help_text = """\
-Enable in-place upgrades for the node pool. In-place upgrades reboot the
-nodes in-place on the same physical host, preserving attached Local SSDs.
+Enable host in-place updates for the node pool. Host in-place updates reboot the
+nodes on the same physical host, preserving attached Local SSDs.
 """
+  parser.add_argument(
+      '--enable-host-update-in-place',
+      action='store_true',
+      default=None,
+      help=help_text,
+      hidden=hidden,
+  )
   parser.add_argument(
       '--enable-upgrade-in-place',
       action='store_true',
@@ -5513,6 +5516,11 @@ nodes in-place on the same physical host, preserving attached Local SSDs.
       help=help_text,
       hidden=hidden,
   )
+
+
+def AddEnableUpgradeInPlaceFlag(parser, hidden=True):
+  """Legacy alias for AddEnableHostUpdateInPlaceFlag."""
+  AddEnableHostUpdateInPlaceFlag(parser, hidden=hidden)
 
 
 def AddNodePoolSoakDurationFlag(parser, for_node_pool=False, hidden=False):
@@ -6145,6 +6153,8 @@ Note: Updating the containerd configuration of an existing cluster or node pool 
 
 def AddCostManagementConfigFlag(parser, is_update=False):
   """Adds flags related to GKE cost management to the given parser."""
+  group = parser.add_group(mutex=False)
+
   help_text = """
 Enable the cost management feature.
 
@@ -6158,11 +6168,33 @@ namespace and label in your billing data exported to BigQuery
 
 Use --no-enable-cost-allocation to disable this feature.
 """
-  parser.add_argument(
+  group.add_argument(
       '--enable-cost-allocation',
       action='store_true',
       default=None,
       help=help_text,
+  )
+
+  egress_help_text = """\
+Enable network egress cost allocation.
+
+When enabled, you can get GKE network egress cost breakdowns for egress usages
+sampled by VPC Flow logs (https://docs.cloud.google.com/vpc/docs/flow-logs).
+
+Network egress cost allocation is disabled if this flag is omitted, or when
+`--no-enable-network-egress-cost-allocation` is set.
+"""
+  if is_update:
+    egress_help_text += """\
+
+Use --no-enable-network-egress-cost-allocation to disable this feature.
+"""
+  group.add_argument(
+      '--enable-network-egress-cost-allocation',
+      action='store_true',
+      default=None,
+      help=egress_help_text,
+      hidden=True,
   )
 
 

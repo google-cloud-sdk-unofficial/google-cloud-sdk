@@ -4891,6 +4891,9 @@ class JobConfigurationExtract(_messages.Message):
       ','. Not applicable when extracting models.
     modelExtractOptions: Optional. Model extract options only applicable when
       extracting models.
+    nativeGeographyExportEnabled: Optional. Applicable to formats: PARQUET. If
+      enabled, BigQuery to Parquet export will write the native Parquet
+      Geography type instead of the default GeoParquet type.
     printHeader: Optional. Whether to print out a header row in the results.
       Default is true. Not applicable when extracting models.
     sourceModel: A reference to the model being exported.
@@ -4905,10 +4908,11 @@ class JobConfigurationExtract(_messages.Message):
   destinationUris = _messages.StringField(4, repeated=True)
   fieldDelimiter = _messages.StringField(5)
   modelExtractOptions = _messages.MessageField('ModelExtractOptions', 6)
-  printHeader = _messages.BooleanField(7, default=True)
-  sourceModel = _messages.MessageField('ModelReference', 8)
-  sourceTable = _messages.MessageField('TableReference', 9)
-  useAvroLogicalTypes = _messages.BooleanField(10)
+  nativeGeographyExportEnabled = _messages.BooleanField(7)
+  printHeader = _messages.BooleanField(8, default=True)
+  sourceModel = _messages.MessageField('ModelReference', 9)
+  sourceTable = _messages.MessageField('TableReference', 10)
+  useAvroLogicalTypes = _messages.BooleanField(11)
 
 
 class JobConfigurationLoad(_messages.Message):
@@ -5408,6 +5412,10 @@ class JobConfigurationQuery(_messages.Message):
       the schema. * ALLOW_FIELD_RELAXATION: allow relaxing a required field in
       the original schema to nullable.
     scriptOptions: Options controlling the execution of scripts.
+    secureContext: Optional. A set of key-value pairs representing the secure
+      context. This can be used to pass sensitive or context-specific
+      information. They can be retrieved via the SECURE_CONTEXT() function and
+      used to modify the run-time behavior of a query.
     systemVariables: Output only. System variables for GoogleSQL queries. A
       system variable is output if the variable is settable and its value
       differs from the system default. "@@" prefix is not included in the name
@@ -5502,14 +5510,15 @@ class JobConfigurationQuery(_messages.Message):
   rangePartitioning = _messages.MessageField('RangePartitioning', 18)
   schemaUpdateOptions = _messages.StringField(19, repeated=True)
   scriptOptions = _messages.MessageField('ScriptOptions', 20)
-  systemVariables = _messages.MessageField('SystemVariables', 21)
-  tableDefinitions = _messages.MessageField('TableDefinitionsValue', 22)
-  timePartitioning = _messages.MessageField('TimePartitioning', 23)
-  useLegacySql = _messages.BooleanField(24, default=True)
-  useQueryCache = _messages.BooleanField(25, default=True)
-  userDefinedFunctionResources = _messages.MessageField('UserDefinedFunctionResource', 26, repeated=True)
-  writeDisposition = _messages.StringField(27)
-  writeIncrementalResults = _messages.BooleanField(28)
+  secureContext = _messages.MessageField('SecureContext', 21)
+  systemVariables = _messages.MessageField('SystemVariables', 22)
+  tableDefinitions = _messages.MessageField('TableDefinitionsValue', 23)
+  timePartitioning = _messages.MessageField('TimePartitioning', 24)
+  useLegacySql = _messages.BooleanField(25, default=True)
+  useQueryCache = _messages.BooleanField(26, default=True)
+  userDefinedFunctionResources = _messages.MessageField('UserDefinedFunctionResource', 27, repeated=True)
+  writeDisposition = _messages.StringField(28)
+  writeIncrementalResults = _messages.BooleanField(29)
 
 
 class JobConfigurationTableCopy(_messages.Message):
@@ -7526,6 +7535,10 @@ class QueryRequest(_messages.Message):
       Forces the query to use on-demand billing when set to `none`. This
       requires the project or organization to have `reservation_override_mode`
       set to `ALLOW_ANY_OVERRIDE`.
+    secureContext: Optional. A set of key-value pairs representing the secure
+      context. This can be used to pass sensitive or context-specific
+      information. They can be retrieved via the SECURE_CONTEXT() function and
+      used to modify the run-time behavior of a query.
     timeoutMs: Optional. Optional: Specifies the maximum amount of time, in
       milliseconds, that the client is willing to wait for the query to
       complete. By default, this limit is 10 seconds (10,000 milliseconds). If
@@ -7644,10 +7657,11 @@ class QueryRequest(_messages.Message):
   queryResultsFormat = _messages.EnumField('QueryResultsFormatValueValuesEnum', 21)
   requestId = _messages.StringField(22)
   reservation = _messages.StringField(23)
-  timeoutMs = _messages.IntegerField(24, variant=_messages.Variant.UINT32)
-  useLegacySql = _messages.BooleanField(25, default=True)
-  useQueryCache = _messages.BooleanField(26, default=True)
-  writeIncrementalResults = _messages.BooleanField(27)
+  secureContext = _messages.MessageField('SecureContext', 24)
+  timeoutMs = _messages.IntegerField(25, variant=_messages.Variant.UINT32)
+  useLegacySql = _messages.BooleanField(26, default=True)
+  useQueryCache = _messages.BooleanField(27, default=True)
+  writeIncrementalResults = _messages.BooleanField(28)
 
 
 class QueryResponse(_messages.Message):
@@ -8618,6 +8632,52 @@ class SearchStatistics(_messages.Message):
   indexPruningStats = _messages.MessageField('IndexPruningStats', 1, repeated=True)
   indexUnusedReasons = _messages.MessageField('IndexUnusedReason', 2, repeated=True)
   indexUsageMode = _messages.EnumField('IndexUsageModeValueValuesEnum', 3)
+
+
+class SecureContext(_messages.Message):
+  r"""A set of key-value pairs representing the secure context.
+
+  Messages:
+    SecureParameterEntriesValue: Optional. A set of key-value pairs
+      representing the secure parameter values. They can be retrieved via the
+      SECURE_CONTEXT() function and used to modify the run-time behavior of a
+      query.
+
+  Fields:
+    secureParameterEntries: Optional. A set of key-value pairs representing
+      the secure parameter values. They can be retrieved via the
+      SECURE_CONTEXT() function and used to modify the run-time behavior of a
+      query.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class SecureParameterEntriesValue(_messages.Message):
+    r"""Optional. A set of key-value pairs representing the secure parameter
+    values. They can be retrieved via the SECURE_CONTEXT() function and used
+    to modify the run-time behavior of a query.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        SecureParameterEntriesValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a SecureParameterEntriesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  secureParameterEntries = _messages.MessageField('SecureParameterEntriesValue', 1)
 
 
 class SerDeInfo(_messages.Message):

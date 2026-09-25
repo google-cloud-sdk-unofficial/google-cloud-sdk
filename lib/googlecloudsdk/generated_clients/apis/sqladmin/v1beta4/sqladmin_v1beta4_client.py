@@ -41,6 +41,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
     self.backups = self.BackupsService(self)
     self.blueGreenDeployments = self.BlueGreenDeploymentsService(self)
     self.connect = self.ConnectService(self)
+    self.customerManagedCertificates = self.CustomerManagedCertificatesService(self)
     self.databases = self.DatabasesService(self)
     self.flags = self.FlagsService(self)
     self.instances = self.InstancesService(self)
@@ -544,6 +545,94 @@ class SqladminV1beta4(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class CustomerManagedCertificatesService(base_api.BaseApiService):
+    """Service class for the customerManagedCertificates resource."""
+
+    _NAME = 'customerManagedCertificates'
+
+    def __init__(self, client):
+      super(SqladminV1beta4.CustomerManagedCertificatesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Delete customer managed certificate bundle for an existing Cloud SQL instance.
+
+      Args:
+        request: (SqlCustomerManagedCertificatesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='sql.customerManagedCertificates.delete',
+        ordered_params=['project', 'instance', 'certificateBundle'],
+        path_params=['certificateBundle', 'instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/customerManagedCertificates/{certificateBundle}',
+        request_field='',
+        request_type_name='SqlCustomerManagedCertificatesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""List all customer managed certificate bundles for an existing Cloud SQL instance.
+
+      Args:
+        request: (SqlCustomerManagedCertificatesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListCustomerManagedCertificatesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='sql.customerManagedCertificates.list',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/customerManagedCertificates',
+        request_field='',
+        request_type_name='SqlCustomerManagedCertificatesListRequest',
+        response_type_name='ListCustomerManagedCertificatesResponse',
+        supports_download=False,
+    )
+
+    def Update(self, request, global_params=None):
+      r"""Upload and update customer managed certificate bundle for an existing Cloud SQL instance.
+
+      Args:
+        request: (SqlCustomerManagedCertificatesUpdateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Update')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Update.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='sql.customerManagedCertificates.update',
+        ordered_params=['project', 'instance', 'certificateBundle'],
+        path_params=['certificateBundle', 'instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/customerManagedCertificates/{certificateBundle}',
+        request_field='updateCustomerManagedCertificateRequest',
+        request_type_name='SqlCustomerManagedCertificatesUpdateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class DatabasesService(base_api.BaseApiService):
     """Service class for the databases resource."""
 
@@ -1042,32 +1131,6 @@ class SqladminV1beta4(base_api.BaseApiClient):
         supports_download=False,
     )
 
-    def DeleteByoCertificate(self, request, global_params=None):
-      r"""Delete BYOC (Bring Your Own Certificate) bundle for an existing Cloud SQL instance.
-
-      Args:
-        request: (SqlSslCertsDeleteByoCertificateRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('DeleteByoCertificate')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    DeleteByoCertificate.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='DELETE',
-        method_id='sql.sslCerts.deleteByoCertificate',
-        ordered_params=['project', 'instance'],
-        path_params=['instance', 'project'],
-        query_params=['bundle'],
-        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:deleteByoCertificate',
-        request_field='',
-        request_type_name='SqlSslCertsDeleteByoCertificateRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
     def Demote(self, request, global_params=None):
       r"""Demotes an existing standalone instance to be a Cloud SQL read replica for an external database server.
 
@@ -1325,32 +1388,6 @@ class SqladminV1beta4(base_api.BaseApiClient):
         request_field='',
         request_type_name='SqlInstancesListRequest',
         response_type_name='InstancesListResponse',
-        supports_download=False,
-    )
-
-    def ListByoCertificates(self, request, global_params=None):
-      r"""List all BYOC (Bring Your Own Certificate) bundles for an existing Cloud SQL instance.
-
-      Args:
-        request: (SqlSslCertsListByoCertificatesRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (ListByoCertificatesResponse) The response message.
-      """
-      config = self.GetMethodConfig('ListByoCertificates')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    ListByoCertificates.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='GET',
-        method_id='sql.sslCerts.listByoCertificates',
-        ordered_params=['project', 'instance'],
-        path_params=['instance', 'project'],
-        query_params=[],
-        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:listByoCertificates',
-        request_field='',
-        request_type_name='SqlSslCertsListByoCertificatesRequest',
-        response_type_name='ListByoCertificatesResponse',
         supports_download=False,
     )
 
@@ -1793,32 +1830,6 @@ class SqladminV1beta4(base_api.BaseApiClient):
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}',
         request_field='databaseInstance',
         request_type_name='SqlInstancesUpdateRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
-    def UpdateByoCertificate(self, request, global_params=None):
-      r"""Upload and update BYOC (Bring Your Own Certificate) bundle for an existing Cloud SQL instance.
-
-      Args:
-        request: (SqlSslCertsUpdateByoCertificateRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('UpdateByoCertificate')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    UpdateByoCertificate.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='PATCH',
-        method_id='sql.sslCerts.updateByoCertificate',
-        ordered_params=['project', 'instance'],
-        path_params=['instance', 'project'],
-        query_params=[],
-        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:updateByoCertificate',
-        request_field='updateByoCertificateRequest',
-        request_type_name='SqlSslCertsUpdateByoCertificateRequest',
         response_type_name='Operation',
         supports_download=False,
     )

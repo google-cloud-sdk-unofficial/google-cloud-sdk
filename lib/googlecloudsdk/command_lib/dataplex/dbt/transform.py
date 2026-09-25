@@ -69,6 +69,10 @@ OPTIONAL_ARTIFACTS = (CATALOG_FILE, RUN_RESULTS_FILE, SOURCES_FILE)
 # shape is easier to diagnose. See metadata.dbt_schema_version in manifest.json.
 SUPPORTED_MANIFEST_SCHEMA_VERSIONS = frozenset(['v10', 'v11', 'v12'])
 
+# Enough of catalog.json's `errors` to name the cause without pasting a wall of
+# adapter stack traces into the terminal.
+_MAX_CATALOG_ERRORS_SHOWN = 3
+
 # Re-exported so callers importing this module reach the entry link type FQNs
 # and the aspect types those links carry (both used to scope the import job)
 # without importing entry_links directly.
@@ -110,8 +114,8 @@ def _load_json(path: str, required: bool) -> dict[str, Any]:
   if not os.path.exists(path):
     if required:
       raise TransformError(
-          'Required dbt artifact not found: [{0}]. Run the relevant dbt '
-          'command (e.g. `dbt run`, `dbt docs generate`) first.'.format(path)
+          'Required dbt artifact not found: [{0}]. Run a dbt command that '
+          'writes it (e.g. `dbt build`) first.'.format(path)
       )
     return {}
   try:
@@ -160,6 +164,50 @@ def _warn_on_unsupported_manifest(manifest: dict[str, Any]) -> None:
             version, ', '.join(sorted(SUPPORTED_MANIFEST_SCHEMA_VERSIONS))
         )
     )
+
+
+def _is_dbt_v1(manifest: dict[str, Any]) -> bool:
+  """Returns if the manifest was written by the dbt-core in 0.x/1.x version."""
+  version = manifest.get('metadata', {}).get('dbt_version') or ''
+  major = re.match(r'\s*(\d+)\.', version)
+  return bool(major) and int(major.group(1)) <= 1
+
+
+def _catalog_recipe(is_v1: bool) -> str:
+  """Returns the commands that write a full catalog.json for this engine."""
+  # Listed as two separate commands rather than chained with `&&`: `dbt build`
+  # exits non-zero on a failing test, and a run with failing tests is exactly
+  # the one whose verdicts are worth importing.
+  if is_v1:
+    return '`dbt build` followed by `dbt docs generate --no-compile`'
+  return '`dbt build` followed by `dbt parse --write-catalog`'
+
+
+def _warn_on_catalog_errors(catalog: dict[str, Any]) -> None:
+  """Echoes the failures dbt recorded while building catalog.json.
+
+  dbt does not fail a run when it cannot read a relation's metadata: it appends
+  the reason to catalog.json's ``errors`` and leaves the relation out. Nothing
+  else reports that, so the columns simply arrive untyped.
+
+  Args:
+    catalog: the parsed catalog.json, or {} when it is absent.
+  """
+  errors = catalog.get('errors')
+  if not errors or not isinstance(errors, list):
+    return
+  shown = [str(e) for e in errors[:_MAX_CATALOG_ERRORS_SHOWN]]
+  remaining = len(errors) - len(shown)
+  if remaining > 0:
+    shown.append('... and {0} more.'.format(remaining))
+  log.warning(
+      'dbt reported {0} error(s) while collecting catalog.json, and left the '
+      'affected relations out of it. Those resources are imported without '
+      'column types or table statistics:\n  {1}\nThe dbt v2 engine reads '
+      'project-level INFORMATION_SCHEMA where dbt-core 1.x needs only dataset '
+      'access, so this is often a missing project-level BigQuery '
+      'permission.'.format(len(errors), '\n  '.join(shown))
+  )
 
 
 def _artifacts_base(artifacts_path: str) -> str:
@@ -215,23 +263,31 @@ def _count_untyped(fields: list[dict[str, Any]]) -> tuple[int, int]:
 
 
 def _warn_on_untyped_columns(
-    ctx: naming.Context, entries: list[dict[str, Any]]
+    ctx: naming.Context, entries: list[dict[str, Any]], is_v1: bool
 ) -> None:
   """Warns when dbt supplied no data type for some columns.
 
-  Column types reach the artifacts only through catalog.json, which only
-  `dbt docs generate` writes, and only for relations that already exist in the
-  warehouse. A project that was never built -- or whose docs were generated
-  before it was built -- therefore yields typeless columns. dbt itself logs
-  nothing in that case, so this is the only signal the user gets.
+  Column types reach the artifacts only through catalog.json, and only for
+  relations that already exist in the warehouse. A project that was never built
+  -- or whose catalog was written before it was built -- therefore yields
+  typeless columns. dbt itself logs nothing in that case, so this is the only
+  signal the user gets.
 
   Args:
     ctx: the naming.Context holding the naming coordinates for this run.
     entries: the entry records built from the artifacts.
+    is_v1: whether the artifacts came from the v1 dbt-core, which needs a
+      different set of commands to write a catalog than the v2 engine.
   """
   schema_key = ctx.schema_key()
+  # A semantic model's fields are its entities/dimensions/measures rather than
+  # warehouse columns, and one defined by a SQL expression can never be typed,
+  # so we shouldn't warn about them.
+  semantic_model_type = ctx.entry_type('dbt-semantic-model')
   untyped = total = resources = 0
   for record in entries:
+    if record['entry'].get('entryType') == semantic_model_type:
+      continue
     aspect = (record['entry'].get('aspects') or {}).get(schema_key)
     if not aspect:
       continue
@@ -246,13 +302,16 @@ def _warn_on_untyped_columns(
     return
   log.warning(
       '{0} of {1} columns across {2} dbt resource(s) have no data type and are '
-      'recorded as [{3}]. Column types come from catalog.json, which only '
-      '`dbt docs generate` writes, and only for models that already exist in '
-      'the warehouse. Run `dbt build && dbt docs generate` (same profile and '
-      'target, and without --select, --no-compile or --empty-catalog), then '
-      're-run this command. Ephemeral models never materialize, so their '
-      'columns can only be typed by declaring data_type in schema.yml.'.format(
-          untyped, total, resources, aspects.UNKNOWN_DATA_TYPE
+      'recorded as [{3}]. Column types come from catalog.json, and only for '
+      'models that already exist in the warehouse. Run {4} (same profile and '
+      'target, and without --select), then re-run this command. Ephemeral '
+      'models never materialize, so their columns can only be typed by '
+      'declaring data_type in schema.yml.'.format(
+          untyped,
+          total,
+          resources,
+          aspects.UNKNOWN_DATA_TYPE,
+          _catalog_recipe(is_v1),
       )
   )
 
@@ -311,6 +370,7 @@ def GenerateImportFile(  # pylint: disable=invalid-name
   manifest = _load_json(os.path.join(base, MANIFEST_FILE), required=True)
   _warn_on_unsupported_manifest(manifest)
   catalog = _load_json(os.path.join(base, CATALOG_FILE), required=False)
+  _warn_on_catalog_errors(catalog)
   run_results = _load_json(os.path.join(base, RUN_RESULTS_FILE), required=False)
   sources = _load_json(os.path.join(base, SOURCES_FILE), required=False)
 
@@ -327,7 +387,7 @@ def GenerateImportFile(  # pylint: disable=invalid-name
   entries, known_ids = entry_builders.build_entries(
       ctx, manifest, catalog, run_results, sources
   )
-  _warn_on_untyped_columns(ctx, entries)
+  _warn_on_untyped_columns(ctx, entries, _is_dbt_v1(manifest))
   links = []
   if include_entry_links:
     links = entry_links.build_entry_links(

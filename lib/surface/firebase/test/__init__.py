@@ -27,6 +27,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.DefaultUniverseOnly
 class Test(base.Group):
   """Interact with Firebase Test Lab.
 
@@ -46,6 +47,8 @@ class Test(base.Group):
     Returns:
       The refined command context.
     """
+    # Test Lab retains legacy shared quota behavior.
+    base.DisableUserProjectQuota()
     # Make sure service endpoints are compatible with each other.
     endpoints.ValidateTestServiceEndpoints()
 

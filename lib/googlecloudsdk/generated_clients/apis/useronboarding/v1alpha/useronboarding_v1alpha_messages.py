@@ -68,14 +68,13 @@ class CreditInfo(_messages.Message):
 
 
 class ErrorInfo(_messages.Message):
-  r"""Describes the cause of the error with structured details.
-
-  Example of an error when contacting the "pubsub.googleapis.com" API when it is
-  not enabled: { "reason": "API_DISABLED" "domain": "googleapis.com" "metadata":
-  { "resource": "projects/123", "service": "pubsub.googleapis.com" } } This
-  response indicates that the pubsub.googleapis.com API is not enabled. Example
-  of an error that is returned when attempting to create a Spanner instance in a
-  region that is out of stock: { "reason": "STOCKOUT" "domain":
+  r"""Describes the cause of the error with structured details. Example of an
+  error when contacting the "pubsub.googleapis.com" API when it is not
+  enabled: { "reason": "API_DISABLED" "domain": "googleapis.com" "metadata": {
+  "resource": "projects/123", "service": "pubsub.googleapis.com" } } This
+  response indicates that the pubsub.googleapis.com API is not enabled.
+  Example of an error that is returned when attempting to create a Spanner
+  instance in a region that is out of stock: { "reason": "STOCKOUT" "domain":
   "spanner.googleapis.com", "metadata": { "availableRegions": "us-central1,us-
   east2" } }
 
@@ -192,9 +191,7 @@ class PendingUserInput(_messages.Message):
   """
 
   billingAccount = _messages.MessageField('PendingUserInputBillingAccount', 1)
-  chargingStrategy = _messages.MessageField(
-      'PendingUserInputChargingStrategy', 2
-  )
+  chargingStrategy = _messages.MessageField('PendingUserInputChargingStrategy', 2)
   cloudRegion = _messages.MessageField('PendingUserInputCloudRegion', 3)
   makePayment = _messages.MessageField('PendingUserInputMakePayment', 4)
   paymentInfo = _messages.MessageField('PendingUserInputPaymentInfo', 5)
@@ -205,7 +202,6 @@ class PendingUserInput(_messages.Message):
 
 class PendingUserInputBillingAccount(_messages.Message):
   r"""Indicates that the onboarding system is waiting for the user to select a
-
   billing account.
 
   Fields:
@@ -230,7 +226,6 @@ class PendingUserInputBillingAccount(_messages.Message):
 
 class PendingUserInputChargingStrategy(_messages.Message):
   r"""Indicates that the onboarding system is waiting for the user to choose a
-
   charging strategy.
 
   Enums:
@@ -258,7 +253,6 @@ class PendingUserInputChargingStrategy(_messages.Message):
 
 class PendingUserInputCloudRegion(_messages.Message):
   r"""Indicates that the onboarding system is waiting for the user to select a
-
   Google Cloud region (e.g. `us-central1`), differentiating it from geographic
   region codes (like `US`, `CA`) as defined in AIP-143. If the user does not
   select a region, the `default_region` will be used.
@@ -276,7 +270,6 @@ class PendingUserInputCloudRegion(_messages.Message):
 
 class PendingUserInputMakePayment(_messages.Message):
   r"""Indicates that the onboarding system is waiting for the user to make a
-
   payment.
 
   Fields:
@@ -289,7 +282,6 @@ class PendingUserInputMakePayment(_messages.Message):
 
 class PendingUserInputPaymentInfo(_messages.Message):
   r"""Indicates that the onboarding system is waiting for the user to submit
-
   payment information.
 
   Fields:
@@ -307,7 +299,6 @@ class PendingUserInputPaymentInfo(_messages.Message):
 
 class PendingUserInputProject(_messages.Message):
   r"""Indicates that the onboarding system is waiting for the user to select a
-
   project.
 
   Fields:
@@ -327,7 +318,6 @@ class PendingUserInputProject(_messages.Message):
 
 class PendingUserInputRegionCode(_messages.Message):
   r"""Indicates that the onboarding system is waiting for the user to select a
-
   region code.
 
   Fields:
@@ -340,7 +330,6 @@ class PendingUserInputRegionCode(_messages.Message):
 
 class PendingUserInputTos(_messages.Message):
   r"""Indicates that the onboarding system is waiting for the user to accept
-
   provided ToS.
 
   Fields:
@@ -356,9 +345,7 @@ class PendingUserInputTos(_messages.Message):
       or `universal`
   """
 
-  requiredTosAcceptances = _messages.MessageField(
-      'TosAcceptance', 1, repeated=True
-  )
+  requiredTosAcceptances = _messages.MessageField('TosAcceptance', 1, repeated=True)
   requiredTosIds = _messages.StringField(2, repeated=True)
 
 
@@ -398,10 +385,9 @@ class ResolveSessionResponse(_messages.Message):
 
 
 class Session(_messages.Message):
-  r"""Represents an onboarding session.
-
-  Used as a bidirectional message to represent the state of an onboarding
-  session as well the requested updates to the session.
+  r"""Represents an onboarding session. Used as a bidirectional message to
+  represent the state of an onboarding session as well the requested updates
+  to the session.
 
   Enums:
     SelectedChargingStrategyValueValuesEnum: Input only. The charging strategy
@@ -486,15 +472,11 @@ class Session(_messages.Message):
   createNewProject = _messages.BooleanField(5)
   name = _messages.StringField(6)
   paymentInfoSubmitted = _messages.BooleanField(7)
-  pendingUserInputs = _messages.MessageField(
-      'PendingUserInput', 8, repeated=True
-  )
+  pendingUserInputs = _messages.MessageField('PendingUserInput', 8, repeated=True)
   prepaymentSubmitted = _messages.BooleanField(9)
   project = _messages.MessageField('Project', 10)
   regionCode = _messages.StringField(11)
-  selectedChargingStrategy = _messages.EnumField(
-      'SelectedChargingStrategyValueValuesEnum', 12
-  )
+  selectedChargingStrategy = _messages.EnumField('SelectedChargingStrategyValueValuesEnum', 12)
   status = _messages.MessageField('SessionStatus', 13)
   tosAcceptances = _messages.MessageField('TosAcceptance', 14, repeated=True)
 

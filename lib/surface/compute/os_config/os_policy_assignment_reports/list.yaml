@@ -24,6 +24,7 @@
 
   request:
     collection: osconfig.projects.locations.instances.osPolicyAssignments.reports
+    regional_endpoint_compatibility: SUPPORTED
     ALPHA:
       api_version: v1alpha
     modify_request_hooks:

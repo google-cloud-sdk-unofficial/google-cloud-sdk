@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command to analyze resource move for a specified asset and destination."""
 
-
 from googlecloudsdk.api_lib.asset import client_util
 from googlecloudsdk.calliope import base
 
@@ -23,8 +22,25 @@ def AddProjectArgs(parser):
   parser.add_argument(
       '--project',
       metavar='PROJECT_ID',
-      required=True,
-      help='The project ID or number to perform the analysis.')
+      required=False,
+      help='The project ID or number to perform the analysis.',
+  )
+
+
+def AddFolderArgs(parser):
+  parser.add_argument(
+      '--folder',
+      metavar='FOLDER_ID',
+      required=False,
+      hidden=True,
+      help='The folder ID to perform the analysis.',
+  )
+
+
+def AddSourceGroup(parser):
+  source_group = parser.add_group(mutex=True, required=True)
+  AddProjectArgs(source_group)
+  AddFolderArgs(source_group)
 
 
 def AddDestinationGroup(parser):
@@ -38,7 +54,8 @@ def AddDestinationOrgArgs(parser):
       '--destination-organization',
       metavar='ORGANIZATION_ID',
       required=False,
-      help='The destination organization ID to perform the analysis.')
+      help='The destination organization ID to perform the analysis.',
+  )
 
 
 def AddDestinationFolderArgs(parser):
@@ -46,7 +63,8 @@ def AddDestinationFolderArgs(parser):
       '--destination-folder',
       metavar='FOLDER_ID',
       required=False,
-      help='The destination folder ID to perform the analysis.')
+      help='The destination folder ID to perform the analysis.',
+  )
 
 
 def AddBlockersOnlyArgs(parser):
@@ -55,20 +73,25 @@ def AddBlockersOnlyArgs(parser):
       metavar='BLOCKERS_ONLY',
       required=False,
       default=False,
-      help='Determines whether to perform analysis against blockers only. '
-      'Leaving it empty means the full analysis will be performed including '
-      'warnings and blockers for the specified resource move.')
+      help=(
+          'Determines whether to perform analysis against blockers only.'
+          ' Leaving it empty means the full analysis will be performed'
+          ' including warnings and blockers for the specified resource move.'
+      ),
+  )
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AnalyzeMove(base.Command):
   """Analyzes resource move."""
 
   detailed_help = {
-      'DESCRIPTION':
+      'DESCRIPTION': (
           """\
-      Analyze resource migration from its current resource hierarchy.""",
-      'EXAMPLES':
+      Analyze resource migration from its current resource hierarchy."""
+      ),
+      'EXAMPLES': (
           """\
       To analyze the impacts of moving a project to a different organization, run:
 
@@ -82,11 +105,12 @@ class AnalyzeMove(base.Command):
 
           $ gcloud asset analyze-move --project=YOUR_PROJECT_ID --destination-folder=FOLDER_ID --blockers-only=true
       """
+      ),
   }
 
   @staticmethod
   def Args(parser):
-    AddProjectArgs(parser)
+    AddSourceGroup(parser)
     AddDestinationGroup(parser)
     AddBlockersOnlyArgs(parser)
 

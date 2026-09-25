@@ -145,6 +145,14 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_REGIONS_NETWORKATTACHMENTS = (
+      'projects.regions.networkAttachments',
+      'projects/{projectsId}/regions/{regionsId}/networkAttachments/'
+      '{networkAttachmentsId}',
+      {},
+      ['projectsId', 'regionsId', 'networkAttachmentsId'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

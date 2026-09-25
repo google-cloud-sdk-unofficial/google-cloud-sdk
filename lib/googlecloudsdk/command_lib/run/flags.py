@@ -1188,19 +1188,26 @@ def AddMemoryFlag(parser):
   MemoryFlag().AddToParser(parser)
 
 
-def CpuFlag():
+def CpuFlag(allow_fractional_cpu: bool = True):
   """Create the --cpu flag."""
-  help_msg = (
-      'Set a CPU limit in Kubernetes cpu units.\n\n'
-      'Cloud Run supports values fractional values below 1, 1, 2, 4, and 8.'
-      '  Some CPU values requires a minimum Memory `--memory` value.'
-  )
+  if not allow_fractional_cpu:
+    help_msg = (
+        'Set a CPU limit in Kubernetes cpu units.\n\n'
+        'Cloud Run supports values 1, 2, 4, and 8.'
+        '  Some CPU values requires a minimum Memory `--memory` value.'
+    )
+  else:
+    help_msg = (
+        'Set a CPU limit in Kubernetes cpu units.\n\n'
+        'Cloud Run supports values fractional values below 1, 1, 2, 4, and 8.'
+        '  Some CPU values requires a minimum Memory `--memory` value.'
+    )
   return base.Argument('--cpu', help=help_msg)
 
 
-def AddCpuFlag(parser):
+def AddCpuFlag(parser, allow_fractional_cpu=True):
   """Add the --cpu flag."""
-  CpuFlag().AddToParser(parser)
+  CpuFlag(allow_fractional_cpu=allow_fractional_cpu).AddToParser(parser)
 
 
 def AddGpuTypeFlag(parser):
@@ -4073,7 +4080,11 @@ def ValidateResource(resource_ref):
     )
 
 
-def PromptForRegion(parsed_args=None, release_track=None):
+def PromptForRegion(
+    parsed_args=None,
+    release_track=None,
+    custom_check_response_func=None,
+):
   """Prompt for region from list of available regions.
 
   This method is referenced by the declaritive iam commands as a fallthrough
@@ -4082,6 +4093,7 @@ def PromptForRegion(parsed_args=None, release_track=None):
   Args:
     parsed_args: Optional args namespace.
     release_track: Optional release track.
+    custom_check_response_func: Optional custom check_response callback.
 
   Returns:
     The region specified by the user, str
@@ -4098,7 +4110,9 @@ def PromptForRegion(parsed_args=None, release_track=None):
 
     if service_name or job_name or worker_pool_name or instance_name:
       if not client:
-        client = global_methods.GetServerlessClientInstance()
+        client = global_methods.GetServerlessClientInstance(
+            custom_check_response_func=custom_check_response_func
+        )
 
     if service_name:
       services = global_methods.ListServices(
@@ -4208,7 +4222,9 @@ def PromptForRegion(parsed_args=None, release_track=None):
 
   if console_io.CanPrompt():
     if not client:
-      client = global_methods.GetServerlessClientInstance()
+      client = global_methods.GetServerlessClientInstance(
+          custom_check_response_func=custom_check_response_func
+      )
     all_regions = global_methods.ListRegions(client)
     image = getattr(parsed_args, 'image', None)
     if image:
@@ -4269,7 +4285,13 @@ def GetFirstRegion(args):
   return None
 
 
-def GetRegion(args, prompt=False, region_label=None, release_track=None):
+def GetRegion(
+    args,
+    prompt=False,
+    region_label=None,
+    release_track=None,
+    custom_check_response_func=None,
+):
   """Prompt for region if not provided.
 
   Region is decided in the following order:
@@ -4283,6 +4305,7 @@ def GetRegion(args, prompt=False, region_label=None, release_track=None):
     prompt: bool, whether to attempt to prompt.
     region_label: a k8s label for the region
     release_track: Optional release track.
+    custom_check_response_func: Optional custom check_response callback.
 
   Returns:
     A str representing region.
@@ -4294,7 +4317,11 @@ def GetRegion(args, prompt=False, region_label=None, release_track=None):
   if properties.VALUES.run.region.IsExplicitlySet():
     return properties.VALUES.run.region.Get()
   if prompt:
-    region = PromptForRegion(parsed_args=args, release_track=release_track)
+    region = PromptForRegion(
+        parsed_args=args,
+        release_track=release_track,
+        custom_check_response_func=custom_check_response_func,
+    )
     if region:
       # set the region on args, so we're not embarassed the next time we call
       # GetRegion

@@ -25,6 +25,46 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class ComponentMetrics(_messages.Message):
+  r"""ComponentMetrics contains sizing, timing, retries, and metrics for an
+  exported component.
+
+  Enums:
+    ComponentTypeValueValuesEnum: Type of the exported component.
+
+  Fields:
+    componentType: Type of the exported component.
+    duration: Duration of the component export.
+    endTime: End timestamp of the component export.
+    retryCount: Number of retries during the component export.
+    sizeGb: Size of the exported component in gigabytes.
+    startTime: Start timestamp of the component export.
+  """
+
+  class ComponentTypeValueValuesEnum(_messages.Enum):
+    r"""Type of the exported component.
+
+    Values:
+      TYPE_UNSPECIFIED: Unspecified component type.
+      BQ_ESA: BigQuery Elite System Activity component.
+      DB: Database component.
+      FS: File system component.
+      ALL: Overall Export Job.
+    """
+    TYPE_UNSPECIFIED = 0
+    BQ_ESA = 1
+    DB = 2
+    FS = 3
+    ALL = 4
+
+  componentType = _messages.EnumField('ComponentTypeValueValuesEnum', 1)
+  duration = _messages.StringField(2)
+  endTime = _messages.StringField(3)
+  retryCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  sizeGb = _messages.FloatField(5)
+  startTime = _messages.StringField(6)
+
+
 class ControlledEgressConfig(_messages.Message):
   r"""Controlled egress configuration.
 
@@ -230,6 +270,7 @@ class ExportMetadata(_messages.Message):
       dataset migration.
     exportEncryptionKey: Encryption key that was used to encrypt the export
       artifacts.
+    exportMetrics: Overall export metrics, timing, and component telemetry.
     filePaths: List of files created as part of export artifact (excluding the
       metadata). The paths are relative to the folder containing the metadata.
     lookerEncryptionKey: Looker encryption key, encrypted with the provided
@@ -249,19 +290,22 @@ class ExportMetadata(_messages.Message):
       SOURCE_UNSPECIFIED: Source not specified
       LOOKER_CORE: Source of export is Looker Core
       LOOKER_ORIGINAL: Source of export is Looker Original
+      LOOKER_SELF_HOSTED: Source of export is Self-Hosted Looker
     """
     SOURCE_UNSPECIFIED = 0
     LOOKER_CORE = 1
     LOOKER_ORIGINAL = 2
+    LOOKER_SELF_HOSTED = 3
 
   esaSourceDatasetId = _messages.StringField(1)
   exportEncryptionKey = _messages.MessageField('ExportMetadataEncryptionKey', 2)
-  filePaths = _messages.StringField(3, repeated=True)
-  lookerEncryptionKey = _messages.StringField(4)
-  lookerInstance = _messages.StringField(5)
-  lookerPlatformEdition = _messages.StringField(6)
-  lookerVersion = _messages.StringField(7)
-  source = _messages.EnumField('SourceValueValuesEnum', 8)
+  exportMetrics = _messages.MessageField('ExportMetrics', 3)
+  filePaths = _messages.StringField(4, repeated=True)
+  lookerEncryptionKey = _messages.StringField(5)
+  lookerInstance = _messages.StringField(6)
+  lookerPlatformEdition = _messages.StringField(7)
+  lookerVersion = _messages.StringField(8)
+  source = _messages.EnumField('SourceValueValuesEnum', 9)
 
 
 class ExportMetadataEncryptionKey(_messages.Message):
@@ -274,6 +318,19 @@ class ExportMetadataEncryptionKey(_messages.Message):
 
   cmek = _messages.StringField(1)
   version = _messages.StringField(2)
+
+
+class ExportMetrics(_messages.Message):
+  r"""ExportMetrics contains overall export execution metrics, timing, and
+  component telemetry.
+
+  Fields:
+    componentMetrics: Metrics and telemetry for each exported component.
+    instanceInternalName: Internal name of the instance being exported.
+  """
+
+  componentMetrics = _messages.MessageField('ComponentMetrics', 1, repeated=True)
+  instanceInternalName = _messages.StringField(2)
 
 
 class GeminiAiConfig(_messages.Message):

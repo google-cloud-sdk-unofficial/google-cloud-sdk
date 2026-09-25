@@ -131,7 +131,7 @@ def AddRepositoryResourceArgAsFlag(parser, verb):
 
 def PullRequestAttributeConfig():
   return concepts.ResourceParameterAttributeConfig(
-      name='pull_request', help_text='Secure Source Manager pull request.'
+      name='pull-request', help_text='Secure Source Manager pull request.'
   )
 
 
@@ -161,5 +161,34 @@ def AddPullRequestResourceArgAsFlag(parser, verb):
       '--pull-request',
       GetPullRequestResourceSpec(),
       'The Secure Source Manager pull request {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+def PullRequestCommentAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='pull_request_comment',
+      help_text='Secure Source Manager pull request comment.',
+  )
+
+
+def GetPullRequestCommentResourceSpec():
+  return concepts.ResourceSpec(
+      'securesourcemanager.projects.locations.repositories.pullRequests.pullRequestComments',
+      resource_name='pull_request_comment',
+      pullRequestCommentsId=PullRequestCommentAttributeConfig(),
+      pullRequestsId=PullRequestAttributeConfig(),
+      repositoriesId=RepositoryAttributeConfig(),
+      locationsId=RegionAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      disable_auto_completers=False,
+  )
+
+
+def AddPullRequestCommentResourceArg(parser, verb):
+  concept_parsers.ConceptParser.ForResource(
+      'pull_request_comment',
+      GetPullRequestCommentResourceSpec(),
+      'The Secure Source Manager pull request comment {}.'.format(verb),
       required=True,
   ).AddToParser(parser)

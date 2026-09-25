@@ -209,15 +209,18 @@ def _ShouldRepairECP(cert_config: typing.Dict[str, typing.Any]) -> bool:
   if 'libs' not in cert_config:
     return False
 
-  expected_keys = set(['ecp', 'ecp_client', 'tls_offload', 'ecp_http_proxy'])
+  required_keys = set(['ecp', 'ecp_client', 'ecp_http_proxy'])
 
   actual_keys = set(cert_config['libs'].keys())
 
-  if expected_keys != actual_keys:
+  # Ensure all required keys are present. A subset check is used so that
+  # legacy configs containing extra keys (such as deprecated tls_offload)
+  # do not unnecessarily trigger an ECP repair.
+  if not required_keys.issubset(actual_keys):
     return True
 
-  # Even if keys match, check if the binaries actually exist on disk.
-  for key in expected_keys:
+  # Check if the required binaries actually exist on disk.
+  for key in required_keys:
     path = cert_config['libs'].get(key)
     if not path or not os.path.exists(path):
       return True

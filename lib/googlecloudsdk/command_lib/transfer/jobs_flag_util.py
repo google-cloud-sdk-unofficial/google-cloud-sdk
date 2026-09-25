@@ -371,6 +371,11 @@ def setup_parser(parser, is_update=False, release_track=None):
         action='store_true',
         help='Remove the minimum duration since modification from the'
         ' object conditions.')
+    object_conditions.add_argument(
+        '--clear-include-storage-classes',
+        action='store_true',
+        help='Remove the storage class filter from the object conditions.',
+    )
   object_conditions.add_argument(
       '--include-prefixes',
       type=arg_parsers.ArgList(),
@@ -424,6 +429,20 @@ def setup_parser(parser, is_update=False, release_track=None):
       ' would include objects last modified *less than* 10 days before'
       ' its start time. Use the absolute duration format (ex. 1m for 1'
       ' month; 1h30m for 1 hour 30 minutes).')
+  object_conditions.add_argument(
+      '--include-storage-classes',
+      type=arg_parsers.ArgList(),
+      metavar='INCLUDED_STORAGE_CLASSES',
+      help=(
+          'Include only objects belonging to the specified Amazon S3 Storage'
+          ' classes. Objects in other storage classes are skipped. Separate'
+          ' multiple classes with commas, omitting spaces E.g.,'
+          ' --include-storage-classes=STANDARD,GLACIER. See Filter source'
+          ' objects by storage class'
+          ' (https://cloud.google.com/storage-transfer/docs/filtering-objects#filter-storage-class)'
+          ' for more information.'
+      ),
+  )
 
   transfer_options = parser.add_group(help='TRANSFER OPTIONS', sort_args=False)
   if is_update:

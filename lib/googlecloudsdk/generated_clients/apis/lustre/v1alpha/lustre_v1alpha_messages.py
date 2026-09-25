@@ -735,6 +735,21 @@ class ListLocationsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListMirrorsResponse(_messages.Message):
+  r"""Response for ListMirrors.
+
+  Fields:
+    mirrors: List of mirrors.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  mirrors = _messages.MessageField('Mirror', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListOperationsResponse(_messages.Message):
   r"""The response message for Operations.ListOperations.
 
@@ -1127,6 +1142,129 @@ class LustreProjectsLocationsInstancesListRequest(_messages.Message):
   parent = _messages.StringField(5, required=True)
 
 
+class LustreProjectsLocationsInstancesMirrorsCreateRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesMirrorsCreateRequest object.
+
+  Fields:
+    mirror: A Mirror resource to be passed as the request body.
+    mirrorId: Required. ID to use for the mirror. This value should be 1-63
+      characters, must use lowercase letters, numbers, or underscores
+      `[a-z0-9_]`. Must start with a letter. Immutable.
+    parent: Required. Parent instance resource where the mirror will be
+      created, in the format:
+      projects/{project}/locations/{location}/instances/{instance}
+    requestId: Optional. The unique ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed. The server
+      guarantees that a request doesn't result in creation of duplicate
+      mirrors for at least 60 minutes. For example, consider a situation where
+      you make an initial request and the request times out. If you make the
+      request again with the same request ID, the server can check if original
+      operation with the same request ID was received, and if so, will ignore
+      the second request. This prevents clients from accidentally creating
+      duplicate mirrors. The request ID must be a valid UUID version 4 with
+      the exception that zero UUID is not supported
+      (`00000000-0000-0000-0000-000000000000`). This request is only
+      idempotent if a `request_id` is provided.
+  """
+
+  mirror = _messages.MessageField('Mirror', 1)
+  mirrorId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class LustreProjectsLocationsInstancesMirrorsDeleteRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesMirrorsDeleteRequest object.
+
+  Fields:
+    name: Required. Name of the mirror to delete, in the format: projects/{pro
+      ject}/locations/{location}/instances/{instance}/mirrors/{mirror}
+    requestId: Optional. The unique ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed. The server
+      guarantees that a request doesn't result in the same delete request
+      being executed for at least 60 minutes. For example, consider a
+      situation where you make an initial request and the request times out.
+      If you make the request again with the same request ID, the server can
+      check if original operation with the same request ID was received, and
+      if so, will ignore the second request. The request ID must be a valid
+      UUID version 4 with the exception that zero UUID is not supported
+      (`00000000-0000-0000-0000-000000000000`). This request is only
+      idempotent if a `request_id` is provided.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class LustreProjectsLocationsInstancesMirrorsGetRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesMirrorsGetRequest object.
+
+  Fields:
+    name: Required. Name of the mirror to retrieve, in the format: projects/{p
+      roject}/locations/{location}/instances/{instance}/mirrors/{mirror}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class LustreProjectsLocationsInstancesMirrorsListRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesMirrorsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Desired order of results.
+    pageSize: Optional. Requested page size. The server might return fewer
+      items than requested. If unspecified, the default page size is 10. The
+      maximum value is 1000.
+    pageToken: Optional. A page token, received from a previous `ListMirrors`
+      call. Provide this to retrieve the subsequent page. When paginating, all
+      other parameters provided to `ListMirrors` must match the call that
+      provided the page token.
+    parent: Required. Parent instance resource where the mirrors will be
+      listed, in the format:
+      projects/{project}/locations/{location}/instances/{instance}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class LustreProjectsLocationsInstancesMirrorsPatchRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesMirrorsPatchRequest object.
+
+  Fields:
+    mirror: A Mirror resource to be passed as the request body.
+    name: Identifier. Name of the mirror. Format: projects/{project}/locations
+      /{location}/instances/{instance}/mirrors/{mirror}
+    requestId: Optional. The unique ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed. The server
+      guarantees that a request doesn't result in the same update request
+      being executed for at least 60 minutes. For example, consider a
+      situation where you make an initial request and the request times out.
+      If you make the request again with the same request ID, the server can
+      check if original operation with the same request ID was received, and
+      if so, will ignore the second request. The request ID must be a valid
+      UUID version 4 with the exception that zero UUID is not supported
+      (`00000000-0000-0000-0000-000000000000`). This request is only
+      idempotent if a `request_id` is provided.
+    updateMask: Optional. Fields specified in the update_mask are relative to
+      the resource, not the full request. A field will be overwritten if it is
+      in the mask. If no mask is provided then all fields present in the
+      request are overwritten.
+  """
+
+  mirror = _messages.MessageField('Mirror', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class LustreProjectsLocationsInstancesPatchRequest(_messages.Message):
   r"""A LustreProjectsLocationsInstancesPatchRequest object.
 
@@ -1328,6 +1466,101 @@ class MaintenanceSchedule(_messages.Message):
 
   endTime = _messages.StringField(1)
   startTime = _messages.StringField(2)
+
+
+class Mirror(_messages.Message):
+  r"""Represents a mirror of a Lustre instance.
+
+  Enums:
+    DirectionValueValuesEnum: Required. Represents the direction of the
+      mirror.
+    StateValueValuesEnum: Output only. [Output only] The current state of the
+      mirror.
+
+  Messages:
+    LabelsValue: Optional. Labels to apply to the mirror.
+
+  Fields:
+    createTime: Output only. [Output only] Create time stamp.
+    deletedFilesRetained: Optional. If true, files will be retained in lustre
+      after the corresponding files are deleted from cloud storage. Default is
+      false.
+    description: Optional. Description of the mirror.
+    direction: Required. Represents the direction of the mirror.
+    gcsPath: Required. URI to a Cloud Storage bucket, or a path within a
+      bucket. gs://// path must end with '/'.
+    labels: Optional. Labels to apply to the mirror.
+    lustrePath: Required. Can be dir/subDir.
+    name: Identifier. Name of the mirror. Format: projects/{project}/locations
+      /{location}/instances/{instance}/mirrors/{mirror}
+    state: Output only. [Output only] The current state of the mirror.
+    uid: Output only. Unique ID of the resource.
+    updateTime: Output only. [Output only] Update time stamp.
+  """
+
+  class DirectionValueValuesEnum(_messages.Enum):
+    r"""Required. Represents the direction of the mirror.
+
+    Values:
+      DIRECTION_UNSPECIFIED: Invalid value.
+      FROM_CLOUD_STORAGE: Mirror from Cloud Storage to Lustre.
+    """
+    DIRECTION_UNSPECIFIED = 0
+    FROM_CLOUD_STORAGE = 1
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output only] The current state of the mirror.
+
+    Values:
+      STATE_UNSPECIFIED: State is unspecified.
+      CREATING: Mirror is being created.
+      INITIAL_SYNC: Initial sync is in progress.
+      DELETING: Mirror is being deleted.
+      ACTIVE: Mirror is active.
+      SUSPENDED: Mirror is suspended.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    INITIAL_SYNC = 2
+    DELETING = 3
+    ACTIVE = 4
+    SUSPENDED = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels to apply to the mirror.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  deletedFilesRetained = _messages.BooleanField(2)
+  description = _messages.StringField(3)
+  direction = _messages.EnumField('DirectionValueValuesEnum', 4)
+  gcsPath = _messages.MessageField('GcsPath', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  lustrePath = _messages.MessageField('LustrePath', 7)
+  name = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  uid = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class Operation(_messages.Message):

@@ -14,7 +14,7 @@
 # limitations under the License.
 release_tracks: [ALPHA]
 auto_generated: true
-hidden: true
+hidden: false
 
 help_text:
   brief: |

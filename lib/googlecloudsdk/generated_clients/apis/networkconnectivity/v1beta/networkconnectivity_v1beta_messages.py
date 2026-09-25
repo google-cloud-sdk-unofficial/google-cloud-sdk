@@ -1115,40 +1115,11 @@ class GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup(_messages.Message
 class GoogleCloudNetworkconnectivityV1betaInterconnectStatus(_messages.Message):
   r"""Represents the status of an Interconnect using this Key Group.
 
-  Enums:
-    MacsecOperationalStatusValueValuesEnum: Output only. Whether MACsec is
-      operational on the Interconnect. During GET, this is only filled if
-      using the FULL view.
-
   Fields:
-    ckn: Output only. The CKN of the MACsec key actually in use on the
-      Interconnect. During GET, this is only filled if using the FULL view and
-      only if macsec_operation_status is ENABLED.
-    macsecOperationalStatus: Output only. Whether MACsec is operational on the
-      Interconnect. During GET, this is only filled if using the FULL view.
     name: Output only. Name of the Interconnect.
   """
 
-  class MacsecOperationalStatusValueValuesEnum(_messages.Enum):
-    r"""Output only. Whether MACsec is operational on the Interconnect. During
-    GET, this is only filled if using the FULL view.
-
-    Values:
-      MACSEC_OPERATIONAL_STATUS_UNSPECIFIED: MACsec operational status is not
-        specified.
-      ENABLED: MACsec is enabled.
-      DISABLED: MACsec is disabled.
-      FETCH_FAILED: Indicates that the fanout to fetch MACsec operational
-        status failed.
-    """
-    MACSEC_OPERATIONAL_STATUS_UNSPECIFIED = 0
-    ENABLED = 1
-    DISABLED = 2
-    FETCH_FAILED = 3
-
-  ckn = _messages.StringField(1)
-  macsecOperationalStatus = _messages.EnumField('MacsecOperationalStatusValueValuesEnum', 2)
-  name = _messages.StringField(3)
+  name = _messages.StringField(1)
 
 
 class GoogleCloudNetworkconnectivityV1betaIpRangeReservation(_messages.Message):
@@ -4635,12 +4606,10 @@ class NetworkconnectivityProjectsLocationsInterconnectKeyGroupsGetRequest(_messa
     Values:
       INTERCONNECT_KEY_GROUP_VIEW_UNSPECIFIED: When unspecified, defaults to
         BASIC.
-      BASIC: Includes basic information, omitting operational status.
-      FULL: Includes full information, including operational status.
+      BASIC: Includes basic information.
     """
     INTERCONNECT_KEY_GROUP_VIEW_UNSPECIFIED = 0
     BASIC = 1
-    FULL = 2
 
   name = _messages.StringField(1, required=True)
   view = _messages.EnumField('ViewValueValuesEnum', 2)
@@ -4671,12 +4640,10 @@ class NetworkconnectivityProjectsLocationsInterconnectKeyGroupsListRequest(_mess
     Values:
       INTERCONNECT_KEY_GROUP_VIEW_UNSPECIFIED: When unspecified, defaults to
         BASIC.
-      BASIC: Includes basic information, omitting operational status.
-      FULL: Includes full information, including operational status.
+      BASIC: Includes basic information.
     """
     INTERCONNECT_KEY_GROUP_VIEW_UNSPECIFIED = 0
     BASIC = 1
-    FULL = 2
 
   filter = _messages.StringField(1)
   orderBy = _messages.StringField(2)

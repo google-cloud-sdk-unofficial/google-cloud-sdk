@@ -92,6 +92,23 @@
       type: bool
       help_text: |
         Once specified, the table is deletion protected.
+    - api_field: createTableRequest.table.granularity
+      arg_name: timestamp-granularity
+      hidden: true  # TODO(b/550334092): Unhide for GA.
+      help_text: |
+        The granularity at which timestamps are stored in this table. The
+        granularity is immutable (fixed at table creation) and defaults to
+        `millis`. Timestamps not matching the granularity will be rejected.
+        Microsecond granularity is supported only for Enterprise Plus instances.
+      choices:
+      - arg_value: millis
+        enum_value: MILLIS
+        help_text: |
+          The table keeps data versioned at a granularity of 1 millisecond.
+      - arg_value: micros
+        enum_value: MICROS
+        help_text: |
+          The table keeps data versioned at a granularity of 1 microsecond.
     - arg_name: row-key-schema-definition-file
       required: false
       help_text: |

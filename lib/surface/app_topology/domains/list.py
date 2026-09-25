@@ -26,7 +26,9 @@ _FORMAT = """
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class List(base.ListCommand):
   """List App Topology domains.
 
@@ -35,10 +37,7 @@ class List(base.ListCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': (
-          '{description}\n\nLists all topology domains registered in the'
-          ' specified location (defaults to "global").'
-      ),
+      'DESCRIPTION': '{description}',
       'EXAMPLES': (
           """\
           To list all App Topology domains in the default global location:
@@ -74,7 +73,8 @@ class List(base.ListCommand):
     """
     client = domains_api.DomainsClient()
     location_ref = args.CONCEPTS.location.Parse()
-    parent = location_ref.RelativeName()
     return client.List(
-        parent=parent, page_size=args.page_size, limit=args.limit
+        parent=location_ref.RelativeName(),
+        page_size=args.page_size,
+        limit=args.limit,
     )

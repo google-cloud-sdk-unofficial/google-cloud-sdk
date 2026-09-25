@@ -18,6 +18,7 @@
 
   request:
     collection: osconfig.projects.locations.osPolicyAssignments.operations
+    regional_endpoint_compatibility: SUPPORTED
     method: cancel
     ALPHA:
       api_version: v1alpha

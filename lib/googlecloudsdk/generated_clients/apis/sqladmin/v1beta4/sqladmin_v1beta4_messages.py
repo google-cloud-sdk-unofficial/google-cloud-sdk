@@ -1040,73 +1040,6 @@ class BlueGreenDeploymentInfo(_messages.Message):
   target = _messages.MessageField('TargetRole', 4)
 
 
-class ByoCert(_messages.Message):
-  r"""A single certificate or key in a BYOC bundle.
-
-  Enums:
-    CertificateTypeValueValuesEnum: Required. The certificate type.
-
-  Fields:
-    certificateType: Required. The certificate type.
-    content: Required. Input only. The PEM-encoded certificate or key content
-      in base64 format.
-  """
-
-  class CertificateTypeValueValuesEnum(_messages.Enum):
-    r"""Required. The certificate type.
-
-    Values:
-      CERTIFICATE_TYPE_UNSPECIFIED: Unspecified certificate type.
-      CERTIFICATE_TYPE_PEER_SERVER_CA: The x509 PEM-encoded certificate of the
-        CA that signed the source database server's certificate.
-      CERTIFICATE_TYPE_PEER_CLIENT_KEY: The unencrypted PKCS#1 or PKCS#8 PEM-
-        encoded private key associated with the Client Certificate.
-      CERTIFICATE_TYPE_PEER_CLIENT_CERTIFICATE: The x509 PEM-encoded
-        certificate used by the client to authenticate against the source
-        database server.
-    """
-    CERTIFICATE_TYPE_UNSPECIFIED = 0
-    CERTIFICATE_TYPE_PEER_SERVER_CA = 1
-    CERTIFICATE_TYPE_PEER_CLIENT_KEY = 2
-    CERTIFICATE_TYPE_PEER_CLIENT_CERTIFICATE = 3
-
-  certificateType = _messages.EnumField('CertificateTypeValueValuesEnum', 1)
-  content = _messages.BytesField(2)
-
-
-class ByocSslConfig(_messages.Message):
-  r"""BYOC (Bring Your Own Certificate) SSL configuration.
-
-  Enums:
-    IntentValueValuesEnum: Required. The intent for this BYOC configuration.
-
-  Fields:
-    bundle: Required. The name of the BYOC SSL config. This name will be used
-      to identify a certificate bundle.
-    byoCerts: Required. The server CA certificate, client key and client
-      certificate.
-    intent: Required. The intent for this BYOC configuration.
-    primaryDnsRecord: DNS name associated with the primary instance in a
-      replication topology. This is needed to insert a DNS entry in a replica
-      VM.
-  """
-
-  class IntentValueValuesEnum(_messages.Enum):
-    r"""Required. The intent for this BYOC configuration.
-
-    Values:
-      INTENT_UNSPECIFIED: Unspecified intent.
-      PG_LOGICAL: Setting up for pg_logical extension.
-    """
-    INTENT_UNSPECIFIED = 0
-    PG_LOGICAL = 1
-
-  bundle = _messages.StringField(1)
-  byoCerts = _messages.MessageField('ByoCert', 2, repeated=True)
-  intent = _messages.EnumField('IntentValueValuesEnum', 3)
-  primaryDnsRecord = _messages.MessageField('DNSEntry', 4)
-
-
 class CancelSessionRequest(_messages.Message):
   r"""The request message for cancelling an agent session."""
 
@@ -1549,6 +1482,76 @@ class ConnectionPoolFlags(_messages.Message):
 
   name = _messages.StringField(1)
   value = _messages.StringField(2)
+
+
+class CustomerManagedCertificate(_messages.Message):
+  r"""A single certificate or key in a customer managed certificate bundle.
+
+  Enums:
+    CertificateTypeValueValuesEnum: Required. The certificate type.
+
+  Fields:
+    certificateType: Required. The certificate type.
+    content: Required. Input only. The PEM-encoded certificate or key content
+      in base64 format.
+  """
+
+  class CertificateTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The certificate type.
+
+    Values:
+      CERTIFICATE_TYPE_UNSPECIFIED: Unspecified certificate type.
+      CERTIFICATE_TYPE_PEER_SERVER_CA: The x509 PEM-encoded certificate of the
+        CA that signed the source database server's certificate.
+      CERTIFICATE_TYPE_PEER_CLIENT_KEY: The unencrypted PKCS#1 or PKCS#8 PEM-
+        encoded private key associated with the Client Certificate.
+      CERTIFICATE_TYPE_PEER_CLIENT_CERTIFICATE: The x509 PEM-encoded
+        certificate used by the client to authenticate against the source
+        database server.
+    """
+    CERTIFICATE_TYPE_UNSPECIFIED = 0
+    CERTIFICATE_TYPE_PEER_SERVER_CA = 1
+    CERTIFICATE_TYPE_PEER_CLIENT_KEY = 2
+    CERTIFICATE_TYPE_PEER_CLIENT_CERTIFICATE = 3
+
+  certificateType = _messages.EnumField('CertificateTypeValueValuesEnum', 1)
+  content = _messages.BytesField(2)
+
+
+class CustomerManagedCertificateConfig(_messages.Message):
+  r"""Customer managed certificate SSL configuration.
+
+  Enums:
+    IntentValueValuesEnum: Required. The intent for this customer managed
+      certificate configuration.
+
+  Fields:
+    bundle: Required. The name of the customer managed certificate
+      configuration. This name will be used to identify a certificate bundle.
+    customerManagedCertificates: Required. The server CA certificate, client
+      key and client certificate.
+    intent: Required. The intent for this customer managed certificate
+      configuration.
+    primaryDnsRecord: DNS name associated with the primary instance in a
+      replication topology. This is needed to insert a DNS entry in a replica
+      VM.
+  """
+
+  class IntentValueValuesEnum(_messages.Enum):
+    r"""Required. The intent for this customer managed certificate
+    configuration.
+
+    Values:
+      INTENT_UNSPECIFIED: Unspecified intent.
+      PG_LOGICAL: Setting up for pg_logical extension.
+    """
+    INTENT_UNSPECIFIED = 0
+    PG_LOGICAL = 1
+
+  bundle = _messages.StringField(1)
+  customerManagedCertificates = _messages.MessageField('CustomerManagedCertificate', 2, repeated=True)
+  intent = _messages.EnumField('IntentValueValuesEnum', 3)
+  primaryDnsRecord = _messages.MessageField('DNSEntry', 4)
 
 
 class DNSEntry(_messages.Message):
@@ -4195,15 +4198,16 @@ class ListBlueGreenDeploymentsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
-class ListByoCertificatesResponse(_messages.Message):
-  r"""Response message for SqlSslCertsService.ListByoCertificates.
+class ListCustomerManagedCertificatesResponse(_messages.Message):
+  r"""Response message for SqlSslCertsService.ListCustomerManagedCertificates.
 
   Fields:
-    byocSslConfigs: Required. List of BYOC SSL configurations for the
-      instance.
+    customerManagedCertificates: Required. List of customer managed SSL
+      configurations for the instance. Note: Sensitive private keys (e.g.,
+      PEER_CLIENT_KEY) are redacted in this response.
   """
 
-  byocSslConfigs = _messages.MessageField('ByocSslConfig', 1, repeated=True)
+  customerManagedCertificates = _messages.MessageField('CustomerManagedCertificateConfig', 1, repeated=True)
 
 
 class ListSessionsResponse(_messages.Message):
@@ -5719,6 +5723,11 @@ class SemiManagedConfig(_messages.Message):
 
   Fields:
     backupConfig: Optional. Backup configuration for a semi-managed instance.
+    enableFencingInfoRefresh: Optional. If `true`, the fencing information
+      will be refreshed. Fencing is a mechanism used in high-availability
+      clusters to isolate failed nodes. Set this to `true` if you need to
+      troubleshoot node issues and refresh the fencing information. Defaults
+      to `false`.
     enableReplication: Optional. If true, configures the Semi-Managed instance
       to have an Always-on Availability group. This configuration cannot be
       changed after the instance is created.
@@ -5743,17 +5752,18 @@ class SemiManagedConfig(_messages.Message):
   """
 
   backupConfig = _messages.MessageField('SemiManagedBackupConfig', 1)
-  enableReplication = _messages.BooleanField(2)
-  errors = _messages.StringField(3, repeated=True)
-  gceInstance = _messages.StringField(4)
-  gceInstances = _messages.StringField(5, repeated=True)
-  insightsConfig = _messages.MessageField('SemiManagedInsightsConfig', 6)
-  kind = _messages.StringField(7)
-  patchConfig = _messages.MessageField('SemiManagedPatchConfig', 8)
-  sqlAccount = _messages.StringField(9)
-  sqlAccountSecretName = _messages.StringField(10)
-  windowsServiceAccount = _messages.StringField(11)
-  windowsServiceAccountSecretName = _messages.StringField(12)
+  enableFencingInfoRefresh = _messages.BooleanField(2)
+  enableReplication = _messages.BooleanField(3)
+  errors = _messages.StringField(4, repeated=True)
+  gceInstance = _messages.StringField(5)
+  gceInstances = _messages.StringField(6, repeated=True)
+  insightsConfig = _messages.MessageField('SemiManagedInsightsConfig', 7)
+  kind = _messages.StringField(8)
+  patchConfig = _messages.MessageField('SemiManagedPatchConfig', 9)
+  sqlAccount = _messages.StringField(10)
+  sqlAccountSecretName = _messages.StringField(11)
+  windowsServiceAccount = _messages.StringField(12)
+  windowsServiceAccountSecretName = _messages.StringField(13)
 
 
 class SemiManagedInsightsConfig(_messages.Message):
@@ -6726,6 +6736,55 @@ class SqlConnectResolveRequest(_messages.Message):
 
   dnsName = _messages.StringField(1, required=True)
   location = _messages.StringField(2, required=True)
+
+
+class SqlCustomerManagedCertificatesDeleteRequest(_messages.Message):
+  r"""A SqlCustomerManagedCertificatesDeleteRequest object.
+
+  Fields:
+    certificateBundle: Required. Name tag of the customer managed certificate
+      bundle to delete.
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+  """
+
+  certificateBundle = _messages.StringField(1, required=True)
+  instance = _messages.StringField(2, required=True)
+  project = _messages.StringField(3, required=True)
+
+
+class SqlCustomerManagedCertificatesListRequest(_messages.Message):
+  r"""A SqlCustomerManagedCertificatesListRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+
+
+class SqlCustomerManagedCertificatesUpdateRequest(_messages.Message):
+  r"""A SqlCustomerManagedCertificatesUpdateRequest object.
+
+  Fields:
+    certificateBundle: Required. Name tag of the customer managed certificate
+      bundle to update.
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+    updateCustomerManagedCertificateRequest: A
+      UpdateCustomerManagedCertificateRequest resource to be passed as the
+      request body.
+  """
+
+  certificateBundle = _messages.StringField(1, required=True)
+  instance = _messages.StringField(2, required=True)
+  project = _messages.StringField(3, required=True)
+  updateCustomerManagedCertificateRequest = _messages.MessageField('UpdateCustomerManagedCertificateRequest', 4)
 
 
 class SqlDatabasesDeleteRequest(_messages.Message):
@@ -8484,21 +8543,6 @@ class SqlSslCertsCreateEphemeralRequest(_messages.Message):
   sslCertsCreateEphemeralRequest = _messages.MessageField('SslCertsCreateEphemeralRequest', 4)
 
 
-class SqlSslCertsDeleteByoCertificateRequest(_messages.Message):
-  r"""A SqlSslCertsDeleteByoCertificateRequest object.
-
-  Fields:
-    bundle: Required. Name tag of the BYOC certificate bundle to delete.
-    instance: Required. Cloud SQL instance ID. This does not include the
-      project ID.
-    project: Required. Project ID of the project that contains the instance.
-  """
-
-  bundle = _messages.StringField(1)
-  instance = _messages.StringField(2, required=True)
-  project = _messages.StringField(3, required=True)
-
-
 class SqlSslCertsDeleteRequest(_messages.Message):
   r"""A SqlSslCertsDeleteRequest object.
 
@@ -8542,19 +8586,6 @@ class SqlSslCertsInsertRequest(_messages.Message):
   sslCertsInsertRequest = _messages.MessageField('SslCertsInsertRequest', 3)
 
 
-class SqlSslCertsListByoCertificatesRequest(_messages.Message):
-  r"""A SqlSslCertsListByoCertificatesRequest object.
-
-  Fields:
-    instance: Required. Cloud SQL instance ID. This does not include the
-      project ID.
-    project: Required. Project ID of the project that contains the instance.
-  """
-
-  instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-
-
 class SqlSslCertsListRequest(_messages.Message):
   r"""A SqlSslCertsListRequest object.
 
@@ -8565,22 +8596,6 @@ class SqlSslCertsListRequest(_messages.Message):
 
   instance = _messages.StringField(1, required=True)
   project = _messages.StringField(2, required=True)
-
-
-class SqlSslCertsUpdateByoCertificateRequest(_messages.Message):
-  r"""A SqlSslCertsUpdateByoCertificateRequest object.
-
-  Fields:
-    instance: Required. Cloud SQL instance ID. This does not include the
-      project ID.
-    project: Required. Project ID of the project that contains the instance.
-    updateByoCertificateRequest: A UpdateByoCertificateRequest resource to be
-      passed as the request body.
-  """
-
-  instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-  updateByoCertificateRequest = _messages.MessageField('UpdateByoCertificateRequest', 3)
 
 
 class SqlSubOperationType(_messages.Message):
@@ -9529,19 +9544,21 @@ class UncMapping(_messages.Message):
   uncPath = _messages.StringField(3)
 
 
-class UpdateByoCertificateRequest(_messages.Message):
-  r"""Request message for SqlSslCertsService.UpdateByoCertificate.
+class UpdateCustomerManagedCertificateRequest(_messages.Message):
+  r"""Request message for SqlSslCertsService.UpdateCustomerManagedCertificate.
 
   Fields:
-    allowMissing: Optional. If set to true, and the BYOC SSL configuration is
-      not found, a new BYOC SSL configuration will be created. In this
-      situation, `update_mask` is ignored.
-    byocSslConfig: Required. The BYOC SSL configuration to upsert.
+    allowMissing: Optional. If set to true, and the customer managed
+      certificate bundle configuration is not found, a new customer managed
+      certificate bundle configuration will be created. In this situation,
+      `update_mask` is ignored.
+    customerManagedCertificateConfig: Required. The customer managed
+      certificate bundle SSL configuration to update.
     updateMask: Optional. The list of fields to be updated.
   """
 
   allowMissing = _messages.BooleanField(1)
-  byocSslConfig = _messages.MessageField('ByocSslConfig', 2)
+  customerManagedCertificateConfig = _messages.MessageField('CustomerManagedCertificateConfig', 2)
   updateMask = _messages.StringField(3)
 
 
@@ -9634,8 +9651,8 @@ class User(_messages.Message):
         Cloud IAM group.
       CLOUD_IAM_GROUP_SERVICE_ACCOUNT: Read-only. Login for a service account
         that belongs to the Cloud IAM group.
-      CLOUD_IAM_WORKFORCE_IDENTITY: Cloud IAM workforce identity user managed
-        via workforce identity federation.
+      CLOUD_IAM_WORKFORCE_IDENTITY: Cloud IAM workforce identity managed by
+        Workforce Identity Federation.
       ENTRAID_USER: Microsoft Entra ID user.
     """
     BUILT_IN = 0

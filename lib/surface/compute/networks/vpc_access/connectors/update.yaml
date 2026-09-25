@@ -60,3 +60,11 @@
       help_text: |
         If set, updates the machine type of VMs underlying the connector. Accepted values are
         "e2-micro", "f1-micro", and "e2-standard-4".
+    - arg_name: throughput
+      release_tracks: [ALPHA, BETA]
+      hidden: true
+      api_field: connector.throughput
+      required: false
+      type: int
+      help_text: |
+        If set, updates the maximum throughput for the connector in Mbps.

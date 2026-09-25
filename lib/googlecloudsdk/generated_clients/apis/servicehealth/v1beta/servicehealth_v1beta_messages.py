@@ -433,7 +433,8 @@ class ListEventsResponse(_messages.Message):
       large result sets. Provide this value in a subsequent request as
       page_token to retrieve the next page. If this field is not present,
       there are no subsequent results.
-    unreachable: Output only. Locations that could not be reached.
+    unreachable: Output only. Unordered list. Locations that could not be
+      reached.
   """
 
   events = _messages.MessageField('Event', 1, repeated=True)
@@ -464,7 +465,8 @@ class ListOrganizationEventsResponse(_messages.Message):
       there are no subsequent results.
     organizationEvents: Output only. List of organization events affecting an
       organization.
-    unreachable: Output only. Locations that could not be reached.
+    unreachable: Output only. Unordered list. Locations that could not be
+      reached.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -484,7 +486,8 @@ class ListOrganizationImpactsResponse(_messages.Message):
     organizationImpacts: Output only. List of [impacts](/service-health/docs/r
       eference/rest/v1beta/organizations.locations.organizationImpacts#Organiz
       ationImpact) for an organization affected by service health events.
-    unreachable: Output only. Locations that could not be reached.
+    unreachable: Output only. Unordered list. Locations that could not be
+      reached.
   """
 
   nextPageToken = _messages.StringField(1)
