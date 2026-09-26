@@ -165,12 +165,21 @@ def raise_pr(pr_title, pr_desc, remote_name, branch_name, base_branch):
     base_branch: The main branch name to be which PR needs to be merged.
   """
   worktree_dir = get_working_tree_dir(remote_name, branch_name)
-  pr_command = (
-      f'gh pr create --base {base_branch} --head {branch_name} --title'
-      f' "{pr_title}" --body "{pr_desc}"'
-  )
+  pr_command = [
+      'gh',
+      'pr',
+      'create',
+      '--base',
+      base_branch,
+      '--head',
+      branch_name,
+      '--title',
+      pr_title,
+      '--body',
+      pr_desc,
+  ]
   subprocess.run(  # create a PR
-      pr_command, shell=True, check=False, cwd=worktree_dir,
+      pr_command, check=False, cwd=worktree_dir,
       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
   )
   subprocess.run(  # cleanup the worktree
