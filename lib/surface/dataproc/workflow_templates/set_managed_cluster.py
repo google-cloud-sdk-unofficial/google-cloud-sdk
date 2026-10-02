@@ -85,7 +85,11 @@ To update managed cluster in a workflow template, run:
       cluster_name = template_ref.workflowTemplatesId
 
     compute_resources = compute_helpers.GetComputeResources(
-        self.GetComputeReleaseTrack(), cluster_name, template_ref.regionsId)
+        self.GetComputeReleaseTrack(),
+        cluster_name,
+        template_ref.regionsId,
+        multizone=args.multizone,
+    )
 
     cluster_config = clusters.GetClusterConfig(
         args,

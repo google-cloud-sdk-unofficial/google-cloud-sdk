@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+
+  # Keeps the command out of help text, tab-completion and the public
+  # reference documentation while Cloud Build Pipelines is in preview.
+  hidden: true
+  universe_compatible: true
+
+  hints:
+    read_only: true
+
+  help_text:
+    brief: Describe a Cloud Build pipeline.
+    description: Show the details of a Cloud Build pipeline.
+    examples: |
+      To describe a pipeline named `main-pipeline` in region `us-central1`:
+
+        $ {command} main-pipeline --region=us-central1
+
+  request:
+    collection: cloudbuild.projects.locations.pipelines
+    api_version: v1
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The Cloud Build pipeline to describe.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:pipeline
+      is_positional: true

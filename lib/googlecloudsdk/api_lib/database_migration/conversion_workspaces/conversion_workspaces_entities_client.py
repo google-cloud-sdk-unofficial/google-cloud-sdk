@@ -185,7 +185,7 @@ class ConversionWorkspacesEntitiesClient(
     ):
       filter_expr = self.CombineFilters(
           filter_expr,
-          self.parent_client.crud.GetGlobalFilter(
+          self.GetGlobalFilter(
               name=conversion_workspace_ref,
           ),
       )
@@ -369,7 +369,7 @@ class ConversionWorkspacesEntitiesClient(
     ):
       combined_filter_expr = self.CombineFilters(
           filter_expr,
-          self.parent_client.crud.GetGlobalFilter(
+          self.GetGlobalFilter(
               name=conversion_workspace_ref,
           ),
       )

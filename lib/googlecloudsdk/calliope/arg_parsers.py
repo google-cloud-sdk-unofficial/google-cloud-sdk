@@ -870,11 +870,15 @@ def _BoundedType(type_builder,
 
 
 def BoundedInt(*args, **kwargs):
-  return _BoundedType(int, 'an integer', *args, **kwargs)
+  parser = _BoundedType(int, 'an integer', *args, **kwargs)
+  parser.__name__ = 'BoundedInt'
+  return parser
 
 
 def BoundedFloat(*args, **kwargs):
-  return _BoundedType(float, 'a floating point number', *args, **kwargs)
+  parser = _BoundedType(float, 'a floating point number', *args, **kwargs)
+  parser.__name__ = 'BoundedFloat'
+  return parser
 
 
 def _SplitOnDelim(arg_value, delim):

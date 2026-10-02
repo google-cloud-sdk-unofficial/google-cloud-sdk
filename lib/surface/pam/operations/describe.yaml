@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Show details of a Privileged Access Manager (PAM) long running operation.

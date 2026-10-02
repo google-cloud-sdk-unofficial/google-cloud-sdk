@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Update a hub.
@@ -55,3 +57,8 @@
       api_version: v1
     collection: networkconnectivity.projects.locations.global.hubs
     method: patch
+
+- release_tracks: [BETA]
+  is_python_command: true
+  hints:
+    read_only: false

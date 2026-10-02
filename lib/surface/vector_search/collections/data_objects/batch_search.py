@@ -66,6 +66,28 @@ class BatchSearch(base.Command):
             }
           ]
           ```
+
+          To request an optional query-time target recall for a search,
+          include `denseScannParams.targetRecall` (a value in [0, 1]) inside
+          that search's `searchHint.indexHint` in the JSON file:
+
+          ```
+          [
+            {
+              "vectorSearch": {
+                "searchField": "plot_embedding",
+                "vector": { "values": [0.1, 0.2, 0.3] },
+                "topK": 10,
+                "searchHint": {
+                  "indexHint": {
+                    "name": "projects/my-project/locations/us-central1/collections/my-collection/indexes/my-index",
+                    "denseScannParams": { "targetRecall": 0.95 }
+                  }
+                }
+              }
+            }
+          ]
+          ```
       """
       ),
   }

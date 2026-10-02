@@ -15,11 +15,15 @@
 
 """Implementations of installers for different component types."""
 
+from __future__ import annotations
+
+from collections.abc import Callable
 import os
 import re
 import stat
 import sys
 import tarfile
+from typing import Any, Optional, Type
 
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import local_file_adapter
@@ -27,7 +31,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import transport
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.util import files as file_utils
 from googlecloudsdk.core.util import http_encoding
 from googlecloudsdk.core.util import platforms
@@ -41,6 +44,54 @@ UPDATE_MANAGER_COMMAND_PATH = 'UPDATE_MANAGER'
 TIMEOUT_IN_SEC = 60
 UPDATE_MANAGER_TIMEOUT_IN_SEC = 3
 WRITE_BUFFER_SIZE = 16 * 1024
+
+_session_factory: Optional[Callable[[], requests.Session]] = None
+_credential_loader: Optional[Callable[[], Any]] = None
+_credential_error_cls: Type[Exception] = exceptions.Error
+
+
+def SetSessionFactory(
+    session_factory: Optional[Callable[[], requests.Session]] = None,
+) -> None:
+  """Sets the factory function used to create HTTP sessions for downloads.
+
+  Args:
+    session_factory: Callable[[], requests.Session] or None, factory returning a
+      configured requests.Session instance.
+  """
+  global _session_factory
+  _session_factory = session_factory
+
+
+def SetCredentialLoader(
+    credential_loader: Optional[Callable[[], Any]] = None,
+    credential_error_cls: Optional[Type[Exception]] = None,
+) -> None:
+  """Sets the loader function used to acquire fresh credentials on 403 retries.
+
+  Args:
+    credential_loader: Callable[[], Any] or None, function returning a
+      credential object with an apply(headers) method.
+    credential_error_cls: Type[Exception] or None, exception base class raised
+      by credential_loader when credentials cannot be loaded.
+  """
+  global _credential_loader, _credential_error_cls
+  _credential_loader = credential_loader
+  _credential_error_cls = credential_error_cls or exceptions.Error
+
+
+def _GetSession() -> requests.Session:
+  """Returns a configured requests.Session instance."""
+  if _session_factory is not None:
+    return _session_factory()
+  return requests.Session()
+
+
+def _LoadFreshCredential() -> Any:
+  """Loads fresh credentials using the configured credential loader."""
+  if _credential_loader is None:
+    raise _credential_error_cls('No credential loader is configured.')
+  return _credential_loader()
 
 
 class Error(exceptions.Error):
@@ -98,9 +149,6 @@ def MakeRequest(url, command_path):
   Returns:
     requests.Response object
   """
-  # pylint: disable=g-import-not-at-top
-  from googlecloudsdk.core.credentials import store
-  # pylint: enable=g-import-not-at-top
   if url.startswith(ComponentInstaller.GCS_BROWSER_DL_URL):
     url = url.replace(
         ComponentInstaller.GCS_BROWSER_DL_URL,
@@ -125,14 +173,14 @@ def MakeRequest(url, command_path):
     ):
       raise e
     try:
-      creds = store.LoadFreshCredential()
+      creds = _LoadFreshCredential()
       creds.apply(headers)
-    except creds_exceptions.Error as e:
+    except _credential_error_cls as err:
       # If we fail here, it is because there are no active credentials or the
       # credentials are bad.
       raise AuthenticationError(
-          'This component requires valid credentials to install.', e
-      )
+          'This component requires valid credentials to install.', err
+      ) from err
     try:
       # Retry the download using the credentials.
       return _RawRequest(url, headers=headers, timeout=timeout)
@@ -202,10 +250,7 @@ def _ExecuteRequestAndRaiseExceptions(url, headers, timeout):
   Raises:
     requests.exceptions.HTTPError in the case of a client or server error.
   """
-  # pylint: disable=g-import-not-at-top
-  from googlecloudsdk.core import requests as core_requests
-  # pylint: enable=g-import-not-at-top
-  requests_session = core_requests.GetSession()
+  requests_session = _GetSession()
   if url.startswith('file://'):
     requests_session.mount('file://', local_file_adapter.LocalFileAdapter())
   response = requests_session.get(

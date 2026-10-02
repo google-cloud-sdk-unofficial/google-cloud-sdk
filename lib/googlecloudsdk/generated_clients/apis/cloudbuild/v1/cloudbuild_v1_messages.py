@@ -819,6 +819,16 @@ class BuildOptions(_messages.Message):
       and in a build step, the variable will use the build step value. The
       elements are of the form "KEY=VALUE" for the environment variable "KEY"
       being given the value "VALUE".
+    infraServiceAccount: Optional. The Infra Service Account is used by the
+      build infrastructure to fetch specific GCP resources owned by the user,
+      such as build sources and dependencies, rather than by the build
+      workload itself. This is distinct from `Build.service_account`, which is
+      the identity the build steps run as. For Trusted Pools this is the per-
+      build Resource Access Account (RAA); if unset, the
+      `resource_access_account` configured on the pool's `TrustedPoolConfig`
+      is used. Must be of the format
+      `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. ACCOUNT can be email
+      address or uniqueId of the service account.
     logStreamingOption: Option to define build log streaming behavior to Cloud
       Storage.
     logging: Option to specify the logging mode, which determines if and where
@@ -999,19 +1009,20 @@ class BuildOptions(_messages.Message):
   dynamicSubstitutions = _messages.BooleanField(7)
   enableStructuredLogging = _messages.BooleanField(8)
   env = _messages.StringField(9, repeated=True)
-  logStreamingOption = _messages.EnumField('LogStreamingOptionValueValuesEnum', 10)
-  logging = _messages.EnumField('LoggingValueValuesEnum', 11)
-  machineType = _messages.EnumField('MachineTypeValueValuesEnum', 12)
-  pool = _messages.MessageField('PoolOption', 13)
-  pubsubTopic = _messages.StringField(14)
-  requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 15)
-  resolvedWorkerRelease = _messages.StringField(16)
-  secretEnv = _messages.StringField(17, repeated=True)
-  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 18, repeated=True)
-  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 19)
-  volumes = _messages.MessageField('Volume', 20, repeated=True)
-  workerPool = _messages.StringField(21)
-  workerRelease = _messages.StringField(22)
+  infraServiceAccount = _messages.StringField(10)
+  logStreamingOption = _messages.EnumField('LogStreamingOptionValueValuesEnum', 11)
+  logging = _messages.EnumField('LoggingValueValuesEnum', 12)
+  machineType = _messages.EnumField('MachineTypeValueValuesEnum', 13)
+  pool = _messages.MessageField('PoolOption', 14)
+  pubsubTopic = _messages.StringField(15)
+  requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 16)
+  resolvedWorkerRelease = _messages.StringField(17)
+  secretEnv = _messages.StringField(18, repeated=True)
+  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 19, repeated=True)
+  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 20)
+  volumes = _messages.MessageField('Volume', 21, repeated=True)
+  workerPool = _messages.StringField(22)
+  workerRelease = _messages.StringField(23)
 
 
 class BuildSecurityPolicy(_messages.Message):
@@ -5031,6 +5042,9 @@ class PipelineRun(_messages.Message):
     pipelineUid: Output only. The UID of the parent Pipeline at the moment the
       run started. Used for audit trails to prove which immutable version of
       the Pipeline executed.
+    serviceAccount: Output only. The service account this run executes as,
+      resolved at creation time. Copied from the parent Pipeline for managed
+      runs, or from `inline_pipeline.service_account` for inline runs.
     stages: Output only. The runtime state of each stage defined in the
       Pipeline.
     startTime: Output only. Time when the PipelineRun started executing.
@@ -5151,12 +5165,13 @@ class PipelineRun(_messages.Message):
   pipeline = _messages.StringField(9)
   pipelineInfo = _messages.MessageField('SnapshotInfo', 10)
   pipelineUid = _messages.StringField(11)
-  stages = _messages.MessageField('PipelineRunStage', 12, repeated=True)
-  startTime = _messages.StringField(13)
-  state = _messages.EnumField('StateValueValuesEnum', 14)
-  trigger = _messages.StringField(15)
-  uid = _messages.StringField(16)
-  updateTime = _messages.StringField(17)
+  serviceAccount = _messages.StringField(12)
+  stages = _messages.MessageField('PipelineRunStage', 13, repeated=True)
+  startTime = _messages.StringField(14)
+  state = _messages.EnumField('StateValueValuesEnum', 15)
+  trigger = _messages.StringField(16)
+  uid = _messages.StringField(17)
+  updateTime = _messages.StringField(18)
 
 
 class PipelineRunFailureInfo(_messages.Message):

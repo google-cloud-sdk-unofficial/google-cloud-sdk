@@ -540,7 +540,8 @@ class BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsListRequest(_messages
     r"""Optional. The view of the catalog to return.
 
     Values:
-      CATALOG_VIEW_UNSPECIFIED: Default/unset value. Same as BASIC.
+      CATALOG_VIEW_UNSPECIFIED: Default/unset value. This value is treated the
+        same as CATALOG_VIEW_BASIC.
       CATALOG_VIEW_BASIC: Include only the name and catalog type.
       CATALOG_VIEW_FULL: Include all fields of the catalog.
     """
@@ -1120,9 +1121,9 @@ class EncryptionConfig(_messages.Message):
   r"""Custom encryption configuration (e.g., Cloud KMS keys).
 
   Fields:
-    kms_key_name: Optional. Optional Cloud KMS key name for encryption of
-      resources in the catalog. Format: projects/{project}/locations/{location
-      }/keyRings/{keyRing}/cryptoKeys/{cryptoKey}
+    kms_key_name: Optional. Cloud KMS key name used to encrypt cached data
+      fetched from the catalog. Format: `projects/{project}/locations/{locatio
+      n}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}`
   """
 
   kms_key_name = _messages.StringField(1)
@@ -1252,11 +1253,24 @@ class FederatedCatalogOptions(_messages.Message):
       catalog.
 
   Fields:
+    generic_iceberg_catalog_info: Optional. Information specific to a generic
+      Iceberg REST catalog.
     glue_catalog_info: Optional. Information specific to AWS Glue Data
       Catalog.
+    identity_federation_organization_service_account: Output only. The
+      organization-level service account used for identity federation.
+    identity_federation_project_service_account: Output only. The project-
+      level service account used for identity federation.
     identity_mode: Optional. The identity mode for the federated catalog.
+    metadata_service_directory_name: Optional. The Service Directory resource
+      name used to route metadata layer traffic with the remote catalog over a
+      private network connection. Format: `projects/{project_id}/locations/{lo
+      cation_id}/namespaces/{namespace_id}/services/{service_id}` This is used
+      to retrieve catalog metadata (such as Iceberg configurations,
+      namespaces, and tables) and to fetch OAuth tokens over a private network
+      connection such as Cross-Cloud Interconnect.
     refresh_options: Optional. Refresh configuration.
-    refresh_status: Output only. The status of the background refresh
+    refresh_status: Output only. The status of the background metadata refresh
       operations.
     secret_name: Optional. The secret resource name in Secret Manager, in the
       format `projects/{project_id}/locations/{location}/secrets/{secret_id}`
@@ -1268,10 +1282,14 @@ class FederatedCatalogOptions(_messages.Message):
       ogInfo.service_principal_application_id or google.cloud.biglake.v1main.I
       cebergCatalog.FederatedCatalogOptions.SnowflakeCatalogInfo.snowflake_rol
       e is set.
-    service_directory_name: Optional. The service directory resource name for
-      routing traffic over a private network connection through Cross-Cloud
-      Interconnect, in the format `projects/{project_id}/locations/{location_i
-      d}/namespaces/{namespace_id}/services/{service_id}`.
+    service_directory_name: Optional. The Service Directory resource name used
+      to route transport layer traffic with the remote catalog (e.g. data file
+      access in storage buckets) over a private network connection. Format: `p
+      rojects/{project_id}/locations/{location_id}/namespaces/{namespace_id}/s
+      ervices/{service_id}` This is used by BigQuery queries to resolve
+      private endpoints for fetching data files (e.g., Iceberg data in S3 or
+      Azure Data Lake Storage) via a private network connection such as Cross-
+      Cloud Interconnect.
     snowflake_catalog_info: Optional. Information specific to Snowflake
       Horizon Catalog.
     unity_catalog_info: Optional. Information specific to Databricks Unity
@@ -1283,7 +1301,8 @@ class FederatedCatalogOptions(_messages.Message):
     r"""Optional. The identity mode for the federated catalog.
 
     Values:
-      IDENTITY_MODE_UNSPECIFIED: Default value. This value is unused.
+      IDENTITY_MODE_UNSPECIFIED: Default/unset value. This value is treated
+        the same as IDENTITY_MODE_SERVICE_IDENTITY.
       IDENTITY_MODE_SERVICE_IDENTITY: Queries execute using the service
         account in
         google.cloud.biglake.v1main.IcebergCatalog.biglake_service_account.
@@ -1295,15 +1314,19 @@ class FederatedCatalogOptions(_messages.Message):
     IDENTITY_MODE_SERVICE_IDENTITY = 1
     IDENTITY_MODE_USER_IDENTITY_FEDERATION = 2
 
-  glue_catalog_info = _messages.MessageField('GlueCatalogInfo', 1)
-  identity_mode = _messages.EnumField('IdentityModeValueValuesEnum', 2)
-  refresh_options = _messages.MessageField('RefreshOptions', 3)
-  refresh_status = _messages.MessageField('RefreshStatus', 4)
-  secret_name = _messages.StringField(5)
-  service_directory_name = _messages.StringField(6)
-  snowflake_catalog_info = _messages.MessageField('SnowflakeCatalogInfo', 7)
-  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 8)
-  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 9)
+  generic_iceberg_catalog_info = _messages.MessageField('GenericIcebergCatalogInfo', 1)
+  glue_catalog_info = _messages.MessageField('GlueCatalogInfo', 2)
+  identity_federation_organization_service_account = _messages.MessageField('IdentityFederationOrganizationServiceAccount', 3)
+  identity_federation_project_service_account = _messages.MessageField('IdentityFederationProjectServiceAccount', 4)
+  identity_mode = _messages.EnumField('IdentityModeValueValuesEnum', 5)
+  metadata_service_directory_name = _messages.StringField(6)
+  refresh_options = _messages.MessageField('RefreshOptions', 7)
+  refresh_status = _messages.MessageField('RefreshStatus', 8)
+  secret_name = _messages.StringField(9)
+  service_directory_name = _messages.StringField(10)
+  snowflake_catalog_info = _messages.MessageField('SnowflakeCatalogInfo', 11)
+  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 12)
+  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 13)
 
 
 class FieldSchema(_messages.Message):
@@ -1321,6 +1344,77 @@ class FieldSchema(_messages.Message):
   type = _messages.StringField(3)
 
 
+class GenericIcebergCatalogInfo(_messages.Message):
+  r"""Information specific to a generic Iceberg REST catalog.
+
+  Messages:
+    CustomHeadersValue: Optional. Custom headers to append to the request when
+      calling the remote catalog. These are appended with standard headers
+      required by the system. For example: `x-project-id: ` or `Polaris-Realm:
+      `. The following headers are used by the system and should not be
+      specified: - `User-Agent` - `Authorization` - `Accept` - `Content-Type`
+      - `If-None-Match` - `X-Iceberg-Access-Delegation` - `X-Snowflake-
+      Workload-Identity-Provider` - `X-Amz-Date` - `X-Amz-Security-Token`
+
+  Fields:
+    base_url: Required. The base URL of the Iceberg REST Catalog (e.g.,
+      `lakekeeper-url.com/catalog`). We will add prefix "https://" to the base
+      URL. Paths from the Iceberg API specification will be appended directly
+      to this URL. For example, if the URL is `lakekeeper-url.com/catalog`,
+      configuration calls will be made to `https://lakekeeper-
+      url.com/catalog/v1/config`. Apache Iceberg OpenAPI specification:
+      https://github.com/apache/iceberg/blob/main/open-api/rest-catalog-open-
+      api.yaml
+    custom_headers: Optional. Custom headers to append to the request when
+      calling the remote catalog. These are appended with standard headers
+      required by the system. For example: `x-project-id: ` or `Polaris-Realm:
+      `. The following headers are used by the system and should not be
+      specified: - `User-Agent` - `Authorization` - `Accept` - `Content-Type`
+      - `If-None-Match` - `X-Iceberg-Access-Delegation` - `X-Snowflake-
+      Workload-Identity-Provider` - `X-Amz-Date` - `X-Amz-Security-Token`
+    warehouse: Required. The warehouse name in the remote Iceberg REST
+      Catalog. This is passed as a query parameter in the config request, for
+      example: `v1/config?warehouse=`. Subsequent calls to list and get
+      namespaces/tables will use the `overrides.prefix` value returned in the
+      config response.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class CustomHeadersValue(_messages.Message):
+    r"""Optional. Custom headers to append to the request when calling the
+    remote catalog. These are appended with standard headers required by the
+    system. For example: `x-project-id: ` or `Polaris-Realm: `. The following
+    headers are used by the system and should not be specified: - `User-Agent`
+    - `Authorization` - `Accept` - `Content-Type` - `If-None-Match` -
+    `X-Iceberg-Access-Delegation` - `X-Snowflake-Workload-Identity-Provider` -
+    `X-Amz-Date` - `X-Amz-Security-Token`
+
+    Messages:
+      AdditionalProperty: An additional property for a CustomHeadersValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type CustomHeadersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a CustomHeadersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  base_url = _messages.StringField(1)
+  custom_headers = _messages.MessageField('CustomHeadersValue', 2)
+  warehouse = _messages.StringField(3)
+
+
 class GlueCatalogInfo(_messages.Message):
   r"""Information specific to AWS Glue Data Catalog. The Iceberg REST Catalog
   endpoint is of the form:
@@ -1330,15 +1424,14 @@ class GlueCatalogInfo(_messages.Message):
     aws_region: Required. Immutable. The AWS region of the AWS Glue Data
       Catalog (for example, `us-east-1`). The federated catalog's region
       should be in the same geographical location and jurisdiction as the AWS
-      region for the best performance. Must be non-empty and is immutable.
+      region for the best performance.
     aws_role_arn: Required. The Amazon Resource Name (ARN) of the AWS IAM role
       that the federated catalog assumes to access the AWS Glue Data Catalog.
     warehouse: Required. Immutable. The warehouse location in AWS Glue Data
       Catalog. For the default account catalog, use the 12-digit AWS account
       ID (for example, `111222333444`). For an Amazon S3 table bucket, use the
       format `:s3tablescatalog/` (for example,
-      `111222333444:s3tablescatalog/my-table-bucket`). Must be non-empty and
-      is immutable.
+      `111222333444:s3tablescatalog/my-table-bucket`).
   """
 
   aws_region = _messages.StringField(1)
@@ -1357,8 +1450,8 @@ class HiveCatalog(_messages.Message):
     createTime: Output only. The creation time of the catalog.
     description: Optional. Stores the catalog description. The maximum length
       is 4000 characters.
-    encryptionConfiguration: Optional. Custom encryption configuration (e.g.,
-      Cloud KMS keys).
+    encryptionConfig: Optional. Custom encryption configuration (e.g., Cloud
+      KMS keys).
     locationUri: Required. The Cloud Storage location path where the catalog
       exists. Format: gs://bucket/path/to/catalog The maximum length is 4000
       characters.
@@ -1370,20 +1463,20 @@ class HiveCatalog(_messages.Message):
 
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
-  encryptionConfiguration = _messages.MessageField('HiveCatalogEncryptionConfiguration', 3)
+  encryptionConfig = _messages.MessageField('HiveCatalogEncryptionConfig', 3)
   locationUri = _messages.StringField(4)
   name = _messages.StringField(5)
   replicas = _messages.MessageField('HiveCatalogReplica', 6, repeated=True)
   updateTime = _messages.StringField(7)
 
 
-class HiveCatalogEncryptionConfiguration(_messages.Message):
+class HiveCatalogEncryptionConfig(_messages.Message):
   r"""Custom encryption configuration (e.g., Cloud KMS keys).
 
   Fields:
-    kmsKeyName: Optional. Optional Cloud KMS key name for encryption of
-      resources in the catalog. Format: projects/{project}/locations/{location
-      }/keyRings/{keyRing}/cryptoKeys/{cryptoKey}
+    kmsKeyName: Optional. Cloud KMS key name used to encrypt cached data
+      fetched from the catalog. Format: `projects/{project}/locations/{locatio
+      n}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}`
   """
 
   kmsKeyName = _messages.StringField(1)
@@ -1613,11 +1706,12 @@ class IcebergCatalog(_messages.Message):
 
   Fields:
     biglake_service_account: Output only. The service account used for
-      credential vending, output only. Might be empty if Credential vending
-      was never enabled for the catalog. For federated catalogs, the service
-      account will be always provisioned and will be used to access the remote
-      Iceberg REST Catalog using access to Secret Manager secret or identity
-      federation.
+      credential vending, output only. Might be empty if credential vending is
+      never enabled for the catalog. For federated catalogs, the service
+      account will be always provisioned and is used to access the remote
+      catalog for background metadata refresh. If google.cloud.biglake.v1main.
+      IcebergCatalog.FederatedCatalogOptions.IdentityMode is set to
+      IDENTITY_MODE_SERVICE_IDENTITY, it will be used for queries as well.
     biglake_service_account_id: Output only. The unique ID of the service
       account. This is used for federation scenarios.
     catalog_type: Required. The catalog type. Required for
@@ -1638,8 +1732,8 @@ class IcebergCatalog(_messages.Message):
     description: Optional. A user-provided description of the catalog. The
       description must be a UTF-8 string with a maximum length of 1024
       characters.
-    encryption_config: Optional. Custom encryption configuration (e.g.,
-      Cloud KMS keys).
+    encryption_config: Optional. Custom encryption configuration (e.g., Cloud
+      KMS keys).
     federated_catalog_options: Optional. Configuration options for federated
       catalogs.
     name: Identifier. The catalog name, `projects/my-project/catalogs/my-
@@ -1668,7 +1762,7 @@ class IcebergCatalog(_messages.Message):
     CATALOG_TYPE_GCS_BUCKET to CATALOG_TYPE_BIGLAKE.
 
     Values:
-      CATALOG_TYPE_UNSPECIFIED: Default value. This value is unused.
+      CATALOG_TYPE_UNSPECIFIED: Default/unset value. This value is unused.
       CATALOG_TYPE_GCS_BUCKET: Google Cloud Storage bucket catalog type.
       CATALOG_TYPE_BIGLAKE: BigLake catalog type.
       CATALOG_TYPE_FEDERATED: Federated catalog type.
@@ -1682,20 +1776,21 @@ class IcebergCatalog(_messages.Message):
     r"""Optional. The credential mode for the catalog.
 
     Values:
-      CREDENTIAL_MODE_UNSPECIFIED: Default value. This value is unused.
-      CREDENTIAL_MODE_END_USER: End user credentials, default. The
+      CREDENTIAL_MODE_UNSPECIFIED: Default/unset value. This value is unused.
+      CREDENTIAL_MODE_END_USER: End user credentials mode, default. The
         authenticating user must have access to the catalog resources and the
-        corresponding Google Cloud Storage files.
-      CREDENTIAL_MODE_VENDED_CREDENTIALS: Use credential vending. The
-        authenticating user must have access to the catalog resources and the
+        underlying Google Cloud Storage objects.
+      CREDENTIAL_MODE_VENDED_CREDENTIALS: Credential vending mode. The
+        authenticating user only needs access to the catalog resources and the
         system will provide the caller with downscoped credentials to access
-        the Google Cloud Storage files. All table operations in this mode
-        would require `X-Iceberg-Access-Delegation` header with `vended-
-        credentials` value included. System will generate a service account
-        and the catalog administrator must grant the service account
-        appropriate permissions. See: https://github.com/apache/iceberg/blob/9
-        31865ecaf40a827f9081dddb675bf1c95c05461/open-api/rest-catalog-open-
-        api.yaml#L1854 for more details.
+        the Google Cloud Storage objects. All table operations in this mode
+        require the `X-Iceberg-Access-Delegation` header to be set as `vended-
+        credentials`. The system will generate a service account in
+        google.cloud.biglake.v1main.IcebergCatalog.biglake_service_account,
+        which the catalog administrator must grant Google Cloud Storage object
+        access to. See
+        https://docs.cloud.google.com/lakehouse/docs/credential-vending for
+        more details.
     """
     CREDENTIAL_MODE_UNSPECIFIED = 0
     CREDENTIAL_MODE_END_USER = 1
@@ -1871,6 +1966,37 @@ class IcebergNamespaceUpdate(_messages.Message):
 
   removals = _messages.StringField(1, repeated=True)
   updates = _messages.MessageField('UpdatesValue', 2)
+
+
+class IdentityFederationOrganizationServiceAccount(_messages.Message):
+  r"""The organization-level service account used for identity federation,
+  output only. Might be empty if identity federation is never enabled for the
+  catalog.
+
+  Fields:
+    service_account: Output only. Email of the organization-level service
+      account.
+    service_account_unique_id: Output only. The unique ID of the organization-
+      level service account.
+  """
+
+  service_account = _messages.StringField(1)
+  service_account_unique_id = _messages.StringField(2)
+
+
+class IdentityFederationProjectServiceAccount(_messages.Message):
+  r"""The project-level service account used for identity federation, output
+  only. Might be empty if identity federation is never enabled for the
+  catalog.
+
+  Fields:
+    service_account: Output only. Email of the project-level service account.
+    service_account_unique_id: Output only. The unique ID of the project-level
+      service account.
+  """
+
+  service_account = _messages.StringField(1)
+  service_account_unique_id = _messages.StringField(2)
 
 
 class ListHiveCatalogsResponse(_messages.Message):
@@ -2141,10 +2267,10 @@ class RefreshSchedule(_messages.Message):
 
   Fields:
     refresh_interval: Optional. The interval for refreshing metadata from the
-      remote catalog. If unset or if the value is <= 0, the background refresh
-      will be disabled. If this field is updated for an existing federated
-      catalog, the previous background refresh must complete before the new
-      refresh interval takes effect.
+      remote catalog. If unset or if the value is <= 0, the background
+      metadata refresh will be disabled. If this field is updated for an
+      existing federated catalog, the previous background metadata refresh
+      must complete before the new refresh interval will take effect.
   """
 
   refresh_interval = _messages.StringField(1)
@@ -2164,15 +2290,15 @@ class RefreshScope(_messages.Message):
 
 
 class RefreshStatus(_messages.Message):
-  r"""Remote catalog background refresh status.
+  r"""Remote catalog background metadata refresh status.
 
   Fields:
     end_time: Output only. When the catalog refresh has ended, unset for in-
       progress refreshes.
     start_time: Output only. When the catalog refresh has started, including
       in-progress refreshes.
-    status: Output only. The status of the last background refresh operation,
-      unset for in-progress refreshes.
+    status: Output only. The status of the last background metadata refresh
+      operation, unset for in-progress refreshes.
   """
 
   end_time = _messages.StringField(1)
@@ -2210,7 +2336,7 @@ class Replica(_messages.Message):
     r"""Output only. The current state of the replica.
 
     Values:
-      STATE_UNKNOWN: The replica state is unknown.
+      STATE_UNKNOWN: Default/unset value. This value is unused.
       STATE_PRIMARY: The replica is the writable primary.
       STATE_PRIMARY_IN_PROGRESS: The replica has been recently assigned as the
         primary, but not all namespaces are writeable yet.
@@ -2344,14 +2470,15 @@ class SnowflakeCatalogInfo(_messages.Message):
   `https://.snowflakecomputing.com/polaris/api/catalog/v1/config?warehouse=`.
 
   Fields:
-    account_identifier: Required. The account identifier in Snowflake. For
-      example, for the Snowflake deployment URL `https://myorg-
+    account_identifier: Required. Immutable. The account identifier in
+      Snowflake. For example, for the Snowflake deployment URL `https://myorg-
       myaccount.snowflakecomputing.com`, the account identifier is `myorg-
       myaccount`.
     snowflake_role: Optional. The Snowflake role name used to access Snowflake
       Horizon Catalog in the Workload Identity Federation (OIDC)
       authentication flow.
-    warehouse: Required. The database name in Snowflake Horizon Catalog.
+    warehouse: Required. Immutable. The database name in Snowflake Horizon
+      Catalog.
   """
 
   account_identifier = _messages.StringField(1)
@@ -2681,10 +2808,10 @@ class UnityCatalogInfo(_messages.Message):
   rest/v1/config?warehouse=`.
 
   Fields:
-    catalog_name: Required. The name of the catalog in Databricks Unity
-      Catalog.
-    instance_name: Required. The instance name of the Databricks workspace.
-      For example, for the Databricks workspace URL
+    catalog_name: Required. Immutable. The name of the catalog in Databricks
+      Unity Catalog.
+    instance_name: Required. Immutable. The instance name of the Databricks
+      workspace. For example, for the Databricks workspace URL
       `https://1.1.gcp.databricks.com`, the instance name is
       `1.1.gcp.databricks.com`.
     service_principal_application_id: Optional. The application ID of the
@@ -2740,9 +2867,9 @@ class WorkdayCatalogInfo(_messages.Message):
   `https:///datalake/api/catalog/v1/config?warehouse=workday`.
 
   Fields:
-    base_url: Required. The base URL of the Workday instance. For example,
-      `impl-services1.wd12.myworkday.com` or `wd501.myworkday.com`.
-    tenant: Required. The Workday tenant name.
+    base_url: Required. Immutable. The base URL of the Workday instance. For
+      example, `impl-services1.wd12.myworkday.com` or `wd501.myworkday.com`.
+    tenant: Required. Immutable. The Workday tenant name.
   """
 
   base_url = _messages.StringField(1)
@@ -2752,9 +2879,17 @@ class WorkdayCatalogInfo(_messages.Message):
 encoding.AddCustomJsonFieldMapping(
     EncryptionConfig, 'kms_key_name', 'kms-key-name')
 encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'generic_iceberg_catalog_info', 'generic-iceberg-catalog-info')
+encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'glue_catalog_info', 'glue-catalog-info')
 encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'identity_federation_organization_service_account', 'identity-federation-organization-service-account')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'identity_federation_project_service_account', 'identity-federation-project-service-account')
+encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'identity_mode', 'identity-mode')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'metadata_service_directory_name', 'metadata-service-directory-name')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'refresh_options', 'refresh-options')
 encoding.AddCustomJsonFieldMapping(
@@ -2769,6 +2904,10 @@ encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'unity_catalog_info', 'unity-catalog-info')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'workday_catalog_info', 'workday-catalog-info')
+encoding.AddCustomJsonFieldMapping(
+    GenericIcebergCatalogInfo, 'base_url', 'base-url')
+encoding.AddCustomJsonFieldMapping(
+    GenericIcebergCatalogInfo, 'custom_headers', 'custom-headers')
 encoding.AddCustomJsonFieldMapping(
     GlueCatalogInfo, 'aws_region', 'aws-region')
 encoding.AddCustomJsonFieldMapping(
@@ -2797,6 +2936,14 @@ encoding.AddCustomJsonFieldMapping(
     IcebergCatalog, 'storage_regions', 'storage-regions')
 encoding.AddCustomJsonFieldMapping(
     IcebergCatalog, 'update_time', 'update-time')
+encoding.AddCustomJsonFieldMapping(
+    IdentityFederationOrganizationServiceAccount, 'service_account', 'service-account')
+encoding.AddCustomJsonFieldMapping(
+    IdentityFederationOrganizationServiceAccount, 'service_account_unique_id', 'service-account-unique-id')
+encoding.AddCustomJsonFieldMapping(
+    IdentityFederationProjectServiceAccount, 'service_account', 'service-account')
+encoding.AddCustomJsonFieldMapping(
+    IdentityFederationProjectServiceAccount, 'service_account_unique_id', 'service-account-unique-id')
 encoding.AddCustomJsonFieldMapping(
     ListIcebergCatalogsResponse, 'iceberg_catalogs', 'iceberg-catalogs')
 encoding.AddCustomJsonFieldMapping(

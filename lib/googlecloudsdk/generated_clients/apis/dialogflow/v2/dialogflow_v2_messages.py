@@ -3418,6 +3418,83 @@ class DialogflowProjectsLocationsAnswerRecordsPatchRequest(_messages.Message):
   updateMask = _messages.StringField(3)
 
 
+class DialogflowProjectsLocationsCompanionAgentsCreateRequest(_messages.Message):
+  r"""A DialogflowProjectsLocationsCompanionAgentsCreateRequest object.
+
+  Fields:
+    companionAgentId: Optional. The resource ID of the companion agent to
+      create. If not provided, the server will auto-generate a resource ID.
+    googleCloudDialogflowV2CompanionAgent: A
+      GoogleCloudDialogflowV2CompanionAgent resource to be passed as the
+      request body.
+    parent: Required. Resource identifier of the project creating the
+      companion agent. Format: `projects/{project}/locations/{location}`
+  """
+
+  companionAgentId = _messages.StringField(1)
+  googleCloudDialogflowV2CompanionAgent = _messages.MessageField('GoogleCloudDialogflowV2CompanionAgent', 2)
+  parent = _messages.StringField(3, required=True)
+
+
+class DialogflowProjectsLocationsCompanionAgentsDeleteRequest(_messages.Message):
+  r"""A DialogflowProjectsLocationsCompanionAgentsDeleteRequest object.
+
+  Fields:
+    name: Required. The unique resource identifier of the CompanionAgent to
+      delete. Format: `projects/{project}/locations/{location}/companionAgents
+      /{companion_agent}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DialogflowProjectsLocationsCompanionAgentsGetRequest(_messages.Message):
+  r"""A DialogflowProjectsLocationsCompanionAgentsGetRequest object.
+
+  Fields:
+    name: Required. The unique resource identifier of the CompanionAgent to
+      get all information for. Format: `projects/{project}/locations/{location
+      }/companionAgents/{companion_agent}`. Contains the information about the
+      {project}, {location}, and {companion_agent}.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DialogflowProjectsLocationsCompanionAgentsListRequest(_messages.Message):
+  r"""A DialogflowProjectsLocationsCompanionAgentsListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of companion agents to return in a
+      single page. By default 100 and at most 1000.
+    pageToken: Optional. The page token, received from a previous call.
+    parent: Required. The parent resource name to list the companion agents
+      for. Format: `projects/{project}/locations/{location}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class DialogflowProjectsLocationsCompanionAgentsPatchRequest(_messages.Message):
+  r"""A DialogflowProjectsLocationsCompanionAgentsPatchRequest object.
+
+  Fields:
+    googleCloudDialogflowV2CompanionAgent: A
+      GoogleCloudDialogflowV2CompanionAgent resource to be passed as the
+      request body.
+    name: Identifier. The unique identifier of the companion agent. Format: `p
+      rojects/{project}/locations/{location}/companionAgents/{companion_agent}
+      `
+    updateMask: Optional. Update mask for Companion Agent.
+  """
+
+  googleCloudDialogflowV2CompanionAgent = _messages.MessageField('GoogleCloudDialogflowV2CompanionAgent', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class DialogflowProjectsLocationsConversationDatasetsCreateRequest(_messages.Message):
   r"""A DialogflowProjectsLocationsConversationDatasetsCreateRequest object.
 
@@ -10855,6 +10932,7 @@ class GoogleCloudDialogflowV2AgentAssistantFeedback(_messages.Message):
       Suggested document says: "Items must be returned/exchanged within 60
       days of the purchase date." * answer_relevance:
       AnswerRelevance.IRRELEVANT
+    companionFeedback: Optional. Feedback for companion agent.
     documentCorrectness: Optional. Whether or not the information in the
       document is correct. For example: * Query: "Can I return the package in
       2 days once received?" * Suggested document says: "Items must be
@@ -10916,11 +10994,16 @@ class GoogleCloudDialogflowV2AgentAssistantFeedback(_messages.Message):
     EFFICIENT = 2
 
   answerRelevance = _messages.EnumField('AnswerRelevanceValueValuesEnum', 1)
-  documentCorrectness = _messages.EnumField('DocumentCorrectnessValueValuesEnum', 2)
-  documentEfficiency = _messages.EnumField('DocumentEfficiencyValueValuesEnum', 3)
-  knowledgeAssistFeedback = _messages.MessageField('GoogleCloudDialogflowV2AgentAssistantFeedbackKnowledgeAssistFeedback', 4)
-  knowledgeSearchFeedback = _messages.MessageField('GoogleCloudDialogflowV2AgentAssistantFeedbackKnowledgeSearchFeedback', 5)
-  summarizationFeedback = _messages.MessageField('GoogleCloudDialogflowV2AgentAssistantFeedbackSummarizationFeedback', 6)
+  companionFeedback = _messages.MessageField('GoogleCloudDialogflowV2AgentAssistantFeedbackCompanionFeedback', 2)
+  documentCorrectness = _messages.EnumField('DocumentCorrectnessValueValuesEnum', 3)
+  documentEfficiency = _messages.EnumField('DocumentEfficiencyValueValuesEnum', 4)
+  knowledgeAssistFeedback = _messages.MessageField('GoogleCloudDialogflowV2AgentAssistantFeedbackKnowledgeAssistFeedback', 5)
+  knowledgeSearchFeedback = _messages.MessageField('GoogleCloudDialogflowV2AgentAssistantFeedbackKnowledgeSearchFeedback', 6)
+  summarizationFeedback = _messages.MessageField('GoogleCloudDialogflowV2AgentAssistantFeedbackSummarizationFeedback', 7)
+
+
+class GoogleCloudDialogflowV2AgentAssistantFeedbackCompanionFeedback(_messages.Message):
+  r"""Feedback for companion agent."""
 
 
 class GoogleCloudDialogflowV2AgentAssistantFeedbackKnowledgeAssistFeedback(_messages.Message):
@@ -11004,15 +11087,20 @@ class GoogleCloudDialogflowV2AgentAssistantRecord(_messages.Message):
 
   Fields:
     articleSuggestionAnswer: Output only. The article suggestion answer.
+    companionSuggestion: Output only. The companion suggestion.
     dialogflowAssistAnswer: Output only. Dialogflow assist answer.
     faqAnswer: Output only. The FAQ answer.
     generatorSuggestion: Output only. The generator suggestion.
+    reactiveCompanionSuggestion: Output only. The reactive companion
+      suggestion.
   """
 
   articleSuggestionAnswer = _messages.MessageField('GoogleCloudDialogflowV2ArticleAnswer', 1)
-  dialogflowAssistAnswer = _messages.MessageField('GoogleCloudDialogflowV2DialogflowAssistAnswer', 2)
-  faqAnswer = _messages.MessageField('GoogleCloudDialogflowV2FaqAnswer', 3)
-  generatorSuggestion = _messages.MessageField('GoogleCloudDialogflowV2GeneratorSuggestion', 4)
+  companionSuggestion = _messages.MessageField('GoogleCloudDialogflowV2CompanionSuggestion', 2)
+  dialogflowAssistAnswer = _messages.MessageField('GoogleCloudDialogflowV2DialogflowAssistAnswer', 3)
+  faqAnswer = _messages.MessageField('GoogleCloudDialogflowV2FaqAnswer', 4)
+  generatorSuggestion = _messages.MessageField('GoogleCloudDialogflowV2GeneratorSuggestion', 5)
+  reactiveCompanionSuggestion = _messages.MessageField('GoogleCloudDialogflowV2StreamingReactiveCompanionSuggestionsResponseReactiveModeResponse', 6)
 
 
 class GoogleCloudDialogflowV2AgentCoachingContext(_messages.Message):
@@ -11988,6 +12076,156 @@ class GoogleCloudDialogflowV2ClearSuggestionFeatureConfigRequest(_messages.Messa
 
   participantRole = _messages.EnumField('ParticipantRoleValueValuesEnum', 1)
   suggestionFeatureType = _messages.EnumField('SuggestionFeatureTypeValueValuesEnum', 2)
+
+
+class GoogleCloudDialogflowV2CompanionAgent(_messages.Message):
+  r"""Companion agent.
+
+  Fields:
+    cesToolSpecs: Optional. List of CES tool specs that the companion agent
+      can choose from.
+    createTime: Output only. Creation time of this companion agent.
+    description: Optional. Description for the companion agent.
+    displayName: Optional. Display name for the companion agent. Character
+      limit is 63.
+    name: Identifier. The unique identifier of the companion agent. Format: `p
+      rojects/{project}/locations/{location}/companionAgents/{companion_agent}
+      `
+    skillConfigs: Optional. List of skill configs for the companion agent.
+      Allows at most one instance of each SkillConfig type.
+    toolsetTools: Optional. List of CES toolset specs that the companion agent
+      can choose from.
+    updateTime: Output only. Update time of this companion agent.
+  """
+
+  cesToolSpecs = _messages.MessageField('GoogleCloudDialogflowV2CesToolSpec', 1, repeated=True)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  name = _messages.StringField(5)
+  skillConfigs = _messages.MessageField('GoogleCloudDialogflowV2CompanionAgentSkillConfig', 6, repeated=True)
+  toolsetTools = _messages.MessageField('GoogleCloudDialogflowV2ToolsetTool', 7, repeated=True)
+  updateTime = _messages.StringField(8)
+
+
+class GoogleCloudDialogflowV2CompanionAgentGuidanceSkillConfig(_messages.Message):
+  r"""Guidance skill configuration.
+
+  Fields:
+    guidanceInstructions: Optional. Customized instructions for guidance.
+    knowledgeSource: Optional. Knowledge source configuration for guidance.
+    overarchingGuidance: Optional. This is specific additional guidance that
+      can configured by the user.
+  """
+
+  guidanceInstructions = _messages.MessageField('GoogleCloudDialogflowV2GuidanceInstruction', 1, repeated=True)
+  knowledgeSource = _messages.MessageField('GoogleCloudDialogflowV2CompanionAgentKnowledgeSource', 2)
+  overarchingGuidance = _messages.StringField(3)
+
+
+class GoogleCloudDialogflowV2CompanionAgentKnowledgeSource(_messages.Message):
+  r"""Knowledge source configuration for knowledge retrieval."""
+
+
+class GoogleCloudDialogflowV2CompanionAgentSkillConfig(_messages.Message):
+  r"""Skill configuration for the companion agent.
+
+  Enums:
+    SkillTriggeringEventValueValuesEnum: Optional. The event that should
+      trigger the skill.
+
+  Fields:
+    guidanceSkillConfig: Optional. Guidance skill configuration.
+    skillTriggeringEvent: Optional. The event that should trigger the skill.
+    translationSkillConfig: Optional. Translation skill configuration.
+  """
+
+  class SkillTriggeringEventValueValuesEnum(_messages.Enum):
+    r"""Optional. The event that should trigger the skill.
+
+    Values:
+      SKILL_TRIGGER_EVENT_UNSPECIFIED: Default value for SkillTriggerEvent.
+      END_OF_UTTERANCE: Triggers when each chat message or voice utterance
+        ends.
+      CUSTOMER_MESSAGE: Triggers after each customer message.
+      AGENT_MESSAGE: Triggers after each agent message.
+    """
+    SKILL_TRIGGER_EVENT_UNSPECIFIED = 0
+    END_OF_UTTERANCE = 1
+    CUSTOMER_MESSAGE = 2
+    AGENT_MESSAGE = 3
+
+  guidanceSkillConfig = _messages.MessageField('GoogleCloudDialogflowV2CompanionAgentGuidanceSkillConfig', 1)
+  skillTriggeringEvent = _messages.EnumField('SkillTriggeringEventValueValuesEnum', 2)
+  translationSkillConfig = _messages.MessageField('GoogleCloudDialogflowV2CompanionAgentTranslationSkillConfig', 3)
+
+
+class GoogleCloudDialogflowV2CompanionAgentTranslationSkillConfig(_messages.Message):
+  r"""Translation skill configuration for the companion agent.
+
+  Fields:
+    agentLanguageCode: Optional. Target language code for the agent, in IETF
+      BCP-47 format (e.g., "en-US").
+    customerLanguageCode: Optional. Target language code for the customer, in
+      IETF BCP-47 format (e.g., "es").
+  """
+
+  agentLanguageCode = _messages.StringField(1)
+  customerLanguageCode = _messages.StringField(2)
+
+
+class GoogleCloudDialogflowV2CompanionSuggestion(_messages.Message):
+  r"""Represents a companion suggestion answer.
+
+  Fields:
+    guidances: List of guidances generated by the Companion Agent.
+  """
+
+  guidances = _messages.MessageField('GoogleCloudDialogflowV2CompanionSuggestionGuidance', 1, repeated=True)
+
+
+class GoogleCloudDialogflowV2CompanionSuggestionGuidance(_messages.Message):
+  r"""Represents guidance for companion suggestion.
+
+  Fields:
+    explanation: Optional. A brief explanation of why the action is suggested.
+    groundingMetadata: Optional. Grounding metadata for the generated
+      guidance.
+    instructionSource: Guidance instruction source.
+    knowledgeSources: Knowledge sources.
+    suggestedAction: Suggested action to human agent. For example, "Ask the
+      customer for their shipping address" or "Create a new case for the
+      customer".
+    suggestedReply: Suggested reply for the agent to respond to the customer.
+    toolCalls: Optional. Rich structured tool calls and their associated
+      citations delivered directly as suggestions.
+    triggeringToolCallAnswerRecords: Optional. The AnswerRecords of the tool
+      calls that triggered this guidance. Format:
+      `projects//locations//answerRecords/`.
+  """
+
+  explanation = _messages.StringField(1)
+  groundingMetadata = _messages.MessageField('GoogleCloudDialogflowV2GroundingMetadata', 2)
+  instructionSource = _messages.MessageField('GoogleCloudDialogflowV2GuidanceInstruction', 3)
+  knowledgeSources = _messages.MessageField('GoogleCloudDialogflowV2CompanionSuggestionGuidanceKnowledgeSource', 4, repeated=True)
+  suggestedAction = _messages.StringField(5)
+  suggestedReply = _messages.StringField(6)
+  toolCalls = _messages.MessageField('GoogleCloudDialogflowV2ToolCallSuggestion', 7, repeated=True)
+  triggeringToolCallAnswerRecords = _messages.StringField(8, repeated=True)
+
+
+class GoogleCloudDialogflowV2CompanionSuggestionGuidanceKnowledgeSource(_messages.Message):
+  r"""Represents a knowledge source for the guidance.
+
+  Fields:
+    knowledgeArticleTitle: Knowledge article title.
+    knowledgeArticleUrl: URL of the knowledge article.
+    knowledgeSnippet: Knowledge snippet.
+  """
+
+  knowledgeArticleTitle = _messages.StringField(1)
+  knowledgeArticleUrl = _messages.StringField(2)
+  knowledgeSnippet = _messages.StringField(3)
 
 
 class GoogleCloudDialogflowV2CompleteConversationRequest(_messages.Message):
@@ -13860,6 +14098,26 @@ class GoogleCloudDialogflowV2GcsSources(_messages.Message):
   uris = _messages.StringField(1, repeated=True)
 
 
+class GoogleCloudDialogflowV2GenerateCompanionSuggestionsResponse(_messages.Message):
+  r"""Represents the response message for GenerateCompanionSuggestions.
+
+  Fields:
+    answerRecord: Answer record that uniquely identifies the suggestion.
+      Format: `projects//locations//answerRecords/`.
+    companionSuggestion: Contains the core suggestion generated by the
+      Companion Agent.
+    latestMessage: The name of the latest conversation message used to compile
+      suggestion for. Format: `projects//locations//conversations//messages/`.
+    suggestionIndex: Output only. The 1-based sequential index of the
+      suggestion generated in this session.
+  """
+
+  answerRecord = _messages.StringField(1)
+  companionSuggestion = _messages.MessageField('GoogleCloudDialogflowV2CompanionSuggestion', 2)
+  latestMessage = _messages.StringField(3)
+  suggestionIndex = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
 class GoogleCloudDialogflowV2GenerateStatelessSuggestionRequest(_messages.Message):
   r"""The request message for Conversations.GenerateStatelessSuggestion.
 
@@ -14416,6 +14674,159 @@ class GoogleCloudDialogflowV2GeneratorSuggestionToolCallInfo(_messages.Message):
   toolCallResult = _messages.MessageField('GoogleCloudDialogflowV2ToolCallResult', 2)
 
 
+class GoogleCloudDialogflowV2GroundingChunk(_messages.Message):
+  r"""A piece of evidence that supports a claim made by the model. This is
+  used to show a citation for a claim made by the model. It contains a
+  reference to the source of the information.
+
+  Fields:
+    retrievedContext: Optional. A grounding chunk from a data source retrieved
+      by a data store tool.
+    web: Optional. A grounding chunk from a web page, typically from web
+      search. See the `Web` message for details.
+  """
+
+  retrievedContext = _messages.MessageField('GoogleCloudDialogflowV2GroundingChunkRetrievedContext', 1)
+  web = _messages.MessageField('GoogleCloudDialogflowV2GroundingChunkWeb', 2)
+
+
+class GoogleCloudDialogflowV2GroundingChunkRetrievedContext(_messages.Message):
+  r"""Context retrieved from a data source to ground the model's response.
+  This is used when a retrieval tool fetches information from a user-provided
+  corpus or a public dataset.
+
+  Fields:
+    text: Output only. The content of the retrieved data source.
+    title: Output only. The title of the retrieved data source.
+    uri: Output only. The URI of the retrieved data source.
+  """
+
+  text = _messages.StringField(1)
+  title = _messages.StringField(2)
+  uri = _messages.StringField(3)
+
+
+class GoogleCloudDialogflowV2GroundingChunkWeb(_messages.Message):
+  r"""A `Web` chunk is a piece of evidence that comes from a web page. It
+  contains the URI of the web page, the title of the page, and the domain of
+  the page. This is used to provide the user with a link to the source of the
+  information.
+
+  Fields:
+    domain: Output only. The domain of the web page that contains the
+      evidence. This can be used to filter out low-quality sources.
+    title: Output only. The title of the web page that contains the evidence.
+    uri: Output only. The URI of the web page that contains the evidence.
+  """
+
+  domain = _messages.StringField(1)
+  title = _messages.StringField(2)
+  uri = _messages.StringField(3)
+
+
+class GoogleCloudDialogflowV2GroundingMetadata(_messages.Message):
+  r"""Grounding metadata contains sources, citations, and search entry points
+  used to ground a generated answer or suggestion.
+
+  Fields:
+    groundingChunks: Optional. A list of supporting references retrieved from
+      the grounding source.
+    groundingSupports: Optional. A list of grounding supports that connect the
+      generated content to the grounding chunks.
+    searchEntryPoint: Optional. A web search entry point that can be used to
+      display search results.
+    webSearchQueries: Optional. The web search queries that were used to
+      generate the content.
+  """
+
+  groundingChunks = _messages.MessageField('GoogleCloudDialogflowV2GroundingChunk', 1, repeated=True)
+  groundingSupports = _messages.MessageField('GoogleCloudDialogflowV2GroundingSupport', 2, repeated=True)
+  searchEntryPoint = _messages.MessageField('GoogleCloudDialogflowV2SearchEntryPoint', 3)
+  webSearchQueries = _messages.StringField(4, repeated=True)
+
+
+class GoogleCloudDialogflowV2GroundingSupport(_messages.Message):
+  r"""A collection of supporting references for a segment or part of the
+  model's response.
+
+  Fields:
+    groundingChunkIndices: Optional. A list of indices into `grounding_chunks`
+      field specifying the citations associated with the claim. For instance
+      [1, 3] means that grounding_chunks[1] and grounding_chunks[3] are the
+      retrieved contents attributed to the claim.
+    segment: Optional. Segment of the content this support belongs to.
+  """
+
+  groundingChunkIndices = _messages.IntegerField(1, repeated=True, variant=_messages.Variant.INT32)
+  segment = _messages.MessageField('GoogleCloudDialogflowV2Segment', 2)
+
+
+class GoogleCloudDialogflowV2GuidanceInstruction(_messages.Message):
+  r"""Guidance instruction for the companion agent.
+
+  Enums:
+    TriggerEventValueValuesEnum: Optional. Event that triggers the guidance
+      instruction. If UNSPECIFIED, the instruction triggering will be the same
+      as the skill's skill_triggering_event.
+
+  Fields:
+    actions: Optional. The action items that can be processed.
+    condition: Optional. The condition of the instruction. For example, "the
+      customer wants to cancel an order". If the users want the instruction to
+      be triggered unconditionally, the condition can be empty.
+    disableSuggestedReply: Optional. Whether to disable suggested reply
+      generation for this instruction. When set to `true`, guidance generated
+      from this instruction will not include a suggested reply. Default is
+      `false` (suggested reply enabled).
+    displayDetails: Optional. The detailed description of this instruction.
+    displayName: Optional. Display name for the instruction. This name should
+      be unique within the companion agent.
+    triggerEvent: Optional. Event that triggers the guidance instruction. If
+      UNSPECIFIED, the instruction triggering will be the same as the skill's
+      skill_triggering_event.
+  """
+
+  class TriggerEventValueValuesEnum(_messages.Enum):
+    r"""Optional. Event that triggers the guidance instruction. If
+    UNSPECIFIED, the instruction triggering will be the same as the skill's
+    skill_triggering_event.
+
+    Values:
+      TRIGGER_EVENT_UNSPECIFIED: Default value for TriggerEvent. For
+        skill_triggering_event, UNSPECIFIED defaults to CUSTOMER_MESSAGE. For
+        instruction trigger_event, UNSPECIFIED defaults to the skill's
+        skill_triggering_event.
+      END_OF_UTTERANCE: Triggers when each chat message or voice utterance
+        ends.
+      CUSTOMER_MESSAGE: Triggers after each customer message.
+      AGENT_MESSAGE: Triggers after each agent message.
+    """
+    TRIGGER_EVENT_UNSPECIFIED = 0
+    END_OF_UTTERANCE = 1
+    CUSTOMER_MESSAGE = 2
+    AGENT_MESSAGE = 3
+
+  actions = _messages.MessageField('GoogleCloudDialogflowV2GuidanceInstructionAction', 1, repeated=True)
+  condition = _messages.StringField(2)
+  disableSuggestedReply = _messages.BooleanField(3)
+  displayDetails = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  triggerEvent = _messages.EnumField('TriggerEventValueValuesEnum', 6)
+
+
+class GoogleCloudDialogflowV2GuidanceInstructionAction(_messages.Message):
+  r"""Actions to take, including agent action and system action (automation).
+
+  Fields:
+    description: Required. Description of action item. It can be a agent
+      action (e.g. "Send a message to the customer", "greet the customer") or
+      system action (e.g. "Update the ticket", "Create a task", "cancel the
+      order").
+  """
+
+  description = _messages.StringField(1)
+
+
 class GoogleCloudDialogflowV2HumanAgentAssistantConfig(_messages.Message):
   r"""Defines the Human Agent Assist to connect to a conversation.
 
@@ -14517,6 +14928,10 @@ class GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionConfig(_messages
   r"""Detail human agent assistant config.
 
   Fields:
+    companionAgent: Optional. The resource name of the companion agent to
+      link. This is only supported for `human_agent_suggestion_config`.
+      Format: `projects/{project}/locations/{location}/companionAgents/{compan
+      ion_agent}`
     disableHighLatencyFeaturesSyncDelivery: Optional. When
       disable_high_latency_features_sync_delivery is true and using the
       AnalyzeContent API, we will not deliver the responses from high latency
@@ -14525,8 +14940,9 @@ class GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionConfig(_messages
       enable_event_based_suggestion must be set to true to receive the
       responses from high latency features in Pub/Sub. High latency
       feature(s): KNOWLEDGE_ASSIST
-    enableAsyncToolCall: Optional. If true, enable asynchronous execution of
-      tools.
+    enableAsyncToolCall: Optional. Deprecated: This field is not consulted for
+      tool execution. Configure asynchronous execution per tool using
+      CesToolSpec.async_execution or ToolsetTool.async_execution instead.
     featureConfigs: Configuration of different suggestion features. One
       feature can have only one config.
     generators: Optional. List of various generator resource names used in the
@@ -14550,13 +14966,14 @@ class GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionConfig(_messages
       ingested context (Supported features: All Agent Assist features)
   """
 
-  disableHighLatencyFeaturesSyncDelivery = _messages.BooleanField(1)
-  enableAsyncToolCall = _messages.BooleanField(2)
-  featureConfigs = _messages.MessageField('GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionFeatureConfig', 3, repeated=True)
-  generators = _messages.StringField(4, repeated=True)
-  groupSuggestionResponses = _messages.BooleanField(5)
-  skipEmptyEventBasedSuggestion = _messages.BooleanField(6)
-  useUnredactedConversationData = _messages.BooleanField(7)
+  companionAgent = _messages.StringField(1)
+  disableHighLatencyFeaturesSyncDelivery = _messages.BooleanField(2)
+  enableAsyncToolCall = _messages.BooleanField(3)
+  featureConfigs = _messages.MessageField('GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionFeatureConfig', 4, repeated=True)
+  generators = _messages.StringField(5, repeated=True)
+  groupSuggestionResponses = _messages.BooleanField(6)
+  skipEmptyEventBasedSuggestion = _messages.BooleanField(7)
+  useUnredactedConversationData = _messages.BooleanField(8)
 
 
 class GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionFeatureConfig(_messages.Message):
@@ -16766,6 +17183,19 @@ class GoogleCloudDialogflowV2ListAnswerRecordsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class GoogleCloudDialogflowV2ListCompanionAgentsResponse(_messages.Message):
+  r"""Response message for ListCompanionAgents.
+
+  Fields:
+    companionAgents: The list of companion agents.
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results in the list.
+  """
+
+  companionAgents = _messages.MessageField('GoogleCloudDialogflowV2CompanionAgent', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class GoogleCloudDialogflowV2ListContextsResponse(_messages.Message):
   r"""The response message for Contexts.ListContexts.
 
@@ -17947,6 +18377,18 @@ class GoogleCloudDialogflowV2SearchAgentsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class GoogleCloudDialogflowV2SearchEntryPoint(_messages.Message):
+  r"""A web search entry point that can be used to display search results.
+
+  Fields:
+    renderedContent: Optional. An HTML snippet that can be embedded in a web
+      page or an application's webview. This snippet displays a search result,
+      including the title, URL, and a brief description of the search result.
+  """
+
+  renderedContent = _messages.StringField(1)
+
+
 class GoogleCloudDialogflowV2SearchKnowledgeAnswer(_messages.Message):
   r"""Represents a SearchKnowledge answer.
 
@@ -18435,6 +18877,24 @@ class GoogleCloudDialogflowV2SearchKnowledgeResponse(_messages.Message):
   answers = _messages.MessageField('GoogleCloudDialogflowV2SearchKnowledgeAnswer', 1, repeated=True)
   rewrittenQuery = _messages.StringField(2)
   searchKnowledgeDebugInfo = _messages.MessageField('GoogleCloudDialogflowV2SearchKnowledgeDebugInfo', 3)
+
+
+class GoogleCloudDialogflowV2Segment(_messages.Message):
+  r"""A segment of the content.
+
+  Fields:
+    endIndex: Output only. The end index of the segment, measured in bytes.
+      This marks the end of the segment and is exclusive, meaning the segment
+      includes content up to, but not including, the byte at this index.
+    startIndex: Output only. The start index of the segment, measured in
+      bytes. This marks the beginning of the segment and is inclusive, meaning
+      the byte at this index is the first byte of the segment.
+    text: Output only. The text of the segment.
+  """
+
+  endIndex = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  startIndex = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  text = _messages.StringField(3)
 
 
 class GoogleCloudDialogflowV2Sentiment(_messages.Message):
@@ -19169,6 +19629,27 @@ class GoogleCloudDialogflowV2SpeechWordInfo(_messages.Message):
   word = _messages.StringField(4)
 
 
+class GoogleCloudDialogflowV2StreamingReactiveCompanionSuggestionsResponseReactiveModeResponse(_messages.Message):
+  r"""The complete response generated by the reactive mode capturing the
+  entire accumulated streaming response, grounding metadata, and tool calls.
+
+  Fields:
+    groundingMetadata: Optional. Grounding metadata for the generated
+      response.
+    response: Optional. The full reactive suggestion generated by the
+      Companion Agent. After the last streaming chunk is sent, this is the
+      final response concatenating all the streaming response chunks together
+      to represent the full reactive suggestion.
+    toolCalls: Optional. Captures all the rich structured tool calls and their
+      associated citations used by the reactive agent to generate the reactive
+      suggestion.
+  """
+
+  groundingMetadata = _messages.MessageField('GoogleCloudDialogflowV2GroundingMetadata', 1)
+  response = _messages.StringField(2)
+  toolCalls = _messages.MessageField('GoogleCloudDialogflowV2ToolCallSuggestion', 3, repeated=True)
+
+
 class GoogleCloudDialogflowV2StreamingRecognitionResult(_messages.Message):
   r"""Contains a speech recognition result corresponding to a portion of the
   audio that is currently being processed or an indication that this is the
@@ -19657,6 +20138,8 @@ class GoogleCloudDialogflowV2SuggestionResult(_messages.Message):
 
   Fields:
     error: Error status if the request failed.
+    generateCompanionSuggestionsResponse: Suggestions generated by companion
+      agent.
     generateSuggestionsResponse: Suggestions generated using generators
       triggered by customer or agent messages.
     suggestArticlesResponse: SuggestArticlesResponse if request is for
@@ -19670,11 +20153,12 @@ class GoogleCloudDialogflowV2SuggestionResult(_messages.Message):
   """
 
   error = _messages.MessageField('GoogleRpcStatus', 1)
-  generateSuggestionsResponse = _messages.MessageField('GoogleCloudDialogflowV2GenerateSuggestionsResponse', 2)
-  suggestArticlesResponse = _messages.MessageField('GoogleCloudDialogflowV2SuggestArticlesResponse', 3)
-  suggestFaqAnswersResponse = _messages.MessageField('GoogleCloudDialogflowV2SuggestFaqAnswersResponse', 4)
-  suggestKnowledgeAssistResponse = _messages.MessageField('GoogleCloudDialogflowV2SuggestKnowledgeAssistResponse', 5)
-  suggestSmartRepliesResponse = _messages.MessageField('GoogleCloudDialogflowV2SuggestSmartRepliesResponse', 6)
+  generateCompanionSuggestionsResponse = _messages.MessageField('GoogleCloudDialogflowV2GenerateCompanionSuggestionsResponse', 2)
+  generateSuggestionsResponse = _messages.MessageField('GoogleCloudDialogflowV2GenerateSuggestionsResponse', 3)
+  suggestArticlesResponse = _messages.MessageField('GoogleCloudDialogflowV2SuggestArticlesResponse', 4)
+  suggestFaqAnswersResponse = _messages.MessageField('GoogleCloudDialogflowV2SuggestFaqAnswersResponse', 5)
+  suggestKnowledgeAssistResponse = _messages.MessageField('GoogleCloudDialogflowV2SuggestKnowledgeAssistResponse', 6)
+  suggestSmartRepliesResponse = _messages.MessageField('GoogleCloudDialogflowV2SuggestSmartRepliesResponse', 7)
 
 
 class GoogleCloudDialogflowV2SummarizationContext(_messages.Message):
@@ -20535,6 +21019,23 @@ class GoogleCloudDialogflowV2ToolCallResultError(_messages.Message):
 
   message = _messages.StringField(1)
   retryable = _messages.BooleanField(2)
+
+
+class GoogleCloudDialogflowV2ToolCallSuggestion(_messages.Message):
+  r"""Structured wrapper that pairs tool execution details with strongly-typed
+  citations.
+
+  Fields:
+    textUpdate: Optional. The conversational text update generated by the
+      agent accompanying this tool call (e.g. "The status of your order 12345
+      is currently being retrieved..."). This is a status update emitted
+      alongside in-flight tool execution and is not accumulated into the final
+      response.
+    toolCallInfo: Optional. Tool execution request/response details.
+  """
+
+  textUpdate = _messages.StringField(1)
+  toolCallInfo = _messages.MessageField('GoogleCloudDialogflowV2GeneratorSuggestionToolCallInfo', 2)
 
 
 class GoogleCloudDialogflowV2ToolConnectorTool(_messages.Message):
@@ -21446,6 +21947,60 @@ class GoogleCloudDialogflowV2beta1ClearSuggestionFeatureConfigOperationMetadata(
   suggestionFeatureType = _messages.EnumField('SuggestionFeatureTypeValueValuesEnum', 4)
 
 
+class GoogleCloudDialogflowV2beta1CompanionSuggestion(_messages.Message):
+  r"""Represents a companion suggestion answer.
+
+  Fields:
+    guidances: List of guidances generated by the Companion Agent.
+  """
+
+  guidances = _messages.MessageField('GoogleCloudDialogflowV2beta1CompanionSuggestionGuidance', 1, repeated=True)
+
+
+class GoogleCloudDialogflowV2beta1CompanionSuggestionGuidance(_messages.Message):
+  r"""Represents guidance for companion suggestion.
+
+  Fields:
+    explanation: Optional. A brief explanation of why the action is suggested.
+    groundingMetadata: Optional. Grounding metadata for the generated
+      guidance.
+    instructionSource: Guidance instruction source.
+    knowledgeSources: Knowledge sources.
+    suggestedAction: Suggested action to human agent. For example, "Ask the
+      customer for their shipping address" or "Create a new case for the
+      customer".
+    suggestedReply: Suggested reply for the agent to respond to the customer.
+    toolCalls: Optional. Rich structured tool calls and their associated
+      citations delivered directly as suggestions.
+    triggeringToolCallAnswerRecords: Optional. The AnswerRecords of the tool
+      calls that triggered this guidance. Format:
+      `projects//locations//answerRecords/`.
+  """
+
+  explanation = _messages.StringField(1)
+  groundingMetadata = _messages.MessageField('GoogleCloudDialogflowV2beta1GroundingMetadata', 2)
+  instructionSource = _messages.MessageField('GoogleCloudDialogflowV2beta1GuidanceInstruction', 3)
+  knowledgeSources = _messages.MessageField('GoogleCloudDialogflowV2beta1CompanionSuggestionGuidanceKnowledgeSource', 4, repeated=True)
+  suggestedAction = _messages.StringField(5)
+  suggestedReply = _messages.StringField(6)
+  toolCalls = _messages.MessageField('GoogleCloudDialogflowV2beta1ToolCallSuggestion', 7, repeated=True)
+  triggeringToolCallAnswerRecords = _messages.StringField(8, repeated=True)
+
+
+class GoogleCloudDialogflowV2beta1CompanionSuggestionGuidanceKnowledgeSource(_messages.Message):
+  r"""Represents a knowledge source for the guidance.
+
+  Fields:
+    knowledgeArticleTitle: Knowledge article title.
+    knowledgeArticleUrl: URL of the knowledge article.
+    knowledgeSnippet: Knowledge snippet.
+  """
+
+  knowledgeArticleTitle = _messages.StringField(1)
+  knowledgeArticleUrl = _messages.StringField(2)
+  knowledgeSnippet = _messages.StringField(3)
+
+
 class GoogleCloudDialogflowV2beta1Context(_messages.Message):
   r"""Dialogflow contexts are similar to natural language context. If a person
   says to you "they are orange", you need context in order to understand what
@@ -21899,6 +22454,26 @@ class GoogleCloudDialogflowV2beta1GcsDestination(_messages.Message):
   uri = _messages.StringField(1)
 
 
+class GoogleCloudDialogflowV2beta1GenerateCompanionSuggestionsResponse(_messages.Message):
+  r"""Represents the response message for GenerateCompanionSuggestions.
+
+  Fields:
+    answerRecord: Answer record that uniquely identifies the suggestion.
+      Format: `projects//locations//answerRecords/`.
+    companionSuggestion: Contains the core suggestion generated by the
+      Companion Agent.
+    latestMessage: The name of the latest conversation message used to compile
+      suggestion for. Format: `projects//locations//conversations//messages/`.
+    suggestionIndex: Output only. The 1-based sequential index of the
+      suggestion generated in this session.
+  """
+
+  answerRecord = _messages.StringField(1)
+  companionSuggestion = _messages.MessageField('GoogleCloudDialogflowV2beta1CompanionSuggestion', 2)
+  latestMessage = _messages.StringField(3)
+  suggestionIndex = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
 class GoogleCloudDialogflowV2beta1GenerateSuggestionsResponse(_messages.Message):
   r"""The response message for Conversations.GenerateSuggestions.
 
@@ -21957,6 +22532,159 @@ class GoogleCloudDialogflowV2beta1GeneratorSuggestionToolCallInfo(_messages.Mess
 
   toolCall = _messages.MessageField('GoogleCloudDialogflowV2beta1ToolCall', 1)
   toolCallResult = _messages.MessageField('GoogleCloudDialogflowV2beta1ToolCallResult', 2)
+
+
+class GoogleCloudDialogflowV2beta1GroundingChunk(_messages.Message):
+  r"""A piece of evidence that supports a claim made by the model. This is
+  used to show a citation for a claim made by the model. It contains a
+  reference to the source of the information.
+
+  Fields:
+    retrievedContext: Optional. A grounding chunk from a data source retrieved
+      by a data store tool.
+    web: Optional. A grounding chunk from a web page, typically from web
+      search. See the `Web` message for details.
+  """
+
+  retrievedContext = _messages.MessageField('GoogleCloudDialogflowV2beta1GroundingChunkRetrievedContext', 1)
+  web = _messages.MessageField('GoogleCloudDialogflowV2beta1GroundingChunkWeb', 2)
+
+
+class GoogleCloudDialogflowV2beta1GroundingChunkRetrievedContext(_messages.Message):
+  r"""Context retrieved from a data source to ground the model's response.
+  This is used when a retrieval tool fetches information from a user-provided
+  corpus or a public dataset.
+
+  Fields:
+    text: Output only. The content of the retrieved data source.
+    title: Output only. The title of the retrieved data source.
+    uri: Output only. The URI of the retrieved data source.
+  """
+
+  text = _messages.StringField(1)
+  title = _messages.StringField(2)
+  uri = _messages.StringField(3)
+
+
+class GoogleCloudDialogflowV2beta1GroundingChunkWeb(_messages.Message):
+  r"""A `Web` chunk is a piece of evidence that comes from a web page. It
+  contains the URI of the web page, the title of the page, and the domain of
+  the page. This is used to provide the user with a link to the source of the
+  information.
+
+  Fields:
+    domain: Output only. The domain of the web page that contains the
+      evidence. This can be used to filter out low-quality sources.
+    title: Output only. The title of the web page that contains the evidence.
+    uri: Output only. The URI of the web page that contains the evidence.
+  """
+
+  domain = _messages.StringField(1)
+  title = _messages.StringField(2)
+  uri = _messages.StringField(3)
+
+
+class GoogleCloudDialogflowV2beta1GroundingMetadata(_messages.Message):
+  r"""Grounding metadata contains sources, citations, and search entry points
+  used to ground a generated answer or suggestion.
+
+  Fields:
+    groundingChunks: Optional. A list of supporting references retrieved from
+      the grounding source.
+    groundingSupports: Optional. A list of grounding supports that connect the
+      generated content to the grounding chunks.
+    searchEntryPoint: Optional. A web search entry point that can be used to
+      display search results.
+    webSearchQueries: Optional. The web search queries that were used to
+      generate the content.
+  """
+
+  groundingChunks = _messages.MessageField('GoogleCloudDialogflowV2beta1GroundingChunk', 1, repeated=True)
+  groundingSupports = _messages.MessageField('GoogleCloudDialogflowV2beta1GroundingSupport', 2, repeated=True)
+  searchEntryPoint = _messages.MessageField('GoogleCloudDialogflowV2beta1SearchEntryPoint', 3)
+  webSearchQueries = _messages.StringField(4, repeated=True)
+
+
+class GoogleCloudDialogflowV2beta1GroundingSupport(_messages.Message):
+  r"""A collection of supporting references for a segment or part of the
+  model's response.
+
+  Fields:
+    groundingChunkIndices: Optional. A list of indices into `grounding_chunks`
+      field specifying the citations associated with the claim. For instance
+      [1, 3] means that grounding_chunks[1] and grounding_chunks[3] are the
+      retrieved contents attributed to the claim.
+    segment: Optional. Segment of the content this support belongs to.
+  """
+
+  groundingChunkIndices = _messages.IntegerField(1, repeated=True, variant=_messages.Variant.INT32)
+  segment = _messages.MessageField('GoogleCloudDialogflowV2beta1Segment', 2)
+
+
+class GoogleCloudDialogflowV2beta1GuidanceInstruction(_messages.Message):
+  r"""Guidance instruction for the companion agent.
+
+  Enums:
+    TriggerEventValueValuesEnum: Optional. Event that triggers the guidance
+      instruction. If UNSPECIFIED, the instruction triggering will be the same
+      as the skill's skill_triggering_event.
+
+  Fields:
+    actions: Optional. The action items that can be processed.
+    condition: Optional. The condition of the instruction. For example, "the
+      customer wants to cancel an order". If the users want the instruction to
+      be triggered unconditionally, the condition can be empty.
+    disableSuggestedReply: Optional. Whether to disable suggested reply
+      generation for this instruction. When set to `true`, guidance generated
+      from this instruction will not include a suggested reply. Default is
+      `false` (suggested reply enabled).
+    displayDetails: Optional. The detailed description of this instruction.
+    displayName: Optional. Display name for the instruction. This name should
+      be unique within the companion agent.
+    triggerEvent: Optional. Event that triggers the guidance instruction. If
+      UNSPECIFIED, the instruction triggering will be the same as the skill's
+      skill_triggering_event.
+  """
+
+  class TriggerEventValueValuesEnum(_messages.Enum):
+    r"""Optional. Event that triggers the guidance instruction. If
+    UNSPECIFIED, the instruction triggering will be the same as the skill's
+    skill_triggering_event.
+
+    Values:
+      TRIGGER_EVENT_UNSPECIFIED: Default value for TriggerEvent. For
+        skill_triggering_event, UNSPECIFIED defaults to CUSTOMER_MESSAGE. For
+        instruction trigger_event, UNSPECIFIED defaults to the skill's
+        skill_triggering_event.
+      END_OF_UTTERANCE: Triggers when each chat message or voice utterance
+        ends.
+      CUSTOMER_MESSAGE: Triggers after each customer message.
+      AGENT_MESSAGE: Triggers after each agent message.
+    """
+    TRIGGER_EVENT_UNSPECIFIED = 0
+    END_OF_UTTERANCE = 1
+    CUSTOMER_MESSAGE = 2
+    AGENT_MESSAGE = 3
+
+  actions = _messages.MessageField('GoogleCloudDialogflowV2beta1GuidanceInstructionAction', 1, repeated=True)
+  condition = _messages.StringField(2)
+  disableSuggestedReply = _messages.BooleanField(3)
+  displayDetails = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  triggerEvent = _messages.EnumField('TriggerEventValueValuesEnum', 6)
+
+
+class GoogleCloudDialogflowV2beta1GuidanceInstructionAction(_messages.Message):
+  r"""Actions to take, including agent action and system action (automation).
+
+  Fields:
+    description: Required. Description of action item. It can be a agent
+      action (e.g. "Send a message to the customer", "greet the customer") or
+      system action (e.g. "Update the ticket", "Create a task", "cancel the
+      order").
+  """
+
+  description = _messages.StringField(1)
 
 
 class GoogleCloudDialogflowV2beta1HumanAgentAssistantEvent(_messages.Message):
@@ -24233,6 +24961,36 @@ class GoogleCloudDialogflowV2beta1ResponseMessageText(_messages.Message):
   text = _messages.StringField(1, repeated=True)
 
 
+class GoogleCloudDialogflowV2beta1SearchEntryPoint(_messages.Message):
+  r"""Google search entry point.
+
+  Fields:
+    renderedContent: Optional. An HTML snippet that can be embedded in a web
+      page or an application's webview. This snippet displays a search result,
+      including the title, URL, and a brief description of the search result.
+  """
+
+  renderedContent = _messages.StringField(1)
+
+
+class GoogleCloudDialogflowV2beta1Segment(_messages.Message):
+  r"""A segment of the content.
+
+  Fields:
+    endIndex: Output only. The end index of the segment, measured in bytes.
+      This marks the end of the segment and is exclusive, meaning the segment
+      includes content up to, but not including, the byte at this index.
+    startIndex: Output only. The start index of the segment, measured in
+      bytes. This marks the beginning of the segment and is inclusive, meaning
+      the byte at this index is the first byte of the segment.
+    text: Output only. The text of the segment.
+  """
+
+  endIndex = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  startIndex = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  text = _messages.StringField(3)
+
+
 class GoogleCloudDialogflowV2beta1Sentiment(_messages.Message):
   r"""The sentiment, such as positive/negative feeling or association, for a
   unit of analysis, such as the query text. See:
@@ -24679,6 +25437,8 @@ class GoogleCloudDialogflowV2beta1SuggestionResult(_messages.Message):
 
   Fields:
     error: Error status if the request failed.
+    generateCompanionSuggestionsResponse: Suggestions generated by companion
+      agent.
     generateSuggestionsResponse: Suggestions generated using generators
       triggered by customer or agent messages.
     suggestArticlesResponse: SuggestArticlesResponse if request is for
@@ -24696,13 +25456,14 @@ class GoogleCloudDialogflowV2beta1SuggestionResult(_messages.Message):
   """
 
   error = _messages.MessageField('GoogleRpcStatus', 1)
-  generateSuggestionsResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1GenerateSuggestionsResponse', 2)
-  suggestArticlesResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestArticlesResponse', 3)
-  suggestDialogflowAssistsResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestDialogflowAssistsResponse', 4)
-  suggestEntityExtractionResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestDialogflowAssistsResponse', 5)
-  suggestFaqAnswersResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestFaqAnswersResponse', 6)
-  suggestKnowledgeAssistResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestKnowledgeAssistResponse', 7)
-  suggestSmartRepliesResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestSmartRepliesResponse', 8)
+  generateCompanionSuggestionsResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1GenerateCompanionSuggestionsResponse', 2)
+  generateSuggestionsResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1GenerateSuggestionsResponse', 3)
+  suggestArticlesResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestArticlesResponse', 4)
+  suggestDialogflowAssistsResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestDialogflowAssistsResponse', 5)
+  suggestEntityExtractionResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestDialogflowAssistsResponse', 6)
+  suggestFaqAnswersResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestFaqAnswersResponse', 7)
+  suggestKnowledgeAssistResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestKnowledgeAssistResponse', 8)
+  suggestSmartRepliesResponse = _messages.MessageField('GoogleCloudDialogflowV2beta1SuggestSmartRepliesResponse', 9)
 
 
 class GoogleCloudDialogflowV2beta1SummarySuggestion(_messages.Message):
@@ -24904,6 +25665,23 @@ class GoogleCloudDialogflowV2beta1ToolCallResultError(_messages.Message):
 
   message = _messages.StringField(1)
   retryable = _messages.BooleanField(2)
+
+
+class GoogleCloudDialogflowV2beta1ToolCallSuggestion(_messages.Message):
+  r"""Structured wrapper that pairs tool execution details with strongly-typed
+  citations.
+
+  Fields:
+    textUpdate: Optional. The conversational text update generated by the
+      agent accompanying this tool call (e.g. "The status of your order 12345
+      is currently being retrieved..."). This is a status update emitted
+      alongside in-flight tool execution and is not accumulated into the final
+      response.
+    toolCallInfo: Optional. Tool execution request/response details.
+  """
+
+  textUpdate = _messages.StringField(1)
+  toolCallInfo = _messages.MessageField('GoogleCloudDialogflowV2beta1GeneratorSuggestionToolCallInfo', 2)
 
 
 class GoogleCloudDialogflowV2beta1WebhookRequest(_messages.Message):

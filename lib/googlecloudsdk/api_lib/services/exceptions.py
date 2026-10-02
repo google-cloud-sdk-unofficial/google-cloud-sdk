@@ -141,6 +141,14 @@ class ListCatalogMembersException(Error):
   """Exception for list catalog members."""
 
 
+class CatalogNotFoundError(Error):
+  """Exception for catalog not found."""
+
+
+class ListDependentServicesException(Error):
+  """Exception for list dependent services."""
+
+
 class ListAncestorGroupsPermissionDeniedException(Error):
   """Permission denied exception for list ancestor groups."""
 

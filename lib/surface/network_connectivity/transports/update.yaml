@@ -1,4 +1,6 @@
 - release_tracks: [BETA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: Update a transport.
     description: Update a transport with the given name to a remote provider.

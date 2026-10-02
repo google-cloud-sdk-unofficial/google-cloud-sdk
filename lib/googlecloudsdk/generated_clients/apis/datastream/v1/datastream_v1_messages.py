@@ -3687,7 +3687,13 @@ class SpecificStartPosition(_messages.Message):
 
 
 class SqlServerChangeTables(_messages.Message):
-  r"""Configuration to use Change Tables CDC read method."""
+  r"""Configuration to use Change Tables CDC read method.
+
+  Fields:
+    ddlConfig: Optional. DDL configuration for change tables.
+  """
+
+  ddlConfig = _messages.MessageField('SqlServerDdlConfig', 1)
 
 
 class SqlServerColumn(_messages.Message):
@@ -3712,6 +3718,25 @@ class SqlServerColumn(_messages.Message):
   precision = _messages.IntegerField(6, variant=_messages.Variant.INT32)
   primaryKey = _messages.BooleanField(7)
   scale = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+
+
+class SqlServerDdlConfig(_messages.Message):
+  r"""DDL configuration for change tables.
+
+  Fields:
+    autoCreateNewCaptureInstanceOnDdl: Optional. If set to true, Datastream
+      will automatically create a new capture instance when DDL is detected on
+      a table.The customer will be responsible for deleting it so that the
+      next set of DDLs can be handled. The default is false and it means that
+      DDL's will not be handled .
+    autoDeleteOldCaptureInstance: Optional. If set to true, Datastream will
+      automatically delete the old capture instance after creating a new one
+      to support a DDL change. The default is false and means that the
+      customer has to delete the old capture instance manually.
+  """
+
+  autoCreateNewCaptureInstanceOnDdl = _messages.BooleanField(1)
+  autoDeleteOldCaptureInstance = _messages.BooleanField(2)
 
 
 class SqlServerLsnPosition(_messages.Message):

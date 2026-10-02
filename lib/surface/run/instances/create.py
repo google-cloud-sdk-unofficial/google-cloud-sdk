@@ -55,7 +55,7 @@ Container Flags
       flags.ImageArg(image=EXAMPLE_INSTANCE_IMAGE, required=False)
   )
   group.AddArgument(flags.PortArg())
-  group.AddArgument(flags.Http2Flag())
+  group.AddArgument(flags.Http2Flag(resource_kind='instance'))
   group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
@@ -68,6 +68,8 @@ Container Flags
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
   group.AddArgument(flags.SandboxLauncherFlag())
+  if release_track == base.ReleaseTrack.ALPHA:
+    group.AddArgument(flags.BaseImageArg(hidden=True))
 
   return group
 
@@ -167,12 +169,14 @@ class Create(base.Command):
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
 
-  @staticmethod
-  def Args(parser):
-    Create.CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
     flags.AddGracePeriodFlag(parser)
-    container_args = ContainerArgGroup()
-    container_parser.AddContainerFlags(parser, container_args)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
   def Run(self, args: argparse.Namespace) -> messages.Instance:
     """Deploy an Instance to Cloud Run."""

@@ -29,12 +29,22 @@ but its speed could be improved - in particular because it uses
 Python's difflib.
 """
 
-import difflib
+__all__ = ["annotate_lines", "update_lines"]
 
+import difflib
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
+
+from dulwich.objects import Blob
 from dulwich.walk import (
     ORDER_DATE,
     Walker,
 )
+
+if TYPE_CHECKING:
+    from dulwich.diff_tree import TreeChange
+    from dulwich.object_store import BaseObjectStore
+    from dulwich.objects import Commit, ObjectID, TreeEntry
 
 # Walk over ancestry graph breadth-first
 # When checking each revision, find lines that according to difflib.Differ()
@@ -44,9 +54,13 @@ from dulwich.walk import (
 # graph.
 
 
-def update_lines(annotated_lines, new_history_data, new_blob):
+def update_lines(
+    annotated_lines: Sequence[tuple[tuple["Commit", "TreeEntry"], bytes]],
+    new_history_data: tuple["Commit", "TreeEntry"],
+    new_blob: "Blob",
+) -> list[tuple[tuple["Commit", "TreeEntry"], bytes]]:
     """Update annotation lines with old blob lines."""
-    ret = []
+    ret: list[tuple[tuple[Commit, TreeEntry], bytes]] = []
     new_lines = new_blob.splitlines()
     matcher = difflib.SequenceMatcher(
         a=[line for (h, line) in annotated_lines], b=new_lines
@@ -63,7 +77,14 @@ def update_lines(annotated_lines, new_history_data, new_blob):
     return ret
 
 
-def annotate_lines(store, commit_id, path, order=ORDER_DATE, lines=None, follow=True):
+def annotate_lines(
+    store: "BaseObjectStore",
+    commit_id: "ObjectID",
+    path: bytes,
+    order: str = ORDER_DATE,
+    lines: Sequence[tuple[tuple["Commit", "TreeEntry"], bytes]] | None = None,
+    follow: bool = True,
+) -> list[tuple[tuple["Commit", "TreeEntry"], bytes]]:
     """Annotate the lines of a blob.
 
     :param store: Object store to retrieve objects from
@@ -78,18 +99,25 @@ def annotate_lines(store, commit_id, path, order=ORDER_DATE, lines=None, follow=
     walker = Walker(
         store, include=[commit_id], paths=[path], order=order, follow=follow
     )
-    revs = []
+    revs: list[tuple[Commit, TreeEntry]] = []
     for log_entry in walker:
         for tree_change in log_entry.changes():
-            if type(tree_change) is not list:
-                tree_change = [tree_change]
-            for change in tree_change:
-                if change.new.path == path:
-                    path = change.old.path
+            changes: list[TreeChange]
+            if isinstance(tree_change, list):
+                changes = tree_change
+            else:
+                changes = [tree_change]
+            for change in changes:
+                if change.new is not None and change.new.path == path:
+                    if change.old is not None and change.old.path is not None:
+                        path = change.old.path
                     revs.append((log_entry.commit, change.new))
                     break
 
-    lines = []
+    lines_annotated: list[tuple[tuple[Commit, TreeEntry], bytes]] = []
     for commit, entry in reversed(revs):
-        lines = update_lines(lines, (commit, entry), store[entry.sha])
-    return lines
+        assert entry.sha is not None
+        blob_obj = store[entry.sha]
+        assert isinstance(blob_obj, Blob)
+        lines_annotated = update_lines(lines_annotated, (commit, entry), blob_obj)
+    return lines_annotated

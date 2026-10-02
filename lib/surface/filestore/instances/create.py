@@ -142,7 +142,8 @@ class CreateBeta(Create):
 
   detailed_help = {
       'DESCRIPTION': 'Create a Filestore instance.',
-      'EXAMPLES': """\
+      'EXAMPLES': (
+          """\
     To create a Basic HDD instance named `my-instance` in zone `us-central1-c` with a 1TB volume named `my_vol` on the default network, run:
 
       $ {command} my-instance --zone=us-central1-c --tier=BASIC_HDD --file-share=name=my_vol,capacity=1TB --network=name=default
@@ -181,7 +182,11 @@ class CreateBeta(Create):
     To create a Basic SSD instance named `my-nfs-instance` using the above configuration file, run:
       $ {command} my-nfs-instance --zone=us-central1-c --tier=BASIC_SSD --network=name=default --flags-file=config.json
 
-    """,
+    To create a Regional instance named `my-psc-instance` in region `us-central1` with a 1TB volume named `my_vol` using Private Service Connect (PSC) with user-created-endpoint (omitting `--network`), run:
+      $ {command} my-psc-instance --region=us-central1 --tier=REGIONAL --file-share=name=my_vol,capacity=1TB
+
+    """
+      ),
   }
 
   @staticmethod
@@ -225,7 +230,6 @@ class CreateBeta(Create):
           nfs_export_options=args.file_share.get('nfs-export-options', []))
     except KeyError as err:
       raise exceptions.InvalidArgumentException('--file-share', str(err))
-
     instance = client.ParseFilestoreConfig(
         tier=tier,
         protocol=protocol,

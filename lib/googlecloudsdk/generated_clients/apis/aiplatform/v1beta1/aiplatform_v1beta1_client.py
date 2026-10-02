@@ -9223,7 +9223,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
         request: (AiplatformProjectsLocationsAgentsPatchRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
-        (GoogleCloudAiplatformV1beta1Agent) The response message.
+        (GoogleLongrunningOperation) The response message.
       """
       config = self.GetMethodConfig('Patch')
       return self._RunMethod(
@@ -9239,7 +9239,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
         relative_path='v1beta1/{+name}',
         request_field='googleCloudAiplatformV1beta1Agent',
         request_type_name='AiplatformProjectsLocationsAgentsPatchRequest',
-        response_type_name='GoogleCloudAiplatformV1beta1Agent',
+        response_type_name='GoogleLongrunningOperation',
         supports_download=False,
     )
 
@@ -19911,7 +19911,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
           }
 
     def Cancel(self, request, global_params=None):
-      r"""Cancels an interaction.
+      r"""Cancels an interaction by id. This only applies to background interactions that are still running.
 
       Args:
         request: (AiplatformProjectsLocationsInteractionsHttpCancelRequest) input message
@@ -19938,7 +19938,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     )
 
     def Create(self, request, global_params=None):
-      r"""Generates a set of responses from the model.
+      r"""Creates a new interaction.
 
       Args:
         request: (AiplatformProjectsLocationsInteractionsHttpCreateRequest) input message
@@ -19965,7 +19965,7 @@ class AiplatformV1beta1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an interaction.
+      r"""Retrieves the full details of a single interaction based on its `Interaction.id`.
 
       Args:
         request: (AiplatformProjectsLocationsInteractionsHttpGetRequest) input message

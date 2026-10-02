@@ -175,30 +175,37 @@ class Update(base.UpdateCommand):
     flags.AddFlexStartInstances(
         parser=flag_group, api_version=api_version, include_update_flags=True
     )
+    orchestrator_group = flag_group.add_group(
+        mutex=True,
+        help="Orchestrator configuration for the cluster.",
+    )
+    slurm_group = orchestrator_group.add_group(
+        help="Slurm orchestrator configuration for the cluster.",
+    )
     flags.AddSlurmNodeSets(
-        parser=flag_group, api_version=api_version, include_update_flags=True
+        parser=slurm_group, api_version=api_version, include_update_flags=True
     )
     flags.AddSlurmPartitions(
-        parser=flag_group, api_version=api_version, include_update_flags=True
+        parser=slurm_group, api_version=api_version, include_update_flags=True
     )
-    flags.AddSlurmDefaultPartition(parser=flag_group, api_version=api_version)
+    flags.AddSlurmDefaultPartition(parser=slurm_group, api_version=api_version)
     flags.AddSlurmLoginNode(
-        parser=flag_group, api_version=api_version, include_update_flags=True
+        parser=slurm_group, api_version=api_version, include_update_flags=True
     )
     flags.AddSlurmPrologBashScripts(
-        parser=flag_group, api_version=api_version, include_update_flags=True
+        parser=slurm_group, api_version=api_version, include_update_flags=True
     )
     flags.AddSlurmEpilogBashScripts(
-        parser=flag_group, api_version=api_version, include_update_flags=True
+        parser=slurm_group, api_version=api_version, include_update_flags=True
     )
     if api_version == "v1alpha":
       flags.AddSlurmTaskPrologBashScripts(
-          parser=flag_group, api_version=api_version, include_update_flags=True
+          parser=slurm_group, api_version=api_version, include_update_flags=True
       )
       flags.AddSlurmTaskEpilogBashScripts(
-          parser=flag_group, api_version=api_version, include_update_flags=True
+          parser=slurm_group, api_version=api_version, include_update_flags=True
       )
-      slurm_config_group = flag_group.add_group(mutex=True)
+      slurm_config_group = slurm_group.add_group(mutex=True)
       flags.AddSlurmConfig(
           parser=slurm_config_group,
           api_version=api_version,
@@ -210,7 +217,15 @@ class Update(base.UpdateCommand):
           include_update_flags=True,
       )
       flags.AddSlurmDisableHealthCheckProgram(
-          parser=flag_group, api_version=api_version, include_update_flags=True
+          parser=slurm_group, api_version=api_version, include_update_flags=True
+      )
+      compute_engine_group = orchestrator_group.add_group(
+          help="Compute Engine orchestrator configuration for the cluster.",
+      )
+      flags.AddManagedInstanceGroups(
+          parser=compute_engine_group,
+          api_version=api_version,
+          include_update_flags=True,
       )
 
   def Run(self, args):

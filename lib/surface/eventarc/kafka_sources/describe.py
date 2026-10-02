@@ -29,6 +29,10 @@ _DETAILED_HELP = {
 }
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning='This command is deprecated. There is no replacement.',
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):

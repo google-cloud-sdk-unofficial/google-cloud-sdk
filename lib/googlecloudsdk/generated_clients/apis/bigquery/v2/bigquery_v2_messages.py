@@ -5900,6 +5900,7 @@ class JobStatistics2(_messages.Message):
     performanceInsights: Output only. Performance insights.
     queryInfo: Output only. Query optimization information for a QUERY job.
     queryPlan: Output only. Describes execution plan for the query.
+    referencedLogicalViews: Output only. Referenced logical views for the job.
     referencedPropertyGraphs: Output only. Referenced property graphs for the
       job. Queries that reference more than 50 property graphs will not have a
       complete list.
@@ -6216,24 +6217,25 @@ class JobStatistics2(_messages.Message):
   performanceInsights = _messages.MessageField('PerformanceInsights', 29)
   queryInfo = _messages.MessageField('QueryInfo', 30)
   queryPlan = _messages.MessageField('ExplainQueryStage', 31, repeated=True)
-  referencedPropertyGraphs = _messages.MessageField('PropertyGraphReference', 32, repeated=True)
-  referencedRoutines = _messages.MessageField('RoutineReference', 33, repeated=True)
-  referencedTables = _messages.MessageField('TableReference', 34, repeated=True)
-  reservationUsage = _messages.MessageField('ReservationUsageValueListEntry', 35, repeated=True)
-  schema = _messages.MessageField('TableSchema', 36)
-  searchStatistics = _messages.MessageField('SearchStatistics', 37)
-  sparkStatistics = _messages.MessageField('SparkStatistics', 38)
-  statementType = _messages.StringField(39)
-  timeline = _messages.MessageField('QueryTimelineSample', 40, repeated=True)
-  totalBytesBilled = _messages.IntegerField(41)
-  totalBytesProcessed = _messages.IntegerField(42)
-  totalBytesProcessedAccuracy = _messages.StringField(43)
-  totalPartitionsProcessed = _messages.IntegerField(44)
-  totalServicesSkuSlotMs = _messages.IntegerField(45)
-  totalSlotMs = _messages.IntegerField(46)
-  transferredBytes = _messages.IntegerField(47)
-  undeclaredQueryParameters = _messages.MessageField('QueryParameter', 48, repeated=True)
-  vectorSearchStatistics = _messages.MessageField('VectorSearchStatistics', 49)
+  referencedLogicalViews = _messages.MessageField('TableReference', 32, repeated=True)
+  referencedPropertyGraphs = _messages.MessageField('PropertyGraphReference', 33, repeated=True)
+  referencedRoutines = _messages.MessageField('RoutineReference', 34, repeated=True)
+  referencedTables = _messages.MessageField('TableReference', 35, repeated=True)
+  reservationUsage = _messages.MessageField('ReservationUsageValueListEntry', 36, repeated=True)
+  schema = _messages.MessageField('TableSchema', 37)
+  searchStatistics = _messages.MessageField('SearchStatistics', 38)
+  sparkStatistics = _messages.MessageField('SparkStatistics', 39)
+  statementType = _messages.StringField(40)
+  timeline = _messages.MessageField('QueryTimelineSample', 41, repeated=True)
+  totalBytesBilled = _messages.IntegerField(42)
+  totalBytesProcessed = _messages.IntegerField(43)
+  totalBytesProcessedAccuracy = _messages.StringField(44)
+  totalPartitionsProcessed = _messages.IntegerField(45)
+  totalServicesSkuSlotMs = _messages.IntegerField(46)
+  totalSlotMs = _messages.IntegerField(47)
+  transferredBytes = _messages.IntegerField(48)
+  undeclaredQueryParameters = _messages.MessageField('QueryParameter', 49, repeated=True)
+  vectorSearchStatistics = _messages.MessageField('VectorSearchStatistics', 50)
 
 
 class JobStatistics3(_messages.Message):

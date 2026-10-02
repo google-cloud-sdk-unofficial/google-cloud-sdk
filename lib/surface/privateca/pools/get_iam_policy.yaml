@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Get the IAM policy for a CA pool.

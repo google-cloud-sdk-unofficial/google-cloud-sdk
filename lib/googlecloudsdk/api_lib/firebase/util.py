@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.firebase import exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
+from googlecloudsdk.generated_clients.apis import apis_map
 
 
 API_NAME = 'firebase'
@@ -29,6 +30,19 @@ VERSION_MAP = {
     base.ReleaseTrack.ALPHA: 'v1alpha',
     base.ReleaseTrack.BETA: 'v1beta1',
 }
+
+if 'v1alpha' not in apis_map.MAP.get(API_NAME, {}):
+  apis_map.MAP.setdefault(API_NAME, {})['v1alpha'] = apis_map.APIDef(
+      apitools=apis_map.ApitoolsClientDef(
+          'googlecloudsdk.generated_clients.apis.firebase.v1alpha',
+          'firebase_v1alpha_client.FirebaseV1alpha',
+          'firebase_v1alpha_messages',
+          # gcloud-disable-gdu-domain
+          'https://firebase.googleapis.com/',
+      ),
+      default_version=False,
+      enable_mtls=True,
+  )
 
 RULES_API_NAME = 'firebaserules'
 RULES_DEFAULT_API_VERSION = 'v1'

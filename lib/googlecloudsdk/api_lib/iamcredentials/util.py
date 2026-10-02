@@ -27,9 +27,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core import transport
 from googlecloudsdk.core.credentials import iam_endpoint
 
-IAM_ENDPOINT_GDU = iam_endpoint.IAM_ENDPOINT_GDU
-GetEffectiveIamEndpoint = iam_endpoint.GetEffectiveIamEndpoint
-
 
 class Error(core_exceptions.Error):
   """Exception that are defined by this module."""
@@ -143,7 +140,7 @@ class ImpersonationAccessTokenProvider(object):
         target_scopes=scopes,
         delegates=delegates,
     )
-    self.PerformIamEndpointsOverride()
+    iam_endpoint.PerformIamEndpointsOverride()
     try:
       cred.refresh(request_client)
     except google_auth_exceptions.RefreshError as e:
@@ -206,7 +203,7 @@ class ImpersonationAccessTokenProvider(object):
         include_email=include_email,
     )
     request_client = core_requests.GoogleAuthRequest()
-    self.PerformIamEndpointsOverride()
+    iam_endpoint.PerformIamEndpointsOverride()
     cred.refresh(request_client)
     return cred
 
@@ -216,40 +213,3 @@ class ImpersonationAccessTokenProvider(object):
     from google.auth import impersonated_credentials as google_auth_impersonated_credentials
     # pylint: enable=g-import-not-at-top
     return isinstance(cred, google_auth_impersonated_credentials.Credentials)
-
-  @classmethod
-  def PerformIamEndpointsOverride(cls):
-    """Perform IAM endpoint override if needed.
-
-    We will override IAM generateAccessToken, signBlob, and generateIdToken
-    endpoint under the following conditions.
-    (1) If the [api_endpoint_overrides/iamcredentials] property is explicitly
-    set, we replace "https://iamcredentials.googleapis.com/" with the given
-    property value in these endpoints.
-    (2) If the property above is not set, and the [core/universe_domain] value
-    is not default, we replace "googleapis.com" with the [core/universe_domain]
-    property value in these endpoints.
-    """
-    # pylint: disable=g-import-not-at-top
-    from google.auth import iam as google_auth_iam
-    # pylint: enable=g-import-not-at-top
-
-    effective_iam_endpoint = GetEffectiveIamEndpoint()
-    google_auth_iam._IAM_ENDPOINT = (  # pylint: disable=protected-access
-        google_auth_iam._IAM_ENDPOINT.replace(  # pylint: disable=protected-access
-            IAM_ENDPOINT_GDU,
-            effective_iam_endpoint,
-        )
-    )
-    google_auth_iam._IAM_SIGN_ENDPOINT = (  # pylint: disable=protected-access
-        google_auth_iam._IAM_SIGN_ENDPOINT.replace(  # pylint: disable=protected-access
-            IAM_ENDPOINT_GDU,
-            effective_iam_endpoint,
-        )
-    )
-    google_auth_iam._IAM_IDTOKEN_ENDPOINT = (  # pylint: disable=protected-access
-        google_auth_iam._IAM_IDTOKEN_ENDPOINT.replace(  # pylint: disable=protected-access
-            IAM_ENDPOINT_GDU,
-            effective_iam_endpoint,
-        )
-    )

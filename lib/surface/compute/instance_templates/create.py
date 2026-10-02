@@ -467,6 +467,11 @@ def AddServiceProxyArgsToMetadata(args):
     if 'use-regional-control-plane' in args.service_proxy:
       proxy_spec['regional-control-plane'] = True
 
+    if 'envoy-bootstrap' in args.service_proxy:
+      proxy_spec['custom-envoy-bootstrap-gcs-path'] = args.service_proxy[
+          'envoy-bootstrap'
+      ]
+
     proxy_spec['network'] = args.service_proxy.get('network', '')
 
     if 'scope' in args.service_proxy:

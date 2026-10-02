@@ -16,15 +16,14 @@
 """Command for updating GlobalVmExtensionPolicies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.global_vm_extension_policies import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.global_vm_extension_policies import flags
+from googlecloudsdk.command_lib.compute.vm_extension_policies import flags as vm_extension_policies_flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine global VM extension policy."""
 
@@ -45,10 +44,14 @@ class Update(base.UpdateCommand):
    """,
   }
 
-  @staticmethod
-  def Args(parser):
-    Update.GlobalVmExtensionPoliciesArg = flags.MakeGlobalVmExtensionPolicyArg()
-    Update.GlobalVmExtensionPoliciesArg.AddArgument(
+  GLOBAL_VM_EXTENSION_POLICIES_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.GLOBAL_VM_EXTENSION_POLICIES_ARG = (
+        flags.MakeGlobalVmExtensionPolicyArg()
+    )
+    cls.GLOBAL_VM_EXTENSION_POLICIES_ARG.AddArgument(
         parser, operation_type='update'
     )
     flags.AddExtensionPolicyArgs(parser)
@@ -65,26 +68,28 @@ class Update(base.UpdateCommand):
       Response calling the GlobalVmExtensionPoliciesService.Update API.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-
-    resource_ref = Update.GlobalVmExtensionPoliciesArg.ResolveAsResource(
+    resource_ref = flags.ResolveGlobalVmExtensionPolicyResource(
         args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client),
+        holder,
+        self.GLOBAL_VM_EXTENSION_POLICIES_ARG,
+        client=holder.client,
     )
-
-    gve_policy = flags.BuildGlobalVmExtensionPolicy(
-        resource_ref, args, messages
+    policy = flags.BuildGlobalVmExtensionPolicy(
+        resource_ref, args, holder.client.messages
     )
-    flags.InsertRetryUuid(args, gve_policy=gve_policy)
+    flags.InsertRetryUuid(args, policy=policy)
+    policy_client = client.GlobalVmExtensionPolicy.FromRef(
+        resource_ref, holder.client
+    )
+    return policy_client.Update(policy)
 
-    return client.MakeRequests([(
-        client.apitools_client.globalVmExtensionPolicies,
-        'Update',
-        messages.ComputeGlobalVmExtensionPoliciesUpdateRequest(
-            project=resource_ref.project,
-            globalVmExtensionPolicy=resource_ref.Name(),
-            globalVmExtensionPolicyResource=gve_policy,
-        ),
-    )])
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Compute Engine global VM extension policy."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlpha, cls).Args(parser)
+    vm_extension_policies_flags.AddScopeFlags(parser)

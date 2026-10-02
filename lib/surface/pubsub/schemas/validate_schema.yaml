@@ -26,7 +26,7 @@
       is_parent_resource: true
     params:
     - group:
-        release_tracks: [BETA, GA]
+        release_tracks: [GA]
         help_text: |
           Schema definition.
         mutex: true
@@ -42,7 +42,7 @@
           help_text: |
             File containing schema definition.
     - group:
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, BETA]
         help_text: |
           Schema definition.
         mutex: true

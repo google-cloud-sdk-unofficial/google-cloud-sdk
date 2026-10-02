@@ -520,6 +520,11 @@ class AutonomousDatabaseProperties(_messages.Message):
       Database.
     disasterRecoveryRoleChangedTime: Output only. The date and time the
       Disaster Recovery role was changed for the standby Autonomous Database.
+    disconnectPeer: Optional. Indicates if the Autonomous Database peer should
+      be disconnected. This field is only applicable for cross-region backup-
+      based disaster recovery (BBDR) standby databases. Used in update flow to
+      permanently disconnect the standby from its primary database, converting
+      it into an independent standalone database.
     encryptionKey: Optional. The encryption key used to encrypt the Autonomous
       Database. Updating this field will add a new entry in the
       `encryption_key_history_entries` field with the former version.
@@ -907,49 +912,50 @@ class AutonomousDatabaseProperties(_messages.Message):
   dbVersion = _messages.StringField(21)
   dbWorkload = _messages.EnumField('DbWorkloadValueValuesEnum', 22)
   disasterRecoveryRoleChangedTime = _messages.StringField(23)
-  encryptionKey = _messages.MessageField('EncryptionKey', 24)
-  encryptionKeyHistoryEntries = _messages.MessageField('EncryptionKeyHistoryEntry', 25, repeated=True)
-  failedDataRecoveryDuration = _messages.StringField(26)
-  isAutoScalingEnabled = _messages.BooleanField(27)
-  isLocalDataGuardEnabled = _messages.BooleanField(28)
-  isStorageAutoScalingEnabled = _messages.BooleanField(29)
-  licenseType = _messages.EnumField('LicenseTypeValueValuesEnum', 30)
-  lifecycleDetails = _messages.StringField(31)
-  localAdgAutoFailoverMaxDataLossLimit = _messages.IntegerField(32, variant=_messages.Variant.INT32)
-  localAdgAutoFailoverMaxDataLossLimitDuration = _messages.IntegerField(33, variant=_messages.Variant.INT32)
-  localDataGuardEnabled = _messages.BooleanField(34)
-  localDisasterRecoveryType = _messages.EnumField('LocalDisasterRecoveryTypeValueValuesEnum', 35)
-  localStandbyDb = _messages.MessageField('AutonomousDatabaseStandbySummary', 36)
-  maintenanceBeginTime = _messages.StringField(37)
-  maintenanceEndTime = _messages.StringField(38)
-  maintenanceScheduleType = _messages.EnumField('MaintenanceScheduleTypeValueValuesEnum', 39)
-  memoryPerOracleComputeUnitGbs = _messages.IntegerField(40, variant=_messages.Variant.INT32)
-  memoryTableGbs = _messages.IntegerField(41, variant=_messages.Variant.INT32)
-  mtlsConnectionRequired = _messages.BooleanField(42)
-  nCharacterSet = _messages.StringField(43)
-  nextLongTermBackupTime = _messages.StringField(44)
-  ociUrl = _messages.StringField(45)
-  ocid = _messages.StringField(46)
-  openMode = _messages.EnumField('OpenModeValueValuesEnum', 47)
-  operationsInsightsState = _messages.EnumField('OperationsInsightsStateValueValuesEnum', 48)
-  peerDbIds = _messages.StringField(49, repeated=True)
-  permissionLevel = _messages.EnumField('PermissionLevelValueValuesEnum', 50)
-  privateEndpoint = _messages.StringField(51)
-  privateEndpointIp = _messages.StringField(52)
-  privateEndpointLabel = _messages.StringField(53)
-  refreshableClone = _messages.BooleanField(54)
-  refreshableMode = _messages.EnumField('RefreshableModeValueValuesEnum', 55)
-  refreshableState = _messages.EnumField('RefreshableStateValueValuesEnum', 56)
-  role = _messages.EnumField('RoleValueValuesEnum', 57)
-  scheduledOperationDetails = _messages.MessageField('ScheduledOperationDetails', 58, repeated=True)
-  secretId = _messages.StringField(59)
-  serviceAgentEmail = _messages.StringField(60)
-  sqlWebDeveloperUrl = _messages.StringField(61)
-  state = _messages.EnumField('StateValueValuesEnum', 62)
-  supportedCloneRegions = _messages.StringField(63, repeated=True)
-  totalAutoBackupStorageSizeGbs = _messages.FloatField(64, variant=_messages.Variant.FLOAT)
-  usedDataStorageSizeTbs = _messages.IntegerField(65, variant=_messages.Variant.INT32)
-  vaultId = _messages.StringField(66)
+  disconnectPeer = _messages.BooleanField(24)
+  encryptionKey = _messages.MessageField('EncryptionKey', 25)
+  encryptionKeyHistoryEntries = _messages.MessageField('EncryptionKeyHistoryEntry', 26, repeated=True)
+  failedDataRecoveryDuration = _messages.StringField(27)
+  isAutoScalingEnabled = _messages.BooleanField(28)
+  isLocalDataGuardEnabled = _messages.BooleanField(29)
+  isStorageAutoScalingEnabled = _messages.BooleanField(30)
+  licenseType = _messages.EnumField('LicenseTypeValueValuesEnum', 31)
+  lifecycleDetails = _messages.StringField(32)
+  localAdgAutoFailoverMaxDataLossLimit = _messages.IntegerField(33, variant=_messages.Variant.INT32)
+  localAdgAutoFailoverMaxDataLossLimitDuration = _messages.IntegerField(34, variant=_messages.Variant.INT32)
+  localDataGuardEnabled = _messages.BooleanField(35)
+  localDisasterRecoveryType = _messages.EnumField('LocalDisasterRecoveryTypeValueValuesEnum', 36)
+  localStandbyDb = _messages.MessageField('AutonomousDatabaseStandbySummary', 37)
+  maintenanceBeginTime = _messages.StringField(38)
+  maintenanceEndTime = _messages.StringField(39)
+  maintenanceScheduleType = _messages.EnumField('MaintenanceScheduleTypeValueValuesEnum', 40)
+  memoryPerOracleComputeUnitGbs = _messages.IntegerField(41, variant=_messages.Variant.INT32)
+  memoryTableGbs = _messages.IntegerField(42, variant=_messages.Variant.INT32)
+  mtlsConnectionRequired = _messages.BooleanField(43)
+  nCharacterSet = _messages.StringField(44)
+  nextLongTermBackupTime = _messages.StringField(45)
+  ociUrl = _messages.StringField(46)
+  ocid = _messages.StringField(47)
+  openMode = _messages.EnumField('OpenModeValueValuesEnum', 48)
+  operationsInsightsState = _messages.EnumField('OperationsInsightsStateValueValuesEnum', 49)
+  peerDbIds = _messages.StringField(50, repeated=True)
+  permissionLevel = _messages.EnumField('PermissionLevelValueValuesEnum', 51)
+  privateEndpoint = _messages.StringField(52)
+  privateEndpointIp = _messages.StringField(53)
+  privateEndpointLabel = _messages.StringField(54)
+  refreshableClone = _messages.BooleanField(55)
+  refreshableMode = _messages.EnumField('RefreshableModeValueValuesEnum', 56)
+  refreshableState = _messages.EnumField('RefreshableStateValueValuesEnum', 57)
+  role = _messages.EnumField('RoleValueValuesEnum', 58)
+  scheduledOperationDetails = _messages.MessageField('ScheduledOperationDetails', 59, repeated=True)
+  secretId = _messages.StringField(60)
+  serviceAgentEmail = _messages.StringField(61)
+  sqlWebDeveloperUrl = _messages.StringField(62)
+  state = _messages.EnumField('StateValueValuesEnum', 63)
+  supportedCloneRegions = _messages.StringField(64, repeated=True)
+  totalAutoBackupStorageSizeGbs = _messages.FloatField(65, variant=_messages.Variant.FLOAT)
+  usedDataStorageSizeTbs = _messages.IntegerField(66, variant=_messages.Variant.INT32)
+  vaultId = _messages.StringField(67)
 
 
 class AutonomousDatabaseRefreshableClone(_messages.Message):
@@ -1163,6 +1169,17 @@ class BackupDestinationDetails(_messages.Message):
 
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
+
+
+class ChangeDisasterRecoveryConfigRequest(_messages.Message):
+  r"""The request for `OracleDatabase.ChangeDisasterRecoveryConfig`.
+
+  Fields:
+    disasterRecoveryConfig: Required. The disaster recovery configuration to
+      apply to the cross-region peer.
+  """
+
+  disasterRecoveryConfig = _messages.MessageField('DisasterRecoveryConfig', 1)
 
 
 class CloudAccountDetails(_messages.Message):
@@ -1677,6 +1694,57 @@ class CloudVmClusterProperties(_messages.Message):
   vmFileSystemStorageType = _messages.EnumField('VmFileSystemStorageTypeValueValuesEnum', 36)
 
 
+class Column(_messages.Message):
+  r"""Contains the name and datatype of a column in a SQL Result.
+
+  Fields:
+    name: Required. Name of the column.
+    type: Required. Database-specific type name (e.g., "VARCHAR2(255)",
+      "NUMBER", "DATE", "CLOB")
+  """
+
+  name = _messages.StringField(1)
+  type = _messages.StringField(2)
+
+
+class ComputePerformance(_messages.Message):
+  r"""Parameters detailing the compute performance for a specified DB system
+  shape.
+
+  Enums:
+    ComputeModelValueValuesEnum: Output only. The compute model for Base
+      Database Service.
+
+  Fields:
+    computeCount: Output only. The number of compute servers for the DB
+      system.
+    computeModel: Output only. The compute model for Base Database Service.
+    cpuCoreCount: Output only. The number of CPU cores available.
+    memoryInGbs: Output only. The amount of memory allocated for the VMDB
+      System in GBs.
+  """
+
+  class ComputeModelValueValuesEnum(_messages.Enum):
+    r"""Output only. The compute model for Base Database Service.
+
+    Values:
+      COMPUTE_MODEL_UNSPECIFIED: Unspecified compute model.
+      COMPUTE_MODEL_ECPU: Abstract measure of compute resources. ECPUs are
+        based on the number of cores elastically allocated from a pool of
+        compute and storage servers.
+      COMPUTE_MODEL_OCPU: Physical measure of compute resources. OCPUs are
+        based on the physical core of a processor.
+    """
+    COMPUTE_MODEL_UNSPECIFIED = 0
+    COMPUTE_MODEL_ECPU = 1
+    COMPUTE_MODEL_OCPU = 2
+
+  computeCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  computeModel = _messages.EnumField('ComputeModelValueValuesEnum', 2)
+  cpuCoreCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  memoryInGbs = _messages.FloatField(4)
+
+
 class ConfigureExascaleCloudExadataInfrastructureRequest(_messages.Message):
   r"""The request for `CloudExadataInfrastructure.ConfigureExascale`.
 
@@ -1906,9 +1974,6 @@ class DatabaseConnection(_messages.Message):
     name: Identifier. The resource name of the DatabaseConnection. Format: pro
       jects/{project}/locations/{location}/databaseConnections/{database_conne
       ction}
-    network: Optional. The resource name of the customer's VPC network to peer
-      with. Format: projects/{project}/global/networks/{network} For Oracle
-      Database on Compute Engine VM.
     odbNetwork: Optional. For Oracle Database@Google cloud resources. Format:
       projects/{project}/locations/{location}/odbNetworks/{odbNetwork}
     passwordSecretVersion: Optional. The resource name of the GCP Secret
@@ -1974,13 +2039,12 @@ class DatabaseConnection(_messages.Message):
   displayName = _messages.StringField(3)
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
-  network = _messages.StringField(6)
-  odbNetwork = _messages.StringField(7)
-  passwordSecretVersion = _messages.StringField(8)
-  state = _messages.EnumField('StateValueValuesEnum', 9)
-  updateTime = _messages.StringField(10)
-  username = _messages.StringField(11)
-  walletSecretVersion = _messages.StringField(12)
+  odbNetwork = _messages.StringField(6)
+  passwordSecretVersion = _messages.StringField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  updateTime = _messages.StringField(9)
+  username = _messages.StringField(10)
+  walletSecretVersion = _messages.StringField(11)
 
 
 class DatabaseConnectionStringProfile(_messages.Message):
@@ -2591,6 +2655,23 @@ class DbSystem(_messages.Message):
   properties = _messages.MessageField('DbSystemProperties', 10)
 
 
+class DbSystemComputePerformance(_messages.Message):
+  r"""Details of the DbSystem compute performance resource.
+
+  Fields:
+    computePerformances: Output only. List of Compute performance details for
+      the specified DB system shape.
+    name: Identifier. The name of the DbSystemComputePerformance resource with
+      the format: projects/{project}/locations/{location}/dbSystemComputePerfo
+      rmances/{db_system_compute_performance}
+    shape: Output only. The shape of the DB system.
+  """
+
+  computePerformances = _messages.MessageField('ComputePerformance', 1, repeated=True)
+  name = _messages.StringField(2)
+  shape = _messages.StringField(3)
+
+
 class DbSystemInitialStorageSize(_messages.Message):
   r"""Summary of the DbSystem initial storage size.
 
@@ -3022,6 +3103,45 @@ class DisableExadbVmClusterIdentityConnectorRequest(_messages.Message):
   r"""The request for `ExadbVmCluster.DisableExadbVmClusterIdentityConnector`.
   """
 
+
+
+class DisasterRecoveryConfig(_messages.Message):
+  r"""Details for changing the disaster recovery configuration of a cross-
+  region Autonomous Database peer.
+
+  Enums:
+    DisasterRecoveryTypeValueValuesEnum: Optional. The disaster recovery type
+      to use for the cross-region peer.
+
+  Fields:
+    automaticBackupsReplicationEnabled: Optional. Indicates whether automatic
+      backups are replicated to the cross-region peer.
+    disasterRecoveryType: Optional. The disaster recovery type to use for the
+      cross-region peer.
+    snapshotStandby: Optional. Indicates whether to convert the cross-region
+      peer to a read-write snapshot standby. Set this to false to reconnect a
+      snapshot standby to its source database.
+    snapshotStandbyExpireTime: Optional. The date and time until which
+      snapshot standby is enabled. The peer automatically reconnects to its
+      source database at this time.
+  """
+
+  class DisasterRecoveryTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The disaster recovery type to use for the cross-region peer.
+
+    Values:
+      DISASTER_RECOVERY_TYPE_UNSPECIFIED: Default unspecified value.
+      ADG: Autonomous Data Guard (ADG).
+      BACKUP_BASED: Backup-based disaster recovery.
+    """
+    DISASTER_RECOVERY_TYPE_UNSPECIFIED = 0
+    ADG = 1
+    BACKUP_BASED = 2
+
+  automaticBackupsReplicationEnabled = _messages.BooleanField(1)
+  disasterRecoveryType = _messages.EnumField('DisasterRecoveryTypeValueValuesEnum', 2)
+  snapshotStandby = _messages.BooleanField(3)
+  snapshotStandbyExpireTime = _messages.StringField(4)
 
 
 class Empty(_messages.Message):
@@ -3535,6 +3655,50 @@ class ExascaleDbStorageVaultProperties(_messages.Message):
   timeZone = _messages.MessageField('TimeZone', 9)
   vmClusterCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
   vmClusterIds = _messages.StringField(11, repeated=True)
+
+
+class ExecuteSqlMetadata(_messages.Message):
+  r"""Any additional metadata information regarding the execution of the SQL
+
+  Fields:
+    executionDuration: The time duration taken to execute the sql statement.
+    message: Message related to SQL execution. This field can be used to
+      convey size limit related message.
+    partialResult: Set to true if SQL returned a result set larger than the
+      acceptable response size limits and the result was truncated.
+  """
+
+  executionDuration = _messages.StringField(1)
+  message = _messages.StringField(2)
+  partialResult = _messages.BooleanField(3)
+
+
+class ExecuteSqlRequest(_messages.Message):
+  r"""The request for `DatabaseConnection.ExecuteSql`.
+
+  Fields:
+    params: Optional. Optional: Bind variables (parameters) to be used with
+      the SQL statement. Supports named bind variables (e.g., :dept_id,
+      :status in Oracle SQL) or positional parameters (:1, :2).
+    sqlStatement: Required. The SQL statement to execute.
+  """
+
+  params = _messages.MessageField('SqlParameter', 1, repeated=True)
+  sqlStatement = _messages.StringField(2)
+
+
+class ExecuteSqlResponse(_messages.Message):
+  r"""Execute a SQL statement response.
+
+  Fields:
+    metadata: Any additional metadata information regarding the execution of
+      the sql statement.
+    sqlResults: SqlResult represents the results for the execution of sql
+      statements.
+  """
+
+  metadata = _messages.MessageField('ExecuteSqlMetadata', 1)
+  sqlResults = _messages.MessageField('SqlResult', 2, repeated=True)
 
 
 class FailoverAutonomousDatabaseRequest(_messages.Message):
@@ -6636,6 +6800,21 @@ class ListDbServersResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListDbSystemComputePerformancesResponse(_messages.Message):
+  r"""Message for response to listing DbSystemComputePerformances
+
+  Fields:
+    dbSystemComputePerformances: The list of DbSystemComputePerformance.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  dbSystemComputePerformances = _messages.MessageField('DbSystemComputePerformance', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListDbSystemInitialStorageSizesResponse(_messages.Message):
   r"""The response for `DbSystemInitialStorageSizes.List`.
 
@@ -7370,7 +7549,7 @@ class OdbNetwork(_messages.Message):
       format: projects/{project}/locations/{region}/odbNetworks/{odb_network}
     network: Required. The name of the VPC network in the following format:
       projects/{project}/global/networks/{network}
-    serviceConnectionConfig: Optional. Configuration to enable the service
+    serviceConnectivityConfig: Optional. Configuration to enable the service
       (Oracledatabase@Google Cloud) to establish connectivity to the database.
       This should be specified if you intend to associate this OdbNetwork with
       a DatabaseConnection resource to `ExecuteSQL` on the database, or to
@@ -7425,7 +7604,7 @@ class OdbNetwork(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
   network = _messages.StringField(6)
-  serviceConnectionConfig = _messages.MessageField('ServiceConnectionConfig', 7)
+  serviceConnectivityConfig = _messages.MessageField('ServiceConnectivityConfig', 7)
   state = _messages.EnumField('StateValueValuesEnum', 8)
 
 
@@ -7717,6 +7896,22 @@ class OracledatabaseProjectsLocationsAutonomousDatabaseCharacterSetsListRequest(
   parent = _messages.StringField(4, required=True)
 
 
+class OracledatabaseProjectsLocationsAutonomousDatabasesChangeDisasterRecoveryConfigRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsAutonomousDatabasesChangeDisasterRecove
+  ryConfigRequest object.
+
+  Fields:
+    changeDisasterRecoveryConfigRequest: A ChangeDisasterRecoveryConfigRequest
+      resource to be passed as the request body.
+    name: Required. The name of the Autonomous Database in the following
+      format: projects/{project}/locations/{location}/autonomousDatabases/{aut
+      onomous_database}.
+  """
+
+  changeDisasterRecoveryConfigRequest = _messages.MessageField('ChangeDisasterRecoveryConfigRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class OracledatabaseProjectsLocationsAutonomousDatabasesCreateRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsAutonomousDatabasesCreateRequest
   object.
@@ -7865,9 +8060,12 @@ class OracledatabaseProjectsLocationsAutonomousDatabasesPatchRequest(_messages.M
       (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the Exadata resource by the update. The fields specified
-      in the update_mask are relative to the resource, not the full request. A
-      field will be overwritten if it is in the mask. If the user does not
-      provide a mask then all fields will be overwritten.
+      in the `update_mask` are relative to the resource, not the full request.
+      A field will be overwritten if it is in the mask. If the user does not
+      provide a mask then the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value). To
+      clear or unset a field, the field must be explicitly specified in the
+      `update_mask`.
   """
 
   autonomousDatabase = _messages.MessageField('AutonomousDatabase', 1)
@@ -8161,9 +8359,12 @@ class OracledatabaseProjectsLocationsCloudExadataInfrastructuresPatchRequest(_me
       (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the Exadata resource by the update. The fields specified
-      in the update_mask are relative to the resource, not the full request. A
-      field will be overwritten if it is in the mask. If the user does not
-      provide a mask then all fields will be overwritten.
+      in the `update_mask` are relative to the resource, not the full request.
+      A field will be overwritten if it is in the mask. If the user does not
+      provide a mask then the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value). To
+      clear or unset a field, the field must be explicitly specified in the
+      `update_mask`.
   """
 
   cloudExadataInfrastructure = _messages.MessageField('CloudExadataInfrastructure', 1)
@@ -8337,10 +8538,12 @@ class OracledatabaseProjectsLocationsCloudVmClustersPatchRequest(_messages.Messa
       accidentally creating duplicate commitments. The request ID must be a
       valid UUID with the exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. A mask specifying which fields in th VM Cluster
+    updateMask: Optional. A mask specifying which fields in the VM Cluster
       should be updated. A field specified in the mask is overwritten. If a
-      mask isn't provided then all the fields in the VM Cluster are
-      overwritten.
+      mask isn't provided, the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value). To
+      clear or unset a field, the field must be explicitly specified in the
+      `update_mask`.
   """
 
   cloudVmCluster = _messages.MessageField('CloudVmCluster', 1)
@@ -8436,6 +8639,22 @@ class OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest(_messages.
 
   name = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest
+  object.
+
+  Fields:
+    executeSqlRequest: A ExecuteSqlRequest resource to be passed as the
+      request body.
+    name: Required. The name of the DatabaseConnection in the following
+      format: projects/{project}/locations/{location}/databaseConnections/{dat
+      abase_connection}.
+  """
+
+  executeSqlRequest = _messages.MessageField('ExecuteSqlRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest(_messages.Message):
@@ -8543,6 +8762,41 @@ class OracledatabaseProjectsLocationsDatabasesListRequest(_messages.Message):
       request that provided this page token.
     parent: Required. The parent resource name in the following format:
       projects/{project}/locations/{region}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class OracledatabaseProjectsLocationsDbSystemComputePerformancesGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDbSystemComputePerformancesGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource in the format: projects/{project}/loc
+      ations/{location}/dbSystemComputePerformances/{db_system_compute_perform
+      ance}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsDbSystemComputePerformancesListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDbSystemComputePerformancesListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Only the `db_system_shape` field is supported in the following format:
+      `db_system_shape="{db_system_shape}"`.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListDbSystemComputePerformancesRequest
+      Format: projects/{project}/locations/{location}
   """
 
   filter = _messages.StringField(1)
@@ -8965,8 +9219,10 @@ class OracledatabaseProjectsLocationsExadbVmClustersPatchRequest(_messages.Messa
       (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. A mask specifying which fields in th VM Cluster
       should be updated. A field specified in the mask is overwritten. If a
-      mask isn't provided then all the fields in the VM Cluster are
-      overwritten.
+      mask isn't provided then the service treats this as an implied field
+      mask equivalent to all fields that are populated (have a non-empty
+      value). To clear or unset a field, the field must be explicitly
+      specified in the `update_mask`.
   """
 
   exadbVmCluster = _messages.MessageField('ExadbVmCluster', 1)
@@ -9106,7 +9362,8 @@ class OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest(_messag
       ExascaleDbStorageVault should be updated. A field specified in the mask
       is updated. If a mask isn't provided, the service treats this as an
       implied field mask equivalent to all fields that are populated (have a
-      non-empty value).
+      non-empty value). To clear or unset a field, the field must be
+      explicitly specified in the `update_mask`.
   """
 
   exascaleDbStorageVault = _messages.MessageField('ExascaleDbStorageVault', 1)
@@ -9356,7 +9613,8 @@ class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsPatchRequest
       GoldengateConnectionAssignment should be updated. A field specified in
       the mask is updated. If a mask isn't provided, the service treats this
       as an implied field mask equivalent to all fields that are populated
-      (have a non-empty value).
+      (have a non-empty value). To clear or unset a field, the field must be
+      explicitly specified in the `update_mask`.
   """
 
   goldengateConnectionAssignment = _messages.MessageField('GoldengateConnectionAssignment', 1)
@@ -9527,7 +9785,8 @@ class OracledatabaseProjectsLocationsGoldengateConnectionsPatchRequest(_messages
       GoldengateConnection should be updated. A field specified in the mask is
       updated. If a mask isn't provided, the service treats this as an implied
       field mask equivalent to all fields that are populated (have a non-empty
-      value).
+      value). To clear or unset a field, the field must be explicitly
+      specified in the `update_mask`.
   """
 
   goldengateConnection = _messages.MessageField('GoldengateConnection', 1)
@@ -9758,7 +10017,8 @@ class OracledatabaseProjectsLocationsGoldengateDeploymentsPatchRequest(_messages
       GoldengateDeployment should be updated. A field specified in the mask is
       updated. If a mask isn't provided, the service treats this as an implied
       field mask equivalent to all fields that are populated (have a non-empty
-      value).
+      value). To clear or unset a field, the field must be explicitly
+      specified in the `update_mask`.
   """
 
   goldengateDeployment = _messages.MessageField('GoldengateDeployment', 1)
@@ -10090,7 +10350,9 @@ class OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsPatchRequest(_messages
     updateMask: Optional. A mask specifying which fields in the OdbSubnet
       should be updated. A field specified in the mask is updated. If a mask
       isn't provided, the service treats this as an implied field mask
-      equivalent to all fields that are populated (have a non-empty value).
+      equivalent to all fields that are populated (have a non-empty value). To
+      clear or unset a field, the field must be explicitly specified in the
+      `update_mask`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -10116,7 +10378,9 @@ class OracledatabaseProjectsLocationsOdbNetworksPatchRequest(_messages.Message):
     updateMask: Optional. A mask specifying which fields in the OdbNetwork
       should be updated. A field specified in the mask is updated. If a mask
       isn't provided, the service treats this as an implied field mask
-      equivalent to all fields that are populated (have a non-empty value).
+      equivalent to all fields that are populated (have a non-empty value). To
+      clear or unset a field, the field must be explicitly specified in the
+      `update_mask`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -10720,6 +10984,16 @@ class RestoreAutonomousDatabaseRequest(_messages.Message):
   restoreTime = _messages.StringField(1)
 
 
+class Row(_messages.Message):
+  r"""A single row from a sql result.
+
+  Fields:
+    values: List of values in a row of sql result.
+  """
+
+  values = _messages.MessageField('Value', 1, repeated=True)
+
+
 class ScheduledOperationDetails(_messages.Message):
   r"""Details of scheduled operation. https://docs.oracle.com/en-
   us/iaas/api/#/en/database/20160918/datatypes/ScheduledOperationDetails
@@ -10760,7 +11034,7 @@ class ScheduledOperationDetails(_messages.Message):
   stopTime = _messages.MessageField('TimeOfDay', 3)
 
 
-class ServiceConnectionConfig(_messages.Message):
+class ServiceConnectivityConfig(_messages.Message):
   r"""Configuration to enable the service (Oracledatabase@Google Cloud) to
   establish connectivity to the database. This should be specified if you
   intend to associate this OdbNetwork with a DatabaseConnection resource to
@@ -10876,6 +11150,9 @@ class SourceConfig(_messages.Message):
   Enums:
     CloneTypeValueValuesEnum: Optional. The clone type of the Autonomous
       Database. This field is only applicable in case of cloning
+    DisasterRecoveryTypeValueValuesEnum: Optional. The disaster recovery type
+      of the Autonomous Database. This field is only applicable in case of
+      CROSS_REGION_DISASTER_RECOVERY source type.
     RefreshableModeValueValuesEnum: Optional. The refresh mode of the clone.
     SourceTypeValueValuesEnum: Optional. The source type of the Autonomous
       Database.
@@ -10903,6 +11180,9 @@ class SourceConfig(_messages.Message):
       use_latest_available_backup is false.
     cloneType: Optional. The clone type of the Autonomous Database. This field
       is only applicable in case of cloning
+    disasterRecoveryType: Optional. The disaster recovery type of the
+      Autonomous Database. This field is only applicable in case of
+      CROSS_REGION_DISASTER_RECOVERY source type.
     refreshableMode: Optional. The refresh mode of the clone.
     sourceType: Optional. The source type of the Autonomous Database.
     useLatestAvailableBackup: Optional. Clone from latest available backup
@@ -10924,6 +11204,20 @@ class SourceConfig(_messages.Message):
     CLONE_TYPE_UNSPECIFIED = 0
     FULL = 1
     METADATA = 2
+
+  class DisasterRecoveryTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The disaster recovery type of the Autonomous Database. This
+    field is only applicable in case of CROSS_REGION_DISASTER_RECOVERY source
+    type.
+
+    Values:
+      DISASTER_RECOVERY_TYPE_UNSPECIFIED: Default unspecified value.
+      ADG: Autonomous Data Guard (ADG).
+      BACKUP_BASED: Backup-based disaster recovery.
+    """
+    DISASTER_RECOVERY_TYPE_UNSPECIFIED = 0
+    ADG = 1
+    BACKUP_BASED = 2
 
   class RefreshableModeValueValuesEnum(_messages.Enum):
     r"""Optional. The refresh mode of the clone.
@@ -10969,9 +11263,45 @@ class SourceConfig(_messages.Message):
   autonomousDatabaseBackup = _messages.StringField(6)
   backupTime = _messages.StringField(7)
   cloneType = _messages.EnumField('CloneTypeValueValuesEnum', 8)
-  refreshableMode = _messages.EnumField('RefreshableModeValueValuesEnum', 9)
-  sourceType = _messages.EnumField('SourceTypeValueValuesEnum', 10)
-  useLatestAvailableBackup = _messages.BooleanField(11)
+  disasterRecoveryType = _messages.EnumField('DisasterRecoveryTypeValueValuesEnum', 9)
+  refreshableMode = _messages.EnumField('RefreshableModeValueValuesEnum', 10)
+  sourceType = _messages.EnumField('SourceTypeValueValuesEnum', 11)
+  useLatestAvailableBackup = _messages.BooleanField(12)
+
+
+class SqlParameter(_messages.Message):
+  r"""Represents a bind variable (parameter) for SQL execution.
+
+  Fields:
+    name: Optional. The name of the SQL bind parameter (excluding the leading
+      colon, e.g. "id"). If omitted, parameters bind positionally based on
+      their order in the list.
+    typeName: Optional. Optional: Datatype hint for the parameter (e.g.,
+      "VARCHAR2", "NUMBER", "DATE", "TIMESTAMP"). If omitted, the Oracle
+      driver will infer the type from the value string.
+    value: Required. Use protobuf.Value so clients can pass ints, bools, and
+      strings natively.
+  """
+
+  name = _messages.StringField(1)
+  typeName = _messages.StringField(2)
+  value = _messages.MessageField('extra_types.JsonValue', 3)
+
+
+class SqlResult(_messages.Message):
+  r"""SqlResult represents the result for the execution of a sql statement.
+
+  Fields:
+    affectedRowCount: Optional. The number of rows affected by DML statements
+      (e.g., INSERT, UPDATE, DELETE, MERGE). Unset or 0 for SELECT / DDL
+      statements.
+    columns: List of columns included in the result, including data type.
+    rows: Rows returned by the SQL statement.
+  """
+
+  affectedRowCount = _messages.IntegerField(1)
+  columns = _messages.MessageField('Column', 2, repeated=True)
+  rows = _messages.MessageField('Row', 3, repeated=True)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -11278,6 +11608,19 @@ class TimeZone(_messages.Message):
 
   id = _messages.StringField(1)
   version = _messages.StringField(2)
+
+
+class Value(_messages.Message):
+  r"""A single value in a row from a sql result.
+
+  Fields:
+    nullValue: Set to true if the cell value is NULL.
+    value: The cell value represented in string format. Timestamps should be
+      converted using RFC3339Nano format.
+  """
+
+  nullValue = _messages.BooleanField(1)
+  value = _messages.StringField(2)
 
 
 encoding.AddCustomJsonFieldMapping(

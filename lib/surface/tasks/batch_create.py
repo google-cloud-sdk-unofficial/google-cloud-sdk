@@ -92,7 +92,6 @@ def _ExtractCreatedTasks(op, task_message_type):
 
 
 @base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class BatchCreate(base.CreateCommand):
   """Create multiple tasks from a file in a single batch operation."""

@@ -134,12 +134,16 @@
         Indicates whether you want to enable support for GKE clients. By default,
         GKE clients are not supported.
     - arg_name: placement-policy
-      api_field: instance.placementPolicy
-      required: false
-      repeated: false
       help_text: |-
         The placement policy name for the instance in the format of
         projects/{project}/locations/{location}/resourcePolicies/{resource_policy}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_or_regions_resource_policies
+      resource_method_params:
+        instance.placementPolicy: '{__relative_name__}'
+      required: false
+      clearable: true
     - group:
         api_field: instance.accessRulesOptions
         arg_name: ''

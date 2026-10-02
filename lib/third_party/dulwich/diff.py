@@ -1,6 +1,7 @@
 # diff.py -- Diff functionality for Dulwich
 # Copyright (C) 2025 Dulwich contributors
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
 # General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
@@ -44,21 +45,46 @@ Example usage:
     diff_index_to_tree(repo, sys.stdout.buffer, paths=[b'src/', b'README.md'])
 """
 
+__all__ = [
+    "ColorizedDiffStream",
+    "diff_index_to_tree",
+    "diff_working_tree_to_index",
+    "diff_working_tree_to_tree",
+    "should_include_path",
+]
+
+import io
 import logging
 import os
 import stat
-from typing import BinaryIO, Optional, cast
+import sys
+from collections.abc import Callable, Iterable, Sequence
+from typing import TYPE_CHECKING, BinaryIO
 
-from .index import ConflictedIndexEntry, commit_index
+if TYPE_CHECKING:
+    from .config import Config
+
+from ._typing import Buffer
+from .index import (
+    ConflictedIndexEntry,
+    commit_index,
+    get_path_element_validator,
+    validate_path,
+)
 from .object_store import iter_tree_contents
-from .objects import S_ISGITLINK, Blob
+from .objects import S_ISGITLINK, Blob, Commit, ObjectID
 from .patch import write_blob_diff, write_object_diff
 from .repo import Repo
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 logger = logging.getLogger(__name__)
 
 
-def should_include_path(path: bytes, paths: Optional[list[bytes]]) -> bool:
+def should_include_path(path: bytes, paths: Sequence[bytes] | None) -> bool:
     """Check if a path should be included based on path filters.
 
     Args:
@@ -73,32 +99,74 @@ def should_include_path(path: bytes, paths: Optional[list[bytes]]) -> bool:
     return any(path == p or path.startswith(p + b"/") for p in paths)
 
 
+def _worktree_fs_path(
+    repo_path: str,
+    tree_path: bytes,
+    element_validator: Callable[[bytes], bool],
+) -> str | None:
+    """Resolve a tree/index path to a work-tree file path, or skip it.
+
+    Tree and index entries can come from an untrusted object (a fetched or
+    cloned commit), so an entry containing ``..`` or ``.git`` would otherwise
+    let a working-tree diff read a file outside the work tree and disclose its
+    contents in the diff output. Like C git, such paths are never touched on the
+    filesystem; the work-tree side is treated as absent instead of erroring, so
+    the rest of the diff is still produced.
+
+    Args:
+      repo_path: Work-tree root.
+      tree_path: Path of the tree/index entry, relative to the work tree.
+      element_validator: Path-element validator, as returned by
+        ``get_path_element_validator`` for the repository configuration.
+
+    Returns:
+      The joined work-tree path, or ``None`` if the path is invalid and should
+      not be read from the filesystem.
+    """
+    if not validate_path(tree_path, element_validator):
+        return None
+    return os.path.join(repo_path, tree_path.decode("utf-8"))
+
+
 def diff_index_to_tree(
     repo: Repo,
     outstream: BinaryIO,
-    commit_sha: Optional[bytes] = None,
-    paths: Optional[list[bytes]] = None,
+    commit_sha: ObjectID | None = None,
+    paths: Sequence[bytes] | None = None,
+    diff_algorithm: str | None = None,
+    *,
+    config: "Config | None" = None,
 ) -> None:
     """Show staged changes (index vs commit).
 
     Args:
         repo: Repository object
         outstream: Stream to write diff to
+        config: Repository configuration
         commit_sha: SHA of commit to compare against, or None for HEAD
         paths: Optional list of paths to filter (as bytes)
+        diff_algorithm: Algorithm to use for diffing ("myers" or "patience"), defaults to DEFAULT_DIFF_ALGORITHM if None
     """
+    if config is None:
+        config = repo.get_config_stack()
     if commit_sha is None:
         try:
-            commit_sha = repo.refs[b"HEAD"]
-            old_tree = repo[commit_sha].tree
+            from dulwich.refs import HEADREF
+
+            commit_sha = repo.refs[HEADREF]
+            old_commit = repo[commit_sha]
+            assert isinstance(old_commit, Commit)
+            old_tree = old_commit.tree
         except KeyError:
             # No HEAD means no commits yet
             old_tree = None
     else:
-        old_tree = repo[commit_sha].tree
+        old_commit = repo[commit_sha]
+        assert isinstance(old_commit, Commit)
+        old_tree = old_commit.tree
 
     # Get tree from index
-    index = repo.open_index()
+    index = repo.open_index(config=config)
     new_tree = commit_index(repo.object_store, index)
     changes = repo.object_store.tree_changes(old_tree, new_tree, paths=paths)
 
@@ -108,14 +176,18 @@ def diff_index_to_tree(
             repo.object_store,
             (oldpath, oldmode, oldsha),
             (newpath, newmode, newsha),
+            diff_algorithm=diff_algorithm,
         )
 
 
 def diff_working_tree_to_tree(
     repo: Repo,
     outstream: BinaryIO,
-    commit_sha: bytes,
-    paths: Optional[list[bytes]] = None,
+    commit_sha: ObjectID,
+    paths: Sequence[bytes] | None = None,
+    diff_algorithm: str | None = None,
+    *,
+    config: "Config | None" = None,
 ) -> None:
     """Compare working tree to a specific commit.
 
@@ -124,30 +196,46 @@ def diff_working_tree_to_tree(
         outstream: Stream to write diff to
         commit_sha: SHA of commit to compare against
         paths: Optional list of paths to filter (as bytes)
+        diff_algorithm: Algorithm to use for diffing ("myers" or "patience"), defaults to DEFAULT_DIFF_ALGORITHM if None
+        config: Repository configuration
     """
-    tree = repo[commit_sha].tree
-    normalizer = repo.get_blob_normalizer()
-    filter_callback = normalizer.checkin_normalize
+    if config is None:
+        config = repo.get_config_stack()
+    commit = repo[commit_sha]
+    assert isinstance(commit, Commit)
+    tree = commit.tree
+    normalizer = repo.get_blob_normalizer(config=config)
+    filter_callback = normalizer.checkin_normalize if normalizer is not None else None
+    validate_element = get_path_element_validator(config)
 
     # Get index for tracking new files
-    index = repo.open_index()
+    index = repo.open_index(config=config)
     index_paths = set(index.paths())
     processed_paths = set()
 
     # Process files from the committed tree lazily
     for entry in iter_tree_contents(repo.object_store, tree):
+        assert (
+            entry.path is not None and entry.mode is not None and entry.sha is not None
+        )
         path = entry.path
         if not should_include_path(path, paths):
             continue
 
         processed_paths.add(path)
-        full_path = os.path.join(repo.path, path.decode("utf-8"))
+        full_path = _worktree_fs_path(repo.path, path, validate_element)
 
         # Get the old file from tree
         old_mode = entry.mode
         old_sha = entry.sha
         old_blob = repo.object_store[old_sha]
         assert isinstance(old_blob, Blob)
+
+        if full_path is None:
+            # Invalid path (e.g. ``..`` or ``.git``); like C git, don't read the
+            # filesystem for it. Show the committed entry as removed.
+            write_blob_diff(outstream, (path, old_mode, old_blob), (None, None, None))
+            continue
 
         try:
             # Use lstat to handle symlinks properly
@@ -292,7 +380,10 @@ def diff_working_tree_to_tree(
         if not should_include_path(path, paths):
             continue
 
-        full_path = os.path.join(repo.path, path.decode("utf-8"))
+        full_path = _worktree_fs_path(repo.path, path, validate_element)
+        if full_path is None:
+            # Invalid path; like C git, don't read the filesystem for it.
+            continue
 
         try:
             # Use lstat to handle symlinks properly
@@ -351,7 +442,12 @@ def diff_working_tree_to_tree(
 
 
 def diff_working_tree_to_index(
-    repo: Repo, outstream: BinaryIO, paths: Optional[list[bytes]] = None
+    repo: Repo,
+    outstream: BinaryIO,
+    paths: Sequence[bytes] | None = None,
+    diff_algorithm: str | None = None,
+    *,
+    config: "Config | None" = None,
 ) -> None:
     """Compare working tree to index.
 
@@ -359,10 +455,15 @@ def diff_working_tree_to_index(
         repo: Repository object
         outstream: Stream to write diff to
         paths: Optional list of paths to filter (as bytes)
+        diff_algorithm: Algorithm to use for diffing ("myers" or "patience"), defaults to DEFAULT_DIFF_ALGORITHM if None
+        config: Repository configuration
     """
-    index = repo.open_index()
-    normalizer = repo.get_blob_normalizer()
-    filter_callback = normalizer.checkin_normalize
+    if config is None:
+        config = repo.get_config_stack()
+    index = repo.open_index(config=config)
+    normalizer = repo.get_blob_normalizer(config=config)
+    filter_callback = normalizer.checkin_normalize if normalizer is not None else None
+    validate_element = get_path_element_validator(config)
 
     # Process each file in the index
     for tree_path, entry in index.iteritems():
@@ -382,11 +483,18 @@ def diff_working_tree_to_index(
         old_obj = repo.object_store[old_sha]
         # Type check and cast to Blob
         if isinstance(old_obj, Blob):
-            old_blob = cast(Blob, old_obj)
+            old_blob = old_obj
         else:
             old_blob = None
 
-        full_path = os.path.join(repo.path, tree_path.decode("utf-8"))
+        full_path = _worktree_fs_path(repo.path, tree_path, validate_element)
+        if full_path is None:
+            # Invalid path (e.g. ``..`` or ``.git``); like C git, don't read the
+            # filesystem for it. Show the index entry as removed.
+            write_blob_diff(
+                outstream, (tree_path, old_mode, old_blob), (None, None, None)
+            )
+            continue
         try:
             # Use lstat to handle symlinks properly
             st = os.lstat(full_path)
@@ -506,7 +614,7 @@ def diff_working_tree_to_index(
             )
 
 
-class ColorizedDiffStream:
+class ColorizedDiffStream(BinaryIO):
     """Stream wrapper that colorizes diff output line by line using Rich.
 
     This class wraps a binary output stream and applies color formatting
@@ -515,7 +623,7 @@ class ColorizedDiffStream:
     """
 
     @staticmethod
-    def is_available():
+    def is_available() -> bool:
         """Check if Rich is available for colorization.
 
         Returns:
@@ -528,7 +636,7 @@ class ColorizedDiffStream:
         except ImportError:
             return False
 
-    def __init__(self, output_stream):
+    def __init__(self, output_stream: BinaryIO) -> None:
         """Initialize the colorized stream wrapper.
 
         Args:
@@ -546,13 +654,18 @@ class ColorizedDiffStream:
         self.console = Console(file=self.text_wrapper, force_terminal=True)
         self.buffer = b""
 
-    def write(self, data):
+    def write(self, data: bytes | Buffer) -> int:  # type: ignore[override,unused-ignore]
         """Write data to the stream, applying colorization.
 
         Args:
             data: Bytes to write
+
+        Returns:
+            Number of bytes written
         """
         # Add new data to buffer
+        if not isinstance(data, bytes):
+            data = bytes(data)
         self.buffer += data
 
         # Process complete lines
@@ -560,7 +673,9 @@ class ColorizedDiffStream:
             line, self.buffer = self.buffer.split(b"\n", 1)
             self._colorize_and_write_line(line + b"\n")
 
-    def writelines(self, lines):
+        return len(data)
+
+    def writelines(self, lines: Iterable[bytes | Buffer]) -> None:  # type: ignore[override,unused-ignore]
         """Write a list of lines to the stream.
 
         Args:
@@ -569,7 +684,7 @@ class ColorizedDiffStream:
         for line in lines:
             self.write(line)
 
-    def _colorize_and_write_line(self, line_bytes):
+    def _colorize_and_write_line(self, line_bytes: bytes) -> None:
         """Apply color formatting to a single line and write it.
 
         Args:
@@ -593,7 +708,7 @@ class ColorizedDiffStream:
             # Fallback to raw output if we can't decode/encode the text
             self.output_stream.write(line_bytes)
 
-    def flush(self):
+    def flush(self) -> None:
         """Flush any remaining buffered content and the underlying stream."""
         # Write any remaining buffer content
         if self.buffer:
@@ -604,3 +719,80 @@ class ColorizedDiffStream:
             self.text_wrapper.flush()
         if hasattr(self.output_stream, "flush"):
             self.output_stream.flush()
+
+    # BinaryIO interface methods
+    def close(self) -> None:
+        """Close the stream."""
+        self.flush()
+        if hasattr(self.output_stream, "close"):
+            self.output_stream.close()
+
+    @property
+    def closed(self) -> bool:
+        """Check if the stream is closed."""
+        return getattr(self.output_stream, "closed", False)
+
+    def fileno(self) -> int:
+        """Return the file descriptor."""
+        return self.output_stream.fileno()
+
+    def isatty(self) -> bool:
+        """Check if the stream is a TTY."""
+        return getattr(self.output_stream, "isatty", lambda: False)()
+
+    def read(self, n: int = -1) -> bytes:
+        """Read is not supported on this write-only stream."""
+        raise io.UnsupportedOperation("not readable")
+
+    def readable(self) -> bool:
+        """This stream is not readable."""
+        return False
+
+    def readline(self, limit: int = -1) -> bytes:
+        """Read is not supported on this write-only stream."""
+        raise io.UnsupportedOperation("not readable")
+
+    def readlines(self, hint: int = -1) -> list[bytes]:
+        """Read is not supported on this write-only stream."""
+        raise io.UnsupportedOperation("not readable")
+
+    def seek(self, offset: int, whence: int = 0) -> int:
+        """Seek is not supported on this stream."""
+        raise io.UnsupportedOperation("not seekable")
+
+    def seekable(self) -> bool:
+        """This stream is not seekable."""
+        return False
+
+    def tell(self) -> int:
+        """Tell is not supported on this stream."""
+        raise io.UnsupportedOperation("not seekable")
+
+    def truncate(self, size: int | None = None) -> int:
+        """Truncate is not supported on this stream."""
+        raise io.UnsupportedOperation("not truncatable")
+
+    def writable(self) -> bool:
+        """This stream is writable."""
+        return True
+
+    def __enter__(self) -> Self:
+        """Context manager entry."""
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object | None,
+    ) -> None:
+        """Context manager exit."""
+        self.flush()
+
+    def __iter__(self) -> "ColorizedDiffStream":
+        """Iterator interface - not supported."""
+        raise io.UnsupportedOperation("not iterable")
+
+    def __next__(self) -> bytes:
+        """Iterator interface - not supported."""
+        raise io.UnsupportedOperation("not iterable")

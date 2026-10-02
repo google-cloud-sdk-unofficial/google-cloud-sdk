@@ -158,8 +158,7 @@ class AgentSpec(_messages.Message):
   r"""The spec of the agent.
 
   Enums:
-    TypeValueValuesEnum: Required. Immutable. The type of the agent spec
-      content.
+    TypeValueValuesEnum: Required. The type of the agent spec content.
 
   Messages:
     ContentValue: Optional. The content of the Agent spec in the JSON format.
@@ -170,11 +169,11 @@ class AgentSpec(_messages.Message):
     content: Optional. The content of the Agent spec in the JSON format. This
       payload is validated against the schema for the specified type. The
       content size is limited to `10KB`.
-    type: Required. Immutable. The type of the agent spec content.
+    type: Required. The type of the agent spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. Immutable. The type of the agent spec content.
+    r"""Required. The type of the agent spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
@@ -1621,7 +1620,7 @@ class Binding(_messages.Message):
       a maximum length of `63` characters.
     name: Required. Identifier. The resource name of the Binding. Format:
       `projects/{project}/locations/{location}/bindings/{binding}`.
-    source: Required. The target Agent of the Binding.
+    source: Optional. The source Agent of the Binding.
     target: Required. The target Agent Registry Resource of the Binding.
     updateTime: Output only. Timestamp when this binding was last updated.
   """
@@ -1923,8 +1922,7 @@ class EndpointSpec(_messages.Message):
   r"""The spec of the endpoint.
 
   Enums:
-    TypeValueValuesEnum: Required. Immutable. The type of the endpoint spec
-      content.
+    TypeValueValuesEnum: Required. The type of the endpoint spec content.
 
   Messages:
     ContentValue: Optional. The content of the endpoint spec. Reserved for
@@ -1933,11 +1931,11 @@ class EndpointSpec(_messages.Message):
   Fields:
     content: Optional. The content of the endpoint spec. Reserved for future
       use.
-    type: Required. Immutable. The type of the endpoint spec content.
+    type: Required. The type of the endpoint spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. Immutable. The type of the endpoint spec content.
+    r"""Required. The type of the endpoint spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
@@ -2887,8 +2885,7 @@ class McpServerSpec(_messages.Message):
   r"""The spec of the MCP Server.
 
   Enums:
-    TypeValueValuesEnum: Required. Immutable. The type of the MCP Server spec
-      content.
+    TypeValueValuesEnum: Required. The type of the MCP Server spec content.
 
   Messages:
     ContentValue: Optional. The content of the MCP Server spec. This payload
@@ -2899,11 +2896,11 @@ class McpServerSpec(_messages.Message):
     content: Optional. The content of the MCP Server spec. This payload is
       validated against the schema for the specified type. The content size is
       limited to `10KB`.
-    type: Required. Immutable. The type of the MCP Server spec content.
+    type: Required. The type of the MCP Server spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. Immutable. The type of the MCP Server spec content.
+    r"""Required. The type of the MCP Server spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
@@ -3229,10 +3226,10 @@ class SearchAgentsRequest(_messages.Message):
       skills.description | No | Yes | No | Included | | skills.tags | No | Yes
       | No | Included | | skills.examples | No | Yes | No | Included |
       Examples: * `agentId="urn:agent:projects-123:projects:123:locations:us-
-      central1:reasoningEngines:1234"` to find the agent with the specified
-      agent ID. * `name:important` to find agents whose name contains
-      `important` as a word. * `displayName:works*` to find agents whose
-      display name contains words that start with `works`. *
+      central1:aiplatform:reasoningEngines:1234"` to find the agent with the
+      specified agent ID. * `name:important` to find agents whose name
+      contains `important` as a word. * `displayName:works*` to find agents
+      whose display name contains words that start with `works`. *
       `skills.tags:test` to find agents whose skills tags contain `test`. *
       `planner OR booking` to find agents whose metadata contains the words
       `planner` or `booking`.
@@ -3377,6 +3374,10 @@ class Skill(_messages.Message):
     TypeValueValuesEnum: Required. Structural deployment type (SIMPLE leaf vs
       COMPOSITE bundle).
 
+  Messages:
+    LabelsValue: Optional. User-defined labels for the Skill. Follows standard
+      Google Cloud resource label format and constraints (AIP-128).
+
   Fields:
     createTime: Output only. Create time.
     defaultRevision: Optional. The full resource name of the revision
@@ -3393,6 +3394,8 @@ class Skill(_messages.Message):
     initialRevision: Optional. Input only. Optional nested initial revision
       payload to support standard one-shot creation. The server processes this
       field on input during creation but must never return it in responses.
+    labels: Optional. User-defined labels for the Skill. Follows standard
+      Google Cloud resource label format and constraints (AIP-128).
     name: Identifier. Resource name of the Skill. Format:
       `projects/{project}/locations/{location}/skills/{skill}` The `{skill}`
       segment acts as the resource ID. If the skill is associated with a
@@ -3475,6 +3478,31 @@ class Skill(_messages.Message):
     TYPE_UNSPECIFIED = 0
     SIMPLE = 1
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels for the Skill. Follows standard Google
+    Cloud resource label format and constraints (AIP-128).
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   createTime = _messages.StringField(1)
   defaultRevision = _messages.StringField(2)
   defaultRevisionFindingCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
@@ -3482,15 +3510,16 @@ class Skill(_messages.Message):
   displayName = _messages.StringField(5)
   frontmatter = _messages.MessageField('Frontmatter', 6)
   initialRevision = _messages.MessageField('SkillRevision', 7)
-  name = _messages.StringField(8)
-  publisher = _messages.StringField(9)
-  scanningConfig = _messages.MessageField('ScanningConfig', 10)
-  skillId = _messages.StringField(11)
-  state = _messages.EnumField('StateValueValuesEnum', 12)
-  targetState = _messages.EnumField('TargetStateValueValuesEnum', 13)
-  type = _messages.EnumField('TypeValueValuesEnum', 14)
-  uid = _messages.StringField(15)
-  updateTime = _messages.StringField(16)
+  labels = _messages.MessageField('LabelsValue', 8)
+  name = _messages.StringField(9)
+  publisher = _messages.StringField(10)
+  scanningConfig = _messages.MessageField('ScanningConfig', 11)
+  skillId = _messages.StringField(12)
+  state = _messages.EnumField('StateValueValuesEnum', 13)
+  targetState = _messages.EnumField('TargetStateValueValuesEnum', 14)
+  type = _messages.EnumField('TypeValueValuesEnum', 15)
+  uid = _messages.StringField(16)
+  updateTime = _messages.StringField(17)
 
 
 class SkillRevision(_messages.Message):

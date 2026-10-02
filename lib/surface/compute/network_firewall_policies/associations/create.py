@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for creating network firewall policy associations."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewall_policy_association_utils as association_utils
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
@@ -34,9 +33,7 @@ class Create(base.CreateCommand):
   """
 
   NEWORK_FIREWALL_POLICY_ARG = None
-  _support_priority = False
   _support_associated_policy_to_be_replaced_global = False
-  _support_associated_policy_to_be_replaced_region = False
 
   @classmethod
   def Args(cls, parser):
@@ -46,12 +43,7 @@ class Create(base.CreateCommand):
         )
     )
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
-    flags.AddArgsCreateAssociation(
-        parser,
-        cls._support_priority,
-        cls._support_associated_policy_to_be_replaced_global
-        or cls._support_associated_policy_to_be_replaced_region,
-    )
+    flags.AddArgsCreateAssociation(parser)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
   def Run(self, args):
@@ -81,22 +73,18 @@ class Create(base.CreateCommand):
     attachment_target = network_ref.SelfLink()
 
     priority = None
-    if self._support_priority and args.IsSpecified('priority'):
+    if args.IsSpecified('priority'):
       priority = association_utils.ConvertPriorityToInt(args.priority)
 
     associated_policy_to_be_replaced = None
-    if (
-        self._support_associated_policy_to_be_replaced_global
-        or self._support_associated_policy_to_be_replaced_region
-    ) and args.IsSpecified('associated_policy_to_be_replaced'):
+    if args.IsSpecified('associated_policy_to_be_replaced'):
       associated_policy_to_be_replaced = args.associated_policy_to_be_replaced
 
     replace_existing_association = False
     if args.replace_association_on_target:
       replace_existing_association = True
 
-    association = None
-    if self._support_priority and priority is not None:
+    if priority is not None:
       association = holder.client.messages.FirewallPolicyAssociation(
           attachmentTarget=attachment_target, name=name, priority=priority
       )
@@ -111,7 +99,7 @@ class Create(base.CreateCommand):
         replace_existing_association=replace_existing_association,
         associated_policy_to_be_replaced=associated_policy_to_be_replaced,
         support_associated_policy_to_be_replaced=(
-            self._support_associated_policy_to_be_replaced_region
+            True
             if hasattr(ref, 'region')
             else self._support_associated_policy_to_be_replaced_global
         ),
@@ -129,10 +117,6 @@ class CreateBeta(Create):
   resources.
   """
 
-  _support_priority = True
-  _support_associated_policy_to_be_replaced_global = False
-  _support_associated_policy_to_be_replaced_region = True
-
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -144,9 +128,7 @@ class CreateAlpha(Create):
   resources.
   """
 
-  _support_priority = True
   _support_associated_policy_to_be_replaced_global = True
-  _support_associated_policy_to_be_replaced_region = True
 
 
 Create.detailed_help = {

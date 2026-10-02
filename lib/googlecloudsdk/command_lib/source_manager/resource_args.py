@@ -15,6 +15,7 @@
 """Shared resource flags for Secure Source Manager commands."""
 
 
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
@@ -152,6 +153,46 @@ def AddPullRequestResourceArg(parser, verb):
       'pull_request',
       GetPullRequestResourceSpec(),
       'The Secure Source Manager pull request {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+def IssueAttributeConfig() -> concepts.ResourceParameterAttributeConfig:
+  return concepts.ResourceParameterAttributeConfig(
+      name='issue', help_text='Secure Source Manager issue.'
+  )
+
+
+def GetIssueResourceSpec() -> concepts.ResourceSpec:
+  return concepts.ResourceSpec(
+      'securesourcemanager.projects.locations.repositories.issues',
+      resource_name='issue',
+      issuesId=IssueAttributeConfig(),
+      repositoriesId=RepositoryAttributeConfig(),
+      locationsId=RegionAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      disable_auto_completers=False,
+  )
+
+
+def AddIssueResourceArg(
+    parser: parser_arguments.ArgumentInterceptor, verb: str
+) -> None:
+  concept_parsers.ConceptParser.ForResource(
+      'issue',
+      GetIssueResourceSpec(),
+      'The Secure Source Manager issue {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+def AddIssueResourceArgAsFlag(
+    parser: parser_arguments.ArgumentInterceptor, verb: str
+) -> None:
+  concept_parsers.ConceptParser.ForResource(
+      '--issue',
+      GetIssueResourceSpec(),
+      'The Secure Source Manager issue {}.'.format(verb),
       required=True,
   ).AddToParser(parser)
 

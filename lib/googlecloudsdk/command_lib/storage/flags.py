@@ -1820,11 +1820,31 @@ def add_feature_config_description_flag(parser):
   )
 
 
-def add_feature_config_auto_annotate_models_flag(parser):
+def add_feature_config_auto_annotate_models_flag(
+    parser, required: bool = False
+) -> None:
   """Adds auto-annotate-models flag for feature-configs commands."""
   parser.add_argument(
       '--auto-annotate-models',
       type=arg_parsers.ArgList(),
       metavar='AUTO_ANNOTATE_MODELS',
+      required=required,
       help='Comma-separated list of models to configure.',
+  )
+
+
+def add_feature_config_auto_annotate_processing_location_flag(
+    parser, required: bool = False
+) -> None:
+  """Adds auto-annotate-processing-location flag for feature-configs commands."""
+  parser.add_argument(
+      '--auto-annotate-processing-location',
+      type=str,
+      metavar='AUTO_ANNOTATE_PROCESSING_LOCATION',
+      required=required,
+      help=(
+          'Specifies the geographic location (case-sensitive) where data is'
+          ' processed. Must be a supported location. See public'
+          ' documentation for supported locations.'
+      ),
   )

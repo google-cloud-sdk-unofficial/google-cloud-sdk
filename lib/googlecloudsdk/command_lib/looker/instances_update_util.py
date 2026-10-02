@@ -422,7 +422,9 @@ def UpdateReleaseChannel(instance_ref, args, patch_request):
   instance_msg = getattr(messages, 'Instance')
   release_channel_enum = instance_msg.ReleaseChannelValueValuesEnum
 
-  client = apis.GetClientInstance('looker', api_version)
+  client = apis.GetClientInstance(
+      'looker', api_version, location=instance_ref.locationsId
+  )
   service = client.projects_locations_instances
 
   get_request_class = getattr(

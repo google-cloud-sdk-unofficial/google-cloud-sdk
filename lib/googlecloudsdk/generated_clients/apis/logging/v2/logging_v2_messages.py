@@ -10785,7 +10785,8 @@ class WriteLogEntriesRequest(_messages.Message):
       permission logging.logEntries.create is needed on each project,
       organization, billing account, or folder that is receiving new log
       entries, whether the resource is specified in logName or in an
-      individual log entry.
+      individual log entry.Only platform services can write logs to billing
+      accounts.
     partialSuccess: Optional. Whether a batch's valid entries should be
       written even if some other entry failed due to a permanent error such as
       INVALID_ARGUMENT or PERMISSION_DENIED. If any entry failed, then the

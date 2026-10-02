@@ -380,25 +380,20 @@ def _Colorize(text, color):
   return console_attr.Colorizer(text, color)
 
 
-def _TransformAction(instance):
+def _TransformAction(action):
   """Transforms the currentAction field with colorization."""
-  action = instance.get('currentAction', '')
   color = _ACTION_COLOR_MAP.get(action)
   return _Colorize(action, color)
 
 
-def _TransformStatus(instance):
+def _TransformStatus(status):
   """Transforms the instanceStatus field with colorization."""
-  status = instance.get('instanceStatus', '')
   color = _STATUS_COLOR_MAP.get(status)
   return _Colorize(status, color)
 
 
-def _TransformHealthState(instance):
+def _TransformHealthState(health_state):
   """Transforms the detailedHealthState field with colorization."""
-  health_list = instance.get('instanceHealth', [])
-  if not health_list: return ''
-  health_state = health_list[0].get('detailedHealthState', '')
   color = _HEALTH_STATE_COLOR_MAP.get(health_state)
   return _Colorize(health_state, color)
 
@@ -415,6 +410,8 @@ def _TransformPreservedState(instance):
   Returns:
     Preserved state status as one of ('POLICY', 'CONFIG', 'POLICY,CONFIG')
   """
+  if not instance:
+    return ''
   preserved_state_value = ''
   if ('preservedStateFromPolicy' in instance and
       instance['preservedStateFromPolicy']):
@@ -522,9 +519,10 @@ _LIST_INSTANCES_FORMAT_BETA = """\
 _LIST_INSTANCES_FORMAT_ALPHA = """\
         table(name:label=NAME,
               instance.scope().segment(0):label=ZONE,
-              colorizedStatus():label=STATUS,
-              colorizedHealthState():label=HEALTH_STATE,
-              colorizedAction():label=ACTION,
+              instanceStatus.colorizedStatus():label=STATUS,
+              instanceHealth[0].detailedHealthState.colorizedHealthState()
+                :label=HEALTH_STATE,
+              currentAction.colorizedAction():label=ACTION,
               preservedState():label=PRESERVED_STATE,
               version.instanceTemplate.basename():label=INSTANCE_TEMPLATE,
               version.name:label=VERSION_NAME,

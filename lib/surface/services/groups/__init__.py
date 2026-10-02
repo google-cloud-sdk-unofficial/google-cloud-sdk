@@ -19,5 +19,14 @@ from googlecloudsdk.calliope import base
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class GroupsBeta(base.Group):
+  """View service group information."""
+
+
+@base.Hidden
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Groups(base.Group):
   """View service group information."""
+
+

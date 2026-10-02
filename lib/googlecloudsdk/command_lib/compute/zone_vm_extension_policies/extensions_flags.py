@@ -17,6 +17,13 @@
 import argparse
 import textwrap
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.vm_extension_policies import flags as vm_extension_policies_flags
+from googlecloudsdk.command_lib.compute.zone_vm_extension_policies import flags as policy_flags
+
+AddScopeFlags = vm_extension_policies_flags.AddScopeFlags
+ResolveZoneVmExtensionPolicyResource = (
+    policy_flags.ResolveZoneVmExtensionPolicyResource
+)
 
 
 def MakeZoneVmExtensionPolicyArg() -> compute_flags.ResourceArgument:
@@ -38,3 +45,4 @@ def AddZoneFlag(parser: argparse.ArgumentParser) -> None:
       The zone to list the extension policies from.
       """),
   )
+

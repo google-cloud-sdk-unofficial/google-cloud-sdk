@@ -192,9 +192,18 @@ def ValidateLustreFilesystemName(name: str) -> None:
     )
 
 
-def ValidateBootDisk(machine_type: str, boot_disk: dict[str, Any]) -> None:
-  """Validates boot disk compatibility with machine type."""
-  if not machine_type or not boot_disk:
+def ValidateBootDisk(
+    machine_type: str | None, boot_disk: dict[str, Any]
+) -> None:
+  """Validates boot disk size and compatibility with machine type."""
+  if not boot_disk:
+    return
+  size_gb = boot_disk.get("sizeGb")
+  if size_gb is not None and size_gb <= 0:
+    raise ClusterDirectorError(
+        f"Boot disk sizeGb must be positive, found {size_gb}."
+    )
+  if not machine_type:
     return
   disk_type = boot_disk.get("type")
   if not disk_type:
@@ -204,6 +213,15 @@ def ValidateBootDisk(machine_type: str, boot_disk: dict[str, Any]) -> None:
   ):
     raise ClusterDirectorError(
         f"{disk_type} disk type cannot be used by {machine_type} machine type."
+    )
+
+
+def ValidateMigTargetSize(mig_id: str, target_size: int | None) -> None:
+  """Validates that the managed instance group targetSize is non-negative."""
+  if target_size is not None and target_size < 0:
+    raise ClusterDirectorError(
+        f"The target size for managed instance group '{mig_id}' must be"
+        f" non-negative, found {target_size}."
     )
 
 
@@ -240,3 +258,17 @@ def ValidateControllerVersion(version: str) -> None:
         "Controller version must be in the format 'ab.cd' (e.g., '25.05'),"
         f" found '{version}'."
     )
+
+
+def IsFlagSpecified(args: Any, flag: str) -> bool:
+  """Returns True if flag is known and specified on args."""
+  try:
+    res = args.IsKnownAndSpecified(flag)
+    if isinstance(res, bool):
+      return res
+  except Exception:  # pylint: disable=broad-exception-caught
+    pass
+  try:
+    return bool(args.IsSpecified(flag))
+  except Exception:  # pylint: disable=broad-exception-caught
+    return False

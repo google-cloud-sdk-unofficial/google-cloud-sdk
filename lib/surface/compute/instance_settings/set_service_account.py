@@ -21,6 +21,7 @@ from googlecloudsdk.command_lib.compute.instance_settings import flags
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class SetServiceAccount(base.UpdateCommand):
@@ -56,8 +57,6 @@ class SetServiceAccount(base.UpdateCommand):
         updateMask='email',
         zone=args.zone,
     )
-    # TODO(b/271293873):Remove no_followup=True once singleton support is added.
     return client.MakeRequests(
         [(service, 'Patch', request)],
-        no_followup=True,
     )[0]

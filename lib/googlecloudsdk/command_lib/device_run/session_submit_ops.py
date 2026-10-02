@@ -33,12 +33,10 @@ def GetRunId() -> str:
   return f'{timestamp}_{random_suffix}'
 
 
-# Prefix and random suffix length used by the server when it generates a session
-# ID. See the `{session_id_OR_GENERATE_UUID_8_WITH_PREFIX_session-}` name
-# template of `AutomationSession.CreateSession`. Client-generated IDs use the
-# same format so that session names look the same no matter who generated them.
+# Prefix used by the server when it generates a session ID. Client-generated
+# IDs use the same format so that session names look the same no matter who
+# generated them.
 _SESSION_ID_PREFIX = 'session-'
-_SESSION_ID_RANDOM_LENGTH = 8
 
 
 def GenerateSessionAndRequestIds() -> Tuple[str, str]:
@@ -60,10 +58,9 @@ def GenerateSessionAndRequestIds() -> Tuple[str, str]:
     A tuple of (session_id, request_id).
   """
   request_id = str(uuid.uuid4())
-  # Mirror the server-side format: the prefix plus the last 8 characters of the
-  # UUID. Deriving both IDs from the same UUID also makes it easy to correlate a
-  # session with the request that created it.
-  session_id = f'{_SESSION_ID_PREFIX}{request_id[-_SESSION_ID_RANDOM_LENGTH:]}'
+  # Mirror the server-side format. Deriving both IDs from the same UUID also
+  # makes it easy to correlate a session with the request that created it.
+  session_id = f'{_SESSION_ID_PREFIX}{request_id}'
   return session_id, request_id
 
 
@@ -174,4 +171,3 @@ def PrintResultFilesLink(
       f'{message_prefix}'
       f' [https://console.cloud.google.com/storage/browser/{gcs_path}/{session_id}/].'
   )
-

@@ -20,8 +20,9 @@ import textwrap
 from typing import Any as typing_Any, List as typing_List
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.global_vm_extension_policies import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.compute.global_vm_extension_policies import extensions_flags as flags
 
 
 @base.DefaultUniverseOnly
@@ -38,6 +39,10 @@ class List(base.ListCommand):
    """),
   }
 
+  @classmethod
+  def Args(cls, parser: argparse.ArgumentParser) -> None:
+    flags.AddScopeFlags(parser)
+
   def Run(self, args: argparse.Namespace) -> typing_List[typing_Any]:
     r"""Run the List command.
 
@@ -48,12 +53,5 @@ class List(base.ListCommand):
       Response calling the GlobalVmExtensionPoliciesService.ListVmExtensions API
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-    return client.MakeRequests([(
-        client.apitools_client.globalVmExtensionPolicies,
-        'ListVmExtensions',
-        messages.ComputeGlobalVmExtensionPoliciesListVmExtensionsRequest(
-            project=properties.VALUES.core.project.GetOrFail(),
-        ),
-    )])
+    policy_client = client.GlobalVmExtensionPolicy.FromArgs(args, holder.client)
+    return policy_client.ListExtensions()

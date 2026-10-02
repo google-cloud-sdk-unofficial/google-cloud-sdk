@@ -106,10 +106,6 @@ class FailedSubCommand(core_exceptions.Error):
     )
 
 
-# Re-export DryRunError from core_exceptions for backward compatibility.
-DryRunError = core_exceptions.DryRunError
-
-
 def RaiseErrorInsteadOf(error, *error_types):
   """A decorator that re-raises as an error.
 

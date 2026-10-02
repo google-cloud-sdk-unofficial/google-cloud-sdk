@@ -893,6 +893,7 @@ class ServerlessOperations(object):
       build_machine_type=None,
       build_env_vars=None,
       enable_automatic_updates=False,
+      upload_through_run_api=False,
       source_bucket=None,
       # legacy submit build flags === end ===
       skip_activation_prompt=False,
@@ -901,8 +902,7 @@ class ServerlessOperations(object):
       is_verbose=False,
       kms_key=None,
       iap_enabled=None,
-      upload_through_run_api=False,
-      source_container_context=None,
+      source_containers_context=None,
   ):
     """Change the given service in prod using the given config_changes.
 
@@ -944,6 +944,8 @@ class ServerlessOperations(object):
       build_env_vars: Dictionary of build env vars to send to submit build.
       enable_automatic_updates: If true, opt-in automatic build image updates.
         If false, opt-out automatic build image updates.
+      upload_through_run_api: bool. If true, upload the source via Upload Source
+        API.
       source_bucket: The existing bucket to use for source uploads. Leave it as
         None to create a new bucket.
       skip_activation_prompt: bool. If true, skip activation prompts for
@@ -954,20 +956,23 @@ class ServerlessOperations(object):
       kms_key: The KMS key to use for the deployment.
       iap_enabled: If true, assign run.invoker access to IAP P4SA, if false,
         remove run.invoker access from IAP P4SA.
-      upload_through_run_api: bool. If true, upload the source via Upload Source
-        API.
-      source_container_context: SourceContainerContext, the source container
-        context to use for the deployment. Must not be used together with legacy
-        build source.
+
+      source_containers_context: List[SourceContainerContext], the list of local
+        context of source containers to use for the deployment. Must not be used
+        together with legacy build source.
 
     Returns:
       service.Service, the service as returned by the server on the POST/PUT
        request to create/update the service.
     """
-    if build_source and source_container_context:
+    source_containers_context = source_containers_context or []
+    has_new_source_containers = len(source_containers_context) > 0
+    # Invalid case that should be caught in argument parsing.
+    # The code here is to prevent mixed usage of legacy and new source build.
+    if build_source and has_new_source_containers:
       raise c_exceptions.InvalidArgumentException(
           '--source',
-          'Source build and --no-build source cannot both be specified.',
+          'Cannot specify more than one source container).',
       )
 
     # legacy build through SubmitBuild API and local orchestration
@@ -991,7 +996,8 @@ class ServerlessOperations(object):
           stages.ServiceStages(
               allow_unauthenticated is not None,
               include_validate_service=requires_legacy_build,
-              include_upload_source=build_source or source_container_context,
+              include_upload_source=build_source
+              or has_new_source_containers,
               include_build=requires_legacy_build,
               include_create_repo=repo_to_create is not None,
               include_iap=iap_enabled is not None,
@@ -1000,56 +1006,57 @@ class ServerlessOperations(object):
           aborted_message='aborted',
       )
 
-    if source_container_context:
+    if has_new_source_containers:
       tracker.StartStage(stages.UPLOAD_SOURCE)
       try:
-        if sources.IsGcsObject(source_container_context.source):
-          tracker.UpdateHeaderMessage(
-              'Using the source from the specified bucket.'
-          )
-          source_path = source_container_context.source
-        elif kms_key:
-          # kms validation for newer source containers that require a
-          # pre-configured bucket.
-          # Similar check should be added for image repository when adding
-          # support for unified build with local repo management.
-          raise serverless_exceptions.ArgumentError(
-              f'Invalid source location: {source_container_context.source}.'
-              ' Deployments encrypted with a customer-managed encryption key'
-              ' (CMEK) expect the source to be passed in a pre-configured'
-              ' Cloud Storage bucket. See'
-              ' https://cloud.google.com/run/docs/securing/using-cmek#source-deploy'
-              ' for more details.'
-          )
-        elif upload_through_run_api:
-          tracker.UpdateHeaderMessage('Uploading sources...')
-          source_object = sources.UploadThroughCloudRun(
-              source_to_upload=source_container_context.source,
-              region=region,
-              service_ref=service_ref,
-              kms_key=kms_key,
-              skip_build=True,
-          )
-          source_path = sources.GetGsutilUri(source_object)
-        else:
-          tracker.UpdateHeaderMessage('Uploading sources...')
-          source = sources.Upload(
-              source_container_context.source,
-              region,
-              service_ref,
-              source_container_context.source_bucket,
-              sources.ArchiveType.TAR,
-              respect_gitignore=False,
-          )
-          source_path = sources.GetGsutilUri(source)
-        config_changes.append(
-            config_changes_mod.SourcesAnnotationChange(
-                updates={source_container_context.name: source_path}
+        for context in source_containers_context:
+          if sources.IsGcsObject(context.source):
+            tracker.UpdateHeaderMessage(
+                'Using the source from the specified bucket.'
             )
-        )
-        tracker.UpdateHeaderMessage(
-            'Sources uploaded to {}.'.format(source_path)
-        )
+            source_path = context.source
+          elif kms_key:
+            # kms validation for newer source containers that require a
+            # pre-configured bucket.
+            # Similar check should be added for image repository when adding
+            # support for unified build with local repo management.
+            raise serverless_exceptions.ArgumentError(
+                f'Invalid source location: {context.source}.'
+                ' Deployments encrypted with a customer-managed encryption key'
+                ' (CMEK) expect the source to be passed in a pre-configured'
+                ' Cloud Storage bucket. See'
+                ' https://cloud.google.com/run/docs/securing/using-cmek#source-deploy'
+                ' for more details.'
+            )
+          elif context.upload_through_run_api:
+            tracker.UpdateHeaderMessage('Uploading sources...')
+            source_object = sources.UploadThroughCloudRun(
+                source_to_upload=context.source,
+                region=region,
+                service_ref=service_ref,
+                kms_key=kms_key,
+                skip_build=True,
+            )
+            source_path = sources.GetGsutilUri(source_object)
+          else:
+            tracker.UpdateHeaderMessage('Uploading sources...')
+            source = sources.Upload(
+                context.source,
+                region,
+                service_ref,
+                context.source_bucket,
+                sources.ArchiveType.TAR,
+                respect_gitignore=False,
+            )
+            source_path = sources.GetGsutilUri(source)
+          config_changes.append(
+              config_changes_mod.SourcesAnnotationChange(
+                  updates={context.name: source_path}
+              )
+          )
+          tracker.UpdateHeaderMessage(
+              'Sources uploaded to {}.'.format(source_path)
+          )
         tracker.CompleteStage(stages.UPLOAD_SOURCE)
       except Exception as e:
         tracker.CompleteStageWithWarning(stages.UPLOAD_SOURCE, str(e))
@@ -1111,7 +1118,7 @@ class ServerlessOperations(object):
         config_changes.append(_AddDigestToImageChange(image_digest))
     if prefetch is None:
       serv = None
-    elif build_source or source_container_context:
+    elif build_source or has_new_source_containers:
       # if we're building from source, we want to force a new fetch
       # because building takes a while which leaves a long time for
       # potential write conflicts.

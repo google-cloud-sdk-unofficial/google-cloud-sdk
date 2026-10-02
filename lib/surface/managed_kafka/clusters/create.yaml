@@ -12,7 +12,7 @@ help_text:
       $ {command} mycluster \
           --location=us-central1 \
           --cpu=3 \
-          --memory=3GiB
+          --memory=3GiB \
           --subnets=projects/PROJECT_ID/regions/us-central1/subnetworks/default
 
 request:
@@ -42,6 +42,8 @@ arguments:
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:mtls-ca-pools
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:ssl-principal-mapping-rules
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:broker-disk
+  - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:kafka-version
+    release_tracks: [ALPHA]
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:public-cluster
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:allowed-source-ip-ranges
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:dns-zone-target

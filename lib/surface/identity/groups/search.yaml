@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: Searches for Groups matching a specified query.
     description: Searches for Groups matching a specified query.

@@ -1,14 +1,13 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: |
       List Dataplex Data Product resources.
     description: |
       List Dataplex Data Product resources under a project and location.
-
-      {command} --project=test-project --location=us-central1
     examples: |
-      $ {command} --project=test-project --location=us-central1
+      To list Dataplex data products in location `us-central1` in project `test-project`, run:
+
+          $ {command} --project=test-project --location=us-central1
   request:
     ALPHA:
       api_version: v1

@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: View the details and configuration of a specified HA Controller.
     description: Describe an High Availability (HA) Controller to view its details and configurations.

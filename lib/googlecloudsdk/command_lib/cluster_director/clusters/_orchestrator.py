@@ -111,6 +111,10 @@ _SLURM_PARTITION_ALREADY_EXISTS_ERROR = (
     "Slurm partitions with id={0} already exist."
 )
 _SLURM_PARTITION_NOT_FOUND_ERROR = "Slurm partitions with id={0} not found."
+_MIG_ALREADY_EXISTS_ERROR = (
+    "Managed instance group with id={0} already exists."
+)
+_MIG_NOT_FOUND_ERROR = "Managed instance group with id={0} not found."
 _UPDATE_GCE_FIELDS_ON_GKE_NODE_SET_ERROR = (
     "Cannot update compute instance fields for a GKE node set."
 )
@@ -1335,3 +1339,303 @@ def MakeClusterSlurmOrchestratorPatch(
           )
 
   return slurm
+
+
+def _MakeManagedInstanceGroup(
+    message_module,
+    mig: Mapping[str, Any],
+    storage_configs,
+    cluster_ref=None,
+    machine_type=None,
+):
+  """Makes a ManagedInstanceGroup message from a dict."""
+  _validator.ValidateMigTargetSize(mig.get("id"), mig.get("targetSize"))
+  if "storageConfigs" in mig:
+    storage_configs = [
+        message_module.StorageConfig(
+            id=sc.get("id"), localMount=sc.get("localMount")
+        )
+        for sc in mig.get("storageConfigs")
+    ]
+  mig_msg = message_module.ManagedInstanceGroup(
+      computeId=mig.get("computeId"),
+      targetSize=mig.get("targetSize"),
+      enablePublicIps=mig.get("enablePublicIps"),
+      startupScript=_GetBashScript(mig.get("startupScript")),
+      storageConfigs=storage_configs,
+  )
+  if mig.get("acceleratorTopology"):
+    mig_msg.resourcePolicyConfig = message_module.ResourcePolicyConfig(
+        acceleratorTopology=mig.get("acceleratorTopology")
+    )
+  boot_disk_args = mig.get("bootDisk")
+  if boot_disk_args:
+    _validator.ValidateBootDisk(machine_type, boot_disk_args)
+    boot_disk = message_module.BootDisk(
+        type=boot_disk_args.get("type"),
+        sizeGb=boot_disk_args.get("sizeGb"),
+    )
+    if hasattr(boot_disk, "image"):
+      boot_disk.image = boot_disk_args.get("image")
+    if hasattr(boot_disk, "storagePools"):
+      storage_pools = boot_disk_args.get("storagePools")
+      if storage_pools is not None:
+        boot_disk.storagePools = [
+            _GetStoragePoolName(cluster_ref, p) for p in storage_pools
+        ]
+    mig_msg.bootDisk = boot_disk
+  return mig_msg
+
+
+def MakeClusterComputeEngineOrchestrator(
+    args, message_module, cluster, cluster_ref=None
+):
+  """Makes a ComputeEngineOrchestrator message from args."""
+  compute_engine = message_module.ComputeEngineOrchestrator()
+  default_storage_configs = _GetStorageConfigs(message_module, cluster)
+  storage_resources_map = {}
+  if cluster and cluster.storageResources:
+    for prop in cluster.storageResources.additionalProperties:
+      storage_resources_map[prop.key] = prop.value
+  migs_cls = message_module.ComputeEngineOrchestrator.ManagedInstanceGroupsValue
+  migs_dict = {}
+  if _validator.IsFlagSpecified(args, "managed_instance_groups"):
+    for mig in args.managed_instance_groups:
+      mig_id = mig.get("id")
+      _validator.ValidateResourceID(mig_id)
+      compute_id = mig.get("computeId")
+      machine_type = None
+      if compute_id:
+        machine_type = _GetComputeMachineTypeFromArgs(args, compute_id)
+      if "storageConfigs" in mig:
+        _validator.ValidateStorageConfigs(
+            storage_resources_map, mig.get("storageConfigs"), {}
+        )
+      mig_msg = _MakeManagedInstanceGroup(
+          message_module,
+          mig,
+          default_storage_configs,
+          cluster_ref=cluster_ref,
+          machine_type=machine_type,
+      )
+      _AddKeyToDictSpec(
+          mig_id, migs_dict, mig_msg, _MIG_ALREADY_EXISTS_ERROR
+      )
+  if migs_dict:
+    compute_engine.managedInstanceGroups = migs_cls(
+        additionalProperties=[
+            migs_cls.AdditionalProperty(key=k, value=v)
+            for k, v in sorted(migs_dict.items())
+        ]
+    )
+  return compute_engine
+
+
+def MakeClusterComputeEngineOrchestratorPatch(
+    args,
+    message_module,
+    existing_cluster,
+    cluster_patch,
+    update_mask,
+    cluster_ref=None,
+):
+  """Makes a ComputeEngineOrchestrator patch message."""
+  compute_engine = message_module.ComputeEngineOrchestrator()
+  migs_cls = message_module.ComputeEngineOrchestrator.ManagedInstanceGroupsValue
+
+  storage_resources_map = {}
+  if existing_cluster and existing_cluster.storageResources:
+    for prop in existing_cluster.storageResources.additionalProperties:
+      storage_resources_map[prop.key] = prop.value
+  if cluster_patch and cluster_patch.storageResources:
+    for prop in cluster_patch.storageResources.additionalProperties:
+      storage_resources_map[prop.key] = prop.value
+
+  removed_storage_ids = set()
+  if (
+      existing_cluster
+      and existing_cluster.storageResources
+      and cluster_patch
+      and cluster_patch.storageResources
+  ):
+    existing_ids = {
+        prop.key
+        for prop in existing_cluster.storageResources.additionalProperties
+    }
+    updated_ids = {
+        prop.key for prop in cluster_patch.storageResources.additionalProperties
+    }
+    removed_storage_ids = existing_ids - updated_ids
+
+  existing_migs_msg = None
+  if (
+      existing_cluster
+      and existing_cluster.orchestrator
+      and getattr(existing_cluster.orchestrator, "computeEngine", None)
+  ):
+    existing_migs_msg = (
+        existing_cluster.orchestrator.computeEngine.managedInstanceGroups
+    )
+  migs_dict = _ConvertMessageToDict(existing_migs_msg)
+
+  existing_storage_configs = []
+  if migs_dict:
+    first_mig = next(iter(migs_dict.values()))
+    existing_storage_configs = first_mig.storageConfigs or []
+
+  filtered_existing_storage_configs = [
+      sc for sc in existing_storage_configs if sc.id not in removed_storage_ids
+  ]
+
+  is_migs_updated = False
+  if _validator.IsFlagSpecified(args, "remove_managed_instance_groups"):
+    for mig_id in args.remove_managed_instance_groups:
+      _RemoveKeyFromDictSpec(
+          mig_id, migs_dict, _MIG_NOT_FOUND_ERROR
+      )
+      is_migs_updated = True
+
+  if _validator.IsFlagSpecified(args, "update_managed_instance_groups"):
+    for mig in args.update_managed_instance_groups:
+      mig_id = mig.get("id")
+      existing_mig = _GetValueFromDictSpec(
+          mig_id, migs_dict, _MIG_NOT_FOUND_ERROR
+      )
+      if "computeId" in mig:
+        _GetComputeMachineTypeFromCluster(
+            mig.get("computeId"),
+            cluster_patch,
+            existing_cluster=existing_cluster,
+            use_existing_cluster=True,
+        )
+        existing_mig.computeId = mig.get("computeId")
+      if "targetSize" in mig:
+        _validator.ValidateMigTargetSize(mig_id, mig.get("targetSize"))
+        existing_mig.targetSize = mig.get("targetSize")
+      if "enablePublicIps" in mig:
+        existing_mig.enablePublicIps = mig.get("enablePublicIps")
+      if "startupScript" in mig:
+        existing_mig.startupScript = _GetBashScript(mig.get("startupScript"))
+      if "acceleratorTopology" in mig:
+        if not existing_mig.resourcePolicyConfig:
+          existing_mig.resourcePolicyConfig = (
+              message_module.ResourcePolicyConfig()
+          )
+        existing_mig.resourcePolicyConfig.acceleratorTopology = mig.get(
+            "acceleratorTopology"
+        )
+      if "bootDisk" in mig:
+        compute_id = getattr(existing_mig, "computeId", None)
+        machine_type = None
+        if compute_id:
+          machine_type = _GetComputeMachineTypeFromCluster(
+              compute_id,
+              cluster_patch,
+              existing_cluster=existing_cluster,
+              use_existing_cluster=True,
+          )
+        _validator.ValidateBootDisk(machine_type, mig.get("bootDisk"))
+        boot_disk_patch = mig.get("bootDisk")
+        boot_disk = existing_mig.bootDisk
+        if boot_disk is None:
+          boot_disk = message_module.BootDisk()
+        boot_disk.type = boot_disk_patch.get("type", boot_disk.type)
+        boot_disk.sizeGb = boot_disk_patch.get("sizeGb", boot_disk.sizeGb)
+        if hasattr(boot_disk, "image"):
+          boot_disk.image = boot_disk_patch.get("image", boot_disk.image)
+        if hasattr(boot_disk, "storagePools"):
+          storage_pools = boot_disk_patch.get("storagePools")
+          if storage_pools is not None:
+            boot_disk.storagePools = [
+                _GetStoragePoolName(cluster_ref, p) for p in storage_pools
+            ]
+        existing_mig.bootDisk = boot_disk
+      if "storageConfigs" in mig:
+        existing_mounts_by_id = {}
+        if existing_mig.storageConfigs:
+          existing_mounts_by_id = {
+              esc.id: esc.localMount for esc in existing_mig.storageConfigs
+          }
+        _validator.ValidateStorageConfigs(
+            storage_resources_map,
+            mig.get("storageConfigs"),
+            existing_mounts_by_id,
+        )
+        existing_mig.storageConfigs = [
+            message_module.StorageConfig(
+                id=sc.get("id"), localMount=sc.get("localMount")
+            )
+            for sc in mig.get("storageConfigs")
+        ]
+      migs_dict[mig_id] = existing_mig
+      is_migs_updated = True
+
+  if _validator.IsFlagSpecified(args, "add_managed_instance_groups"):
+    for mig in args.add_managed_instance_groups:
+      storage_configs_source = existing_cluster
+      if (
+          cluster_patch.storageResources
+          and cluster_patch.storageResources.additionalProperties
+      ):
+        storage_configs_source = cluster_patch
+      storage_configs = _GetStorageConfigs(
+          message_module,
+          storage_configs_source,
+          existing_storage_configs=filtered_existing_storage_configs,
+      )
+      mig_id = mig.get("id")
+      _validator.ValidateResourceID(mig_id)
+      compute_id = mig.get("computeId")
+      machine_type = None
+      if compute_id:
+        machine_type = _GetComputeMachineTypeFromCluster(
+            compute_id,
+            cluster_patch,
+            existing_cluster=existing_cluster,
+            use_existing_cluster=True,
+        )
+      if "storageConfigs" in mig:
+        _validator.ValidateStorageConfigs(
+            storage_resources_map, mig.get("storageConfigs"), {}
+        )
+      mig_msg = _MakeManagedInstanceGroup(
+          message_module,
+          mig,
+          storage_configs,
+          cluster_ref=cluster_ref,
+          machine_type=machine_type,
+      )
+      _AddKeyToDictSpec(
+          mig_id, migs_dict, mig_msg, _MIG_ALREADY_EXISTS_ERROR
+      )
+      is_migs_updated = True
+
+  if "storage_resources" in update_mask and migs_dict:
+    new_storage_configs = _GetStorageConfigs(
+        message_module, cluster_patch, filtered_existing_storage_configs
+    )
+    for mig in migs_dict.values():
+      if mig.storageConfigs:
+        mig.storageConfigs = [
+            sc for sc in mig.storageConfigs if sc.id not in removed_storage_ids
+        ]
+      if not mig.storageConfigs:
+        mig.storageConfigs = new_storage_configs
+      else:
+        existing_ids = {sc.id for sc in mig.storageConfigs}
+        for sc in new_storage_configs:
+          if sc.id not in existing_ids:
+            mig.storageConfigs.append(sc)
+    is_migs_updated = True
+
+  if is_migs_updated:
+    compute_engine.managedInstanceGroups = migs_cls(
+        additionalProperties=[
+            migs_cls.AdditionalProperty(key=k, value=v)
+            for k, v in sorted(migs_dict.items())
+        ]
+    )
+    update_mask.add("orchestrator.compute_engine.managed_instance_groups")
+
+  return compute_engine
+

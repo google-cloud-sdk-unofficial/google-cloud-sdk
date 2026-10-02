@@ -22,7 +22,9 @@ from googlecloudsdk.command_lib.dataflow import job_utils
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class UpdateOptions(base.Command):
   """Update pipeline options on-the-fly for running Dataflow jobs.
 
@@ -128,6 +130,79 @@ class UpdateOptions(base.Command):
         ),
     )
 
+    schedule_group = parser.add_mutually_exclusive_group()
+    schedule_group.add_argument(
+        '--set-schedule',
+        type=str,
+        help=(
+            'Unique identifier for the autoscaling schedule to create or'
+            ' update.'
+        ),
+    )
+    schedule_group.add_argument(
+        '--unset-schedule',
+        type=str,
+        help='Unique identifier of the autoscaling schedule to remove.',
+    )
+    schedule_group.add_argument(
+        '--unset-schedules',
+        action='store_true',
+        help='Remove all autoscaling schedules from the job.',
+    )
+
+    parser.add_argument(
+        '--autoscaling-schedule',
+        type=str,
+        help='Crontab expression specifying when the schedule starts.',
+    )
+    parser.add_argument(
+        '--autoscaling-schedule-duration-seconds',
+        type=int,
+        help='Duration in seconds for which the schedule will be active.',
+    )
+    parser.add_argument(
+        '--autoscaling-schedule-timezone',
+        type=str,
+        help=(
+            'Time zone for the schedule from tz database (e.g.,'
+            ' America/Los_Angeles).'
+        ),
+    )
+    parser.add_argument(
+        '--autoscaling-schedule-priority',
+        type=int,
+        help=(
+            'Priority of the schedule. If two schedules overlap, the one with'
+            ' the higher priority will be used.'
+        ),
+    )
+    parser.add_argument(
+        '--autoscaling-min-num-workers',
+        '--autoscaling-min-workers',
+        dest='autoscaling_min_num_workers',
+        type=int,
+        help='Minimum worker count when schedule is active.',
+    )
+    parser.add_argument(
+        '--autoscaling-max-num-workers',
+        '--autoscaling-max-workers',
+        dest='autoscaling_max_num_workers',
+        type=int,
+        help='Maximum worker count when schedule is active.',
+    )
+    parser.add_argument(
+        '--autoscaling-worker-utilization-hint',
+        type=float,
+        help='Target worker utilization hint when schedule is active.',
+    )
+    parser.add_argument(
+        '--autoscaling-latency-tier',
+        type=str,
+        choices=['low_latency', 'medium_latency', 'high_latency'],
+        hidden=True,
+        help='Latency tier when schedule is active.',
+    )
+
   def Run(self, args):
     """Called when the user runs gcloud dataflow jobs update-options ...
 
@@ -137,6 +212,22 @@ class UpdateOptions(base.Command):
     Returns:
       The updated Job
     """
+    if args.set_schedule is None and (
+        args.autoscaling_schedule is not None
+        or args.autoscaling_schedule_duration_seconds is not None
+        or args.autoscaling_schedule_timezone is not None
+        or args.autoscaling_schedule_priority is not None
+        or args.autoscaling_min_num_workers is not None
+        or args.autoscaling_max_num_workers is not None
+        or args.autoscaling_worker_utilization_hint is not None
+        or args.autoscaling_latency_tier is not None
+    ):
+      raise exceptions.RequiredArgumentException(
+          '--set-schedule',
+          'You must specify --set-schedule when configuring an autoscaling'
+          ' schedule.',
+      )
+
     if (
         args.min_num_workers is None
         and args.max_num_workers is None
@@ -144,6 +235,9 @@ class UpdateOptions(base.Command):
         and not args.unset_worker_utilization_hint
         and args.latency_tier is None
         and not args.unset_latency_tier
+        and args.set_schedule is None
+        and args.unset_schedule is None
+        and not args.unset_schedules
     ):
       raise exceptions.OneOfArgumentsRequiredException(
           [
@@ -153,6 +247,9 @@ class UpdateOptions(base.Command):
               '--unset-worker-utilization-hint',
               '--latency-tier',
               '--unset-latency-tier',
+              '--set-schedule',
+              '--unset-schedule',
+              '--unset-schedules',
           ],
           'You must provide at-least one field to update',
       )
@@ -168,4 +265,15 @@ class UpdateOptions(base.Command):
         unset_worker_utilization_hint=args.unset_worker_utilization_hint,
         latency_tier=args.latency_tier,
         unset_latency_tier=args.unset_latency_tier,
+        set_schedule=args.set_schedule,
+        unset_schedule=args.unset_schedule,
+        unset_schedules=args.unset_schedules,
+        autoscaling_schedule=args.autoscaling_schedule,
+        autoscaling_schedule_duration_seconds=args.autoscaling_schedule_duration_seconds,
+        autoscaling_schedule_timezone=args.autoscaling_schedule_timezone,
+        autoscaling_schedule_priority=args.autoscaling_schedule_priority,
+        autoscaling_min_num_workers=args.autoscaling_min_num_workers,
+        autoscaling_max_num_workers=args.autoscaling_max_num_workers,
+        autoscaling_worker_utilization_hint=args.autoscaling_worker_utilization_hint,
+        autoscaling_latency_tier=args.autoscaling_latency_tier,
     )

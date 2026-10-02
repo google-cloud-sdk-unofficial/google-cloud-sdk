@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Delete a spoke.
@@ -21,3 +23,8 @@
       api_version: v1alpha1
     method: delete
     collection: networkconnectivity.projects.locations.spokes
+
+- release_tracks: [BETA, GA]
+  is_python_command: true
+  hints:
+    read_only: false

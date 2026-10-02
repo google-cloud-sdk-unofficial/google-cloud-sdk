@@ -334,12 +334,13 @@ prints the translated query to standard output (or an output file).
       'EXAMPLES': """\
 To translate a Snowflake query from stdin, run:
 
-  $ echo 'SELECT * FROM test.my_table;' | {command} --source-dialect=SNOWFLAKE --location=us
+  $ echo 'SELECT * FROM test.my_table;' | {command} --source-dialect=SNOWFLAKE --target-dialect=BIGQUERY --location=us
 
 To translate a Snowflake query from a file and save the output and logs to files, run:
 
   $ {command} \\
       --source-dialect=SNOWFLAKE \\
+      --target-dialect=BIGQUERY \\
       --location=us \\
       --project=my-project \\
       --input-file=input.sql \\
@@ -354,7 +355,7 @@ To translate a Snowflake query from a file and save the output and logs to files
         '--source-dialect',
         help=(
             'Source dialect of the query. See supported dialects in'
-            ' https://docs.cloud.google.com/bigquery/docs/batch-sql-translator#supported_sql_dialects'
+            ' https://docs.cloud.google.com/bigquery/docs/enable-sql-translations#supported_sql_dialects'
         ),
         required=True,
     )
@@ -362,7 +363,7 @@ To translate a Snowflake query from a file and save the output and logs to files
         '--target-dialect',
         help=(
             'Target dialect of the query. See supported dialects in'
-            ' https://docs.cloud.google.com/bigquery/docs/batch-sql-translator#supported_sql_dialects'
+            ' https://docs.cloud.google.com/bigquery/docs/enable-sql-translations#supported_sql_dialects'
         ),
         required=True,
     )

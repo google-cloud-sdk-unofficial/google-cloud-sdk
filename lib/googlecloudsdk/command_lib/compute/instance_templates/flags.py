@@ -114,6 +114,7 @@ def AddServiceProxyConfigArgs(parser,
       'access-log': str,
       'network': str,
       'use-regional-control-plane': None,
+      'envoy-bootstrap': str,
   }
   service_proxy_help = textwrap.dedent("""
   Controls whether the Traffic Director service proxy (Envoy) and agent are

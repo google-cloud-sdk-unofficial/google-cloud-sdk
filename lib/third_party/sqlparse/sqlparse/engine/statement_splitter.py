@@ -61,6 +61,17 @@ class StatementSplitter:
                 return 1
             return 0
 
+        # Issue826: If we see a transaction keyword after BEGIN,
+        # it's a transaction statement, not a block.
+        if self._seen_begin and \
+                (ttype is T.Keyword or ttype is T.Name) and \
+                unified in ('TRANSACTION', 'WORK', 'TRAN',
+                            'DISTRIBUTED', 'DEFERRED',
+                            'IMMEDIATE', 'EXCLUSIVE'):
+            self._begin_depth = max(0, self._begin_depth - 1)
+            self._seen_begin = False
+            return 0
+
         # BEGIN and CASE/WHEN both end with END
         if unified == 'END':
             if not self._in_case:
@@ -121,7 +132,7 @@ class StatementSplitter:
                     self.consume_ws = True
             elif ttype is T.Keyword and value.split()[0] == 'GO':
                 self.consume_ws = True
-            elif (ttype not in (T.Whitespace, T.Comment.Single,
+            elif (ttype not in (T.Whitespace, T.Newline, T.Comment.Single,
                                 T.Comment.Multiline)
                   and not (ttype is T.Keyword and value.upper() == 'BEGIN')):
                 # Reset _seen_begin if we see a non-whitespace, non-comment

@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: |
       List Dataplex data asset resources.
@@ -19,5 +18,6 @@
       help_text: |
         Arguments and flags that specify the parent Dataplex Data Product to list Data Assets under.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_product
+      is_positional: false
   response:
     id_field: name

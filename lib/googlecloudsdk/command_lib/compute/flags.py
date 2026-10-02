@@ -1206,6 +1206,7 @@ def AddInstanceFlexibilityPolicyArgs(
         instance_selection_group,
         is_update,
         instance_selection_help_text=instance_selection_help_text,
+        support_instance_selection_min_cpu_platform=support_instance_selection_min_cpu_platform,
     )
   else:
     if support_instance_selection_min_cpu_platform:

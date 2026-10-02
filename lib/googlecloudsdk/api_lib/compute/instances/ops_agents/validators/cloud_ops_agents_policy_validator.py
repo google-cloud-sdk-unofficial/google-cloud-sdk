@@ -21,7 +21,6 @@ from typing import Set
 
 from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_exceptions as exceptions
 from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_policy as agents_policy
-from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_util as util
 from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.osconfig.v1 import osconfig_v1_messages as osconfig
 
@@ -327,7 +326,8 @@ def _ValidateInventories(
 def IsCloudOpsAgentsPolicy(policy: osconfig.OSPolicyAssignment) -> bool:
   """Returns if the policy was created with the Ops Agent command.
   """
-  return (
-      len(policy.osPolicies) == 1
-      and util.GetAgentsRuleFromDescription(policy.osPolicies[0].description)
+  return len(
+      policy.osPolicies
+  ) == 1 and agents_policy.GetAgentsRuleFromDescription(
+      policy.osPolicies[0].description
   )

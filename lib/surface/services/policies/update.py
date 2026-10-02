@@ -25,14 +25,14 @@ from googlecloudsdk.core import yaml
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Update(base.Command):
-  """Update consumer policy for a project, folder or organization.
+class UpdateBeta(base.Command):
+  """Update the consumer policy for a project, folder or organization.
 
-  Update consumer policy for a project, folder or organization.
+  Update the consumer policy for a project, folder or organization.
 
   ## EXAMPLES
 
-  Update consumer policy
+  Update the consumer policy
 
    $ {command} --consumer-policy-file=/path/to/the/file.yaml
 
@@ -69,7 +69,7 @@ class Update(base.Command):
       Response from longrunning.operations from UpdateConsumerPolicy API call.
     """
 
-    if not args.consumer_policy_file.endswith('.yaml'):
+    if not args.consumer_policy_file.endswith(('.yaml', '.yml')):
       raise exceptions.ConfigError(
           'Invalid consumer_policy_file format. Please provide path to a yaml'
           ' file.'
@@ -87,21 +87,98 @@ class Update(base.Command):
           'Invalid Consumer Policy. Please provide a name.'
       )
 
-    op = serviceusage.UpdateConsumerPolicy(
+    op = serviceusage.UpdateConsumerPolicyBeta(
         policy,
         validate_only=args.validate_only,
         bypass_dependency_check=args.bypass_dependency_check,
         force=args.bypass_api_usage_check,
     )
 
-    # If there is no change in the consumer policy after applying the changes,
-    # the operation name is empty.
-    # temporary fix till the backend returns name for no-op operations.
+    # TODO(b/565334243): Clean up once the backend returns an operation name
+    # for no-op operations.
     if op.done and not op.name:
-      log.warning('No change required for the current consumer policy.')
+      log.status.Print('No change required for the current consumer policy.')
       return None
 
     op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
+    if args.validate_only:
+      services_util.PrintOperation(op)
+    else:
+      services_util.PrintOperationWithResponseForUpdateConsumerPolicy(op)
+
+
+@base.Hidden
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.Command):
+  """Update the consumer policy for a project, folder or organization.
+
+  Update the consumer policy for a project, folder or organization.
+
+  ## EXAMPLES
+
+  Update the consumer policy
+
+   $ {command} --consumer-policy-file=/path/to/the/file.yaml
+
+  Validate the update action on the policy:
+
+   $ {command} --consumer-policy-file=/path/to/the/file.yaml --validate-only
+
+  Update consumer policy and bypass dependency check:
+
+   $ {command} --consumer-policy-file=/path/to/the/file.yaml
+   --bypass-dependency-check
+  """
+
+  @staticmethod
+  def Args(parser):
+    common_flags.consumer_policy_file_flag().AddToParser(parser)
+    common_flags.validate_only_args(parser, suffix='to update')
+    common_flags.bypass_dependency_check().AddToParser(parser)
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Response from longrunning.operations from UpdateConsumerPolicy API call.
+    """
+
+    if not args.consumer_policy_file.endswith(('.yaml', '.yml')):
+      raise exceptions.ConfigError(
+          'Invalid consumer_policy_file format. Please provide path to a yaml'
+          ' file.'
+      )
+
+    policy = yaml.load_path(args.consumer_policy_file)
+
+    if not isinstance(policy, dict):
+      raise exceptions.ConfigError(
+          'Invalid consumer-policy-file. Please provide a valid policy.'
+      )
+
+    if 'name' not in policy:
+      raise exceptions.ConfigError(
+          'Invalid Consumer Policy. Please provide a name.'
+      )
+
+    op = serviceusage.UpdateConsumerPolicyV2(
+        policy,
+        validate_only=args.validate_only,
+        bypass_dependency_check=args.bypass_dependency_check,
+    )
+
+    # TODO(b/565334243): Clean up once the backend returns an operation name
+    # for no-op operations.
+    if op.done and not op.name:
+      log.status.Print('No change required for the current consumer policy.')
+      return None
+
+    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2)
     if args.validate_only:
       services_util.PrintOperation(op)
     else:

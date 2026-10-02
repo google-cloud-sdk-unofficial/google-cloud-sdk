@@ -389,6 +389,7 @@ def AddBaseArgs(parser):
   flags.AddEnablePscAutoConnectionPolicy(parser)
   flags.AddInstanceResizeLimit(parser)
   flags.AddDatabaseCenterIntegrationEnabled(parser)
+  flags.AddDatabaseCenterIntegration(parser)
   flags.AddEnablePscAutoDns(parser)
   flags.AddEnablePscWriteEndpointDns(parser)
 

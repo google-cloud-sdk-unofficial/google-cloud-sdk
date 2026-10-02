@@ -1067,6 +1067,8 @@ class _SectionApiEndpointOverrides(_Section):
     self.iamconnectors = self._Add(
         'iamconnectors', command='gcloud agent-identity'
     )
+    self.meridian = self._Add(
+        'meridian', command='gcloud meridian', hidden=True)
     self.observability = self._Add(
         'observability', command='gcloud observability'
     )
@@ -1261,6 +1263,8 @@ class _SectionApiEndpointOverrides(_Section):
     self.workflows = self._Add('workflows', command='gcloud workflows')
     self.workloadcertificate = self._Add('workloadcertificate', hidden=True)
     self.workloadidentity = self._Add('workloadidentity', hidden=True)
+    self.workloadmanager = self._Add(
+        'workloadmanager', command='gcloud workload-manager', hidden=True)
     self.workstations = self._Add('workstations', command='gcloud workstations')
 
   def StorageGrpcEndpointValidator(self, value):

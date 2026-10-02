@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 EgressNetworkConfigTlsConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  additionalRoots:
+    description: The additional roots to trust.
+    type: string
+    enum:
+    - ADDITIONAL_ROOTS_UNSPECIFIED
+    - NO_ADDITIONAL_ROOTS
+    - PUBLICLY_TRUSTED_ROOTS
+  trustConfig:
+    description: |-
+      The trust config resource name. Format:
+      projects/{project}/locations/{location}/trustConfigs/{trust_config}
+    type: string

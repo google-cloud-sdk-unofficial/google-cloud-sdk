@@ -171,9 +171,6 @@
         GKE clients are not supported.
       default: null
     - arg_name: kms-key
-      api_field: instance.kmsKey
-      required: false
-      repeated: false
       help_text: |-
         The Cloud KMS key name to use for data encryption.
         If not set, the instance will use Google-managed encryption keys.
@@ -181,13 +178,22 @@
         The key must be in the same region as the instance.
         The key format is:
         projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{key}
-    - arg_name: placement-policy
-      api_field: instance.placementPolicy
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_key_rings_crypto_keys
+      resource_method_params:
+        instance.kmsKey: '{__relative_name__}'
       required: false
-      repeated: false
+    - arg_name: placement-policy
       help_text: |-
         The placement policy name for the instance in the format of
         projects/{project}/locations/{location}/resourcePolicies/{resource_policy}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_or_regions_resource_policies
+      resource_method_params:
+        instance.placementPolicy: '{__relative_name__}'
+      required: false
     - group:
         api_field: instance.accessRulesOptions
         required: false

@@ -22,13 +22,16 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class RateLimitPoliciesAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.NETWORK_SECURITY_CATEGORY
 
 
 @base.DefaultUniverseOnly
 class RateLimitPoliciesBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.NETWORK_SECURITY_CATEGORY
 
 
 @base.DefaultUniverseOnly
 class RateLimitPoliciesGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.NETWORK_SECURITY_CATEGORY

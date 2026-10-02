@@ -193,7 +193,7 @@ class Parameter(_messages.Message):
       control policy evaluation for the resource.
 
   Fields:
-    createTime: Output only. [Output only] Create time stamp
+    createTime: Output only. Create time stamp
     format: Optional. Specifies the format of a Parameter.
     kmsKey: Optional. Customer managed encryption key (CMEK) to use for
       encrypting the Parameter Versions. If not set, the default Google-
@@ -201,17 +201,17 @@ class Parameter(_messages.Message):
       the same location as the Parameter. The expected format is
       `projects/*/locations/*/keyRings/*/cryptoKeys/*`.
     labels: Optional. Labels as key value pairs
-    name: Identifier. [Output only] The resource name of the Parameter in the
-      format `projects/*/locations/*/parameters/*`.
-    policyMember: Output only. [Output-only] policy member strings of a Google
-      Cloud resource.
+    name: Identifier. The resource name of the Parameter in the format
+      `projects/*/locations/*/parameters/*`.
+    policyMember: Output only. Policy member strings of a Google Cloud
+      resource.
     tags: Optional. Input only. Immutable. Tag keys and tag values that are
       bound to this Parameter. You must represent each item in the map as: `""
       : ""`. For example, a single resource can have the following tags: ```
       "123/environment": "production", "123/costCenter": "marketing", ``` Tags
       are used to organize and group resources. Tags can be used to control
       policy evaluation for the resource.
-    updateTime: Output only. [Output only] Update time stamp
+    updateTime: Output only. Update time stamp
   """
 
   class FormatValueValuesEnum(_messages.Enum):
@@ -296,32 +296,31 @@ class ParameterVersion(_messages.Message):
   r"""Message describing ParameterVersion resource
 
   Enums:
-    ChecksumSourceValueValuesEnum: Optional. Output only. [Output only] The
-      source of the checksum.
+    ChecksumSourceValueValuesEnum: Optional. Output only. The source of the
+      checksum.
 
   Fields:
-    checksumSource: Optional. Output only. [Output only] The source of the
-      checksum.
-    createTime: Output only. [Output only] Create time stamp
+    checksumSource: Optional. Output only. The source of the checksum.
+    createTime: Output only. Create time stamp
     disabled: Optional. Disabled boolean to determine if a ParameterVersion
       acts as a metadata only resource (payload is never returned if disabled
       is true). If true any calls will always default to BASIC view even if
       the user explicitly passes FULL view as part of the request. A render
       call on a disabled resource fails with an error. Default value is False.
-    kmsKeyVersion: Optional. Output only. [Output only] The resource name of
-      the KMS key version used to encrypt the ParameterVersion payload. This
-      field is populated only if the Parameter resource has customer managed
-      encryption key (CMEK) configured.
-    name: Identifier. [Output only] The resource name of the ParameterVersion
-      in the format `projects/*/locations/*/parameters/*/versions/*`.
+    kmsKeyVersion: Optional. Output only. The resource name of the KMS key
+      version used to encrypt the ParameterVersion payload. This field is
+      populated only if the Parameter resource has customer managed encryption
+      key (CMEK) configured.
+    name: Identifier. The resource name of the ParameterVersion in the format
+      `projects/*/locations/*/parameters/*/versions/*`.
     payload: Required. Immutable. Payload content of a ParameterVersion
       resource. This is only returned when the request provides the View value
       of FULL (default for GET request).
-    updateTime: Output only. [Output only] Update time stamp
+    updateTime: Output only. Update time stamp
   """
 
   class ChecksumSourceValueValuesEnum(_messages.Enum):
-    r"""Optional. Output only. [Output only] The source of the checksum.
+    r"""Optional. Output only. The source of the checksum.
 
     Values:
       CHECKSUM_SOURCE_UNSPECIFIED: The default / unset value.
@@ -346,9 +345,9 @@ class ParameterVersionPayload(_messages.Message):
 
   Fields:
     data: Required. bytes data for storing payload.
-    dataCrc32c: Optional. [Optional] The integrity checksum of the payload. If
-      provided, the server will verify that the checksum matches the payload.
-      If not provided, the server will generate the checksum.
+    dataCrc32c: Optional. The integrity checksum of the payload. If provided,
+      the server will verify that the checksum matches the payload. If not
+      provided, the server will generate the checksum.
   """
 
   data = _messages.BytesField(1)
@@ -475,8 +474,8 @@ class ParametermanagerProjectsLocationsParametersPatchRequest(_messages.Message)
   r"""A ParametermanagerProjectsLocationsParametersPatchRequest object.
 
   Fields:
-    name: Identifier. [Output only] The resource name of the Parameter in the
-      format `projects/*/locations/*/parameters/*`.
+    name: Identifier. The resource name of the Parameter in the format
+      `projects/*/locations/*/parameters/*`.
     parameter: A Parameter resource to be passed as the request body.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -620,8 +619,8 @@ class ParametermanagerProjectsLocationsParametersVersionsPatchRequest(_messages.
   object.
 
   Fields:
-    name: Identifier. [Output only] The resource name of the ParameterVersion
-      in the format `projects/*/locations/*/parameters/*/versions/*`.
+    name: Identifier. The resource name of the ParameterVersion in the format
+      `projects/*/locations/*/parameters/*/versions/*`.
     parameterVersion: A ParameterVersion resource to be passed as the request
       body.
     requestId: Optional. An optional request ID to identify requests. Specify
@@ -935,17 +934,16 @@ class ParametermanagerProjectsLocationsTemplatesVersionsRenderRequest(_messages.
 
 
 class RenderParameterVersionResponse(_messages.Message):
-  r"""Message describing RenderParameterVersionResponse resource
+  r"""Message describing response of the `RenderParameterVersion` method
 
   Fields:
-    parameterVersion: Output only. Resource identifier of a ParameterVersion
-      in the format `projects/*/locations/*/parameters/*/versions/*`.
+    parameterVersion: Resource identifier of a ParameterVersion in the format
+      `projects/*/locations/*/parameters/*/versions/*`.
     payload: Payload content of a ParameterVersion resource.
-    renderedPayload: Output only. Server generated rendered version of the
-      user provided payload data (ParameterVersionPayload) which has
-      substitutions of all (if any) references to a SecretManager
-      SecretVersion resources. This substitution only works for a Parameter
-      which is in JSON or YAML format.
+    renderedPayload: Server generated rendered version of the user provided
+      payload data (ParameterVersionPayload) which has substitutions of all
+      (if any) references to a SecretManager SecretVersion resources. This
+      substitution only works for a Parameter which is in JSON or YAML format.
   """
 
   parameterVersion = _messages.StringField(1)
@@ -954,27 +952,26 @@ class RenderParameterVersionResponse(_messages.Message):
 
 
 class RenderTemplateVersionResponse(_messages.Message):
-  r"""Message describing RenderTemplateVersionResponse resource
+  r"""Message describing response for `RenderTemplateVersion` method
 
   Enums:
-    TemplateFormatValueValuesEnum: Output only. Format of the template
-      version.
+    TemplateFormatValueValuesEnum: Format of the template version.
 
   Fields:
-    parameterVersion: Output only. The resource name of the ParameterVersion
-      used to render the template version in the format
+    parameterVersion: The resource name of the ParameterVersion used to render
+      the template version in the format
       `projects/*/locations/*/parameters/*/versions/*`.
     payload: Payload content of a TemplateVersion resource.
-    renderedPayload: Output only. Server generated rendered version of the
-      user provided payload data (TemplateVersionPayload) which has all the
-      variables resolved using the provided parameter version.
-    templateFormat: Output only. Format of the template version.
+    renderedPayload: Server generated rendered version of the user provided
+      payload data (TemplateVersionPayload) which has all the variables
+      resolved using the provided parameter version.
+    templateFormat: Format of the template version.
     templateVersion: Resource identifier of a TemplateVersion in the format
       `projects/*/locations/*/templates/*/versions/*`.
   """
 
   class TemplateFormatValueValuesEnum(_messages.Enum):
-    r"""Output only. Format of the template version.
+    r"""Format of the template version.
 
     Values:
       TEMPLATE_FORMAT_UNSPECIFIED: The default / unset value. The API will

@@ -21,10 +21,9 @@ from clients import bigquery_client_extended
 from clients import wait_printer
 from frontend import utils as bq_frontend_utils
 from utils import bq_api_utils
-
+from utils import bq_error
 from utils import bq_gcloud_utils
 from utils import bq_logging
-
 
 
 FLAGS = flags.FLAGS
@@ -67,6 +66,7 @@ class Client(object):
       bq_logging.ConfigureLogging(bq_flags.APILOG.value)
     # Gcloud config currently gets processed twice.
     bq_gcloud_utils.process_config(flag_values=FLAGS)
+
 
     if (
         bq_flags.UNIVERSE_DOMAIN.present

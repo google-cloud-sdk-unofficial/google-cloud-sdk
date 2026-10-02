@@ -1527,9 +1527,16 @@ def GetClusterConfig(
       ),
       serviceAccount=args.service_account,
       serviceAccountScopes=expanded_scopes,
-      zoneUri=properties.VALUES.compute.zone.GetOrFail(),
+      zoneUri=(
+          '' if args.multizone else properties.VALUES.compute.zone.GetOrFail()
+      ),
       autoZoneExcludeZoneUris=args.auto_zone_exclude_zones,
   )
+
+  if args.multizone:
+    gce_cluster_config.multiZoneConfig = dataproc.messages.MultiZoneConfig(
+        targetShape=dataproc.messages.MultiZoneConfig.TargetShapeValueValuesEnum.ANY
+    )
 
   if args.public_ip_address:
     gce_cluster_config.internalIpOnly = not args.public_ip_address

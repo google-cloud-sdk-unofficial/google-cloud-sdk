@@ -14,10 +14,13 @@
 # limitations under the License.
 """The kafka sources command group for Eventarc."""
 
-
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning="This command group is deprecated. There is no replacement.",
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 @base.Hidden

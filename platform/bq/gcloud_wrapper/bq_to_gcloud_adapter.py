@@ -85,20 +85,57 @@ def run_bq_command_using_gcloud(
     return 0
   proc = gcloud_runner.run_gcloud_command(
       gcloud_command,
-      # TODO(b/355324165): Handle that create, and probably others, output their
-      # user messaging to stderr.
-      stderr=subprocess.STDOUT,
+      stderr=subprocess.PIPE,
   )
+  out, err = proc.communicate()
+
+  # 1. Only retry interactively if an interactive auth prompt (e.g. security key
+  # touch or login prompt) is needed. Regular errors (like NOT_FOUND) should not
+  # retry to avoid double latency and direct stderr leakage.
+  needs_interactive_retry = (
+      proc.returncode != 0
+      and err
+      and any(
+          kw in err.lower()
+          for kw in [
+              'reauthentication',
+              'reauth',
+              'login',
+              'security key',
+              'security-key',
+              'gcloud auth',
+          ]
+      )
+  )
+
+  if needs_interactive_retry:
+    retry_proc = gcloud_runner.run_gcloud_command(
+        gcloud_command,
+        stderr=None,
+    )
+    retry_out, retry_err = retry_proc.communicate()
+    proc = retry_proc
+    out = retry_out
+    err = retry_err
+
   bq_format = bq_global_flags.get('format', 'sparse')
   command_mapping = GCLOUD_COMMAND_GENERATOR.get_command_mapping(
       resource=resource, bq_command=bq_command
   )
-  if not proc.stdout:
+  # 2. Restore stderr to out if out is empty.
+  # Handles regular errors returned on stderr so they get formatted/printed,
+  # as well as user messaging output to stderr on success (TODO: b/355324165).
+  if proc.returncode != 0 and err:
+    out = f'{out}\n{err}' if out else err
+  elif not command_mapping.print_resource and not out and err:
+    out = err
+
+  if not out:
     return proc.returncode
   # Print line-by-line unless for JSON output, where we first collect all the
   # lines into a single JSON object before printing.
   json_output = ''
-  for raw_line in iter(proc.stdout.readline, ''):
+  for raw_line in out.splitlines(keepends=True):
     line_to_print = ''
     output = str(raw_line).strip()
     is_progress_message = command_mapping.synchronous_progress_message_matcher(

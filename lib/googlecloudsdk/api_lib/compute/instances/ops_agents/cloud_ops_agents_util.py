@@ -14,9 +14,6 @@
 # limitations under the License.
 """Util for cloud ops agents policy commands."""
 
-import json
-from typing import Optional
-
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_exceptions as exceptions
 from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_policy
@@ -24,25 +21,6 @@ from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import os_po
 from googlecloudsdk.api_lib.compute.instances.ops_agents.validators import cloud_ops_agents_policy_validator
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
-
-
-def GetAgentsRuleFromDescription(
-    description: str,
-) -> Optional[cloud_ops_agents_policy.OpsAgentsPolicy.AgentsRule]:
-  """Returns an agents rule from a OSPolicy description."""
-  if description is None:
-    return None
-  description_parts = description.split(' | ', maxsplit=1)
-  if len(description_parts) < 2:
-    return None
-  try:
-    agents_rule_json = json.loads(description_parts[1])
-  except json.JSONDecodeError:
-    return None
-  try:
-    return cloud_ops_agents_policy.CreateAgentsRule(agents_rule_json)
-  except exceptions.PolicyValidationError:
-    return None
 
 
 def GetOpsAgentsPolicyFromApi(

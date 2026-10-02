@@ -60,6 +60,28 @@ _SOURCE_DISK_DETAILED_HELP = """\
       size of the disks.
 
       The source disk must be in the same zone/region as the disk to be created.
+
+      To create a disk from a source disk in a different project, specify the
+      source disk using its full resource path. For example:
+
+        projects/SOURCE_PROJECT/zones/ZONE/disks/SOURCE_DISK
+
+      or for a regional disk:
+
+        projects/SOURCE_PROJECT/regions/REGION/disks/SOURCE_DISK
+
+      When cloning a disk across projects:
+
+      * The source disk and target disk must still reside in the same zone (or
+        region for regional disks).
+      * You must have permission to access the disk in the source project
+        (such as `roles/compute.viewer` or `compute.disks.get` and
+        `compute.disks.useReadOnly`) and permission to create disks in the target
+        project (`compute.disks.create`).
+      * If the source disk is encrypted with a customer-managed encryption key
+        (CMEK) or customer-supplied encryption key (CSEK), you must provide the
+        same encryption key for the cloned disk using `--kms-key` (for CMEK) or
+        `--csek-key-file` (for CSEK).
 """
 
 _SOURCE_DISK_ZONE_EXPLANATION = """\

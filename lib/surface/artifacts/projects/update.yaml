@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
   universe_compatible: true
   help_text:
     brief: Update project configuration.

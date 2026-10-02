@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Update Privileged Access Manager (PAM) settings configured on a project, folder, or organization.
     description: |

@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Initiate the failover of the virtual machine (VM) instance to a designated failover zone.
     description: Initiate the failover of the VM to a designated zone by using a High Availability (HA) Controller. Regional disks attached to the other preconfigured zone are included in this failover.

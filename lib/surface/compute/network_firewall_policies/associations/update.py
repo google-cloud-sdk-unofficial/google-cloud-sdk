@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for updating network firewall policy associations."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewall_policy_association_utils as association_utils
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
@@ -23,9 +22,13 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
 
-@base.Hidden
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Update(base.UpdateCommand):
   """Update association between a firewall policy and a network.
 

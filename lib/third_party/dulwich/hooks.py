@@ -21,8 +21,21 @@
 
 """Access to hooks."""
 
+__all__ = [
+    "CommitMsgShellHook",
+    "Hook",
+    "PostCommitShellHook",
+    "PostReceiveShellHook",
+    "PreCommitShellHook",
+    "PreReceiveShellHook",
+    "ShellHook",
+    "UpdateShellHook",
+]
+
 import os
 import subprocess
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from .errors import HookError
 
@@ -30,7 +43,7 @@ from .errors import HookError
 class Hook:
     """Generic hook object."""
 
-    def execute(self, *args):
+    def execute(self, *args: Any) -> Any:  # noqa: ANN401
         """Execute the hook with the given args.
 
         Args:
@@ -53,12 +66,12 @@ class ShellHook(Hook):
 
     def __init__(
         self,
-        name,
-        path,
-        numparam,
-        pre_exec_callback=None,
-        post_exec_callback=None,
-        cwd=None,
+        name: str,
+        path: str,
+        numparam: int,
+        pre_exec_callback: Callable[..., Any] | None = None,
+        post_exec_callback: Callable[..., Any] | None = None,
+        cwd: str | None = None,
     ) -> None:
         """Setup shell hook definition.
 
@@ -85,7 +98,7 @@ class ShellHook(Hook):
 
         self.cwd = cwd
 
-    def execute(self, *args):
+    def execute(self, *args: Any) -> Any:  # noqa: ANN401
         """Execute the hook with given args."""
         if len(args) != self.numparam:
             raise HookError(
@@ -113,7 +126,13 @@ class ShellHook(Hook):
 class PreCommitShellHook(ShellHook):
     """pre-commit shell hook."""
 
-    def __init__(self, cwd, controldir) -> None:
+    def __init__(self, cwd: str, controldir: str) -> None:
+        """Initialize pre-commit hook.
+
+        Args:
+            cwd: Working directory for hook execution
+            controldir: Path to the git control directory (.git)
+        """
         filepath = os.path.join(controldir, "hooks", "pre-commit")
 
         ShellHook.__init__(self, "pre-commit", filepath, 0, cwd=cwd)
@@ -122,7 +141,12 @@ class PreCommitShellHook(ShellHook):
 class PostCommitShellHook(ShellHook):
     """post-commit shell hook."""
 
-    def __init__(self, controldir) -> None:
+    def __init__(self, controldir: str) -> None:
+        """Initialize post-commit hook.
+
+        Args:
+            controldir: Path to the git control directory (.git)
+        """
         filepath = os.path.join(controldir, "hooks", "post-commit")
 
         ShellHook.__init__(self, "post-commit", filepath, 0, cwd=controldir)
@@ -131,10 +155,15 @@ class PostCommitShellHook(ShellHook):
 class CommitMsgShellHook(ShellHook):
     """commit-msg shell hook."""
 
-    def __init__(self, controldir) -> None:
+    def __init__(self, controldir: str) -> None:
+        """Initialize commit-msg hook.
+
+        Args:
+            controldir: Path to the git control directory (.git)
+        """
         filepath = os.path.join(controldir, "hooks", "commit-msg")
 
-        def prepare_msg(*args):
+        def prepare_msg(*args: bytes) -> tuple[str, ...]:
             import tempfile
 
             (fd, path) = tempfile.mkstemp()
@@ -144,13 +173,14 @@ class CommitMsgShellHook(ShellHook):
 
             return (path,)
 
-        def clean_msg(success, *args):
+        def clean_msg(success: int, *args: str) -> bytes | None:
             if success:
                 with open(args[0], "rb") as f:
                     new_msg = f.read()
                 os.unlink(args[0])
                 return new_msg
             os.unlink(args[0])
+            return None
 
         ShellHook.__init__(
             self, "commit-msg", filepath, 1, prepare_msg, clean_msg, controldir
@@ -160,12 +190,31 @@ class CommitMsgShellHook(ShellHook):
 class PostReceiveShellHook(ShellHook):
     """post-receive shell hook."""
 
-    def __init__(self, controldir) -> None:
+    def __init__(self, controldir: str) -> None:
+        """Initialize post-receive hook.
+
+        Args:
+            controldir: Path to the git control directory (.git)
+        """
         self.controldir = controldir
         filepath = os.path.join(controldir, "hooks", "post-receive")
         ShellHook.__init__(self, "post-receive", path=filepath, numparam=0)
 
-    def execute(self, client_refs):
+    def execute(
+        self, client_refs: Sequence[tuple[bytes, bytes, bytes]]
+    ) -> bytes | None:
+        """Execute the post-receive hook.
+
+        Args:
+            client_refs: List of tuples containing (old_sha, new_sha, ref_name)
+                        for each updated reference
+
+        Returns:
+            Output from the hook execution or None if hook doesn't exist
+
+        Raises:
+            HookError: If hook execution fails
+        """
         # do nothing if the script doesn't exist
         if not os.path.exists(self.filepath):
             return None
@@ -188,9 +237,130 @@ class PostReceiveShellHook(ShellHook):
             out_data, err_data = p.communicate(in_data)
 
             if (p.returncode != 0) or err_data:
-                err_fmt = b"post-receive exit code: %d\n" + b"stdout:\n%s\nstderr:\n%s"
-                err_msg = err_fmt % (p.returncode, out_data, err_data)
-                raise HookError(err_msg.decode("utf-8", "backslashreplace"))
+                err_msg = (
+                    f"post-receive exit code: {p.returncode}\n"
+                    f"stdout:\n{out_data.decode('utf-8', 'backslashreplace')}\n"
+                    f"stderr:\n{err_data.decode('utf-8', 'backslashreplace')}"
+                )
+                raise HookError(err_msg)
             return out_data
+        except OSError as err:
+            raise HookError(repr(err)) from err
+
+
+class PreReceiveShellHook(ShellHook):
+    """pre-receive shell hook."""
+
+    def __init__(self, controldir: str) -> None:
+        """Initialize pre-receive hook.
+
+        Args:
+            controldir: Path to the git control directory (.git)
+        """
+        self.controldir = controldir
+        filepath = os.path.join(controldir, "hooks", "pre-receive")
+        ShellHook.__init__(self, "pre-receive", path=filepath, numparam=0)
+
+    def execute(
+        self, client_refs: Sequence[tuple[bytes, bytes, bytes]]
+    ) -> tuple[bytes, bytes]:
+        """Execute the pre-receive hook.
+
+        Args:
+            client_refs: List of tuples containing (old_sha, new_sha, ref_name)
+                        for each reference to be updated
+
+        Returns:
+            Tuple of (stdout, stderr) from hook execution
+
+        Raises:
+            HookError: If hook execution fails (exits with non-zero status)
+        """
+        # do nothing if the script doesn't exist
+        if not os.path.exists(self.filepath):
+            return (b"", b"")
+
+        try:
+            env = os.environ.copy()
+            env["GIT_DIR"] = self.controldir
+
+            p = subprocess.Popen(
+                self.filepath,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env,
+            )
+
+            # client_refs is a list of (oldsha, newsha, ref)
+            in_data = b"\n".join([b" ".join(ref) for ref in client_refs])
+
+            out_data, err_data = p.communicate(in_data)
+
+            if p.returncode != 0:
+                raise HookError(
+                    f"pre-receive hook exited with status {p.returncode}: {err_data.decode('utf-8', 'backslashreplace')}"
+                )
+            return (out_data, err_data)
+        except OSError as err:
+            raise HookError(repr(err)) from err
+
+
+class UpdateShellHook(ShellHook):
+    """update shell hook."""
+
+    def __init__(self, controldir: str) -> None:
+        """Initialize update hook.
+
+        Args:
+            controldir: Path to the git control directory (.git)
+        """
+        self.controldir = controldir
+        filepath = os.path.join(controldir, "hooks", "update")
+        ShellHook.__init__(self, "update", path=filepath, numparam=3)
+
+    def execute(
+        self, ref_name: bytes, old_sha: bytes, new_sha: bytes
+    ) -> tuple[bytes, bytes]:
+        """Execute the update hook for a single ref.
+
+        Args:
+            ref_name: Name of the reference being updated
+            old_sha: Old SHA of the reference
+            new_sha: New SHA of the reference
+
+        Returns:
+            Tuple of (stdout, stderr) from hook execution
+
+        Raises:
+            HookError: If hook execution fails (exits with non-zero status)
+        """
+        # do nothing if the script doesn't exist
+        if not os.path.exists(self.filepath):
+            return (b"", b"")
+
+        try:
+            env = os.environ.copy()
+            env["GIT_DIR"] = self.controldir
+
+            p = subprocess.Popen(
+                [
+                    self.filepath,
+                    ref_name.decode("utf-8", "backslashreplace"),
+                    old_sha.decode("utf-8", "backslashreplace"),
+                    new_sha.decode("utf-8", "backslashreplace"),
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env,
+            )
+
+            out_data, err_data = p.communicate()
+
+            if p.returncode != 0:
+                raise HookError(
+                    f"update hook exited with status {p.returncode}: {err_data.decode('utf-8', 'backslashreplace')}"
+                )
+            return (out_data, err_data)
         except OSError as err:
             raise HookError(repr(err)) from err

@@ -21,10 +21,23 @@
 
 """Utilities for reading and generating reflogs."""
 
-import collections
-from collections.abc import Generator
-from typing import BinaryIO, Optional, Union
+__all__ = [
+    "drop_reflog_entry",
+    "expire_reflog",
+    "format_reflog_line",
+    "iter_reflogs",
+    "parse_reflog_line",
+    "parse_reflog_spec",
+    "read_reflog",
+]
 
+import collections
+import os
+from collections.abc import Callable, Generator
+from pathlib import Path
+from typing import IO, BinaryIO
+
+from .file import _GitFile
 from .objects import ZERO_SHA, format_timezone, parse_timezone
 
 Entry = collections.namedtuple(
@@ -33,11 +46,50 @@ Entry = collections.namedtuple(
 )
 
 
+def parse_reflog_spec(refspec: str | bytes) -> tuple[bytes, int]:
+    """Parse a reflog specification like 'HEAD@{1}' or 'refs/heads/master@{2}'.
+
+    Args:
+        refspec: Reflog specification (e.g., 'HEAD@{1}', 'master@{0}')
+
+    Returns:
+        Tuple of (ref_name, index) where index is in Git reflog order (0 = newest)
+
+    Raises:
+        ValueError: If the refspec is not a valid reflog specification
+    """
+    if isinstance(refspec, str):
+        refspec = refspec.encode("utf-8")
+
+    if b"@{" not in refspec:
+        raise ValueError(
+            f"Invalid reflog spec: {refspec!r}. Expected format: ref@{{n}}"
+        )
+
+    ref, rest = refspec.split(b"@{", 1)
+    if not rest.endswith(b"}"):
+        raise ValueError(
+            f"Invalid reflog spec: {refspec!r}. Expected format: ref@{{n}}"
+        )
+
+    index_str = rest[:-1]
+    if not index_str.isdigit():
+        raise ValueError(
+            f"Invalid reflog index: {index_str!r}. Expected integer in ref@{{n}}"
+        )
+
+    # Use HEAD if no ref specified (e.g., "@{1}")
+    if not ref:
+        ref = b"HEAD"
+
+    return ref, int(index_str)
+
+
 def format_reflog_line(
-    old_sha: Optional[bytes],
+    old_sha: bytes | None,
     new_sha: bytes,
     committer: bytes,
-    timestamp: Union[int, float],
+    timestamp: int | float,
     timezone: int,
     message: bytes,
 ) -> bytes:
@@ -53,6 +105,11 @@ def format_reflog_line(
     """
     if old_sha is None:
         old_sha = ZERO_SHA
+    # A reflog entry is a single line and the message is the last, tab-separated
+    # field. Collapse embedded whitespace (in particular newlines) to single
+    # spaces so a multi-line or crafted message cannot split into extra physical
+    # lines and forge additional reflog entries. Matches Git's copy_reflog_msg.
+    message = b" ".join(message.split())
     return (
         old_sha
         + b" "
@@ -89,7 +146,9 @@ def parse_reflog_line(line: bytes) -> Entry:
     )
 
 
-def read_reflog(f: BinaryIO) -> Generator[Entry, None, None]:
+def read_reflog(
+    f: BinaryIO | IO[bytes] | _GitFile,
+) -> Generator[Entry, None, None]:
     """Read reflog.
 
     Args:
@@ -115,7 +174,7 @@ def drop_reflog_entry(f: BinaryIO, index: int, rewrite: bool = False) -> None:
     log = []
     offset = f.tell()
     for line in f:
-        log.append((offset, parse_reflog_line(line)))
+        log.append((offset, parse_reflog_line(line.rstrip(b"\n"))))
         offset = f.tell()
 
     inverse_index = len(log) - index - 1
@@ -155,8 +214,88 @@ def drop_reflog_entry(f: BinaryIO, index: int, rewrite: bool = False) -> None:
                 entry.timezone,
                 entry.message,
             )
+            + b"\n"
         )
     f.truncate()
+
+
+def expire_reflog(
+    f: BinaryIO,
+    expire_time: int | None = None,
+    expire_unreachable_time: int | None = None,
+    reachable_checker: Callable[[bytes], bool] | None = None,
+) -> int:
+    """Expire reflog entries based on age and reachability.
+
+    Args:
+        f: File-like object for the reflog
+        expire_time: Expire entries older than this timestamp (seconds since epoch).
+            If None, entries are not expired based on age alone.
+        expire_unreachable_time: Expire unreachable entries older than this
+            timestamp. If None, unreachable entries are not expired.
+        reachable_checker: Optional callable that takes a SHA and returns True
+            if the commit is reachable. If None, all entries are considered
+            reachable.
+
+    Returns:
+        Number of entries expired
+    """
+    if expire_time is None and expire_unreachable_time is None:
+        return 0
+
+    entries = []
+    offset = f.tell()
+    for line in f:
+        entries.append((offset, parse_reflog_line(line.rstrip(b"\n"))))
+        offset = f.tell()
+
+    # Filter entries that should be kept
+    kept_entries = []
+    expired_count = 0
+
+    for offset, entry in entries:
+        should_expire = False
+
+        # Check if entry is reachable
+        is_reachable = True
+        if reachable_checker is not None:
+            is_reachable = reachable_checker(entry.new_sha)
+
+        # Apply expiration rules
+        # Check the appropriate expiration time based on reachability
+        if is_reachable:
+            if expire_time is not None and entry.timestamp < expire_time:
+                should_expire = True
+        else:
+            if (
+                expire_unreachable_time is not None
+                and entry.timestamp < expire_unreachable_time
+            ):
+                should_expire = True
+
+        if should_expire:
+            expired_count += 1
+        else:
+            kept_entries.append((offset, entry))
+
+    # Write back the kept entries
+    if expired_count > 0:
+        f.seek(0)
+        for _, entry in kept_entries:
+            f.write(
+                format_reflog_line(
+                    entry.old_sha,
+                    entry.new_sha,
+                    entry.committer,
+                    entry.timestamp,
+                    entry.timezone,
+                    entry.message,
+                )
+                + b"\n"
+            )
+        f.truncate()
+
+    return expired_count
 
 
 def iter_reflogs(logs_dir: str) -> Generator[bytes, None, None]:
@@ -168,9 +307,6 @@ def iter_reflogs(logs_dir: str) -> Generator[bytes, None, None]:
     Yields:
         Reference names (as bytes) that have reflogs
     """
-    import os
-    from pathlib import Path
-
     if not os.path.exists(logs_dir):
         return
 

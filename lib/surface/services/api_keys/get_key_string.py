@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -56,8 +57,8 @@ class GetKeyString(base.DescribeCommand):
       Key string.
     """
 
-    client = apikeys.GetClientInstance()
-    messages = client.MESSAGES_MODULE
+    client = apikeys.GetClientInstance(self.ReleaseTrack())
+    messages = apikeys.GetMessagesModule(self.ReleaseTrack())
 
     key_ref = args.CONCEPTS.key.Parse()
     request = messages.ApikeysProjectsLocationsKeysGetKeyStringRequest(

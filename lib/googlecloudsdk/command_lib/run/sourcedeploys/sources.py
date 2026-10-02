@@ -17,7 +17,7 @@
 import dataclasses
 import enum
 import os
-from typing import Any, Mapping
+from typing import Any
 import uuid
 
 from apitools.base.py import exceptions as api_exceptions
@@ -218,17 +218,11 @@ def IsGcsObject(source: str) -> bool:
   return isinstance(source, str) and source.startswith(_GCS_PREFIX)
 
 
-def ShouldUploadThroughRunApi(
-    deploy_from_source: Mapping[str, Any], release_track: Any
-) -> bool:
+def ShouldUploadThroughRunApi(container_args: Any, release_track: Any) -> bool:
   """Returns True if the source should be uploaded via Cloud Run Upload Source API."""
   if not flags.IsRunUploadSupported(release_track):
     return False
 
-  if not deploy_from_source:
-    return False
-
-  container_args = next(iter(deploy_from_source.values()))
   source_path = getattr(container_args, 'source', None)
   if IsGcsObject(source_path):
     return False
@@ -237,7 +231,11 @@ def ShouldUploadThroughRunApi(
     return bool(container_args.run_upload)
 
   # make no-build deployments to use Cloud Run Upload Source API as the default.
-  if validators.IsNoBuildFromSource(release_track, deploy_from_source):
+  if validators.IsNoBuildFromSource(release_track, container_args):
+    return True
+  # make local-build deployments to use Cloud Run Upload Source API as the
+  # default.
+  if validators.IsLocalBuildFromSource(release_track, container_args):
     return True
 
   return False

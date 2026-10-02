@@ -1397,7 +1397,7 @@ def AddCommitSchemaFlags(parser, release_track=base.ReleaseTrack.GA):
     parser: The argparse parser.
     release_track: The release track of the command.
   """
-  if release_track == base.ReleaseTrack.ALPHA:
+  if release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
     definition_group = parser.add_group(
         mutex=True, help='Schema definition.', required=True
     )

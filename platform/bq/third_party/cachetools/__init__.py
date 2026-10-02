@@ -13,7 +13,7 @@ __all__ = (
     "cachedmethod",
 )
 
-__version__ = "7.0.1"
+__version__ = "7.1.8"
 
 import collections
 import collections.abc
@@ -23,9 +23,6 @@ import random
 import time
 
 from . import keys
-
-# Typing stubs for this package are provided by typeshed:
-# https://github.com/python/typeshed/tree/main/stubs/cachetools
 
 
 class _DefaultSize:
@@ -42,6 +39,9 @@ class _DefaultSize:
     def pop(self, _key):
         return 1
 
+    def clear(self):
+        pass
+
 
 class Cache(collections.abc.MutableMapping):
     """Mutable mapping to serve as a simple cache or cache base class."""
@@ -51,11 +51,13 @@ class Cache(collections.abc.MutableMapping):
     __size = _DefaultSize()
 
     def __init__(self, maxsize, getsizeof=None):
+        if maxsize < 0:
+            raise ValueError("maxsize must be non-negative")
         if getsizeof:
             self.getsizeof = getsizeof
         if self.getsizeof is not Cache.getsizeof:
-            self.__size = dict()
-        self.__data = dict()
+            self.__size = {}
+        self.__data = {}
         self.__currsize = 0
         self.__maxsize = maxsize
 
@@ -76,15 +78,20 @@ class Cache(collections.abc.MutableMapping):
     def __setitem__(self, key, value):
         maxsize = self.__maxsize
         size = self.getsizeof(value)
+        if size < 0:
+            raise ValueError("value size must be non-negative")
         if size > maxsize:
             raise ValueError("value too large")
-        if key not in self.__data or self.__size[key] < size:
-            while self.__currsize + size > maxsize:
-                self.popitem()
-        if key in self.__data:
-            diffsize = size - self.__size[key]
-        else:
+        if key not in self.__data:
             diffsize = size
+            while self.__currsize + diffsize > maxsize:
+                self.popitem()
+        else:
+            diffsize = size - self.__size[key]
+            while self.__currsize + diffsize > maxsize:
+                self.popitem()
+                if key not in self.__data:
+                    diffsize = size
         self.__data[key] = value
         self.__size[key] = size
         self.__currsize += diffsize
@@ -135,6 +142,17 @@ class Cache(collections.abc.MutableMapping):
             self[key] = value = default
         return value
 
+    # Although the MutableMapping.clear() default implementation works
+    # perfectly well, it calls popitem() in a loop until the cache is
+    # empty, resulting in O(n) complexity.  For large caches, this
+    # becomes a significant performance bottleneck, so we provide an
+    # optimized version for each Cache subclass.
+
+    def clear(self):
+        self.__data.clear()
+        self.__size.clear()
+        self.__currsize = 0
+
     @property
     def maxsize(self):
         """The maximum size of the cache."""
@@ -177,6 +195,10 @@ class FIFOCache(Cache):
             raise KeyError("%s is empty" % type(self).__name__) from None
         else:
             return (key, self.pop(key))
+
+    def clear(self):
+        Cache.clear(self)
+        self.__order.clear()
 
 
 class LFUCache(Cache):
@@ -238,6 +260,12 @@ class LFUCache(Cache):
         key = next(iter(curr.keys))  # remove an arbitrary element
         return (key, self.pop(key))
 
+    def clear(self):
+        Cache.clear(self)
+        root = self.__root
+        root.prev = root.next = root
+        self.__links.clear()
+
     def __touch(self, key):
         """Increment use count"""
         link = self.__links[key]
@@ -287,6 +315,10 @@ class LRUCache(Cache):
         else:
             return (key, self.pop(key))
 
+    def clear(self):
+        Cache.clear(self)
+        self.__order.clear()
+
     def __touch(self, key):
         """Mark as recently used"""
         try:
@@ -333,6 +365,11 @@ class RRCache(Cache):
         else:
             return (key, self.pop(key))
 
+    def clear(self):
+        Cache.clear(self)
+        self.__index.clear()
+        del self.__keys[:]
+
 
 class _TimedCache(Cache):
     """Base class for time aware cache implementations."""
@@ -365,7 +402,7 @@ class _TimedCache(Cache):
         def __getattr__(self, name):
             return getattr(self.__timer, name)
 
-    def __init__(self, maxsize, timer=time.monotonic, getsizeof=None):
+    def __init__(self, maxsize, timer, getsizeof=None):
         Cache.__init__(self, maxsize, getsizeof)
         self.__timer = _TimedCache._Timer(timer)
 
@@ -390,11 +427,6 @@ class _TimedCache(Cache):
         """The timer function used by the cache."""
         return self.__timer
 
-    def clear(self):
-        with self.__timer as time:
-            self.expire(time)
-            Cache.clear(self)
-
     def get(self, *args, **kwargs):
         with self.__timer:
             return Cache.get(self, *args, **kwargs)
@@ -407,12 +439,21 @@ class _TimedCache(Cache):
         with self.__timer:
             return Cache.setdefault(self, *args, **kwargs)
 
+    def clear(self):
+        # Subclasses must override to also reset their own time-tracking
+        # structures; we do not call expire() here since clear() should
+        # be O(1) regardless of cache contents.
+        Cache.clear(self)
+
+    def expire(self, time=None):  # pragma: no cover
+        raise NotImplementedError
+
 
 class TTLCache(_TimedCache):
     """LRU Cache implementation with per-item time-to-live (TTL) value."""
 
     class _Link:
-        __slots__ = ("key", "expires", "next", "prev")
+        __slots__ = ("expires", "key", "next", "prev")
 
         def __init__(self, key=None, expires=None):
             self.key = key
@@ -537,6 +578,12 @@ class TTLCache(_TimedCache):
             else:
                 return (key, self.pop(key))
 
+    def clear(self):
+        _TimedCache.clear(self)
+        root = self.__root
+        root.prev = root.next = root
+        self.__links.clear()
+
     def __getlink(self, key):
         value = self.__links[key]
         self.__links.move_to_end(key)
@@ -550,7 +597,7 @@ class TLRUCache(_TimedCache):
 
     @functools.total_ordering
     class _Item:
-        __slots__ = ("key", "expires", "removed")
+        __slots__ = ("expires", "key", "removed")
 
         def __init__(self, key=None, expires=None):
             self.key = key
@@ -588,10 +635,12 @@ class TLRUCache(_TimedCache):
 
     def __setitem__(self, key, value, cache_setitem=Cache.__setitem__):
         with self.timer as time:
+            self.expire(time)
             expires = self.__ttu(key, value, time)
             if not (time < expires):
-                return  # skip expired items
-            self.expire(time)
+                # updating an existing item with an already expired
+                # one should remove the existing item
+                return self.__delitem(key)
             cache_setitem(self, key, value)
         # removing an existing item would break the heap structure, so
         # only mark it as removed for now
@@ -661,12 +710,27 @@ class TLRUCache(_TimedCache):
             else:
                 return (key, self.pop(key))
 
+    def clear(self):
+        _TimedCache.clear(self)
+        self.__items.clear()
+        del self.__order[:]
+
     def __getitem(self, key):
         value = self.__items[key]
         self.__items.move_to_end(key)
         return value
 
+    def __delitem(self, key, cache_delitem=Cache.__delitem__):
+        try:
+            self.__items.pop(key).removed = True
+        except KeyError:
+            pass
+        else:
+            cache_delitem(self, key)
 
+
+# note that the runtime __name__ is "CacheInfo", as in stdlib:
+# https://github.com/python/cpython/blob/3.14/Lib/functools.py#L520
 _CacheInfo = collections.namedtuple(
     "CacheInfo", ["hits", "misses", "maxsize", "currsize"]
 )
@@ -704,8 +768,8 @@ def cached(cache, key=keys.hashkey, lock=None, condition=None, info=False):
 
 
 def cachedmethod(cache, key=keys.methodkey, lock=None, condition=None, info=False):
-    """Decorator to wrap a class or instance method with a memoizing
-    callable that saves results in a cache.
+    """Decorator to wrap a method with a memoizing callable that saves
+    results in a cache.
 
     """
     from ._cachedmethod import _wrapper

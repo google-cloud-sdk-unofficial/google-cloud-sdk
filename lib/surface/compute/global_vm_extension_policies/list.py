@@ -16,14 +16,13 @@
 """Command for listing GlobalVmExtensionPolicies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.global_vm_extension_policies import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.compute.vm_extension_policies import flags as vm_extension_policies_flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine global VM extension policies."""
 
@@ -46,12 +45,16 @@ class List(base.ListCommand):
       Response calling the GlobalVmExtensionPoliciesService.List API.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-    return client.MakeRequests([(
-        client.apitools_client.globalVmExtensionPolicies,
-        'List',
-        messages.ComputeGlobalVmExtensionPoliciesListRequest(
-            project=properties.VALUES.core.project.GetOrFail(),
-        ),
-    )])
+    policy_client = client.GlobalVmExtensionPolicy.FromArgs(args, holder.client)
+    return policy_client.List()
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Compute Engine global VM extension policies."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(ListAlpha, cls).Args(parser)
+    vm_extension_policies_flags.AddScopeFlags(parser)

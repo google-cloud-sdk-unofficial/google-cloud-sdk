@@ -1,4 +1,6 @@
 - release_tracks: [BETA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: List transports.
     description: Retrieve and display a list of all transports in the specified project.

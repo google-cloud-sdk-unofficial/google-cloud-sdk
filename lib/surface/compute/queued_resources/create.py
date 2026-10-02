@@ -91,6 +91,7 @@ class Create(base.CreateCommand):
         support_workload_identity_config=cls._support_workload_identity_config,
         support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
+        support_flex_policy_flag_with_mincpu_and_disks=False,
         support_vsock_mode=cls._support_vsock_mode,
         include_kms_key_service_account=True,
     )

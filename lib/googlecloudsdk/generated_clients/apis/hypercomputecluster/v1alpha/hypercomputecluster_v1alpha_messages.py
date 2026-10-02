@@ -274,17 +274,46 @@ class AutoCaptureSettings(_messages.Message):
 class BenchmarkingTrial(_messages.Message):
   r"""A benchmarking trial represents an execution of a benchmark.
 
+  Messages:
+    LabelsValue: Optional. Labels for the benchmarking trial.
+
   Fields:
     createTime: Output only. Create time of the benchmarking trial.
+    labels: Optional. Labels for the benchmarking trial.
     name: Identifier. The resource name of the benchmarking trial. Format: pro
       jects/{project}/locations/{location}/benchmarkingTrials/{benchmarking_tr
       ial}
     updateTime: Output only. Update time of the benchmarking trial.
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels for the benchmarking trial.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   createTime = _messages.StringField(1)
-  name = _messages.StringField(2)
-  updateTime = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 2)
+  name = _messages.StringField(3)
+  updateTime = _messages.StringField(4)
 
 
 class BootDisk(_messages.Message):
@@ -304,8 +333,7 @@ class BootDisk(_messages.Message):
       continue to use the current image family.
     sizeGb: Optional. The size of the disk in gigabytes (GB), which must be at
       least 40 GB.
-    storagePools: Optional. Unstable: Contact hypercompute-service-eng@ before
-      using. The [storage
+    storagePools: Optional. The [storage
       pools](https://docs.cloud.google.com/compute/docs/disks/storage-pools)
       used for creating the boot disk, in the format:
       `projects/{project}/zones/{zone}/storagePools/{storage_pool}`.
@@ -1638,10 +1666,14 @@ class HealthChecks(_messages.Message):
 
     Values:
       NODE_ACTION_UNSPECIFIED: Not set.
-      CORDON: Cordon the node to prevent new jobs from being scheduled.
+      CORDON: Cordons the node to prevent new jobs from being scheduled.
+      REBOOT: Reboots the node.
+      RECREATE: Recreates the node.
     """
     NODE_ACTION_UNSPECIFIED = 0
     CORDON = 1
+    REBOOT = 2
+    RECREATE = 3
 
   disabledNodeActions = _messages.EnumField('DisabledNodeActionsValueListEntryValuesEnum', 1, repeated=True)
   enableStandardChecks = _messages.BooleanField(2)
@@ -2748,6 +2780,9 @@ class ManagedInstanceGroup(_messages.Message):
     bootDisk: Optional. Boot disk for the managed instance group.
     computeId: Required. ID of the compute resource used to create this
       managed instance group.
+    enableOsLogin: Optional. Whether [OS
+      Login](https://cloud.google.com/compute/docs/oslogin) should be enabled
+      on instances in this managed instance group.
     enablePublicIps: Optional. Whether to enable public IPs for the instances
       in the managed instance group.
     instanceGroupManager: Output only. Name of the managed instance group, in
@@ -2768,13 +2803,14 @@ class ManagedInstanceGroup(_messages.Message):
 
   bootDisk = _messages.MessageField('BootDisk', 1)
   computeId = _messages.StringField(2)
-  enablePublicIps = _messages.BooleanField(3)
-  instanceGroupManager = _messages.StringField(4)
-  instanceTemplate = _messages.StringField(5)
-  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 6)
-  startupScript = _messages.StringField(7)
-  storageConfigs = _messages.MessageField('StorageConfig', 8, repeated=True)
-  targetSize = _messages.IntegerField(9)
+  enableOsLogin = _messages.BooleanField(3)
+  enablePublicIps = _messages.BooleanField(4)
+  instanceGroupManager = _messages.StringField(5)
+  instanceTemplate = _messages.StringField(6)
+  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 7)
+  startupScript = _messages.StringField(8)
+  storageConfigs = _messages.MessageField('StorageConfig', 9, repeated=True)
+  targetSize = _messages.IntegerField(10)
 
 
 class Metrics(_messages.Message):
@@ -3986,8 +4022,9 @@ class SchedulerParameters(_messages.Message):
     defaultQueueDepth: Optional. Main scheduler jobs considered per cycle. For
       more details, see the Slurm documentation for SchedulerParameters:
       https://slurm.schedmd.com/slurm.conf.html#OPT_default_queue_depth
-    noholdOnPrologFail: Optional. Don't hold jobs on prolog script failure.
-      For more details, see the Slurm documentation for SchedulerParameters:
+    noholdOnPrologFail: Optional. Don't hold jobs on prolog script failure. If
+      unset, this is enabled by default in the cluster configuration. For more
+      details, see the Slurm documentation for SchedulerParameters:
       https://slurm.schedmd.com/slurm.conf.html#OPT_nohold_on_prolog_fail
   """
 

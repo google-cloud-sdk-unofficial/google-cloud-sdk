@@ -364,11 +364,9 @@ class BigQueryConfig(_messages.Message):
 
 
 class BigtableConfig(_messages.Message):
-  r"""Configuration for a Bigtable subscription. The Pub/Sub message will be
-  written to a Bigtable row as follows: - row key: subscription name, message
-  ID hash, and message ID delimited by `#`. - columns: message bytes written
-  to a single column family `data` with an empty-string column qualifier. -
-  cell timestamp: the message publish timestamp.
+  r"""Configuration for a Bigtable subscription, which will write a Pub/Sub
+  message to a Bigtable row. See the ColumnFamilyMapping documentation below
+  for details on how the row keys and columns will be written.
 
   Enums:
     StateValueValuesEnum: Output only. An output-only field that indicates
@@ -693,15 +691,19 @@ class CloudStorageConfig(_messages.Message):
 
 class ColumnFamilyMapping(_messages.Message):
   r"""Configuration for writing a Pub/Sub message to a Bigtable row with a
-  user-defined key and writing to column families. If this field is set, the
-  subscription messages must be formatted as JSON. The row key mapping is
-  configured in the `key_definition` section. The top-level fields will be
+  user-defined key and writing to column families. If this field is set: - The
+  subscription messages must be formatted as JSON. - The row key mapping is
+  configured in the `key_definition` section. - The top-level fields will be
   written either: - By default, they will be written to the `data` column
   family with the field name as the column qualifier. - But if the field name
   matches an existing column family (except for the default `data` column),
   then that field will be written to that column family, either as a scalar or
-  its next level nested fields if it's a JSON object. The cell timestamp will
-  be the message publish timestamp.
+  its next level nested fields if it's a JSON object. - The cell timestamp
+  will be the message publish timestamp. If the field is not set, the default
+  behavior is to write: - row key: subscription name, message ID hash, and
+  message ID delimited by `#`. - columns: message bytes written to a single
+  column family `data` with an empty-string column qualifier. - cell
+  timestamp: the message publish timestamp.
 
   Fields:
     delimitedKey: Optional. If set, the row key is constructed from the given

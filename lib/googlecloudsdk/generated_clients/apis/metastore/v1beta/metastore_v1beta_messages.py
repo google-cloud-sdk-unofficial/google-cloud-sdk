@@ -1503,6 +1503,27 @@ class Lake(_messages.Message):
   name = _messages.StringField(1)
 
 
+class LakehouseProxyConfig(_messages.Message):
+  r"""Configuration for Dataproc Metastore to Lakehouse proxy routing.In a
+  phased migration, namespaces are migrated from Dataproc Metastore to a
+  Lakehouse Iceberg REST Catalog in batches. Between and after migration
+  phases, the metastore service operates in PROXY state where requests for
+  migrated namespaces are forwarded to the Lakehouse catalog while unmigrated
+  namespaces continue to be served locally by DPMS.
+
+  Fields:
+    catalog: Output only. The Lakehouse Iceberg REST Catalog where requests
+      are being proxied to. Format:
+      projects/{project_id_or_number}/catalogs/{catalog_id}.
+    namespaces: Output only. The list of namespaces currently proxied to the
+      Lakehouse catalog. As each migration batch completes, newly migrated
+      namespaces are added to this list.
+  """
+
+  catalog = _messages.StringField(1)
+  namespaces = _messages.StringField(2, repeated=True)
+
+
 class LatestBackup(_messages.Message):
   r"""The details of the latest scheduled backup.
 
@@ -3695,6 +3716,8 @@ class Service(_messages.Message):
     hiveMetastoreConfig: Configuration information specific to running Hive
       metastore software as the metastore service.
     labels: User-defined labels for the metastore service.
+    lakehouseProxyConfig: Output only. The Lakehouse proxy routing
+      configuration for the metastore service.
     maintenanceWindow: Optional. The one hour maintenance window of the
       metastore service. This specifies when the service can be restarted for
       maintenance purposes in UTC time. Maintenance window is not needed for
@@ -3874,24 +3897,25 @@ class Service(_messages.Message):
   endpointUri = _messages.StringField(6)
   hiveMetastoreConfig = _messages.MessageField('HiveMetastoreConfig', 7)
   labels = _messages.MessageField('LabelsValue', 8)
-  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 9)
-  metadataIntegration = _messages.MessageField('MetadataIntegration', 10)
-  metadataManagementActivity = _messages.MessageField('MetadataManagementActivity', 11)
-  multiRegionConfig = _messages.MessageField('MultiRegionConfig', 12)
-  name = _messages.StringField(13)
-  network = _messages.StringField(14)
-  networkConfig = _messages.MessageField('NetworkConfig', 15)
-  port = _messages.IntegerField(16, variant=_messages.Variant.INT32)
-  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 17)
-  scalingConfig = _messages.MessageField('ScalingConfig', 18)
-  scheduledBackup = _messages.MessageField('ScheduledBackup', 19)
-  state = _messages.EnumField('StateValueValuesEnum', 20)
-  stateMessage = _messages.StringField(21)
-  tags = _messages.MessageField('TagsValue', 22)
-  telemetryConfig = _messages.MessageField('TelemetryConfig', 23)
-  tier = _messages.EnumField('TierValueValuesEnum', 24)
-  uid = _messages.StringField(25)
-  updateTime = _messages.StringField(26)
+  lakehouseProxyConfig = _messages.MessageField('LakehouseProxyConfig', 9)
+  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 10)
+  metadataIntegration = _messages.MessageField('MetadataIntegration', 11)
+  metadataManagementActivity = _messages.MessageField('MetadataManagementActivity', 12)
+  multiRegionConfig = _messages.MessageField('MultiRegionConfig', 13)
+  name = _messages.StringField(14)
+  network = _messages.StringField(15)
+  networkConfig = _messages.MessageField('NetworkConfig', 16)
+  port = _messages.IntegerField(17, variant=_messages.Variant.INT32)
+  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 18)
+  scalingConfig = _messages.MessageField('ScalingConfig', 19)
+  scheduledBackup = _messages.MessageField('ScheduledBackup', 20)
+  state = _messages.EnumField('StateValueValuesEnum', 21)
+  stateMessage = _messages.StringField(22)
+  tags = _messages.MessageField('TagsValue', 23)
+  telemetryConfig = _messages.MessageField('TelemetryConfig', 24)
+  tier = _messages.EnumField('TierValueValuesEnum', 25)
+  uid = _messages.StringField(26)
+  updateTime = _messages.StringField(27)
 
 
 class SetIamPolicyRequest(_messages.Message):

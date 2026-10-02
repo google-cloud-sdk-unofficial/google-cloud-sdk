@@ -47,6 +47,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.credentials import devshell as c_devshell
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import times
 from googlecloudsdk.core.util.files import FileReader
@@ -730,16 +731,20 @@ class BaseSSHHelper(object):
       )
     known_hosts.Write()
 
-  def _SetProjectMetadata(self, client, new_metadata):
+  def _SetProjectMetadata(self, client, new_metadata, project=None):
     """Sets the project metadata to the new metadata."""
     errors = []
+    project_name = (
+        getattr(project, 'name', project)
+        or properties.VALUES.core.project.Get(required=True)
+    )
     client.MakeRequests(
         requests=[(
             client.apitools_client.projects,
             'SetCommonInstanceMetadata',
             client.messages.ComputeProjectsSetCommonInstanceMetadataRequest(
                 metadata=new_metadata,
-                project=properties.VALUES.core.project.Get(required=True),
+                project=project_name,
             ),
         )],
         errors_to_collect=errors,
@@ -751,16 +756,20 @@ class BaseSSHHelper(object):
           error_message='Could not add SSH key to project metadata:',
       )
 
-  def SetProjectMetadata(self, client, new_metadata):
+  def SetProjectMetadata(self, client, new_metadata, project=None):
     """Sets the project metadata to the new metadata with progress tracker."""
     with progress_tracker.ProgressTracker('Updating project ssh metadata'):
-      self._SetProjectMetadata(client, new_metadata)
+      self._SetProjectMetadata(client, new_metadata, project=project)
 
-  def _SetInstanceMetadata(self, client, instance, new_metadata):
+  def _SetInstanceMetadata(self, client, instance, new_metadata, project=None):
     """Sets the instance metadata to the new metadata."""
     errors = []
     # API wants just the zone name, not the full URL
     zone = instance.zone.split('/')[-1]
+    project_name = (
+        getattr(project, 'name', project)
+        or properties.VALUES.core.project.Get(required=True)
+    )
     client.MakeRequests(
         requests=[(
             client.apitools_client.instances,
@@ -768,7 +777,7 @@ class BaseSSHHelper(object):
             client.messages.ComputeInstancesSetMetadataRequest(
                 instance=instance.name,
                 metadata=new_metadata,
-                project=properties.VALUES.core.project.Get(required=True),
+                project=project_name,
                 zone=zone,
             ),
         )],
@@ -784,13 +793,15 @@ class BaseSSHHelper(object):
           ),
       )
 
-  def SetInstanceMetadata(self, client, instance, new_metadata):
+  def SetInstanceMetadata(self, client, instance, new_metadata, project=None):
     """Sets the instance metadata to the new metadata with progress tracker."""
     with progress_tracker.ProgressTracker('Updating instance ssh metadata'):
-      self._SetInstanceMetadata(client, instance, new_metadata)
+      self._SetInstanceMetadata(
+          client, instance, new_metadata, project=project
+      )
 
   def EnsureSSHKeyIsInInstance(
-      self, client, user, instance, expiration, legacy=False
+      self, client, user, instance, expiration, legacy=False, project=None
   ):
     """Ensures that the user's public SSH key is in the instance metadata.
 
@@ -803,6 +814,7 @@ class BaseSSHHelper(object):
         longer valid.
       legacy: If the key is not present in metadata, add it to the legacy
         metadata entry instead of the default entry.
+      project: Project or str, the project the instance is in.
 
     Returns:
       bool, True if the key was newly added, False if it was in the metadata
@@ -819,7 +831,9 @@ class BaseSSHHelper(object):
     )
     has_new_metadata = new_metadata != instance.metadata
     if has_new_metadata:
-      self.SetInstanceMetadata(client, instance, new_metadata)
+      self.SetInstanceMetadata(
+          client, instance, new_metadata, project=project
+      )
     return has_new_metadata
 
   def EnsureSSHKeyIsInProject(
@@ -851,7 +865,7 @@ class BaseSSHHelper(object):
         expiration=expiration,
     )
     if new_metadata != existing_metadata:
-      self.SetProjectMetadata(client, new_metadata)
+      self.SetProjectMetadata(client, new_metadata, project=project)
       return True
     else:
       return False
@@ -903,6 +917,7 @@ class BaseSSHHelper(object):
     #                   project.metadata['ssh-keys'] +
     #                   project.metadata['sshKeys']) # Legacy Project Keys
     #
+    project_name = getattr(project, 'name', project) if project else None
     _, ssh_legacy_keys = _GetSSHKeysFromMetadata(instance.metadata)
     if ssh_legacy_keys:
       # If we add a key to project-wide metadata but the per-instance
@@ -910,13 +925,18 @@ class BaseSSHHelper(object):
       # won't check the project-wide metadata. To avoid this, if the instance
       # has per-instance SSH key metadata, we add the key there instead.
       keys_newly_added = self.EnsureSSHKeyIsInInstance(
-          compute_client, user, instance, expiration, legacy=True
+          compute_client,
+          user,
+          instance,
+          expiration,
+          legacy=True,
+          project=project_name,
       )
     elif _MetadataHasBlockProjectSshKeys(instance.metadata):
       # If the instance 'ssh-keys' metadata overrides the project-wide
       # 'ssh-keys' metadata, we should put our key there.
       keys_newly_added = self.EnsureSSHKeyIsInInstance(
-          compute_client, user, instance, expiration
+          compute_client, user, instance, expiration, project=project_name
       )
     else:
       # Otherwise, try to add to the project-wide metadata. If we don't have
@@ -935,7 +955,7 @@ class BaseSSHHelper(object):
         # project metadata.
         log.info('Attempting to set instance metadata.')
         keys_newly_added = self.EnsureSSHKeyIsInInstance(
-            compute_client, user, instance, expiration
+            compute_client, user, instance, expiration, project=project_name
         )
     return keys_newly_added
 
@@ -1210,6 +1230,7 @@ def ConfirmSecurityKeyStatus(oslogin_state):
 
   If OS Login security keys are not enabled, continue.
   When security keys are enabled:
+    - if the user is using Cloud Shell, show an error.
     - if no security keys are configured in the user's account, show an error.
     - if the local SSH client doesn't support them, show an error.
     - if the user is using Putty, show an error.
@@ -1231,6 +1252,13 @@ def ConfirmSecurityKeyStatus(oslogin_state):
   # If OS login security keys are not enabled, continue.
   if not oslogin_state.security_keys_enabled:
     return
+
+  # If we are in Cloud Shell, raise an error.
+  if c_devshell.IsDevshellEnvironment():
+    raise SecurityKeysNotSupportedError(
+        'Instance requires security key for connection, but security keys '
+        'are not supported in Cloud Shell.'
+    )
 
   # If security keys are enabled, but no security keys are registered in the
   # user's account, raise an error.

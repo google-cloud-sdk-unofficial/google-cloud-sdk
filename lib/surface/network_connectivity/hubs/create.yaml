@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Create a new hub.
@@ -60,6 +62,8 @@
     - googlecloudsdk.command_lib.network_connectivity.util:SetExportPscBeta
 
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Create a new hub.

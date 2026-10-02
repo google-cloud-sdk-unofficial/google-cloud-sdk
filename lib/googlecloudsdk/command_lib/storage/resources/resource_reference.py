@@ -16,13 +16,24 @@
 
 
 import collections
+import enum
 import os
+from typing import Optional
 
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.resources import resource_util
 
 
 NOT_SUPPORTED_DO_NOT_DISPLAY = '_NOT_SUPPORTED_DO_NOT_DISPLAY'
+
+UNSUPPORTED_OBJECT_WARNING_FORMAT = (
+    'Skipping item {} with unsupported object type: {}'
+)
+
+
+class UnsupportedObjectType(enum.Enum):
+  GLACIER = 'GLACIER'
 
 
 class Resource(object):
@@ -57,13 +68,14 @@ class Resource(object):
     """
     self.storage_url = storage_url_object
 
-  def get_json_dump(self):
+  def get_json_dump(self) -> str:
     """Formats resource for printing as JSON."""
     return resource_util.configured_json_dumps(
         collections.OrderedDict([
             ('url', self.storage_url.url_string),
             ('type', self.TYPE_STRING),
-        ]))
+        ])
+    )
 
   def __repr__(self):
     # Includes generation ("gs://b/o#some-generation"). Warning: Terminal may
@@ -357,7 +369,7 @@ class ObjectResource(CloudResource):
     return self.storage_url.generation
 
   @property
-  def is_symlink(self):
+  def is_symlink(self) -> bool:
     """Returns whether this object is a symlink."""
     if (
         not self.custom_fields
@@ -604,3 +616,25 @@ def is_container_or_has_container_url(resource):
     # May query for objects in bucket, skipping check if the bucket exists.
     return resource.storage_url.is_bucket()
   return resource.is_container()
+
+
+def get_unsupported_object_type(
+    resource: Resource,
+) -> Optional[UnsupportedObjectType]:
+  """Returns unsupported type or None if object is supported for copies.
+
+  Currently, S3 Glacier objects are the only unsupported object type.
+
+  Args:
+    resource: Check if this resource is supported for copies.
+
+  Returns:
+    If resource is unsupported, the unsupported type, else None.
+  """
+  if (
+      isinstance(resource, ObjectResource)
+      and resource.storage_url.scheme == storage_url.ProviderPrefix.S3
+      and resource.storage_class == 'GLACIER'
+  ):
+    return UnsupportedObjectType.GLACIER
+  return None

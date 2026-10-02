@@ -377,6 +377,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_COMPANIONAGENTS = (
+      'projects.locations.companionAgents',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/companionAgents/'
+              '{companionAgentsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_CONVERSATIONDATASETS = (
       'projects.locations.conversationDatasets',
       '{+name}',

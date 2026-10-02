@@ -9358,11 +9358,11 @@ class Commitment(_messages.Message):
       GRAPHICS_OPTIMIZED_G4,GRAPHICS_OPTIMIZED_G4_VGPU,MEMORY_OPTIMIZED,
       MEMORY_OPTIMIZED_M3,MEMORY_OPTIMIZED_X4,
       STORAGE_OPTIMIZED_Z3,STORAGE_OPTIMIZED_Z4DS,
-      STORAGE_OPTIMIZED_Z4DH,STORAGE_OPTIMIZED_Z4D4T. For example, type
-      MEMORY_OPTIMIZED specifies a commitment that applies only to eligible
-      resources of memory optimized M1 and M2 machine series. Type
-      GENERAL_PURPOSE specifies a commitment that applies only to eligible
-      resources of general purpose N1 machine series.
+      STORAGE_OPTIMIZED_Z4DH,STORAGE_OPTIMIZED_Z4D4T,STORAGE_OPTIMIZED_Z4M.
+      For example, type MEMORY_OPTIMIZED specifies a commitment that applies
+      only to eligible resources of memory optimized M1 and M2 machine series.
+      Type GENERAL_PURPOSE specifies a commitment that applies only to
+      eligible resources of general purpose N1 machine series.
 
   Fields:
     autoRenew: Specifies whether to automatically renew the commitment at the
@@ -9458,11 +9458,11 @@ class Commitment(_messages.Message):
       GRAPHICS_OPTIMIZED_G4,GRAPHICS_OPTIMIZED_G4_VGPU,MEMORY_OPTIMIZED,
       MEMORY_OPTIMIZED_M3,MEMORY_OPTIMIZED_X4,
       STORAGE_OPTIMIZED_Z3,STORAGE_OPTIMIZED_Z4DS,
-      STORAGE_OPTIMIZED_Z4DH,STORAGE_OPTIMIZED_Z4D4T. For example, type
-      MEMORY_OPTIMIZED specifies a commitment that applies only to eligible
-      resources of memory optimized M1 and M2 machine series. Type
-      GENERAL_PURPOSE specifies a commitment that applies only to eligible
-      resources of general purpose N1 machine series.
+      STORAGE_OPTIMIZED_Z4DH,STORAGE_OPTIMIZED_Z4D4T,STORAGE_OPTIMIZED_Z4M.
+      For example, type MEMORY_OPTIMIZED specifies a commitment that applies
+      only to eligible resources of memory optimized M1 and M2 machine series.
+      Type GENERAL_PURPOSE specifies a commitment that applies only to
+      eligible resources of general purpose N1 machine series.
   """
 
   class CategoryValueValuesEnum(_messages.Enum):
@@ -9535,9 +9535,9 @@ class Commitment(_messages.Message):
     GRAPHICS_OPTIMIZED_G4,GRAPHICS_OPTIMIZED_G4_VGPU,MEMORY_OPTIMIZED,
     MEMORY_OPTIMIZED_M3,MEMORY_OPTIMIZED_X4,
     STORAGE_OPTIMIZED_Z3,STORAGE_OPTIMIZED_Z4DS,
-    STORAGE_OPTIMIZED_Z4DH,STORAGE_OPTIMIZED_Z4D4T. For example, type
-    MEMORY_OPTIMIZED specifies a commitment that applies only to eligible
-    resources of memory optimized M1 and M2 machine series. Type
+    STORAGE_OPTIMIZED_Z4DH,STORAGE_OPTIMIZED_Z4D4T,STORAGE_OPTIMIZED_Z4M. For
+    example, type MEMORY_OPTIMIZED specifies a commitment that applies only to
+    eligible resources of memory optimized M1 and M2 machine series. Type
     GENERAL_PURPOSE specifies a commitment that applies only to eligible
     resources of general purpose N1 machine series.
 
@@ -51623,8 +51623,11 @@ class FirewallPolicy(_messages.Message):
     users.
 
     Values:
-      SYSTEM: <no description>
-      USER_DEFINED: <no description>
+      SYSTEM: A system-level policy managed by an internal service like GKE.
+        This value is reserved for internal services and cannot be set by
+        users during policy creation. Policies with a SYSTEM source cannot be
+        modified or deleted by users.
+      USER_DEFINED: A regular firewall policy.
     """
     SYSTEM = 0
     USER_DEFINED = 1

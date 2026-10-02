@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Create a new VPN spoke.
@@ -73,6 +75,8 @@
 
 
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Create a new VPN spoke.

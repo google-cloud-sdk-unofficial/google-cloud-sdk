@@ -161,6 +161,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_DBSYSTEMCOMPUTEPERFORMANCES = (
+      'projects.locations.dbSystemComputePerformances',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'dbSystemComputePerformances/{dbSystemComputePerformancesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_DBSYSTEMINITIALSTORAGESIZES = (
       'projects.locations.dbSystemInitialStorageSizes',
       '{+name}',

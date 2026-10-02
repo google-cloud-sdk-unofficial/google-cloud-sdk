@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
   hidden: true  # TODO(b/488006032): Unhide when ready for GA
 
   help_text:

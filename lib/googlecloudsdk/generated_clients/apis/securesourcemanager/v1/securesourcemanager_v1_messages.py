@@ -522,6 +522,8 @@ class Hook(_messages.Message):
     pushOption: Optional. The trigger option for push events.
     sensitiveQueryString: Optional. The sensitive query string to be appended
       to the target URI.
+    serviceAccountAuth: Optional. Determines if the hook uses the Repository
+      Service Account to generate an OIDC ID Token for webhook authentication.
     targetUri: Required. The target URI to which the payloads will be
       delivered.
     uid: Output only. Unique identifier of the hook.
@@ -550,9 +552,10 @@ class Hook(_messages.Message):
   name = _messages.StringField(4)
   pushOption = _messages.MessageField('PushOption', 5)
   sensitiveQueryString = _messages.StringField(6)
-  targetUri = _messages.StringField(7)
-  uid = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  serviceAccountAuth = _messages.BooleanField(7)
+  targetUri = _messages.StringField(8)
+  uid = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class HostConfig(_messages.Message):

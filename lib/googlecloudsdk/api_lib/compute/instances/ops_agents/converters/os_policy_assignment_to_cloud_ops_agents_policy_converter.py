@@ -15,7 +15,6 @@
 """Converter related function for Ops Agents Policy."""
 
 from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_policy as agents_policy
-from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_util as util
 from googlecloudsdk.generated_clients.apis.osconfig.v1 import osconfig_v1_messages as osconfig
 
 
@@ -35,7 +34,7 @@ def ConvertOsPolicyAssignmentToCloudOpsAgentsPolicy(
 
   assert len(os_policy_assignment.osPolicies) == 1
   description = os_policy_assignment.osPolicies[0].description
-  agents_rule = util.GetAgentsRuleFromDescription(description)
+  agents_rule = agents_policy.GetAgentsRuleFromDescription(description)
   assert agents_rule is not None
 
   return agents_policy.OpsAgentsPolicy(

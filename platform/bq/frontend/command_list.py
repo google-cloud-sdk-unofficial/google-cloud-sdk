@@ -294,6 +294,22 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
     if self.all_jobs is not None:
       self.a = self.all_jobs
 
+    # Early delegation to gcloud (before bq_cached_client.Client.Get()).
+    # This prevents premature and redundant evaluation of BQ CLI credentials,
+    # .bigqueryrc, and discovery document construction when delegating to
+    # gcloud.
+    if self.migration_workflow:
+      # TODO: b/563038048 - Remove flag validation and delegate that to gcloud.
+      if not bq_flags.LOCATION.value:
+        raise app.UsageError(
+            'Need to specify location for listing migration workflows.'
+        )
+      self.DelegateToGcloudAndExit(
+          'migration_workflows',
+          'ls',
+          command_flags_for_this_resource={'location': bq_flags.LOCATION.value},
+      )
+
     client = bq_cached_client.Client.Get()
     if identifier:
       reference = bq_client_utils.GetReference(
@@ -642,17 +658,6 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         print('No row access policies found.')
       if 'nextPageToken' in response:
         frontend_utils.PrintPageToken(response)
-    elif self.migration_workflow:
-      if not bq_flags.LOCATION.value:
-        raise app.UsageError(
-            'Need to specify location for listing migration workflows.'
-        )
-      object_type = None
-      self.DelegateToGcloudAndExit(
-          'migration_workflows',
-          'ls',
-          command_flags_for_this_resource={'location': bq_flags.LOCATION.value},
-      )
     elif self.d:
       reference = bq_client_utils.GetProjectReference(
           id_fallbacks=client, identifier=identifier

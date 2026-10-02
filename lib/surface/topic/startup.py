@@ -30,7 +30,7 @@ class Startup(base.TopicCommand):
 
   ## CONFIGURING THE PYTHON INTERPRETER
 
-  The `gcloud` CLI requires a compatible Python version (3.10-3.14) to run. In
+  The `gcloud` CLI requires a compatible Python version (3.10-3.15) to run. In
   most gcloud CLI installations, the gcloud installer manages the Python
   installation (version 3.14) for the user. Configuring the Python
   interpreter is only supported in specific scenarios described below.
@@ -68,7 +68,7 @@ class Startup(base.TopicCommand):
   `CLOUDSDK_GSUTIL_PYTHON` environment variable to the interpreter that you
   want.
 
-  `bq` versions 2.0.99 and later support Python 3.10-3.14. To use a different
+  `bq` versions 2.0.99 and later support Python 3.10-3.15. To use a different
   interpreter for `bq` than for the other Python tools, set the
   `CLOUDSDK_BQ_PYTHON` environment variable to the interpreter that you want.
 

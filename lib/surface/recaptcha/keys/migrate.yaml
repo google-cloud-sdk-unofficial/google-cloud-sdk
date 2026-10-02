@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: Migrate a key to reCAPTCHA Enterprise.
     description: Migrate a key from reCAPTCHA to reCAPTCHA Enterprise.

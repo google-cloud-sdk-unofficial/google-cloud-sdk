@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Update a VLAN attachment spoke.
@@ -56,6 +58,8 @@
     method: patch
 
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Update a VLAN attachment spoke.

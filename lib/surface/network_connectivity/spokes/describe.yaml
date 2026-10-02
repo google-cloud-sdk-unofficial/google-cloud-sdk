@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Describe a spoke.
@@ -17,3 +19,8 @@
     ALPHA:
       api_version: v1alpha1
     collection: networkconnectivity.projects.locations.spokes
+
+- release_tracks: [BETA, GA]
+  is_python_command: true
+  hints:
+    read_only: true

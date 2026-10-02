@@ -95,6 +95,7 @@ class Update(base.UpdateCommand):
   def Args(parser):
 
     notifications_flags.DESCRIPTION_FLAG.AddToParser(parser)
+    notifications_flags.DELETION_NOTIFICATIONS_ENABLED_FLAG.AddToParser(parser)
     notifications_flags.FILTER_FLAG_LONG_DESCRIPTION.AddToParser(parser)
     notifications_flags.PUBSUB_TOPIC_OPTIONAL_FLAG.AddToParser(parser)
 
@@ -137,6 +138,11 @@ class Update(base.UpdateCommand):
 
     computed_update_mask = []
     req.notificationConfig = messages.NotificationConfig()
+    if args.IsKnownAndSpecified('deletion_notifications_enabled'):
+      computed_update_mask.append('deletion_notifications_enabled')
+      req.notificationConfig.deletionNotificationsEnabled = (
+          args.deletion_notifications_enabled
+      )
     if args.IsKnownAndSpecified('description'):
       computed_update_mask.append('description')
       req.notificationConfig.description = args.description

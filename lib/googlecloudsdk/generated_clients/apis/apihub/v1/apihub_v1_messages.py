@@ -492,7 +492,7 @@ class ApihubProjectsLocationsApisVersionsOperationsCreateRequest(_messages.Messa
       id will be used. This value should be 4-500 characters, overall resource
       name which will be of format `projects/{project}/locations/{location}/ap
       is/{api}/versions/{version}/operations/{operation}`, its length is
-      limited to 700 characters, and valid characters are /a-z[0-9]-_/.
+      limited to 1000 characters, and valid characters are /a-z[0-9]-_/.
     googleCloudApihubV1ApiOperation: A GoogleCloudApihubV1ApiOperation
       resource to be passed as the request body.
     parent: Required. The parent resource for the operation resource. Format:
@@ -2379,7 +2379,7 @@ class GoogleCloudApihubV1AllowedValue(_messages.Message):
       provided, a system generated id derived from the display name will be
       used. In this case, the service will handle conflict resolution by
       adding a system generated suffix in case of duplicates. This value
-      should be 4-63 characters, and valid characters are /a-z-/.
+      should be 3-500 characters, and valid characters are /a-z[0-9]-_/.
     immutable: Optional. When set to true, the allowed value cannot be updated
       or deleted by the user. It can only be true for System defined
       attributes.
@@ -4103,9 +4103,9 @@ class GoogleCloudApihubV1ExternalApi(_messages.Message):
       `projects/{project}/locations/{location}/attributes/{attribute}`. The
       value is the attribute values associated with the resource.
     createTime: Output only. Creation timestamp.
-    description: Optional. Description of the external API. Max length is 2000
-      characters (Unicode Code Points).
-    displayName: Required. Display name of the external API. Max length is 63
+    description: Optional. Description of the external API. Max length is
+      500000 characters (Unicode Code Points).
+    displayName: Required. Display name of the external API. Max length is 500
       characters (Unicode Code Points).
     documentation: Optional. Documentation of the external API.
     endpoints: Optional. List of endpoints on which this API is accessible.
@@ -5334,9 +5334,9 @@ class GoogleCloudApihubV1Plugin(_messages.Message):
       missing.
     configTemplate: Optional. The configuration template for the plugin.
     createTime: Output only. Timestamp indicating when the plugin was created.
-    description: Optional. The plugin description. Max length is 2000
+    description: Optional. The plugin description. Max length is 500000
       characters (Unicode code points).
-    displayName: Required. The display name of the plugin. Max length is 50
+    displayName: Required. The display name of the plugin. Max length is 500
       characters (Unicode code points).
     documentation: Optional. The documentation of the plugin, that explains
       how to set up and use the plugin.
@@ -5542,7 +5542,7 @@ class GoogleCloudApihubV1PluginInstance(_messages.Message):
     createTime: Output only. Timestamp indicating when the plugin instance was
       created.
     displayName: Required. The display name for this plugin instance. Max
-      length is 255 characters.
+      length is 500 characters.
     errorMessage: Output only. Error message describing the failure, if any,
       during Create, Delete or ApplyConfig operation corresponding to the
       plugin instance.This field will only be populated if the plugin instance

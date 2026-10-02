@@ -31,7 +31,7 @@
     - help_text: |-
         Identifier. Name of the mirror.
         Format:
-        projects/{project}/locations/{location}/instances/{instance}/mirrors/{mirror}
+        `projects/{project}/locations/{location}/instances/{instance}/mirrors/{mirror}`
       is_positional: true
       is_primary_resource: true
       request_id_field: mirrorId
@@ -81,9 +81,8 @@
       required: false
       type: bool
       help_text: |-
-        If true, files will be retained in lustre after the corresponding files are
-        deleted from cloud storage.
-        Default is false.
+        If `true`, files are not deleted from Managed Lustre when the source
+        files are deleted from Cloud Storage. Default is `false`.
       default: null
     - arg_name: description
       api_field: mirror.description

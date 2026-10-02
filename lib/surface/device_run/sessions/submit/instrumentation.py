@@ -368,10 +368,11 @@ targets in the module will be run.
         '--orchestrator-version',
         type=str,
         help=(
-            'Specify the version of the Android Test Orchestrator to use'
-            ' during test execution. If not specified, no orchestrator is'
-            ' used. If set to `auto`, the system-default orchestrator version'
-            ' is used.'
+            'Specify the version of the Android Test Orchestrator to use during'
+            ' test execution. If not specified, no orchestrator is used. '
+            'Available versions can be found in the catalog, queryable with the'
+            ' command `gcloud device-run software-versions list`. If'
+            ' set to `auto`, the system-default orchestrator version is used.'
         ),
     )
     parser.add_argument(

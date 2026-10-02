@@ -92,7 +92,7 @@
         Can have a maximum length of `2048` characters.
     - group:
         api_field: binding.source
-        required: true
+        required: false
         help_text: |-
           The source of the Binding.
         params:

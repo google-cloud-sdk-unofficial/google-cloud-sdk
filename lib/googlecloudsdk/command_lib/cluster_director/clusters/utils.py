@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.cluster_director.clusters import _networks
 from googlecloudsdk.command_lib.cluster_director.clusters import _orchestrator
 from googlecloudsdk.command_lib.cluster_director.clusters import _reference_architectures
 from googlecloudsdk.command_lib.cluster_director.clusters import _storage
+from googlecloudsdk.command_lib.cluster_director.clusters import _validator
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
 from googlecloudsdk.command_lib.cluster_director.clusters import flag_types
 from googlecloudsdk.command_lib.util.apis import yaml_data
@@ -91,6 +92,10 @@ class ClusterUtil:
           self.args, self.message_module, self.cluster_ref
       )
 
+    is_compute_engine = _validator.IsFlagSpecified(
+        self.args, "managed_instance_groups"
+    )
+
     if not ref_arch and not quickstart and not self.args.IsSpecified("config"):
       if not self.args.IsSpecified("network") and not self.args.IsSpecified(
           "create_network"
@@ -99,7 +104,9 @@ class ClusterUtil:
             "Must specify network configuration (e.g. --create-network or "
             "--network and --subnet) when not using a reference architecture."
         )
-      if not self.args.IsSpecified("slurm_login_node"):
+      if not is_compute_engine and not self.args.IsSpecified(
+          "slurm_login_node"
+      ):
         raise errors.ClusterDirectorError(
             "Must specify slurm login node configuration (--slurm-login-node) "
             "when not using a reference architecture."
@@ -115,11 +122,18 @@ class ClusterUtil:
     cluster.computeResources = _compute.MakeClusterCompute(
         self.args, self.message_module, self.cluster_ref
     )
-    cluster.orchestrator = self.message_module.Orchestrator(
-        slurm=_orchestrator.MakeClusterSlurmOrchestrator(
-            self.args, self.message_module, cluster, self.cluster_ref
-        )
-    )
+    if is_compute_engine:
+      cluster.orchestrator = self.message_module.Orchestrator(
+          computeEngine=_orchestrator.MakeClusterComputeEngineOrchestrator(
+              self.args, self.message_module, cluster, self.cluster_ref
+          )
+      )
+    else:
+      cluster.orchestrator = self.message_module.Orchestrator(
+          slurm=_orchestrator.MakeClusterSlurmOrchestrator(
+              self.args, self.message_module, cluster, self.cluster_ref
+          )
+      )
     return cluster
 
   def MakeClusterBasic(self) -> Any:
@@ -156,16 +170,45 @@ class ClusterUtil:
         self.existing_cluster,
         self.update_mask,
     )
-    cluster.orchestrator = self.message_module.Orchestrator(
-        slurm=_orchestrator.MakeClusterSlurmOrchestratorPatch(
-            self.args,
-            self.message_module,
-            self.existing_cluster,
-            cluster,
-            self.update_mask,
-            self.cluster_ref,
+    is_compute_engine = (
+        _validator.IsFlagSpecified(self.args, "add_managed_instance_groups")
+        or _validator.IsFlagSpecified(
+            self.args, "update_managed_instance_groups"
+        )
+        or _validator.IsFlagSpecified(
+            self.args, "remove_managed_instance_groups"
+        )
+        or (
+            self.existing_cluster
+            and self.existing_cluster.orchestrator
+            and getattr(
+                self.existing_cluster.orchestrator, "computeEngine", None
+            )
+            is not None
         )
     )
+    if is_compute_engine:
+      cluster.orchestrator = self.message_module.Orchestrator(
+          computeEngine=_orchestrator.MakeClusterComputeEngineOrchestratorPatch(
+              self.args,
+              self.message_module,
+              self.existing_cluster,
+              cluster,
+              self.update_mask,
+              self.cluster_ref,
+          )
+      )
+    else:
+      cluster.orchestrator = self.message_module.Orchestrator(
+          slurm=_orchestrator.MakeClusterSlurmOrchestratorPatch(
+              self.args,
+              self.message_module,
+              self.existing_cluster,
+              cluster,
+              self.update_mask,
+              self.cluster_ref,
+          )
+      )
     return cluster, ",".join(sorted(self.update_mask))
 
   def MakeClusterBasicPatch(self) -> Any:

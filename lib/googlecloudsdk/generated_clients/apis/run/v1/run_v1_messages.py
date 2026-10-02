@@ -1371,6 +1371,8 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
     pubsubTopic: Optional. Option to specify the Pub/Sub topic to receive
       build status updates.
     requestedVerifyOption: Requested verifiability options.
+    resolvedWorkerRelease: Output only. Worker release resolved from the
+      release channel.
     secretEnv: A list of global environment variables, which are encrypted
       using a Cloud Key Management Service crypto key. These values must be
       specified in the build's `Secret`. These variables will be available to
@@ -1388,6 +1390,8 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
       valid as it is indicative of a build request with an incorrect
       configuration.
     workerPool: This field deprecated; please use `pool.name` instead.
+    workerRelease: Optional. Option to specify which release or release
+      channel (rapid|regular|stable) to use to run this build.
   """
 
   class DefaultLogsBucketBehaviorValueValuesEnum(_messages.Enum):
@@ -1517,11 +1521,13 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
   pool = _messages.MessageField('GoogleDevtoolsCloudbuildV1PoolOption', 10)
   pubsubTopic = _messages.StringField(11)
   requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 12)
-  secretEnv = _messages.StringField(13, repeated=True)
-  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 14, repeated=True)
-  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 15)
-  volumes = _messages.MessageField('GoogleDevtoolsCloudbuildV1Volume', 16, repeated=True)
-  workerPool = _messages.StringField(17)
+  resolvedWorkerRelease = _messages.StringField(13)
+  secretEnv = _messages.StringField(14, repeated=True)
+  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 15, repeated=True)
+  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 16)
+  volumes = _messages.MessageField('GoogleDevtoolsCloudbuildV1Volume', 17, repeated=True)
+  workerPool = _messages.StringField(18)
+  workerRelease = _messages.StringField(19)
 
 
 class GoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
@@ -2145,9 +2151,17 @@ class GoogleDevtoolsCloudbuildV1PoolOption(_messages.Message):
       `cloudbuild.workerpools.use` on the project hosting the WorkerPool.
       Format
       projects/{project}/locations/{location}/workerPools/{workerPoolId}
+    resolvedWorkerRelease: Output only. OUTPUT_ONLY. Worker release resolved
+      from the release channel.
+    workerRelease: Output only. OUTPUT_ONLY. The release or release channel
+      used to run the Build. This is set to the same value as
+      `PrivatePoolV1Config.WorkerConfig.worker_release` for the UI to easily
+      access.
   """
 
   name = _messages.StringField(1)
+  resolvedWorkerRelease = _messages.StringField(2)
+  workerRelease = _messages.StringField(3)
 
 
 class GoogleDevtoolsCloudbuildV1PythonPackage(_messages.Message):

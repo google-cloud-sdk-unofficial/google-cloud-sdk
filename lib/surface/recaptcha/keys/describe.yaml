@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
 
   help_text:
     description: Get the details of a reCAPTCHA Key.

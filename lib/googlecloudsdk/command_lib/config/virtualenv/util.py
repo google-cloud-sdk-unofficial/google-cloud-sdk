@@ -26,13 +26,12 @@ import six
 # Python modules to install into virtual env environment
 MODULES = [
     'crcmod',
-    'grpcio==1.83.0',
+    'grpcio==1.84.0',
     'pyopenssl==26.0.0',
     'google_crc32c',
     'certifi',
     ('https://github.com/googleapis/enterprise-certificate-proxy/releases/down'
      'load/v0.3.17/cryptography-46.0.7-cp38-abi3-macosx_10_9_universal2.whl'),
-    'setuptools',
 ]
 
 # Enable file name.

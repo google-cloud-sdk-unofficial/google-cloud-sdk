@@ -15,6 +15,8 @@
 """services api-keys undelete command."""
 
 
+import functools
+
 from googlecloudsdk.api_lib.services import apikeys
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.calliope import base
@@ -25,6 +27,7 @@ OP_BASE_CMD = 'gcloud services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -69,8 +72,8 @@ class Undelete(base.RestoreCommand):
       None
     """
 
-    client = apikeys.GetClientInstance()
-    messages = client.MESSAGES_MODULE
+    client = apikeys.GetClientInstance(self.ReleaseTrack())
+    messages = apikeys.GetMessagesModule(self.ReleaseTrack())
 
     if args.IsSpecified('key'):
       key_ref = args.CONCEPTS.key.Parse()
@@ -94,6 +97,11 @@ class Undelete(base.RestoreCommand):
                          'Use the following command to wait for its '
                          'completion:\n {0}'.format(cmd))
         return op
-      op = services_util.WaitOperation(op.name, apikeys.GetOperation)
+      op = services_util.WaitOperation(
+          op.name,
+          functools.partial(
+              apikeys.GetOperation, release_track=self.ReleaseTrack()
+          ),
+      )
     services_util.PrintOperationWithResponse(op)
     return op

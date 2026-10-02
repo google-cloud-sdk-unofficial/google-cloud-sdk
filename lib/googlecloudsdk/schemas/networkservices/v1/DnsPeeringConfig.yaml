@@ -26,8 +26,14 @@ properties:
     items:
       type: string
   domain:
-    description: The domain to peer.
+    description: |-
+      Deprecated: Use `domains` instead. The domain to peer.
     type: string
+  domains:
+    description: The domains to peer.
+    type: array
+    items:
+      type: string
   targetNetwork:
     description: The target network resource name for DNS peering.
     type: string

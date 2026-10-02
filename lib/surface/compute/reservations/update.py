@@ -34,6 +34,7 @@ def _ValidateArgs(
     support_share_type=False,
     support_scheduling_type=False,
     support_early_access_maintenance=False,
+    support_require_specific_reservation=False,
 ):
   """Validates that both share settings arguments are mentioned.
 
@@ -48,6 +49,8 @@ def _ValidateArgs(
     support_scheduling_type: Check if scheduling type is supported.
     support_early_access_maintenance: Check if early access maintenance is
       supported.
+    support_require_specific_reservation: Check if require specific reservation
+      is supported.
   """
   # Check the version and share-with option.
   share_with = False
@@ -109,6 +112,15 @@ def _ValidateArgs(
     one_option_exception_message += (
         '8- Modify early access maintenance with specifying'
         ' early-access-maintenance flag.'
+    )
+  if support_require_specific_reservation:
+    parameter_names.extend([
+        '--require-specific-reservation',
+        '--no-require-specific-reservation',
+    ])
+    one_option_exception_message += (
+        '9- Modify whether the reservation must be consumed specifically with'
+        ' specifying require-specific-reservation flag.'
     )
 
   has_share_with = False
@@ -200,6 +212,11 @@ def _ValidateArgs(
     minimum_argument_specified = (
         minimum_argument_specified
         and not args.IsSpecified('early_access_maintenance')
+    )
+  if support_require_specific_reservation:
+    minimum_argument_specified = (
+        minimum_argument_specified
+        and not args.IsKnownAndSpecified('require_specific_reservation')
     )
 
   # Check parameters (add_share_with and remove_share_with are on GA).
@@ -561,6 +578,35 @@ def _EarlyAccessMaintenanceUpdateRequest(args, reservation_ref, holder):
   )
 
 
+def _RequireSpecificReservationUpdateRequest(args, reservation_ref, holder):
+  """Create Update Request for require specific reservation."""
+  messages = holder.client.messages
+  update_mask = []
+  if args.IsKnownAndSpecified('require_specific_reservation'):
+    update_mask.append('specificReservationRequired')
+    require_specific_reservation = args.require_specific_reservation
+  else:
+    require_specific_reservation = None
+  r_resource = util.MakeReservationMessage(
+      messages,
+      reservation_ref.Name(),
+      None,
+      None,
+      None,
+      require_specific_reservation,
+      reservation_ref.zone,
+  )
+
+  # Build Update Request.
+  return messages.ComputeReservationsUpdateRequest(
+      reservation=reservation_ref.Name(),
+      reservationResource=r_resource,
+      paths=update_mask,
+      project=reservation_ref.project,
+      zone=reservation_ref.zone,
+  )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
@@ -574,6 +620,21 @@ class Update(base.UpdateCommand):
   _support_scheduling_type = True
   _support_early_access_maintenance = True
   _support_folder_share_setting = False
+
+  @classmethod
+  def _SupportRequireSpecificReservation(cls):
+    """Whether --require-specific-reservation is supported on this track.
+
+    Updating `specificReservationRequired` is currently an allowlist-only
+    feature, so the flag is only exposed on the ALPHA and PREVIEW tracks.
+
+    Returns:
+      True if the flag should be available.
+    """
+    return cls.ReleaseTrack() in (
+        base.ReleaseTrack.ALPHA,
+        base.ReleaseTrack.PREVIEW,
+    )
 
   @classmethod
   def Args(cls, parser):
@@ -591,6 +652,10 @@ class Update(base.UpdateCommand):
     ).AddToParser(parser)
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
     r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
+    if cls._SupportRequireSpecificReservation():
+      r_flags.GetRequireSpecificAllocation(is_update=True).AddToParser(
+          parser
+      )
 
   def Run(self, args):
     """Common routine for updating reservation."""
@@ -608,6 +673,7 @@ class Update(base.UpdateCommand):
         self._support_share_type,
         self._support_scheduling_type,
         self._support_early_access_maintenance,
+        self._SupportRequireSpecificReservation(),
     )
     reservation_ref = (
         resource_args.GetReservationResourceArg().ResolveAsResource(
@@ -757,6 +823,24 @@ class Update(base.UpdateCommand):
         if errors:
           utils.RaiseToolException(errors)
 
+    if self._SupportRequireSpecificReservation():
+      if args.IsKnownAndSpecified('require_specific_reservation'):
+        r_update_request = _RequireSpecificReservationUpdateRequest(
+            args, reservation_ref, holder
+        )
+        result.append(
+            list(
+                request_helper.MakeRequests(
+                    requests=[(service, 'Update', r_update_request)],
+                    http=holder.client.apitools_client.http,
+                    batch_url=holder.client.batch_url,
+                    errors=errors,
+                )
+            )
+        )
+        if errors:
+          utils.RaiseToolException(errors)
+
     return result
 
 
@@ -836,6 +920,9 @@ class UpdateAlpha(Update):
     ).AddToParser(parser)
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
     r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
+    r_flags.GetRequireSpecificAllocation(is_update=True).AddToParser(
+        parser
+    )
 
     auto_delete_group = base.ArgumentGroup(
         'Manage auto-delete properties for reservations.',

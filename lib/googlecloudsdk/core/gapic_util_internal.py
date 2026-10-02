@@ -39,7 +39,6 @@ from googlecloudsdk.core.credentials import transport
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import http_proxy_types
-from googlecloudsdk.core.util import regional
 import grpc
 from six.moves import urllib
 import socks
@@ -53,10 +52,12 @@ class EcpError(exceptions.Error):
   """Exceptions for Enterprise Certificate Proxy."""
 
 
-class ClientCallDetailsInterceptor(grpc.UnaryUnaryClientInterceptor,
-                                   grpc.UnaryStreamClientInterceptor,
-                                   grpc.StreamUnaryClientInterceptor,
-                                   grpc.StreamStreamClientInterceptor):
+class ClientCallDetailsInterceptor(
+    grpc.UnaryUnaryClientInterceptor,
+    grpc.UnaryStreamClientInterceptor,
+    grpc.StreamUnaryClientInterceptor,
+    grpc.StreamStreamClientInterceptor,
+):
   """Generic Client Interceptor that modifies the ClientCallDetails."""
 
   def __init__(self, fn):
@@ -66,15 +67,14 @@ class ClientCallDetailsInterceptor(grpc.UnaryUnaryClientInterceptor,
     """Intercepts a RPC.
 
     Args:
-      continuation: A function that proceeds with the invocation by
-        executing the next interceptor in chain or invoking the
-        actual RPC on the underlying Channel. It is the interceptor's
-        responsibility to call it if it decides to move the RPC forward.
-        The interceptor can use
-        `response_future = continuation(client_call_details, request)`
-        to continue with the RPC.
-      client_call_details: A ClientCallDetails object describing the
-        outgoing RPC.
+      continuation: A function that proceeds with the invocation by executing
+        the next interceptor in chain or invoking the actual RPC on the
+        underlying Channel. It is the interceptor's responsibility to call it if
+        it decides to move the RPC forward. The interceptor can use
+        `response_future = continuation(client_call_details, request)` to
+        continue with the RPC.
+      client_call_details: A ClientCallDetails object describing the outgoing
+        RPC.
       request: The request value for the RPC.
 
     Returns:
@@ -98,28 +98,33 @@ class ClientCallDetailsInterceptor(grpc.UnaryUnaryClientInterceptor,
     """Intercepts a unary-unary invocation asynchronously."""
     return self.intercept_call(continuation, client_call_details, request)
 
-  def intercept_unary_stream(self, continuation, client_call_details,
-                             request):
+  def intercept_unary_stream(self, continuation, client_call_details, request):
     """Intercepts a unary-stream invocation."""
     return self.intercept_call(continuation, client_call_details, request)
 
-  def intercept_stream_unary(self, continuation, client_call_details,
-                             request_iterator):
+  def intercept_stream_unary(
+      self, continuation, client_call_details, request_iterator
+  ):
     """Intercepts a stream-unary invocation asynchronously."""
-    return self.intercept_call(continuation, client_call_details,
-                               request_iterator)
+    return self.intercept_call(
+        continuation, client_call_details, request_iterator
+    )
 
-  def intercept_stream_stream(self, continuation, client_call_details,
-                              request_iterator):
+  def intercept_stream_stream(
+      self, continuation, client_call_details, request_iterator
+  ):
     """Intercepts a stream-stream invocation."""
-    return self.intercept_call(continuation, client_call_details,
-                               request_iterator)
+    return self.intercept_call(
+        continuation, client_call_details, request_iterator
+    )
 
 
-class AsyncClientCallDetailsInterceptor(grpc.aio.UnaryUnaryClientInterceptor,
-                                        grpc.aio.UnaryStreamClientInterceptor,
-                                        grpc.aio.StreamUnaryClientInterceptor,
-                                        grpc.aio.StreamStreamClientInterceptor):
+class AsyncClientCallDetailsInterceptor(
+    grpc.aio.UnaryUnaryClientInterceptor,
+    grpc.aio.UnaryStreamClientInterceptor,
+    grpc.aio.StreamUnaryClientInterceptor,
+    grpc.aio.StreamStreamClientInterceptor,
+):
   """Generic Async Client Interceptor that modifies the ClientCallDetails."""
 
   def __init__(self, fn):
@@ -129,15 +134,14 @@ class AsyncClientCallDetailsInterceptor(grpc.aio.UnaryUnaryClientInterceptor,
     """Intercepts a RPC.
 
     Args:
-      continuation: A function that proceeds with the invocation by
-        executing the next interceptor in chain or invoking the
-        actual RPC on the underlying Channel. It is the interceptor's
-        responsibility to call it if it decides to move the RPC forward.
-        The interceptor can use
-        `response_future = continuation(client_call_details, request)`
-        to continue with the RPC.
-      client_call_details: A ClientCallDetails object describing the
-        outgoing RPC.
+      continuation: A function that proceeds with the invocation by executing
+        the next interceptor in chain or invoking the actual RPC on the
+        underlying Channel. It is the interceptor's responsibility to call it if
+        it decides to move the RPC forward. The interceptor can use
+        `response_future = continuation(client_call_details, request)` to
+        continue with the RPC.
+      client_call_details: A ClientCallDetails object describing the outgoing
+        RPC.
       request: The request value for the RPC.
 
     Returns:
@@ -157,33 +161,39 @@ class AsyncClientCallDetailsInterceptor(grpc.aio.UnaryUnaryClientInterceptor,
     new_details = self._fn(client_call_details)
     return continuation(new_details, request)
 
-  async def intercept_unary_unary(self, continuation, client_call_details,
-                                  request):
+  async def intercept_unary_unary(
+      self, continuation, client_call_details, request
+  ):
     """Intercepts a unary-unary invocation asynchronously."""
     return self.intercept_call(continuation, client_call_details, request)
 
-  async def intercept_unary_stream(self, continuation, client_call_details,
-                                   request):
+  async def intercept_unary_stream(
+      self, continuation, client_call_details, request
+  ):
     """Intercepts a unary-stream invocation."""
     return self.intercept_call(continuation, client_call_details, request)
 
-  async def intercept_stream_unary(self, continuation, client_call_details,
-                                   request_iterator):
+  async def intercept_stream_unary(
+      self, continuation, client_call_details, request_iterator
+  ):
     """Intercepts a stream-unary invocation asynchronously."""
-    return self.intercept_call(continuation, client_call_details,
-                               request_iterator)
+    return self.intercept_call(
+        continuation, client_call_details, request_iterator
+    )
 
-  async def intercept_stream_stream(self, continuation, client_call_details,
-                                    request_iterator):
+  async def intercept_stream_stream(
+      self, continuation, client_call_details, request_iterator
+  ):
     """Intercepts a stream-stream invocation."""
-    return self.intercept_call(continuation, client_call_details,
-                               request_iterator)
+    return self.intercept_call(
+        continuation, client_call_details, request_iterator
+    )
 
 
 def ShouldRecoverFromAPIEnablement():
   """Returns a callback for checking API enablement errors."""
-  state = {'already_prompted_to_enable': False,
-           'api_enabled': False}
+  state = {'already_prompted_to_enable': False, 'api_enabled': False}
+
   def _ShouldRecover(response):
     if response.code() != grpc.StatusCode.PERMISSION_DENIED:
       return False
@@ -198,11 +208,13 @@ def ShouldRecoverFromAPIEnablement():
         state['api_enabled'] = api_enable_attempted
         return True
     return False
+
   return _ShouldRecover
 
 
-class APIEnablementInterceptor(grpc.UnaryUnaryClientInterceptor,
-                               grpc.StreamUnaryClientInterceptor):
+class APIEnablementInterceptor(
+    grpc.UnaryUnaryClientInterceptor, grpc.StreamUnaryClientInterceptor
+):
   """API Enablement Interceptor for prompting to enable APIs."""
 
   def __init__(self):
@@ -214,8 +226,7 @@ class APIEnablementInterceptor(grpc.UnaryUnaryClientInterceptor,
     if response.code() != grpc.StatusCode.PERMISSION_DENIED:
       return response
 
-    enablement_info = api_enablement.GetApiEnablementInfo(
-        response.details())
+    enablement_info = api_enablement.GetApiEnablementInfo(response.details())
     if enablement_info:
       if self.already_prompted_to_enable:
         if self.api_enabled:
@@ -232,19 +243,23 @@ class APIEnablementInterceptor(grpc.UnaryUnaryClientInterceptor,
     """Intercepts a unary-unary invocation asynchronously."""
     return self.intercept_call(continuation, client_call_details, request)
 
-  def intercept_stream_unary(self, continuation, client_call_details,
-                             request_iterator):
+  def intercept_stream_unary(
+      self, continuation, client_call_details, request_iterator
+  ):
     """Intercepts a stream-unary invocation asynchronously."""
-    return self.intercept_call(continuation, client_call_details,
-                               request_iterator)
+    return self.intercept_call(
+        continuation, client_call_details, request_iterator
+    )
 
 
 def IsUserProjectError(trailing_metadata):
   for metadatum in trailing_metadata:
     if metadatum.key == 'google.rpc.errorinfo-bin':
       error_info = error_details_pb2.ErrorInfo.FromString(metadatum.value)
-      if (error_info.reason == transport.USER_PROJECT_ERROR_REASON and
-          error_info.domain == transport.USER_PROJECT_ERROR_DOMAIN):
+      if (
+          error_info.reason == transport.USER_PROJECT_ERROR_REASON
+          and error_info.domain == transport.USER_PROJECT_ERROR_DOMAIN
+      ):
         return True
   return False
 
@@ -267,8 +282,9 @@ def ShouldRecoverFromQuotaProject(credentials):
   return _ShouldRecover
 
 
-class QuotaProjectInterceptor(grpc.UnaryUnaryClientInterceptor,
-                              grpc.StreamUnaryClientInterceptor):
+class QuotaProjectInterceptor(
+    grpc.UnaryUnaryClientInterceptor, grpc.StreamUnaryClientInterceptor
+):
   """API Enablement Interceptor for prompting to enable APIs."""
 
   def __init__(self, credentials):
@@ -294,19 +310,22 @@ class QuotaProjectInterceptor(grpc.UnaryUnaryClientInterceptor,
     """Intercepts a unary-unary invocation asynchronously."""
     return self.intercept_call(continuation, client_call_details, request)
 
-  def intercept_stream_unary(self, continuation, client_call_details,
-                             request_iterator):
+  def intercept_stream_unary(
+      self, continuation, client_call_details, request_iterator
+  ):
     """Intercepts a stream-unary invocation asynchronously."""
-    return self.intercept_call(continuation, client_call_details,
-                               request_iterator)
+    return self.intercept_call(
+        continuation, client_call_details, request_iterator
+    )
 
 
 def ShouldRecover(credentials):
   """Returns a `should_recover` callable."""
   recovery_methods = [
       ShouldRecoverFromAPIEnablement(),
-      ShouldRecoverFromQuotaProject(credentials)
+      ShouldRecoverFromQuotaProject(credentials),
   ]
+
   def _ShouldRecover(future):
     if not isinstance(future, grpc.RpcError):
       return False
@@ -314,6 +333,7 @@ def ShouldRecover(credentials):
       if method(future):
         return True
     return False
+
   return _ShouldRecover
 
 
@@ -348,17 +368,31 @@ class BidiRpc(bidi.ResumableBidiRpc):
 
 
 class _ClientCallDetails(
-        collections.namedtuple(
-            '_ClientCallDetails',
-            ('method', 'timeout', 'metadata', 'credentials', 'wait_for_ready',
-             'compression')),
-        grpc.ClientCallDetails):
-  pass
+    collections.namedtuple(
+        '_ClientCallDetails',
+        (
+            'method',
+            'timeout',
+            'metadata',
+            'credentials',
+            'wait_for_ready',
+            'compression',
+        ),
+    ),
+    grpc.ClientCallDetails,
+):
+  """Immutable grpc.ClientCallDetails implementation.
+
+  gRPC's ClientCallDetails is an interface without a concrete, mutable
+  implementation, so interceptors that need to modify call details (for
+  example, to add headers) build a new instance of this namedtuple instead.
+  """
 
 
 def _AddHeaders(headers_func):
   """Returns a function that adds headers to client call details."""
   headers = headers_func()
+
   def AddHeaders(client_call_details):
     if not headers:
       return client_call_details
@@ -371,10 +405,15 @@ def _AddHeaders(headers_func):
       metadata.append((header.lower(), value))
 
     new_client_call_details = _ClientCallDetails(
-        client_call_details.method, client_call_details.timeout, metadata,
-        client_call_details.credentials, client_call_details.wait_for_ready,
-        client_call_details.compression)
+        client_call_details.method,
+        client_call_details.timeout,
+        metadata,
+        client_call_details.credentials,
+        client_call_details.wait_for_ready,
+        client_call_details.compression,
+    )
     return new_client_call_details
+
   return AddHeaders
 
 
@@ -403,7 +442,8 @@ def _GetIAMAuthHeaders():
 
   authorization_token = None
   authorization_token_file = (
-      properties.VALUES.auth.authorization_token_file.Get())
+      properties.VALUES.auth.authorization_token_file.Get()
+  )
   if authorization_token_file:
     try:
       authorization_token = files.ReadFileContents(authorization_token_file)
@@ -411,10 +451,9 @@ def _GetIAMAuthHeaders():
       raise Error(e)
 
   if authorization_token:
-    headers.append((
-        IAM_AUTHORIZATION_TOKEN_HEADER,
-        authorization_token.strip()
-    ))
+    headers.append(
+        (IAM_AUTHORIZATION_TOKEN_HEADER, authorization_token.strip())
+    )
   return headers
 
 
@@ -450,15 +489,21 @@ def AsyncRequestReasonInterceptor():
 def _AddTimeout():
   """Returns a function that sets a timeout on client call details."""
   timeout = properties.VALUES.core.http_timeout.GetInt()
+
   def AddTimeout(client_call_details):
     if not timeout:
       return client_call_details
 
     new_client_call_details = _ClientCallDetails(
-        client_call_details.method, timeout, client_call_details.metadata,
-        client_call_details.credentials, client_call_details.wait_for_ready,
-        client_call_details.compression)
+        client_call_details.method,
+        timeout,
+        client_call_details.metadata,
+        client_call_details.credentials,
+        client_call_details.wait_for_ready,
+        client_call_details.compression,
+    )
     return new_client_call_details
+
   return AddTimeout
 
 
@@ -475,11 +520,13 @@ def AsyncTimeoutInterceptor():
 def _GetOrgRestrictionHeader():
   """Returns the org restriction headers to be used."""
   headers = []
-  request_org_restriction_headers = properties.VALUES.resource_policy.org_restriction_header.Get(
+  request_org_restriction_headers = (
+      properties.VALUES.resource_policy.org_restriction_header.Get()
   )
   if request_org_restriction_headers:
     headers.append(
-        ('x-goog-allowed-resources', request_org_restriction_headers))
+        ('x-goog-allowed-resources', request_org_restriction_headers)
+    )
   return headers
 
 
@@ -498,8 +545,8 @@ class WrappedStreamingResponse(grpc.Call, grpc.Future):
 
   Attributes:
     _response: A grpc.Call/grpc.Future instance representing a service response.
-    _fn: Function called on each iteration of this iterator. Takes a lambda
-         that produces the next response in the _response iterator.
+    _fn: Function called on each iteration of this iterator. Takes a lambda that
+      produces the next response in the _response iterator.
   """
 
   def __init__(self, response, fn):
@@ -561,110 +608,12 @@ class WrappedStreamingResponse(grpc.Call, grpc.Future):
     return self._fn(lambda: next(self._response))
 
 
-class _UnavailableRegionDnsErrorResponse(grpc.Call, grpc.Future):
-  """Wrapped response that raises a user-friendly error on DNS failure."""
-
-  def __init__(self, response, region, known_available_regions):
-    self._response = response
-    self._region = region
-    self._known_available_regions = known_available_regions
-
-  def initial_metadata(self):
-    return self._response.initial_metadata()
-
-  def trailing_metadata(self):
-    return self._response.trailing_metadata()
-
-  def code(self):
-    return self._response.code()
-
-  def details(self):
-    return self._response.details()
-
-  def debug_error_string(self):
-    return self._response.debug_error_string()
-
-  def cancel(self):
-    return self._response.cancel()
-
-  def cancelled(self):
-    return self._response.cancelled()
-
-  def running(self):
-    return self._response.running()
-
-  def done(self):
-    return self._response.done()
-
-  def result(self, timeout=None):
-    try:
-      return self._response.result(timeout=timeout)
-    except grpc.RpcError as e:
-      regional_error = self._GetRegionalError(e)
-      if regional_error:
-        raise regional_error
-      raise
-
-  def exception(self, timeout=None):
-    e = self._response.exception(timeout=timeout)
-    regional_error = self._GetRegionalError(e)
-    if regional_error:
-      return regional_error
-    return e
-
-  def traceback(self, timeout=None):
-    return self._response.traceback(timeout=timeout)
-
-  def add_done_callback(self, fn):
-    return self._response.add_done_callback(fn)
-
-  def add_callback(self, callback):
-    return self._response.add_callback(callback)
-
-  def is_active(self):
-    return self._response.is_active()
-
-  def time_remaining(self):
-    return self._response.time_remaining()
-
-  def _GetRegionalError(self, error):
-    if error and error.code() == grpc.StatusCode.UNAVAILABLE:
-      return regional.UnavailableRegionError(
-          '{}\n\nNote: the region [{}] may not be available for this service. '
-          'Known available regions are: [{}].'.format(
-              error.details(), self._region,
-              ', '.join(sorted(self._known_available_regions))))
-    return None
-
-
-class UnavailableRegionDnsErrorInterceptor(grpc.UnaryUnaryClientInterceptor,
-                                           grpc.StreamUnaryClientInterceptor):
-  """Interceptor that catches DNS errors for invalid regions."""
-
-  def __init__(self, region, known_available_regions):
-    self._region = region
-    self._known_available_regions = known_available_regions
-
-  def intercept_call(self, continuation, client_call_details, request):
-    response = continuation(client_call_details, request)
-    return _UnavailableRegionDnsErrorResponse(
-        response, self._region, self._known_available_regions)
-
-  def intercept_unary_unary(self, continuation, client_call_details, request):
-    """Intercepts a unary-unary invocation asynchronously."""
-    return self.intercept_call(continuation, client_call_details, request)
-
-  def intercept_stream_unary(self, continuation, client_call_details,
-                             request_iterator):
-    """Intercepts a stream-unary invocation asynchronously."""
-    return self.intercept_call(continuation, client_call_details,
-                               request_iterator)
-
-
-class LoggingInterceptor(grpc.UnaryUnaryClientInterceptor,
-                         grpc.UnaryStreamClientInterceptor,
-                         grpc.StreamUnaryClientInterceptor,
-                         grpc.StreamStreamClientInterceptor):
+class LoggingInterceptor(
+    grpc.UnaryUnaryClientInterceptor,
+    grpc.UnaryStreamClientInterceptor,
+    grpc.StreamUnaryClientInterceptor,
+    grpc.StreamStreamClientInterceptor,
+):
   """Logging Interceptor for logging requests and responses.
 
   Logging is enabled if the --log-http flag is provided on any command.
@@ -678,11 +627,10 @@ class LoggingInterceptor(grpc.UnaryUnaryClientInterceptor,
     """Logs the metadata.
 
     Args:
-      metadata: `metadata` to be transmitted to
-        the service-side of the RPC.
+      metadata: `metadata` to be transmitted to the service-side of the RPC.
     """
     redact_token = properties.VALUES.core.log_http_redact_token.GetBool()
-    for (h, v) in sorted(metadata or [], key=lambda x: x[0]):
+    for h, v in sorted(metadata or [], key=lambda x: x[0]):
       if redact_token and h.lower() == IAM_AUTHORIZATION_TOKEN_HEADER:
         v = '--- Token Redacted ---'
       log.status.Print('{0}: {1}'.format(h, v))
@@ -691,8 +639,8 @@ class LoggingInterceptor(grpc.UnaryUnaryClientInterceptor,
     """Logs information about the request.
 
     Args:
-        client_call_details: a grpc._interceptor._ClientCallDetails
-            instance containing request metadata.
+        client_call_details: a grpc._interceptor._ClientCallDetails instance
+          containing request metadata.
         request: the request value for the RPC.
     """
     redact_token = properties.VALUES.core.log_http_redact_token.GetBool()
@@ -726,7 +674,7 @@ class LoggingInterceptor(grpc.UnaryUnaryClientInterceptor,
 
     Args:
         response: A grpc.Call/grpc.Future instance representing a service
-            response.
+          response.
         time_taken: time, in seconds, it took for the RPC to complete.
     """
     log.status.Print('---- response start ----')
@@ -743,7 +691,9 @@ class LoggingInterceptor(grpc.UnaryUnaryClientInterceptor,
     log.status.Print('-- body end --')
     log.status.Print(
         'total round trip time (request+response): {0:.3f} secs'.format(
-            time_taken))
+            time_taken
+        )
+    )
     log.status.Print('---- response end ----')
     log.status.Print('----------------------')
 
@@ -757,7 +707,7 @@ class LoggingInterceptor(grpc.UnaryUnaryClientInterceptor,
 
     Args:
         responses: A grpc.Call/grpc.Future instance representing a service
-            response.
+          response.
         response: response to log.
         time_taken: time, in seconds, it took for the RPC to complete.
     """
@@ -772,8 +722,7 @@ class LoggingInterceptor(grpc.UnaryUnaryClientInterceptor,
     else:
       log.status.Print('<streaming body>')
     log.status.Print('-- body end --')
-    log.status.Print(
-        'total time (response): {0:.3f} secs'.format(time_taken))
+    log.status.Print('total time (response): {0:.3f} secs'.format(time_taken))
     log.status.Print('---- response end ----')
     log.status.Print('----------------------')
 
@@ -805,9 +754,10 @@ class LoggingInterceptor(grpc.UnaryUnaryClientInterceptor,
     Overrides abstract method defined in grpc.UnaryUnaryClientInterceptor.
     Args:
         continuation: a function to continue the request process.
-        client_call_details: a grpc._interceptor._ClientCallDetails
-            instance containing request metadata.
+        client_call_details: a grpc._interceptor._ClientCallDetails instance
+          containing request metadata.
         request: the request value for the RPC.
+
     Returns:
         A grpc.Call/grpc.Future instance representing a service response.
     """
@@ -820,30 +770,33 @@ class LoggingInterceptor(grpc.UnaryUnaryClientInterceptor,
     self.log_response(response, time_taken)
     return response
 
-  def intercept_unary_stream(self, continuation, client_call_details,
-                             request):
+  def intercept_unary_stream(self, continuation, client_call_details, request):
     """Intercepts a unary-stream invocation."""
     self.log_request(client_call_details, request)
     response = continuation(client_call_details, request)
     return self.log_responses(response)
 
-  def intercept_stream_unary(self, continuation, client_call_details,
-                             request_iterator):
+  def intercept_stream_unary(
+      self, continuation, client_call_details, request_iterator
+  ):
     """Intercepts a stream-unary invocation asynchronously."""
     start_time = time.time()
     response = continuation(
         client_call_details,
-        self.log_requests(client_call_details, request_iterator))
+        self.log_requests(client_call_details, request_iterator),
+    )
     time_taken = time.time() - start_time
     self.log_response(response, time_taken)
     return response
 
-  def intercept_stream_stream(self, continuation, client_call_details,
-                              request_iterator):
+  def intercept_stream_stream(
+      self, continuation, client_call_details, request_iterator
+  ):
     """Intercepts a stream-stream invocation."""
     response = continuation(
         client_call_details,
-        self.log_requests(client_call_details, request_iterator))
+        self.log_requests(client_call_details, request_iterator),
+    )
 
     return self.log_responses(response)
 
@@ -861,9 +814,10 @@ class RPCDurationReporterInterceptor(grpc.UnaryUnaryClientInterceptor):
     Overrides abstract method defined in grpc.UnaryUnaryClientInterceptor.
     Args:
         continuation: a function to continue the request process.
-        client_call_details: a grpc._interceptor._ClientCallDetails
-            instance containing request metadata.
+        client_call_details: a grpc._interceptor._ClientCallDetails instance
+          containing request metadata.
         request: the request value for the RPC.
+
     Returns:
         A grpc.Call/grpc.Future instance representing a service response.
     """
@@ -994,7 +948,8 @@ def GetSSLCredentials(mtls_enabled):
     return grpc.ssl_channel_credentials(
         root_certificates=ca_certs,
         certificate_chain=certificate_chain,
-        private_key=private_key)
+        private_key=private_key,
+    )
   return None
 
 
@@ -1005,11 +960,13 @@ def MakeProxyFromProperties():
   proxy_port = properties.VALUES.proxy.port.GetInt()
 
   proxy_prop_set = len(
-      [f for f in (proxy_type, proxy_address, proxy_port) if f])
+      [f for f in (proxy_type, proxy_address, proxy_port) if f]
+  )
   if proxy_prop_set > 0 and proxy_prop_set != 3:
     raise properties.InvalidValueError(
         'Please set all or none of the following properties: '
-        'proxy/type, proxy/address and proxy/port')
+        'proxy/type, proxy/address and proxy/port'
+    )
 
   if not proxy_prop_set:
     return
@@ -1023,7 +980,8 @@ def MakeProxyFromProperties():
 
   if proxy_user or proxy_pass:
     proxy_auth = ':'.join(
-        urllib.parse.quote(x) or '' for x in (proxy_user, proxy_pass))
+        urllib.parse.quote(x) or '' for x in (proxy_user, proxy_pass)
+    )
     proxy_auth += '@'
   else:
     proxy_auth = ''
@@ -1157,6 +1115,4 @@ def MakeAsyncTransport(
       interceptors=interceptors,
   )
 
-  return transport_class(
-      channel=channel,
-      host=address)
+  return transport_class(channel=channel, host=address)

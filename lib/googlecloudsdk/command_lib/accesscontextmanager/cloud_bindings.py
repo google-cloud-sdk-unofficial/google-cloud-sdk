@@ -61,8 +61,8 @@ def ProcessOrganization(ref, args, req):
   if org is None:
     raise calliope_exceptions.RequiredArgumentException(
         '--organization',
-        'The attribute can be set in the following ways: \n'
-        + '- provide the argument `--organization` on the command line \n'
+        'The attribute can be set in the following ways:\n'
+        + '- provide the argument `--organization` on the command line\n'
         + '- set the property `access_context_manager/organization`',
     )
 

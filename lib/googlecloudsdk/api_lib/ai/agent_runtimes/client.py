@@ -46,14 +46,10 @@ class AgentRuntimesClient:
     self._service = client.projects_locations_reasoningEngines
     self._message_prefix = constants.AI_PLATFORM_MESSAGE_PREFIX[version]
 
-  def GetMessage(self, message_name: str) -> Any:
-    """Returns the API message class by name."""
-
-    return getattr(
-        self._messages,
-        f'{self._message_prefix}{message_name}',
-        None,
-    )
+  @property
+  def messages(self) -> Any:
+    """Returns the API messages module."""
+    return self._messages
 
   def _ReasoningEngineRequestField(self) -> str:
     """Returns the version-specific ReasoningEngine request body field name.
@@ -135,7 +131,7 @@ class AgentRuntimesClient:
       parent: The location resource name to create the Agent Runtime in, in the
         form `projects/{project}/locations/{location}`.
       reasoning_engine: The ReasoningEngine message describing the Agent Runtime
-        to create (e.g. built via `GetMessage('ReasoningEngine')`).
+        to create.
 
     Returns:
       The long-running operation for the create request.

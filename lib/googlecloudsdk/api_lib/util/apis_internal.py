@@ -319,13 +319,18 @@ def _GetGapicClientInstance(
   # regional endpoints.
   region_interceptors = []
   if region and _ShouldUseRegionalEndpoints(api_name, api_version, region):
+    # Imported lazily: gapic_region_interceptor depends on grpc, which is an
+    # optional dependency that users install separately.
     # pylint: disable=g-import-not-at-top
-    from googlecloudsdk.core import gapic_util_internal
+    from googlecloudsdk.core import gapic_region_interceptor
     # pylint: enable=g-import-not-at-top
     api_def = GetApiDef(api_name, api_version)
     if region not in api_def.regional_endpoints:
-      interceptor = gapic_util_internal.UnavailableRegionDnsErrorInterceptor(
-          region, known_available_regions=api_def.regional_endpoints)
+      interceptor = (
+          gapic_region_interceptor.UnavailableRegionDnsErrorInterceptor(
+              region, known_available_regions=api_def.regional_endpoints
+          )
+      )
       region_interceptors.append(interceptor)
 
   client_class = _GetGapicClientClass(

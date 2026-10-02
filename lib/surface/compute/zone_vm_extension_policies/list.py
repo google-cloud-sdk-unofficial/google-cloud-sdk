@@ -16,15 +16,14 @@
 """Command for listing ZoneVmExtensionPolicies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.zone_vm_extension_policies import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.vm_extension_policies import flags as vm_extension_policies_flags
 from googlecloudsdk.command_lib.compute.zone_vm_extension_policies import flags
-from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine zone VM extension policies."""
 
@@ -37,8 +36,8 @@ class List(base.ListCommand):
    """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddZoneFlag(parser)
 
   def Run(self, args):
@@ -51,13 +50,16 @@ class List(base.ListCommand):
       Response calling the ZoneVmExtensionPoliciesService.List API.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-    return client.MakeRequests([(
-        client.apitools_client.zoneVmExtensionPolicies,
-        'List',
-        messages.ComputeZoneVmExtensionPoliciesListRequest(
-            project=properties.VALUES.core.project.GetOrFail(),
-            zone=args.zone
-        ),
-    )])
+    policy_client = client.ZoneVmExtensionPolicy.FromArgs(args, holder.client)
+    return policy_client.List()
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Compute Engine zone VM extension policies."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(ListAlpha, cls).Args(parser)
+    vm_extension_policies_flags.AddScopeFlags(parser)

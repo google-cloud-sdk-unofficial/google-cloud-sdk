@@ -7806,6 +7806,52 @@ def AddDisableL4LbFirewallReconciliationFlag(
     )
 
 
+def AddGranularNatFlag(parser, hidden=True, is_update=False):
+  """Adds the --enable-granular-nat flag to the given cluster parser.
+
+  Args:
+    parser: A given parser.
+    hidden: Indicates that the flags are hidden.
+    is_update: Whether the flag is used for an update operation.
+  """
+  help_text = 'Enables Granular NAT for the cluster.'
+  if is_update:
+    parser.add_argument(
+        '--enable-granular-nat',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=help_text,
+        hidden=hidden,
+    )
+  else:
+    parser.add_argument(
+        '--enable-granular-nat',
+        action='store_true',
+        default=None,
+        help=help_text,
+        hidden=hidden,
+    )
+
+
+def AddNetworkSuiteFlag(parser, hidden=True):
+  """Adds the --network-suite flag to the given cluster parser.
+
+  Args:
+    parser: A given parser.
+    hidden: Indicates that the flags are hidden.
+  """
+  help_text = (
+      'Sets the networking suite tier for the cluster. Choices are'
+      " 'essentials', 'standard', or 'enterprise'."
+  )
+  parser.add_argument(
+      '--network-suite',
+      type=str.lower,
+      choices=['essentials', 'standard', 'enterprise'],
+      help=help_text,
+      hidden=hidden,
+  )
+
+
 def AddSoleTenantNodeAffinityFileFlag(parser, hidden=False):
   """Adds --sole-tenant-node-affinity-file flag to the given parser.
 
@@ -8981,7 +9027,11 @@ def AddAcceleratorNetworkProfileCreateFlags(parser, hidden=True):
   parser.add_argument(
       '--cluster',
       required=True,
-      help='The name of the cluster this profile will be associated with.',
+      help=(
+          'The name of the cluster this profile will be associated with. The'
+          ' `--location` (`--zone` or `--region`) flag must match the location'
+          ' of this cluster.'
+      ),
       action=actions.StoreProperty(properties.VALUES.container.cluster),
       hidden=hidden,
   )
@@ -9028,6 +9078,18 @@ def AddAcceleratorNetworkProfileCreateFlags(parser, hidden=True):
   parser.add_argument(
       '--auto-config-mrdma-vpc',
       help='The name of the VPC used for all MRDMA NICs.',
+      hidden=hidden,
+  )
+  parser.add_argument(
+      '--rdma-locations',
+      type=arg_parsers.ArgList(min_length=1),
+      metavar='ZONE',
+      help="""\
+      Compute Engine zone in which the AcceleratorNetworkProfile's RDMA network fabric resources are provisioned (e.g. `us-central1-a`).
+      Required when creating a profile for an RDMA machine type in a regional cluster (`--location` / `--region`); must be a zone within the cluster's region.
+      For a zonal cluster (`--location` / `--zone`), it defaults to the cluster's zone if omitted.
+      Must not be specified for machine types that do not support RDMA.
+      """,
       hidden=hidden,
   )
   parser.add_argument(

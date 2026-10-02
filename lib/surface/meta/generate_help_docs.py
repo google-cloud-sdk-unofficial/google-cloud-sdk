@@ -18,6 +18,7 @@
 
 import re
 
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import walker_util
 from googlecloudsdk.command_lib.meta import help_util
@@ -80,10 +81,20 @@ class GenerateHelpDocs(base.Command):
     parser.add_argument(
         '--manpage-dir',
         metavar='DIRECTORY',
-        help=('The directory where the generated manpage document subtree will '
-              'be written. The manpage hierarchy is flat with all command '
-              'documents in the manN/ subdirectory. If not specified then '
-              'manpage documents will not be generated.'))
+        action=actions.DeprecationAction(
+            '--manpage-dir',
+            warn=(
+                'The {flag_name} option is deprecated and will be removed in '
+                'an upcoming release. Please use --html-dir instead.'
+            ),
+            removed=False,
+        ),
+        help=(
+            'The directory where the generated manpage document subtree will '
+            'be written. If not specified then manpage documents will not be '
+            'generated.'
+        ),
+    )
     parser.add_argument(
         '--test',
         action='store_true',
@@ -136,9 +147,11 @@ class GenerateHelpDocs(base.Command):
     # Handle deprecated flags -- probably burned in a bunch of eng scripts.
 
     if args.update_help_text_dir:
-      log.warning('[--update-help-text-dir={directory}] is deprecated. Use '
-                  'this instead: --update --help-text-dir={directory}.'.format(
-                      directory=args.update_help_text_dir))
+      log.warning(
+          f'[--update-help-text-dir={args.update_help_text_dir}] is deprecated.'
+          ' Use this instead: --update'
+          f' --help-text-dir={args.update_help_text_dir}.'
+      )
       args.help_text_dir = args.update_help_text_dir
       args.update = True
 
@@ -168,5 +181,4 @@ class GenerateHelpDocs(base.Command):
         kinds = ' and '.join([', '.join(names[:-1]), names[-1]])
       else:
         kinds = names[0]
-      raise HelpOutOfDateError(
-          '{} document files must be updated.'.format(kinds))
+      raise HelpOutOfDateError(f'{kinds} document files must be updated.')

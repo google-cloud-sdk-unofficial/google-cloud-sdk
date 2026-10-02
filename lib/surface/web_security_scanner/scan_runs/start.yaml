@@ -13,6 +13,8 @@
 # limitations under the License.
 
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Start a scan run for a scan config.

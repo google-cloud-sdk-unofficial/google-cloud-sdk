@@ -111,8 +111,8 @@ Delete.detailed_help = {
     ),
     'EXAMPLES': (
         """\
-        To delete the Accelerator Network Profile `anp-1` in zone
-        `us-central1-a`, run:
+        To delete the Accelerator Network Profile `anp-1` in location
+        `us-central1-a` (or region `us-central1` for an ANP in a regional cluster), run:
 
           $ {command} anp-1 --location=us-central1-a
         """

@@ -412,7 +412,7 @@ class NetworkmanagementV1alpha1(base_api.BaseApiClient):
           }
 
     def DiagnoseAlarm(self, request, global_params=None):
-      r"""Diagnoses an alarm for a given alarm ID.
+      r"""Deprecated: This internal endpoint is unused and will be removed. Use `GenerateInsights` instead.
 
       Args:
         request: (NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsDiagnoseAlarmRequest) input message
@@ -435,6 +435,33 @@ class NetworkmanagementV1alpha1(base_api.BaseApiClient):
         request_field='',
         request_type_name='NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsDiagnoseAlarmRequest',
         response_type_name='DiagnoseAlarmResponse',
+        supports_download=False,
+    )
+
+    def GenerateInsights(self, request, global_params=None):
+      r"""Generates insights for a given network path and time window.
+
+      Args:
+        request: (NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsGenerateInsightsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GenerateInsights')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateInsights.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/networkMonitoringProviders/{networkMonitoringProvidersId}/networkPaths/{networkPathsId}:generateInsights',
+        http_method='POST',
+        method_id='networkmanagement.projects.locations.networkMonitoringProviders.networkPaths.generateInsights',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:generateInsights',
+        request_field='generateInsightsRequest',
+        request_type_name='NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsGenerateInsightsRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

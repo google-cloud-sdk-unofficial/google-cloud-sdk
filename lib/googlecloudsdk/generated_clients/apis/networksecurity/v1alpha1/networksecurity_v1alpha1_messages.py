@@ -3814,6 +3814,7 @@ class MTLSPolicy(_messages.Message):
       `client_validation_mode` specifies how the client connection is handled.
       Required if the policy is to be used with the Application Load
       Balancers. For Traffic Director it must be empty.
+    ClientValidationRelaxationsValueListEntryValuesEnum:
 
   Fields:
     clientValidationCa: Required if the policy is to be used with Traffic
@@ -3825,6 +3826,8 @@ class MTLSPolicy(_messages.Message):
       specifies how the client connection is handled. Required if the policy
       is to be used with the Application Load Balancers. For Traffic Director
       it must be empty.
+    clientValidationRelaxations: A list of validation relaxations to apply
+      when `client_validation_mode` is set to ALLOW_VALIDATION_RELAXATIONS.
     clientValidationTrustConfig: Reference to the TrustConfig from
       certificatemanager.googleapis.com namespace. If specified, the chain
       validation will be performed against certificates configured in the
@@ -3851,14 +3854,50 @@ class MTLSPolicy(_messages.Message):
         backend only if validation of the client certificate passed. If set,
         requires a reference to non-empty TrustConfig specified in
         `client_validation_trust_config`.
+      ALLOW_VALIDATION_RELAXATIONS: Require a client certificate, but apply
+        the specific validation relaxations requested in
+        `client_validation_relaxations`. All selected relaxations are applied
+        simultaneously.
     """
     CLIENT_VALIDATION_MODE_UNSPECIFIED = 0
     ALLOW_INVALID_OR_MISSING_CLIENT_CERT = 1
     REJECT_INVALID = 2
+    ALLOW_VALIDATION_RELAXATIONS = 3
+
+  class ClientValidationRelaxationsValueListEntryValuesEnum(_messages.Enum):
+    r"""ClientValidationRelaxationsValueListEntryValuesEnum enum type.
+
+    Values:
+      CLIENT_VALIDATION_RELAXATION_UNSPECIFIED: Not allowed.
+      ALLOW_MISSING_EKU: Allows the client certificate to completely omit the
+        Extended Key Usage (EKU) extension. If the EKU extension is present,
+        it must permit the `clientAuth` key purpose (OID 1.3.6.1.5.5.7.3.2).
+        Security Warning: Enabling this option is risky if the customer uses a
+        Root CA that issues certificates for multiple different purposes.
+        Without EKU enforcement, a certificate intended for a non-
+        authentication purpose (like S/MIME or server-only auth) might be
+        accepted for mTLS client authentication. Customers should only use
+        this relaxation if they are using a dedicated Private CA solely for
+        issuing client authentication certificates.
+      ALLOW_SHA1_HASHING: Allows validation of client certificate chains
+        signed using legacy SHA-1 message digests. Enabling this is insecure
+        and should only be used to support legacy clients during migration
+        periods.
+      ALLOW_EXPIRED_LEAF_CERTIFICATE: Allows validation of an expired client
+        leaf certificate. The certificate will be validated as if the current
+        time was one second before the end of its validity period (the
+        `notAfter` timestamp). This relaxation applies strictly to the leaf
+        certificate and not to the rest of the chain.
+    """
+    CLIENT_VALIDATION_RELAXATION_UNSPECIFIED = 0
+    ALLOW_MISSING_EKU = 1
+    ALLOW_SHA1_HASHING = 2
+    ALLOW_EXPIRED_LEAF_CERTIFICATE = 3
 
   clientValidationCa = _messages.MessageField('ValidationCA', 1, repeated=True)
   clientValidationMode = _messages.EnumField('ClientValidationModeValueValuesEnum', 2)
-  clientValidationTrustConfig = _messages.StringField(3)
+  clientValidationRelaxations = _messages.EnumField('ClientValidationRelaxationsValueListEntryValuesEnum', 3, repeated=True)
+  clientValidationTrustConfig = _messages.StringField(4)
 
 
 class MirroringDeployment(_messages.Message):
@@ -11629,6 +11668,8 @@ class UllMirroringCollectorRuleMatch(_messages.Message):
     ipProtocols: Optional. IP protocols to match. When unset, matches any IP
       protocol. Examples: "tcp", "udp", "icmp". If unset, matches any IP
       protocol.
+    primaryIpRanges: Optional. Primary IP ranges to match (for the capture
+      point). When unset, matches any primary IP.
     srcIpRanges: Optional. Source IP ranges to match. When unset, matches any
       source IP range.
   """
@@ -11649,7 +11690,8 @@ class UllMirroringCollectorRuleMatch(_messages.Message):
   direction = _messages.EnumField('DirectionValueValuesEnum', 1)
   dstIpRanges = _messages.StringField(2, repeated=True)
   ipProtocols = _messages.StringField(3, repeated=True)
-  srcIpRanges = _messages.StringField(4, repeated=True)
+  primaryIpRanges = _messages.StringField(4, repeated=True)
+  srcIpRanges = _messages.StringField(5, repeated=True)
 
 
 class UllMirroringEngine(_messages.Message):

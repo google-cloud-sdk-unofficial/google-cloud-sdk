@@ -385,9 +385,11 @@ def GetFromFallthroughs(fallthroughs, parsed_args, attribute_name=None):
       ['- {}'.format(hint) for hint in hints])
   raise AttributeNotFoundError(
       'Failed to find attribute{}. The attribute can be set in the '
-      'following ways: \n{}'.format(
+      'following ways:\n{}'.format(
           '' if attribute_name is None else ' [{}]'.format(attribute_name),
-          fallthroughs_summary))
+          fallthroughs_summary,
+      )
+  )
 
 
 def GetHints(fallthroughs):

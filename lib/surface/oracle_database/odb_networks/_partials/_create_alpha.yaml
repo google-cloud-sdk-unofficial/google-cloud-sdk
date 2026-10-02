@@ -66,7 +66,7 @@
         Example: us-east4-b-r2.
         If not specified, the system will pick a zone based on availability.
     - group:
-        api_field: odbNetwork.serviceConnectionConfig
+        api_field: odbNetwork.serviceConnectivityConfig
         required: false
         help_text: |-
           Configuration to enable the service (Oracledatabase@Google Cloud) to
@@ -79,7 +79,7 @@
           Please don't specify it otherwise to avoid complicating the network setup.
         params:
         - group:
-            api_field: odbNetwork.serviceConnectionConfig.pscInterfaceConfig
+            api_field: odbNetwork.serviceConnectivityConfig.pscInterfaceConfig
             required: false
             help_text: |-
               Configuration for a Private Service Connect (PSC) interface used by
@@ -87,7 +87,7 @@
               database.
             params:
             - arg_name: psc-interface-config-network-attachment
-              api_field: odbNetwork.serviceConnectionConfig.pscInterfaceConfig.networkAttachment
+              api_field: odbNetwork.serviceConnectivityConfig.pscInterfaceConfig.networkAttachment
               required: false
               repeated: false
               help_text: |-

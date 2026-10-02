@@ -16,15 +16,14 @@
 """Command for creating ZoneVmExtensionPolicies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.zone_vm_extension_policies import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.vm_extension_policies import flags as vm_extension_policies_flags
 from googlecloudsdk.command_lib.compute.zone_vm_extension_policies import flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine zone VM extension policy."""
 
@@ -50,10 +49,12 @@ class Create(base.CreateCommand):
    """,
   }
 
-  @staticmethod
-  def Args(parser):
-    Create.ZoneVmExtensionPoliciesArg = flags.MakeZoneVmExtensionPolicyArg()
-    Create.ZoneVmExtensionPoliciesArg.AddArgument(
+  ZONE_VM_EXTENSION_POLICIES_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.ZONE_VM_EXTENSION_POLICIES_ARG = flags.MakeZoneVmExtensionPolicyArg()
+    cls.ZONE_VM_EXTENSION_POLICIES_ARG.AddArgument(
         parser, operation_type='create'
     )
     flags.AddExtensionPolicyArgs(parser)
@@ -68,24 +69,33 @@ class Create(base.CreateCommand):
       Response calling the ZoneVmExtensionPoliciesService.Insert API.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-    resource_ref = Create.ZoneVmExtensionPoliciesArg.ResolveAsResource(
+    resource_ref = flags.ResolveZoneVmExtensionPolicyResource(
         args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client),
+        holder,
+        self.ZONE_VM_EXTENSION_POLICIES_ARG,
+        client=holder.client,
     )
-    flags.ParseExtensionConfigs(
+    vm_extension_policies_flags.ParseExtensionConfigs(
         args.extensions, args.config, args.config_from_file
     )
-    flags.ParseExtensionVersions(args.extensions, args.version)
-    zve_policy = flags.BuildZoneVmExtensionPolicy(resource_ref, args, messages)
-    return client.MakeRequests([(
-        client.apitools_client.zoneVmExtensionPolicies,
-        'Insert',
-        messages.ComputeZoneVmExtensionPoliciesInsertRequest(
-            project=resource_ref.project,
-            zone=resource_ref.zone,
-            vmExtensionPolicy=zve_policy,
-        ),
-    )])
+    vm_extension_policies_flags.ParseExtensionVersions(
+        args.extensions, args.version
+    )
+    policy = flags.BuildZoneVmExtensionPolicy(
+        resource_ref, args, holder.client.messages
+    )
+    policy_client = client.ZoneVmExtensionPolicy.FromRef(
+        resource_ref, holder.client
+    )
+    return policy_client.Insert(policy)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Compute Engine zone VM extension policy."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    vm_extension_policies_flags.AddScopeFlags(parser)

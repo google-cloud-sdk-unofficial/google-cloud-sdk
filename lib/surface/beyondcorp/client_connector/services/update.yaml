@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Update a BeyondCorp client connector service (Deprecated).
     description: Update a BeyondCorp client connector service. Note - Mutable fields include - \

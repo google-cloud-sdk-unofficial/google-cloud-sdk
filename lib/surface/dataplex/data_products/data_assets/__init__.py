@@ -17,8 +17,9 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class DataAssets(base.Group):
   """Manage Dataplex Data Asset resources."""
+
+  category = base.DATA_ANALYTICS_CATEGORY

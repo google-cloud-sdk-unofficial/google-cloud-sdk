@@ -21,18 +21,32 @@
 
 """Mailmap file reader."""
 
+__all__ = [
+    "Mailmap",
+    "parse_identity",
+    "read_mailmap",
+]
+
 from collections.abc import Iterator
-from typing import IO, Optional, Union
+from typing import IO
 
 
-def parse_identity(text: bytes) -> tuple[Optional[bytes], Optional[bytes]]:
+def parse_identity(text: bytes) -> tuple[bytes | None, bytes | None]:
+    """Parse an identity string into name and email.
+
+    Args:
+      text: Identity string in format "Name <email>"
+
+    Returns:
+      Tuple of (name, email) where either can be None
+    """
     # TODO(user): Integrate this with dulwich.fastexport.split_email and
     # dulwich.repo.check_user_identity
     (name_str, email_str) = text.rsplit(b"<", 1)
     name_str = name_str.strip()
     email_str = email_str.rstrip(b">").strip()
-    name: Optional[bytes] = name_str if name_str else None
-    email: Optional[bytes] = email_str if email_str else None
+    name: bytes | None = name_str if name_str else None
+    email: bytes | None = email_str if email_str else None
     return (name, email)
 
 
@@ -40,8 +54,8 @@ def read_mailmap(
     f: IO[bytes],
 ) -> Iterator[
     tuple[
-        tuple[Optional[bytes], Optional[bytes]],
-        Optional[tuple[Optional[bytes], Optional[bytes]]],
+        tuple[bytes | None, bytes | None],
+        tuple[bytes | None, bytes | None] | None,
     ]
 ]:
     """Read a mailmap.
@@ -72,18 +86,22 @@ class Mailmap:
 
     def __init__(
         self,
-        map: Optional[
-            Iterator[
-                tuple[
-                    tuple[Optional[bytes], Optional[bytes]],
-                    Optional[tuple[Optional[bytes], Optional[bytes]]],
-                ]
+        map: Iterator[
+            tuple[
+                tuple[bytes | None, bytes | None],
+                tuple[bytes | None, bytes | None] | None,
             ]
-        ] = None,
+        ]
+        | None = None,
     ) -> None:
+        """Initialize Mailmap.
+
+        Args:
+          map: Optional iterator of (canonical_identity, from_identity) tuples
+        """
         self._table: dict[
-            tuple[Optional[bytes], Optional[bytes]],
-            tuple[Optional[bytes], Optional[bytes]],
+            tuple[bytes | None, bytes | None],
+            tuple[bytes | None, bytes | None],
         ] = {}
         if map:
             for canonical_identity, from_identity in map:
@@ -91,8 +109,8 @@ class Mailmap:
 
     def add_entry(
         self,
-        canonical_identity: tuple[Optional[bytes], Optional[bytes]],
-        from_identity: Optional[tuple[Optional[bytes], Optional[bytes]]] = None,
+        canonical_identity: tuple[bytes | None, bytes | None],
+        from_identity: tuple[bytes | None, bytes | None] | None = None,
     ) -> None:
         """Add an entry to the mail mail.
 
@@ -115,8 +133,8 @@ class Mailmap:
             self._table[from_name, from_email] = canonical_identity
 
     def lookup(
-        self, identity: Union[bytes, tuple[Optional[bytes], Optional[bytes]]]
-    ) -> Union[bytes, tuple[Optional[bytes], Optional[bytes]]]:
+        self, identity: bytes | tuple[bytes | None, bytes | None]
+    ) -> bytes | tuple[bytes | None, bytes | None]:
         """Lookup an identity in this mailmail."""
         if not isinstance(identity, tuple):
             was_tuple = False
@@ -143,5 +161,13 @@ class Mailmap:
 
     @classmethod
     def from_path(cls, path: str) -> "Mailmap":
+        """Create Mailmap from file path.
+
+        Args:
+          path: Path to mailmap file
+
+        Returns:
+          Mailmap instance
+        """
         with open(path, "rb") as f:
             return cls(read_mailmap(f))

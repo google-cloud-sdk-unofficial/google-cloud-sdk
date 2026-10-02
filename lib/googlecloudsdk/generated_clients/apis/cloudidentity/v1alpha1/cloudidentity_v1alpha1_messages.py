@@ -2145,6 +2145,7 @@ class GoogleAppsCloudidentityDevicesV1Device(_messages.Message):
       MAC_OS: Device is a MacOS device.
       LINUX: Device is a Linux device.
       CHROME_OS: Device is a ChromeOS device.
+      GOOGLEBOOK: Device is a Googlebook device.
     """
     DEVICE_TYPE_UNSPECIFIED = 0
     ANDROID = 1
@@ -2154,6 +2155,7 @@ class GoogleAppsCloudidentityDevicesV1Device(_messages.Message):
     MAC_OS = 5
     LINUX = 6
     CHROME_OS = 7
+    GOOGLEBOOK = 8
 
   class EncryptionStateValueValuesEnum(_messages.Enum):
     r"""Output only. Device encryption state.

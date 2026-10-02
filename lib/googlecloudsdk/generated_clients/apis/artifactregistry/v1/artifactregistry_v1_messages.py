@@ -4563,6 +4563,8 @@ class VulnerabilityScanningConfig(_messages.Message):
   this repository, as well as output fields describing current state.
 
   Enums:
+    AttestationGenerationValueValuesEnum: Optional. Configures vulnerability
+      attestation generation in addition to occurrences.
     EnablementConfigValueValuesEnum: Optional. Config for whether this
       repository has vulnerability scanning disabled. When unset
       (ENABLEMENT_CONFIG_UNSPECIFIED), this is treated as INHERITED for Docker
@@ -4571,6 +4573,8 @@ class VulnerabilityScanningConfig(_messages.Message):
       combining repository enablement config and API enablement state.
 
   Fields:
+    attestationGeneration: Optional. Configures vulnerability attestation
+      generation in addition to occurrences.
     enablementConfig: Optional. Config for whether this repository has
       vulnerability scanning disabled. When unset
       (ENABLEMENT_CONFIG_UNSPECIFIED), this is treated as INHERITED for Docker
@@ -4581,6 +4585,20 @@ class VulnerabilityScanningConfig(_messages.Message):
     lastEnableTime: Output only. The last time this repository config was
       enabled.
   """
+
+  class AttestationGenerationValueValuesEnum(_messages.Enum):
+    r"""Optional. Configures vulnerability attestation generation in addition
+    to occurrences.
+
+    Values:
+      ENABLEMENT_CONFIG_UNSPECIFIED: Unspecified enablement configuration.
+      INHERITED: Enables the feature, but is dependent on parent API
+        enablement.
+      DISABLED: Disables the feature for this repository.
+    """
+    ENABLEMENT_CONFIG_UNSPECIFIED = 0
+    INHERITED = 1
+    DISABLED = 2
 
   class EnablementConfigValueValuesEnum(_messages.Enum):
     r"""Optional. Config for whether this repository has vulnerability
@@ -4618,10 +4636,11 @@ class VulnerabilityScanningConfig(_messages.Message):
     SCANNING_ACTIVE = 3
     ACTIVE_VIA_SCC = 4
 
-  enablementConfig = _messages.EnumField('EnablementConfigValueValuesEnum', 1)
-  enablementState = _messages.EnumField('EnablementStateValueValuesEnum', 2)
-  enablementStateReason = _messages.StringField(3)
-  lastEnableTime = _messages.StringField(4)
+  attestationGeneration = _messages.EnumField('AttestationGenerationValueValuesEnum', 1)
+  enablementConfig = _messages.EnumField('EnablementConfigValueValuesEnum', 2)
+  enablementState = _messages.EnumField('EnablementStateValueValuesEnum', 3)
+  enablementStateReason = _messages.StringField(4)
+  lastEnableTime = _messages.StringField(5)
 
 
 class YumArtifact(_messages.Message):

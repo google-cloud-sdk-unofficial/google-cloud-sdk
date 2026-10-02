@@ -65,7 +65,7 @@ projects_locations_cloud_exadata_infrastructures:
     parameter_name: cloudExadataInfrastructuresId
     attribute_name: cloud_exadata_infrastructure
     help: The cloudExadataInfrastructure id of the {resource} resource.
-  disable_auto_completers: true
+  disable_auto_completers: false
 projects_locations_cloud_vm_clusters:
   name: cloudVmCluster
   plural_name: cloudVmClusters
@@ -124,6 +124,18 @@ projects_locations_databases:
     parameter_name: databasesId
     attribute_name: database
     help: The database id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_db_system_compute_performances:
+  name: dbSystemComputePerformance
+  plural_name: dbSystemComputePerformances
+  collection: oracledatabase.projects.locations.dbSystemComputePerformances
+  attributes:
+  - *project
+  - *location
+  - &dbSystemComputePerformance
+    parameter_name: dbSystemComputePerformancesId
+    attribute_name: db_system_compute_performance
+    help: The dbSystemComputePerformance id of the {resource} resource.
   disable_auto_completers: false
 projects_locations_db_systems:
   name: dbSystem

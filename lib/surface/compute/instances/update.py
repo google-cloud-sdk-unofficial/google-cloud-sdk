@@ -15,18 +15,23 @@
 """Command for labels update to instances."""
 
 
+from typing import Any
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import partner_metadata_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import resources as core_resources
 
 
 DETAILED_HELP = {
@@ -286,6 +291,28 @@ class Update(base.UpdateCommand):
           operation_poller,
           update_scheduling_ref, 'Updating the scheduling of instance [{0}]',
           instance_ref.Name()) or result
+
+    if args.IsKnownAndSpecified(
+        'management_interface'
+    ) or args.IsKnownAndSpecified('clear_management_interfaces'):
+      management_interface_operation_ref = (
+          self._GetManagementInterfacesOperationRef(
+              args,
+              instance_ref,
+              holder,
+              most_disruptive_allowed_action,
+              minimal_action,
+          )
+      )
+      result = (
+          self._WaitForResult(
+              operation_poller,
+              management_interface_operation_ref,
+              'Updating management interfaces of instance [{0}]',
+              instance_ref.Name(),
+          )
+          or result
+      )
 
     return result
 
@@ -581,6 +608,100 @@ class Update(base.UpdateCommand):
     return holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')
 
+  def _GetManagementInterfacesOperationRef(
+      self,
+      args: parser_extensions.Namespace,
+      instance_ref: core_resources.Resource,
+      holder: base_classes.ComputeApiHolder,
+      most_disruptive_allowed_action: Any,
+      minimal_action: Any,
+  ) -> core_resources.Resource:
+    messages = holder.client.messages
+    client = holder.client.apitools_client
+
+    if args.IsKnownAndSpecified('clear_management_interfaces'):
+      instance = client.instances.Get(
+          messages.ComputeInstancesGetRequest(**instance_ref.AsDict())
+      )
+      instance.managementInterfaces = (
+          messages.Instance.ManagementInterfacesValue(additionalProperties=[])
+      )
+
+    else:
+      mgmt_dict = args.management_interface
+      key = mgmt_dict.get('key')
+      if not key:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--management-interface',
+            'Key [key] is required and cannot be empty.',
+        )
+      iface_type = None
+      if 'type' in mgmt_dict:
+        try:
+          iface_type = arg_utils.ChoiceToEnum(
+              mgmt_dict['type'],
+              messages.InstanceManagementInterface.TypeValueValuesEnum,
+              item_type='type',
+          )
+        except (arg_parsers.ArgumentTypeError, KeyError, ValueError) as e:
+          raise calliope_exceptions.InvalidArgumentException(
+              '--management-interface', str(e)
+          )
+
+      instance = client.instances.Get(
+          messages.ComputeInstancesGetRequest(**instance_ref.AsDict())
+      )
+      if instance.managementInterfaces is None:
+        instance.managementInterfaces = (
+            messages.Instance.ManagementInterfacesValue(additionalProperties=[])
+        )
+
+      existing_prop = None
+      for prop in instance.managementInterfaces.additionalProperties:
+        if prop.key == key:
+          existing_prop = prop
+          break
+
+      if existing_prop is not None:
+        if existing_prop.value is None:
+          existing_prop.value = messages.InstanceManagementInterface()
+        mgmt_iface = existing_prop.value
+      else:
+        mgmt_iface = messages.InstanceManagementInterface()
+        instance.managementInterfaces.additionalProperties.append(
+            messages.Instance.ManagementInterfacesValue.AdditionalProperty(
+                key=key, value=mgmt_iface
+            )
+        )
+
+      if iface_type is not None:
+        mgmt_iface.type = iface_type
+      if 'network' in mgmt_dict:
+        mgmt_iface.network = mgmt_dict['network']
+      if 'subnetwork' in mgmt_dict:
+        mgmt_iface.subnetwork = mgmt_dict['subnetwork']
+      if 'network-ip' in mgmt_dict:
+        mgmt_iface.ipv4Address = mgmt_dict['network-ip']
+      if 'trust-config' in mgmt_dict:
+        if mgmt_iface.authenticationConfig is None:
+          mgmt_iface.authenticationConfig = (
+              messages.InstanceManagementInterfaceAuthenticationConfig()
+          )
+        mgmt_iface.authenticationConfig.trustConfig = mgmt_dict['trust-config']
+
+    request = messages.ComputeInstancesUpdateRequest(
+        instance=instance_ref.Name(),
+        project=instance_ref.project,
+        zone=instance_ref.zone,
+        instanceResource=instance,
+        minimalAction=minimal_action,
+        mostDisruptiveAllowedAction=most_disruptive_allowed_action,
+    )
+    operation = client.instances.Update(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations'
+    )
+
   def _WaitForResult(self, operation_poller, operation_ref, message, *args):
     if operation_ref:
       return waiter.WaitFor(
@@ -634,5 +755,6 @@ class UpdateAlpha(UpdateBeta):
     flags.AddMostDisruptiveAllowedActionArgs(parser)
     flags.AddMinimalActionArgs(parser)
     flags.AddExposeHostTopologyArg(parser)
+    flags.AddManagementInterfaceArgs(parser)
 
 Update.detailed_help = DETAILED_HELP

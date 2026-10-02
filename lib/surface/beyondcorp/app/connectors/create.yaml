@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Create a new Beyondcorp application connector.
     description: Create a new Beyondcorp application connector.

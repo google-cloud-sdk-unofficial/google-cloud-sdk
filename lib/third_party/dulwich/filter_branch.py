@@ -21,15 +21,35 @@
 
 """Git filter-branch implementation."""
 
+__all__ = [
+    "CommitData",
+    "CommitFilter",
+    "filter_refs",
+]
+
 import os
 import tempfile
 import warnings
-from typing import Callable, Optional
+from collections.abc import Callable, Sequence
+from typing import TypedDict
 
-from .index import Index, build_index_from_tree
-from .object_store import BaseObjectStore
-from .objects import Commit, Tag, Tree
-from .refs import RefsContainer
+from .index import Index, index_entry_from_tree_entry
+from .object_store import BaseObjectStore, iter_tree_contents
+from .objects import S_ISGITLINK, Commit, ObjectID, Tag, Tree
+from .refs import Ref, RefsContainer, local_tag_name
+
+
+class CommitData(TypedDict, total=False):
+    """TypedDict for commit data fields."""
+
+    author: bytes
+    author_time: int
+    author_timezone: int
+    committer: bytes
+    commit_time: int
+    commit_timezone: int
+    message: bytes
+    encoding: bytes
 
 
 class CommitFilter:
@@ -39,17 +59,17 @@ class CommitFilter:
         self,
         object_store: BaseObjectStore,
         *,
-        filter_fn: Optional[Callable[[Commit], Optional[dict[str, bytes]]]] = None,
-        filter_author: Optional[Callable[[bytes], Optional[bytes]]] = None,
-        filter_committer: Optional[Callable[[bytes], Optional[bytes]]] = None,
-        filter_message: Optional[Callable[[bytes], Optional[bytes]]] = None,
-        tree_filter: Optional[Callable[[bytes, str], Optional[bytes]]] = None,
-        index_filter: Optional[Callable[[bytes, str], Optional[bytes]]] = None,
-        parent_filter: Optional[Callable[[list[bytes]], list[bytes]]] = None,
-        commit_filter: Optional[Callable[[Commit, bytes], Optional[bytes]]] = None,
-        subdirectory_filter: Optional[bytes] = None,
+        filter_fn: Callable[[Commit], CommitData | None] | None = None,
+        filter_author: Callable[[bytes], bytes | None] | None = None,
+        filter_committer: Callable[[bytes], bytes | None] | None = None,
+        filter_message: Callable[[bytes], bytes | None] | None = None,
+        tree_filter: Callable[[ObjectID, str], ObjectID | None] | None = None,
+        index_filter: Callable[[ObjectID, str], ObjectID | None] | None = None,
+        parent_filter: Callable[[Sequence[ObjectID]], list[ObjectID]] | None = None,
+        commit_filter: Callable[[Commit, ObjectID], ObjectID | None] | None = None,
+        subdirectory_filter: bytes | None = None,
         prune_empty: bool = False,
-        tag_name_filter: Optional[Callable[[bytes], Optional[bytes]]] = None,
+        tag_name_filter: Callable[[bytes], bytes | None] | None = None,
     ):
         """Initialize a commit filter.
 
@@ -87,13 +107,13 @@ class CommitFilter:
         self.subdirectory_filter = subdirectory_filter
         self.prune_empty = prune_empty
         self.tag_name_filter = tag_name_filter
-        self._old_to_new: dict[bytes, bytes] = {}
-        self._processed: set[bytes] = set()
-        self._tree_cache: dict[bytes, bytes] = {}  # Cache for filtered trees
+        self._old_to_new: dict[ObjectID, ObjectID] = {}
+        self._processed: set[ObjectID] = set()
+        self._tree_cache: dict[ObjectID, ObjectID] = {}  # Cache for filtered trees
 
     def _filter_tree_with_subdirectory(
-        self, tree_sha: bytes, subdirectory: bytes
-    ) -> Optional[bytes]:
+        self, tree_sha: ObjectID, subdirectory: bytes
+    ) -> ObjectID | None:
         """Extract a subdirectory from a tree as the new root.
 
         Args:
@@ -122,6 +142,7 @@ class CommitFilter:
             for entry in current_tree.items():
                 if entry.path == part:
                     try:
+                        assert entry.sha is not None
                         obj = self.object_store[entry.sha]
                         if isinstance(obj, Tree):
                             current_tree = obj
@@ -138,7 +159,7 @@ class CommitFilter:
         # Return the subdirectory tree
         return current_tree.id
 
-    def _apply_tree_filter(self, tree_sha: bytes) -> bytes:
+    def _apply_tree_filter(self, tree_sha: ObjectID) -> ObjectID:
         """Apply tree filter by checking out tree and running filter.
 
         Args:
@@ -166,7 +187,7 @@ class CommitFilter:
             self._tree_cache[tree_sha] = new_tree_sha
             return new_tree_sha
 
-    def _apply_index_filter(self, tree_sha: bytes) -> bytes:
+    def _apply_index_filter(self, tree_sha: ObjectID) -> ObjectID:
         """Apply index filter by creating temp index and running filter.
 
         Args:
@@ -182,18 +203,28 @@ class CommitFilter:
             self._tree_cache[tree_sha] = tree_sha
             return tree_sha
 
-        # Create temporary index file
         with tempfile.NamedTemporaryFile(delete=False) as tmp_index:
             tmp_index_path = tmp_index.name
 
         try:
-            # Build index from tree
-            build_index_from_tree(".", tmp_index_path, self.object_store, tree_sha)
+            index = Index(tmp_index_path, read=False)
+            for entry in iter_tree_contents(self.object_store, tree_sha):
+                assert (
+                    entry.path is not None
+                    and entry.mode is not None
+                    and entry.sha is not None
+                )
+                if S_ISGITLINK(entry.mode):
+                    size = 0
+                else:
+                    size = self.object_store[entry.sha].raw_length()
+                index[entry.path] = index_entry_from_tree_entry(
+                    entry.mode, entry.sha, size
+                )
+            index.write()
 
-            # Run index filter
             new_tree_sha = self.index_filter(tree_sha, tmp_index_path)
             if new_tree_sha is None:
-                # Read back the modified index and create new tree
                 index = Index(tmp_index_path)
                 new_tree_sha = index.commit(self.object_store)
 
@@ -202,7 +233,7 @@ class CommitFilter:
         finally:
             os.unlink(tmp_index_path)
 
-    def process_commit(self, commit_sha: bytes) -> Optional[bytes]:
+    def process_commit(self, commit_sha: ObjectID) -> ObjectID | None:
         """Process a single commit, creating a filtered version.
 
         Args:
@@ -267,7 +298,7 @@ class CommitFilter:
                 return new_parents[0]
 
         # Apply filters
-        new_data = {}
+        new_data: CommitData = {}
 
         # Custom filter function takes precedence
         if self.filter_fn:
@@ -351,7 +382,7 @@ class CommitFilter:
             self._old_to_new[commit_sha] = commit_sha
             return commit_sha
 
-    def get_mapping(self) -> dict[bytes, bytes]:
+    def get_mapping(self) -> dict[ObjectID, ObjectID]:
         """Get the mapping of old commit SHAs to new commit SHAs.
 
         Returns:
@@ -363,13 +394,13 @@ class CommitFilter:
 def filter_refs(
     refs: RefsContainer,
     object_store: BaseObjectStore,
-    ref_names: list[bytes],
+    ref_names: Sequence[bytes],
     commit_filter: CommitFilter,
     *,
     keep_original: bool = True,
     force: bool = False,
-    tag_callback: Optional[Callable[[bytes, bytes], None]] = None,
-) -> dict[bytes, bytes]:
+    tag_callback: Callable[[Ref, Ref], None] | None = None,
+) -> dict[ObjectID, ObjectID]:
     """Filter commits reachable from the given refs.
 
     Args:
@@ -390,7 +421,7 @@ def filter_refs(
     # Check if already filtered
     if keep_original and not force:
         for ref in ref_names:
-            original_ref = b"refs/original/" + ref
+            original_ref = Ref(b"refs/original/" + ref)
             if original_ref in refs:
                 raise ValueError(
                     f"Branch {ref.decode()} appears to have been filtered already. "
@@ -401,8 +432,9 @@ def filter_refs(
     for ref in ref_names:
         try:
             # Get the commit SHA for this ref
-            if ref in refs:
-                ref_sha = refs[ref]
+            ref_obj = Ref(ref)
+            if ref_obj in refs:
+                ref_sha = refs[ref_obj]
                 if ref_sha:
                     commit_filter.process_commit(ref_sha)
         except KeyError:
@@ -414,18 +446,19 @@ def filter_refs(
     mapping = commit_filter.get_mapping()
     for ref in ref_names:
         try:
-            if ref in refs:
-                old_sha = refs[ref]
+            ref_obj = Ref(ref)
+            if ref_obj in refs:
+                old_sha = refs[ref_obj]
                 new_sha = mapping.get(old_sha, old_sha)
 
                 if old_sha != new_sha:
                     # Save original ref if requested
                     if keep_original:
-                        original_ref = b"refs/original/" + ref
+                        original_ref = Ref(b"refs/original/" + ref)
                         refs[original_ref] = old_sha
 
                     # Update ref to new commit
-                    refs[ref] = new_sha
+                    refs[ref_obj] = new_sha
         except KeyError:
             # Not a valid ref, skip updating
             warnings.warn(f"Could not update ref {ref!r}: ref not found")
@@ -468,12 +501,12 @@ def filter_refs(
                                 new_tag.tag_timezone = tag_obj.tag_timezone
                                 object_store.add_object(new_tag)
                                 # Update ref to point to new tag object
-                                refs[b"refs/tags/" + new_tag_name] = new_tag.id
+                                refs[local_tag_name(new_tag_name)] = new_tag.id
                                 # Delete old tag
                                 del refs[ref]
                             else:
                                 # Just rename the tag
-                                new_ref = b"refs/tags/" + new_tag_name
+                                new_ref = local_tag_name(new_tag_name)
                                 tag_callback(ref, new_ref)
                 elif isinstance(tag_obj, Commit):
                     # Lightweight tag - points directly to a commit
@@ -481,7 +514,7 @@ def filter_refs(
                     if tag_sha in mapping or commit_filter.tag_name_filter is not None:
                         new_tag_name = commit_filter.tag_name_filter(tag_name)
                         if new_tag_name and new_tag_name != tag_name:
-                            new_ref = b"refs/tags/" + new_tag_name
+                            new_ref = local_tag_name(new_tag_name)
                             if tag_sha in mapping:
                                 # Point to rewritten commit
                                 refs[new_ref] = mapping[tag_sha]

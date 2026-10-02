@@ -30,7 +30,7 @@
     params:
     - help_text: |-
         Parent instance resource where the mirrors will be listed, in the format:
-        projects/{project}/locations/{location}/instances/{instance}
+        `projects/{project}/locations/{location}/instances/{instance}`
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_instances

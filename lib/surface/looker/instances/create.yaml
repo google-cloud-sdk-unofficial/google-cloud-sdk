@@ -407,3 +407,4 @@
       - googlecloudsdk.command_lib.looker.instances_util:ValidateReleaseChannelConfig
 
     collection: looker.projects.locations.instances
+    regional_endpoint_compatibility: SUPPORTED

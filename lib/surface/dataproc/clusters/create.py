@@ -113,7 +113,11 @@ class Create(base.CreateCommand):
     cluster_ref = args.CONCEPTS.cluster.Parse()
 
     compute_resources = compute_helpers.GetComputeResources(
-        self.ReleaseTrack(), cluster_ref.clusterName, cluster_ref.region)
+        self.ReleaseTrack(),
+        cluster_ref.clusterName,
+        cluster_ref.region,
+        multizone=args.multizone,
+    )
 
     cluster_config = clusters.GetClusterConfig(
         args,

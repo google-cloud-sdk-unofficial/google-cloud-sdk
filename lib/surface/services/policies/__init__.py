@@ -19,5 +19,12 @@ from googlecloudsdk.calliope import base
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class PoliciesBeta(base.Group):
+  """Get/update consumer policies and get the effective policy."""
+
+
+@base.Hidden
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Policies(base.Group):
   """Get/update consumer policies and get the effective policy."""

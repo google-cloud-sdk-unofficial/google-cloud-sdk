@@ -1667,16 +1667,16 @@ class ExpiryDetail(_messages.Message):
 
 
 class ExternalId(_messages.Message):
-  r"""An external identifier for an entity in the Cloud Identity Groups API.
-  Used to link a `Group` in Cloud Identity Groups API with a corresponding
-  entity in an external identity system or directory.
+  r"""Represents an external identifier that links a Group in the Cloud
+  Identity Groups API with a corresponding entity in an external directory or
+  identity provider.
 
   Fields:
     id: Required. The unique identifier assigned by the external identity
-      provider. The API does not enforce uniqueness of IDs across entities,
-      but clients should ensure IDs are unique within their namespace.
-    namespace: Required. The namespace in which the entity exists. Cannot be
-      empty. Currently, the only allowable namespace is `"system/external"`.
+      provider. The API does not enforce unique IDs across entities, but
+      clients **must** ensure IDs are unique within their namespace.
+    namespace: Required. The namespace in which the entity exists. The only
+      supported namespace is `system/external`.
   """
 
   id = _messages.StringField(1)
@@ -2358,6 +2358,7 @@ class GoogleAppsCloudidentityDevicesV1Device(_messages.Message):
       MAC_OS: Device is a MacOS device.
       LINUX: Device is a Linux device.
       CHROME_OS: Device is a ChromeOS device.
+      GOOGLEBOOK: Device is a Googlebook device.
     """
     DEVICE_TYPE_UNSPECIFIED = 0
     ANDROID = 1
@@ -2367,6 +2368,7 @@ class GoogleAppsCloudidentityDevicesV1Device(_messages.Message):
     MAC_OS = 5
     LINUX = 6
     CHROME_OS = 7
+    GOOGLEBOOK = 8
 
   class EncryptionStateValueValuesEnum(_messages.Enum):
     r"""Output only. Device encryption state.
@@ -2779,9 +2781,9 @@ class Group(_messages.Message):
     dynamicGroupMetadata: Optional. Dynamic group metadata like queries and
       status.
     externalIds: Optional. External identifiers associated with the `Group`.
-      Enables external identity providers and directory sync tools to link
-      their native unique identifiers with this group. Currently, the only
-      allowable namespace is `"system/external"`.
+      Allows external identity providers and directory sync tools link their
+      native unique identifiers with this group. The only supported namespace
+      is `system/external`.
     groupKey: Required. The `EntityKey` of the `Group`.
     labels: Required. One or more label entries that apply to the Group.
       Labels contain a key with an empty value. Google Groups are the default

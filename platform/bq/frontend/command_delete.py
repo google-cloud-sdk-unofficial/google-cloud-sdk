@@ -169,9 +169,6 @@ class Delete(bigquery_command.BigqueryCmd):
           --target_table=target_table policy_id
     """
 
-    client = bq_cached_client.Client.Get()
-
-    # pylint: disable=g-doc-exception
     if frontend_utils.ValidateAtMostOneSelected(
         self.d,
         self.t,
@@ -187,6 +184,25 @@ class Delete(bigquery_command.BigqueryCmd):
       raise app.UsageError('Cannot specify more than one resource type.')
     if not identifier:
       raise app.UsageError('Must provide an identifier for rm.')
+
+    # Early delegation to gcloud (before bq_cached_client.Client.Get()).
+    # This prevents premature and redundant evaluation of BQ CLI credentials,
+    # .bigqueryrc, and discovery document construction when delegating to
+    # gcloud.
+    if self.migration_workflow:
+      if not self.force:
+        if 'y' != frontend_utils.PromptYN(
+            f"rm: remove migration workflow '{identifier}'? (y/N) "
+        ):
+          print(f"NOT deleting '{identifier}', exiting.")
+          return 0
+      self.DelegateToGcloudAndExit(
+          'migration_workflows',
+          'rm',
+          identifier,
+      )
+
+    client = bq_cached_client.Client.Get()
 
     if self.t:
       reference = bq_client_utils.GetTableReference(
@@ -442,11 +458,4 @@ class Delete(bigquery_command.BigqueryCmd):
           client.GetTransferV1ApiClient(),
           reference,
           ignore_not_found=self.force,
-      )
-    elif self.migration_workflow:
-      # Prompt for confirmation has already occurred.
-      self.DelegateToGcloudAndExit(
-          'migration_workflows',
-          'rm',
-          identifier,
       )

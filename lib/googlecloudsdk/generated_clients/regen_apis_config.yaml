@@ -214,6 +214,8 @@ apis:
     v2:
       discovery_doc: apikeys_v2.json
       default: true
+    v3:
+      discovery_doc: apikeys_v3.json
   apigateway:
     v1alpha1:
       discovery_doc: apigateway_v1alpha1.json
@@ -291,6 +293,8 @@ apis:
       default: true
     v2:
       discovery_doc: assuredworkloads_v2.json
+      skip:
+        bug: b/564545811
   authztoolkit:
     v1alpha:
       discovery_doc: authztoolkit_v1alpha.json
@@ -331,6 +335,8 @@ apis:
         projects.locations.resourceBackupConfigs:
           path:
             projects/{projectsId}/locations/{locationsId}/resourceBackupConfigs/{resourceBackupConfigsId}
+      skip:
+        bug: b/564546821
     v1beta:
       discovery_doc: backupdr_v1beta.json
       resources: *backupdr_resources
@@ -663,6 +669,8 @@ apis:
     v2:
       discovery_doc: cloudtasks_v2.json
       default: true
+      skip:
+        bug: b/564542149
   cloudtrace:
     v2beta1:
       discovery_doc: cloudtrace_v2beta1.json
@@ -788,6 +796,10 @@ apis:
     preview:
       discovery_doc: compute_preview.json
       resources:
+        acceleratorInterconnects:
+          path: projects/{project}/zones/{zone}/acceleratorInterconnects/{acceleratorInterconnect}
+        acceleratorInterconnectMemberInstances:
+          path: projects/{project}/zones/{zone}/acceleratorInterconnects/{acceleratorInterconnect}/memberInstances
         nextHopGateways:
           path: projects/{project}/global/gateways/{nextHopGateway}
         regionSecurityPolicyRules:
@@ -960,8 +972,6 @@ apis:
         projects.locations.lakes.zones.assets.actions:
           path:
             projects/{projectsId}/locations/{locationsId}/lakes/{lakesId}/zones/{zonesId}/assets/{assetsId}/actions/{actionsId}
-      skip:
-        bug: b/539506524
   dataproc:
     v1:
       discovery_doc: dataproc_v1.json
@@ -1128,9 +1138,13 @@ apis:
     v1beta1:
       discovery_doc: domains_v1beta1.json
       enable_mtls: true
+      skip:
+        bug: b/564545828
     v1alpha2:
       discovery_doc: domains_v1alpha2.json
       enable_mtls: true
+      skip:
+        bug: b/564546555
   edgecontainer:
     v1:
       discovery_doc: edgecontainer_v1.json
@@ -1521,11 +1535,14 @@ apis:
         projects.networks:
           path: projects/{projectsId}/global/networks/{networksId}
         projects.locations.resourcePolicies:
-          path: projects/{projectsId}/locations/{locationsId}/resourcePolicies/{resourcePoliciesId}
+          path:
+            projects/{projectsId}/locations/{locationsId}/resourcePolicies/{resourcePoliciesId}
         projects.regions.resourcePolicies:
-          path: projects/{projectsId}/regions/{regionsId}/resourcePolicies/{resourcePoliciesId}
+          path:
+            projects/{projectsId}/regions/{regionsId}/resourcePolicies/{resourcePoliciesId}
         projects.locations.keyRings.cryptoKeys:
-          path: projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
+          path:
+            projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
     v1alpha:
       discovery_doc: lustre_v1alpha.json
       default: true
@@ -1535,11 +1552,14 @@ apis:
         projects.networks:
           path: projects/{projectsId}/global/networks/{networksId}
         projects.locations.resourcePolicies:
-          path: projects/{projectsId}/locations/{locationsId}/resourcePolicies/{resourcePoliciesId}
+          path:
+            projects/{projectsId}/locations/{locationsId}/resourcePolicies/{resourcePoliciesId}
         projects.regions.resourcePolicies:
-          path: projects/{projectsId}/regions/{regionsId}/resourcePolicies/{resourcePoliciesId}
+          path:
+            projects/{projectsId}/regions/{regionsId}/resourcePolicies/{resourcePoliciesId}
         projects.locations.keyRings.cryptoKeys:
-          path: projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
+          path:
+            projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
   managedflink:
     v1alpha:
       discovery_doc: managedflink_v1alpha.json
@@ -1561,8 +1581,6 @@ apis:
       discovery_doc: logging_v2.json
       gcloud_gapic_library: google/logging/v2:logging_v2_py
       default: true
-      skip:
-        bug: b/558690662
   looker:
     v1alpha2:
       discovery_doc: looker_v1alpha2.json
@@ -1613,6 +1631,10 @@ apis:
         projects.regions.networkAttachments:
           path:
             projects/{projectsId}/regions/{regionsId}/networkAttachments/{networkAttachmentsId}
+  meridian:
+    v1alpha:
+      discovery_doc: meridian_v1alpha.json
+      default: true
   metastore:
     v1alpha:
       discovery_doc: metastore_v1alpha.json
@@ -2111,7 +2133,8 @@ apis:
           path:
             projects/{project}/locations/{location}/blueGreenDeployments/{blueGreenDeploymentsId}
         workloadCaptures:
-          path: projects/{project}/instances/{instance}/workloadCaptures/{workloadId}
+          path:
+            projects/{project}/instances/{instance}/workloadCaptures/{workloadId}
   stream:
     v1:
       discovery_doc: stream_v1.json
@@ -2494,8 +2517,6 @@ apis:
             projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
         projects.secrets.versions:
           path: projects/{projectsId}/secrets/{secretsId}/versions/{versionsId}
-      skip:
-        bug: b/548051624
   geminicloudassist:
     v1alpha:
       discovery_doc: geminicloudassist_v1alpha.json
@@ -2534,6 +2555,10 @@ apis:
         organizations.locations.serviceProducers:
           path:
             organizations/{organization}/locations/{location}/serviceProducers/{serviceProducer}
+  workloadmanager:
+    v1:
+      discovery_doc: workloadmanager_v1.json
+      default: true
   useronboarding:
     v1alpha:
       discovery_doc: useronboarding_v1alpha.json
@@ -2930,6 +2955,10 @@ canonical_surfaces:
   memorystore:
     name: memorystore
     command: memorystore
+  meridian:
+    name: meridian
+    command: meridian
+    hidden: true
   metastore:
     name: metastore
     command: metastore
@@ -3166,6 +3195,10 @@ canonical_surfaces:
     hidden: true
   workloadidentity:
     name: workloadidentity
+    hidden: true
+  workloadmanager:
+    name: workloadmanager
+    command: workload-manager
     hidden: true
   workstations:
     name: workstations

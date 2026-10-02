@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
   hidden: true
   help_text:
     brief: Describe locations

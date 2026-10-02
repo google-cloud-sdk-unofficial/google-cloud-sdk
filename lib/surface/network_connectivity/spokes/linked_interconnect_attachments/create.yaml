@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Create a new VLAN attachment spoke.
@@ -72,6 +74,8 @@
     collection: networkconnectivity.projects.locations.spokes
 
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Create a new VLAN attachment spoke.

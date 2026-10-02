@@ -688,12 +688,12 @@ class ComponentSnapshotDiff(object):
                       'version of the components, please install Rosetta 2 '
                       'first by running the command: '
                       'softwareupdate --install-rosetta.'
-                      .format(', '.join(arm_x86_ids)))
+                      .format(', '.join(sorted(arm_x86_ids))))
           invalid_seeds |= arm_x86_ids
     if missing_platform:
       log.warning(
           'The platform specific binary does not exist for components [{}].'
-          .format(', '.join(missing_platform)))
+          .format(', '.join(sorted(missing_platform))))
     return invalid_seeds | missing_platform
 
   def _CheckRosetta2Exists(self):
@@ -747,7 +747,7 @@ class ComponentSnapshotDiff(object):
       filtered = self.__diffs
     else:
       filtered = [diff for diff in self.__diffs if diff.state is state]
-    return sorted(filtered, key=lambda d: d.name)
+    return sorted(filtered, key=lambda d: (d.name, d.id))
 
   def FilterDuplicatesArm(self, component_ids):
     """Filter out x86_64 components that are available in arm versions."""
@@ -792,7 +792,7 @@ class ComponentSnapshotDiff(object):
       if x86_removal_seed:
         log.warning('The ARM versions of the following components are '
                     'available, replacing installed x86_64 versions: [{}].'
-                    .format(', '.join(x86_removal_seed)))
+                    .format(', '.join(sorted(x86_removal_seed))))
       removal_candidates = connected & set(self.current.components.keys())
       # We need to remove anything that no longer exists or that has been
       # updated, and existing x86_64 versions that could be updated to native
@@ -847,7 +847,7 @@ class ComponentSnapshotDiff(object):
       if platform_seeds:
         log.warning('The ARM versions of the following components are not '
                     'available yet, using x86_64 versions instead: [{}].'
-                    .format(', '.join(platform_seeds)))
+                    .format(', '.join(sorted(platform_seeds))))
 
       local_connected = self.current.ConnectedComponents(
           valid_seed, platform_filter=self.__platform_filter)
@@ -874,7 +874,7 @@ class ComponentSnapshotDiff(object):
       if dep_missing_platform:
         log.warning(
             'The platform specific binary does not exist for components [{}].'
-            .format(', '.join(dep_missing_platform)))
+            .format(', '.join(sorted(dep_missing_platform))))
         all_required -= dep_missing_platform
     else:
       local_connected = self.current.ConnectedComponents(
@@ -897,7 +897,7 @@ class ComponentSnapshotDiff(object):
       if dep_missing_platform:
         log.warning(
             'The platform specific binary does not exist for components [{}].'
-            .format(', '.join(dep_missing_platform)))
+            .format(', '.join(sorted(dep_missing_platform))))
         all_required -= dep_missing_platform
 
     different = self.__new_components | self.__updated_components
@@ -917,7 +917,7 @@ class ComponentSnapshotDiff(object):
       A list of schema.Component objects sorted by component display name.
     """
     return sorted(self.current.ComponentsFromIds(component_ids),
-                  key=lambda c: c.details.display_name)
+                  key=lambda c: (c.details.display_name, c.id))
 
   def DetailsForLatest(self, component_ids):
     """Gets the schema.Component objects for all ids from the latest snapshot.
@@ -929,7 +929,7 @@ class ComponentSnapshotDiff(object):
       A list of schema.Component objects sorted by component display name.
     """
     return sorted(self.latest.ComponentsFromIds(component_ids),
-                  key=lambda c: c.details.display_name)
+                  key=lambda c: (c.details.display_name, c.id))
 
 
 class ComponentInfo(object):

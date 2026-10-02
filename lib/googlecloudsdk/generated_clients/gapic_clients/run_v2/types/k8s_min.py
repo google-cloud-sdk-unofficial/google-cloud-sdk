@@ -989,6 +989,10 @@ class BuildConfiguration(proto.Message):
             Optional. Configuration for the worker.
         tags (MutableSequence[str]):
             Optional. Tags to add to the build.
+        service_account (str):
+            Optional. The service account to use for the build. Its
+            resource name in the format
+            ``projects/{project}/serviceAccounts/{email}``.
     """
 
     class DockerBuild(proto.Message):
@@ -1100,6 +1104,10 @@ class BuildConfiguration(proto.Message):
     tags: MutableSequence[str] = proto.RepeatedField(
         proto.STRING,
         number=5,
+    )
+    service_account: str = proto.Field(
+        proto.STRING,
+        number=6,
     )
 
 

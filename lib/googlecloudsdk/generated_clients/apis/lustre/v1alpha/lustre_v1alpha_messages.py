@@ -739,7 +739,7 @@ class ListMirrorsResponse(_messages.Message):
   r"""Response for ListMirrors.
 
   Fields:
-    mirrors: List of mirrors.
+    mirrors: List of mirrors on the instance.
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Unordered list. Locations that could not be reached.
@@ -1153,7 +1153,7 @@ class LustreProjectsLocationsInstancesMirrorsCreateRequest(_messages.Message):
       The ID cannot be changed after the mirror is created.
     parent: Required. Parent instance resource where the mirror will be
       created, in the format:
-      projects/{project}/locations/{location}/instances/{instance}
+      `projects/{project}/locations/{location}/instances/{instance}`
     requestId: Optional. The unique ID to identify requests. Specify a unique
       request ID so that if you must retry your request, the server will know
       to ignore the request if it has already been completed. The server
@@ -1179,8 +1179,8 @@ class LustreProjectsLocationsInstancesMirrorsDeleteRequest(_messages.Message):
   r"""A LustreProjectsLocationsInstancesMirrorsDeleteRequest object.
 
   Fields:
-    name: Required. Name of the mirror to delete, in the format: projects/{pro
-      ject}/locations/{location}/instances/{instance}/mirrors/{mirror}
+    name: Required. Name of the mirror to delete, in the format: `projects/{pr
+      oject}/locations/{location}/instances/{instance}/mirrors/{mirror}`
     requestId: Optional. The unique ID to identify requests. Specify a unique
       request ID so that if you must retry your request, the server will know
       to ignore the request if it has already been completed. The server
@@ -1203,8 +1203,8 @@ class LustreProjectsLocationsInstancesMirrorsGetRequest(_messages.Message):
   r"""A LustreProjectsLocationsInstancesMirrorsGetRequest object.
 
   Fields:
-    name: Required. Name of the mirror to retrieve, in the format: projects/{p
-      roject}/locations/{location}/instances/{instance}/mirrors/{mirror}
+    name: Required. Name of the mirror to retrieve, in the format: `projects/{
+      project}/locations/{location}/instances/{instance}/mirrors/{mirror}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -1225,7 +1225,7 @@ class LustreProjectsLocationsInstancesMirrorsListRequest(_messages.Message):
       provided the page token.
     parent: Required. Parent instance resource where the mirrors will be
       listed, in the format:
-      projects/{project}/locations/{location}/instances/{instance}
+      `projects/{project}/locations/{location}/instances/{instance}`
   """
 
   filter = _messages.StringField(1)
@@ -1240,8 +1240,8 @@ class LustreProjectsLocationsInstancesMirrorsPatchRequest(_messages.Message):
 
   Fields:
     mirror: A Mirror resource to be passed as the request body.
-    name: Identifier. Name of the mirror. Format: projects/{project}/locations
-      /{location}/instances/{instance}/mirrors/{mirror}
+    name: Identifier. Name of the mirror. Format: `projects/{project}/location
+      s/{location}/instances/{instance}/mirrors/{mirror}`
     requestId: Optional. The unique ID to identify requests. Specify a unique
       request ID so that if you must retry your request, the server will know
       to ignore the request if it has already been completed. The server
@@ -1470,11 +1470,11 @@ class MaintenanceSchedule(_messages.Message):
 
 
 class Mirror(_messages.Message):
-  r"""Represents a mirror of a Lustre instance.
+  r"""Represents a Cloud Storage mirror.
 
   Enums:
-    DirectionValueValuesEnum: Required. Represents the direction of the
-      mirror.
+    DirectionValueValuesEnum: Required. Immutable. Represents the direction of
+      the mirror.
     StateValueValuesEnum: Output only. [Output only] The current state of the
       mirror.
 
@@ -1483,24 +1483,29 @@ class Mirror(_messages.Message):
 
   Fields:
     createTime: Output only. [Output only] Create time stamp.
-    deletedFilesRetained: Optional. If true, files will be retained in lustre
-      after the corresponding files are deleted from cloud storage. Default is
-      false.
+    deletedFilesRetained: Optional. If `true`, files are not deleted from
+      Managed Lustre when the source files are deleted from Cloud Storage.
+      Default is `false`.
     description: Optional. Description of the mirror.
-    direction: Required. Represents the direction of the mirror.
-    gcsPath: Required. URI to a Cloud Storage bucket, or a path within a
-      bucket. gs://// path must end with '/'.
+    direction: Required. Immutable. Represents the direction of the mirror.
+    gcsPath: Required. Immutable. The URI to a Cloud Storage bucket, or a path
+      within a bucket, using the format `gs://{BUCKET_NAME}/{OPTIONAL_PATH}/`.
+      If a path inside the bucket is specified, it must end with a forward
+      slash (`/`).
     labels: Optional. Labels to apply to the mirror.
-    lustrePath: Required. Can be dir/subDir.
-    name: Identifier. Name of the mirror. Format: projects/{project}/locations
-      /{location}/instances/{instance}/mirrors/{mirror}
+    lustrePath: Required. Immutable. The Managed Lustre directory to mirror
+      to. Must be an absolute path starting with `/`, for example `/data` or
+      `/data/subdir`. Defaults to the root directory, `/`. If the specified
+      directory doesn't exist, it is created.
+    name: Identifier. Name of the mirror. Format: `projects/{project}/location
+      s/{location}/instances/{instance}/mirrors/{mirror}`
     state: Output only. [Output only] The current state of the mirror.
     uid: Output only. Unique ID of the resource.
     updateTime: Output only. [Output only] Update time stamp.
   """
 
   class DirectionValueValuesEnum(_messages.Enum):
-    r"""Required. Represents the direction of the mirror.
+    r"""Required. Immutable. Represents the direction of the mirror.
 
     Values:
       DIRECTION_UNSPECIFIED: Invalid value.
@@ -1514,11 +1519,13 @@ class Mirror(_messages.Message):
 
     Values:
       STATE_UNSPECIFIED: State is unspecified.
-      CREATING: Mirror is being created.
-      INITIAL_SYNC: Initial sync is in progress.
-      DELETING: Mirror is being deleted.
-      ACTIVE: Mirror is active.
-      SUSPENDED: Mirror is suspended.
+      CREATING: The mirror resource is being created.
+      INITIAL_SYNC: The initial sync is copying existing objects from Cloud
+        Storage.
+      DELETING: The mirror is being deleted.
+      ACTIVE: The mirror is synchronizing changes as they occur.
+      SUSPENDED: Synchronization is paused because the file system is close to
+        capacity.
     """
     STATE_UNSPECIFIED = 0
     CREATING = 1

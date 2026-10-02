@@ -200,6 +200,10 @@ NC_SWAP_CONFIG_DEDICATED_LOCAL_SSD_PROFILE = 'dedicatedLocalSsdProfile'
 NC_SWAP_CONFIG_SWAP_SIZE_GIB = 'swapSizeGib'
 NC_SWAP_CONFIG_SWAP_SIZE_PERCENT = 'swapSizePercent'
 NC_SWAP_CONFIG_DISK_COUNT = 'diskCount'
+NC_SWAP_CONFIG_ZSWAP_CONFIG = 'zswapConfig'
+NC_SWAP_CONFIG_ZSWAP_CONFIG_ENABLED = 'enabled'
+NC_SWAP_CONFIG_ZSWAP_CONFIG_COMPRESSOR = 'compressor'
+NC_SWAP_CONFIG_ZSWAP_CONFIG_MAX_POOL_PERCENT = 'maxPoolPercent'
 NC_CC_PRIVATE_CR_CONFIG = 'privateRegistryAccessConfig'
 NC_CC_PRIVATE_CR_CONFIG_ENABLED = 'enabled'
 NC_CC_WRITABLE_CGROUPS = 'writableCgroups'
@@ -1287,6 +1291,7 @@ def LoadSystemConfigFromYAML(
               NC_SWAP_CONFIG_BOOT_DISK_PROFILE: dict,
               NC_SWAP_CONFIG_EPHEMERAL_LOCAL_SSD_PROFILE: dict,
               NC_SWAP_CONFIG_DEDICATED_LOCAL_SSD_PROFILE: dict,
+              NC_SWAP_CONFIG_ZSWAP_CONFIG: dict,
           },
       )
       enabled = swap_config_opts.get(NC_SWAP_CONFIG_ENABLED)
@@ -1383,6 +1388,34 @@ def LoadSystemConfigFromYAML(
         node_config.linuxNodeConfig.swapConfig.dedicatedLocalSsdProfile = (
             dedicated_local_ssd_profile_msg
         )
+      zswap_config_opts = swap_config_opts.get(NC_SWAP_CONFIG_ZSWAP_CONFIG)
+      if zswap_config_opts:
+        zswap_config_msg = messages.ZswapConfig()
+        _CheckNodeConfigFields(
+            NC_SWAP_CONFIG_ZSWAP_CONFIG,
+            zswap_config_opts,
+            {
+                NC_SWAP_CONFIG_ZSWAP_CONFIG_ENABLED: bool,
+                NC_SWAP_CONFIG_ZSWAP_CONFIG_COMPRESSOR: str,
+                NC_SWAP_CONFIG_ZSWAP_CONFIG_MAX_POOL_PERCENT: int,
+            },
+        )
+        zswap_enabled = zswap_config_opts.get(
+            NC_SWAP_CONFIG_ZSWAP_CONFIG_ENABLED
+        )
+        if zswap_enabled is not None:
+          zswap_config_msg.enabled = zswap_enabled
+        compressor = zswap_config_opts.get(
+            NC_SWAP_CONFIG_ZSWAP_CONFIG_COMPRESSOR
+        )
+        if compressor is not None:
+          zswap_config_msg.compressor = compressor
+        max_pool_percent = zswap_config_opts.get(
+            NC_SWAP_CONFIG_ZSWAP_CONFIG_MAX_POOL_PERCENT
+        )
+        if max_pool_percent is not None:
+          zswap_config_msg.maxPoolPercent = max_pool_percent
+        node_config.linuxNodeConfig.swapConfig.zswapConfig = zswap_config_msg
 
     # Parse kernel overrides.
     kernel_overrides_opts = linux_config_opts.get(NC_KERNEL_OVERRIDES)

@@ -19,6 +19,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class OfflineHelp(base.TopicCommand):
   """Setting up gcloud command offline help.
 
@@ -42,13 +43,10 @@ class OfflineHelp(base.TopicCommand):
       item to focus the menu, hover to the left to expand it again. More
       details on this below.
 
-    * Generate and install *man*(1) style documents on a local host. More
-      details on this below.
-
   All of these methods have the same content, all generated from a Google Cloud
-  CLI `gcloud` installation. The last two are user maintained and can become out
-  of date. Either use them for one time offline access, or make them part of
-  your Google Cloud CLI installation/update routine.
+  CLI `gcloud` installation. Offline HTML documents are user maintained and can
+  become out of date. Either use them for one time offline access, or make them
+  part of your Google Cloud CLI installation/update routine.
 
   ### Generating offline HTML documents
 
@@ -66,22 +64,4 @@ class OfflineHelp(base.TopicCommand):
   must be the actual path name of the directory:
 
       file://$HTML_DIR/index.html
-
-  ### Generating offline manpage documents
-
-  To generate man page documents for the *man*(1) command:
-
-      # Select an empty directory where the man page files will be generated.
-      MANPAGE_DIR=<some-local-directory>
-
-      # Generate the man pages in $MANPAGE_DIR.
-      # Should take ~1 min, 10 min or more on slower systems.
-      gcloud meta generate-help-docs --manpage-dir=$MANPAGE_DIR
-
-      # Append $MANPAGE_DIR to the MANPATH environment variable:
-      export MANPATH=$MANPATH:$MANPAGE_dir
-
-  Then run the man command on gcloud manpages:
-
-      man gcloud info
   """

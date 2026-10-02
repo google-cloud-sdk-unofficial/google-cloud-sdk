@@ -27,6 +27,7 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Security Command Center BigQuery export."""
 
@@ -89,6 +90,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     bqexports_flags.DATASET_FLAG_REQUIRED.AddToParser(parser)
+    bqexports_flags.DELETION_NOTIFICATIONS_ENABLED_FLAG.AddToParser(parser)
     bqexports_flags.DESCRIPTION_FLAG.AddToParser(parser)
     bqexports_flags.FILTER_FLAG.AddToParser(parser)
 
@@ -128,6 +130,8 @@ class Create(base.CreateCommand):
     req.bigQueryExportId = _GetBigQueryExportIdFromFullResourceName(config_name)
     req.parent = _GetParentFromFullResourceName(config_name)
 
+    if args.IsKnownAndSpecified('deletion_notifications_enabled'):
+      export.deletionNotificationsEnabled = args.deletion_notifications_enabled
     export.dataset = args.dataset
     export.description = args.description
     export.filter = args.filter

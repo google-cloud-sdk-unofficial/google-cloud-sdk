@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Create a new BeyondCorp client connector service (Deprecated).
     description: Create a new BeyondCorp client connector service.

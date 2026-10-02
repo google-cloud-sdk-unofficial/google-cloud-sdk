@@ -17,6 +17,8 @@
 
 
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import requests as _
+from googlecloudsdk.core.credentials import store as _
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms

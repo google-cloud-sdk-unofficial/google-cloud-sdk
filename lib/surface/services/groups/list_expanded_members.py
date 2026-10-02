@@ -29,7 +29,7 @@ _ORGANIZATION_RESOURCE = 'organizations/%s'
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ListExpandedMembers(base.ListCommand):
+class ListExpandedMembersBeta(base.ListCommand):
   """List expanded members of a specific service and group.
 
   List expanded members of a specific service and group.
@@ -106,3 +106,88 @@ class ListExpandedMembers(base.ListCommand):
       )
 
     return service_names
+
+
+@base.Hidden
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListExpandedMembers(base.ListCommand):
+  """List expanded members of a specific service and group.
+
+  List expanded members of a specific service and group.
+
+  ## EXAMPLES
+
+   List expanded members of service my-service and group my-group:
+
+   $ {command} my-service my-group
+
+   List expanded members of service my-service and group my-group
+   for a specific project '12345678':
+
+    $ {command} my-service my-group --project=12345678
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument('service', help='Name of the service.')
+    parser.add_argument(
+        'group', help='Service group name, for example "dependencies".'
+    )
+    common_flags.add_resource_args(parser)
+
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 50)
+
+    # Remove unneeded list-related flags from parser
+    base.URI_FLAG.RemoveFromParser(parser)
+
+    parser.display_info.AddFormat("""
+          table(
+            Name:label=''
+          )
+        """)
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Resource name and its parent name.
+    """
+    # TODO(b/563364542): Implement resource as a multi-type resource arg.
+    if args.IsSpecified('folder'):
+      resource_name = _FOLDER_RESOURCE % args.folder
+    elif args.IsSpecified('organization'):
+      resource_name = _ORGANIZATION_RESOURCE % args.organization
+    elif args.IsSpecified('project'):
+      resource_name = _PROJECT_RESOURCE % args.project
+    else:
+      project = properties.VALUES.core.project.Get(required=True)
+      resource_name = _PROJECT_RESOURCE % project
+
+    if not util.IsValidGroupName(args.service, args.group):
+      raise exceptions.InvalidGroupNameError(
+          util.GetGroupName(args.service, args.group)
+      )
+
+    response = serviceusage.ListExpandedMembersV2(
+        resource_name,
+        util.GetGroupName(args.service, args.group),
+        page_size=args.page_size,
+    )
+    service_names = []
+    results = collections.namedtuple('Service', ['name'])
+    for service in response:
+      service_names.append(results(name=service))
+
+    if not service_names:
+      raise exceptions.EmptyMembersError(
+          util.GetGroupName(args.service, args.group)
+      )
+
+    return service_names
+
+

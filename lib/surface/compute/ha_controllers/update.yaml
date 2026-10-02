@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Update the settings of an existing HA Controller.
     description: Update an High Availability (HA) Controller to, for example, change the existing HA Controller failover initiation configuration from automatic to manual, or vice-versa.

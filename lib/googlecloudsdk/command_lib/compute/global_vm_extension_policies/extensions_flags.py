@@ -15,6 +15,13 @@
 """Flags for the compute global vm extension policies extensions commands."""
 
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.global_vm_extension_policies import flags as policy_flags
+from googlecloudsdk.command_lib.compute.vm_extension_policies import flags as vm_extension_policies_flags
+
+AddScopeFlags = vm_extension_policies_flags.AddScopeFlags
+ResolveGlobalVmExtensionPolicyResource = (
+    policy_flags.ResolveGlobalVmExtensionPolicyResource
+)
 
 
 def MakeGlobalVmExtensionPolicyArg() -> compute_flags.ResourceArgument:
