@@ -1,0 +1,39 @@
+release_tracks: [BETA, ALPHA]
+hints:
+  read_only: false
+help_text:
+  brief: Stops workload capture on a Cloud SQL instance.
+  description: |
+    Stops capturing the SQL queries and transactions executed on the Cloud SQL instance.
+  examples: |
+    To stop workload capture for an instance:
+
+      $ {command} --instance=my-instance
+
+    To stop workload capture and abort live replay:
+
+      $ {command} --instance=my-instance --abort-live-replay
+request:
+  collection: sql.workloadCaptures
+  method: stop
+  regional_endpoint_compatibility: SUPPORTED
+async:
+  collection: sql.operations
+  response_name_field: selfLink
+  extract_resource_result: false
+  state:
+    field: status
+    success_values: ['DONE']
+arguments:
+  resource:
+    help_text: Cloud SQL instance ID.
+    spec: !REF googlecloudsdk.command_lib.sql.resources:instance
+    is_positional: false
+    override_resource_collection: true
+    is_parent_resource: true
+  params:
+  - arg_name: abort-live-replay
+    api_field: workloadCapturesStopRequest.stopWorkloadCaptureContext.abortLiveReplay
+    help_text: |
+      If true, the live replay is stopped but the instance is not deleted.
+    action: store_true

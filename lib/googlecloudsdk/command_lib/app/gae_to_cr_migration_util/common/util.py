@@ -283,6 +283,7 @@ def _get_input_data_by_input_type(
         'readinessCheck': gcloud_output.readinessCheck,
         'resources': gcloud_output.resources,
         'entrypoint': gcloud_output.entrypoint,
+        'vpcAccessConnector': gcloud_output.vpcAccessConnector,
     }
     if gcloud_output.envVariables is not None:
       version_data.update(

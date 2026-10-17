@@ -14,9 +14,9 @@
 # limitations under the License.
 """The Secure Source Manager pull requests client module."""
 
+from googlecloudsdk.api_lib.securesourcemanager import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import resources
 
 VERSION_MAP = {base.ReleaseTrack.ALPHA: 'v1'}
 
@@ -28,15 +28,12 @@ def GetClientInstance(release_track=base.ReleaseTrack.ALPHA, location=None):
   )
 
 
-class PullRequestsClient(object):
+class PullRequestsClient(util.SecureSourceManagerClientBase):
   """Client for Secure Source Manager pull requests."""
 
-  def __init__(self, location=None):
-    self.client = GetClientInstance(base.ReleaseTrack.ALPHA, location=location)
-    self.messages = self.client.MESSAGES_MODULE
+  def __init__(self, release_track=base.ReleaseTrack.ALPHA, location=None):
+    super().__init__(release_track=release_track, location=location)
     self._service = self.client.projects_locations_repositories_pullRequests
-    self._resource_parser = resources.Registry()
-    self._resource_parser.RegisterApiByName('securesourcemanager', 'v1')
 
   def Create(self, pull_request_ref, title, body, base_branch, head_branch):
     """Create a pull request."""

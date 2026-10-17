@@ -65,3 +65,27 @@ resource_record_set:
   - parameter_name: type
     attribute_name: type
     help: The DNS record type of the record set.
+
+location:
+  name: location
+  collection: dns.locations
+  attributes:
+  - &projectsId
+    parameter_name: projectsId
+    attribute_name: project
+    help: The Cloud project name.
+    property: core/project
+  - &locationsId
+    parameter_name: locationsId
+    attribute_name: location
+    help: The Cloud location for the resource.
+
+outbound_endpoint:
+  name: outbound endpoint
+  collection: dns.outboundEndpoints
+  attributes:
+  - *projectsId
+  - *locationsId
+  - parameter_name: outboundEndpointsId
+    attribute_name: outbound_endpoint
+    help: The name of the outbound endpoint.

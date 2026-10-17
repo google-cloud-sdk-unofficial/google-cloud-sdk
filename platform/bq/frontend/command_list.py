@@ -172,27 +172,23 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
     flags.DEFINE_string(
         'filter',
         None,
-        'Filters resources based on the filter expression.'
-        '\nFor datasets, use a space-separated list of label keys and values '
-        'in the form "labels.key:value". Datasets must match '
-        'all provided filter expressions. See '
-        'https://cloud.google.com/bigquery/docs/filtering-labels'
-        '#filtering_datasets_using_labels '
-        'for details'
-        '\nFor transfer configurations, the filter expression, '
-        'in the form "dataSourceIds:value(s)", will show '
-        'transfer configurations with '
-        ' the specified dataSourceId. '
-        '\nFor transfer runs, the filter expression, '
-        'in the form "states:VALUE(s)", will show '
-        'transfer runs with the specified states. See '
-        'https://cloud.google.com/bigquery/docs/reference/datatransfer/rest/v1/'
-        'TransferState '
-        'for details.'
-        '\nFor jobs, the filter expression, in the form "states:VALUE(s)", '
-        'will show jobs with the specified states. See '
-        'https://cloud.google.com/bigquery/docs/reference/rest/v2/'
-        'Job#JobStatus for details.',
+        'Filters resources based on the filter expression.\nFor datasets, use a'
+        ' space-separated list of label keys and values in the form'
+        ' "labels.key:value". Datasets must match all provided filter'
+        ' expressions. See'
+        ' https://cloud.google.com/bigquery/docs/filtering-labels#filtering_datasets_using_labels'
+        ' for details\nFor transfer configurations, the filter expression only'
+        ' supports exact string matching on the following values:'
+        ' "dataSourceIds:value(s)",'
+        ' "metadata_destination.dataplex_configuration:*", or'
+        ' "destination_dataset_id:*".\nFor transfer runs, the filter'
+        ' expression, in the form "states:VALUE(s)", will show transfer runs'
+        ' with the specified states. See'
+        ' https://cloud.google.com/bigquery/docs/reference/datatransfer/rest/v1/TransferState'
+        ' for details.\nFor jobs, the filter expression, in the form'
+        ' "states:VALUE(s)", will show jobs with the specified states. See'
+        ' https://cloud.google.com/bigquery/docs/reference/rest/v2/Job#JobStatus'
+        ' for details.',
         flag_values=fv,
     )
     flags.DEFINE_boolean(
@@ -419,7 +415,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           reference=reference,
           max_results=self.max_results,
           page_token=page_token,
-          filter_expression=self.filter,
+          filter=self.filter,
       )
       if 'routines' in response:
         results = response['routines']
@@ -575,7 +571,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           location=self.transfer_location,
           page_size=self.max_results,
           page_token=page_token,
-          data_source_ids=self.filter,
+          filter=self.filter,
       )
       # If the max_results flag is set and the length of transfer_configs is 2
       # then it also contains the next_page_token.
@@ -699,7 +695,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           max_results=self.max_results,
           list_all=self.a,
           page_token=page_token,
-          filter_expression=self.filter,
+          filter=self.filter,
       )
       results = objects_metadata.pop('datasets')
 

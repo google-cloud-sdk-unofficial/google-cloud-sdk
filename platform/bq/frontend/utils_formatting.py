@@ -36,6 +36,7 @@ _COLUMNS_TO_INCLUDE_FOR_TRANSFER_RUN = [
     'state',
     'startTime',
     'name',
+    'metadataDestination',
 ]
 
 

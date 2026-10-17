@@ -17,7 +17,6 @@
 import copy
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 from googlecloudsdk.command_lib.apigee.aft import models
-from googlecloudsdk.core import log
 
 
 _TypeToRewrite = TypeVar("_TypeToRewrite")
@@ -284,25 +283,10 @@ class ApigeeCompiler:
     models.validate_gateway(template_dict.get("gateway", ""))
     models.validate_schema_version(template_dict.get("schemaVersion", ""))
 
-    # A template's own `endpoints` / `targets` describe a complete, standalone
-    # proxy. When features are supplied, the features define the topology
-    # instead. Seeding from the template as well can leave targets unreachable:
-    # a feature endpoint replaces the template's endpoint of the same name,
-    # which removes the RouteRules that referenced those targets.
-    # apigee-templater reads these fields only when no features are supplied
-    # (converter.ts:1207-1250).
+    # The template's own `endpoints` / `targets` seed the proxy. Features are
+    # applied on top of that seed, as apigee-templater does.
     template_endpoints = template_dict.get("endpoints") or []
     template_targets = template_dict.get("targets") or []
-    if features and (template_endpoints or template_targets):
-      log.warning(
-          "Ignoring the `endpoints` and `targets` declared by template %r: "
-          "they are only used when the template supplies no features, and "
-          "this one supplies %d. The features define the proxy topology.",
-          template_dict.get("name", ""),
-          len(features),
-      )
-      template_endpoints = []
-      template_targets = []
 
     proxy_dict = {
         # gateway/schemaVersion are authoring metadata carried onto the

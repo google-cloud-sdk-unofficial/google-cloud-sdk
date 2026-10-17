@@ -972,7 +972,7 @@ class CloudcommerceconsumerprocurementV1alpha1(base_api.BaseApiClient):
     )
 
     def Review(self, request, global_params=None):
-      r"""Reviews an Entitlement and generates a token for writing a product review.
+      r"""Initiates a review for an Entitlement and generates a random, one-time-use token to redirect to the third-party Review Collection Provider.
 
       Args:
         request: (CloudcommerceconsumerprocurementProjectsEntitlementsReviewRequest) input message

@@ -585,6 +585,101 @@ def AddImportIacFlags(parser):
   )
 
 
+def AddIngestIacFlags(parser):
+  """Adds flags for ingest-iac commands to the given parser."""
+  source_group = parser.add_mutually_exclusive_group(
+      required=True, help='The source of the IaC to ingest.'
+  )
+  source_group.add_argument(
+      '--gcs-uri',
+      help=(
+          'The Cloud Storage URI of the Terraform code '
+          '(e.g., gs://my-bucket/iac).'
+      ),
+  )
+  source_group.add_argument(
+      '--iac-module-from-file',
+      type=arg_parsers.FileContents(),
+      help=(
+          'Path to a local YAML or JSON file containing the IaC module '
+          'definition.'
+      ),
+  )
+
+  developer_connect_group = source_group.add_group(
+      help='Ingest IaC from a Git repository linked through Developer Connect.'
+  )
+  developer_connect_group.add_argument(
+      '--developer-connect-repo-uri',
+      required=True,
+      help=(
+          'The Developer Connect Git repository link, formatted as '
+          '`projects/{project}/locations/{location}/connections/'
+          '{connection}/gitRepositoryLinks/{gitRepositoryLink}`.'
+      ),
+  )
+  developer_connect_group.add_argument(
+      '--developer-connect-dir',
+      required=True,
+      help=(
+          'The directory, relative to the repository root, to read the IaC '
+          'from (e.g., `dir1/dir2`). Use `/` for the repository root.'
+      ),
+  )
+  reference_group = developer_connect_group.add_mutually_exclusive_group(
+      required=True, help='The Git reference to read the IaC from.'
+  )
+  reference_group.add_argument(
+      '--developer-connect-branch',
+      help='The branch to read the IaC from (e.g., `main`).',
+  )
+  reference_group.add_argument(
+      '--developer-connect-ref-tag',
+      help='The tag to read the IaC from (e.g., `v1.2.3`).',
+  )
+  reference_group.add_argument(
+      '--developer-connect-commit-sha',
+      help='The full SHA of the commit to read the IaC from.',
+  )
+
+  git_source_group = source_group.add_group(
+      help='Ingest IaC from a public Git repository.'
+  )
+  git_source_group.add_argument(
+      '--git-source-repo',
+      required=True,
+      help=(
+          'The HTTPS URL of the public Git repository '
+          '(e.g., `https://github.com/my-org/my-repo`).'
+      ),
+  )
+  git_source_group.add_argument(
+      '--git-source-ref-tag',
+      required=True,
+      help='The Git reference tag to read the IaC from.',
+  )
+  git_source_group.add_argument(
+      '--git-source-dir',
+      help='The directory, relative to the repository root, to read from.',
+  )
+
+  parser.add_argument(
+      '--raw-terraform-import-enabled',
+      action='store_true',
+      default=False,
+      help=(
+          'If set, ingest the IaC as raw Terraform without converting it to '
+          'application template components.'
+      ),
+  )
+  parser.add_argument(
+      '--validate-catalog-compatibility',
+      action='store_true',
+      default=False,
+      help='If set, validate that the IaC is compatible with the catalog.',
+  )
+
+
 def AddDeployApplicationFlags(parser):
   """Adds all flags for the deploy application command.
 

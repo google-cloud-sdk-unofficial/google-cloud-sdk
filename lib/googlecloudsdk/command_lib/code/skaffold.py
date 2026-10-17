@@ -69,8 +69,8 @@ def _FindSkaffold():
   """Find the path to the skaffold executable."""
   skaffold = (
       properties.VALUES.code.skaffold_path_override.Get() or
-      _FindOrInstallSkaffoldComponent() or
-      file_utils.FindExecutableOnPath('skaffold'))
+      file_utils.FindExecutableOnPath('skaffold') or
+      _FindOrInstallSkaffoldComponent())
   if not skaffold:
     raise EnvironmentError('Unable to locate skaffold.')
   return skaffold

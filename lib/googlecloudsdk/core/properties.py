@@ -1260,6 +1260,11 @@ class _SectionApiEndpointOverrides(_Section):
     self.workloadidentity = self._Add('workloadidentity', hidden=True)
     self.workloadmanager = self._Add(
         'workloadmanager', command='gcloud workload-manager', hidden=True)
+    self.workspacekeyaccess = self._Add(
+        'workspacekeyaccess',
+        command='gcloud workspace-key-access',
+        hidden=True,
+    )
     self.workstations = self._Add('workstations', command='gcloud workstations')
 
   def StorageGrpcEndpointValidator(self, value):
@@ -2203,6 +2208,16 @@ class _SectionCore(_Section):
     )
     self.disable_command_lazy_loading = self._AddBool(
         'disable_command_lazy_loading', hidden=True
+    )
+    self.command_impl = self._Add(
+        'command_impl',
+        choices=['declarative', 'python'],
+        default='python',
+        hidden=True,
+        help_text=(
+            'Determines whether to prefer the declarative YAML or the Python'
+            ' implementation of a command when both exist.'
+        ),
     )
     self.disable_prompts = self._AddBool(
         'disable_prompts',
@@ -3888,11 +3903,13 @@ class _SectionStorage(_Section):
 
     self.enable_server_side_hash_validation = self._AddBool(
         'enable_server_side_hash_validation',
-        default=False,
-        hidden=True,
+        default=True,
+        hidden=False,
         help_text=(
             'If True, hashes will be sent to the server in the last request for'
-            ' server-side hash validation during uploads.'
+            ' server-side hash validation during uploads. Client side hash'
+            ' validation is still performed for all uploads. For large uploads,'
+            ' this may cause a slight performance regression.'
         ),
     )
 

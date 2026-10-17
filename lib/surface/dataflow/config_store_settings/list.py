@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.dataflow import config_store_util
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Dataflow ConfigStore settings."""
 

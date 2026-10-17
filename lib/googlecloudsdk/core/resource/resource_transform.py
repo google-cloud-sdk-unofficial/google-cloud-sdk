@@ -312,7 +312,9 @@ def TransformDecode(r, encoding, undefined=''):
   if encoding == 'base64':
     try:
       # This uses str.translate, so we must cast unicode to str here.
-      return base64.urlsafe_b64decode(str(r))
+      data = str(r).encode('ascii') if isinstance(r, str) else bytes(r)
+      data = data.translate(bytes.maketrans(b'-_', b'+/'))
+      return base64.b64decode(data, validate=True)
     except:  # pylint: disable=bare-except
       # This shouldn't happen because the URL-safe implementation can handle
       # both standard and URL-safe encoded base64 strings.

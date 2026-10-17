@@ -17,6 +17,7 @@ package = 'runtimeconfig'
 
 class AgentMetadata(_messages.Message):
   r"""Metadata about the agent that is used for logging.
+  LINT.IfChange(AgentMetadata)
 
   Fields:
     agentName: The name of the agent being used. This is expected to be

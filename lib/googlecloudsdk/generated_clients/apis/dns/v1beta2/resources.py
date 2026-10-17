@@ -38,6 +38,13 @@ class Collections(enum.Enum):
       ['project', 'managedZone', 'dnsKeyId'],
       True
   )
+  LOCATIONS = (
+      'locations',
+      'projects/{projectsId}/locations/{locationsId}',
+      {},
+      ['projectsId', 'locationsId'],
+      True
+  )
   MANAGEDZONEOPERATIONS = (
       'managedZoneOperations',
       'projects/{project}/managedZones/{managedZone}/operations/{operation}',
@@ -52,6 +59,17 @@ class Collections(enum.Enum):
       ['project', 'managedZone'],
       True
   )
+  OUTBOUNDENDPOINTS = (
+      'outboundEndpoints',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'outboundEndpoints/{outboundEndpointsId}',
+      },
+      ['name'],
+      True
+  )
   POLICIES = (
       'policies',
       'projects/{project}/policies/{policy}',
@@ -62,9 +80,19 @@ class Collections(enum.Enum):
   PROJECTS = (
       'projects',
       'projects/{project}',
-      {},
+      {
+          '':
+              'projects/{project}',
+      },
       ['project'],
       True
+  )
+  PROJECTS_LOCATIONS = (
+      'projects.locations',
+      'projects/{projectsId}/locations/{locationsId}',
+      {},
+      ['projectsId', 'locationsId'],
+      False
   )
   RESOURCERECORDSETS = (
       'resourceRecordSets',

@@ -1,0 +1,32 @@
+release_tracks: [BETA, ALPHA]
+hints:
+  read_only: false
+help_text:
+  brief: Starts workload replay on a Cloud SQL instance.
+  description: |
+    Starts executing a captured workload on a separate Cloud SQL instance provisioned for workload replay.
+  examples: |
+    To start workload replay for a captured workload on a replay instance:
+
+      $ {command} my-workload --instance=my-instance --replay-instance=my-replay-instance
+request:
+  collection: sql.workloadCaptures
+  method: startReplay
+  regional_endpoint_compatibility: SUPPORTED
+async:
+  collection: sql.operations
+  response_name_field: selfLink
+  extract_resource_result: false
+  state:
+    field: status
+    success_values: ['DONE']
+arguments:
+  resource:
+    help_text: Cloud SQL workload capture to start replay for.
+    spec: !REF googlecloudsdk.command_lib.sql.resources:workload_capture
+  params:
+  - arg_name: replay-instance
+    api_field: workloadCapturesStartReplayRequest.startWorkloadReplayContext.replayInstance
+    required: true
+    help_text: |
+      The name of the Cloud SQL instance where the captured workload is being executed.

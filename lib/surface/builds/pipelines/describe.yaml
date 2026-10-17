@@ -16,6 +16,10 @@
 
         $ {command} main-pipeline --region=us-central1
 
+  # TODO(b/571186089): `describe` currently uses the standard full-resource
+  # YAML output used by other gcloud services. Since `Pipeline` is a
+  # multi-stage DAG resource (`config.stages`), improve the display to provide
+  # a structured multi-stage breakdown.
   request:
     collection: cloudbuild.projects.locations.pipelines
     api_version: v1

@@ -220,6 +220,18 @@ class RolloutSequenceFlags:
             patch version.
         """),
     )
+    if self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+      self.parser.add_argument(
+          '--prioritized',
+          action='store_true',
+          default=False,
+          help=textwrap.dedent("""\
+              If set, conflicting rollouts will be paused, to allow this rollout
+              to progress through the sequence. Conflicting rollouts running on
+              the first stage will be canceled, to allow this rollout to be
+              created.
+          """),
+      )
 
   def AddRolloutSequenceResourceArg(self):
     fleet_resources.AddRolloutSequenceResourceArg(
@@ -519,3 +531,7 @@ class RolloutSequenceFlagParser:
   def PatchOnly(self) -> bool:
     """Parses patch only flag."""
     return getattr(self.args, 'patch_only', False)
+
+  def Prioritized(self) -> bool:
+    """Parses prioritized flag."""
+    return getattr(self.args, 'prioritized', False)

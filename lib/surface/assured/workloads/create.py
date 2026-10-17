@@ -14,35 +14,63 @@
 # limitations under the License.
 """Command to create a new Assured Workloads environment."""
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.base import ReleaseTrack
 from googlecloudsdk.command_lib.assured import create_workload
 from googlecloudsdk.command_lib.assured import flags
 
 
+class _CreateWorkloadBase(object):
+  """Create a new Assured Workloads environment."""
+
+  detailed_help = create_workload.DETAILED_HELP
+
+  def Run(self, args):
+    """Run the create command, routing to V1 or V2 based on the --version flag."""
+    flags.ValidateCreateWorkloadVersionFlags(args)
+    version = flags.GetApiVersion(args, release_track=self.ReleaseTrack())
+    if version == 'v2':
+      self.created_resource, self.is_async = create_workload.RunV2(
+          args, self.ReleaseTrack()
+      )
+    else:
+      self.created_resource = create_workload.RunV1(args, self.ReleaseTrack())
+      self.is_async = False
+    return self.created_resource
+
+  def Epilog(self, unused_resources_were_displayed):
+    """Displays resource creation message upon command completion."""
+    create_workload.Epilog(
+        getattr(self, 'created_resource', None),
+        getattr(self, 'is_async', False),
+    )
+
+
 @base.ReleaseTracks(ReleaseTrack.GA)
-class GaCreate(create_workload.CreateWorkload):
+class GaCreate(_CreateWorkloadBase, base.CreateCommand):
   """Create a new Assured Workloads environment."""
 
   @staticmethod
   def Args(parser):
-    flags.AddCreateWorkloadFlags(parser, ReleaseTrack.GA)
+    """Register flags for GA release track."""
+    flags.AddUnifiedCreateWorkloadFlags(parser, ReleaseTrack.GA)
 
 
 @base.ReleaseTracks(ReleaseTrack.BETA)
-class BetaCreate(create_workload.CreateWorkload):
+class BetaCreate(_CreateWorkloadBase, base.CreateCommand):
   """Create a new Assured Workloads environment."""
 
   @staticmethod
   def Args(parser):
-    flags.AddCreateWorkloadFlags(parser, ReleaseTrack.BETA)
+    """Register flags for Beta release track."""
+    flags.AddUnifiedCreateWorkloadFlags(parser, ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(ReleaseTrack.ALPHA)
-class AlphaCreate(create_workload.CreateWorkload):
+class AlphaCreate(_CreateWorkloadBase, base.CreateCommand):
   """Create a new Assured Workloads environment."""
 
   @staticmethod
   def Args(parser):
-    flags.AddCreateWorkloadFlags(parser, ReleaseTrack.ALPHA)
+    """Register flags for Alpha release track."""
+    flags.AddUnifiedCreateWorkloadFlags(parser, ReleaseTrack.ALPHA)

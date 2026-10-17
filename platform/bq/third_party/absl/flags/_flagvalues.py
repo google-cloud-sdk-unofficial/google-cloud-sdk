@@ -79,7 +79,8 @@ def _find_reload_detector_insert_position() -> int:
 reload_detector_insert_position = _find_reload_detector_insert_position()
 # absl:google3-end
 
-sys.meta_path.insert(reload_detector_insert_position, reload_detector)
+if os.environ.get('ABSL_RELOAD_DETECTOR', '1') == '1':
+  sys.meta_path.insert(reload_detector_insert_position, reload_detector)
 
 
 class FlagValues:

@@ -17,6 +17,8 @@
 
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.instance_groups import color_utils
+from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import times
 
@@ -38,7 +40,7 @@ DEFAULT_CREATE_OR_LIST_FORMAT_ALPHA = """\
       location():label=LOCATION,
       location_scope():label=SCOPE,
       resize_by,
-      state,
+      state.colorizedState():label=STATE,
       status.queuingPolicy.validUntilTime,
       requestedRunDuration()
     )
@@ -50,6 +52,18 @@ _RELEASE_TRACK_TO_LIST_FORMAT = {
     base.ReleaseTrack.ALPHA: DEFAULT_CREATE_OR_LIST_FORMAT_ALPHA,
     base.ReleaseTrack.PREVIEW: DEFAULT_CREATE_OR_LIST_FORMAT,
 }
+
+_STATE_COLOR_MAP = {
+    'ACCEPTED': 'blue',
+    'CREATING': 'blue',
+    'SUCCEEDED': 'green',
+    'FAILED': 'red',
+}
+
+
+def _TransformState(state: str) -> str | console_attr.Colorizer:
+  """Transforms the state field with colorization."""
+  return color_utils.Colorize(state, _STATE_COLOR_MAP.get(state))
 
 
 def _TransformRequestedRunDuration(resource):
@@ -93,4 +107,5 @@ def AddOutputFormat(parser, release_track):
   parser.display_info.AddFormat(_RELEASE_TRACK_TO_LIST_FORMAT[release_track])
   parser.display_info.AddTransforms({
       'requestedRunDuration': _TransformRequestedRunDuration,
+      'colorizedState': _TransformState,
   })

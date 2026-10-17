@@ -63,6 +63,19 @@ class File(_messages.Message):
   name = _messages.StringField(3)
 
 
+class FirebaserulesProjectsReleasesCreateRequest(_messages.Message):
+  r"""A FirebaserulesProjectsReleasesCreateRequest object.
+
+  Fields:
+    name: Required. Resource name for the project which owns this `Release`.
+      Format: `projects/{project_id}`
+    release: A Release resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  release = _messages.MessageField('Release', 2)
+
+
 class FirebaserulesProjectsReleasesDeleteRequest(_messages.Message):
   r"""A FirebaserulesProjectsReleasesDeleteRequest object.
 

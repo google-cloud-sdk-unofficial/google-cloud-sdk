@@ -559,6 +559,33 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def ResolveAuthorization(self, request, global_params=None):
+      r"""Resolves an authorization for a user on an auth provider, creating one if it does not exist or returning an existing one.
+
+      Args:
+        request: (AgentidentityProjectsLocationsAuthProvidersResolveAuthorizationRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ResolveAuthorizationResponse) The response message.
+      """
+      config = self.GetMethodConfig('ResolveAuthorization')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ResolveAuthorization.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/authProviders/{authProvidersId}:resolveAuthorization',
+        http_method='POST',
+        method_id='agentidentity.projects.locations.authProviders.resolveAuthorization',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:resolveAuthorization',
+        request_field='resolveAuthorizationRequest',
+        request_type_name='AgentidentityProjectsLocationsAuthProvidersResolveAuthorizationRequest',
+        response_type_name='ResolveAuthorizationResponse',
+        supports_download=False,
+    )
+
     def RevokeAuthorization(self, request, global_params=None):
       r"""Revokes all authorizations for a specific user on an auth provider. This deletes all authorization records associated with the user and auth provider, effectively revoking access across all agents.
 

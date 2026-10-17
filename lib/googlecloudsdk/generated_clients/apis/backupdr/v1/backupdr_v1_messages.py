@@ -720,6 +720,8 @@ class Backup(_messages.Message):
       backups/{backup}"`. `{backup}` cannot be changed after creation. It must
       be between 3-63 characters long and must be unique within the
       datasource.
+    netappVolumeBackupProperties: Output only. NetApp Volume specific backup
+      properties.
     resourceSizeBytes: Output only. source resource size in bytes at the time
       of the backup.
     satisfiesPzi: Optional. Output only. Reserved for future use.
@@ -829,12 +831,13 @@ class Backup(_messages.Message):
   kmsKeyVersions = _messages.StringField(18, repeated=True)
   labels = _messages.MessageField('LabelsValue', 19)
   name = _messages.StringField(20)
-  resourceSizeBytes = _messages.IntegerField(21)
-  satisfiesPzi = _messages.BooleanField(22)
-  satisfiesPzs = _messages.BooleanField(23)
-  serviceLocks = _messages.MessageField('BackupLock', 24, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 25)
-  updateTime = _messages.StringField(26)
+  netappVolumeBackupProperties = _messages.MessageField('NetAppVolumeBackupProperties', 21)
+  resourceSizeBytes = _messages.IntegerField(22)
+  satisfiesPzi = _messages.BooleanField(23)
+  satisfiesPzs = _messages.BooleanField(24)
+  serviceLocks = _messages.MessageField('BackupLock', 25, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 26)
+  updateTime = _messages.StringField(27)
 
 
 class BackupApplianceBackupConfig(_messages.Message):
@@ -1301,6 +1304,8 @@ class BackupPlanAssociation(_messages.Message):
     name: Output only. Identifier. The resource name of BackupPlanAssociation
       in below format Format : projects/{project}/locations/{location}/backupP
       lanAssociations/{backupPlanAssociationId}
+    netappVolumeBackupPlanAssociationProperties: Output only. NetApp volume
+      backup plan association properties.
     resource: Required. Immutable. Resource name of workload on which the
       backup plan is applied. The format can either be the resource name
       (e.g., "projects/my-project/zones/us-central1-a/instances/my-instance")
@@ -1343,11 +1348,12 @@ class BackupPlanAssociation(_messages.Message):
   dataSource = _messages.StringField(7)
   filestoreInstanceBackupPlanAssociationProperties = _messages.MessageField('FilestoreInstanceBackupPlanAssociationProperties', 8)
   name = _messages.StringField(9)
-  resource = _messages.StringField(10)
-  resourceType = _messages.StringField(11)
-  rulesConfigInfo = _messages.MessageField('RuleConfigInfo', 12, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 13)
-  updateTime = _messages.StringField(14)
+  netappVolumeBackupPlanAssociationProperties = _messages.MessageField('NetAppVolumeBackupPlanAssociationProperties', 10)
+  resource = _messages.StringField(11)
+  resourceType = _messages.StringField(12)
+  rulesConfigInfo = _messages.MessageField('RuleConfigInfo', 13, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  updateTime = _messages.StringField(15)
 
 
 class BackupPlanDetail(_messages.Message):
@@ -4718,6 +4724,9 @@ class DataSourceGcpResource(_messages.Message):
     gcpResourcename: Output only. Full resource pathname URL of the source
       Google Cloud resource.
     location: Location of the resource: //"global"/"unspecified".
+    netappVolumeDatasourceProperties: Output only.
+      NetAppVolumeDataSourceProperties has a subset of NetApp Volume
+      properties that are useful at the Datasource level.
     type: The type of the Google Cloud resource. Use the Unified Resource
       Type, eg. compute.googleapis.com/Instance.
   """
@@ -4729,7 +4738,8 @@ class DataSourceGcpResource(_messages.Message):
   filestoreInstanceDatasourceProperties = _messages.MessageField('FilestoreInstanceDataSourceProperties', 5)
   gcpResourcename = _messages.StringField(6)
   location = _messages.StringField(7)
-  type = _messages.StringField(8)
+  netappVolumeDatasourceProperties = _messages.MessageField('NetAppVolumeDataSourceProperties', 8)
+  type = _messages.StringField(9)
 
 
 class DataSourceGcpResourceInfo(_messages.Message):
@@ -4746,6 +4756,7 @@ class DataSourceGcpResourceInfo(_messages.Message):
       resource. Ex: projects/{project}/zones/{zone}/instances/{instance}
     location: Output only. The location of the Google Cloud resource. Ex:
       //"global"/"unspecified"
+    netappVolumeProperties: Output only. The NetApp Volume properties.
     type: Output only. The type of the Google Cloud resource. Ex:
       compute.googleapis.com/Instance
   """
@@ -4755,7 +4766,8 @@ class DataSourceGcpResourceInfo(_messages.Message):
   filestoreInstanceProperties = _messages.MessageField('FilestoreInstanceDataSourceReferenceProperties', 3)
   gcpResourcename = _messages.StringField(4)
   location = _messages.StringField(5)
-  type = _messages.StringField(6)
+  netappVolumeProperties = _messages.MessageField('NetAppVolumeDataSourceReferenceProperties', 6)
+  type = _messages.StringField(7)
 
 
 class DataSourceReference(_messages.Message):
@@ -6483,6 +6495,57 @@ class Metadata(_messages.Message):
   """
 
   items = _messages.MessageField('Entry', 1, repeated=True)
+
+
+class NetAppVolumeBackupPlanAssociationProperties(_messages.Message):
+  r"""NetAppVolumeBackupPlanAssociationProperties represents NetApp Volume
+  backup plan association properties in BackupPlanAssociation. .
+
+  Fields:
+    sourceResourceCreateTime: Output only. The creation timestamp of the
+      source resource.
+  """
+
+  sourceResourceCreateTime = _messages.StringField(1)
+
+
+class NetAppVolumeBackupProperties(_messages.Message):
+  r"""NetAppVolumeBackupProperties represents NetApp Volume backup properties
+  in Backup. .
+
+  Fields:
+    sourceResource: Output only. The source volume of the Backup.
+  """
+
+  sourceResource = _messages.StringField(1)
+
+
+class NetAppVolumeDataSourceProperties(_messages.Message):
+  r"""NetAppVolumeDataSourceProperties represents NetApp Volume properties
+  stored in DataSource. .
+
+  Fields:
+    sourceResource: Output only. The source volume represented by this
+      DataSource.
+    sourceResourceCreateTime: Output only. The volume creation timestamp.
+  """
+
+  sourceResource = _messages.StringField(1)
+  sourceResourceCreateTime = _messages.StringField(2)
+
+
+class NetAppVolumeDataSourceReferenceProperties(_messages.Message):
+  r"""NetAppVolumeDataSourceReferenceProperties represents NetApp Volume
+  properties stored in DataSourceReference. .
+
+  Fields:
+    sourceResource: Output only. The source volume represented by this
+      DataSourceReference.
+    sourceResourceCreateTime: Output only. The volume creation timestamp.
+  """
+
+  sourceResource = _messages.StringField(1)
+  sourceResourceCreateTime = _messages.StringField(2)
 
 
 class NetworkConfig(_messages.Message):

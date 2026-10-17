@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute.instance_groups import color_utils
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed.resize_requests import flags as rr_flags
 
@@ -142,3 +143,4 @@ class ListAlpha(ListBeta):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser
     )
+    color_utils.AddNoColorFlag(parser)

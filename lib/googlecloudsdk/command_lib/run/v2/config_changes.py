@@ -1007,6 +1007,8 @@ class VpcAccessChanges(config_changes.TemplateConfigChanger):
     network_tags: List[str], vpc network tags to set.
     clear_network: bool, whether to clear the network.
     clear_network_tags: bool, whether to clear the network tags.
+    vpc_connector: str, vpc connector to set.
+    clear_vpc_connector: bool, whether to clear the vpc connector.
   """
 
   vpc_egress: str | None = None
@@ -1015,29 +1017,37 @@ class VpcAccessChanges(config_changes.TemplateConfigChanger):
   network_tags: list[str] = dataclasses.field(default_factory=list)
   clear_network: bool = False
   clear_network_tags: bool = False
+  vpc_connector: str | None = None
+  clear_vpc_connector: bool = False
 
   def Adjust(self, resource):
     # --clear-network cannot be used with other flags.
     if self.clear_network:
       resource.template.vpc_access.network_interfaces = None
-      resource.template.vpc_access.egress = (
-          vendor_settings.VpcAccess.VpcEgress.VPC_EGRESS_UNSPECIFIED
-      )
-      return resource
-    # Currently only single network interface is supported.
-    if not resource.template.vpc_access.network_interfaces:
-      resource.template.vpc_access.network_interfaces.append(
-          vendor_settings.VpcAccess.NetworkInterface()
-      )
-    network_interface = resource.template.vpc_access.network_interfaces[0]
-    if self.network:
-      network_interface.network = self.network
-    if self.subnet:
-      network_interface.subnetwork = self.subnet
-    if self.network_tags:
-      network_interface.tags = self.network_tags
-    if self.clear_network_tags:
-      network_interface.tags = []
+    if self.clear_vpc_connector:
+      resource.template.vpc_access.connector = ''
+    if self.vpc_connector:
+      resource.template.vpc_access.connector = self.vpc_connector
+    if (
+        self.network
+        or self.subnet
+        or self.network_tags
+        or self.clear_network_tags
+    ):
+      # Currently only single network interface is supported.
+      if not resource.template.vpc_access.network_interfaces:
+        resource.template.vpc_access.network_interfaces.append(
+            vendor_settings.VpcAccess.NetworkInterface()
+        )
+      network_interface = resource.template.vpc_access.network_interfaces[0]
+      if self.network:
+        network_interface.network = self.network
+      if self.subnet:
+        network_interface.subnetwork = self.subnet
+      if self.network_tags:
+        network_interface.tags = self.network_tags
+      if self.clear_network_tags:
+        network_interface.tags = []
     if self.vpc_egress == 'all' or self.vpc_egress == 'all-traffic':
       resource.template.vpc_access.egress = (
           vendor_settings.VpcAccess.VpcEgress.ALL_TRAFFIC
@@ -1045,6 +1055,14 @@ class VpcAccessChanges(config_changes.TemplateConfigChanger):
     elif self.vpc_egress == 'private-ranges-only':
       resource.template.vpc_access.egress = (
           vendor_settings.VpcAccess.VpcEgress.PRIVATE_RANGES_ONLY
+      )
+    if (
+        (self.clear_network or self.clear_vpc_connector)
+        and not resource.template.vpc_access.network_interfaces
+        and not resource.template.vpc_access.connector
+    ):
+      resource.template.vpc_access.egress = (
+          vendor_settings.VpcAccess.VpcEgress.VPC_EGRESS_UNSPECIFIED
       )
     return resource
 

@@ -1509,6 +1509,76 @@ class ManifestsListResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class MicroVmsExportOperationMetadata(_messages.Message):
+  r"""[Output Only] Operation metadata for microVms.export.
+
+  Fields:
+    archiveSha256: Output only. [Output Only] SHA-256 hex digest of the
+      exported archive.
+    bucketName: Output only. [Output Only] Target Cloud Storage bucket name.
+    bytesTransferred: Output only. [Output Only] Total bytes transferred to
+      Cloud Storage.
+    filesTransferred: Output only. [Output Only] Total files archived.
+    objectName: Output only. [Output Only] Target Cloud Storage object name or
+      prefix.
+  """
+
+  archiveSha256 = _messages.StringField(1)
+  bucketName = _messages.StringField(2)
+  bytesTransferred = _messages.IntegerField(3)
+  filesTransferred = _messages.IntegerField(4)
+  objectName = _messages.StringField(5)
+
+
+class MicroVmsImportOperationMetadata(_messages.Message):
+  r"""[Output Only] Operation metadata for microVms.import.
+
+  Enums:
+    PhaseValueValuesEnum: Output only. [Output Only] The current phase of the
+      import operation.
+
+  Fields:
+    archiveSha256: Output only. [Output Only] SHA-256 hex digest of the
+      imported archive.
+    bucketName: Output only. [Output Only] Source Cloud Storage bucket name.
+    bytesTransferred: Output only. [Output Only] Total bytes transferred from
+      Cloud Storage.
+    filesTransferred: Output only. [Output Only] Total files imported.
+    objectName: Output only. [Output Only] Source Cloud Storage object name or
+      prefix.
+    phase: Output only. [Output Only] The current phase of the import
+      operation.
+    totalBytes: Output only. [Output Only] Size of the source object in bytes.
+      Unset for DIRECTORY_SYNC.
+  """
+
+  class PhaseValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output Only] The current phase of the import operation.
+
+    Values:
+      PHASE_UNSPECIFIED: Default value; not used.
+      SCHEDULING: Selecting a host and reserving capacity for the MicroVM.
+      PROVISIONING_STORAGE: Creating and attaching the MicroVM's persistent
+        session storage.
+      IMPORTING: Streaming user data from Cloud Storage into the session
+        storage.
+      BOOTING: Booting the guest VM.
+    """
+    PHASE_UNSPECIFIED = 0
+    SCHEDULING = 1
+    PROVISIONING_STORAGE = 2
+    IMPORTING = 3
+    BOOTING = 4
+
+  archiveSha256 = _messages.StringField(1)
+  bucketName = _messages.StringField(2)
+  bytesTransferred = _messages.IntegerField(3)
+  filesTransferred = _messages.IntegerField(4)
+  objectName = _messages.StringField(5)
+  phase = _messages.EnumField('PhaseValueValuesEnum', 6)
+  totalBytes = _messages.IntegerField(7)
+
+
 class Operation(_messages.Message):
   r"""Represents an Operation resource. Google Compute Engine has three
   Operation resources: *
@@ -1566,6 +1636,10 @@ class Operation(_messages.Message):
       Operation metadata for instances.troubleshoot.
     kind: Output only. [Output Only] Type of the resource. Always
       `compute#operation` for Operation resources.
+    microVmsExportOperationMetadata: Output only. [Output Only] Operation
+      metadata for microVms.export.
+    microVmsImportOperationMetadata: Output only. [Output Only] Operation
+      metadata for microVms.import.
     name: [Output Only] Name of the operation.
     operationGroupId: Output only. [Output Only] An ID that represents a group
       of operations, such as when a group of operations results from a
@@ -1878,23 +1952,25 @@ class Operation(_messages.Message):
   instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 14)
   instancesTroubleshootOperationMetadata = _messages.MessageField('InstancesTroubleshootOperationMetadata', 15)
   kind = _messages.StringField(16, default='compute#operation')
-  name = _messages.StringField(17)
-  operationGroupId = _messages.StringField(18)
-  operationType = _messages.StringField(19)
-  progress = _messages.IntegerField(20, variant=_messages.Variant.INT32)
-  region = _messages.StringField(21)
-  selfLink = _messages.StringField(22)
-  selfLinkWithId = _messages.StringField(23)
-  setAutoscalerLinkOperationMetadata = _messages.MessageField('SetAutoscalerLinkOperationMetadata', 24)
-  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 25)
-  startTime = _messages.StringField(26)
-  status = _messages.EnumField('StatusValueValuesEnum', 27)
-  statusMessage = _messages.StringField(28)
-  targetId = _messages.IntegerField(29, variant=_messages.Variant.UINT64)
-  targetLink = _messages.StringField(30)
-  user = _messages.StringField(31)
-  warnings = _messages.MessageField('WarningsValueListEntry', 32, repeated=True)
-  zone = _messages.StringField(33)
+  microVmsExportOperationMetadata = _messages.MessageField('MicroVmsExportOperationMetadata', 17)
+  microVmsImportOperationMetadata = _messages.MessageField('MicroVmsImportOperationMetadata', 18)
+  name = _messages.StringField(19)
+  operationGroupId = _messages.StringField(20)
+  operationType = _messages.StringField(21)
+  progress = _messages.IntegerField(22, variant=_messages.Variant.INT32)
+  region = _messages.StringField(23)
+  selfLink = _messages.StringField(24)
+  selfLinkWithId = _messages.StringField(25)
+  setAutoscalerLinkOperationMetadata = _messages.MessageField('SetAutoscalerLinkOperationMetadata', 26)
+  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 27)
+  startTime = _messages.StringField(28)
+  status = _messages.EnumField('StatusValueValuesEnum', 29)
+  statusMessage = _messages.StringField(30)
+  targetId = _messages.IntegerField(31, variant=_messages.Variant.UINT64)
+  targetLink = _messages.StringField(32)
+  user = _messages.StringField(33)
+  warnings = _messages.MessageField('WarningsValueListEntry', 34, repeated=True)
+  zone = _messages.StringField(35)
 
 
 class OperationDetails(_messages.Message):

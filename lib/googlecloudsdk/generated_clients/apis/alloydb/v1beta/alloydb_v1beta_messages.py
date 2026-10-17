@@ -290,6 +290,20 @@ class AlloydbProjectsLocationsBackupsPatchRequest(_messages.Message):
   validateOnly = _messages.BooleanField(6)
 
 
+class AlloydbProjectsLocationsClustersCreateExternalReplicaRequest(_messages.Message):
+  r"""A AlloydbProjectsLocationsClustersCreateExternalReplicaRequest object.
+
+  Fields:
+    createExternalReplicaRequest: A CreateExternalReplicaRequest resource to
+      be passed as the request body.
+    parent: Required. The location of the new cluster. For the required
+      format, see the comment on Cluster.name field.
+  """
+
+  createExternalReplicaRequest = _messages.MessageField('CreateExternalReplicaRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class AlloydbProjectsLocationsClustersCreateRequest(_messages.Message):
   r"""A AlloydbProjectsLocationsClustersCreateRequest object.
 
@@ -775,6 +789,20 @@ class AlloydbProjectsLocationsClustersPatchRequest(_messages.Message):
   requestId = _messages.StringField(4)
   updateMask = _messages.StringField(5)
   validateOnly = _messages.BooleanField(6)
+
+
+class AlloydbProjectsLocationsClustersPromoteExternalReplicaRequest(_messages.Message):
+  r"""A AlloydbProjectsLocationsClustersPromoteExternalReplicaRequest object.
+
+  Fields:
+    name: Required. The name of the external_replica cluster to promote.
+      Format: projects/{project}/locations/{location}/clusters/{cluster}
+    promoteExternalReplicaRequest: A PromoteExternalReplicaRequest resource to
+      be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  promoteExternalReplicaRequest = _messages.MessageField('PromoteExternalReplicaRequest', 2)
 
 
 class AlloydbProjectsLocationsClustersPromoteRequest(_messages.Message):
@@ -1332,9 +1360,10 @@ class Backup(_messages.Message):
     DatabaseVersionValueValuesEnum: Output only. The database engine major
       version of the cluster this backup was created from. Any restored
       cluster created from this backup will have the same database version.
-    EditionValueValuesEnum: Output only. The edition of the cluster this
-      backup was created from. Any restored cluster created from this backup
-      will have the same edition.
+    EditionValueValuesEnum: Output only. Deprecated: Use `express_config`
+      instead. Output only. The edition of the cluster this backup was created
+      from. Any restored cluster created from this backup will have the same
+      edition.
     StateValueValuesEnum: Output only. The current state of the backup.
     TypeValueValuesEnum: The backup type, which suggests the trigger for the
       backup.
@@ -1367,9 +1396,9 @@ class Backup(_messages.Message):
     deleteTime: Output only. Delete time stamp
     description: User-provided description of the backup.
     displayName: User-settable and human-readable display name for the Backup.
-    edition: Output only. The edition of the cluster this backup was created
-      from. Any restored cluster created from this backup will have the same
-      edition.
+    edition: Output only. Deprecated: Use `express_config` instead. Output
+      only. The edition of the cluster this backup was created from. Any
+      restored cluster created from this backup will have the same edition.
     encryptionConfig: Optional. The encryption config can be specified to
       encrypt the backup with a customer-managed encryption key (CMEK). When
       this field is not specified, the backup will then use default encryption
@@ -1440,13 +1469,17 @@ class Backup(_messages.Message):
     POSTGRES_19 = 7
 
   class EditionValueValuesEnum(_messages.Enum):
-    r"""Output only. The edition of the cluster this backup was created from.
-    Any restored cluster created from this backup will have the same edition.
+    r"""Output only. Deprecated: Use `express_config` instead. Output only.
+    The edition of the cluster this backup was created from. Any restored
+    cluster created from this backup will have the same edition.
 
     Values:
-      EDITION_UNSPECIFIED: An unknown Edition type.
-      EDITION_ALLOYDB: Standard AlloyDB cluster.
-      EDITION_ALLOYDB_DEVELOPER: Developer edition cluster.
+      EDITION_UNSPECIFIED: Deprecated: Use `ExpressConfig` instead. An unknown
+        Edition type.
+      EDITION_ALLOYDB: Deprecated: Use `ExpressConfig` instead. Standard
+        AlloyDB cluster.
+      EDITION_ALLOYDB_DEVELOPER: Deprecated: Use `ExpressConfig` instead.
+        Developer edition cluster.
     """
     EDITION_UNSPECIFIED = 0
     EDITION_ALLOYDB = 1
@@ -1737,12 +1770,53 @@ class CloudControl2SharedOperationsReconciliationOperationMetadata(_messages.Mes
   exclusiveAction = _messages.EnumField('ExclusiveActionValueValuesEnum', 2)
 
 
+class CloudSQLAuthConfig(_messages.Message):
+  r"""Configuration for authentication and connectivity to a database.
+
+  Fields:
+    usernamePassword: Input only. Standard username and password for the
+      replication account.
+  """
+
+  usernamePassword = _messages.MessageField('UsernamePassword', 1)
+
+
 class CloudSQLBackupRunSource(_messages.Message):
   r"""The source CloudSQL backup resource.
 
   Fields:
     backupRunId: Required. The CloudSQL backup run ID.
     instanceId: Required. The CloudSQL instance ID.
+    project: The project ID of the source CloudSQL instance. This should be
+      the same as the AlloyDB cluster's project.
+  """
+
+  backupRunId = _messages.IntegerField(1)
+  instanceId = _messages.StringField(2)
+  project = _messages.StringField(3)
+
+
+class CloudSQLSource(_messages.Message):
+  r"""The source CloudSQL instance for external replication.
+
+  Fields:
+    authConfig: Required. Authentication configuration for the source.
+    instanceId: Required. The CloudSQL instance ID.
+    project: Required. The project ID of the source CloudSQL instance. This
+      should be the same as the AlloyDB cluster's project.
+  """
+
+  authConfig = _messages.MessageField('CloudSQLAuthConfig', 1)
+  instanceId = _messages.StringField(2)
+  project = _messages.StringField(3)
+
+
+class CloudSQLSourceInfo(_messages.Message):
+  r"""Information about the source CloudSQL instance.
+
+  Fields:
+    backupRunId: The CloudSQL backup run ID.
+    instanceId: The CloudSQL instance ID.
     project: The project ID of the source CloudSQL instance. This should be
       the same as the AlloyDB cluster's project.
   """
@@ -1767,8 +1841,9 @@ class Cluster(_messages.Message):
       version. This is an optional field and it is populated at the Cluster
       creation time. If a database version is not supplied at cluster creation
       time, then a default database version will be used.
-    EditionValueValuesEnum: Optional. Edition of the cluster. If left
-      unspecified, the cluster behaves as `EDITION_ALLOYDB`.
+    EditionValueValuesEnum: Optional. Deprecated: Use `express_config`
+      instead. Edition of the cluster. If left unspecified, the cluster
+      behaves as `EDITION_ALLOYDB`.
     MaintenanceVersionSelectionPolicyValueValuesEnum: Input only. Policy to
       use to automatically select the maintenance version to which to update
       the cluster's instances.
@@ -1820,8 +1895,9 @@ class Cluster(_messages.Message):
     deleteTime: Output only. Delete time stamp
     displayName: User-settable and human-readable display name for the
       Cluster.
-    edition: Optional. Edition of the cluster. If left unspecified, the
-      cluster behaves as `EDITION_ALLOYDB`.
+    edition: Optional. Deprecated: Use `express_config` instead. Edition of
+      the cluster. If left unspecified, the cluster behaves as
+      `EDITION_ALLOYDB`.
     encryptionConfig: Optional. The encryption config can be specified to
       encrypt the data disks and other persistent data resources of a cluster
       with a customer-managed encryption key (CMEK). When this field is not
@@ -1831,6 +1907,8 @@ class Cluster(_messages.Message):
     etag: For Resource freshness validation (https://google.aip.dev/154)
     expressConfig: Optional. Configuration that allows the customer to create
       an AlloyDB Express cluster.
+    externalReplicaConfig: Optional. Configuration for external replica.
+    externalReplicaInfo: Output only. Information about the external replica.
     geminiConfig: Optional. Deprecated and unused. This field will be removed
       in the near future.
     initialUser: Input only. Initial user to setup during cluster creation.
@@ -1932,13 +2010,16 @@ class Cluster(_messages.Message):
     POSTGRES_19 = 7
 
   class EditionValueValuesEnum(_messages.Enum):
-    r"""Optional. Edition of the cluster. If left unspecified, the cluster
-    behaves as `EDITION_ALLOYDB`.
+    r"""Optional. Deprecated: Use `express_config` instead. Edition of the
+    cluster. If left unspecified, the cluster behaves as `EDITION_ALLOYDB`.
 
     Values:
-      EDITION_UNSPECIFIED: An unknown Edition type.
-      EDITION_ALLOYDB: Standard AlloyDB cluster.
-      EDITION_ALLOYDB_DEVELOPER: Developer edition cluster.
+      EDITION_UNSPECIFIED: Deprecated: Use `ExpressConfig` instead. An unknown
+        Edition type.
+      EDITION_ALLOYDB: Deprecated: Use `ExpressConfig` instead. Standard
+        AlloyDB cluster.
+      EDITION_ALLOYDB_DEVELOPER: Deprecated: Use `ExpressConfig` instead.
+        Developer edition cluster.
     """
     EDITION_UNSPECIFIED = 0
     EDITION_ALLOYDB = 1
@@ -2108,30 +2189,32 @@ class Cluster(_messages.Message):
   encryptionInfo = _messages.MessageField('EncryptionInfo', 19)
   etag = _messages.StringField(20)
   expressConfig = _messages.MessageField('ExpressConfig', 21)
-  geminiConfig = _messages.MessageField('GeminiClusterConfig', 22)
-  initialUser = _messages.MessageField('UserPassword', 23)
-  labels = _messages.MessageField('LabelsValue', 24)
-  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 25)
-  maintenanceUpdatePolicy = _messages.MessageField('MaintenanceUpdatePolicy', 26)
-  maintenanceVersionSelectionPolicy = _messages.EnumField('MaintenanceVersionSelectionPolicyValueValuesEnum', 27)
-  migrationSource = _messages.MessageField('MigrationSource', 28)
-  name = _messages.StringField(29)
-  network = _messages.StringField(30)
-  networkConfig = _messages.MessageField('NetworkConfig', 31)
-  primaryConfig = _messages.MessageField('PrimaryConfig', 32)
-  pscConfig = _messages.MessageField('PscConfig', 33)
-  reconciling = _messages.BooleanField(34)
-  satisfiesPzs = _messages.BooleanField(35)
-  secondaryConfig = _messages.MessageField('SecondaryConfig', 36)
-  secondaryInfo = _messages.MessageField('SecondaryInfo', 37)
-  serviceAccountEmail = _messages.StringField(38)
-  sslConfig = _messages.MessageField('SslConfig', 39)
-  state = _messages.EnumField('StateValueValuesEnum', 40)
-  subscriptionType = _messages.EnumField('SubscriptionTypeValueValuesEnum', 41)
-  tags = _messages.MessageField('TagsValue', 42)
-  trialMetadata = _messages.MessageField('TrialMetadata', 43)
-  uid = _messages.StringField(44)
-  updateTime = _messages.StringField(45)
+  externalReplicaConfig = _messages.MessageField('ExternalReplicaConfig', 22)
+  externalReplicaInfo = _messages.MessageField('ExternalReplicaInfo', 23)
+  geminiConfig = _messages.MessageField('GeminiClusterConfig', 24)
+  initialUser = _messages.MessageField('UserPassword', 25)
+  labels = _messages.MessageField('LabelsValue', 26)
+  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 27)
+  maintenanceUpdatePolicy = _messages.MessageField('MaintenanceUpdatePolicy', 28)
+  maintenanceVersionSelectionPolicy = _messages.EnumField('MaintenanceVersionSelectionPolicyValueValuesEnum', 29)
+  migrationSource = _messages.MessageField('MigrationSource', 30)
+  name = _messages.StringField(31)
+  network = _messages.StringField(32)
+  networkConfig = _messages.MessageField('NetworkConfig', 33)
+  primaryConfig = _messages.MessageField('PrimaryConfig', 34)
+  pscConfig = _messages.MessageField('PscConfig', 35)
+  reconciling = _messages.BooleanField(36)
+  satisfiesPzs = _messages.BooleanField(37)
+  secondaryConfig = _messages.MessageField('SecondaryConfig', 38)
+  secondaryInfo = _messages.MessageField('SecondaryInfo', 39)
+  serviceAccountEmail = _messages.StringField(40)
+  sslConfig = _messages.MessageField('SslConfig', 41)
+  state = _messages.EnumField('StateValueValuesEnum', 42)
+  subscriptionType = _messages.EnumField('SubscriptionTypeValueValuesEnum', 43)
+  tags = _messages.MessageField('TagsValue', 44)
+  trialMetadata = _messages.MessageField('TrialMetadata', 45)
+  uid = _messages.StringField(46)
+  updateTime = _messages.StringField(47)
 
 
 class ClusterUpgradeDetails(_messages.Message):
@@ -2446,6 +2529,24 @@ class CpuUtilization(_messages.Message):
   """
 
   utilizationTarget = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+
+
+class CreateExternalReplicaRequest(_messages.Message):
+  r"""Message for creating an External Replica.
+
+  Fields:
+    cloudSqlSource: Replicates from a CloudSQL instance source.
+    cluster: Required. The cluster resource being created.
+    clusterId: Required. ID of the requesting object.
+    instance: Required. The primary instance resource being created.
+    instanceId: Required. ID of the primary instance being created.
+  """
+
+  cloudSqlSource = _messages.MessageField('CloudSQLSource', 1)
+  cluster = _messages.MessageField('Cluster', 2)
+  clusterId = _messages.StringField(3)
+  instance = _messages.MessageField('Instance', 4)
+  instanceId = _messages.StringField(5)
 
 
 class CsvExportOptions(_messages.Message):
@@ -2835,6 +2936,26 @@ class ExpressConfig(_messages.Message):
   """
 
   enabled = _messages.BooleanField(1)
+
+
+class ExternalReplicaConfig(_messages.Message):
+  r"""Configuration for external replica.
+
+  Fields:
+    cloudSqlSource: Optional. CloudSQL source.
+  """
+
+  cloudSqlSource = _messages.MessageField('CloudSQLSource', 1)
+
+
+class ExternalReplicaInfo(_messages.Message):
+  r"""Information about the external replica.
+
+  Fields:
+    cloudSqlSourceInfo: CloudSQL source information.
+  """
+
+  cloudSqlSourceInfo = _messages.MessageField('CloudSQLSourceInfo', 1)
 
 
 class FailoverInstanceRequest(_messages.Message):
@@ -4335,6 +4456,19 @@ class PromoteClusterRequest(_messages.Message):
   failover = _messages.BooleanField(2)
   requestId = _messages.StringField(3)
   validateOnly = _messages.BooleanField(4)
+
+
+class PromoteExternalReplicaRequest(_messages.Message):
+  r"""Message for promoting an External Replica.
+
+  Fields:
+    cutoverEnabled: Optional. If true, performs a transparent network cutover
+      from the source Cloud SQL instance to the AlloyDB primary cluster.
+      Writes will be stopped on the source, replication lag drained to zero,
+      and customer-managed Private Service Connect endpoints redirected.
+  """
+
+  cutoverEnabled = _messages.BooleanField(1)
 
 
 class PscAutoConnectionConfig(_messages.Message):
@@ -7843,6 +7977,18 @@ class UserPassword(_messages.Message):
 
   password = _messages.StringField(1)
   user = _messages.StringField(2)
+
+
+class UsernamePassword(_messages.Message):
+  r"""Generic message for username and password credentials.
+
+  Fields:
+    password: Input only. Database password.
+    username: Required. Database username.
+  """
+
+  password = _messages.StringField(1)
+  username = _messages.StringField(2)
 
 
 class WeeklySchedule(_messages.Message):

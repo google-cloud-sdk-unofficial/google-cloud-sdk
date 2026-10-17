@@ -14,7 +14,10 @@
 # limitations under the License.
 """Utilities for interacting with the Composer DAG API."""
 
+import datetime
 import json
+import random
+import time
 
 from googlecloudsdk.api_lib.composer import dags_util
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -24,6 +27,19 @@ from googlecloudsdk.core import resources
 
 
 DEPLOYMENT_FILE = 'deployment.yaml'
+DEFAULT_POLLING_TIME_SECONDS = datetime.timedelta(seconds=2)
+POLL_JITTER_SECONDS = datetime.timedelta(seconds=0.5)
+
+
+def sleep_with_jitter():
+  """Sleeps for the default polling interval with random jitter."""
+  time.sleep(
+      DEFAULT_POLLING_TIME_SECONDS.total_seconds()
+      + random.uniform(
+          -POLL_JITTER_SECONDS.total_seconds(),
+          POLL_JITTER_SECONDS.total_seconds(),
+      )
+  )
 
 
 def _build_triggers(dag):

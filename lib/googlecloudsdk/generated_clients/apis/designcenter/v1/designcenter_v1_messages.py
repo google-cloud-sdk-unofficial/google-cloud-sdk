@@ -1218,6 +1218,21 @@ class CloudControl(_messages.Message):
   parameters = _messages.MessageField('Parameter', 6, repeated=True)
 
 
+class CloudControlConfig(_messages.Message):
+  r"""Parameter values stored for a single cloud control of a policy.
+
+  Fields:
+    cloudControl: Required. Resource name of the cloud control that these
+      parameter values apply to. Format: organizations/{organization}/location
+      s/{location}/cloudControls/{cloud_control} or
+      projects/{project}/locations/{location}/cloudControls/{cloud_control}
+    parameters: Optional. Parameter values for this specific control.
+  """
+
+  cloudControl = _messages.StringField(1)
+  parameters = _messages.MessageField('Parameter', 2, repeated=True)
+
+
 class CodePosition(_messages.Message):
   r"""CodePosition represents a code location.
 
@@ -2412,6 +2427,26 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesImportRequest(_mess
   name = _messages.StringField(2, required=True)
 
 
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest(
+    _messages.Message
+):
+  r"""A
+
+  DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest
+  object.
+
+  Fields:
+    ingestApplicationTemplateIaCRequest: A IngestApplicationTemplateIaCRequest
+      resource to be passed as the request body.
+    name: Required. The name of the application template.
+  """
+
+  ingestApplicationTemplateIaCRequest = _messages.MessageField(
+      'IngestApplicationTemplateIaCRequest', 1
+  )
+  name = _messages.StringField(2, required=True)
+
+
 class DesigncenterProjectsLocationsSpacesApplicationTemplatesListRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesListRequest
   object.
@@ -2729,6 +2764,23 @@ class DesigncenterProjectsLocationsSpacesApplicationsDeployRequest(_messages.Mes
   """
 
   deployApplicationRequest = _messages.MessageField('DeployApplicationRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DesigncenterProjectsLocationsSpacesApplicationsExportRequest(
+    _messages.Message
+):
+  r"""A DesigncenterProjectsLocationsSpacesApplicationsExportRequest object.
+
+  Fields:
+    exportApplicationIaCRequest: A ExportApplicationIaCRequest resource to be
+      passed as the request body.
+    name: Required. The name of the application.
+  """
+
+  exportApplicationIaCRequest = _messages.MessageField(
+      'ExportApplicationIaCRequest', 1
+  )
   name = _messages.StringField(2, required=True)
 
 
@@ -3726,7 +3778,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class Environment(_messages.Message):
   r"""Environment of the Application, Service, or Workload
 
@@ -3758,6 +3809,37 @@ class Environment(_messages.Message):
 
   environment = _messages.StringField(1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
+class ExportApplicationIaCRequest(_messages.Message):
+  r"""Request message for ExportApplicationIaC method.
+
+  Enums:
+    IacFormatValueValuesEnum: Optional. The IaC format to generate.
+
+  Fields:
+    artifactLocation: Optional. Specifies the destination for the generated
+      IaC, which can be Cloud Storage or a Developer Connect repository.
+    exportIacConfig: Optional. Configuration for exporting IaC.
+    iacFormat: Optional. The IaC format to generate.
+  """
+
+  class IacFormatValueValuesEnum(_messages.Enum):
+    r"""Optional. The IaC format to generate.
+
+    Values:
+      IAC_FORMAT_UNSPECIFIED: IaC format is unspecified.
+      TERRAFORM: IaC format is Terraform.
+      HELM: IaC format is HELM.
+    """
+
+    IAC_FORMAT_UNSPECIFIED = 0
+    TERRAFORM = 1
+    HELM = 2
+
+  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
+  exportIacConfig = _messages.MessageField('ExportIaCConfig', 2)
+  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 3)
 
 
 class ExportApplicationTemplateIaCRequest(_messages.Message):
@@ -4620,6 +4702,32 @@ class InferredMetadata(_messages.Message):
   description = _messages.StringField(2)
   templateMetadata = _messages.MessageField('TFBlueprintMetadata', 3)
   updateTime = _messages.StringField(4)
+
+
+class IngestApplicationTemplateIaCRequest(_messages.Message):
+  r"""Request message for IngestApplicationTemplateIaC method.
+
+  Fields:
+    devconnectSourceConfig: Optional. Configuration for fetching content from
+      source code repository such as GitHub or Bitbucket through Developer
+      Connect.
+    gcsUri: Optional. The Cloud Storage URI of the terraform code.
+    gitSource: Optional. The git source.
+    iacModule: Optional. The IaC configuration to import.
+    rawTerraformImportEnabled: Optional. If set to true, imports the IaC as
+      raw terraform and does not attempt SAT conversion.
+    validateCatalogCompatibility: Optional. If set to true, validates if the
+      imported IaC is compatible with the catalog.
+  """
+
+  devconnectSourceConfig = _messages.MessageField(
+      'DeveloperConnectSourceConfig', 1
+  )
+  gcsUri = _messages.StringField(2)
+  gitSource = _messages.MessageField('GitSource', 3)
+  iacModule = _messages.MessageField('IaCModule', 4)
+  rawTerraformImportEnabled = _messages.BooleanField(5)
+  validateCatalogCompatibility = _messages.BooleanField(6)
 
 
 class InputVariableAlias(_messages.Message):
@@ -5898,6 +6006,8 @@ class SerializedPolicy(_messages.Message):
 
   Fields:
     applyConditions: Optional. The serialized policy apply conditions.
+    cloudControlConfigs: Optional. Stored parameter values grouped by cloud
+      control.
     description: Optional. The serialized policy description. At most 2048
       characters.
     displayName: Optional. The serialized policy display name. The number of
@@ -5923,12 +6033,13 @@ class SerializedPolicy(_messages.Message):
     COMPLIANCE_FRAMEWORK = 1
 
   applyConditions = _messages.MessageField('ApplyCondition', 1, repeated=True)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  policyRevisionUri = _messages.StringField(4)
-  policyType = _messages.EnumField('PolicyTypeValueValuesEnum', 5)
-  policyUri = _messages.StringField(6)
-  uri = _messages.StringField(7)
+  cloudControlConfigs = _messages.MessageField('CloudControlConfig', 2, repeated=True)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  policyRevisionUri = _messages.StringField(5)
+  policyType = _messages.EnumField('PolicyTypeValueValuesEnum', 6)
+  policyUri = _messages.StringField(7)
+  uri = _messages.StringField(8)
 
 
 class SerializedProvider(_messages.Message):

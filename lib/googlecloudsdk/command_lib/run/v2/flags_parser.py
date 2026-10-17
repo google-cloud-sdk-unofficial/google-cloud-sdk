@@ -139,11 +139,22 @@ def _HasNetworkChanges(args):
       'network_tags',
       'clear_network',
       'clear_network_tags',
+      'vpc_connector',
+      'clear_vpc_connector',
   ]
   return flags.HasChanges(args, network_flags)
 
 
 def _GetNetworkChange(args):
+  has_vpc_connector = flags.FlagIsExplicitlySet(args, 'vpc_connector')
+  has_clear_vpc_connector = (
+      flags.FlagIsExplicitlySet(args, 'clear_vpc_connector')
+      and args.clear_vpc_connector
+  )
+  if has_vpc_connector and has_clear_vpc_connector:
+    raise exceptions.ConfigurationError(
+        'Cannot specify both --vpc-connector and --clear-vpc-connector.'
+    )
   return config_changes.VpcAccessChanges(
       vpc_egress=args.vpc_egress,
       network=args.network,
@@ -155,6 +166,10 @@ def _GetNetworkChange(args):
       clear_network_tags=args.clear_network_tags
       if 'clear_network_tags' in args
       else False,
+      vpc_connector=args.vpc_connector
+      if has_vpc_connector
+      else None,
+      clear_vpc_connector=has_clear_vpc_connector,
   )
 
 

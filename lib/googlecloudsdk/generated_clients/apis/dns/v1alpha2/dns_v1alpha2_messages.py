@@ -624,6 +624,103 @@ class DnsManagedZonesUpdateRequest(_messages.Message):
   project = _messages.StringField(4, required=True)
 
 
+class DnsOutboundEndpointsCreateRequest(_messages.Message):
+  r"""A DnsOutboundEndpointsCreateRequest object.
+
+  Fields:
+    clientOperationId: For mutating operation requests only. An optional
+      identifier specified by the client. Must be unique for operation
+      resources in the Operations collection.
+    outboundEndpoint: A OutboundEndpoint resource to be passed as the request
+      body.
+    outboundEndpointId: Required. The ID to use for the OutboundEndpoint,
+      which will become the final component of the OutboundEndpoint's resource
+      name.
+    parent: Required. The parent project and location where this
+      OutboundEndpoint will be created. Format:
+      projects/{project}/locations/{location}
+    requestId: Optional. An optional request ID to identify requests.
+  """
+
+  clientOperationId = _messages.StringField(1)
+  outboundEndpoint = _messages.MessageField('OutboundEndpoint', 2)
+  outboundEndpointId = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  requestId = _messages.StringField(5)
+
+
+class DnsOutboundEndpointsDeleteRequest(_messages.Message):
+  r"""A DnsOutboundEndpointsDeleteRequest object.
+
+  Fields:
+    clientOperationId: For mutating operation requests only. An optional
+      identifier specified by the client. Must be unique for operation
+      resources in the Operations collection.
+    name: Required. The name of the OutboundEndpoint to delete. Format: projec
+      ts/{project}/locations/{location}/outboundEndpoints/{outboundEndpoint}
+    requestId: Optional. An optional request ID to identify requests.
+  """
+
+  clientOperationId = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class DnsOutboundEndpointsGetRequest(_messages.Message):
+  r"""A DnsOutboundEndpointsGetRequest object.
+
+  Fields:
+    clientOperationId: For mutating operation requests only. An optional
+      identifier specified by the client. Must be unique for operation
+      resources in the Operations collection.
+    name: Required. The name of the OutboundEndpoint to retrieve. Format: proj
+      ects/{project}/locations/{location}/outboundEndpoints/{outboundEndpoint}
+  """
+
+  clientOperationId = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class DnsOutboundEndpointsListRequest(_messages.Message):
+  r"""A DnsOutboundEndpointsListRequest object.
+
+  Fields:
+    clientOperationId: A string attribute.
+    pageSize: Optional. The maximum number of results to return.
+    pageToken: Optional. A page token received from a previous List call.
+    parent: Required. The parent project and location from which to list
+      resources. Format: projects/{project}/locations/{location}
+  """
+
+  clientOperationId = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class DnsOutboundEndpointsPatchRequest(_messages.Message):
+  r"""A DnsOutboundEndpointsPatchRequest object.
+
+  Fields:
+    clientOperationId: For mutating operation requests only. An optional
+      identifier specified by the client. Must be unique for operation
+      resources in the Operations collection.
+    name: Identifier. The resource name of the OutboundEndpoint. Format: `proj
+      ects/{project}/locations/{location}/outboundEndpoints/{outboundEndpoint}
+      `
+    outboundEndpoint: A OutboundEndpoint resource to be passed as the request
+      body.
+    requestId: Optional. An optional request ID to identify requests.
+    updateMask: Required. The list of fields to be updated.
+  """
+
+  clientOperationId = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  outboundEndpoint = _messages.MessageField('OutboundEndpoint', 3)
+  requestId = _messages.StringField(4)
+  updateMask = _messages.StringField(5)
+
+
 class DnsPoliciesCreateRequest(_messages.Message):
   r"""A DnsPoliciesCreateRequest object.
 
@@ -1598,6 +1695,22 @@ class GoogleLongrunningOperation(_messages.Message):
   response = _messages.MessageField('ResponseValue', 5)
 
 
+class ListOutboundEndpointsResponse(_messages.Message):
+  r"""Response message for OutboundEndpointsService.ListOutboundEndpoints
+
+  Fields:
+    nextPageToken: A token to retrieve the next page of results. Set to empty
+      if there are no remaining results.
+    outboundEndpoints: The list of OutboundEndpoints.
+    unreachable: Unordered list. The resource names of the unreachable
+      locations. Format: `projects/{project}/locations/{location}`
+  """
+
+  nextPageToken = _messages.StringField(1)
+  outboundEndpoints = _messages.MessageField('OutboundEndpoint', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ManagedZone(_messages.Message):
   r"""A zone is a subtree of the DNS namespace under one administrative
   responsibility. A ManagedZone is a resource that represents a DNS zone
@@ -1781,12 +1894,14 @@ class ManagedZoneForwardingConfig(_messages.Message):
 
   Fields:
     kind: A string attribute.
+    outboundEndpoints: The list of outbound endpoints to use for queries.
     targetNameServers: List of target name servers to forward to. Cloud DNS
       selects the best available name server if more than one target is given.
   """
 
   kind = _messages.StringField(1, default='dns#managedZoneForwardingConfig')
-  targetNameServers = _messages.MessageField('ManagedZoneForwardingConfigNameServerTarget', 2, repeated=True)
+  outboundEndpoints = _messages.MessageField('ManagedZoneForwardingConfigOutboundEndpoint', 2, repeated=True)
+  targetNameServers = _messages.MessageField('ManagedZoneForwardingConfigNameServerTarget', 3, repeated=True)
 
 
 class ManagedZoneForwardingConfigNameServerTarget(_messages.Message):
@@ -1834,6 +1949,20 @@ class ManagedZoneForwardingConfigNameServerTarget(_messages.Message):
   ipv4Address = _messages.StringField(3)
   ipv6Address = _messages.StringField(4)
   kind = _messages.StringField(5, default='dns#managedZoneForwardingConfigNameServerTarget')
+
+
+class ManagedZoneForwardingConfigOutboundEndpoint(_messages.Message):
+  r"""A ManagedZoneForwardingConfigOutboundEndpoint object.
+
+  Fields:
+    kind: A string attribute.
+    name: Specified as a resource path including project and region. This
+      should be formatted like
+      projects/{project}/locations/{location}/outboundEndpoints/{endpoint}
+  """
+
+  kind = _messages.StringField(1, default='dns#managedZoneForwardingConfigOutboundEndpoint')
+  name = _messages.StringField(2)
 
 
 class ManagedZoneOperationsListResponse(_messages.Message):
@@ -2079,6 +2208,146 @@ class OperationManagedZoneContext(_messages.Message):
   oldValue = _messages.MessageField('ManagedZone', 2)
 
 
+class OperationMetadata(_messages.Message):
+  r"""Represents the metadata of the long-running operation.
+
+  Fields:
+    apiVersion: Output only. API version used to start the operation.
+    createTime: Output only. The time the operation was created.
+    endTime: Output only. The time the operation finished running.
+    requestedCancellation: Output only. Identifies whether the user has
+      requested cancellation of the operation. Operations that have
+      successfully been cancelled have Operation.error value with a
+      google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
+    statusMessage: Output only. Human-readable status of the operation, if
+      any.
+    target: Output only. Server-defined resource path for the target of the
+      operation.
+    verb: Output only. Name of the verb executed by the operation.
+  """
+
+  apiVersion = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  endTime = _messages.StringField(3)
+  requestedCancellation = _messages.BooleanField(4)
+  statusMessage = _messages.StringField(5)
+  target = _messages.StringField(6)
+  verb = _messages.StringField(7)
+
+
+class OutboundEndpoint(_messages.Message):
+  r"""An OutboundEndpoint is a regional resource to enable outbound forwarding
+  from a private IP range in VPCs to on-premise or other networks.
+
+  Messages:
+    AnnotationsValue: Optional. Annotations as key value pairs
+    LabelsValue: Optional. Labels as key value pairs
+    TagsValue: Optional. Tag bindings as key value pairs
+
+  Fields:
+    annotations: Optional. Annotations as key value pairs
+    createTime: Output only. [Output only] Create time stamp
+    description: Optional. User provided description.
+    endpointIp: Required. Immutable. User provided IP address to use for
+      outbound DNS forwarding. This address must be a free address on the
+      subnetwork.
+    labels: Optional. Labels as key value pairs
+    name: Identifier. The resource name of the OutboundEndpoint. Format: `proj
+      ects/{project}/locations/{location}/outboundEndpoints/{outboundEndpoint}
+      `
+    network: Required. Immutable. The VPC network containing the outbound
+      endpoint, specified as full path.
+    subnetwork: Required. Immutable. The subnetwork holding the endpoint_ip,
+      specified as full path.
+    tags: Optional. Tag bindings as key value pairs
+    updateTime: Output only. [Output only] Update time stamp
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Annotations as key value pairs
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Tag bindings as key value pairs
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  endpointIp = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  network = _messages.StringField(7)
+  subnetwork = _messages.StringField(8)
+  tags = _messages.MessageField('TagsValue', 9)
+  updateTime = _messages.StringField(10)
+
+
 class PeeringZoneDeactivateResponse(_messages.Message):
   r"""A PeeringZoneDeactivateResponse object.
 
@@ -2198,6 +2467,7 @@ class PolicyAlternativeNameServerConfig(_messages.Message):
 
   Fields:
     kind: A string attribute.
+    outboundEndpoints: The list of outbound endpoints to use for queries.
     targetNameServers: Sets an alternative name server for the associated
       networks. When specified, all DNS queries are forwarded to a name server
       that you choose. Names such as .internal are not available when an
@@ -2205,7 +2475,22 @@ class PolicyAlternativeNameServerConfig(_messages.Message):
   """
 
   kind = _messages.StringField(1, default='dns#policyAlternativeNameServerConfig')
-  targetNameServers = _messages.MessageField('PolicyAlternativeNameServerConfigTargetNameServer', 2, repeated=True)
+  outboundEndpoints = _messages.MessageField('PolicyAlternativeNameServerConfigOutboundEndpoint', 2, repeated=True)
+  targetNameServers = _messages.MessageField('PolicyAlternativeNameServerConfigTargetNameServer', 3, repeated=True)
+
+
+class PolicyAlternativeNameServerConfigOutboundEndpoint(_messages.Message):
+  r"""A PolicyAlternativeNameServerConfigOutboundEndpoint object.
+
+  Fields:
+    kind: A string attribute.
+    name: Specified as a resource path including project and region. This
+      should be formatted like
+      projects/{project}/locations/{location}/outboundEndpoints/{endpoint}
+  """
+
+  kind = _messages.StringField(1, default='dns#policyAlternativeNameServerConfigOutboundEndpoint')
+  name = _messages.StringField(2)
 
 
 class PolicyAlternativeNameServerConfigTargetNameServer(_messages.Message):
@@ -2340,6 +2625,10 @@ class Quota(_messages.Message):
     networksPerPolicy: Maximum allowed number of networks per policy.
     networksPerResponsePolicy: Maximum allowed number of networks per response
       policy.
+    outboundEndpointsPerManagedZone: Maximum allowed number of outbound
+      endpoints per managed zone.
+    outboundEndpointsPerPolicy: Maximum allowed number of outbound endpoints
+      per policy.
     peeringZonesPerTargetNetwork: Maximum allowed number of consumer peering
       zones per target network owned by this producer project
     policies: Maximum allowed number of policies per project.
@@ -2378,18 +2667,20 @@ class Quota(_messages.Message):
   networksPerManagedZone = _messages.IntegerField(12, variant=_messages.Variant.INT32)
   networksPerPolicy = _messages.IntegerField(13, variant=_messages.Variant.INT32)
   networksPerResponsePolicy = _messages.IntegerField(14, variant=_messages.Variant.INT32)
-  peeringZonesPerTargetNetwork = _messages.IntegerField(15, variant=_messages.Variant.INT32)
-  policies = _messages.IntegerField(16, variant=_messages.Variant.INT32)
-  resourceRecordsPerRrset = _messages.IntegerField(17, variant=_messages.Variant.INT32)
-  responsePolicies = _messages.IntegerField(18, variant=_messages.Variant.INT32)
-  responsePolicyRulesPerResponsePolicy = _messages.IntegerField(19, variant=_messages.Variant.INT32)
-  rrsetAdditionsPerChange = _messages.IntegerField(20, variant=_messages.Variant.INT32)
-  rrsetDeletionsPerChange = _messages.IntegerField(21, variant=_messages.Variant.INT32)
-  rrsetsPerManagedZone = _messages.IntegerField(22, variant=_messages.Variant.INT32)
-  targetNameServersPerManagedZone = _messages.IntegerField(23, variant=_messages.Variant.INT32)
-  targetNameServersPerPolicy = _messages.IntegerField(24, variant=_messages.Variant.INT32)
-  totalRrdataSizePerChange = _messages.IntegerField(25, variant=_messages.Variant.INT32)
-  whitelistedKeySpecs = _messages.MessageField('DnsKeySpec', 26, repeated=True)
+  outboundEndpointsPerManagedZone = _messages.IntegerField(15, variant=_messages.Variant.INT32)
+  outboundEndpointsPerPolicy = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+  peeringZonesPerTargetNetwork = _messages.IntegerField(17, variant=_messages.Variant.INT32)
+  policies = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  resourceRecordsPerRrset = _messages.IntegerField(19, variant=_messages.Variant.INT32)
+  responsePolicies = _messages.IntegerField(20, variant=_messages.Variant.INT32)
+  responsePolicyRulesPerResponsePolicy = _messages.IntegerField(21, variant=_messages.Variant.INT32)
+  rrsetAdditionsPerChange = _messages.IntegerField(22, variant=_messages.Variant.INT32)
+  rrsetDeletionsPerChange = _messages.IntegerField(23, variant=_messages.Variant.INT32)
+  rrsetsPerManagedZone = _messages.IntegerField(24, variant=_messages.Variant.INT32)
+  targetNameServersPerManagedZone = _messages.IntegerField(25, variant=_messages.Variant.INT32)
+  targetNameServersPerPolicy = _messages.IntegerField(26, variant=_messages.Variant.INT32)
+  totalRrdataSizePerChange = _messages.IntegerField(27, variant=_messages.Variant.INT32)
+  whitelistedKeySpecs = _messages.MessageField('DnsKeySpec', 28, repeated=True)
 
 
 class RRSetRoutingPolicy(_messages.Message):

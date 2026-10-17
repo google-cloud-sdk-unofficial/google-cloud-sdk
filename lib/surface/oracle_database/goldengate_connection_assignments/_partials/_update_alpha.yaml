@@ -20,12 +20,22 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Update goldengateConnectionAssignments
-    description: Update a goldengateConnectionAssignment
+    brief: Update labels of a GoldengateConnectionAssignment.
+    description: |-
+      Update labels of a GoldengateConnectionAssignment. Only labels can be updated on this resource;
+      use `--update-labels`, `--remove-labels` or `--clear-labels` to manage them.
     examples: |-
-      To update the goldengateConnectionAssignment, run:
+      To add or update labels on a GoldengateConnectionAssignment with id `my-assignment` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-assignment --location=us-east4 --update-labels=env=prod,team=oasis
+
+      To remove the label `team` from the GoldengateConnectionAssignment, run:
+
+        $ {command} my-assignment --location=us-east4 --remove-labels=team
+
+      To clear all labels from the GoldengateConnectionAssignment, run:
+
+        $ {command} my-assignment --location=us-east4 --clear-labels
   arguments:
     params:
     - help_text: |-
@@ -36,36 +46,6 @@
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_goldengate_connection_assignments
       required: true
-    - group:
-        api_field: goldengateConnectionAssignment.properties
-        arg_name: properties
-        clearable: true
-        required: false
-        help_text: |-
-          The properties of a GoldengateConnectionAssignment.
-        params:
-        - arg_name: properties-goldengate-connection
-          help_text: |-
-            The GoldengateConnection resource to be assigned.
-            Format:
-            projects/{project}/locations/{location}/goldengateConnections/{goldengate_connection}
-          is_positional: false
-          is_primary_resource: false
-          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_goldengate_connections
-          resource_method_params:
-            goldengateConnectionAssignment.properties.goldengateConnection: '{__relative_name__}'
-          required: false
-        - arg_name: properties-goldengate-deployment
-          help_text: |-
-            The GoldenGateDeployment to assign the connection to.
-            Format:
-            projects/{project}/locations/{location}/goldengateDeployments/{goldengate_deployment}
-          is_positional: false
-          is_primary_resource: false
-          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_goldengate_deployments
-          resource_method_params:
-            goldengateConnectionAssignment.properties.goldengateDeployment: '{__relative_name__}'
-          required: false
     - arg_name: labels
       api_field: goldengateConnectionAssignment.labels
       required: false
@@ -76,12 +56,6 @@
       spec:
       - api_field: key
       - api_field: value
-    - arg_name: display-name
-      api_field: goldengateConnectionAssignment.displayName
-      required: false
-      repeated: false
-      help_text: |-
-        The display name for the GoldengateConnectionAssignment.
     - arg_name: request-id
       api_field: requestId
       required: false

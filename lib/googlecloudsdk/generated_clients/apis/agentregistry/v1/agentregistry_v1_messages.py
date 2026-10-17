@@ -885,6 +885,17 @@ class AgentregistryProjectsLocationsGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class AgentregistryProjectsLocationsGetSkillEncryptionSpecRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsGetSkillEncryptionSpecRequest object.
+
+  Fields:
+    name: Required. The name of the SkillEncryptionSpec to retrieve. Format:
+      `projects/{project}/locations/{location}/skillEncryptionSpec`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class AgentregistryProjectsLocationsListRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsListRequest object.
 
@@ -1147,6 +1158,27 @@ class AgentregistryProjectsLocationsServicesPatchRequest(_messages.Message):
   requestId = _messages.StringField(2)
   service = _messages.MessageField('Service', 3)
   updateMask = _messages.StringField(4)
+
+
+class AgentregistryProjectsLocationsUpdateSkillEncryptionSpecRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsUpdateSkillEncryptionSpecRequest object.
+
+  Fields:
+    name: Identifier. Resource name of the SkillEncryptionSpec. Format:
+      `projects/{project}/locations/{location}/skillEncryptionSpec`
+    skillEncryptionSpec: A SkillEncryptionSpec resource to be passed as the
+      request body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the SkillEncryptionSpec resource by the update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all fields present in the request
+      will be overwritten.
+  """
+
+  name = _messages.StringField(1, required=True)
+  skillEncryptionSpec = _messages.MessageField('SkillEncryptionSpec', 2)
+  updateMask = _messages.StringField(3)
 
 
 class AiApplication(_messages.Message):
@@ -2810,6 +2842,31 @@ class Service(_messages.Message):
   name = _messages.StringField(8)
   registryResource = _messages.StringField(9)
   updateTime = _messages.StringField(10)
+
+
+class SkillEncryptionSpec(_messages.Message):
+  r"""Once the SkillEncryptionSpec is configured, new Skill payloads are
+  protected using the provided customer-managed encryption key instead of a
+  Google-managed encryption key. SkillEncryptionSpec cannot be set if any
+  Skills have already been created in the project and location.
+
+  Fields:
+    createTime: Output only. Creation timestamp.
+    cryptoKeyName: Required. The Cloud KMS CryptoKey resource name used to
+      protect Skill payloads in this project and location. This field can be
+      set or updated only when no Skills exist in the target project and
+      location. Once any Skill exists in the location, updating this field is
+      rejected with `FAILED_PRECONDITION`. Format: `projects/{project}/locatio
+      ns/{location}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}`
+    name: Identifier. Resource name of the SkillEncryptionSpec. Format:
+      `projects/{project}/locations/{location}/skillEncryptionSpec`
+    updateTime: Output only. Most recent update timestamp.
+  """
+
+  createTime = _messages.StringField(1)
+  cryptoKeyName = _messages.StringField(2)
+  name = _messages.StringField(3)
+  updateTime = _messages.StringField(4)
 
 
 class Source(_messages.Message):

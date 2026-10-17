@@ -42,6 +42,7 @@ class DnsV1alpha2(base_api.BaseApiClient):
     self.dnsKeys = self.DnsKeysService(self)
     self.managedZoneOperations = self.ManagedZoneOperationsService(self)
     self.managedZones = self.ManagedZonesService(self)
+    self.outboundEndpoints = self.OutboundEndpointsService(self)
     self.policies = self.PoliciesService(self)
     self.projects_managedZones = self.ProjectsManagedZonesService(self)
     self.projects = self.ProjectsService(self)
@@ -512,6 +513,151 @@ class DnsV1alpha2(base_api.BaseApiClient):
         request_field='managedZoneResource',
         request_type_name='DnsManagedZonesUpdateRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class OutboundEndpointsService(base_api.BaseApiService):
+    """Service class for the outboundEndpoints resource."""
+
+    _NAME = 'outboundEndpoints'
+
+    def __init__(self, client):
+      super(DnsV1alpha2.OutboundEndpointsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new Outbound Endpoint.
+
+      Args:
+        request: (DnsOutboundEndpointsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='dns/v1alpha2/projects/{projectsId}/locations/{locationsId}/outboundEndpoints',
+        http_method='POST',
+        method_id='dns.outboundEndpoints.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['clientOperationId', 'outboundEndpointId', 'requestId'],
+        relative_path='dns/v1alpha2/{+parent}/outboundEndpoints',
+        request_field='outboundEndpoint',
+        request_type_name='DnsOutboundEndpointsCreateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a previously created Outbound Endpoint.
+
+      Args:
+        request: (DnsOutboundEndpointsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='dns/v1alpha2/projects/{projectsId}/locations/{locationsId}/outboundEndpoints/{outboundEndpointsId}',
+        http_method='DELETE',
+        method_id='dns.outboundEndpoints.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['clientOperationId', 'requestId'],
+        relative_path='dns/v1alpha2/{+name}',
+        request_field='',
+        request_type_name='DnsOutboundEndpointsDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Fetches the representation of an existing Outbound Endpoint.
+
+      Args:
+        request: (DnsOutboundEndpointsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (OutboundEndpoint) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='dns/v1alpha2/projects/{projectsId}/locations/{locationsId}/outboundEndpoints/{outboundEndpointsId}',
+        http_method='GET',
+        method_id='dns.outboundEndpoints.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['clientOperationId'],
+        relative_path='dns/v1alpha2/{+name}',
+        request_field='',
+        request_type_name='DnsOutboundEndpointsGetRequest',
+        response_type_name='OutboundEndpoint',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Enumerates all Outbound Endpoints associated with a project.
+
+      Args:
+        request: (DnsOutboundEndpointsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListOutboundEndpointsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='dns/v1alpha2/projects/{projectsId}/locations/{locationsId}/outboundEndpoints',
+        http_method='GET',
+        method_id='dns.outboundEndpoints.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['clientOperationId', 'pageSize', 'pageToken'],
+        relative_path='dns/v1alpha2/{+parent}/outboundEndpoints',
+        request_field='',
+        request_type_name='DnsOutboundEndpointsListRequest',
+        response_type_name='ListOutboundEndpointsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an existing Outbound Endpoint.
+
+      Args:
+        request: (DnsOutboundEndpointsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='dns/v1alpha2/projects/{projectsId}/locations/{locationsId}/outboundEndpoints/{outboundEndpointsId}',
+        http_method='PATCH',
+        method_id='dns.outboundEndpoints.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['clientOperationId', 'requestId', 'updateMask'],
+        relative_path='dns/v1alpha2/{+name}',
+        request_field='outboundEndpoint',
+        request_type_name='DnsOutboundEndpointsPatchRequest',
+        response_type_name='GoogleLongrunningOperation',
         supports_download=False,
     )
 

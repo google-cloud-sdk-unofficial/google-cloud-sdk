@@ -39,9 +39,14 @@ def GetWorkloadURI(resource):
 class WorkloadsClient(object):
   """Client for Workloads in Assured Workloads API."""
 
-  def __init__(self, release_track, no_http=False, api_version=None):
+  def __init__(
+      self, release_track, no_http=False, api_version=None, location=None
+  ):
     self.client = util.GetClientInstance(
-        release_track=release_track, api_version=api_version, no_http=no_http
+        release_track=release_track,
+        api_version=api_version,
+        no_http=no_http,
+        location=location,
     )
     self.messages = util.GetMessagesModule(
         release_track=release_track, api_version=api_version
@@ -414,5 +419,7 @@ class WorkloadsClient(object):
 
   def GetOperationResource(self, name):
     return resources.REGISTRY.ParseRelativeName(
-        name, collection='assuredworkloads.organizations.locations.operations'
+        name,
+        collection='assuredworkloads.organizations.locations.operations',
+        api_version=util.GetApiVersion(self._release_track),
     )

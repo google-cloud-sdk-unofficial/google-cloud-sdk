@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import json
 import logging
+import os
 from typing import Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Tuple
 import urllib.parse
 
@@ -243,6 +244,7 @@ class BigqueryHttp(http_request.HttpRequest):
       # applied to only methods that expect a JSON-type response.
       if 'headers' not in kwds:
         kwds['headers'] = {}
+
 
       # Set user-agent if not already set in BigqueryModel.request, e.g. for
       # DELETE requests.

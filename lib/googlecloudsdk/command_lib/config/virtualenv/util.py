@@ -27,11 +27,11 @@ import six
 MODULES = [
     'crcmod',
     'grpcio==1.84.0',
+    # pyOpenSSL pins an upper bound on cryptography, so the two move together.
     'pyopenssl==26.0.0',
+    'cryptography==46.0.7',
     'google_crc32c',
     'certifi',
-    ('https://github.com/googleapis/enterprise-certificate-proxy/releases/down'
-     'load/v0.3.17/cryptography-46.0.7-cp38-abi3-macosx_10_9_universal2.whl'),
 ]
 
 # Enable file name.

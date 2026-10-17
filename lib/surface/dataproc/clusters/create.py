@@ -104,6 +104,7 @@ class Create(base.CreateCommand):
           constants.ALLOW_ZERO_WORKERS_PROPERTY)
 
     clusters.ValidateReservationAffinityGroup(args)
+    clusters.ValidateHighObtainabilityArgs(args)
 
   def Run(self, args):
     self.ValidateArgs(args)

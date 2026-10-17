@@ -91,6 +91,7 @@ def _SetImagePush(skaffold_file, shared_docker):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Dev(base.Command):
   r"""Run a Cloud Run service in a local development environment."""
   detailed_help = {
@@ -303,7 +304,10 @@ def _EnsureComponentsInstalled(args):
     # gcloud build.
     return
 
-  components = ['skaffold']
+  components = []
+  if not (properties.VALUES.code.skaffold_path_override.Get() or
+          file_utils.FindExecutableOnPath('skaffold')):
+    components.append('skaffold')
   if args.IsKnownAndSpecified('cloud'):
     components.append('cloud-run-proxy')
     components.append('log-streaming')

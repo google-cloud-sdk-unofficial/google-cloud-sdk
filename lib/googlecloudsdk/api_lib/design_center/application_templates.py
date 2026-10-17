@@ -59,6 +59,52 @@ class ApplicationTemplatesClient(object):
 
     return self._service.ImportIaC(request)
 
+  def IngestIac(
+      self,
+      name,
+      *,
+      gcs_uri=None,
+      iac_module=None,
+      developer_connect_source_config=None,
+      git_source=None,
+      raw_terraform_import_enabled=False,
+      validate_catalog_compatibility=False
+  ):
+    """Calls the IngestApplicationTemplateIaC RPC.
+
+    Args:
+      name: str, The full resource name of the Application Template.
+      gcs_uri: str, The Cloud Storage URI of the IaC source.
+      iac_module: messages.IaCModule, The inline IaC module.
+      developer_connect_source_config: messages.DeveloperConnectSourceConfig,
+        The Developer Connect source.
+      git_source: messages.GitSource, The public Git source.
+      raw_terraform_import_enabled: bool, Whether to import the IaC as raw
+        Terraform without converting it to components.
+      validate_catalog_compatibility: bool, Whether to validate that the IaC is
+        compatible with the catalog.
+
+    Returns:
+      The long-running operation.
+    """
+    if not name:
+      raise ValueError('Application template name cannot be empty or None.')
+
+    ingest_iac_request = self.messages.IngestApplicationTemplateIaCRequest(
+        gcsUri=gcs_uri,
+        iacModule=iac_module,
+        devconnectSourceConfig=developer_connect_source_config,
+        gitSource=git_source,
+        rawTerraformImportEnabled=raw_terraform_import_enabled,
+        validateCatalogCompatibility=validate_catalog_compatibility,
+    )
+
+    request = self.messages.DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest(
+        name=name, ingestApplicationTemplateIaCRequest=ingest_iac_request
+    )
+
+    return self._service.IngestIaC(request)
+
   def GenerateAssessmentReport(self, name, *,
                                service_account=None):
     """Calls the GenerateApplicationTemplateAssessmentReport RPC.

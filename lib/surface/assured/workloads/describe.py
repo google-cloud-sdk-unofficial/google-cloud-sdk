@@ -22,21 +22,26 @@ from googlecloudsdk.calliope.base import ReleaseTrack
 from googlecloudsdk.command_lib.assured import flags
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        'Obtain details about a given Assured Workloads environment.',
-    'EXAMPLES':
-        """ \
+    'DESCRIPTION': (
+        'Obtain details about a given Assured Workloads environment.'
+    ),
+    'EXAMPLES': (
+        """\
         To describe an Assured Workloads environment in the us-central1 region,
-        belonging to an organization with ID 123, with workload ID 456 and an
-        etag of 789, run:
-
+        belonging to an organization with ID 123, with workload ID 456, run:
 
           $ {command} organizations/123/locations/us-central1/workloads/456
-        """,
+
+        To describe an Assured Workloads V2 environment:
+
+          $ {command} organizations/123/locations/us-central1/workloads/456 --version=v2
+        """
+    ),
 }
 
 
 @base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe Assured Workloads environment."""
 
@@ -45,13 +50,21 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     flags.AddDescribeWorkloadFlags(parser)
+    flags.AddVersionFlag(parser)
 
   def Run(self, args):
     """Run the describe command."""
     workload_resource = args.CONCEPTS.workload.Parse()
     region = workload_resource.Parent().Name()
     workload = workload_resource.RelativeName()
+    version = flags.GetApiVersion(args, release_track=self.ReleaseTrack())
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
-        release_track=self.ReleaseTrack(), region=region):
+        release_track=self.ReleaseTrack(), region=region
+    ):
+      if version == 'v2':
+        client = apis.WorkloadsClient(
+            release_track=self.ReleaseTrack(), api_version='v2'
+        )
+        return client.DescribeV2(name=workload)
       client = apis.WorkloadsClient(release_track=self.ReleaseTrack())
       return client.Describe(name=workload)

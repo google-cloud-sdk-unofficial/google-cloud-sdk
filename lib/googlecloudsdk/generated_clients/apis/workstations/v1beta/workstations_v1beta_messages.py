@@ -190,6 +190,9 @@ class BoostConfig(_messages.Message):
     bootDiskSizeGb: Optional. The size of the boot disk for the VM in
       gigabytes (GB). The minimum boot disk size is `30` GB. Defaults to `50`
       GB.
+    enableAutomaticFailover: Optional. Indicates if this boost config is
+      eligible for automatic failover when the service cannot provision the
+      default VM type. Defaults to `false`.
     enableNestedVirtualization: Optional. Whether to enable nested
       virtualization on boosted Cloud Workstations VMs running using this
       boost configuration. Defaults to false. Nested virtualization lets you
@@ -237,11 +240,12 @@ class BoostConfig(_messages.Message):
 
   accelerators = _messages.MessageField('Accelerator', 1, repeated=True)
   bootDiskSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  enableNestedVirtualization = _messages.BooleanField(3)
-  id = _messages.StringField(4)
-  machineType = _messages.StringField(5)
-  poolSize = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  reservationAffinity = _messages.MessageField('ReservationAffinity', 7)
+  enableAutomaticFailover = _messages.BooleanField(3)
+  enableNestedVirtualization = _messages.BooleanField(4)
+  id = _messages.StringField(5)
+  machineType = _messages.StringField(6)
+  poolSize = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  reservationAffinity = _messages.MessageField('ReservationAffinity', 8)
 
 
 class CancelOperationRequest(_messages.Message):

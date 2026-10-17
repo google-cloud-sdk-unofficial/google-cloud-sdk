@@ -288,6 +288,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddWorkerPoolAddPubsubSubscriptionFlag(parser, hidden=True)
     flags.AddWorkerPoolRemovePubsubSubscriptionFlag(parser, hidden=True)
     flags.AddWorkerPoolClearPubsubSubscriptionsFlag(parser, hidden=True)
+    flags.AddVpcConnectorArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

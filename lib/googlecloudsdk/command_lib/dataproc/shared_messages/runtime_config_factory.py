@@ -19,7 +19,85 @@ import collections
 
 from apitools.base.py import encoding
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.dataproc.shared_messages import autotuning_config_factory as standard_autotuning_config_factory
+from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
+
+_ENVIRONMENT_COLLECTION = 'dataproc.projects.locations.environments'
+# Managed Environments are only defined in the Dataproc v2 API.
+_ENVIRONMENT_API_VERSION = 'v2'
+
+
+def _GetWorkloadProjectAndLocation(
+    args: parser_extensions.Namespace,
+) -> tuple[str | None, str | None]:
+  """Returns the project and location of the workload being created.
+
+  The workload's resource argument takes precedence: the session for
+  `sessions create`, or the parent `--region` for `batches submit`, which takes
+  the batch ID as a plain `--batch` flag. Otherwise, falls back to the location
+  flags and the `core/project`, `dataproc/location`, and `dataproc/region`
+  properties.
+
+  Args:
+    args: Parsed arguments.
+
+  Returns:
+    A (project, location) tuple. Either value may be None.
+  """
+  project = None
+  location = None
+  concepts = getattr(args, 'CONCEPTS', None)
+  if concepts is not None:
+    for concept_name in ('session', 'region'):
+      concept = getattr(concepts, concept_name, None)
+      if concept is not None:
+        ref = concept.Parse()
+        if ref is not None:
+          project = ref.projectsId
+          location = ref.locationsId
+          break
+
+  if not project:
+    project = properties.VALUES.core.project.Get()
+  if not location:
+    location = (
+        getattr(args, 'location', None)
+        or getattr(args, 'region', None)
+        or properties.VALUES.dataproc.location.Get()
+        or properties.VALUES.dataproc.region.Get()
+    )
+
+  return project, location
+
+
+def _ResolveEnvironmentResourceName(
+    args: parser_extensions.Namespace,
+) -> str | None:
+  """Resolves the --environment value to a relative resource name.
+
+  Accepts an environment ID, a relative resource name, or a full URI. An
+  environment ID is resolved against the project and location of the workload.
+
+  Args:
+    args: Parsed arguments.
+
+  Returns:
+    The relative resource name of the environment, or None if --environment
+    is not specified.
+  """
+  env = getattr(args, 'environment', None)
+  if not env:
+    return None
+  project, location = _GetWorkloadProjectAndLocation(args)
+  return resources.REGISTRY.Parse(
+      env,
+      params={'projectsId': project, 'locationsId': location},
+      collection=_ENVIRONMENT_COLLECTION,
+      api_version=_ENVIRONMENT_API_VERSION,
+  ).RelativeName()
 
 
 class RuntimeConfigFactory(object):
@@ -95,6 +173,13 @@ class RuntimeConfigFactory(object):
     if args.version:
       kwargs['version'] = args.version
 
+    environment = _ResolveEnvironmentResourceName(args)
+    if environment:
+      kwargs['environment'] = environment
+    base_environment_version = getattr(args, 'base_environment_version', None)
+    if base_environment_version:
+      kwargs['baseEnvironmentVersion'] = base_environment_version
+
     if self.include_autotuning:
       autotuning_config = self.autotuning_config_factory.GetMessage(args)
       if autotuning_config:
@@ -111,11 +196,41 @@ class RuntimeConfigFactory(object):
     return self.dataproc.messages.RuntimeConfig(**kwargs)
 
 
+def AddEnvironmentArguments(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds the mutually exclusive environment flags for Python workloads.
+
+  Args:
+    parser: The argparse parser to add the flags to.
+  """
+  group = parser.add_mutually_exclusive_group(hidden=True)
+  group.add_argument(
+      '--environment',
+      hidden=True,
+      help=(
+          'Optional Managed Service for Apache Spark environment ID or full '
+          'resource name '
+          '(`projects/PROJECT/locations/LOCATION/environments/ENVIRONMENT`) '
+          'to execute the workload with.'
+      ),
+  )
+  group.add_argument(
+      '--base-environment-version',
+      hidden=True,
+      help=(
+          'Optional predefined base environment version to execute the '
+          'workload with (for example, `1.0`).'
+      ),
+  )
+
+
 def AddArguments(
     parser,
     use_config_property=False,
     include_autotuning=False,
     include_cohort=False,
+    include_environment=False,
 ):
   """Adds arguments related to RuntimeConfig message to the given parser."""
   parser.add_argument(
@@ -154,6 +269,8 @@ def AddArguments(
           'version will be used.'
       ),
   )
+  if include_environment:
+    AddEnvironmentArguments(parser)
 
   if include_cohort:
     cohort_group = parser.add_mutually_exclusive_group(hidden=True)

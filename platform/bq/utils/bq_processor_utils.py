@@ -302,14 +302,14 @@ def PrepareListRequest(
     reference,
     max_results: Optional[int] = None,
     page_token: Optional[str] = None,
-    filter_expression: Optional[str] = None,
+    filter: Optional[str] = None,  # pylint: disable=redefined-builtin
 ):
   """Create and populate a list request."""
   request = dict(reference)
   if max_results is not None:
     request['maxResults'] = max_results
-  if filter_expression is not None:
-    request['filter'] = filter_expression
+  if filter is not None:
+    request['filter'] = filter
   if page_token is not None:
     request['pageToken'] = page_token
   return request
@@ -325,6 +325,7 @@ class TransferListRequest(TypedDict):
   pageSize: Optional[int]
   pageToken: Optional[str]
   dataSourceIds: Optional[List[str]]
+  filter: Optional[str]
 
 
 # pylint: enable=invalid-name
@@ -335,7 +336,7 @@ def PrepareTransferListRequest(
     location: str,
     page_size: Optional[int] = None,
     page_token: Optional[str] = None,
-    data_source_ids: Optional[str] = None,
+    filter: Optional[str] = None,  # pylint: disable=redefined-builtin
 ) -> TransferListRequest:
   """Create and populate a list request."""
   request = dict(
@@ -345,28 +346,23 @@ def PrepareTransferListRequest(
     request['pageSize'] = page_size  # pyrefly: ignore[bad-assignment]
   if page_token is not None:
     request['pageToken'] = page_token
-  if data_source_ids is not None:
-    data_source_ids = data_source_ids.split(':')  # pyrefly: ignore[bad-assignment]
-    if data_source_ids[0] == 'dataSourceIds':  # pyrefly: ignore[unsupported-operation]
-      data_source_ids = data_source_ids[1].split(',')  # pyrefly: ignore[bad-assignment, unsupported-operation]
+  if filter is not None:
+    if filter.startswith('dataSourceIds:'):
+      data_source_ids = filter.split(':', 1)[1].split(',')
       request['dataSourceIds'] = data_source_ids  # pyrefly: ignore[bad-assignment]
     else:
-      raise bq_error.BigqueryError(
-          "Invalid filter flag values: '%s'. "
-          "Expected format: '--filter=dataSourceIds:id1,id2'"
-          % data_source_ids[0]
-      )
+      request['filter'] = filter
 
   return request  # pyrefly: ignore[bad-return]
 
 
 def ParseStateFilterExpression(
-    filter_expression: Optional[str] = None,
+    filter: Optional[str] = None,  # pylint: disable=redefined-builtin
 ) -> Optional[List[str]]:
   """Parses the state filter for list jobs.
 
   Args:
-    filter_expression: A string containing the state filter, e.g., 'state:done'.
+    filter: A string containing the state filter, e.g., 'state:done'.
 
   Returns:
     A single state filter or a list of filters to apply. Returns None if no
@@ -375,19 +371,19 @@ def ParseStateFilterExpression(
   Raises:
     bq_error.BigqueryClientError: if the filter expression is invalid.
   """
-  if filter_expression is None:
+  if filter is None:
     return None
-  if filter_expression.startswith('states:'):
+  if filter.startswith('states:'):
     try:
-      return filter_expression.split(':')[1].split(',')
+      return filter.split(':')[1].split(',')
     except IndexError as e:
       raise bq_error.BigqueryError(
-          'Invalid flag argument "' + filter_expression + '"'
+          'Invalid flag argument "' + filter + '"'
       ) from e
   else:
     raise bq_error.BigqueryError(
         'Invalid flag argument "'
-        + filter_expression
+        + filter
         + ', the expression must start with "states:"'
     )
 

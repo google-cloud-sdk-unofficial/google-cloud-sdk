@@ -304,7 +304,7 @@ class GsuiteaddonsV1(base_api.BaseApiClient):
     )
 
     def GetChatAppConfig(self, request, global_params=None):
-      r"""Gets a Chat app configuration.
+      r"""Gets a Chat app configuration. [Developer Preview](https://developers.google.com/workspace/preview).
 
       Args:
         request: (GsuiteaddonsProjectsGetChatAppConfigRequest) input message
@@ -331,7 +331,7 @@ class GsuiteaddonsV1(base_api.BaseApiClient):
     )
 
     def UpdateChatAppConfig(self, request, global_params=None):
-      r"""Updates a Chat app configuration.
+      r"""Updates a Chat app configuration. [Developer Preview](https://developers.google.com/workspace/preview).
 
       Args:
         request: (GsuiteaddonsProjectsUpdateChatAppConfigRequest) input message

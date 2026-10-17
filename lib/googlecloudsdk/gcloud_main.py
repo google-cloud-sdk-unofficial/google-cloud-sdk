@@ -53,6 +53,21 @@ if not config.Paths().sdk_root:
   # Don't do update checks if there is no install root.
   properties.VALUES.component_manager.disable_update_check.Set(True)
 
+# The 'app-lifecycle-manager' subgroups that are also exposed under the hidden,
+# deprecated 'saas-runtime' alias. This list is frozen: subgroups added to
+# 'app-lifecycle-manager' later must not be added here.
+_SAAS_RUNTIME_ALIASED_ALM_SUBGROUPS = (
+    'flags',
+    'releases',
+    'rollout_kinds',
+    'rollouts',
+    'saas',
+    'tenants',
+    'unit_kinds',
+    'unit_operations',
+    'units',
+)
+
 
 def UpdateCheck(command_path, **unused_kwargs):
   from googlecloudsdk.core.updater import update_manager
@@ -143,16 +158,17 @@ def CreateCLI(surfaces, translator=None):
   for dot_path, dir_path in surfaces:
     loader.AddModule(dot_path, dir_path, component=None)
 
-  # TODO(b/497928442): Remove cloned saas-runtime commands after a suitable
+  # TODO(b/497928442): Remove the saas-runtime alias after a suitable
   # deprecation period.
-  # Clone 'app-lifecycle-manager' surface into 'saas-runtime'.
-  loader.AddModule(
-      'saas_runtime', os.path.join(pkg_root, 'surface', 'app_lifecycle_manager')
-  )
-  loader.RegisterPreRunHook(
-      _IssueAppLifecycleManagerAliasWarning,
-      include_commands=r'gcloud\..*saas-runtime\..*',
-  )
+  # Map the existing 'app-lifecycle-manager' subgroups under the hidden,
+  # deprecated, ALPHA/BETA-only 'saas-runtime' group (surface/saas_runtime).
+  # The whole surface is not cloned, so that 'saas-runtime' does not go GA, or
+  # gain new subgroups, along with 'app-lifecycle-manager'.
+  alm_root = os.path.join(pkg_root, 'surface', 'app_lifecycle_manager')
+  for alm_subgroup in _SAAS_RUNTIME_ALIASED_ALM_SUBGROUPS:
+    loader.AddModule(
+        'saas_runtime.' + alm_subgroup, os.path.join(alm_root, alm_subgroup)
+    )
 
   # Clone 'container/hub' surface into 'container/fleet'
   # for backward compatibility.
@@ -199,14 +215,6 @@ def StartECPProxyManager(command_path=None, **unused_kwargs):
   from googlecloudsdk.core import ecp_proxy_manager
 
   ecp_proxy_manager.get_proxy_port()
-
-
-def _IssueAppLifecycleManagerAliasWarning(command_path=None):
-  del command_path
-  log.warning(
-      'The `gcloud saas-runtime` commands have been renamed and will soon be '
-      'removed. Please use `gcloud app-lifecycle-manager` instead.'
-  )
 
 
 @crash_handling.CrashManager

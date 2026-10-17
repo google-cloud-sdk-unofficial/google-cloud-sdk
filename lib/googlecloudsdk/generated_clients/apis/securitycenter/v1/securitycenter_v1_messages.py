@@ -2203,6 +2203,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EnvironmentVariable(_messages.Message):
   r"""A name-value pair representing an environment variable used in an
   operating system process.
@@ -2377,6 +2378,7 @@ class ExportFindingsMetadata(_messages.Message):
 class ExportFindingsResponse(_messages.Message):
   r"""The response to a ExportFindings request. Contains the LRO information.
   """
+
 
 
 class Expr(_messages.Message):
@@ -3209,8 +3211,8 @@ class GoogleCloudSecuritycenterV1BigQueryExport(_messages.Message):
       "projects/[project_id]/datasets/[bigquery_dataset_id]". BigQuery Dataset
       unique ID must contain only letters (a-z, A-Z), numbers (0-9), or
       underscores (_).
-    deletionNotificationsEnabled: Indicates whether the notifications will be
-      sent for deleted findings.
+    deletionNotificationsEnabled: Optional. Indicates whether the
+      notifications will be sent for deleted findings.
     description: The description of the export (max of 1024 characters).
     filter: Expression that defines the filter to apply across create/update
       events of findings. The expression is a list of zero or more
@@ -3557,6 +3559,7 @@ class GoogleCloudSecuritycenterV1NotificationMessage(_messages.Message):
   r"""Cloud SCC's Notification
 
   Fields:
+    deletedFinding: The deleted finding flag for this notification.
     finding: If it's a Finding based notification config, this field will be
       populated.
     notificationConfigName: Name of the notification config that generated
@@ -3564,9 +3567,10 @@ class GoogleCloudSecuritycenterV1NotificationMessage(_messages.Message):
     resource: The Cloud resource tied to this notification's Finding.
   """
 
-  finding = _messages.MessageField('Finding', 1)
-  notificationConfigName = _messages.StringField(2)
-  resource = _messages.MessageField('GoogleCloudSecuritycenterV1Resource', 3)
+  deletedFinding = _messages.BooleanField(1)
+  finding = _messages.MessageField('Finding', 2)
+  notificationConfigName = _messages.StringField(3)
+  resource = _messages.MessageField('GoogleCloudSecuritycenterV1Resource', 4)
 
 
 class GoogleCloudSecuritycenterV1Property(_messages.Message):
@@ -5008,6 +5012,8 @@ class GoogleCloudSecuritycenterV2BigQueryExport(_messages.Message):
       "projects/[project_id]/datasets/[bigquery_dataset_id]". BigQuery dataset
       unique ID must contain only letters (a-z, A-Z), numbers (0-9), or
       underscores (_).
+    deletionNotificationsEnabled: Optional. Indicates whether the
+      notifications will be sent for deleted findings.
     description: The description of the export (max of 1024 characters).
     filter: Expression that defines the filter to apply across create/update
       events of findings. The expression is a list of zero or more
@@ -5041,12 +5047,13 @@ class GoogleCloudSecuritycenterV2BigQueryExport(_messages.Message):
   createTime = _messages.StringField(1)
   cryptoKeyName = _messages.StringField(2)
   dataset = _messages.StringField(3)
-  description = _messages.StringField(4)
-  filter = _messages.StringField(5)
-  mostRecentEditor = _messages.StringField(6)
-  name = _messages.StringField(7)
-  principal = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  deletionNotificationsEnabled = _messages.BooleanField(4)
+  description = _messages.StringField(5)
+  filter = _messages.StringField(6)
+  mostRecentEditor = _messages.StringField(7)
+  name = _messages.StringField(8)
+  principal = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class GoogleCloudSecuritycenterV2Binding(_messages.Message):
@@ -8525,6 +8532,7 @@ class GoogleCloudSecuritycenterV2NotificationMessage(_messages.Message):
   r"""Cloud SCC's Notification
 
   Fields:
+    deletedFinding: The deleted finding flag for this notification.
     finding: If it's a Finding based notification config, this field will be
       populated.
     notificationConfigName: Name of the notification config that generated
@@ -8532,9 +8540,10 @@ class GoogleCloudSecuritycenterV2NotificationMessage(_messages.Message):
     resource: The Cloud resource tied to this notification's Finding.
   """
 
-  finding = _messages.MessageField('GoogleCloudSecuritycenterV2Finding', 1)
-  notificationConfigName = _messages.StringField(2)
-  resource = _messages.MessageField('GoogleCloudSecuritycenterV2Resource', 3)
+  deletedFinding = _messages.BooleanField(1)
+  finding = _messages.MessageField('GoogleCloudSecuritycenterV2Finding', 2)
+  notificationConfigName = _messages.StringField(3)
+  resource = _messages.MessageField('GoogleCloudSecuritycenterV2Resource', 4)
 
 
 class GoogleCloudSecuritycenterV2Object(_messages.Message):
@@ -11301,8 +11310,8 @@ class NotificationConfig(_messages.Message):
   to send notifications for create/update events of findings, assets and etc.
 
   Fields:
-    deletionNotificationsEnabled: Indicates whether the notifications will be
-      sent for deleted findings.
+    deletionNotificationsEnabled: Optional. Indicates whether the
+      notifications will be sent for deleted findings.
     description: The description of the notification config (max of 1024
       characters).
     name: The relative resource name of this notification config. See:

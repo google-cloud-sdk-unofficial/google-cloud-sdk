@@ -20,12 +20,22 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Update odbSubnets
-    description: Update an odbSubnet
+    brief: Update labels of an OdbSubnet.
+    description: |-
+      Update labels of an OdbSubnet. Only labels can be updated on this resource;
+      use `--update-labels`, `--remove-labels` or `--clear-labels` to manage them.
     examples: |-
-      To update the odbSubnet, run:
+      To add or update labels on an OdbSubnet with id `my-odbsubnet` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-odbsubnet --odb-network=my-odbnetwork --location=us-east4 --update-labels=env=prod,team=oasis
+
+      To remove the label `team` from the OdbSubnet, run:
+
+        $ {command} my-odbsubnet --odb-network=my-odbnetwork --location=us-east4 --remove-labels=team
+
+      To clear all labels from the OdbSubnet, run:
+
+        $ {command} my-odbsubnet --odb-network=my-odbnetwork --location=us-east4 --clear-labels
   arguments:
     params:
     - help_text: |-
@@ -35,28 +45,6 @@
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_odb_networks_odb_subnets
       required: true
-    - arg_name: cidr-range
-      api_field: odbSubnet.cidrRange
-      required: false
-      repeated: false
-      help_text: |-
-        The CIDR range of the subnet.
-    - arg_name: purpose
-      api_field: odbSubnet.purpose
-      required: false
-      help_text: |-
-        Purpose of the subnet.
-      choices:
-      - arg_value: client-subnet
-        enum_value: CLIENT_SUBNET
-        help_text: |-
-          Subnet to be used for client connections.
-        hidden: true
-      - arg_value: backup-subnet
-        enum_value: BACKUP_SUBNET
-        help_text: |-
-          Subnet to be used for backup.
-        hidden: true
     - arg_name: labels
       api_field: odbSubnet.labels
       required: false

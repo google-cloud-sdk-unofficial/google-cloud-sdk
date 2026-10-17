@@ -191,7 +191,7 @@ def list_transfer_configs(
     location: Optional[str] = None,
     page_size: Optional[int] = None,
     page_token: Optional[str] = None,
-    data_source_ids: Optional[str] = None,
+    filter: Optional[str] = None,  # pylint: disable=redefined-builtin
 ):
   """Return a list of transfer configurations.
 
@@ -201,7 +201,8 @@ def list_transfer_configs(
     location: The location id, e.g. 'us' or 'eu'.
     page_size: The maximum number of transfer configurations to return.
     page_token: Current page token (optional).
-    data_source_ids: The dataSourceIds to display transfer configurations for.
+    filter: The filter string to apply, e.g., dataSourceIds:cli_e2e or standard
+      AIP-160 filters.
 
   Returns:
     A list of transfer configurations.
@@ -216,7 +217,7 @@ def list_transfer_configs(
     if page_size > bq_processor_utils.MAX_RESULTS:
       page_size = bq_processor_utils.MAX_RESULTS
   request = bq_processor_utils.PrepareTransferListRequest(
-      reference, location, page_size, page_token, data_source_ids  # pyrefly: ignore[bad-argument-type]
+      reference, location, page_size, page_token, filter  # pyrefly: ignore[bad-argument-type]
   )
   if request:
     bq_processor_utils.ApplyParameters(request)
@@ -235,7 +236,7 @@ def list_transfer_configs(
             location,  # pyrefly: ignore[bad-argument-type]
             page_size - len(results),
             result['nextPageToken'],
-            data_source_ids,
+            filter,
         )
         if request:
           bq_processor_utils.ApplyParameters(request)
@@ -474,6 +475,7 @@ def update_transfer_config(
     destination_kms_key: Optional[str] = None,
     notification_pubsub_topic: Optional[str] = None,
     schedule_args: Optional[TransferScheduleArgs] = None,
+    dataplex_entry_group: Optional[str] = None,
 ):
   """Updates a transfer config.
 
@@ -552,6 +554,12 @@ def update_transfer_config(
     update_items['notification_pubsub_topic'] = notification_pubsub_topic
     update_mask.append('transfer_config.notification_pubsub_topic')
 
+  if dataplex_entry_group:
+    update_items['metadataDestination'] = {
+        'dataplexConfiguration': {'entryGroup': dataplex_entry_group}
+    }
+    update_mask.append('transfer_config.metadata_destination')
+
   if auth_info is not None and AUTHORIZATION_CODE in auth_info:
     update_mask.append(AUTHORIZATION_CODE)
 
@@ -606,6 +614,7 @@ def create_transfer_config(
     destination_kms_key: Optional[str] = None,
     managed_table_type: Optional[str] = None,
     location: Optional[str] = None,
+    dataplex_entry_group: Optional[str] = None,
 ):
   """Create a transfer config corresponding to TransferConfigReference.
 
@@ -631,6 +640,8 @@ def create_transfer_config(
     destination_kms_key: Optional KMS key for encryption.
     managed_table_type: Optional destination table type for the transfer config.
     location: The location where the new transfer config will run.
+    dataplex_entry_group: Optional Dataplex entry group resource name to
+      automatically catalog transfer table metadata.
 
   Raises:
     BigqueryNotFoundError: if a requested item is not found.
@@ -690,6 +701,11 @@ def create_transfer_config(
 
   if managed_table_type:
     create_items['managed_table_type'] = managed_table_type
+
+  if dataplex_entry_group:
+    create_items['metadataDestination'] = {
+        'dataplexConfiguration': {'entryGroup': dataplex_entry_group}
+    }
 
   new_transfer_config = (
       transfer_client.projects()

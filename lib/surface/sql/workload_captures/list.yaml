@@ -1,0 +1,22 @@
+release_tracks: [BETA, ALPHA]
+hints:
+  read_only: true
+help_text:
+  brief: Lists captured workloads for a Cloud SQL instance.
+  description: |
+    Lists captured workloads for a Cloud SQL instance.
+  examples: |
+    To list captured workloads for an instance:
+
+      $ {command} --instance=my-instance
+request:
+  collection: sql.workloadCaptures
+  method: list
+  regional_endpoint_compatibility: SUPPORTED
+arguments:
+  resource:
+    help_text: Cloud SQL instance ID.
+    spec: !REF googlecloudsdk.command_lib.sql.resources:instance
+    is_positional: false
+    override_resource_collection: true
+    is_parent_resource: true

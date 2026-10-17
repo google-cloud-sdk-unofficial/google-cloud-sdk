@@ -1320,26 +1320,25 @@ def AddSlurmConfFile(
   )
 
 
-def AddSlurmDisableHealthCheckProgram(
-    parser, api_version=None, hidden=False, include_update_flags=False
+def AddEnableSlurmHealthCheck(
+    parser, api_version=None, hidden=False
 ):
-  """Adds a slurm disable health check program flag for the given API version."""
+  """Adds an enable slurm health check flag for the given API version."""
   if api_version not in ["v1alpha"]:
     raise ValueError(
-        "Unsupported API version for slurm-disable-health-check-program:"
+        "Unsupported API version for enable-slurm-health-check:"
         f" {api_version!r}"
     )
-  flag_name = "slurm-disable-health-check-program"
-  if include_update_flags:
-    flag_name = f"update-{flag_name}"
+  flag_name = "enable-slurm-health-check"
   parser.add_argument(
       f"--{flag_name}",
       help=textwrap.dedent(f"""
-        If true, health checking is disabled, and health_check_interval,
+        If false, Slurm health checking is disabled, and health_check_interval,
         health_check_node_state, and health_check_program should not be passed in.
 
-        For example --{flag_name}
+        For example --no-{flag_name}
       """),
+      default=True,
       action="store_true",
       hidden=hidden,
   )
@@ -1443,4 +1442,3 @@ def AddManagedInstanceGroups(
         required=required,
         hidden=hidden,
     )
-

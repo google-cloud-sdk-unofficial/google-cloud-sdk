@@ -100,19 +100,22 @@ class AgentConnectivityTemplate(_messages.Message):
     PRIVATE = 2
 
   class AgentComputeValueValuesEnum(_messages.Enum):
-    r"""Optional. The compute environment where the agent is hosted. Exactly
-    one type of compute must be chosen.
+    r"""Optional. The compute environment where the agent is hosted.
+
+    Exactly one type of compute must be chosen.
 
     Values:
       AGENT_COMPUTE_UNSPECIFIED: Unspecified compute type.
       GKE: Google Kubernetes Engine.
       CLOUD_RUN: Google Cloud Run.
       BORG: Google Borg (for 1P producers).
+      GCE_VM: Google Compute Engine VM.
     """
     AGENT_COMPUTE_UNSPECIFIED = 0
     GKE = 1
     CLOUD_RUN = 2
     BORG = 3
+    GCE_VM = 4
 
   class DeploymentModelValueValuesEnum(_messages.Enum):
     r"""Required. The deployment model for the gateway.
@@ -2354,6 +2357,7 @@ class ExpressLinkSource(_messages.Message):
 
 class ExtensionBinding(_messages.Message):
   r"""`ExtensionBinding` is a resource representing the attachment of an
+
   extension to a service.
 
   Messages:
@@ -2362,7 +2366,11 @@ class ExtensionBinding(_messages.Message):
       requirements](https://cloud.google.com/compute/docs/labeling-
       resources#requirements).
     ProducerMetadataValue: Optional. Additional metadata that should be passed
-      to the attached extension with each request.
+      to the attached extension with each request. This field is subject to
+      the following limitations: * The total size of the metadata must be less
+      than 1 KiB. * The total number of keys must be less than 16. * The
+      length of each key must be less than 64 characters. * The length of each
+      value must be less than 1024 characters.
 
   Fields:
     createTime: Output only. The timestamp when the resource was created.
@@ -2377,26 +2385,29 @@ class ExtensionBinding(_messages.Message):
       resource. The format must comply with [the following
       requirements](https://cloud.google.com/compute/docs/labeling-
       resources#requirements).
-    matchConditions: Optional. A list of match conditions to match against the
-      incoming request. The extension will be invoked if at least one
-      condition matches the request, or if no match conditions are specified.
-      Limited to 5 conditions.
+    matchConditions: Optional. A list of match conditions to evaluate against
+      the incoming request. The extension is invoked if the request matches at
+      least one condition, or if no match conditions are specified. A request
+      matches a condition only if it matches every field that is set in that
+      condition. Limited to 5 conditions.
     name: Identifier. Name of the `ExtensionBinding` resource in the following
       format: `projects/{project}/locations/{location}/extensionBindings/{exte
       nsion_binding}`.
     priority: Optional. Priority of the extension binding. Lower numbers
-      indicate higher priority. Priority of extension bindings are used to
-      determine the order in which extension bindings are applied to a
-      request.
+      indicate higher priority. The priority determines the order in which
+      extension bindings are applied to a request.
     producerExtension: Required. The name of the extension that this binding
       should attach to target resources. Format: For Google-provided
-      extensions, specify the service endpoint (see [Model Armor
-      integration](https://docs.cloud.google.com/model-armor/integrations))
+      extensions, specify the service endpoint, for example `modelarmor.us-
+      central1.rep.googleapis.com`.
     producerMetadata: Optional. Additional metadata that should be passed to
-      the attached extension with each request.
+      the attached extension with each request. This field is subject to the
+      following limitations: * The total size of the metadata must be less
+      than 1 KiB. * The total number of keys must be less than 16. * The
+      length of each key must be less than 64 characters. * The length of each
+      value must be less than 1024 characters.
     target: Required. Specifies a target to which this `ExtensionBinding`
-      should be attached. The target can be either a single resource or a
-      scope of resources.
+      should be attached.
     updateTime: Output only. The timestamp when the resource was updated.
   """
 
@@ -2429,8 +2440,13 @@ class ExtensionBinding(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ProducerMetadataValue(_messages.Message):
-    r"""Optional. Additional metadata that should be passed to the attached
-    extension with each request.
+    r"""Optional.
+
+    Additional metadata that should be passed to the attached extension with
+    each request. This field is subject to the following limitations: * The
+    total size of the metadata must be less than 1 KiB. * The total number of
+    keys must be less than 16. * The length of each key must be less than 64
+    characters. * The length of each value must be less than 1024 characters.
 
     Messages:
       AdditionalProperty: An additional property for a ProducerMetadataValue
@@ -2496,20 +2512,20 @@ class ExtensionBindingMatchConditionStringMatch(_messages.Message):
   r"""Specifies matching logic for string values.
 
   Fields:
-    contains: Optional. The input string must have the substring specified
-      here. Note: empty contains match is not allowed, please use regex
-      instead. Examples: * ``abc`` matches the value ``xyz.abc.def``
+    contains: Optional. The input string must contain the substring specified
+      here. An empty substring is not allowed. Examples: * `abc` matches the
+      value `xyz.abc.def`.
     exact: Optional. The input string must match exactly the string specified
-      here. Examples: * ``abc`` only matches the value ``abc``.
-    ignoreCase: Optional. If true, indicates the exact/prefix/suffix/contains
-      matching should be case insensitive. For example, the matcher ``data``
-      will match both input string ``Data`` and ``data`` if set to true.
-    prefix: Optional. The input string must have the prefix specified here.
-      Note: empty prefix is not allowed. Examples: * ``abc`` matches the value
-      ``abc.xyz``
-    suffix: Optional. The input string must have the suffix specified here.
-      Note: empty prefix is not allowed, please use regex instead. Examples: *
-      ``abc`` matches the value ``xyz.abc``
+      here. Examples: * `abc` only matches the value `abc`.
+    ignoreCase: Optional. If true, the `exact`, `prefix`, `suffix`, or
+      `contains` match is case insensitive. For example, the matcher `data`
+      matches both `Data` and `data` when set to true.
+    prefix: Optional. The input string must have the prefix specified here. An
+      empty prefix is not allowed. Examples: * `abc` matches the value
+      `abc.xyz`.
+    suffix: Optional. The input string must have the suffix specified here. An
+      empty suffix is not allowed. Examples: * `abc` matches the value
+      `xyz.abc`.
   """
 
   contains = _messages.StringField(1)
@@ -2523,11 +2539,12 @@ class ExtensionBindingMatchConditionTo(_messages.Message):
   r"""Describes properties of one or more destinations of a request.
 
   Fields:
-    destination: Optional. Describes properties of destination of a request.
-      Within a destination, the match follows AND semantics across fields and
-      OR semantics within a field, i.e. a match occurs when ANY path matches
-      AND ANY header matches and ANY method matches. At least one of
-      destination or not_destination must be specified.
+    destination: Optional. Describes properties of the destination of a
+      request. A request matches the destination only if it matches every
+      field that is set. Fields that are not set are always considered a
+      match. For example, if only `hosts` and `paths` are set, a request
+      matches when any host matches and any path matches. At least one of
+      `destination` or `not_destination` must be specified.
     notDestination: Optional. Describes the negated properties of the request
       destination. Extension will not be invoked on requests that match the
       criteria specified in this field. At least one of destination or
@@ -2569,9 +2586,10 @@ class ExtensionBindingMatchConditionToDestinationHeaderSet(_messages.Message):
   r"""Describes a set of HTTP headers to match against.
 
   Fields:
-    headers: Required. A list of headers to match against in http header. If
-      multiple header matches are provided, they will be evaluated as an AND,
-      i.e. all header matches must match for the request to match.
+    headers: Required. A list of HTTP headers to match against. If multiple
+      header matches are provided, they are evaluated as an AND, meaning that
+      all header matches must match for the request to match. Limited to 10
+      headers.
   """
 
   headers = _messages.MessageField('ExtensionBindingMatchConditionHeaderMatch', 1, repeated=True)
@@ -2579,12 +2597,16 @@ class ExtensionBindingMatchConditionToDestinationHeaderSet(_messages.Message):
 
 class ExtensionBindingTarget(_messages.Message):
   r"""Specifies a list of targets to which this `ExtensionBinding` should
+
   attach.
 
   Fields:
-    resources: Optional. The reference to the target resource, to which this
+    resources: Optional. The references to the target resources to which this
       binding should attach. Exactly one of `resources` or `scope` must be
-      set.
+      set. For AI Application resources, specify the full resource name in the
+      format:
+      `projects/{project}/locations/{location}/applications/{application}`.
+      Limited to 1 resource.
     scope: Optional. Specifies the scope of resources to which this binding
       should attach. Exactly one of `resources` or `scope` must be set.
   """
@@ -2600,10 +2622,14 @@ class ExtensionBindingTargetScope(_messages.Message):
     ResourceTypesValueListEntryValuesEnum:
 
   Fields:
-    parent: Required. Parent resource name specification, in the format:
-      `projects/{project_number}`.
-    resourceTypes: Required. Type of the resource to which the binding should
-      attach. Limited to 1 resource type.
+    parent: Required. The parent resource that defines the scope, in the
+      format `projects/{project_number}`. When the scope is a project, the
+      binding applies to the resources that meet all of the following
+      conditions: * The resource belongs to the specified project. * The
+      resource is in the same location as the `ExtensionBinding`. * The
+      resource type is listed in `resource_types`.
+    resourceTypes: Required. The types of resources to which the binding
+      should attach. Limited to 1 resource type.
   """
 
   class ResourceTypesValueListEntryValuesEnum(_messages.Enum):
@@ -5718,21 +5744,6 @@ class ListMulticastGroupConsumerActivationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
-class ListMulticastGroupDefinitionsResponse(_messages.Message):
-  r"""Response message for ListMulticastGroupDefinitions.
-
-  Fields:
-    multicastGroupDefinitions: The list of multicast group definitions.
-    nextPageToken: A page token from an earlier query, as returned in
-      `next_page_token`.
-    unreachable: Locations that could not be reached.
-  """
-
-  multicastGroupDefinitions = _messages.MessageField('MulticastGroupDefinition', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-  unreachable = _messages.StringField(3, repeated=True)
-
-
 class ListMulticastGroupProducerActivationsResponse(_messages.Message):
   r"""Response message for ListMulticastGroupProducerActivations.
 
@@ -5776,21 +5787,6 @@ class ListMulticastGroupRangesResponse(_messages.Message):
   """
 
   multicastGroupRanges = _messages.MessageField('MulticastGroupRange', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-  unreachable = _messages.StringField(3, repeated=True)
-
-
-class ListMulticastGroupsResponse(_messages.Message):
-  r"""Response message for ListMulticastGroups.
-
-  Fields:
-    multicastGroups: The list of multicast groups.
-    nextPageToken: A page token from an earlier query, as returned in
-      `next_page_token`.
-    unreachable: Locations that could not be reached.
-  """
-
-  multicastGroups = _messages.MessageField('MulticastGroup', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -6892,86 +6888,6 @@ class MulticastDomainGroup(_messages.Message):
   updateTime = _messages.StringField(8)
 
 
-class MulticastGroup(_messages.Message):
-  r"""Multicast group resource.
-
-  Messages:
-    LabelsValue: Optional. Labels as key-value pairs.
-
-  Fields:
-    createTime: Output only. [Output only] The timestamp when the multicast
-      group was created.
-    description: Optional. An optional text description of the multicast
-      group.
-    ipCidrRange: Output only. [Output only] The multicast group IP address
-      range.
-    labels: Optional. Labels as key-value pairs.
-    logConfig: Optional. Specifies the logging options for the activities
-      performed regarding the multicast group. Defaults to false. If not
-      specified, inherit the logging options from the global multicast group
-      definition resource. If logging is enabled, logs are exported to Cloud
-      Logging. If the log config is explicitly set for the multicast group,
-      regardless if it is enabled or not, the value overrides what is
-      configured by the multicast group definition resource.
-    multicastDomainActivation: Optional. The resource name of the multicast
-      domain activation that is in the same zone as this multicast group. Use
-      the following format:
-      `projects/*/locations/*/multicastDomainActivations/*`.
-    multicastGroupConsumerActivations: Output only. The resource names of
-      associated multicast group consumer activations. Use the following
-      format: `projects/*/locations/*/multicastGroupConsumerActivations/*`.
-    multicastGroupDefinition: Optional. The resource name of the multicast
-      group definition for the group. Use the following format:
-      `projects/*/locations/global/multicastGroupDefinitions/*`.
-    name: Identifier. The resource name of the multicast group. Use the
-      following format: `projects/*/locations/*/multicastGroups/*`.
-    state: Output only. [Output only] The state of the resource.
-    uniqueId: Output only. [Output only] The Google-generated UUID for the
-      resource. This value is unique across all multicast group resources. If
-      a group is deleted and another with the same name is created, the new
-      group is assigned a different unique_id.
-    updateTime: Output only. [Output only] The timestamp when the multicast
-      group was most recently updated.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  ipCidrRange = _messages.StringField(3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  logConfig = _messages.MessageField('MulticastLogConfig', 5)
-  multicastDomainActivation = _messages.StringField(6)
-  multicastGroupConsumerActivations = _messages.StringField(7, repeated=True)
-  multicastGroupDefinition = _messages.StringField(8)
-  name = _messages.StringField(9)
-  state = _messages.MessageField('MulticastResourceState', 10)
-  uniqueId = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
-
-
 class MulticastGroupConsumerActivation(_messages.Message):
   r"""Multicast group consumer activation resource.
 
@@ -7070,93 +6986,6 @@ class MulticastGroupConsumerActivation(_messages.Message):
   state = _messages.MessageField('MulticastResourceState', 10)
   uniqueId = _messages.StringField(11)
   updateTime = _messages.StringField(12)
-
-
-class MulticastGroupDefinition(_messages.Message):
-  r"""Multicast group definition resource.
-
-  Messages:
-    LabelsValue: Optional. Labels as key-value pairs.
-
-  Fields:
-    consumerAcceptList: Optional. A list of consumer projects that are allowed
-      to subscribe to the multicast IP addresses within the range defined by
-      this MulticastGroupDefinition. The project can be specified using its
-      project ID or project number. If left empty, then all consumer projects
-      are allowed (unless require_explicit_accept is set to true) once they
-      have VPC networks associated to the multicast domain. The current max
-      length of the accept list is 100.
-    createTime: Output only. [Output only] The timestamp when the multicast
-      group definition was created.
-    description: Optional. An optional text description of the multicast group
-      definition.
-    ipCidrRange: Output only. [Output only] The multicast group IP address
-      range.
-    labels: Optional. Labels as key-value pairs.
-    logConfig: Optional. Specifies the logging options for the activities
-      performed related to all the multicast groups associated with the
-      multicast group definition. Defaults to false. If logging is enabled,
-      logs are exported to Cloud Logging.
-    multicastDomain: Required. The resource name of the multicast domain in
-      which to create this multicast group definition. Use the following
-      format: `projects/*/locations/global/multicastDomains/*`.
-    name: Identifier. The resource name of the multicast group definition. Use
-      the following format:
-      `projects/*/locations/global/multicastGroupDefinitions/*`.
-    requireExplicitAccept: Optional. Whether an empty consumer_accept_list
-      will deny all consumer projects.
-    reservedInternalRange: Required. The resource name of the internal range
-      reserved for this multicast group definition. The internal range must be
-      a Class D address (224.0.0.0 to 239.255.255.255) and have a prefix
-      length >= 23. Use the following format:
-      `projects/*/locations/global/internalRanges/*`.
-    state: Output only. [Output only] The state of the resource.
-    uniqueId: Output only. [Output only] The Google-generated UUID for the
-      resource. This value is unique across all multicast group definition
-      resources. If a group definition is deleted and another with the same
-      name is created, the new group definition is assigned a different
-      unique_id.
-    updateTime: Output only. [Output only] The timestamp when the multicast
-      group definition was most recently updated.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key-value pairs.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  consumerAcceptList = _messages.StringField(1, repeated=True)
-  createTime = _messages.StringField(2)
-  description = _messages.StringField(3)
-  ipCidrRange = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  logConfig = _messages.MessageField('MulticastLogConfig', 6)
-  multicastDomain = _messages.StringField(7)
-  name = _messages.StringField(8)
-  requireExplicitAccept = _messages.BooleanField(9)
-  reservedInternalRange = _messages.StringField(10)
-  state = _messages.MessageField('MulticastResourceState', 11)
-  uniqueId = _messages.StringField(12)
-  updateTime = _messages.StringField(13)
 
 
 class MulticastGroupProducerActivation(_messages.Message):
@@ -10781,140 +10610,6 @@ class NetworkservicesProjectsLocationsMulticastGroupConsumerActivationsPatchRequ
   updateMask = _messages.StringField(4)
 
 
-class NetworkservicesProjectsLocationsMulticastGroupDefinitionsCreateRequest(_messages.Message):
-  r"""A NetworkservicesProjectsLocationsMulticastGroupDefinitionsCreateRequest
-  object.
-
-  Fields:
-    multicastGroupDefinition: A MulticastGroupDefinition resource to be passed
-      as the request body.
-    multicastGroupDefinitionId: Required. A unique name for the multicast
-      group definition. The name is restricted to lower-case letters, numbers,
-      and hyphen, with the first character a lower-case letter, and the last a
-      letter or a number. The name must not exceed 48 characters.
-    parent: Required. The parent resource of the multicast group definition.
-      Use the following format: `projects/*/locations/global`.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes after the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-  """
-
-  multicastGroupDefinition = _messages.MessageField('MulticastGroupDefinition', 1)
-  multicastGroupDefinitionId = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
-
-
-class NetworkservicesProjectsLocationsMulticastGroupDefinitionsDeleteRequest(_messages.Message):
-  r"""A NetworkservicesProjectsLocationsMulticastGroupDefinitionsDeleteRequest
-  object.
-
-  Fields:
-    name: Required. The resource name of the multicast group definition to
-      delete. Use the following format:
-      `projects/*/locations/global/multicastGroupDefinitions/*`.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes after the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-  """
-
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-
-
-class NetworkservicesProjectsLocationsMulticastGroupDefinitionsGetRequest(_messages.Message):
-  r"""A NetworkservicesProjectsLocationsMulticastGroupDefinitionsGetRequest
-  object.
-
-  Fields:
-    name: Required. The resource name of the multicast group definition to
-      get. Use the following format:
-      `projects/*/locations/global/multicastGroupDefinitions/*`.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class NetworkservicesProjectsLocationsMulticastGroupDefinitionsListRequest(_messages.Message):
-  r"""A NetworkservicesProjectsLocationsMulticastGroupDefinitionsListRequest
-  object.
-
-  Fields:
-    filter: Optional. A filter expression that filters the resources listed in
-      the response. The expression must be of the form ` ` where operators:
-      `<`, `>`, `<=`, `>=`, `!=`, `=`, `:` are supported (colon `:` represents
-      a HAS operator which is roughly synonymous with equality). can refer to
-      a proto or JSON field, or a synthetic field. Field names can be
-      camelCase or snake_case. Examples: * Filter by name: name =
-      "RESOURCE_NAME" * Filter by labels: * Resources that have a key named
-      `foo` labels.foo:* * Resources that have a key named `foo` whose value
-      is `bar` labels.foo = bar
-    orderBy: Optional. A field used to sort the results by a certain order.
-    pageSize: Optional. The maximum number of multicast group definitions to
-      return per call.
-    pageToken: Optional. A page token from an earlier query, as returned in
-      `next_page_token`.
-    parent: Required. The parent resource for which to list multicast group
-      definitions. Use the following format: `projects/*/locations/global`.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class NetworkservicesProjectsLocationsMulticastGroupDefinitionsPatchRequest(_messages.Message):
-  r"""A NetworkservicesProjectsLocationsMulticastGroupDefinitionsPatchRequest
-  object.
-
-  Fields:
-    multicastGroupDefinition: A MulticastGroupDefinition resource to be passed
-      as the request body.
-    name: Identifier. The resource name of the multicast group definition. Use
-      the following format:
-      `projects/*/locations/global/multicastGroupDefinitions/*`.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes after the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the multicast group definition resource by the update. The fields
-      specified in the `update_mask` are relative to the resource, not the
-      full request. If a field is in the mask, then it is overwritten. If the
-      you do not provide a mask, then all fields are overwritten.
-  """
-
-  multicastGroupDefinition = _messages.MessageField('MulticastGroupDefinition', 1)
-  name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-  updateMask = _messages.StringField(4)
-
-
 class NetworkservicesProjectsLocationsMulticastGroupProducerActivationsCreateRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsMulticastGroupProducerActivationsCreat
   eRequest object.
@@ -11321,132 +11016,6 @@ class NetworkservicesProjectsLocationsMulticastGroupRangesPatchRequest(_messages
   """
 
   multicastGroupRange = _messages.MessageField('MulticastGroupRange', 1)
-  name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-  updateMask = _messages.StringField(4)
-
-
-class NetworkservicesProjectsLocationsMulticastGroupsCreateRequest(_messages.Message):
-  r"""A NetworkservicesProjectsLocationsMulticastGroupsCreateRequest object.
-
-  Fields:
-    multicastGroup: A MulticastGroup resource to be passed as the request
-      body.
-    multicastGroupId: Required. A unique name for the multicast group. The
-      name is restricted to lower-case letters, numbers, and hyphen, with the
-      first character a lower-case letter, and the last a letter or a number.
-      The name must not exceed 48 characters.
-    parent: Required. The parent resource of the multicast group. Use the
-      following format: `projects/*/locations/*`.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes after the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-  """
-
-  multicastGroup = _messages.MessageField('MulticastGroup', 1)
-  multicastGroupId = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
-
-
-class NetworkservicesProjectsLocationsMulticastGroupsDeleteRequest(_messages.Message):
-  r"""A NetworkservicesProjectsLocationsMulticastGroupsDeleteRequest object.
-
-  Fields:
-    name: Required. The resource name of the multicast group to delete. Use
-      the following format: `projects/*/locations/*/multicastGroups/*`.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes after the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-  """
-
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-
-
-class NetworkservicesProjectsLocationsMulticastGroupsGetRequest(_messages.Message):
-  r"""A NetworkservicesProjectsLocationsMulticastGroupsGetRequest object.
-
-  Fields:
-    name: Required. The resource name of the multicast group to get. Use the
-      following format: `projects/*/locations/*/multicastGroups/*`.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class NetworkservicesProjectsLocationsMulticastGroupsListRequest(_messages.Message):
-  r"""A NetworkservicesProjectsLocationsMulticastGroupsListRequest object.
-
-  Fields:
-    filter: Optional. A filter expression that filters the resources listed in
-      the response. The expression must be of the form ` ` where operators:
-      `<`, `>`, `<=`, `>=`, `!=`, `=`, `:` are supported (colon `:` represents
-      a HAS operator which is roughly synonymous with equality). can refer to
-      a proto or JSON field, or a synthetic field. Field names can be
-      camelCase or snake_case. Examples: * Filter by name: name =
-      "RESOURCE_NAME" * Filter by labels: * Resources that have a key named
-      `foo` labels.foo:* * Resources that have a key named `foo` whose value
-      is `bar` labels.foo = bar
-    orderBy: Optional. A field used to sort the results by a certain order.
-    pageSize: Optional. The maximum number of multicast groups to return per
-      call.
-    pageToken: Optional. A page token from an earlier query, as returned in
-      `next_page_token`.
-    parent: Required. The parent resource for which to list multicast groups.
-      Use the following format: `projects/*/locations/*`.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class NetworkservicesProjectsLocationsMulticastGroupsPatchRequest(_messages.Message):
-  r"""A NetworkservicesProjectsLocationsMulticastGroupsPatchRequest object.
-
-  Fields:
-    multicastGroup: A MulticastGroup resource to be passed as the request
-      body.
-    name: Identifier. The resource name of the multicast group. Use the
-      following format: `projects/*/locations/*/multicastGroups/*`.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes after the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the multicast group resource by the update. The fields specified in the
-      `update_mask` are relative to the resource, not the full request. If a
-      field is in the mask, then it is overwritten. If the you do not provide
-      a mask, then all fields are overwritten.
-  """
-
-  multicastGroup = _messages.MessageField('MulticastGroup', 1)
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
@@ -15912,12 +15481,12 @@ class UrlRewrite(_messages.Message):
       `path_prefix_rewrite` and path_template_rewrite can be specified.
     pathTemplateRewrite: Optional. Before forwarding the request to the
       selected origin, if the request matched a path_template_match, the
-      matching portion of the request's path is replaced re-written using the
-      pattern specified by `path_template_rewrite`. `path_template_rewrite`
-      must be between 1 and 255 characters (inclusive), must start with a `/`,
-      and must only use variables captured by the route's
-      `path_template_match`. `path_template_rewrite` can only be used when all
-      of a route's match_rules specify `path_template_match`. Only one of
+      matching portion of the request's path is rewritten using the pattern
+      specified by `path_template_rewrite`. `path_template_rewrite` must be
+      between 1 and 255 characters (inclusive), must start with a `/`, and
+      must only use variables captured by the route's `path_template_match`.
+      `path_template_rewrite` can only be used when all of a route's
+      match_rules specify `path_template_match`. Only one of
       path_prefix_rewrite and `path_template_rewrite` can be specified.
   """
 

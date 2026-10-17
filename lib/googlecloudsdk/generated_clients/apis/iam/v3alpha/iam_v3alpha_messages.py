@@ -42,93 +42,6 @@ class GoogleIamAdminV1AuditDataPermissionDelta(_messages.Message):
   removedPermissions = _messages.StringField(2, repeated=True)
 
 
-class GoogleIamV1Binding(_messages.Message):
-  r"""Associates `members`, or principals, with a `role`.
-
-  Fields:
-    condition: The condition that is associated with this binding. If the
-      condition evaluates to `true`, then this binding applies to the current
-      request. If the condition evaluates to `false`, then this binding does
-      not apply to the current request. However, a different role binding
-      might grant the same role to one or more of the principals in this
-      binding. To learn which resources support conditions in their IAM
-      policies, see the [IAM
-      documentation](https://cloud.google.com/iam/help/conditions/resource-
-      policies).
-    members: Specifies the principals requesting access for a Google Cloud
-      resource. `members` can have the following values: * `allUsers`: A
-      special identifier that represents anyone who is on the internet; with
-      or without a Google account. * `allAuthenticatedUsers`: A special
-      identifier that represents anyone who is authenticated with a Google
-      account or a service account. Does not include identities that come from
-      external identity providers (IdPs) through identity federation. *
-      `user:{emailid}`: An email address that represents a specific Google
-      account. For example, `alice@example.com` . *
-      `serviceAccount:{emailid}`: An email address that represents a Google
-      service account. For example, `my-other-
-      app@appspot.gserviceaccount.com`. *
-      `serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]`:
-      An identifier for a [Kubernetes service
-      account](https://cloud.google.com/kubernetes-engine/docs/how-
-      to/kubernetes-service-accounts). For example, `my-
-      project.svc.id.goog[my-namespace/my-kubernetes-sa]`. *
-      `group:{emailid}`: An email address that represents a Google group. For
-      example, `admins@example.com`. * `domain:{domain}`: The G Suite domain
-      (primary) that represents all the users of that domain. For example,
-      `google.com` or `example.com`. * `principal://iam.googleapis.com/locatio
-      ns/global/workforcePools/{pool_id}/subject/{subject_attribute_value}`: A
-      single identity in a workforce identity pool. * `principalSet://iam.goog
-      leapis.com/locations/global/workforcePools/{pool_id}/group/{group_id}`:
-      All workforce identities in a group. * `principalSet://iam.googleapis.co
-      m/locations/global/workforcePools/{pool_id}/attribute.{attribute_name}/{
-      attribute_value}`: All workforce identities with a specific attribute
-      value. * `principalSet://iam.googleapis.com/locations/global/workforcePo
-      ols/{pool_id}/*`: All identities in a workforce identity pool. * `princi
-      pal://iam.googleapis.com/projects/{project_number}/locations/global/work
-      loadIdentityPools/{pool_id}/subject/{subject_attribute_value}`: A single
-      identity in a workload identity pool. * `principalSet://iam.googleapis.c
-      om/projects/{project_number}/locations/global/workloadIdentityPools/{poo
-      l_id}/group/{group_id}`: A workload identity pool group. * `principalSet
-      ://iam.googleapis.com/projects/{project_number}/locations/global/workloa
-      dIdentityPools/{pool_id}/attribute.{attribute_name}/{attribute_value}`:
-      All identities in a workload identity pool with a certain attribute. * `
-      principalSet://iam.googleapis.com/projects/{project_number}/locations/gl
-      obal/workloadIdentityPools/{pool_id}/*`: All identities in a workload
-      identity pool. * `deleted:user:{emailid}?uid={uniqueid}`: An email
-      address (plus unique identifier) representing a user that has been
-      recently deleted. For example,
-      `alice@example.com?uid=123456789012345678901`. If the user is recovered,
-      this value reverts to `user:{emailid}` and the recovered user retains
-      the role in the binding. *
-      `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address
-      (plus unique identifier) representing a service account that has been
-      recently deleted. For example, `my-other-
-      app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the
-      service account is undeleted, this value reverts to
-      `serviceAccount:{emailid}` and the undeleted service account retains the
-      role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An
-      email address (plus unique identifier) representing a Google group that
-      has been recently deleted. For example,
-      `admins@example.com?uid=123456789012345678901`. If the group is
-      recovered, this value reverts to `group:{emailid}` and the recovered
-      group retains the role in the binding. * `deleted:principal://iam.google
-      apis.com/locations/global/workforcePools/{pool_id}/subject/{subject_attr
-      ibute_value}`: Deleted single identity in a workforce identity pool. For
-      example, `deleted:principal://iam.googleapis.com/locations/global/workfo
-      rcePools/my-pool-id/subject/my-subject-attribute-value`.
-    role: Role that is assigned to the list of `members`, or principals. For
-      example, `roles/viewer`, `roles/editor`, or `roles/owner`. For an
-      overview of the IAM roles and permissions, see the [IAM
-      documentation](https://cloud.google.com/iam/docs/roles-overview). For a
-      list of the available pre-defined roles, see
-      [here](https://cloud.google.com/iam/docs/understanding-roles).
-  """
-
-  condition = _messages.MessageField('GoogleTypeExpr', 1)
-  members = _messages.StringField(2, repeated=True)
-  role = _messages.StringField(3)
-
-
 class GoogleIamV3alphaAccessPolicy(_messages.Message):
   r"""An IAM access policy resource.
 
@@ -404,54 +317,6 @@ class GoogleIamV3alphaAccessPolicyRuleOperation(_messages.Message):
   serviceMethods = _messages.StringField(4, repeated=True)
 
 
-class GoogleIamV3alphaAccessTrace(_messages.Message):
-  r"""AccessTrace contains trace(provenance) info of the individual role
-  bindings within the policies. NOTE : To be used only as part of
-  TranslationReport.
-
-  Fields:
-    contributingPolicyIds: Optional. Contributing policy ids.
-    mappedPermissions: Optional. Mapped permissions.
-    matchedRoles: Optional. Matched roles.
-    principal: Optional. Principal.
-    resource: Optional. Resource.
-  """
-
-  contributingPolicyIds = _messages.StringField(1, repeated=True)
-  mappedPermissions = _messages.StringField(2, repeated=True)
-  matchedRoles = _messages.StringField(3, repeated=True)
-  principal = _messages.StringField(4)
-  resource = _messages.StringField(5)
-
-
-class GoogleIamV3alphaExportTranslatedPoliciesRequest(_messages.Message):
-  r"""Message for requesting export of TranslatedPolicies.
-
-  Enums:
-    InlineDestinationValueValuesEnum: Inline export of translated policy with
-      format mentioned in this enum.
-
-  Fields:
-    filter: Optional. Filtering results. Filter expression would be on the
-      TranslatedPolicy resource.
-    inlineDestination: Inline export of translated policy with format
-      mentioned in this enum.
-  """
-
-  class InlineDestinationValueValuesEnum(_messages.Enum):
-    r"""Inline export of translated policy with format mentioned in this enum.
-
-    Values:
-      INLINE_DESTINATION_FORMAT_UNSPECIFIED: Default value. This is unused.
-      TERRAFORM: Represents terraform format of policy.
-    """
-    INLINE_DESTINATION_FORMAT_UNSPECIFIED = 0
-    TERRAFORM = 1
-
-  filter = _messages.StringField(1)
-  inlineDestination = _messages.EnumField('InlineDestinationValueValuesEnum', 2)
-
-
 class GoogleIamV3alphaListAccessPoliciesResponse(_messages.Message):
   r"""Response message for ListAccessPolicies method.
 
@@ -480,21 +345,6 @@ class GoogleIamV3alphaListPolicyBindingsResponse(_messages.Message):
   policyBindings = _messages.MessageField('GoogleIamV3alphaPolicyBinding', 2, repeated=True)
 
 
-class GoogleIamV3alphaListPolicyPortersResponse(_messages.Message):
-  r"""Message for response to listing PolicyPorters
-
-  Fields:
-    nextPageToken: A token identifying a page of results the server should
-      return.
-    policyPorters: The list of PolicyPorter
-    unreachable: Locations that could not be reached.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  policyPorters = _messages.MessageField('GoogleIamV3alphaPolicyPorter', 2, repeated=True)
-  unreachable = _messages.StringField(3, repeated=True)
-
-
 class GoogleIamV3alphaListPrincipalAccessBoundaryPoliciesResponse(_messages.Message):
   r"""Response message for ListPrincipalAccessBoundaryPolicies method.
 
@@ -508,51 +358,6 @@ class GoogleIamV3alphaListPrincipalAccessBoundaryPoliciesResponse(_messages.Mess
 
   nextPageToken = _messages.StringField(1)
   principalAccessBoundaryPolicies = _messages.MessageField('GoogleIamV3alphaPrincipalAccessBoundaryPolicy', 2, repeated=True)
-
-
-class GoogleIamV3alphaListSourcePoliciesResponse(_messages.Message):
-  r"""Message for response to listing SourcePolicies
-
-  Fields:
-    nextPageToken: A token identifying a page of results the server should
-      return.
-    sourcePolicies: The list of SourcePolicy
-    unreachable: Locations that could not be reached.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  sourcePolicies = _messages.MessageField('GoogleIamV3alphaSourcePolicy', 2, repeated=True)
-  unreachable = _messages.StringField(3, repeated=True)
-
-
-class GoogleIamV3alphaListTranslatedPoliciesResponse(_messages.Message):
-  r"""Message for response to listing TranslatedPolicies
-
-  Fields:
-    nextPageToken: A token identifying a page of results the server should
-      return.
-    translatedPolicies: The list of TranslatedPolicy
-    unreachable: Locations that could not be reached.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  translatedPolicies = _messages.MessageField('GoogleIamV3alphaTranslatedPolicy', 2, repeated=True)
-  unreachable = _messages.StringField(3, repeated=True)
-
-
-class GoogleIamV3alphaListTranslationsResponse(_messages.Message):
-  r"""Message for response to listing Translations
-
-  Fields:
-    nextPageToken: A token identifying a page of results the server should
-      return.
-    translations: The list of Translation
-    unreachable: Locations that could not be reached.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  translations = _messages.MessageField('GoogleIamV3alphaTranslation', 2, repeated=True)
-  unreachable = _messages.StringField(3, repeated=True)
 
 
 class GoogleIamV3alphaOperationMetadata(_messages.Message):
@@ -630,7 +435,7 @@ class GoogleIamV3alphaPolicyBinding(_messages.Message):
       `iam.googleapis.com/WorkforcePoolIdentity` -
       `iam.googleapis.com/WorkloadPoolIdentity` -
       `iam.googleapis.com/ServiceAccount` -
-      `iam.googleapis.com/AgentPoolIdentity` (available in Preview)
+      `iam.googleapis.com/AgentPoolIdentity`
     createTime: Output only. The time when the policy binding was created.
     displayName: Optional. The description of the policy binding. Must be less
       than or equal to 63 characters.
@@ -755,223 +560,6 @@ class GoogleIamV3alphaPolicyInaccessible(_messages.Message):
 
 class GoogleIamV3alphaPolicyNotFound(_messages.Message):
   r"""A marker to indicate that the policy was not found"""
-
-
-class GoogleIamV3alphaPolicyPorter(_messages.Message):
-  r"""Policy porter resource defines a workspace where customers can upload
-  security policies from different clouds and get them translated to GCP
-  security policies.
-
-  Messages:
-    LabelsValue: Optional. Resource labels as key value pairs, used for List
-      API filtering.
-
-  Fields:
-    createTime: Output only. [Output only] Create time stamp
-    description: Optional. Description about translation.
-    displayName: Required. An arbitrary user-provided name for policy porter.
-      The display name should adhere to the following format: * Must be 6 to
-      63 characters in length. * Can only contain lowercase letters, numbers,
-      and hyphens. * Must start with a letter.
-    labels: Optional. Resource labels as key value pairs, used for List API
-      filtering.
-    name: Identifier. Name of resource. Format:
-      projects/{project}/locations/{location}/policyPorters/{policy_porter}.
-    policyConfig: Optional. Represents config for PolicyPorter such as
-      policies, mappings, etc. required by PolicyPorter.
-    updateTime: Output only. [Output only] Update time stamp
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. Resource labels as key value pairs, used for List API
-    filtering.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  name = _messages.StringField(5)
-  policyConfig = _messages.MessageField('GoogleIamV3alphaPolicyPorterConfig', 6)
-  updateTime = _messages.StringField(7)
-
-
-class GoogleIamV3alphaPolicyPorterConfig(_messages.Message):
-  r"""Represents config for PolicyPorter such as policies, mappings, etc.
-  required by PolicyPorter.
-
-  Enums:
-    SourceCloudValueValuesEnum: Optional. Type of source cloud from which
-      policies are being translated.
-
-  Fields:
-    awsMappings: Optional. Mappings required for translating policies from AWS
-      source cloud.
-    inlinePolicyJson: Inline representation of policy json that is being
-      translated.
-    sourceCloud: Optional. Type of source cloud from which policies are being
-      translated.
-  """
-
-  class SourceCloudValueValuesEnum(_messages.Enum):
-    r"""Optional. Type of source cloud from which policies are being
-    translated.
-
-    Values:
-      SOURCE_CLOUD_UNSPECIFIED: Default value. This value is unused.
-      AWS: Represents AWS cloud.
-    """
-    SOURCE_CLOUD_UNSPECIFIED = 0
-    AWS = 1
-
-  awsMappings = _messages.MessageField('GoogleIamV3alphaPolicyPorterConfigAwsMappings', 1)
-  inlinePolicyJson = _messages.MessageField('GoogleIamV3alphaPolicyPorterConfigInlinePolicyJson', 2)
-  sourceCloud = _messages.EnumField('SourceCloudValueValuesEnum', 3)
-
-
-class GoogleIamV3alphaPolicyPorterConfigAwsMappings(_messages.Message):
-  r"""Resource and principal mappings required for translating policies.
-
-  Messages:
-    PrincipalMappingValue: Optional. User provided principal mapping for keys
-      in `principal_keys` field. Keys format: [AWS JSON policy elements: Princ
-      ipal](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policie
-      s_elements_principal.html). Values format: See [Members field in binding
-      s](https://cloud.google.com/iam/docs/reference/rest/v1/Policy#binding).
-    ResourceMappingValue: Optional. User provided resource mapping for keys in
-      `resource_keys` field. Keys format: [IAM JSON policy elements: Resource]
-      (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_ele
-      ments_resource.html). Values format: See [Resource
-      names](https://cloud.google.com/apis/design/resource_names).
-
-  Fields:
-    principalKeys: Output only. Principal keys identified in the policy json
-      for which mappings are required for translation. Mappings need to be
-      provided in `principal_mapping` field.
-    principalMapping: Optional. User provided principal mapping for keys in
-      `principal_keys` field. Keys format: [AWS JSON policy elements: Principa
-      l](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_e
-      lements_principal.html). Values format: See [Members field in bindings](
-      https://cloud.google.com/iam/docs/reference/rest/v1/Policy#binding).
-    resourceKeys: Output only. Resource keys identified in the policy json for
-      which mappings are required for translation. Mappings need to be
-      provided in `resource_mapping` field.
-    resourceMapping: Optional. User provided resource mapping for keys in
-      `resource_keys` field. Keys format: [IAM JSON policy elements: Resource]
-      (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_ele
-      ments_resource.html). Values format: See [Resource
-      names](https://cloud.google.com/apis/design/resource_names).
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class PrincipalMappingValue(_messages.Message):
-    r"""Optional. User provided principal mapping for keys in `principal_keys`
-    field. Keys format: [AWS JSON policy elements: Principal](https://docs.aws
-    .amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.htm
-    l). Values format: See [Members field in bindings](https://cloud.google.co
-    m/iam/docs/reference/rest/v1/Policy#binding).
-
-    Messages:
-      AdditionalProperty: An additional property for a PrincipalMappingValue
-        object.
-
-    Fields:
-      additionalProperties: Additional properties of type
-        PrincipalMappingValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a PrincipalMappingValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class ResourceMappingValue(_messages.Message):
-    r"""Optional. User provided resource mapping for keys in `resource_keys`
-    field. Keys format: [IAM JSON policy elements: Resource](https://docs.aws.
-    amazon.com/IAM/latest/UserGuide/reference_policies_elements_resource.html)
-    . Values format: See [Resource
-    names](https://cloud.google.com/apis/design/resource_names).
-
-    Messages:
-      AdditionalProperty: An additional property for a ResourceMappingValue
-        object.
-
-    Fields:
-      additionalProperties: Additional properties of type ResourceMappingValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a ResourceMappingValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  principalKeys = _messages.StringField(1, repeated=True)
-  principalMapping = _messages.MessageField('PrincipalMappingValue', 2)
-  resourceKeys = _messages.StringField(3, repeated=True)
-  resourceMapping = _messages.MessageField('ResourceMappingValue', 4)
-
-
-class GoogleIamV3alphaPolicyPorterConfigInlinePolicyJson(_messages.Message):
-  r"""Inline representation of policy json that is being translated.
-
-  Fields:
-    content: Required. Content of the file containing policies in json format.
-    fileName: Required. Name of file from which policy json got imported. This
-      helps user to recognize the source of policies.
-  """
-
-  content = _messages.StringField(1)
-  fileName = _messages.StringField(2)
-
-
-class GoogleIamV3alphaPolicyTrace(_messages.Message):
-  r"""TranslationTraceTable contains trace(provenance) info of the translated
-  policies. NOTE : To be used only as part of TranslationReport.
-
-  Fields:
-    contributingPolicyIds: Optional. Contributing policy ids.
-    translatedPolicyId: Optional. Translated policy id.
-  """
-
-  contributingPolicyIds = _messages.StringField(1, repeated=True)
-  translatedPolicyId = _messages.StringField(2)
 
 
 class GoogleIamV3alphaPrincipalAccessBoundaryPolicy(_messages.Message):
@@ -1229,283 +817,6 @@ class GoogleIamV3alphaSearchTargetPolicyBindingsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   policyBindings = _messages.MessageField('GoogleIamV3alphaPolicyBinding', 2, repeated=True)
-
-
-class GoogleIamV3alphaSourcePolicy(_messages.Message):
-  r"""SourcePolicy resource represents a security policy provided by user for
-  translation.
-
-  Fields:
-    awsIamPolicy: AWS IAM policy.
-    createTime: Output only. [Output only] Create time stamp
-    description: Optional. The description of the source policy. It explains
-      the purpose of this policy.
-    displayName: Required. The display name of the source policy.
-    name: Identifier. Name of resource. Format: projects/{project}/locations/{
-      location}/policyPorters/{policy_porter}/translations/{translation}/sourc
-      ePolicies/{source_policy}.
-    updateTime: Output only. [Output only] Update time stamp
-  """
-
-  awsIamPolicy = _messages.MessageField('GoogleIamV3alphaSourcePolicyAwsIamPolicy', 1)
-  createTime = _messages.StringField(2)
-  description = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  name = _messages.StringField(5)
-  updateTime = _messages.StringField(6)
-
-
-class GoogleIamV3alphaSourcePolicyAwsIamPolicy(_messages.Message):
-  r"""Proto representation of AWS IAM policy and attachment. Please check [AWS
-  - IAM JSON policy reference](https://docs.aws.amazon.com/IAM/latest/UserGuid
-  e/reference_policies.html) to see the AWS IAM JSON policy reference.
-
-  Fields:
-    arn: The Amazon Resource Name (ARN). ARNs are unique identifiers for
-      Amazon Web Services resources.
-    attachmentInfo: Information about the attachment of the policy.
-    defaultVersion: The identifier for the version of the policy that is set
-      as the default version.
-    id: The stable and unique string identifying the policy.
-    name: The friendly name (not ARN) identifying the policy.
-    path: The path for the policy.
-    policyVersions: Policy versions.
-  """
-
-  arn = _messages.StringField(1)
-  attachmentInfo = _messages.MessageField('GoogleIamV3alphaSourcePolicyAwsIamPolicyAttachmentInfo', 2, repeated=True)
-  defaultVersion = _messages.StringField(3)
-  id = _messages.StringField(4)
-  name = _messages.StringField(5)
-  path = _messages.StringField(6)
-  policyVersions = _messages.MessageField('GoogleIamV3alphaSourcePolicyAwsIamPolicyPolicyVersion', 7, repeated=True)
-
-
-class GoogleIamV3alphaSourcePolicyAwsIamPolicyAttachmentInfo(_messages.Message):
-  r"""Information about the attachment of the policy.
-
-  Fields:
-    principal: Principal where policy is attached.
-    resource: Resource where policy is attached.
-  """
-
-  principal = _messages.StringField(1)
-  resource = _messages.StringField(2)
-
-
-class GoogleIamV3alphaSourcePolicyAwsIamPolicyDocument(_messages.Message):
-  r"""The policy document is the content of the policy containing policy
-  rules/statements.
-
-  Fields:
-    id: The Id element specifies an optional identifier for the policy.
-    statements: Statements present in a policy.
-    version: The Version policy element specifies the language syntax rules
-      that are to be used to process a policy.
-  """
-
-  id = _messages.StringField(1)
-  statements = _messages.MessageField('GoogleIamV3alphaSourcePolicyAwsIamPolicyDocumentStatement', 2, repeated=True)
-  version = _messages.StringField(3)
-
-
-class GoogleIamV3alphaSourcePolicyAwsIamPolicyDocumentStatement(_messages.Message):
-  r"""Defines single rule/statement in a policy.
-
-  Fields:
-    actions: The Action element describes the specific action or actions that
-      will be allowed or denied.
-    effect: The Effect element is required and specifies whether the statement
-      results in an allow or an explicit deny.
-    id: Optional id to identify a statement within a policy.
-    notActions: NotAction explicitly matches everything except the specified
-      list of actions.
-    notPrincipal: NotPrincipal element to deny access to all principals except
-      the IAM user, federated user, IAM role, AWS account, AWS service, or
-      other principal specified in the NotPrincipal element.
-    notResources: NotResource is an advanced policy element that explicitly
-      matches every resource except those specified.
-    principal: Principal element is present in a resource-based JSON policy to
-      specify the principal that is allowed or denied access to a resource.
-    resources: The Resource element specifies the object or objects that the
-      statement covers.
-  """
-
-  actions = _messages.StringField(1, repeated=True)
-  effect = _messages.StringField(2)
-  id = _messages.StringField(3)
-  notActions = _messages.StringField(4, repeated=True)
-  notPrincipal = _messages.MessageField('GoogleIamV3alphaSourcePolicyAwsIamPolicyDocumentStatementPrincipal', 5)
-  notResources = _messages.StringField(6, repeated=True)
-  principal = _messages.MessageField('GoogleIamV3alphaSourcePolicyAwsIamPolicyDocumentStatementPrincipal', 7)
-  resources = _messages.StringField(8, repeated=True)
-
-
-class GoogleIamV3alphaSourcePolicyAwsIamPolicyDocumentStatementPrincipal(_messages.Message):
-  r"""Principal represents IAM user, federated user, IAM role, AWS account,
-  AWS service, or other principal.
-
-  Fields:
-    aws: AWS account identifier.
-    canonicalUser: Canonical user identifier in AWS account.
-    federated: A web identity session principal or SAML session principal.
-    service: AWS service principal.
-  """
-
-  aws = _messages.StringField(1, repeated=True)
-  canonicalUser = _messages.StringField(2, repeated=True)
-  federated = _messages.StringField(3, repeated=True)
-  service = _messages.StringField(4, repeated=True)
-
-
-class GoogleIamV3alphaSourcePolicyAwsIamPolicyPolicyVersion(_messages.Message):
-  r"""Policy version.
-
-  Fields:
-    isDefaultVersion: Boolean to identify the default version.
-    policyDocument: Policy document containing the policy.
-    version: Version id of the policy version.
-  """
-
-  isDefaultVersion = _messages.BooleanField(1)
-  policyDocument = _messages.MessageField('GoogleIamV3alphaSourcePolicyAwsIamPolicyDocument', 2)
-  version = _messages.StringField(3)
-
-
-class GoogleIamV3alphaTranslatedPolicy(_messages.Message):
-  r"""TranslatedPolicy resource represents an output translated policy from
-  PolicyPorter. User can refine the TranslatedPolicy before applying it.
-
-  Fields:
-    createTime: Output only. [Output only] Create time stamp
-    description: Optional. The description of the translated policy. It
-      explains the purpose of this policy.
-    displayName: Required. The display name of the translated policy.
-    name: Identifier. Name of resource. Format: projects/{project}/locations/{
-      location}/policyPorters/{policy_porter}/translations/{translation}/trans
-      latedPolicies/{translated_policy}.
-    policy: Output only. System generated policy.
-    skipExport: Optional. If this flag is set to true, this policy will be
-      skipped from exporting the policy.
-    updateTime: Output only. [Output only] Update time stamp
-    userUpdatedPolicy: Optional. User updated translated policy.
-  """
-
-  createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  name = _messages.StringField(4)
-  policy = _messages.MessageField('GoogleIamV3alphaTranslatedPolicyPolicyWrapper', 5)
-  skipExport = _messages.BooleanField(6)
-  updateTime = _messages.StringField(7)
-  userUpdatedPolicy = _messages.MessageField('GoogleIamV3alphaTranslatedPolicyPolicyWrapper', 8)
-
-
-class GoogleIamV3alphaTranslatedPolicyGcpIamV1Policy(_messages.Message):
-  r"""Represents GCP IAM V1 policy.
-
-  Fields:
-    attachmentResource: Required. Resource name to which policy binding is
-      attached. See [Resource
-      names](https://cloud.google.com/apis/design/resource_names) for the
-      appropriate value for this field
-    binding: Required. Binding of role and members representing GCP IAM V1
-      binding. See [Policy Binding Reference](https://cloud.google.com/iam/doc
-      s/reference/rest/v1/Policy#Binding) binding reference.
-  """
-
-  attachmentResource = _messages.StringField(1)
-  binding = _messages.MessageField('GoogleIamV1Binding', 2, repeated=True)
-
-
-class GoogleIamV3alphaTranslatedPolicyPolicyWrapper(_messages.Message):
-  r"""The translated policy wrapper.
-
-  Fields:
-    gcpIamV1Policy: GCP IAM V1 policy.
-    sourcePolicies: Output only. Source policies which contributed to this
-      translated policy.
-    updateTime: Output only. Update time stamp.
-  """
-
-  gcpIamV1Policy = _messages.MessageField('GoogleIamV3alphaTranslatedPolicyGcpIamV1Policy', 1)
-  sourcePolicies = _messages.StringField(2, repeated=True)
-  updateTime = _messages.StringField(3)
-
-
-class GoogleIamV3alphaTranslation(_messages.Message):
-  r"""Translation resource represents one translation instance on the
-  PolicyPorter resource.
-
-  Enums:
-    StateValueValuesEnum: Output only. State of the translation.
-
-  Fields:
-    createTime: Output only. [Output only] Create time stamp
-    displayName: Required. The display name of translation.
-    name: Identifier. Name of resource. Format: projects/{project}/locations/{
-      location}/policyPorters/{policy_porter}/translations/{translation}.
-    policyConfig: Output only. Represents config for PolicyPorter such as
-      policies, mappings, etc. required by PolicyPorter.
-    state: Output only. State of the translation.
-    translationReport: Output only. Translation report contains insights about
-      a translation.
-    updateTime: Output only. [Output only] Update time stamp
-  """
-
-  class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. State of the translation.
-
-    Values:
-      STATE_UNSPECIFIED: Default value. This value is unused.
-      INITIALIZING: Represents initialization of translation.
-      TRANSLATING: Represents in progress translation.
-      REFINING: Represents refining of translation.
-      COMPLETED: Represents completed translation.
-      FAILED: Represents failed translation.
-    """
-    STATE_UNSPECIFIED = 0
-    INITIALIZING = 1
-    TRANSLATING = 2
-    REFINING = 3
-    COMPLETED = 4
-    FAILED = 5
-
-  createTime = _messages.StringField(1)
-  displayName = _messages.StringField(2)
-  name = _messages.StringField(3)
-  policyConfig = _messages.MessageField('GoogleIamV3alphaPolicyPorterConfig', 4)
-  state = _messages.EnumField('StateValueValuesEnum', 5)
-  translationReport = _messages.MessageField('GoogleIamV3alphaTranslationReport', 6)
-  updateTime = _messages.StringField(7)
-
-
-class GoogleIamV3alphaTranslationReport(_messages.Message):
-  r"""Translation report contains meta-details about translation (non-critical
-  failures, provenance of a translated access etc). NOTE : To be used only as
-  part of Translation resource.
-
-  Fields:
-    messages: Optional. Messages to be displayed in the translation report.
-    translationTraceTable: Optional. Trace table for the translation report.
-  """
-
-  messages = _messages.StringField(1, repeated=True)
-  translationTraceTable = _messages.MessageField('GoogleIamV3alphaTranslationTraceTable', 2)
-
-
-class GoogleIamV3alphaTranslationTraceTable(_messages.Message):
-  r"""TranslationTraceTable contains trace(provenance) info for the artifacts
-  produced by translation. NOTE : To be used only as part of
-  TranslationReport.
-
-  Fields:
-    accessTraces: Optional. Access traces for the translated policies.
-    policyTraces: Optional. Policy traces for the translated policies.
-  """
-
-  accessTraces = _messages.MessageField('GoogleIamV3alphaAccessTrace', 1, repeated=True)
-  policyTraces = _messages.MessageField('GoogleIamV3alphaPolicyTrace', 2, repeated=True)
 
 
 class GoogleLongrunningOperation(_messages.Message):
@@ -1772,6 +1083,9 @@ class IamFoldersLocationsAccessPoliciesListRequest(_messages.Message):
   r"""A IamFoldersLocationsAccessPoliciesListRequest object.
 
   Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Example filter query: `display_name:example*` matches access policies
+      whose display name starts with "example".
     pageSize: Optional. The maximum number of access policies to return. The
       service may return fewer than this value. If unspecified, at most 50
       access policies will be returned. Valid value ranges from 1 to 1000;
@@ -1787,9 +1101,10 @@ class IamFoldersLocationsAccessPoliciesListRequest(_messages.Message):
       `organizations/{organization_id}/locations/{location}`
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class IamFoldersLocationsAccessPoliciesPatchRequest(_messages.Message):
@@ -2082,6 +1397,9 @@ class IamOrganizationsLocationsAccessPoliciesListRequest(_messages.Message):
   r"""A IamOrganizationsLocationsAccessPoliciesListRequest object.
 
   Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Example filter query: `display_name:example*` matches access policies
+      whose display name starts with "example".
     pageSize: Optional. The maximum number of access policies to return. The
       service may return fewer than this value. If unspecified, at most 50
       access policies will be returned. Valid value ranges from 1 to 1000;
@@ -2097,9 +1415,10 @@ class IamOrganizationsLocationsAccessPoliciesListRequest(_messages.Message):
       `organizations/{organization_id}/locations/{location}`
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class IamOrganizationsLocationsAccessPoliciesPatchRequest(_messages.Message):
@@ -2391,6 +1710,9 @@ class IamOrganizationsLocationsPrincipalAccessBoundaryPoliciesListRequest(_messa
   object.
 
   Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Example filter query: `display_name:example*` matches principal access
+      boundary policies whose display name starts with "example".
     pageSize: Optional. The maximum number of principal access boundary
       policies to return. The service may return fewer than this value. If
       unspecified, at most 50 principal access boundary policies will be
@@ -2406,9 +1728,10 @@ class IamOrganizationsLocationsPrincipalAccessBoundaryPoliciesListRequest(_messa
       `organizations/{organization_id}/locations/{location}`
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class IamOrganizationsLocationsPrincipalAccessBoundaryPoliciesPatchRequest(_messages.Message):
@@ -2526,6 +1849,9 @@ class IamProjectsLocationsAccessPoliciesListRequest(_messages.Message):
   r"""A IamProjectsLocationsAccessPoliciesListRequest object.
 
   Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Example filter query: `display_name:example*` matches access policies
+      whose display name starts with "example".
     pageSize: Optional. The maximum number of access policies to return. The
       service may return fewer than this value. If unspecified, at most 50
       access policies will be returned. Valid value ranges from 1 to 1000;
@@ -2541,9 +1867,10 @@ class IamProjectsLocationsAccessPoliciesListRequest(_messages.Message):
       `organizations/{organization_id}/locations/{location}`
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class IamProjectsLocationsAccessPoliciesPatchRequest(_messages.Message):
@@ -2765,344 +2092,6 @@ class IamProjectsLocationsPolicyBindingsSearchTargetPolicyBindingsRequest(_messa
   pageToken = _messages.StringField(3)
   parent = _messages.StringField(4, required=True)
   target = _messages.StringField(5)
-
-
-class IamProjectsLocationsPolicyPortersCreateRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersCreateRequest object.
-
-  Fields:
-    googleIamV3alphaPolicyPorter: A GoogleIamV3alphaPolicyPorter resource to
-      be passed as the request body.
-    parent: Required. Value for parent. Format:
-      projects/{project}/locations/{location}.
-    policyPorterId: Required. Id of the requesting object If auto-generating
-      Id server-side, remove this field and policy_porter_id from the
-      method_signature of Create RPC
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-  """
-
-  googleIamV3alphaPolicyPorter = _messages.MessageField('GoogleIamV3alphaPolicyPorter', 1)
-  parent = _messages.StringField(2, required=True)
-  policyPorterId = _messages.StringField(3)
-  requestId = _messages.StringField(4)
-
-
-class IamProjectsLocationsPolicyPortersDeleteRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersDeleteRequest object.
-
-  Fields:
-    force: Optional. If set to true, any Translations from this PolicyPorter
-      will also be deleted. (Otherwise, the request will only work if the
-      PolicyPorter has no Translations.)
-    name: Required. Name of the resource. Format:
-      projects/{project}/locations/{location}/policyPorters/{policy_porter}.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes after the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-  """
-
-  force = _messages.BooleanField(1)
-  name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-
-
-class IamProjectsLocationsPolicyPortersGetRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersGetRequest object.
-
-  Fields:
-    name: Required. Name of the resource. Format:
-      projects/{project}/locations/{location}/policyPorters/{policy_porter}.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class IamProjectsLocationsPolicyPortersListRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersListRequest object.
-
-  Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
-    pageSize: Optional. Requested page size. Server may return fewer items
-      than requested. If unspecified, server will pick an appropriate default.
-    pageToken: Optional. A token identifying a page of results the server
-      should return.
-    parent: Required. Parent value for ListPolicyPortersRequest. Format:
-      projects/{project}/locations/{location}.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class IamProjectsLocationsPolicyPortersPatchRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersPatchRequest object.
-
-  Fields:
-    googleIamV3alphaPolicyPorter: A GoogleIamV3alphaPolicyPorter resource to
-      be passed as the request body.
-    name: Identifier. Name of resource. Format:
-      projects/{project}/locations/{location}/policyPorters/{policy_porter}.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Required. Field mask is used to specify the fields to be
-      overwritten in the PolicyPorter resource by the update. The fields
-      specified in the update_mask are relative to the resource, not the full
-      request. A field will be overwritten if it is in the mask. If the user
-      does not provide a mask then all fields will be overwritten.
-  """
-
-  googleIamV3alphaPolicyPorter = _messages.MessageField('GoogleIamV3alphaPolicyPorter', 1)
-  name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-  updateMask = _messages.StringField(4)
-
-
-class IamProjectsLocationsPolicyPortersTranslationsCreateRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersTranslationsCreateRequest object.
-
-  Fields:
-    googleIamV3alphaTranslation: A GoogleIamV3alphaTranslation resource to be
-      passed as the request body.
-    parent: Required. Value for parent. Format:
-      projects/{project}/locations/{location}/policyPorters/{policy_porter}.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    translationId: Required. Id of the requesting object If auto-generating Id
-      server-side, remove this field and translation_id from the
-      method_signature of Create RPC
-  """
-
-  googleIamV3alphaTranslation = _messages.MessageField('GoogleIamV3alphaTranslation', 1)
-  parent = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-  translationId = _messages.StringField(4)
-
-
-class IamProjectsLocationsPolicyPortersTranslationsDeleteRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersTranslationsDeleteRequest object.
-
-  Fields:
-    force: Optional. If set to true, any SourcePolicies and TranslatedPolicies
-      from this Translation will also be deleted. (Otherwise, the request will
-      only work if the Translation has no SourcePolicies and
-      TranslatedPolicies.)
-    name: Required. Name of the resource Format: projects/{project}/locations/
-      {location}/policyPorters/{policy_porter}/translations/{translation}.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes after the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-  """
-
-  force = _messages.BooleanField(1)
-  name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-
-
-class IamProjectsLocationsPolicyPortersTranslationsGetRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersTranslationsGetRequest object.
-
-  Fields:
-    name: Required. Name of the resource. Format: projects/{project}/locations
-      /{location}/policyPorters/{policy_porter}/translations/{translation}.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class IamProjectsLocationsPolicyPortersTranslationsListRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersTranslationsListRequest object.
-
-  Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
-    pageSize: Optional. Requested page size. Server may return fewer items
-      than requested. If unspecified, server will pick an appropriate default.
-    pageToken: Optional. A token identifying a page of results the server
-      should return.
-    parent: Required. Parent value for ListTranslationsRequest. Format:
-      projects/{project}/locations/{location}/policyPorters/{policy_porter}.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class IamProjectsLocationsPolicyPortersTranslationsSourcePoliciesGetRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersTranslationsSourcePoliciesGetRequest
-  object.
-
-  Fields:
-    name: Required. Name of the resource. Format: projects/{project}/locations
-      /{location}/policyPorters/{policy_porter}/translations/{translation}/sou
-      rcePolicies/{source_policy}.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class IamProjectsLocationsPolicyPortersTranslationsSourcePoliciesListRequest(_messages.Message):
-  r"""A IamProjectsLocationsPolicyPortersTranslationsSourcePoliciesListRequest
-  object.
-
-  Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
-    pageSize: Optional. Requested page size. Server may return fewer items
-      than requested. If unspecified, server will pick an appropriate default.
-    pageToken: Optional. A token identifying a page of results the server
-      should return.
-    parent: Required. Parent value for ListSourcePoliciesRequest. Format: proj
-      ects/{project}/locations/{location}/policyPorters/{policy_porter}/transl
-      ations/{translation}.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class IamProjectsLocationsPolicyPortersTranslationsTranslatedPoliciesExportRequest(_messages.Message):
-  r"""A
-  IamProjectsLocationsPolicyPortersTranslationsTranslatedPoliciesExportRequest
-  object.
-
-  Fields:
-    googleIamV3alphaExportTranslatedPoliciesRequest: A
-      GoogleIamV3alphaExportTranslatedPoliciesRequest resource to be passed as
-      the request body.
-    parent: Required. Parent value for ExportTranslatedPoliciesRequest.
-      Format: projects/{project}/locations/{location}/policyPorters/{policy_po
-      rter}/translations/{translation}.
-  """
-
-  googleIamV3alphaExportTranslatedPoliciesRequest = _messages.MessageField('GoogleIamV3alphaExportTranslatedPoliciesRequest', 1)
-  parent = _messages.StringField(2, required=True)
-
-
-class IamProjectsLocationsPolicyPortersTranslationsTranslatedPoliciesGetRequest(_messages.Message):
-  r"""A
-  IamProjectsLocationsPolicyPortersTranslationsTranslatedPoliciesGetRequest
-  object.
-
-  Fields:
-    name: Required. Name of the resource. Format: projects/{project}/locations
-      /{location}/policyPorters/{policy_porter}/translations/{translation}/tra
-      nslatedPolicies/{translated_policy}.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class IamProjectsLocationsPolicyPortersTranslationsTranslatedPoliciesListRequest(_messages.Message):
-  r"""A
-  IamProjectsLocationsPolicyPortersTranslationsTranslatedPoliciesListRequest
-  object.
-
-  Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
-    pageSize: Optional. Requested page size. Server may return fewer items
-      than requested. If unspecified, server will pick an appropriate default.
-    pageToken: Optional. A token identifying a page of results the server
-      should return.
-    parent: Required. Parent value for ListTranslatedPoliciesRequest. Format:
-      projects/{project}/locations/{location}/policyPorters/{policy_porter}/tr
-      anslations/{translation}.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class IamProjectsLocationsPolicyPortersTranslationsTranslatedPoliciesPatchRequest(_messages.Message):
-  r"""A
-  IamProjectsLocationsPolicyPortersTranslationsTranslatedPoliciesPatchRequest
-  object.
-
-  Fields:
-    googleIamV3alphaTranslatedPolicy: A GoogleIamV3alphaTranslatedPolicy
-      resource to be passed as the request body.
-    name: Identifier. Name of resource. Format: projects/{project}/locations/{
-      location}/policyPorters/{policy_porter}/translations/{translation}/trans
-      latedPolicies/{translated_policy}.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Required. Field mask is used to specify the fields to be
-      overwritten in the TranslatedPolicy resource by the update. The fields
-      specified in the update_mask are relative to the resource, not the full
-      request. A field will be overwritten if it is in the mask. If the user
-      does not provide a mask then all fields will be overwritten.
-  """
-
-  googleIamV3alphaTranslatedPolicy = _messages.MessageField('GoogleIamV3alphaTranslatedPolicy', 1)
-  name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-  updateMask = _messages.StringField(4)
 
 
 class IamSearchApplicablePoliciesSearchRequest(_messages.Message):

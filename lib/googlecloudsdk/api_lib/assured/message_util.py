@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.assured import util
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 
 ReleaseTrack = calliope_base.ReleaseTrack
@@ -56,7 +57,11 @@ def GetPartnerPermissions(release_track):
 
 
 def CreateAssuredParent(organization_id, location):
-  return 'organizations/{}/locations/{}'.format(organization_id, location)
+  return resources.REGISTRY.Parse(
+      location,
+      params={'organizationsId': organization_id},
+      collection='assuredworkloads.organizations.locations',
+  ).RelativeName()
 
 
 def CreateAssuredWorkload(
@@ -976,36 +981,37 @@ def CreateAssuredWorkloadV2(
 
 
 def CreateUpdateMaskV2(
-    description: Optional[Any] = None,
+    framework_major_revision_id: Optional[Any] = None,
     cloud_control_configs: Optional[Any] = None,
 ) -> str:
   """Constructs a comma-separated update mask for Assured Workloads V2.
 
   Args:
-    description: Indicator if description is being updated.
+    framework_major_revision_id: Indicator if framework.major_revision_id is
+      being updated.
     cloud_control_configs: Indicator if cloud_control_configs is updated.
 
   Returns:
     Comma-separated field mask string.
   """
   update_mask = []
-  if description is not None:
-    update_mask.append('description')
+  if framework_major_revision_id is not None:
+    update_mask.append('framework.major_revision_id')
   if cloud_control_configs is not None:
     update_mask.append('cloud_control_configs')
   return ','.join(update_mask)
 
 
 def CreateAssuredWorkloadForUpdateV2(
-    description: Optional[str] = None,
-    cloud_control_configs: Optional[List[Any]] = None,
-    etag: Optional[str] = None,
+    framework_major_revision_id: str | int | None = None,
+    cloud_control_configs: list[Any] | None = None,
+    etag: str | None = None,
     release_track: ReleaseTrack = ReleaseTrack.ALPHA,
 ) -> Any:
   """Constructs a GoogleCloudAssuredworkloadsV2Workload message for update.
 
   Args:
-    description: Optional description for the workload environment.
+    framework_major_revision_id: Optional major revision ID for the workload.
     cloud_control_configs: Optional list of CloudControlConfig messages.
     etag: Optional optimistic concurrency control etag.
     release_track: gcloud release track being used.
@@ -1015,8 +1021,19 @@ def CreateAssuredWorkloadForUpdateV2(
   """
   messages = GetMessagesV2(release_track)
   workload = messages.GoogleCloudAssuredworkloadsV2Workload()
-  if description is not None:
-    workload.description = description
+  if framework_major_revision_id is not None:
+    try:
+      major_revision_id = int(framework_major_revision_id)
+    except (ValueError, TypeError) as exc:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--framework-major-revision',
+          'Value must be an integer (e.g. 1).',
+      ) from exc
+    workload.framework = (
+        messages.GoogleCloudAssuredworkloadsV2FrameworkReference(
+            majorRevisionId=major_revision_id
+        )
+    )
   if cloud_control_configs is not None:
     workload.cloudControlConfigs = cloud_control_configs
   if etag is not None:

@@ -654,6 +654,33 @@ class AlloydbV1beta(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def CreateExternalReplica(self, request, global_params=None):
+      r"""Creates a new External Replica in a given project and location.
+
+      Args:
+        request: (AlloydbProjectsLocationsClustersCreateExternalReplicaRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('CreateExternalReplica')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CreateExternalReplica.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/clusters:createExternalReplica',
+        http_method='POST',
+        method_id='alloydb.projects.locations.clusters.createExternalReplica',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta/{+parent}/clusters:createExternalReplica',
+        request_field='createExternalReplicaRequest',
+        request_type_name='AlloydbProjectsLocationsClustersCreateExternalReplicaRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Createsecondary(self, request, global_params=None):
       r"""Creates a cluster of type SECONDARY in the given location using the primary cluster as the source.
 
@@ -866,6 +893,33 @@ class AlloydbV1beta(base_api.BaseApiClient):
         relative_path='v1beta/{+name}:promote',
         request_field='promoteClusterRequest',
         request_type_name='AlloydbProjectsLocationsClustersPromoteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def PromoteExternalReplica(self, request, global_params=None):
+      r"""TODO (Update the fuzz corpus files for the new methods) Promotes an External Replica to a standalone cluster by stopping the replication from the source.
+
+      Args:
+        request: (AlloydbProjectsLocationsClustersPromoteExternalReplicaRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('PromoteExternalReplica')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PromoteExternalReplica.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:promoteExternalReplica',
+        http_method='POST',
+        method_id='alloydb.projects.locations.clusters.promoteExternalReplica',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta/{+name}:promoteExternalReplica',
+        request_field='promoteExternalReplicaRequest',
+        request_type_name='AlloydbProjectsLocationsClustersPromoteExternalReplicaRequest',
         response_type_name='Operation',
         supports_download=False,
     )

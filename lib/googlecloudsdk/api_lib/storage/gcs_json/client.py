@@ -816,7 +816,7 @@ class JsonClient(cloud_api.CloudApi):
 
     rotate_bucket_encryption_key_request = (
         self.messages_v2.RotateBucketEncryptionKeyRequest(
-            kmsKey=kms_key_version,
+            kmsKeyVersion=kms_key_version,
             requestId=request_id or uuid.uuid4().hex,
         )
     )
@@ -1660,12 +1660,34 @@ class JsonClient(cloud_api.CloudApi):
     return metadata_util.get_object_resource_from_metadata(metadata)
 
   @error_util.catch_http_error_raise_gcs_api_error()
-  def create_managed_folder(self, bucket_name, managed_folder_name):
+  def create_managed_folder(
+      self, bucket_name, managed_folder_name, rapid_cache_config=None
+  ):
     """See CloudApi class for function doc strings."""
     folder_message = self.messages.ManagedFolder(
-        bucket=bucket_name, name=managed_folder_name
+        bucket=bucket_name,
+        name=managed_folder_name,
+        rapidCacheConfig=rapid_cache_config,
     )
     response = self.client.managedFolders.Insert(folder_message)
+    return metadata_util.get_managed_folder_resource_from_metadata(response)
+
+  @error_util.catch_http_error_raise_gcs_api_error()
+  def update_managed_folder(
+      self,
+      bucket_name,
+      managed_folder_name,
+      managed_folder_metadata=None,
+      if_metageneration_match=None,
+  ):
+    """See CloudApi class for function doc strings."""
+    request = self.messages.StorageManagedFoldersUpdateRequest(
+        bucket=bucket_name,
+        managedFolder=managed_folder_name,
+        managedFolderResource=managed_folder_metadata,
+        ifMetagenerationMatch=if_metageneration_match,
+    )
+    response = self.client.managedFolders.Update(request)
     return metadata_util.get_managed_folder_resource_from_metadata(response)
 
   @error_util.catch_http_error_raise_gcs_api_error()

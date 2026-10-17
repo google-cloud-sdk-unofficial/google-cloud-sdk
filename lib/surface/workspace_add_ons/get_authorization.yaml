@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: true
   help_text:
     brief: Gets the authorization information for deployments in a given project
     description: Gets the authorization information for deployments in a given project

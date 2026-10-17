@@ -52,6 +52,8 @@ def _GetApiVersion(release_track):
     return 'alpha'
   elif release_track == base.ReleaseTrack.BETA:
     return 'beta'
+  elif release_track == base.ReleaseTrack.PREVIEW:
+    return 'preview'
   return 'v1'
 
 
@@ -155,6 +157,7 @@ def _SendRegionalRequest(client, project, region, url_map):
     base.ReleaseTrack.GA,
     base.ReleaseTrack.PREVIEW,
 )
+@base.UniverseCompatible
 class Validate(base.Command):
   """Validates URL map configs from your project."""
 

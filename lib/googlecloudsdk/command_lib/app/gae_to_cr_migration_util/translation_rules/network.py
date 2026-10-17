@@ -20,6 +20,29 @@ import json
 import logging
 from typing import Any
 
+_EGRESS_SETTING_MAPPING = {
+    'ALL_TRAFFIC': 'all-traffic',
+    'PRIVATE_IP_RANGES': 'private-ranges-only',
+    'EGRESS_SETTING_UNSPECIFIED': 'private-ranges-only',
+    'all-traffic': 'all-traffic',
+    'private-ranges-only': 'private-ranges-only',
+}
+
+
+def map_vpc_egress_setting(egress_setting: str | None) -> str | None:
+  """Maps App Engine Admin API VPC egress setting to Cloud Run accepted values.
+
+  Args:
+    egress_setting: The egress setting string from App Engine config or Admin
+      API.
+
+  Returns:
+    The mapped Cloud Run egress value, or the original value if unmapped.
+  """
+  if egress_setting is None:
+    return None
+  return _EGRESS_SETTING_MAPPING.get(egress_setting, egress_setting)
+
 
 def _warn_if_multiple_forwarded_ports(forwarded_ports: Any) -> None:
   """Warns that only the first port is configured if multiple are specified.
@@ -68,11 +91,19 @@ def translate_network_features(
   instance_ip_mode = input_data.get(
       'network.instance_ip_mode'
   ) or input_data.get('network.instanceIpMode')
-  if instance_ip_mode:
-    if instance_ip_mode == 'external':
-      output_flags.append('--ingress=all')
-    elif instance_ip_mode == 'internal':
-      output_flags.append('--ingress=internal')
+  has_direct_vpc = bool(
+      input_data.get('network.name')
+      or input_data.get('network.subnetwork_name')
+  )
+  # Flex VMs without an external IP send all outbound traffic through the VPC.
+  if instance_ip_mode and instance_ip_mode.lower() == 'internal':
+    if has_direct_vpc:
+      output_flags.append('--vpc-egress=all-traffic')
+    else:
+      logging.warning(
+          'App Engine Flexible instance_ip_mode is internal, but no Direct VPC'
+          ' network or subnetwork is configured. VPC egress cannot be set.'
+      )
 
   return output_flags
 
@@ -91,16 +122,7 @@ def update_service_yaml_with_network(
   """
 
   # 1. Service level annotations
-  service_metadata = service_yaml.setdefault('metadata', {})
-  service_annotations = service_metadata.setdefault('annotations', {})
-
-  instance_ip_mode = input_data.get(
-      'network.instance_ip_mode'
-  ) or input_data.get('network.instanceIpMode')
-  if instance_ip_mode == 'external':
-    service_annotations['run.googleapis.com/ingress'] = 'all'
-  elif instance_ip_mode == 'internal':
-    service_annotations['run.googleapis.com/ingress'] = 'internal'
+  service_yaml.setdefault('metadata', {}).setdefault('annotations', {})
 
   # 2. Revision level metadata & annotations
   spec = service_yaml.setdefault('spec', {})
@@ -126,10 +148,28 @@ def update_service_yaml_with_network(
         tag_data if isinstance(tag_data, list) else [tag_data]
     )
 
+  instance_ip_mode = input_data.get(
+      'network.instance_ip_mode'
+  ) or input_data.get('network.instanceIpMode')
+  has_direct_vpc = bool(network_name or subnetwork_name)
+
   if network_interface:
     template_annotations['run.googleapis.com/network-interfaces'] = json.dumps(
         [network_interface]
     )
+
+  # Flex VMs without an external IP send all outbound traffic through the VPC.
+  if instance_ip_mode and instance_ip_mode.lower() == 'internal':
+    if has_direct_vpc:
+      # gcloud-disable-gdu-domain
+      template_annotations['run.googleapis.com/vpc-access-egress'] = (
+          'all-traffic'
+      )
+    else:
+      logging.warning(
+          'App Engine Flexible instance_ip_mode is internal, but no Direct VPC'
+          ' network or subnetwork is configured. VPC egress cannot be set.'
+      )
 
   vpc_connector = input_data.get('vpc_access_connector.name') or input_data.get(
       'vpcAccessConnector.name'
@@ -149,7 +189,10 @@ def update_service_yaml_with_network(
         'vpc_access_connector.egress_setting'
     ) or input_data.get('vpcAccessConnector.egressSetting')
     if vpc_egress:
-      template_annotations['run.googleapis.com/vpc-access-egress'] = vpc_egress
+      # gcloud-disable-gdu-domain
+      template_annotations['run.googleapis.com/vpc-access-egress'] = (
+          map_vpc_egress_setting(vpc_egress)
+      )
 
   # 4. Container level settings
   template_spec = template.setdefault('spec', {})

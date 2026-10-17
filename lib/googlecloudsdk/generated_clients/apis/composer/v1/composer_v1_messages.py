@@ -1290,6 +1290,20 @@ class ImageVersion(_messages.Message):
   upgradeDisabled = _messages.BooleanField(6)
 
 
+class ImageVersionRollbackTarget(_messages.Message):
+  r"""The image version an environment can be rolled back to.
+
+  Fields:
+    imageVersion: Output only. The image version the environment can be rolled
+      back to.
+    lastActiveTime: Output only. The last time when the environment was
+      running this image version.
+  """
+
+  imageVersion = _messages.StringField(1)
+  lastActiveTime = _messages.StringField(2)
+
+
 class Line(_messages.Message):
   r"""Contains information about a single line from logs.
 
@@ -2097,6 +2111,11 @@ class SoftwareConfig(_messages.Message):
       list](/composer/docs/concepts/versioning/composer-versions) and
       [versioning overview](/composer/docs/concepts/versioning/composer-
       versioning-overview).
+    imageVersionRollbackTargets: Output only. The list of image versions the
+      environment can be rolled back to, sorted by last_active_time in
+      descending order (most recent first). This field is supported for Cloud
+      Composer environments in versions composer-3-airflow-*.*.*-build.* and
+      newer.
     pypiPackages: Optional. Custom Python Package Index (PyPI) packages to be
       installed in the environment. Keys refer to the lowercase package name
       such as "numpy" and values are the lowercase extras and version
@@ -2256,10 +2275,11 @@ class SoftwareConfig(_messages.Message):
   cloudDataLineageIntegration = _messages.MessageField('CloudDataLineageIntegration', 3)
   envVariables = _messages.MessageField('EnvVariablesValue', 4)
   imageVersion = _messages.StringField(5)
-  pypiPackages = _messages.MessageField('PypiPackagesValue', 6)
-  pythonVersion = _messages.StringField(7)
-  schedulerCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 9)
+  imageVersionRollbackTargets = _messages.MessageField('ImageVersionRollbackTarget', 6, repeated=True)
+  pypiPackages = _messages.MessageField('PypiPackagesValue', 7)
+  pythonVersion = _messages.StringField(8)
+  schedulerCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 10)
 
 
 class StandardQueryParameters(_messages.Message):

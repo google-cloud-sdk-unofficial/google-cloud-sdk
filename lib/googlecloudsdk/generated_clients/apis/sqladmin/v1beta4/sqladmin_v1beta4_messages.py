@@ -8824,50 +8824,70 @@ class SqlWorkloadCapturesListRequest(_messages.Message):
 
 
 class SqlWorkloadCapturesStartReplayRequest(_messages.Message):
-  r"""Request to start executing a captured workload on a replay instance (the
-  Cloud SQL instance where the recorded SQL queries are executed).
+  r"""A SqlWorkloadCapturesStartReplayRequest object.
 
   Fields:
-    startWorkloadReplayContext: Required. Contains details about the start
-      workload replay operation.
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+    workloadCapturesStartReplayRequest: A WorkloadCapturesStartReplayRequest
+      resource to be passed as the request body.
+    workloadId: Required. The ID of the workload to replay.
   """
 
-  startWorkloadReplayContext = _messages.MessageField('StartWorkloadReplayContext', 1)
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  workloadCapturesStartReplayRequest = _messages.MessageField('WorkloadCapturesStartReplayRequest', 3)
+  workloadId = _messages.StringField(4, required=True)
 
 
 class SqlWorkloadCapturesStartRequest(_messages.Message):
-  r"""Request to start recording traffic from the primary instance (captured
-  workload).
+  r"""A SqlWorkloadCapturesStartRequest object.
 
   Fields:
-    startWorkloadCaptureContext: Optional. Contains details about the start
-      workload capture operation.
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+    workloadCapturesStartRequest: A WorkloadCapturesStartRequest resource to
+      be passed as the request body.
   """
 
-  startWorkloadCaptureContext = _messages.MessageField('StartWorkloadCaptureContext', 1)
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  workloadCapturesStartRequest = _messages.MessageField('WorkloadCapturesStartRequest', 3)
 
 
 class SqlWorkloadCapturesStopReplayRequest(_messages.Message):
-  r"""Request to stop an active workload replay on a target Cloud SQL replay
-  instance.
+  r"""A SqlWorkloadCapturesStopReplayRequest object.
 
   Fields:
-    stopWorkloadReplayContext: Optional. Contains details about the stop
-      workload replay operation.
+    instance: Required. Cloud SQL instance ID of the target replay instance.
+      This does not include the project ID.
+    project: Required. Project ID of the project that contains the target
+      replay instance.
+    workloadCapturesStopReplayRequest: A WorkloadCapturesStopReplayRequest
+      resource to be passed as the request body.
   """
 
-  stopWorkloadReplayContext = _messages.MessageField('StopWorkloadReplayContext', 1)
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  workloadCapturesStopReplayRequest = _messages.MessageField('WorkloadCapturesStopReplayRequest', 3)
 
 
 class SqlWorkloadCapturesStopRequest(_messages.Message):
-  r"""Request to stop recording traffic from the primary instance.
+  r"""A SqlWorkloadCapturesStopRequest object.
 
   Fields:
-    stopWorkloadCaptureContext: Optional. Contains details about the stop
-      workload capture operation.
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+    workloadCapturesStopRequest: A WorkloadCapturesStopRequest resource to be
+      passed as the request body.
   """
 
-  stopWorkloadCaptureContext = _messages.MessageField('StopWorkloadCaptureContext', 1)
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  workloadCapturesStopRequest = _messages.MessageField('WorkloadCapturesStopRequest', 3)
 
 
 class SslCert(_messages.Message):
@@ -9837,6 +9857,53 @@ class WorkloadCapturesListResponse(_messages.Message):
 
   kind = _messages.StringField(1)
   workloadCaptures = _messages.MessageField('WorkloadCapture', 2, repeated=True)
+
+
+class WorkloadCapturesStartReplayRequest(_messages.Message):
+  r"""Request to start executing a captured workload on a replay instance (the
+  Cloud SQL instance where the recorded SQL queries are executed).
+
+  Fields:
+    startWorkloadReplayContext: Required. Contains details about the start
+      workload replay operation.
+  """
+
+  startWorkloadReplayContext = _messages.MessageField('StartWorkloadReplayContext', 1)
+
+
+class WorkloadCapturesStartRequest(_messages.Message):
+  r"""Request to start recording traffic from the primary instance (captured
+  workload).
+
+  Fields:
+    startWorkloadCaptureContext: Optional. Contains details about the start
+      workload capture operation.
+  """
+
+  startWorkloadCaptureContext = _messages.MessageField('StartWorkloadCaptureContext', 1)
+
+
+class WorkloadCapturesStopReplayRequest(_messages.Message):
+  r"""Request to stop an active workload replay on a target Cloud SQL replay
+  instance.
+
+  Fields:
+    stopWorkloadReplayContext: Optional. Contains details about the stop
+      workload replay operation.
+  """
+
+  stopWorkloadReplayContext = _messages.MessageField('StopWorkloadReplayContext', 1)
+
+
+class WorkloadCapturesStopRequest(_messages.Message):
+  r"""Request to stop recording traffic from the primary instance.
+
+  Fields:
+    stopWorkloadCaptureContext: Optional. Contains details about the stop
+      workload capture operation.
+  """
+
+  stopWorkloadCaptureContext = _messages.MessageField('StopWorkloadCaptureContext', 1)
 
 
 encoding.AddCustomJsonFieldMapping(

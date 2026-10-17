@@ -978,7 +978,7 @@ class DelimitedKey(_messages.Message):
     delimiter: Optional. Byte sequence used to delimit concatenated fields.
       Must be specified if multiple key fields are used. The delimiter must
       contain at least 1 character and at most 50 characters.
-    keyFields: Optional. The key fields to construct from the row key. The
+    keyFields: Required. The key fields to construct from the row key. The
       fields must be present in the message as a top-level field, i.e. JSON
       path expressions will not traverse into nested objects.
   """

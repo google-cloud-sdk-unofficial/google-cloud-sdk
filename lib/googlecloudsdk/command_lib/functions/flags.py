@@ -1173,7 +1173,7 @@ def AddDockerRepositoryFlags(parser):
         must be an Artifact Registry Docker repository present in the `same`
         project and location as the Cloud Function.
 
-        **Preview:** for 2nd gen functions, a Docker Artifact registry
+        *Preview:* for 2nd gen functions, a Docker Artifact registry
         repository in a different project and/or location may be used.
         Additional requirements apply, see
         https://cloud.google.com/functions/docs/building#image_registry

@@ -1,0 +1,48 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute preview RegexRewrite export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- pathPattern
+- pathSubstitution
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  pathPattern:
+    description: |-
+      The regular expression used to match against the URL path. It uses RE2
+      syntax with the following constraints: - Any single character operators
+      - Groups are allowed to have only submatch operator inside      - Groups
+      are allowed only without any char repetition, e.g.      .*      - Any char
+      repetition, e.g. .*, is only allowed to be used in a single regex together
+      with: - Empty string operators             - Other repetitions
+      - Ranges             - Repetitions of ranges                       -
+      Ranges are only allowed to have:                            - Character
+      range             - Digits range             - Symbols listed in
+      characters allowed for ranges
+    type: string
+  pathSubstitution:
+    description: |-
+      Required when path pattern is specified. Used to rewrite matching parts of
+      the path.
+    type: string

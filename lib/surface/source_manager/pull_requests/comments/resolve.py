@@ -15,7 +15,6 @@
 """Resolve Secure Source Manager pull request comments command."""
 
 from googlecloudsdk.api_lib.securesourcemanager import pull_request_comments
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import resource_args
@@ -80,23 +79,15 @@ class Resolve(base.Command):
     )
 
     if args.async_:
-      return resolve_operation
-
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if resolve_operation.done or not resolve_operation.name:
-      if resolve_operation.error:
-        raise waiter.OperationError(
-            resolve_operation.error.message or str(resolve_operation.error)
-        )
       log.status.Print(
-          "Resolve comments request completed for [{}].".format(
+          "Resolve comments request issued for [{}].".format(
               pull_request_ref.RelativeName()
           )
       )
       return resolve_operation
 
-    response = client.WaitForOperation(
-        client.GetOperationRef(resolve_operation),
+    response = client.GetOperationResult(
+        resolve_operation,
         "Waiting for pull request comments to be resolved",
         has_result=False,
     )

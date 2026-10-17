@@ -1775,10 +1775,23 @@ class Layer(_messages.Message):
   directive = _messages.StringField(2)
 
 
+class LayerAttribute(_messages.Message):
+  r"""An attribute attached to a layer by a plugin.
+
+  Fields:
+    plugin: The name of the plugin that generated this attribute.
+    value: The value of the attribute, with a meaning defined by the plugin.
+  """
+
+  plugin = _messages.StringField(1)
+  value = _messages.StringField(2)
+
+
 class LayerDetails(_messages.Message):
   r"""Details about the layer a package was found in.
 
   Fields:
+    attributes: Attributes attached to this layer by plugins.
     baseImages: The base images the layer is found within.
     chainId: The layer chain ID (sha256 hash) of the layer in the container
       image. https://github.com/opencontainers/image-
@@ -1790,11 +1803,12 @@ class LayerDetails(_messages.Message):
     index: The index of the layer in the container image.
   """
 
-  baseImages = _messages.MessageField('BaseImage', 1, repeated=True)
-  chainId = _messages.StringField(2)
-  command = _messages.StringField(3)
-  diffId = _messages.StringField(4)
-  index = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  attributes = _messages.MessageField('LayerAttribute', 1, repeated=True)
+  baseImages = _messages.MessageField('BaseImage', 2, repeated=True)
+  chainId = _messages.StringField(3)
+  command = _messages.StringField(4)
+  diffId = _messages.StringField(5)
+  index = _messages.IntegerField(6, variant=_messages.Variant.INT32)
 
 
 class License(_messages.Message):

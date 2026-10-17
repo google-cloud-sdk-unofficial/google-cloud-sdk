@@ -967,9 +967,12 @@ class BuildOptions(_messages.Message):
     Values:
       NOT_VERIFIED: Not a verifiable build (the default).
       VERIFIED: Build must be verified.
+      BEST_EFFORT: Build verification is best effort. If provenance generation
+        fails, the build will still succeed.
     """
     NOT_VERIFIED = 0
     VERIFIED = 1
+    BEST_EFFORT = 2
 
   class SourceProvenanceHashValueListEntryValuesEnum(_messages.Enum):
     r"""SourceProvenanceHashValueListEntryValuesEnum enum type.
@@ -3586,8 +3589,8 @@ class GenericArtifactDependency(_messages.Message):
   r"""Represents a generic artifact as a build dependency.
 
   Fields:
-    destPath: Required. Where the artifact files should be placed on the
-      worker.
+    destPath: Optional. Where the artifact files should be placed on the
+      worker. Required when specified in `Build.dependencies`.
     resource: Required. The location to download the artifact files from. Ex:
       projects/p1/locations/us/repositories/r1/packages/p1/versions/v1
   """
@@ -4806,7 +4809,7 @@ class OverlayBranchId(_messages.Message):
 
 
 class ParameterDefinition(_messages.Message):
-  r"""Definition of a Pipeline input parameter.
+  r"""Definition of a Pipeline or Task input parameter.
 
   Fields:
     defaultValue: Optional. The default value if not provided at runtime.

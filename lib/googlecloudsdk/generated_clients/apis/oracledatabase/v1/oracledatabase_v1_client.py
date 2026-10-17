@@ -752,6 +752,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single Exadata Infrastructure.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsCloudExadataInfrastructuresPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/cloudExadataInfrastructures/{cloudExadataInfrastructuresId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.cloudExadataInfrastructures.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='cloudExadataInfrastructure',
+        request_type_name='OracledatabaseProjectsLocationsCloudExadataInfrastructuresPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsCloudVmClustersDbNodesService(base_api.BaseApiService):
     """Service class for the projects_locations_cloudVmClusters_dbNodes resource."""
 
@@ -904,6 +931,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsCloudVmClustersListRequest',
         response_type_name='ListCloudVmClustersResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single Vm Cluster.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsCloudVmClustersPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/cloudVmClusters/{cloudVmClustersId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.cloudVmClusters.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='cloudVmCluster',
+        request_type_name='OracledatabaseProjectsLocationsCloudVmClustersPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -1197,6 +1251,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsDbSystemsListRequest',
         response_type_name='ListDbSystemsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single DbSystem.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDbSystemsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dbSystems/{dbSystemsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.dbSystems.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='dbSystem',
+        request_type_name='OracledatabaseProjectsLocationsDbSystemsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -1601,6 +1682,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single ExascaleDbStorageVault.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/exascaleDbStorageVaults/{exascaleDbStorageVaultsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.exascaleDbStorageVaults.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='exascaleDbStorageVault',
+        request_type_name='OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsGiVersionsMinorVersionsService(base_api.BaseApiService):
     """Service class for the projects_locations_giVersions_minorVersions resource."""
 
@@ -1793,6 +1901,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single GoldengateConnectionAssignment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnectionAssignments/{goldengateConnectionAssignmentsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.goldengateConnectionAssignments.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='goldengateConnectionAssignment',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Test(self, request, global_params=None):
       r"""Tests a single GoldengateConnectionAssignment.
 
@@ -1972,6 +2107,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionsListRequest',
         response_type_name='ListGoldengateConnectionsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single GoldengateConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateConnections/{goldengateConnectionsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.goldengateConnections.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='goldengateConnection',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -2204,6 +2366,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single GoldengateDeployment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/goldengateDeployments/{goldengateDeploymentsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.goldengateDeployments.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='goldengateDeployment',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Start(self, request, global_params=None):
       r"""Starts a single GoldengateDeployment.
 
@@ -2373,6 +2562,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsListRequest',
         response_type_name='ListOdbSubnetsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single ODB Subnet.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbSubnets/{odbSubnetsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbSubnets.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='odbSubnet',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

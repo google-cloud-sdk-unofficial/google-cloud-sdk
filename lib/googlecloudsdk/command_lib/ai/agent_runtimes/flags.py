@@ -284,7 +284,28 @@ def _AddUpdateSecretEnvVarsFlags(parser):
   _AddSecretEnvVarsArg(secret_env_vars_group)
 
 
-def _AddDeploymentConfigFlags(parser):
+def _AddDnsPeeringConfigsArg(parser):
+  """Adds the `--dns-peering-configs` flag."""
+  parser.add_argument(
+      '--dns-peering-configs',
+      action='append',
+      metavar='DOMAIN=DOMAIN,TARGET_PROJECT=PROJECT,TARGET_NETWORK=NETWORK',
+      type=arg_parsers.ArgDict(
+          spec={
+              'domain': str,
+              'target-project': str,
+              'target-network': str,
+          },
+          required_keys=['domain', 'target-project', 'target-network'],
+      ),
+      help=(
+          'DNS peering configuration for resolving private internal zones via'
+          ' Cloud DNS.'
+      ),
+  )
+
+
+def _AddDeploymentConfigFlags(parser, with_clear_dns_peering=False):
   """Adds deployment configuration flags other than environment variables."""
   parser.add_argument(
       '--min-instances',
@@ -335,23 +356,20 @@ def _AddDeploymentConfigFlags(parser):
           ' connectivity.'
       ),
   )
-  parser.add_argument(
-      '--dns-peering-configs',
-      action='append',
-      metavar='DOMAIN=DOMAIN,TARGET_PROJECT=PROJECT,TARGET_NETWORK=NETWORK',
-      type=arg_parsers.ArgDict(
-          spec={
-              'domain': str,
-              'target-project': str,
-              'target-network': str,
-          },
-          required_keys=['domain', 'target-project', 'target-network'],
-      ),
-      help=(
-          'DNS peering configuration for resolving private internal zones via'
-          ' Cloud DNS.'
-      ),
-  )
+  if with_clear_dns_peering:
+    dns_peering_group = parser.add_group(
+        mutex=True,
+        help='Argument group for DNS peering configs.',
+    )
+    _AddDnsPeeringConfigsArg(dns_peering_group)
+    dns_peering_group.add_argument(
+        '--clear-dns-peering-configs',
+        action='store_true',
+        default=None,
+        help='Clear all previously set DNS peering configs.',
+    )
+  else:
+    _AddDnsPeeringConfigsArg(parser)
   parser.add_argument(
       '--client-to-agent-gateway',
       help=(
@@ -415,6 +433,14 @@ def AddCreateFlags(parser):
   _AddDeploymentFlags(parser)
 
 
+def _AddEtagFlag(parser, help_text=None):
+  """Adds the `--etag` flag."""
+  parser.add_argument(
+      '--etag',
+      help=help_text or 'ETag of the agent runtime.',
+  )
+
+
 def AddDeployFlags(parser):
   """Adds all the flags of `gcloud ai agent runtimes deploy`."""
   shared_flags.AddRegionResourceArg(
@@ -437,9 +463,9 @@ def AddDeployFlags(parser):
   _AddAgentDefinitionFlags(parser, display_name_required=False)
   labels_util.AddCreateLabelsFlags(parser)
   labels_util.AddUpdateLabelsFlags(parser)
-  parser.add_argument(
-      '--etag',
-      help=(
+  _AddEtagFlag(
+      parser,
+      help_text=(
           'ETag of the agent runtime. Only applies when updating an existing'
           ' runtime.'
       ),
@@ -452,3 +478,20 @@ def AddDeployFlags(parser):
       ),
   )
   _AddDeploymentConfigFlags(parser)
+
+
+def AddUpdateFlags(parser):
+  """Adds all the flags of `gcloud ai agent runtimes update`."""
+  shared_flags.AddAgentRuntimeResourceArg(
+      parser,
+      'to update',
+  )
+  _AddSourceFlags(parser, required=False)
+  _AddIdentityFlags(parser)
+  _AddTrafficFlags(parser)
+  _AddUpdateEnvVarsFlags(parser)
+  _AddUpdateSecretEnvVarsFlags(parser)
+  _AddAgentDefinitionFlags(parser, display_name_required=False)
+  labels_util.AddUpdateLabelsFlags(parser)
+  _AddEtagFlag(parser)
+  _AddDeploymentConfigFlags(parser, with_clear_dns_peering=True)

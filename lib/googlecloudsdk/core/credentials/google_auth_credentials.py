@@ -257,10 +257,21 @@ def _RefreshGrant(request,
   return access_token, refresh_token, expiry, response_data
 
 
+_NON_RETRYABLE_OAUTH_ERRORS = frozenset([
+    'invalid_request',
+    'invalid_client',
+    'invalid_grant',
+    'unauthorized_client',
+    'unsupported_grant_type',
+    'invalid_scope',
+])
+
+
 def _ShouldRetryServerInternalError(exc_type, exc_value, exc_traceback, state):
   """Whether to retry the request when receive errors.
 
-  Do not retry reauth-related errors or context aware access errors.
+  Do not retry reauth-related errors, context aware access errors, or
+  non-retryable OAuth client errors (such as invalid_grant).
   Retrying won't help in those situations.
 
   Args:
@@ -271,12 +282,15 @@ def _ShouldRetryServerInternalError(exc_type, exc_value, exc_traceback, state):
     state: RetryerState, state of the retryer.
 
   Returns:
-    True if exception and is not due to reauth-related errors or context-aware
-    access restriction.
+    True if exception and is not due to reauth-related errors, context-aware
+    access restriction, or non-retryable OAuth errors.
   """
-  del exc_value, exc_traceback, state
-  return (exc_type != ReauthRequiredError and
-          exc_type != ContextAwareAccessDeniedError)
+  del exc_traceback, state
+  if exc_type in (ReauthRequiredError, ContextAwareAccessDeniedError):
+    return False
+  if isinstance(exc_value, google_auth_exceptions.RefreshError):
+    return exc_value.retryable
+  return True
 
 
 @retry.RetryOnException(
@@ -332,8 +346,9 @@ def _HandleErrorResponse(response_body):
       error_subtype == 'invalid_rapt' or
       error_subtype == 'rapt_required'):
     raise ReauthRequiredError('reauth is required.')
+  retryable = error_code not in _NON_RETRYABLE_OAUTH_ERRORS
   try:
-    google_auth_client._handle_error_response(error_data, False)  # pylint: disable=protected-access
+    google_auth_client._handle_error_response(error_data, retryable)  # pylint: disable=protected-access
   except google_auth_exceptions.RefreshError as e:
     if context_aware.IsContextAwareAccessDeniedError(e):
       raise ContextAwareAccessDeniedError()

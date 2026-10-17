@@ -42,6 +42,8 @@ STORAGE_TYPE_MAPPING = {
     'HYPERDISK_BALANCED': 'HYPERDISK_BALANCED',
 }
 
+SEMI_MANAGED_BACKEND_TYPE = 'SEMI_MANAGED'
+
 
 def GetInstanceRef(args, client):
   """Validates and returns the instance reference."""
@@ -394,9 +396,19 @@ class _BaseInstances(object):
     if not args.IsKnownAndSpecified('replication'):
       args.replication = None
 
+    backend_type = (
+        args.backend_type if args.IsKnownAndSpecified('backend_type') else None
+    )
+
     settings = sql_messages.Settings(
         kind='sql#settings',
-        tier=reducers.MachineType(instance, args.tier, args.memory, args.cpu),
+        tier=reducers.MachineType(
+            instance,
+            args.tier,
+            args.memory,
+            args.cpu,
+            backend_type=backend_type,
+        ),
         pricingPlan=_ParsePricingPlan(sql_messages, args.pricing_plan),
         replicationType=_ParseReplicationType(sql_messages, args.replication),
         activationPolicy=_ParseActivationPolicy(
@@ -1264,9 +1276,14 @@ class _BaseInstances(object):
     instance_resource.region = reducers.Region(
         args.region, _GetZone(args), _GetSecondaryZone(args)
     )
-    instance_resource.databaseVersion = ParseDatabaseVersion(
-        sql_messages, args.database_version
-    )
+    if not (
+        args.IsKnownAndSpecified('backend_type')
+        and args.backend_type.replace('-', '_').upper()
+        == SEMI_MANAGED_BACKEND_TYPE
+    ):
+      instance_resource.databaseVersion = ParseDatabaseVersion(
+          sql_messages, args.database_version
+      )
 
     if args.IsKnownAndSpecified('database_center_integration_enabled'):
       instance_resource.databaseCenterIntegrationEnabled = (
@@ -1307,7 +1324,7 @@ class _BaseInstances(object):
     }
     if kwargs or (
         args.IsKnownAndSpecified('backend_type')
-        and args.backend_type == 'SEMI_MANAGED'
+        and args.backend_type == SEMI_MANAGED_BACKEND_TYPE
     ):
       instance_resource.semiManagedConfig = reducers.SemiManagedConfig(
           sql_messages, **kwargs

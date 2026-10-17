@@ -28,17 +28,26 @@ class Dataproc(object):
   support API version switching in future.
   """
 
-  def __init__(self, release_track=base.ReleaseTrack.GA):
+  def __init__(
+      self,
+      release_track=base.ReleaseTrack.GA,
+      api_version='v1',
+      location=None,
+  ):
     super(Dataproc, self).__init__()
     self.release_track = release_track
-    self.api_version = 'v1'
+    self.api_version = api_version
+    # Location used to select a regional endpoint.
+    self.location = location
     self._client = None
     self._resources = None
 
   @property
   def client(self):
     if self._client is None:
-      self._client = apis.GetClientInstance('dataproc', self.api_version)
+      self._client = apis.GetClientInstance(
+          'dataproc', self.api_version, location=self.location
+      )
     return self._client
 
   @property

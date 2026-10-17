@@ -1098,15 +1098,18 @@ def HandleGoogleAuthCredentialsRefreshError(
     raise creds_exceptions.WebLoginRequiredReauthError(for_adc=for_adc)
   except c_google_auth.ReauthRequiredError as e:
     raise creds_exceptions.TokenRefreshReauthError(str(e), for_adc=for_adc)
-  except google_auth_exceptions.RefreshError as e:
+  except (
+      google_auth_exceptions.RefreshError,
+      google_auth_exceptions.OAuthError,
+  ) as e:
     if context_aware.IsContextAwareAccessDeniedError(e):
-      raise creds_exceptions.TokenRefreshDeniedByCAAError(e)
+      raise creds_exceptions.TokenRefreshDeniedByCAAError(e) from e
     raise creds_exceptions.TokenRefreshError(
         six.text_type(e),
         for_adc=for_adc,
         account=account,
         is_service_account=is_service_account,
-    )
+    ) from e
 
 
 def _ShouldRefreshGoogleAuthIdToken(credentials):

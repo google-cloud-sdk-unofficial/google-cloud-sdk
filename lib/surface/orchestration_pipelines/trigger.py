@@ -14,8 +14,6 @@
 # limitations under the License.
 """Command to trigger an orchestration pipeline."""
 
-import datetime
-import random
 import time
 from googlecloudsdk.api_lib.composer import dags_util
 from googlecloudsdk.api_lib.composer import util
@@ -24,9 +22,6 @@ from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_ut
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
-
-DEFAULT_POLLING_TIME_SECONDS = datetime.timedelta(seconds=2)
-POLL_JITTER_SECONDS = datetime.timedelta(seconds=0.5)
 
 
 @calliope_base.DefaultUniverseOnly
@@ -158,13 +153,7 @@ class Trigger(calliope_base.Command):
                   [dag_run]
               ),
           }
-        time.sleep(
-            DEFAULT_POLLING_TIME_SECONDS.total_seconds()
-            + random.uniform(
-                -POLL_JITTER_SECONDS.total_seconds(),
-                POLL_JITTER_SECONDS.total_seconds(),
-            )
-        )
+        composer_utils.sleep_with_jitter()
         elapsed_time = int(time.time() - start_time)
         log.status.Print(f"Waiting... ({elapsed_time}s elapsed)")
       except KeyboardInterrupt:

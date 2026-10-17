@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.dataflow import config_store_util
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Dataflow ConfigStore setting."""
 

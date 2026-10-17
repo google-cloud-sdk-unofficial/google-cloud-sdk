@@ -234,9 +234,14 @@ class SecurityRulesClient:
         )
         return self.client.projects_releases.Patch(patch_req)
       else:
-        create_req = self.messages.Release(
-            name=full_release_name,
-            rulesetName=full_ruleset_name,
+        # Create takes the parent project in the URL and the full release
+        # name in the body.
+        create_req = self.messages.FirebaserulesProjectsReleasesCreateRequest(
+            name=_FormatProjectName(project_id),
+            release=self.messages.Release(
+                name=full_release_name,
+                rulesetName=full_ruleset_name,
+            ),
         )
         return self.client.projects_releases.Create(create_req)
     except apitools_exceptions.HttpError as e:

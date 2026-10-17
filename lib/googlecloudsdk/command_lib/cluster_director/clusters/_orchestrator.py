@@ -656,8 +656,8 @@ def MakeClusterSlurmOrchestrator(
           )
         else:
           partition.config = None
-  if args.IsKnownAndSpecified("slurm_disable_health_check_program"):
-    slurm.disableHealthCheckProgram = args.slurm_disable_health_check_program
+  if args.IsKnownAndSpecified("enable_slurm_health_check"):
+    slurm.disableHealthCheckProgram = not args.enable_slurm_health_check
   if args.IsKnownAndSpecified("controller_version"):
     _validator.ValidateControllerVersion(args.controller_version)
     slurm.controllerVersion = args.controller_version
@@ -1301,9 +1301,9 @@ def MakeClusterSlurmOrchestratorPatch(
       else:
         slurm.config = None
       update_mask.add("orchestrator.slurm.config")
-  if args.IsKnownAndSpecified("update_slurm_disable_health_check_program"):
+  if args.IsKnownAndSpecified("enable_slurm_health_check"):
     slurm.disableHealthCheckProgram = (
-        args.update_slurm_disable_health_check_program
+        not args.enable_slurm_health_check
     )
     update_mask.add("orchestrator.slurm.disable_health_check_program")
 

@@ -917,6 +917,17 @@ class AgentregistryProjectsLocationsGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class AgentregistryProjectsLocationsGetSkillEncryptionSpecRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsGetSkillEncryptionSpecRequest object.
+
+  Fields:
+    name: Required. The name of the SkillEncryptionSpec to retrieve. Format:
+      `projects/{project}/locations/{location}/skillEncryptionSpec`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class AgentregistryProjectsLocationsListRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsListRequest object.
 
@@ -1484,6 +1495,27 @@ class AgentregistryProjectsLocationsSkillsTestIamPermissionsRequest(_messages.Me
 
   googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
   resource = _messages.StringField(2, required=True)
+
+
+class AgentregistryProjectsLocationsUpdateSkillEncryptionSpecRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsUpdateSkillEncryptionSpecRequest object.
+
+  Fields:
+    name: Identifier. Resource name of the SkillEncryptionSpec. Format:
+      `projects/{project}/locations/{location}/skillEncryptionSpec`
+    skillEncryptionSpec: A SkillEncryptionSpec resource to be passed as the
+      request body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the SkillEncryptionSpec resource by the update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all fields present in the request
+      will be overwritten.
+  """
+
+  name = _messages.StringField(1, required=True)
+  skillEncryptionSpec = _messages.MessageField('SkillEncryptionSpec', 2)
+  updateMask = _messages.StringField(3)
 
 
 class AiApplication(_messages.Message):
@@ -3408,6 +3440,76 @@ class SearchMcpServersResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class SearchSkillsRequest(_messages.Message):
+  r"""Requesting a deep search of Skills.
+
+  Enums:
+    SearchTypeValueValuesEnum: Optional. The type of search.
+
+  Fields:
+    filter: Optional. Use this field to specify additional filter criteria on
+      search results. Filter expressions can be used to restrict results based
+      upon filterable fields, where equality operators can be used. See
+      [instructions](https://docs.cloud.google.com/agent-registry/search-
+      agents-and-tools) for more details. Allowed operators: `=`, `<`, `>`,
+      `NOT`, `AND`, `OR`, and `()`. | Field | `=` | `<`, `>` |
+      |--------------|-----|----------| | state | Yes | No | | targetState |
+      Yes | No | | createTime | Yes | Yes | | updateTime | Yes | Yes |
+      Examples: * `state=ACTIVE` to restrict results to skills in the `ACTIVE`
+      state.
+    pageSize: Optional. The maximum number of search results to return per
+      page. The page size is capped at `100`, even if a larger value is
+      specified. A negative value will result in an `INVALID_ARGUMENT` error.
+      If unspecified or set to `0`, a default value of `20` will be used. The
+      server may return fewer results than requested.
+    pageToken: Optional. If present, retrieve the next batch of results from
+      the preceding call to this method. `page_token` must be the value of
+      `next_page_token` from the previous response. The values of all other
+      method parameters, must be identical to those in the previous call.
+    searchString: Optional. Search criteria used to select the Skills to
+      return. If no search criteria is specified then all accessible Skills
+      will be returned. Search expressions can be used to restrict results
+      based upon searchable fields, where the operators can be used along with
+      the suffix wildcard symbol `*`. See
+      [instructions](https://docs.cloud.google.com/agent-registry/search-
+      agents-and-tools) for more details. Allowed operators: `=`, `:`, `NOT`,
+      `AND`, `OR`, and `()`. Searchable fields: | Field | `=` | `:` | `*` |
+      Keyword Search |
+      |---------------------------|-----|-----|-----|----------------| |
+      skillId | Yes | Yes | Yes | Included | | name | No | Yes | Yes |
+      Included | | displayName | No | Yes | Yes | Included | | description |
+      No | Yes | No | Included | | frontmatter.name | No | Yes | No | Included
+      | | frontmatter.description | No | Yes | No | Included | |
+      frontmatter.compatibility | No | Yes | No | Included | |
+      frontmatter.license | No | Yes | No | Included | Examples: *
+      `skillId="urn:skill:projects-1234:locations:global:private-important-
+      skill"` to find the skill with the specified skill ID. *
+      `name:important` to find skills whose name contains `important` as a
+      word. * `displayName:works*` to find skills whose display name contains
+      words that start with `works`.
+    searchType: Optional. The type of search.
+  """
+
+  class SearchTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The type of search.
+
+    Values:
+      SEARCH_TYPE_UNSPECIFIED: Invalid search type.
+      KEYWORD: Search for a keyword across all searchable fields.
+      SEMANTIC: Search based on the meaning and intent of a natural language
+        query.
+    """
+    SEARCH_TYPE_UNSPECIFIED = 0
+    KEYWORD = 1
+    SEMANTIC = 2
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  searchString = _messages.StringField(4)
+  searchType = _messages.EnumField('SearchTypeValueValuesEnum', 5)
+
+
 class SearchSkillsResponse(_messages.Message):
   r"""Response listing searched Skills.
 
@@ -3616,6 +3718,31 @@ class Skill(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 15)
   uid = _messages.StringField(16)
   updateTime = _messages.StringField(17)
+
+
+class SkillEncryptionSpec(_messages.Message):
+  r"""Once the SkillEncryptionSpec is configured, new Skill payloads are
+  protected using the provided customer-managed encryption key instead of a
+  Google-managed encryption key. SkillEncryptionSpec cannot be set if any
+  Skills have already been created in the project and location.
+
+  Fields:
+    createTime: Output only. Creation timestamp.
+    cryptoKeyName: Required. The Cloud KMS CryptoKey resource name used to
+      protect Skill payloads in this project and location. This field can be
+      set or updated only when no Skills exist in the target project and
+      location. Once any Skill exists in the location, updating this field is
+      rejected with `FAILED_PRECONDITION`. Format: `projects/{project}/locatio
+      ns/{location}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}`
+    name: Identifier. Resource name of the SkillEncryptionSpec. Format:
+      `projects/{project}/locations/{location}/skillEncryptionSpec`
+    updateTime: Output only. Most recent update timestamp.
+  """
+
+  createTime = _messages.StringField(1)
+  cryptoKeyName = _messages.StringField(2)
+  name = _messages.StringField(3)
+  updateTime = _messages.StringField(4)
 
 
 class SkillRevision(_messages.Message):

@@ -242,6 +242,15 @@ def _ExportStorageApi(gcs_bucket, source, destination):
   if dest_is_local:
     for obj in to_export:
       dest_path = _GetDestPath(source_dirname, obj.name, destination, True)
+      # Object names are controlled by whoever can write to the bucket. They
+      # can contain '..' segments or absolute paths, or go through existing
+      # symlinks, which would make the export write outside of the destination
+      # directory.
+      if not _IsPathInsideDirectory(dest_path, destination):
+        log.warning(
+            'Skipping export of [{}] because it would be written outside of '
+            'the destination directory [{}].'.format(obj.ToUrl(), destination))
+        continue
       files.MakeDir(os.path.dirname(dest_path))
       # Command description for export commands says overwriting is default
       # behavior.
@@ -287,6 +296,27 @@ def _GetDestPath(source_dirname, source_path, destination, dest_is_local):
 
   return _JoinPaths(
       destination, dest_path_suffix, gsutil_path=not dest_is_local)
+
+
+def _IsPathInsideDirectory(path, directory):
+  """Checks whether a local path is located inside a local directory.
+
+  Both paths are fully resolved first, so '..' segments, absolute path
+  components and symlinks are all taken into account.
+
+  Args:
+    path: str, the local path to check.
+    directory: str, the local directory that should contain the path.
+
+  Returns:
+    True if the path is located strictly inside the directory, False otherwise.
+  """
+  real_directory = os.path.realpath(directory)
+  real_path = os.path.realpath(path)
+  if real_path == real_directory:
+    return False
+  directory_prefix = os.path.join(real_directory, '')
+  return real_path.startswith(directory_prefix)
 
 
 def Delete(env_ref, target, gcs_subdir, release_track=base.ReleaseTrack.GA):

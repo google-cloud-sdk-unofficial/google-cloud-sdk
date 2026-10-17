@@ -68,6 +68,7 @@ class Upgrade(base.Command):
             soakDurationOverrideAllStages=flag_parser.SoakDurationOverrideAllStages(),
             soakDurationOverridePerStage=flag_parser.SoakDurationOverridePerStage(),
             patchOnly=flag_parser.PatchOnly(),
+            prioritized=flag_parser.Prioritized(),
         ),
     )
 

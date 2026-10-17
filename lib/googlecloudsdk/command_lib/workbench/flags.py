@@ -249,7 +249,7 @@ def AddCreateInstanceFlags(parser):
       'HYPERDISK_THROUGHPUT',
   ]
   encryption_choices = ['GMEK', 'CMEK']
-  nic_type_choices = ['VIRTIGO_NET', 'GVNIC']
+  nic_type_choices = ['VIRTIO_NET', 'GVNIC']
   reservation_type_choices = [
       'none', 'any', 'specific'
   ]

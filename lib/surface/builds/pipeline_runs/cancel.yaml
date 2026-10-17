@@ -1,0 +1,48 @@
+- release_tracks: [ALPHA]
+
+  # Keeps the command out of help text, tab-completion and the public
+  # reference documentation while Cloud Build Pipelines is in preview.
+  hidden: true
+  universe_compatible: true
+
+  hints:
+    read_only: false
+
+  help_text:
+    brief: Cancel a Cloud Build pipeline run.
+    description: |
+      Cancel an in-progress Cloud Build pipeline run.
+    examples: |
+      To cancel a pipeline run with ID `12345678-abcd` in region `us-central1`:
+
+        $ {command} 12345678-abcd --region=us-central1
+
+      To cancel a pipeline run without waiting for the operation to complete:
+
+        $ {command} 12345678-abcd --region=us-central1 --async
+
+  request:
+    collection: cloudbuild.projects.locations.pipelineRuns
+    api_version: v1
+    method: cancel
+    regional_endpoint_compatibility: SUPPORTED
+
+  # Adds --async. When omitted, polls the returned operation to completion.
+  async:
+    collection: cloudbuild.projects.locations.operations
+    api_version: v1
+    extract_resource_result: false
+    request_issued_message: 'Cancel request issued for: [{__name__}]'
+
+  input:
+    confirmation_prompt: |-
+      You are about to cancel pipeline run [{__name__}] in [{locationsId}].
+
+  arguments:
+    resource:
+      help_text: The Cloud Build pipeline run to cancel.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:pipeline_run
+      is_positional: true
+
+  output:
+    format: none

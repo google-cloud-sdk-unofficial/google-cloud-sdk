@@ -74,6 +74,17 @@ class Update(base.UpdateCommand):
         '--num-workers',
         type=int,
         help='The new number of worker nodes in the cluster.')
+    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      parser.add_argument(
+          '--worker-flexible-config',
+          type=arg_parsers.ArgDict(spec={'num-instances': int}),
+          metavar='KEY=VALUE',
+          help=(
+              'The flexible instance group configuration for primary'
+              ' workers in High Obtainability (HO) clusters. Supported keys:'
+              ' num-instances (positive integer).'
+          ),
+      )
     num_secondary_workers = parser.add_argument_group(mutex=True)
     num_secondary_workers.add_argument(
         '--num-preemptible-workers',
@@ -88,6 +99,17 @@ class Update(base.UpdateCommand):
         '--num-secondary-workers',
         type=int,
         help='The new number of secondary worker nodes in the cluster.')
+    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      parser.add_argument(
+          '--secondary-worker-flexible-config',
+          type=arg_parsers.ArgDict(spec={'num-instances': int}),
+          metavar='KEY=VALUE',
+          help=(
+              'The flexible instance group configuration for secondary'
+              ' workers in High Obtainability (HO) clusters. Supported keys:'
+              ' num-instances (non-negative integer).'
+          ),
+      )
 
     parser.add_argument(
         '--graceful-decommission-timeout',
@@ -272,6 +294,18 @@ class Update(base.UpdateCommand):
         'Must specify at least one cluster parameter to update.'
     )
 
+    clusters.ValidateHighObtainabilityUpdateArgs(args)
+
+    if getattr(args, 'worker_flexible_config', None) is not None:
+      num_instances = args.worker_flexible_config.get('num-instances')
+      if num_instances is not None:
+        cluster_config.workerFlexibleConfig = (
+            clusters.CreateFlexibleInstanceGroupConfig(
+                dataproc, num_instances=num_instances
+            )
+        )
+        changed_fields.append('config.worker_flexible_config.num_instances')
+        has_changes = True
     if args.num_workers is not None:
       worker_config = dataproc.messages.InstanceGroupConfig(
           numInstances=args.num_workers)
@@ -279,14 +313,27 @@ class Update(base.UpdateCommand):
       changed_fields.append('config.worker_config.num_instances')
       has_changes = True
 
-    num_secondary_workers = _FirstNonNone(args.num_preemptible_workers,
-                                          args.num_secondary_workers)
+    num_secondary_workers = _FirstNonNone(
+        args.num_preemptible_workers, args.num_secondary_workers
+    )
+    if getattr(args, 'secondary_worker_flexible_config', None) is not None:
+      num_instances = args.secondary_worker_flexible_config.get('num-instances')
+      if num_instances is not None:
+        cluster_config.secondaryWorkerFlexibleConfig = (
+            clusters.CreateFlexibleInstanceGroupConfig(
+                dataproc, num_instances=num_instances
+            )
+        )
+        changed_fields.append(
+            'config.secondary_worker_flexible_config.num_instances'
+        )
+        has_changes = True
     if num_secondary_workers is not None:
       worker_config = dataproc.messages.InstanceGroupConfig(
-          numInstances=num_secondary_workers)
+          numInstances=num_secondary_workers
+      )
       cluster_config.secondaryWorkerConfig = worker_config
-      changed_fields.append(
-          'config.secondary_worker_config.num_instances')
+      changed_fields.append('config.secondary_worker_config.num_instances')
       has_changes = True
 
     if args.min_secondary_worker_fraction is not None:

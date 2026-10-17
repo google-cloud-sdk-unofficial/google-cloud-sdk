@@ -53,7 +53,7 @@ _DETAILED_HELP = {
 
         To create a key with allowed Android application and allowed API targets:
 
-          $ {command} --allowed-application=sha1_fingerprint=foo1,package_name=bar.foo --allowed-application=sha1_fingerprint=foo2,package_name=foo.bar --api-target=service=bar.googleapis.com
+          $ {command} --allowed-application=sha1_fingerprint=DA:39:A3:EE:5E:6B:4B:0D:32:55:BF:EF:95:60:18:90:AF:D8:07:09,package_name=bar.foo --allowed-application=sha1_fingerprint=DA39A3EE5E6B4B0D3255BFEF95601890AFD80709,package_name=foo.bar --api-target=service=bar.googleapis.com
 
         To create a key with allowed API targets (service name only):
 

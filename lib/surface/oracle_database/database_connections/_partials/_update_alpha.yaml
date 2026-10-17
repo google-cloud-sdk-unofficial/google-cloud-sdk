@@ -48,22 +48,6 @@
             databaseConnection.walletSecretVersion: '{__relative_name__}'
           required: false
           clearable: true
-    - group:
-        mutex: true
-        help_text: |-
-          Arguments for the network configuration.
-        params:
-        - arg_name: odb-network
-          help_text: |-
-            For Oracle Database@Google cloud resources.
-            Format: projects/{project}/locations/{location}/odbNetworks/{odbNetwork}
-          is_positional: false
-          is_primary_resource: false
-          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_odb_networks
-          resource_method_params:
-            databaseConnection.odbNetwork: '{__relative_name__}'
-          required: false
-          clearable: true
     - help_text: |-
         Identifier. The resource name of the DatabaseConnection.
         Format:
@@ -72,18 +56,6 @@
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_database_connections
       required: true
-    - arg_name: display-name
-      api_field: databaseConnection.displayName
-      required: false
-      repeated: false
-      help_text: |-
-        User-friendly display name for the connection.
-    - arg_name: username
-      api_field: databaseConnection.username
-      required: false
-      repeated: false
-      help_text: |-
-        The default database username to use for connections.
     - arg_name: password-secret-version
       help_text: |-
         The resource name of the GCP Secret Manager secret version
@@ -98,13 +70,6 @@
         databaseConnection.passwordSecretVersion: '{__relative_name__}'
       required: false
       clearable: true
-    - arg_name: connection-string
-      api_field: databaseConnection.connectionString
-      required: false
-      repeated: false
-      help_text: |-
-        Oracle Easy Connect or TNS connection string.
-        Example: "your-db-host.example.com:1521/YOUR_SERVICE_NAME"
     - arg_name: labels
       api_field: databaseConnection.labels
       required: false

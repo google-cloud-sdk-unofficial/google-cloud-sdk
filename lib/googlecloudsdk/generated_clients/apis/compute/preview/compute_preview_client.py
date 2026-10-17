@@ -9762,34 +9762,6 @@ Suspending and resuming an instance.
         supports_download=False,
     )
 
-    def Troubleshoot(self, request, global_params=None):
-      r"""Initiates diagnostic troubleshooting on the specified instance.
-This operation cannot be cancelled.
-
-      Args:
-        request: (ComputeInstancesTroubleshootRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('Troubleshoot')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Troubleshoot.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-10-01-preview',
-        http_method='POST',
-        method_id='compute.instances.troubleshoot',
-        ordered_params=['project', 'zone', 'instance'],
-        path_params=['instance', 'project', 'zone'],
-        query_params=['params_endTime', 'params_startTime', 'requestId'],
-        relative_path='projects/{project}/zones/{zone}/instances/{instance}/troubleshoot',
-        request_field='',
-        request_type_name='ComputeInstancesTroubleshootRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
     def Update(self, request, global_params=None):
       r"""Updates an instance only if the necessary resources are available. This.
 method can update only a specific set of instance properties. See
@@ -22564,6 +22536,34 @@ encryption key to the latest version for the specified snapshot.
         supports_download=False,
     )
 
+    def FetchEncryptionKey(self, request, global_params=None):
+      r"""Returns the public encryption key used to encrypt the TLS private key.
+before upload.
+
+      Args:
+        request: (ComputeRegionSslCertificatesFetchEncryptionKeyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SslCertificatesFetchEncryptionKeyResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchEncryptionKey')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchEncryptionKey.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        http_method='GET',
+        method_id='compute.regionSslCertificates.fetchEncryptionKey',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/sslCertificates/encryptionKey',
+        request_field='',
+        request_type_name='ComputeRegionSslCertificatesFetchEncryptionKeyRequest',
+        response_type_name='SslCertificatesFetchEncryptionKeyResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Returns the specified SslCertificate resource in the specified region. Get.
 a list of available SSL certificates by making a list()
@@ -26928,6 +26928,34 @@ To prevent failure, Google recommends that you set the
         request_field='',
         request_type_name='ComputeSslCertificatesDeleteRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def FetchEncryptionKey(self, request, global_params=None):
+      r"""Returns the public encryption key used to encrypt the TLS private key.
+before upload.
+
+      Args:
+        request: (ComputeSslCertificatesFetchEncryptionKeyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SslCertificatesFetchEncryptionKeyResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchEncryptionKey')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchEncryptionKey.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        http_method='GET',
+        method_id='compute.sslCertificates.fetchEncryptionKey',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=[],
+        relative_path='projects/{project}/global/sslCertificates/encryptionKey',
+        request_field='',
+        request_type_name='ComputeSslCertificatesFetchEncryptionKeyRequest',
+        response_type_name='SslCertificatesFetchEncryptionKeyResponse',
         supports_download=False,
     )
 

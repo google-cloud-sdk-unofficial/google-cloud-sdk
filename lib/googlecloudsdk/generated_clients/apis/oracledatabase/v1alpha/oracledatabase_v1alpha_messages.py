@@ -1212,17 +1212,17 @@ class CloudExadataInfrastructure(_messages.Message):
   Fields:
     createTime: Output only. The date and time that the Exadata Infrastructure
       was created.
-    displayName: Optional. User friendly name for this resource.
+    displayName: Optional. Immutable. User friendly name for this resource.
     entitlementId: Output only. Entitlement ID of the private offer against
       which this infrastructure resource is provisioned.
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle Exadata
-      Infrastructure is hosted. Example: us-east4-b-r2. If not specified, the
-      system will pick a zone based on availability.
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where Oracle
+      Exadata Infrastructure is hosted. Example: us-east4-b-r2. If not
+      specified, the system will pick a zone based on availability.
     labels: Optional. Labels or tags associated with the resource.
     name: Identifier. The name of the Exadata Infrastructure resource with the
       format: projects/{project}/locations/{region}/cloudExadataInfrastructure
       s/{cloud_exadata_infrastructure}
-    properties: Optional. Various properties of the infra.
+    properties: Optional. Immutable. Various properties of the infra.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1403,21 +1403,23 @@ class CloudVmCluster(_messages.Message):
     LabelsValue: Optional. Labels or tags associated with the VM Cluster.
 
   Fields:
-    backupOdbSubnet: Optional. The name of the backup OdbSubnet associated
-      with the VM Cluster. Format: projects/{project}/locations/{location}/odb
-      Networks/{odb_network}/odbSubnets/{odb_subnet}
-    backupSubnetCidr: Optional. CIDR range of the backup subnet.
-    cidr: Optional. Network settings. CIDR to use for cluster IP allocation.
+    backupOdbSubnet: Optional. Immutable. The name of the backup OdbSubnet
+      associated with the VM Cluster. Format: projects/{project}/locations/{lo
+      cation}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
+    backupSubnetCidr: Optional. Immutable. CIDR range of the backup subnet.
+    cidr: Optional. Immutable. Network settings. CIDR to use for cluster IP
+      allocation.
     createTime: Output only. The date and time that the VM cluster was
       created.
-    displayName: Optional. User friendly name for this resource.
-    exadataInfrastructure: Required. The name of the Exadata Infrastructure
-      resource on which VM cluster resource is created, in the following
-      format: projects/{project}/locations/{region}/cloudExadataInfrastuctures
-      /{cloud_extradata_infrastructure}
-    exascaleDbStorageVault: Optional. The name of ExascaleDbStorageVault
-      associated with the VM Cluster. Format: projects/{project}/locations/{lo
-      cation}/exascaleDbStorageVaults/{exascale_db_storage_vault}
+    displayName: Optional. Immutable. User friendly name for this resource.
+    exadataInfrastructure: Required. Immutable. The name of the Exadata
+      Infrastructure resource on which VM cluster resource is created, in the
+      following format: projects/{project}/locations/{region}/cloudExadataInfr
+      astuctures/{cloud_extradata_infrastructure}
+    exascaleDbStorageVault: Optional. Immutable. The name of
+      ExascaleDbStorageVault associated with the VM Cluster. Format: projects/
+      {project}/locations/{location}/exascaleDbStorageVaults/{exascale_db_stor
+      age_vault}
     gcpOracleZone: Output only. The GCP Oracle zone where Oracle
       CloudVmCluster is hosted. This will be the same as the gcp_oracle_zone
       of the CloudExadataInfrastructure. Example: us-east4-b-r2.
@@ -1432,20 +1434,20 @@ class CloudVmCluster(_messages.Message):
     labels: Optional. Labels or tags associated with the VM Cluster.
     name: Identifier. The name of the VM Cluster resource with the format:
       projects/{project}/locations/{region}/cloudVmClusters/{cloud_vm_cluster}
-    network: Optional. The name of the VPC network. Format:
+    network: Optional. Immutable. The name of the VPC network. Format:
       projects/{project}/global/networks/{network}
-    odbDnsZone: Optional. The name of the OdbDnsZone for using custom domain
-      name for the VM Cluster. Format: projects/{project}/locations/{location}
-      /odbNetworks/{odb_network}/odbDnsZones/{odb_dns_zone}
-    odbNetwork: Optional. The name of the OdbNetwork associated with the VM
-      Cluster. Format:
+    odbDnsZone: Optional. Immutable. The name of the OdbDnsZone for using
+      custom domain name for the VM Cluster. Format: projects/{project}/locati
+      ons/{location}/odbNetworks/{odb_network}/odbDnsZones/{odb_dns_zone}
+    odbNetwork: Optional. Immutable. The name of the OdbNetwork associated
+      with the VM Cluster. Format:
       projects/{project}/locations/{location}/odbNetworks/{odb_network} It is
       optional but if specified, this should match the parent ODBNetwork of
       the odb_subnet and backup_odb_subnet.
-    odbSubnet: Optional. The name of the OdbSubnet associated with the VM
-      Cluster for IP allocation. Format: projects/{project}/locations/{locatio
-      n}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
-    properties: Optional. Various properties of the VM Cluster.
+    odbSubnet: Optional. Immutable. The name of the OdbSubnet associated with
+      the VM Cluster for IP allocation. Format: projects/{project}/locations/{
+      location}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
+    properties: Optional. Immutable. Various properties of the VM Cluster.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1976,6 +1978,8 @@ class DatabaseConnection(_messages.Message):
       connection.
     labels: Optional. Optional: Labels as key-value pairs to organize the
       resource.
+    lifecycleDetails: Output only. Additional information about the current
+      state of the connection.
     name: Identifier. The resource name of the DatabaseConnection. Format: pro
       jects/{project}/locations/{location}/databaseConnections/{database_conne
       ction}
@@ -2045,13 +2049,14 @@ class DatabaseConnection(_messages.Message):
   createTime = _messages.StringField(2)
   displayName = _messages.StringField(3)
   labels = _messages.MessageField('LabelsValue', 4)
-  name = _messages.StringField(5)
-  odbNetwork = _messages.StringField(6)
-  passwordSecretVersion = _messages.StringField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  updateTime = _messages.StringField(9)
-  username = _messages.StringField(10)
-  walletSecretVersion = _messages.StringField(11)
+  lifecycleDetails = _messages.StringField(5)
+  name = _messages.StringField(6)
+  odbNetwork = _messages.StringField(7)
+  passwordSecretVersion = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  updateTime = _messages.StringField(10)
+  username = _messages.StringField(11)
+  walletSecretVersion = _messages.StringField(12)
 
 
 class DatabaseConnectionStringProfile(_messages.Message):
@@ -2603,27 +2608,27 @@ class DbSystem(_messages.Message):
 
   Fields:
     createTime: Output only. The date and time that the DbSystem was created.
-    displayName: Required. The display name for the System db. The name does
-      not have to be unique within your project.
+    displayName: Required. Immutable. The display name for the System db. The
+      name does not have to be unique within your project.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the DbSystem
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle DbSystem is
-      hosted. Example: us-east4-b-r2. If not specified, the system will pick a
-      zone based on availability.
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where Oracle
+      DbSystem is hosted. Example: us-east4-b-r2. If not specified, the system
+      will pick a zone based on availability.
     labels: Optional. The labels or tags associated with the DbSystem.
     name: Identifier. The name of the DbSystem resource in the following
       format: projects/{project}/locations/{region}/dbSystems/{db_system}
     ociUrl: Output only. HTTPS link to OCI resources exposed to Customer via
       UI Interface.
-    odbNetwork: Optional. The name of the OdbNetwork associated with the
-      DbSystem. Format:
+    odbNetwork: Optional. Immutable. The name of the OdbNetwork associated
+      with the DbSystem. Format:
       projects/{project}/locations/{location}/odbNetworks/{odb_network} It is
       optional but if specified, this should match the parent ODBNetwork of
       the OdbSubnet.
-    odbSubnet: Required. The name of the OdbSubnet associated with the
-      DbSystem for IP allocation. Format: projects/{project}/locations/{locati
-      on}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
-    properties: Optional. The properties of the DbSystem.
+    odbSubnet: Required. Immutable. The name of the OdbSubnet associated with
+      the DbSystem for IP allocation. Format: projects/{project}/locations/{lo
+      cation}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
+    properties: Optional. Immutable. The properties of the DbSystem.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -3522,16 +3527,17 @@ class ExascaleDbStorageVault(_messages.Message):
   Fields:
     createTime: Output only. The date and time when the ExascaleDbStorageVault
       was created.
-    displayName: Required. The display name for the ExascaleDbStorageVault.
-      The name does not have to be unique within your project. The name must
-      be 1-255 characters long and can only contain alphanumeric characters.
+    displayName: Required. Immutable. The display name for the
+      ExascaleDbStorageVault. The name does not have to be unique within your
+      project. The name must be 1-255 characters long and can only contain
+      alphanumeric characters.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the ExascaleDbStorageVault.
-    exadataInfrastructure: Optional. The Exadata Infrastructure resource on
-      which ExascaleDbStorageVault resource is created, in the following
-      format: projects/{project}/locations/{region}/cloudExadataInfrastuctures
-      /{cloud_extradata_infrastructure}
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle
+    exadataInfrastructure: Optional. Immutable. The Exadata Infrastructure
+      resource on which ExascaleDbStorageVault resource is created, in the
+      following format: projects/{project}/locations/{region}/cloudExadataInfr
+      astuctures/{cloud_extradata_infrastructure}
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where Oracle
       ExascaleDbStorageVault is hosted. Example: us-east4-b-r2. If not
       specified, the system will pick a zone based on availability.
     labels: Optional. The labels or tags associated with the
@@ -3539,7 +3545,8 @@ class ExascaleDbStorageVault(_messages.Message):
     name: Identifier. The resource name of the ExascaleDbStorageVault. Format:
       projects/{project}/locations/{location}/exascaleDbStorageVaults/{exascal
       e_db_storage_vault}
-    properties: Required. The properties of the ExascaleDbStorageVault.
+    properties: Required. Immutable. The properties of the
+      ExascaleDbStorageVault.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -3667,17 +3674,45 @@ class ExascaleDbStorageVaultProperties(_messages.Message):
 class ExecuteSqlMetadata(_messages.Message):
   r"""Any additional metadata information regarding the execution of the SQL
 
+  Enums:
+    StatusValueValuesEnum: Output only. Status of SQL execution.
+
   Fields:
     executionDuration: The time duration taken to execute the sql statement.
     message: Message related to SQL execution. This field can be used to
       convey size limit related message.
     partialResult: Set to true if SQL returned a result set larger than the
       acceptable response size limits and the result was truncated.
+    status: Output only. Status of SQL execution.
   """
+
+  class StatusValueValuesEnum(_messages.Enum):
+    r"""Output only. Status of SQL execution.
+
+    Values:
+      STATUS_UNSPECIFIED: Default value. Not returned by the service.
+      OK: No error during SQL execution i.e. All SQL statements ran to
+        completion. The "message" will be empty.
+      PARTIAL: Same as OK, except indicates that only partial results were
+        returned. The "message" field will contain details on why results were
+        truncated. `partial_result` is true if and only if `status` is
+        `PARTIAL`.
+      ERROR: The database returned an error while executing the SQL statement.
+        `message` contains the error text returned by Oracle. `sql_results` is
+        empty. The statement runs in autocommit mode; which changes are
+        committed or rolled back follows Oracle Database behavior.
+        Authentication failures, database availability errors, network errors,
+        and timeouts are returned as API errors (AIP-193), not as ERROR.
+    """
+    STATUS_UNSPECIFIED = 0
+    OK = 1
+    PARTIAL = 2
+    ERROR = 3
 
   executionDuration = _messages.StringField(1)
   message = _messages.StringField(2)
   partialResult = _messages.BooleanField(3)
+  status = _messages.EnumField('StatusValueValuesEnum', 4)
 
 
 class ExecuteSqlRequest(_messages.Message):
@@ -4080,7 +4115,7 @@ class GoldengateConnection(_messages.Message):
       was created.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the GoldengateConnection.
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where Oracle
       GoldengateConnection is hosted. Example: us-east4-b-r2. If not
       specified, the system will pick a zone based on availability.
     labels: Optional. The labels or tags associated with the
@@ -4090,15 +4125,16 @@ class GoldengateConnection(_messages.Message):
       tions/{goldengate_connection}
     ociUrl: Output only. HTTPS link to OCI resources exposed to Customer via
       UI Interface.
-    odbNetwork: Optional. The name of the OdbNetwork associated with the
-      GoldengateConnection. The format is
+    odbNetwork: Optional. Immutable. The name of the OdbNetwork associated
+      with the GoldengateConnection. The format is
       projects/{project}/locations/{location}/odbNetworks/{odb_network}. It is
       optional but if specified, this should match the parent ODBNetwork of
       the OdbSubnet.
-    odbSubnet: Optional. The name of the OdbSubnet associated with the
-      GoldengateConnection for IP allocation. Format: projects/{project}/locat
-      ions/{location}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
-    properties: Required. The properties of the GoldengateConnection.
+    odbSubnet: Optional. Immutable. The name of the OdbSubnet associated with
+      the GoldengateConnection for IP allocation. Format: projects/{project}/l
+      ocations/{location}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
+    properties: Required. Immutable. The properties of the
+      GoldengateConnection.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -4146,7 +4182,7 @@ class GoldengateConnectionAssignment(_messages.Message):
   Fields:
     createTime: Output only. The time when the connection assignment was
       created.
-    displayName: Optional. The display name for the
+    displayName: Optional. Immutable. The display name for the
       GoldengateConnectionAssignment.
     entitlementId: Output only. The OCID of the entitlement linked to this
       resource.
@@ -4155,7 +4191,7 @@ class GoldengateConnectionAssignment(_messages.Message):
     name: Identifier. The name of the GoldengateConnectionAssignment resource
       in the following format: projects/{project}/locations/{region}/goldengat
       eConnectionAssignments/{goldengate_connection_assignment}
-    properties: Required. The properties of the
+    properties: Required. Immutable. The properties of the
       GoldengateConnectionAssignment.
   """
 
@@ -4667,10 +4703,11 @@ class GoldengateDeployment(_messages.Message):
   Fields:
     createTime: Output only. The date and time that the GoldengateDeployment
       was created.
-    displayName: Required. The display name for the GoldengateDeployment.
+    displayName: Required. Immutable. The display name for the
+      GoldengateDeployment.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the GoldengateDeployment
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where Oracle
       GoldengateDeployment is hosted. Example: us-east4-b-r2. If not
       specified, the system will pick a zone based on availability.
     labels: Optional. The labels or tags associated with the
@@ -4680,11 +4717,12 @@ class GoldengateDeployment(_messages.Message):
       ments/{goldengate_deployment}
     ociUrl: Output only. HTTPS link to OCI resources exposed to Customer via
       UI Interface.
-    odbNetwork: Optional. The name of the OdbNetwork associated with the
+    odbNetwork: Optional. Immutable. The name of the OdbNetwork associated
+      with the GoldengateDeployment.
+    odbSubnet: Required. Immutable. The name of the OdbSubnet associated with
+      the GoldengateDeployment for IP allocation.
+    properties: Required. Immutable. The properties of the
       GoldengateDeployment.
-    odbSubnet: Required. The name of the OdbSubnet associated with the
-      GoldengateDeployment for IP allocation.
-    properties: Required. The properties of the GoldengateDeployment.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -7097,10 +7135,13 @@ class ListOdbDnsZonesResponse(_messages.Message):
     nextPageToken: A token identifying a page of results the server should
       return.
     odbDnsZones: The list of OdbDnsZones.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
   """
 
   nextPageToken = _messages.StringField(1)
   odbDnsZones = _messages.MessageField('OdbDnsZone', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListOdbNetworksResponse(_messages.Message):
@@ -7622,14 +7663,14 @@ class OdbSubnet(_messages.Message):
   r"""Represents OdbSubnet resource.
 
   Enums:
-    PurposeValueValuesEnum: Required. Purpose of the subnet.
+    PurposeValueValuesEnum: Required. Immutable. Purpose of the subnet.
     StateValueValuesEnum: Output only. State of the ODB Subnet.
 
   Messages:
     LabelsValue: Optional. Labels or tags associated with the resource.
 
   Fields:
-    cidrRange: Required. The CIDR range of the subnet.
+    cidrRange: Required. Immutable. The CIDR range of the subnet.
     createTime: Output only. The date and time that the OdbNetwork was
       created.
     domainSuffix: Output only. The default domain name associated with the
@@ -7638,12 +7679,12 @@ class OdbSubnet(_messages.Message):
     name: Identifier. The name of the OdbSubnet resource in the following
       format: projects/{project}/locations/{location}/odbNetworks/{odb_network
       }/odbSubnets/{odb_subnet}
-    purpose: Required. Purpose of the subnet.
+    purpose: Required. Immutable. Purpose of the subnet.
     state: Output only. State of the ODB Subnet.
   """
 
   class PurposeValueValuesEnum(_messages.Enum):
-    r"""Required. Purpose of the subnet.
+    r"""Required. Immutable. Purpose of the subnet.
 
     Values:
       PURPOSE_UNSPECIFIED: Default unspecified value.

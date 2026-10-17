@@ -52,6 +52,8 @@ def _GetApiVersion(release_track):
     return 'alpha'
   elif release_track == base.ReleaseTrack.BETA:
     return 'beta'
+  elif release_track == base.ReleaseTrack.PREVIEW:
+    return 'preview'
   return 'v1'
 
 

@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recaptcha import policies_util
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.generated_clients.apis.recaptchaenterprise.v1 import recaptchaenterprise_v1_messages as messages
 
 
@@ -55,14 +56,30 @@ class Update(base.UpdateCommand):
     key_ref = args.CONCEPTS.key.Parse()
     policy_name = key_ref.RelativeName() + '/policy'
 
-    policy_dict = args.policy if args.policy is not None else {}
-    policy_message = encoding.DictToMessage(
-        policy_dict, messages.GoogleCloudRecaptchaenterpriseV1Policy
+    new_policy_dict = args.policy if args.policy is not None else {}
+    new_policy_message = encoding.DictToMessage(
+        new_policy_dict, messages.GoogleCloudRecaptchaenterpriseV1Policy
     )
+
+    # Fetch current policy to check for destructive changes
+    get_request = messages.RecaptchaenterpriseProjectsKeysGetPolicyRequest(
+        name=policy_name
+    )
+    current_policy = client.projects_keys.GetPolicy(get_request)
+
+    warnings = policies_util.GetDestructiveChanges(
+        current_policy, new_policy_message
+    )
+    if warnings:
+      message = '\n'.join(warnings)
+      console_io.PromptContinue(
+          message=message,
+          cancel_on_no=True,
+      )
 
     # Create the UpdatePolicyRequest message
     request = messages.RecaptchaenterpriseProjectsKeysUpdatePolicyRequest(
         name=policy_name,
-        googleCloudRecaptchaenterpriseV1Policy=policy_message,
+        googleCloudRecaptchaenterpriseV1Policy=new_policy_message,
     )
     return client.projects_keys.UpdatePolicy(request)

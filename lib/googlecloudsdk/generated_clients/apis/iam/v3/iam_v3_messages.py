@@ -428,7 +428,7 @@ class GoogleIamV3PolicyBinding(_messages.Message):
       `iam.googleapis.com/WorkforcePoolIdentity` -
       `iam.googleapis.com/WorkloadPoolIdentity` -
       `iam.googleapis.com/ServiceAccount` -
-      `iam.googleapis.com/AgentPoolIdentity` (available in Preview)
+      `iam.googleapis.com/AgentPoolIdentity`
     createTime: Output only. The time when the policy binding was created.
     displayName: Optional. The description of the policy binding. Must be less
       than or equal to 63 characters.
@@ -1132,6 +1132,9 @@ class IamFoldersLocationsAccessPoliciesListRequest(_messages.Message):
   r"""A IamFoldersLocationsAccessPoliciesListRequest object.
 
   Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Example filter query: `display_name:example*` matches access policies
+      whose display name starts with "example".
     pageSize: Optional. The maximum number of access policies to return. The
       service may return fewer than this value. If unspecified, at most 50
       access policies will be returned. Valid value ranges from 1 to 1000;
@@ -1147,9 +1150,10 @@ class IamFoldersLocationsAccessPoliciesListRequest(_messages.Message):
       `organizations/{organization_id}/locations/{location}`
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class IamFoldersLocationsAccessPoliciesPatchRequest(_messages.Message):
@@ -1442,6 +1446,9 @@ class IamOrganizationsLocationsAccessPoliciesListRequest(_messages.Message):
   r"""A IamOrganizationsLocationsAccessPoliciesListRequest object.
 
   Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Example filter query: `display_name:example*` matches access policies
+      whose display name starts with "example".
     pageSize: Optional. The maximum number of access policies to return. The
       service may return fewer than this value. If unspecified, at most 50
       access policies will be returned. Valid value ranges from 1 to 1000;
@@ -1457,9 +1464,10 @@ class IamOrganizationsLocationsAccessPoliciesListRequest(_messages.Message):
       `organizations/{organization_id}/locations/{location}`
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class IamOrganizationsLocationsAccessPoliciesPatchRequest(_messages.Message):
@@ -1751,6 +1759,9 @@ class IamOrganizationsLocationsPrincipalAccessBoundaryPoliciesListRequest(_messa
   object.
 
   Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Example filter query: `display_name:example*` matches principal access
+      boundary policies whose display name starts with "example".
     pageSize: Optional. The maximum number of principal access boundary
       policies to return. The service may return fewer than this value. If
       unspecified, at most 50 principal access boundary policies will be
@@ -1766,9 +1777,10 @@ class IamOrganizationsLocationsPrincipalAccessBoundaryPoliciesListRequest(_messa
       `organizations/{organization_id}/locations/{location}`
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class IamOrganizationsLocationsPrincipalAccessBoundaryPoliciesPatchRequest(_messages.Message):
@@ -1883,6 +1895,9 @@ class IamOrganizationsLocationsRegionalAccessBoundaryPoliciesListRequest(_messag
   object.
 
   Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Example filter query: `display_name:example*` matches regional access
+      boundary policies whose display name starts with "example".
     pageSize: Optional. The maximum number of regional access boundary
       policies to return. The service may return fewer than this value. If
       unspecified, at most 50 regional access boundary policies will be
@@ -1898,9 +1913,10 @@ class IamOrganizationsLocationsRegionalAccessBoundaryPoliciesListRequest(_messag
       `organizations/{organization_id}/locations/{location}`
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class IamOrganizationsLocationsRegionalAccessBoundaryPoliciesPatchRequest(_messages.Message):
@@ -2018,6 +2034,9 @@ class IamProjectsLocationsAccessPoliciesListRequest(_messages.Message):
   r"""A IamProjectsLocationsAccessPoliciesListRequest object.
 
   Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Example filter query: `display_name:example*` matches access policies
+      whose display name starts with "example".
     pageSize: Optional. The maximum number of access policies to return. The
       service may return fewer than this value. If unspecified, at most 50
       access policies will be returned. Valid value ranges from 1 to 1000;
@@ -2033,9 +2052,10 @@ class IamProjectsLocationsAccessPoliciesListRequest(_messages.Message):
       `organizations/{organization_id}/locations/{location}`
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class IamProjectsLocationsAccessPoliciesPatchRequest(_messages.Message):

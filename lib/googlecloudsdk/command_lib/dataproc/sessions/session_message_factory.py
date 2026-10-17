@@ -131,6 +131,8 @@ def AddArguments(parser):
 
 
 def _AddDependency(parser):
-  rcf.AddArguments(parser, use_config_property=True)
+  rcf.AddArguments(
+      parser, use_config_property=True, include_environment=True
+  )
   ecf.AddArguments(parser)
   jcf.AddArguments(parser)

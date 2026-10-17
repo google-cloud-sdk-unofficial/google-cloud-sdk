@@ -15,7 +15,6 @@
 """Delete Secure Source Manager pull request comment command."""
 
 from googlecloudsdk.api_lib.securesourcemanager import pull_request_comments
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import resource_args
 from googlecloudsdk.core import log
@@ -62,17 +61,8 @@ class Delete(base.DeleteCommand):
       )
       return delete_operation
 
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if delete_operation.done or not delete_operation.name:
-      if delete_operation.error:
-        raise waiter.OperationError(
-            delete_operation.error.message or str(delete_operation.error)
-        )
-      log.DeletedResource(pull_request_comment_ref.RelativeName())
-      return delete_operation
-
-    response = client.WaitForOperation(
-        client.GetOperationRef(delete_operation),
+    response = client.GetOperationResult(
+        delete_operation,
         "Waiting for pull request comment to be deleted",
         has_result=False,
     )

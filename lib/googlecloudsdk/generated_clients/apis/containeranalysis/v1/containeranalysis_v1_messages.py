@@ -595,7 +595,7 @@ class BuildProvenance(_messages.Message):
 
 
 class BuildStep(_messages.Message):
-  r"""A step in the build pipeline. Next ID: 23
+  r"""A step in the build pipeline. Next ID: 24
 
   Enums:
     StatusValueValuesEnum: Output only. Status of the build step. At this
@@ -660,6 +660,7 @@ class BuildStep(_messages.Message):
     status: Output only. Status of the build step. At this time, build step
       status is only updated on build completion; step status is not updated
       in real-time as the build progresses.
+    tasks: Tasks to be executed in the build step.
     timeout: Time limit for executing this build step. If not defined, the
       step has no time limit and will be allowed to continue to run until
       either it completes or the build itself times out.
@@ -724,10 +725,11 @@ class BuildStep(_messages.Message):
   script = _messages.StringField(14)
   secretEnv = _messages.StringField(15, repeated=True)
   status = _messages.EnumField('StatusValueValuesEnum', 16)
-  timeout = _messages.StringField(17)
-  timing = _messages.MessageField('TimeSpan', 18)
-  volumes = _messages.MessageField('Volume', 19, repeated=True)
-  waitFor = _messages.StringField(20, repeated=True)
+  tasks = _messages.MessageField('Task', 17, repeated=True)
+  timeout = _messages.StringField(18)
+  timing = _messages.MessageField('TimeSpan', 19)
+  volumes = _messages.MessageField('Volume', 20, repeated=True)
+  waitFor = _messages.StringField(21, repeated=True)
 
 
 class BuilderConfig(_messages.Message):
@@ -1336,6 +1338,18 @@ class CisBenchmark(_messages.Message):
 
   profileLevel = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   severity = _messages.EnumField('SeverityValueValuesEnum', 2)
+
+
+class CitCWorkspace(_messages.Message):
+  r"""Represents a CitC workspace as a build dependency. next ID: 3
+
+  Fields:
+    snapshotVersion: e.g., 45
+    workspaceId: e.g., "user/123"
+  """
+
+  snapshotVersion = _messages.IntegerField(1)
+  workspaceId = _messages.StringField(2)
 
 
 class CloudRepoSourceContext(_messages.Message):
@@ -2160,9 +2174,12 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message)
     Values:
       NOT_VERIFIED: Not a verifiable build (the default).
       VERIFIED: Build must be verified.
+      BEST_EFFORT: Build verification is best effort. If provenance generation
+        fails, the build will still succeed.
     """
     NOT_VERIFIED = 0
     VERIFIED = 1
+    BEST_EFFORT = 2
 
   class SourceProvenanceHashValueListEntryValuesEnum(_messages.Enum):
     r"""SourceProvenanceHashValueListEntryValuesEnum enum type.
@@ -2546,8 +2563,8 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGenericArtifactDepend
   r"""Represents a generic artifact as a build dependency.
 
   Fields:
-    destPath: Required. Where the artifact files should be placed on the
-      worker.
+    destPath: Optional. Where the artifact files should be placed on the
+      worker. Required when specified in `Build.dependencies`.
     resource: Required. The location to download the artifact files from. Ex:
       projects/p1/locations/us/repositories/r1/packages/p1/versions/v1
   """
@@ -4027,6 +4044,27 @@ class DSSEHint(_messages.Message):
   humanReadableName = _messages.StringField(1)
 
 
+class Dependency(_messages.Message):
+  r"""A dependency that the Cloud Build worker will fetch before executing
+  user steps. next ID: 7
+
+  Fields:
+    empty: A boolean attribute.
+    genericArtifact: A GenericArtifactDependency attribute.
+    gitSource: A GitSourceDependency attribute.
+    httpsArtifactDependency: A HttpsArtifactDependency attribute.
+    invokeBlaze: A InvokeBlazeDependency attribute.
+    piperSource: A PiperSourceDependency attribute.
+  """
+
+  empty = _messages.BooleanField(1)
+  genericArtifact = _messages.MessageField('GenericArtifactDependency', 2)
+  gitSource = _messages.MessageField('GitSourceDependency', 3)
+  httpsArtifactDependency = _messages.MessageField('HttpsArtifactDependency', 4)
+  invokeBlaze = _messages.MessageField('InvokeBlazeDependency', 5)
+  piperSource = _messages.MessageField('PiperSourceDependency', 6)
+
+
 class DeploymentNote(_messages.Message):
   r"""An artifact that can be deployed in some runtime.
 
@@ -4075,6 +4113,19 @@ class DeploymentOccurrence(_messages.Message):
   resourceUri = _messages.StringField(5, repeated=True)
   undeployTime = _messages.StringField(6)
   userEmail = _messages.StringField(7)
+
+
+class DepotSource(_messages.Message):
+  r"""Represents a Piper depot source as a revision. next ID: 3
+
+  Fields:
+    changelist: The changelist number. If not provided, it will default to
+      piper HEAD.
+    overlayBranch: Optional branch information.
+  """
+
+  changelist = _messages.IntegerField(1)
+  overlayBranch = _messages.MessageField('OverlayBranchId', 2)
 
 
 class Detail(_messages.Message):
@@ -4136,6 +4187,21 @@ class Detail(_messages.Message):
   source = _messages.StringField(12)
   sourceUpdateTime = _messages.StringField(13)
   vendor = _messages.StringField(14)
+
+
+class DeveloperConnectSetupData(_messages.Message):
+  r"""Data needed to setup the Developer Connect repository. next ID: 3
+
+  Fields:
+    gitServerIpAddress: INTERNAL_ONLY. The IP address of the private git
+      server. Only set if the git server is private and connected with a
+      service directory. Deprecated: this was a workaround for PSC that is no
+      longer used.
+    sslCaInfo: INTERNAL_ONLY. SSL certificate to use for git operations.
+  """
+
+  gitServerIpAddress = _messages.StringField(1)
+  sslCaInfo = _messages.StringField(2)
 
 
 class Digest(_messages.Message):
@@ -4610,6 +4676,22 @@ class FixableTotalByDigest(_messages.Message):
   totalCount = _messages.IntegerField(4)
 
 
+class GenericArtifactDependency(_messages.Message):
+  r"""Generic artifact dependency. next ID: 3
+
+  Fields:
+    destPath: Where the artifact files should be placed on the worker.
+      Required when specified in `Build.dependencies`. Ignored when specified
+      in `TaskDependency`, as the task runner controls where artifacts are
+      placed.
+    resource: The location to download the artifact files from. Ex:
+      projects/p1/locations/us/repositories/r1/packages/p1/versions/v1
+  """
+
+  destPath = _messages.StringField(1)
+  resource = _messages.StringField(2)
+
+
 class GerritSourceContext(_messages.Message):
   r"""A SourceContext referring to a Gerrit project.
 
@@ -4671,6 +4753,51 @@ class GitSourceContext(_messages.Message):
 
   revisionId = _messages.StringField(1)
   url = _messages.StringField(2)
+
+
+class GitSourceDependency(_messages.Message):
+  r"""Represents a git repository as a build dependency next ID: 7
+
+  Fields:
+    depth: How much history should be fetched for the build (default 1, -1 for
+      all history).
+    destPath: Where should the files be placed on the worker.
+    fetchTags: True if remote tags should be fetched too (default false).
+      Note: when depth is 1 (default), git fetch only retrieves tags pointing
+      to commits within the shallow boundary. Set depth to -1 to fetch all
+      historical tags.
+    recurseSubmodules: True if submodules should be fetched too (default
+      false).
+    repository: The kind of repo (url or dev connect)
+    revision: The revision that we will fetch the repo at.
+  """
+
+  depth = _messages.IntegerField(1)
+  destPath = _messages.StringField(2)
+  fetchTags = _messages.BooleanField(3)
+  recurseSubmodules = _messages.BooleanField(4)
+  repository = _messages.MessageField('GitSourceRepository', 5)
+  revision = _messages.StringField(6)
+
+
+class GitSourceRepository(_messages.Message):
+  r"""A repository for a git source. next ID: 5
+
+  Fields:
+    developerConnect: The Developer Connect Git repository link or the url
+      that matches a repository link in the current project, formatted as
+      `projects/*/locations/*/connections/*/gitRepositoryLink/*`
+    developerConnectSetupData: Data needed to setup the Developer Connect
+      repository.
+    proxyUrlEnabled: Enables the use of the proxy URL returned by
+      DeveloperConnect for git operations, if available.
+    url: Location of the Git repository.
+  """
+
+  developerConnect = _messages.StringField(1)
+  developerConnectSetupData = _messages.MessageField('DeveloperConnectSetupData', 2)
+  proxyUrlEnabled = _messages.BooleanField(3)
+  url = _messages.StringField(4)
 
 
 class GoogleDevtoolsContaineranalysisV1alpha1OperationMetadata(_messages.Message):
@@ -4925,6 +5052,21 @@ class Hint(_messages.Message):
   humanReadableName = _messages.StringField(1)
 
 
+class HttpsArtifactDependency(_messages.Message):
+  r"""Represents an HTTPS artifact as a build dependency. next ID: 3
+
+  Fields:
+    destPath: Where the artifact file should be placed on the worker. Required
+      when specified in `Build.dependencies`. Ignored when specified in
+      `TaskDependency`, as the task runner controls where artifacts are
+      placed.
+    uri: The URI to download the artifact file from.
+  """
+
+  destPath = _messages.StringField(1)
+  uri = _messages.StringField(2)
+
+
 class Identity(_messages.Message):
   r"""The unique identifier of the update.
 
@@ -5033,6 +5175,43 @@ class InTotoStatement(_messages.Message):
   slsaProvenance = _messages.MessageField('SlsaProvenance', 4)
   slsaProvenanceZeroTwo = _messages.MessageField('SlsaProvenanceZeroTwo', 5)
   subject = _messages.MessageField('Subject', 6, repeated=True)
+
+
+class InvokeBlazeDependency(_messages.Message):
+  r"""Represents an Invoke Blaze dependency. next ID: 8
+
+  Enums:
+    CommandValueValuesEnum:
+
+  Fields:
+    architecture: Only for MPM commands.
+    command: A CommandValueValuesEnum attribute.
+    destPath: A string attribute.
+    flags: A string attribute.
+    piperRevision: A PiperRevision attribute.
+    targets: A string attribute.
+  """
+
+  class CommandValueValuesEnum(_messages.Enum):
+    r"""CommandValueValuesEnum enum type.
+
+    Values:
+      UNKNOWN_COMMAND: <no description>
+      BUILD: <no description>
+      MPM: <no description>
+      TEST: <no description>
+    """
+    UNKNOWN_COMMAND = 0
+    BUILD = 1
+    MPM = 2
+    TEST = 3
+
+  architecture = _messages.StringField(1)
+  command = _messages.EnumField('CommandValueValuesEnum', 2)
+  destPath = _messages.StringField(3)
+  flags = _messages.StringField(4, repeated=True)
+  piperRevision = _messages.MessageField('PiperRevision', 5)
+  targets = _messages.StringField(6, repeated=True)
 
 
 class Justification(_messages.Message):
@@ -5634,6 +5813,18 @@ class Occurrence(_messages.Message):
   vulnerability = _messages.MessageField('VulnerabilityOccurrence', 22)
 
 
+class OverlayBranchId(_messages.Message):
+  r"""Represents an overlay branch in Piper. next ID: 3
+
+  Fields:
+    branchPrefix: The required prefix, also called branch family.
+    branchSuffix: The optional suffix, also called iteration.
+  """
+
+  branchPrefix = _messages.StringField(1)
+  branchSuffix = _messages.StringField(2)
+
+
 class PackageIssue(_messages.Message):
   r"""A detail for a distro and package this vulnerability occurrence was
   found in and its associated fix (if one is available).
@@ -5800,6 +5991,19 @@ class PackageOccurrence(_messages.Message):
   version = _messages.MessageField('Version', 7)
 
 
+class ParameterDefinition(_messages.Message):
+  r"""Definition of an input parameter. Next ID: 3
+
+  Fields:
+    defaultValue: The default value if not provided at runtime. Omission of
+      this parameter indicates the parameter is required.
+    description: A description of the parameter for UI documentation.
+  """
+
+  defaultValue = _messages.StringField(1)
+  description = _messages.StringField(2)
+
+
 class PerScannerVerdict(_messages.Message):
   r"""A PerScannerVerdict object.
 
@@ -5814,6 +6018,35 @@ class PerScannerVerdict(_messages.Message):
   maliciousContentStaticResult = _messages.MessageField('MaliciousContentStaticResult', 2)
   malwareScan = _messages.MessageField('MalwareScanResult', 3)
   workspacePolicy = _messages.MessageField('WorkspacePolicyResult', 4)
+
+
+class PiperRevision(_messages.Message):
+  r"""Information about the Piper revision to build. next ID: 3
+
+  Fields:
+    citcWorkspace: Revision is within a CitC workspace.
+    depotSource: Revision is a specific submitted changelist (possibly on a
+      branch).
+  """
+
+  citcWorkspace = _messages.MessageField('CitCWorkspace', 1)
+  depotSource = _messages.MessageField('DepotSource', 2)
+
+
+class PiperSourceDependency(_messages.Message):
+  r"""Represents a Piper repository as a build dependency. next ID: 3
+
+  Fields:
+    depotPaths: The depot paths to fetch. (e.g.,
+      "//depot/google3/my/path/..."). Wildcards like ... and * are supported
+      as per go/piper-api#depot_path_expression. Paths must start with
+      "//depot/".
+    piperRevision: The piper revision to fetch the depot_paths from. If not
+      provided, it will default to DepotSource with Piper HEAD.
+  """
+
+  depotPaths = _messages.StringField(1, repeated=True)
+  piperRevision = _messages.MessageField('PiperRevision', 2)
 
 
 class Policy(_messages.Message):
@@ -7069,6 +7302,248 @@ class Subject(_messages.Message):
 
   digest = _messages.MessageField('DigestValue', 1)
   name = _messages.StringField(2)
+
+
+class Task(_messages.Message):
+  r"""A task in a build step. Next ID: 14
+
+  Enums:
+    StatusValueValuesEnum: Output only. Status of the task.
+
+  Messages:
+    DataValue: Data to be passed to the task.
+    EnvsValue: Environment variables to be set for this task.
+    EvaluatedParamsValue: Output only. The evaluated parameters for the task.
+    ParamsValue: Parameters to be passed to the task.
+    ResultsValue: Output only. The results of the task.
+
+  Fields:
+    data: Data to be passed to the task.
+    dependencies: Dependencies that the Cloud Build worker will fetch before
+      executing the task.
+    dir: Working directory to use when running this task. This value is a
+      relative path to the step's working directory.
+    envs: Environment variables to be set for this task.
+    evaluatedParams: Output only. The evaluated parameters for the task.
+    exitCode: Output only. Return code from running the task.
+    metadata: Metadata for the task.
+    name: Name of the task to be executed. Note that this field cannot be
+      parameterized.
+    params: Parameters to be passed to the task.
+    remoteConfig: Remote configuration for the task.
+    results: Output only. The results of the task.
+    script: A shell script to be executed in the task.
+    status: Output only. Status of the task.
+  """
+
+  class StatusValueValuesEnum(_messages.Enum):
+    r"""Output only. Status of the task.
+
+    Values:
+      STATUS_UNKNOWN: Status of the task is unknown.
+      QUEUED: Task is queued; work has not yet begun.
+      WORKING: Task is being executed.
+      SUCCESS: Task finished successfully.
+      FAILURE: Task failed to complete successfully.
+      INTERNAL_ERROR: Task failed due to an internal cause.
+      CANCELLED: Task was cancelled by a user.
+    """
+    STATUS_UNKNOWN = 0
+    QUEUED = 1
+    WORKING = 2
+    SUCCESS = 3
+    FAILURE = 4
+    INTERNAL_ERROR = 5
+    CANCELLED = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DataValue(_messages.Message):
+    r"""Data to be passed to the task.
+
+    Messages:
+      AdditionalProperty: An additional property for a DataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type DataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class EnvsValue(_messages.Message):
+    r"""Environment variables to be set for this task.
+
+    Messages:
+      AdditionalProperty: An additional property for a EnvsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type EnvsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a EnvsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class EvaluatedParamsValue(_messages.Message):
+    r"""Output only. The evaluated parameters for the task.
+
+    Messages:
+      AdditionalProperty: An additional property for a EvaluatedParamsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type EvaluatedParamsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a EvaluatedParamsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParamsValue(_messages.Message):
+    r"""Parameters to be passed to the task.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParamsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ParamsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParamsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResultsValue(_messages.Message):
+    r"""Output only. The results of the task.
+
+    Messages:
+      AdditionalProperty: An additional property for a ResultsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ResultsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResultsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  data = _messages.MessageField('DataValue', 1)
+  dependencies = _messages.MessageField('TaskDependency', 2, repeated=True)
+  dir = _messages.StringField(3)
+  envs = _messages.MessageField('EnvsValue', 4)
+  evaluatedParams = _messages.MessageField('EvaluatedParamsValue', 5)
+  exitCode = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  metadata = _messages.MessageField('TaskMetadata', 7)
+  name = _messages.StringField(8)
+  params = _messages.MessageField('ParamsValue', 9)
+  remoteConfig = _messages.StringField(10)
+  results = _messages.MessageField('ResultsValue', 11)
+  script = _messages.StringField(12)
+  status = _messages.EnumField('StatusValueValuesEnum', 13)
+
+
+class TaskDependency(_messages.Message):
+  r"""A dependency that the Cloud Build worker will fetch before executing the
+  task. Next ID: 4
+
+  Fields:
+    dep: Dependency to fetch.
+    name: Name of the dependency.
+    sha256: SHA256 digest of the dependency.
+  """
+
+  dep = _messages.MessageField('Dependency', 1)
+  name = _messages.StringField(2)
+  sha256 = _messages.StringField(3)
+
+
+class TaskMetadata(_messages.Message):
+  r"""Metadata for a task. Next ID: 3
+
+  Messages:
+    ParamsValue: Parameter definitions for the task.
+
+  Fields:
+    description: Description of the task.
+    params: Parameter definitions for the task.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParamsValue(_messages.Message):
+    r"""Parameter definitions for the task.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParamsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ParamsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParamsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ParameterDefinition attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ParameterDefinition', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  description = _messages.StringField(1)
+  params = _messages.MessageField('ParamsValue', 2)
 
 
 class TestIamPermissionsRequest(_messages.Message):

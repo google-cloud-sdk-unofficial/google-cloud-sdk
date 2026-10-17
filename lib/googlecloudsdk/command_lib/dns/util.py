@@ -17,7 +17,10 @@
 
 from googlecloudsdk.api_lib.dns import util as api_util
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
+from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 import ipaddr
 
@@ -140,8 +143,71 @@ def ParseDnssecConfigArgs(args, messages, api_version='v1'):
   return dnssec_config
 
 
+def ParseOutboundEndpointURI(
+    endpoint: str, project: str | None = None
+) -> str:
+  """Normalizes an outbound endpoint name or relative/full path.
+
+  Args:
+    endpoint: (str) The outbound endpoint resource path or URI to normalize. If
+      empty, it is returned unchanged.
+    project: (str | None) The project ID to use when `endpoint` is a
+      location-relative path (starting with `locations/` or `regions/`). If
+      None, falls back to the `core/project` property when `endpoint` is a
+      location-relative path.
+
+  Returns:
+    The normalized relative resource name in the format
+    `projects/PROJECT/locations/LOCATION/outboundEndpoints/NAME`, or `endpoint`
+    unchanged if empty.
+
+  Raises:
+    exceptions.InvalidArgumentException: If `endpoint` is not a valid outbound
+      endpoint resource path with a location.
+    properties.RequiredPropertyError: If `endpoint` is a location-relative path,
+      `project` is None, and the `core/project` property is not set.
+  """
+  if not endpoint:
+    return endpoint
+
+  normalized = endpoint
+  if normalized.startswith(('locations/', 'regions/')):
+    project = project or properties.VALUES.core.project.Get(required=True)
+    normalized = f'projects/{project}/{normalized}'
+
+  normalized = normalized.replace('/regions/', '/locations/')
+
+  try:
+    ref = resources.REGISTRY.Parse(
+        normalized,
+        collection='dns.outboundEndpoints',
+        api_version='v1',
+    )
+  except resources.Error as e:
+    raise exceptions.InvalidArgumentException(
+        '--outbound-endpoints',
+        f"Outbound endpoint '{endpoint}' must specify a location, formatted"
+        " as 'locations/LOCATION/outboundEndpoints/NAME' or"
+        " 'projects/PROJECT/locations/LOCATION/outboundEndpoints/NAME'.",
+    ) from e
+
+  if not ref.Name() or '/' in ref.Name():
+    raise exceptions.InvalidArgumentException(
+        '--outbound-endpoints',
+        f"Outbound endpoint '{endpoint}' must specify a location, formatted"
+        " as 'locations/LOCATION/outboundEndpoints/NAME' or"
+        " 'projects/PROJECT/locations/LOCATION/outboundEndpoints/NAME'.",
+    )
+  return ref.RelativeName()
+
+
 def ParseManagedZoneForwardingConfigWithForwardingPath(
-    messages, server_list=None, private_server_list=None):
+    messages,
+    server_list=None,
+    private_server_list=None,
+    outbound_endpoint_list=None,
+    project=None,
+):
   """Parses list of forwarding nameservers into ManagedZoneForwardingConfig.
 
   Args:
@@ -152,6 +218,9 @@ def ParseManagedZoneForwardingConfigWithForwardingPath(
       check).
     private_server_list: (list) List of IP addresses to use as forwarding
       targets for the DNS Managed Zone that always use the private VPC path.
+    outbound_endpoint_list: (list) List of outbound endpoints to use for
+      forwarding queries.
+    project: (str) Project ID for relative outbound endpoint resource names.
 
   Returns:
     A messages.ManagedZoneForwardingConfig instance populated from the given
@@ -207,7 +276,22 @@ def ParseManagedZoneForwardingConfigWithForwardingPath(
             )
         )
 
-  return messages.ManagedZoneForwardingConfig(targetNameServers=target_servers)
+  outbound_endpoints = []
+  if outbound_endpoint_list:
+    outbound_endpoints = [
+        messages.ManagedZoneForwardingConfigOutboundEndpoint(
+            name=ParseOutboundEndpointURI(ep, project=project)
+        )
+        for ep in outbound_endpoint_list
+        if ep
+    ]
+
+  forwarding_config = messages.ManagedZoneForwardingConfig(
+      targetNameServers=target_servers
+  )
+  if outbound_endpoints:
+    forwarding_config.outboundEndpoints = outbound_endpoints
+  return forwarding_config
 
 
 def PolicyNetworkProcessor(parsed_value, version='v1'):
@@ -240,6 +324,7 @@ def ResponsePolicyNetworkProcessor(parsed_value, version='v1'):
       messages.ResponsePolicyNetwork(networkUrl=network_ref.SelfLink())
       for network_ref in parsed_value
   ]
+
 
 def TargetNameServerType(value, version='v1'):
   """Build a single TargetNameServer based on 'value'.
@@ -393,7 +478,13 @@ def ParseResponsePolicyNetworks(value, project, version):
   return ResponsePolicyNetworkProcessor(networks, version)
 
 
-def ParseAltNameServers(version, server_list=None, private_server_list=None):
+def ParseAltNameServers(
+    version,
+    server_list=None,
+    private_server_list=None,
+    outbound_endpoint_list=None,
+    project=None,
+):
   """Parses list of alternative nameservers into AlternativeNameServerConfig.
 
   Args:
@@ -403,14 +494,16 @@ def ParseAltNameServers(version, server_list=None, private_server_list=None):
       for the DNS managed zone that uses default forwarding logic.
     private_server_list: (Sequence) List of IP addresses to use as forwarding
       targets for the DNS Managed Zone that always uses the private VPC path.
+    outbound_endpoint_list: (Sequence) List of outbound endpoints to use for
+      forwarding queries.
+    project: (str) Project ID for relative outbound endpoint resource names.
 
   Returns:
     A messages.PolicyAlternativeNameServerConfig instance populated from the
-    given command line arguments.Only the not none server list will be parsed
-    and
-    an empty list will be returned if both are none.
+    given command line arguments, or None if all three lists (server_list,
+    private_server_list, and outbound_endpoint_list) are empty or None.
   """
-  if not server_list and not private_server_list:
+  if not server_list and not private_server_list and not outbound_endpoint_list:
     return None
   messages = GetMessages(version)
   result_list = []
@@ -420,13 +513,30 @@ def ParseAltNameServers(version, server_list=None, private_server_list=None):
     result_list += [
         PrivateTargetNameServerType(ip, version) for ip in private_server_list
     ]
-  return messages.PolicyAlternativeNameServerConfig(
-      targetNameServers=result_list)
+  outbound_endpoints = []
+  if outbound_endpoint_list:
+    outbound_endpoints = [
+        messages.PolicyAlternativeNameServerConfigOutboundEndpoint(
+            name=ParseOutboundEndpointURI(ep, project=project)
+        )
+        for ep in outbound_endpoint_list
+        if ep
+    ]
+  config = messages.PolicyAlternativeNameServerConfig(
+      targetNameServers=result_list
+  )
+  if outbound_endpoints:
+    config.outboundEndpoints = outbound_endpoints
+  return config
 
 
-def BetaParseAltNameServers(version,
-                            server_list=None,
-                            private_server_list=None):
+def BetaParseAltNameServers(
+    version,
+    server_list=None,
+    private_server_list=None,
+    outbound_endpoint_list=None,
+    project=None,
+):
   """Parses list of alternative nameservers into AlternativeNameServerConfig.
 
   Args:
@@ -437,14 +547,16 @@ def BetaParseAltNameServers(version,
       for the DNS Managed Zone that uses default forwarding logic.
     private_server_list: (Sequence) List of IP addresses to use as forwarding
       targets for the DNS Managed Zone that always uses the private VPC path.
+    outbound_endpoint_list: (Sequence) List of outbound endpoints to use for
+      forwarding queries.
+    project: (str) Project ID for relative outbound endpoint resource names.
 
   Returns:
     A messages.PolicyAlternativeNameServerConfig instance populated from the
-    given command line arguments.Only the not none server list will be parsed
-    and
-    an empty list will be returned if both are none.
+    given command line arguments, or None if all three lists (server_list,
+    private_server_list, and outbound_endpoint_list) are empty or None.
   """
-  if not server_list and not private_server_list:
+  if not server_list and not private_server_list and not outbound_endpoint_list:
     return None
   messages = GetMessages(version)
   result_list = []
@@ -455,17 +567,33 @@ def BetaParseAltNameServers(version,
         BetaPrivateTargetNameServerType(ip, version)
         for ip in private_server_list
     ]
-  return messages.PolicyAlternativeNameServerConfig(
-      targetNameServers=result_list)
+  outbound_endpoints = []
+  if outbound_endpoint_list:
+    outbound_endpoints = [
+        messages.PolicyAlternativeNameServerConfigOutboundEndpoint(
+            name=ParseOutboundEndpointURI(ep, project=project)
+        )
+        for ep in outbound_endpoint_list
+        if ep
+    ]
+  config = messages.PolicyAlternativeNameServerConfig(
+      targetNameServers=result_list
+  )
+  if outbound_endpoints:
+    config.outboundEndpoints = outbound_endpoints
+  return config
 
 
 def ParseResponsePolicyRulesBehavior(args, version='v1'):
   """Parses response policy rule behavior."""
   m = GetMessages(version)
   if args.behavior == 'bypassResponsePolicy':
-    return m.ResponsePolicyRule.BehaviorValueValuesEnum.BYPASS_RESPONSE_POLICY if version == 'v2' else m.ResponsePolicyRule.BehaviorValueValuesEnum.bypassResponsePolicy
-  else:
-    return None
+    if version == 'v2':
+      return (
+          m.ResponsePolicyRule.BehaviorValueValuesEnum.BYPASS_RESPONSE_POLICY
+      )
+    return m.ResponsePolicyRule.BehaviorValueValuesEnum.bypassResponsePolicy
+  return None
   # TODO(b/215745011) Use this once GCloud is migrated to v2
   # return flags.GetResponsePolicyRulesBehaviorFlagMapper(
   #    messages).GetEnumForChoice(args.behavior)

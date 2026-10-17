@@ -20,12 +20,39 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: change autonomousDatabases
-    description: change autonomousDatabases
+    brief: Change the disaster recovery configuration of an Autonomous Database.
+    description: |-
+      Changes the disaster recovery configuration of a cross-region Autonomous
+      Database peer. Send this request to the standby database through its
+      regional endpoint.
     examples: |-
-      To change all autonomousDatabases, run:
+      To change the disaster recovery configuration of an Autonomous Database with id `my-instance` in the location `us-east4` to backup-based disaster recovery, run:
 
-          $ {command}
+        $ {command} my-instance --location=us-east4 --disaster-recovery-config-type=backup-based
+
+      To change the disaster recovery configuration of an Autonomous Database with id `my-instance` in the location `us-east4` to Autonomous Data Guard (ADG), run:
+
+        $ {command} my-instance --location=us-east4 --disaster-recovery-config-type=adg
+
+      To enable automatic backups replication for an Autonomous Database with id `my-instance` in the location `us-east4`, run:
+
+        $ {command} my-instance --location=us-east4 --disaster-recovery-config-automatic-backups-replication-enabled
+
+      To disable automatic backups replication for an Autonomous Database with id `my-instance` in the location `us-east4`, run:
+
+        $ {command} my-instance --location=us-east4 --no-disaster-recovery-config-automatic-backups-replication-enabled
+
+      To convert an Autonomous Database peer to a snapshot standby with id `my-instance` in the location `us-east4`, run:
+
+        $ {command} my-instance --location=us-east4 --disaster-recovery-config-snapshot-standby
+
+      To convert an Autonomous Database peer to a snapshot standby with an expiration time with id `my-instance` in the location `us-east4`, run:
+
+        $ {command} my-instance --location=us-east4 --disaster-recovery-config-snapshot-standby --disaster-recovery-config-snapshot-standby-expire-time="2026-10-01T00:00:00Z"
+
+      To reconnect a snapshot standby to its source database with id `my-instance` in the location `us-east4`, run:
+
+        $ {command} my-instance --location=us-east4 --no-disaster-recovery-config-snapshot-standby
   arguments:
     params:
     - help_text: |-

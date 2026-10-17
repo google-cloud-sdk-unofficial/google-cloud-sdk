@@ -1845,7 +1845,7 @@ def AddAddressArgs(
       ``NETWORK_TIER'' must be one of: `PREMIUM`, `STANDARD`. The default
       value is `PREMIUM`.
 
-      *private-network-ip*::: Assigns the given RFC1918 IP address to the
+      *private-network-ip*::: Assigns the given internal IPv4 address to the
       interface.
 
       *subnet*::: Specifies the subnet that the interface will be part of.
@@ -2445,16 +2445,31 @@ def AddLocalSsdRecoveryTimeoutArgs(parser):
     """)
 
 
-def AddLocalSsdEncryptionModeArgs(parser):
-  parser.add_argument(
-      '--local-ssd-encryption-mode',
-      choices=['STANDARD_ENCRYPTION', 'EPHEMERAL_KEY_ENCRYPTION'],
-      hidden_choices=['EPHEMERAL_KEY_ENCRYPTION'],
-      help="""
+def AddLocalSsdEncryptionModeArgs(parser, support_cmek_encryption=False):
+  """Adds the --local-ssd-encryption-mode flag.
+
+  Args:
+    parser: ArgumentParser, parser to which flags will be added.
+    support_cmek_encryption: bool, whether CMEK_ENCRYPTION is an accepted
+      choice. Only enable for release tracks whose API exposes it.
+  """
+  choices = ['STANDARD_ENCRYPTION', 'EPHEMERAL_KEY_ENCRYPTION']
+  help_text = """
       Specifies which method should be used for encrypting the Local SSDs
       attached to the VM. STANDARD_ENCRYPTION will use
       Google managed keys.
-      """,
+      """
+  if support_cmek_encryption:
+    choices.append('CMEK_ENCRYPTION')
+    help_text += """
+      CMEK_ENCRYPTION will use the customer-managed Cloud KMS key specified
+      by `--instance-kms-key`.
+      """
+  parser.add_argument(
+      '--local-ssd-encryption-mode',
+      choices=choices,
+      hidden_choices=['EPHEMERAL_KEY_ENCRYPTION'],
+      help=help_text,
   )
 
 
@@ -2569,8 +2584,8 @@ def AddPrivateNetworkIpArgs(parser):
   parser.add_argument(
       '--private-network-ip',
       help="""\
-      Specifies the RFC1918 IP to assign to the instance. The IP should be in
-      the subnet or legacy network IP range.
+      Specifies the internal IPv4 address to assign to the instance. The IP
+      should be in the subnet or legacy network IP range.
       """)
 
 

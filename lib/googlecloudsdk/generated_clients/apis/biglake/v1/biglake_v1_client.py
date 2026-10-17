@@ -56,6 +56,7 @@ class BiglakeV1(base_api.BaseApiClient):
     self.iceberg_v1 = self.IcebergV1Service(self)
     self.iceberg = self.IcebergService(self)
     self.projects_catalogs_namespaces_tables = self.ProjectsCatalogsNamespacesTablesService(self)
+    self.projects_catalogs_namespaces_views = self.ProjectsCatalogsNamespacesViewsService(self)
     self.projects_catalogs_namespaces = self.ProjectsCatalogsNamespacesService(self)
     self.projects_catalogs = self.ProjectsCatalogsService(self)
     self.projects = self.ProjectsService(self)
@@ -1433,6 +1434,97 @@ class BiglakeV1(base_api.BaseApiClient):
         relative_path='v1/{+resource}:testIamPermissions',
         request_field='testIamPermissionsRequest',
         request_type_name='BiglakeProjectsCatalogsNamespacesTablesTestIamPermissionsRequest',
+        response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsCatalogsNamespacesViewsService(base_api.BaseApiService):
+    """Service class for the projects_catalogs_namespaces_views resource."""
+
+    _NAME = 'projects_catalogs_namespaces_views'
+
+    def __init__(self, client):
+      super(BiglakeV1.ProjectsCatalogsNamespacesViewsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the IAM policy for the specified View.
+
+      Args:
+        request: (BiglakeProjectsCatalogsNamespacesViewsGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/views/{viewsId}:getIamPolicy',
+        http_method='GET',
+        method_id='biglake.projects.catalogs.namespaces.views.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['options_requestedPolicyVersion'],
+        relative_path='v1/{+resource}:getIamPolicy',
+        request_field='',
+        request_type_name='BiglakeProjectsCatalogsNamespacesViewsGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the IAM policy for the specified view.
+
+      Args:
+        request: (BiglakeProjectsCatalogsNamespacesViewsSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/views/{viewsId}:setIamPolicy',
+        http_method='POST',
+        method_id='biglake.projects.catalogs.namespaces.views.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:setIamPolicy',
+        request_field='setIamPolicyRequest',
+        request_type_name='BiglakeProjectsCatalogsNamespacesViewsSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Tests the IAM permissions for the specified view.
+
+      Args:
+        request: (BiglakeProjectsCatalogsNamespacesViewsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/views/{viewsId}:testIamPermissions',
+        http_method='POST',
+        method_id='biglake.projects.catalogs.namespaces.views.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:testIamPermissions',
+        request_field='testIamPermissionsRequest',
+        request_type_name='BiglakeProjectsCatalogsNamespacesViewsTestIamPermissionsRequest',
         response_type_name='TestIamPermissionsResponse',
         supports_download=False,
     )

@@ -1429,6 +1429,33 @@ class AgentregistryV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetSkillEncryptionSpec(self, request, global_params=None):
+      r"""========================================================================= # Skill Encryption Spec Service Methods Gets the customer-managed encryption key (CMEK) configuration for Skills in a specific project and location.
+
+      Args:
+        request: (AgentregistryProjectsLocationsGetSkillEncryptionSpecRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SkillEncryptionSpec) The response message.
+      """
+      config = self.GetMethodConfig('GetSkillEncryptionSpec')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetSkillEncryptionSpec.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skillEncryptionSpec',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.getSkillEncryptionSpec',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsGetSkillEncryptionSpecRequest',
+        response_type_name='SkillEncryptionSpec',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
@@ -1453,6 +1480,33 @@ class AgentregistryV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='AgentregistryProjectsLocationsListRequest',
         response_type_name='ListLocationsResponse',
+        supports_download=False,
+    )
+
+    def UpdateSkillEncryptionSpec(self, request, global_params=None):
+      r"""Updates the customer-managed encryption key (CMEK) configuration for Skills in a specific project and location. This method is only allowed when no Skills exist in the target project and location. If any Skill already exists in the location, the request fails with `FAILED_PRECONDITION`.
+
+      Args:
+        request: (AgentregistryProjectsLocationsUpdateSkillEncryptionSpecRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('UpdateSkillEncryptionSpec')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateSkillEncryptionSpec.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skillEncryptionSpec',
+        http_method='PATCH',
+        method_id='agentregistry.projects.locations.updateSkillEncryptionSpec',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='skillEncryptionSpec',
+        request_type_name='AgentregistryProjectsLocationsUpdateSkillEncryptionSpecRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

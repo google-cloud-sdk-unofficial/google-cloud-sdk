@@ -165,3 +165,64 @@ def AddResponsePolicyRuleArg(parser,
       'The response policy rule {}.'.format(verb),
       flag_name_overrides={'response-policy-rule': 'response_policy_rule'},
       required=required).AddToParser(parser)
+
+
+def OutboundEndpointAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='outbound-endpoint',
+      help_text='The Cloud DNS outbound endpoint name {resource}.',
+  )
+
+
+def LocationAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='location',
+      help_text='The Cloud location for the {resource}.',
+  )
+
+
+def GetOutboundEndpointResourceSpec(api_version='v1'):
+  return concepts.ResourceSpec(
+      'dns.outboundEndpoints',
+      api_version=api_version,
+      resource_name='outbound_endpoint',
+      projectsId=ProjectAttributeConfig(),
+      locationsId=LocationAttributeConfig(),
+      outboundEndpointsId=OutboundEndpointAttributeConfig(),
+  )
+
+
+def GetLocationResourceSpec(api_version='v1'):
+  return concepts.ResourceSpec(
+      'dns.locations',
+      api_version=api_version,
+      resource_name='location',
+      projectsId=ProjectAttributeConfig(),
+      locationsId=LocationAttributeConfig(),
+  )
+
+
+def AddOutboundEndpointResourceArg(
+    parser, verb, api_version='v1', positional=True, required=True
+):
+  """Add a resource argument for a Cloud DNS Outbound Endpoint."""
+  name = 'outbound_endpoint' if positional else '--outbound-endpoint'
+  concept_parsers.ConceptParser.ForResource(
+      name,
+      GetOutboundEndpointResourceSpec(api_version),
+      'The outbound endpoint {}.'.format(verb),
+      required=required,
+  ).AddToParser(parser)
+
+
+def AddLocationResourceArg(
+    parser, verb, api_version='v1', positional=False, required=True
+):
+  """Add a resource argument for a Cloud DNS Location."""
+  name = 'location' if positional else '--location'
+  concept_parsers.ConceptParser.ForResource(
+      name,
+      GetLocationResourceSpec(api_version),
+      'The location {}.'.format(verb),
+      required=required,
+  ).AddToParser(parser)

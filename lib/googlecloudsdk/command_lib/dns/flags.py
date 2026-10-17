@@ -347,6 +347,21 @@ def GetPrivateForwardingTargetsArg():
   )
 
 
+def GetForwardingOutboundEndpointsArg():
+  return base.Argument(
+      '--outbound-endpoints',
+      type=arg_parsers.ArgList(),
+      metavar='OUTBOUND_ENDPOINTS',
+      help=(
+          'List of outbound endpoints to use for forwarding queries. Specify'
+          ' either the outbound endpoint name formatted as'
+          ' `locations/LOCATION/outboundEndpoints/NAME` or the'
+          ' full resource path'
+          ' `projects/PROJECT/locations/LOCATION/outboundEndpoints/NAME`.'
+      ),
+  )
+
+
 def GetReverseLookupArg():
   return base.Argument(
       '--managed-reverse-lookup',
@@ -432,6 +447,21 @@ def GetPolicyPrivateAltNameServersArg():
       help=(
           'List of alternative name servers to forward to. All addresses'
           ' specified for this parameter will be reached through the VPC.'
+      ),
+  )
+
+
+def GetPolicyOutboundEndpointsArg():
+  return base.Argument(
+      '--outbound-endpoints',
+      type=arg_parsers.ArgList(),
+      metavar='OUTBOUND_ENDPOINTS',
+      help=(
+          'List of outbound endpoints to use for forwarding queries to'
+          ' alternative name servers. Specify either the outbound endpoint'
+          ' name formatted as `locations/LOCATION/outboundEndpoints/NAME` or'
+          ' the full resource path'
+          ' `projects/PROJECT/locations/LOCATION/outboundEndpoints/NAME`.'
       ),
   )
 
@@ -906,6 +936,7 @@ def _FormatHealthCheckTarget(health_check_target):
 
 
 def _FormatRrdata(routing_policy_item):
+  """Formats rrdata from a routing policy item."""
   rrdata = []
   if 'rrdatas' in routing_policy_item:
     rrdata = rrdata + routing_policy_item['rrdatas']
@@ -1183,4 +1214,45 @@ def GetRoutingPolicyBackupItemArg(required: bool = False) -> base.Argument:
 
     *internal_load_balancers*::: The list of health checked internal load balancers, split by ";".
     """,
+  )
+
+
+# Outbound Endpoint Flags
+def GetOutboundEndpointNetworkArg(required=True):
+  return base.Argument(
+      '--network',
+      required=required,
+      help=(
+          'VPC network for the outbound endpoint. Specify either the network'
+          ' name or the full resource URL.'
+      ),
+  )
+
+
+def GetOutboundEndpointSubnetworkArg(required=True):
+  return base.Argument(
+      '--subnetwork',
+      required=required,
+      help=(
+          'Subnetwork in the same region as the outbound endpoint. Specify'
+          ' either the subnetwork name or the full resource URL.'
+      ),
+  )
+
+
+def GetOutboundEndpointIpArg(required=True):
+  return base.Argument(
+      '--endpoint-ip',
+      required=required,
+      help=(
+          'IPv4 address for the outbound endpoint on the specified subnetwork.'
+      ),
+  )
+
+
+def GetOutboundEndpointDescriptionArg(required=False):
+  return base.Argument(
+      '--description',
+      required=required,
+      help='A description of the outbound endpoint.',
   )

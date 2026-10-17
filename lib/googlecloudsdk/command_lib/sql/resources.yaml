@@ -38,3 +38,14 @@ ssl_cert:
     parameter_name: sha1Fingerprint
     attribute_name: common_name
     help: 'User supplied name. Constrained to [a-zA-Z.-_ ]+.'
+
+workload_capture:
+  name: workload capture
+  collection: sql.workloadCaptures
+  attributes:
+  - *project
+  - *instance
+  - &workload_capture
+    parameter_name: workloadId
+    attribute_name: workload
+    help: The workload capture ID.

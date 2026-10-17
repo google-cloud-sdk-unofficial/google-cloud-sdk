@@ -53,6 +53,7 @@ class Update(base.Command):
   _support_maintenance_window = True
   _support_environment_size = True
   _support_traffic_routing_config = False
+  _support_user_workloads_service_accounts = False
 
   @staticmethod
   def Args(parser, release_track=base.ReleaseTrack.GA):
@@ -404,6 +405,16 @@ class Update(base.Command):
       possible_args['cloud-run-functions-routing'] = (
           args.cloud_run_functions_routing
       )
+    if self._support_user_workloads_service_accounts:
+      possible_args['update-user-workloads-service-accounts'] = (
+          args.update_user_workloads_service_accounts
+      )
+      possible_args['remove-user-workloads-service-accounts'] = (
+          args.remove_user_workloads_service_accounts
+      )
+      possible_args['clear-user-workloads-service-accounts'] = (
+          args.clear_user_workloads_service_accounts
+      )
     for k, v in possible_args.items():
       if v is not None and not is_composer3:
         raise command_util.InvalidUserInputError(
@@ -463,6 +474,16 @@ class Update(base.Command):
               args.cloud_run_functions_routing
           )
         params['cloud_run_functions_routing'] = rmode
+    if self._support_user_workloads_service_accounts:
+      params['clear_user_workloads_service_accounts'] = (
+          args.clear_user_workloads_service_accounts
+      )
+      params['remove_user_workloads_service_accounts'] = (
+          args.remove_user_workloads_service_accounts
+      )
+      params['update_user_workloads_service_accounts'] = (
+          args.update_user_workloads_service_accounts
+      )
     if args.enable_private_builds_only or args.disable_private_builds_only:
       params['support_private_builds_only'] = (
           True if args.enable_private_builds_only else False
@@ -568,6 +589,7 @@ class UpdateBeta(Update):
   _support_maintenance_window = True
   _support_environment_size = True
   _support_traffic_routing_config = True
+  _support_user_workloads_service_accounts = False
 
   @staticmethod
   def AlphaAndBetaArgs(parser, release_track=base.ReleaseTrack.BETA):
@@ -605,6 +627,7 @@ class UpdateAlpha(UpdateBeta):
 
   _support_autoscaling = True
   _support_traffic_routing_config = True
+  _support_user_workloads_service_accounts = True
 
   @staticmethod
   def Args(parser):

@@ -21,6 +21,9 @@ from apitools.base.py import encoding
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.dataproc import local_file_uploader
+from googlecloudsdk.command_lib.dataproc.shared_messages import (
+    runtime_config_factory as rcf,
+)
 
 
 class PySparkNotebookBatchFactory(object):
@@ -116,4 +119,5 @@ def AddArguments(parser: Any) -> None:
   parser.add_argument(
       '--deps-bucket',
       help='A Cloud Storage bucket to upload workload dependencies.')
+  rcf.AddEnvironmentArguments(parser)
 

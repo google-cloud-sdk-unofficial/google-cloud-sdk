@@ -15,8 +15,8 @@
 """Update Secure Source Manager issue command."""
 
 from googlecloudsdk.api_lib.securesourcemanager import issues
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.source_manager import resource_args
 from googlecloudsdk.core import log
 
@@ -43,6 +43,8 @@ DETAILED_HELP = {
 class Update(base.UpdateCommand):
   """Update a Secure Source Manager issue."""
 
+  NO_CHANGES_MESSAGE = "There are no changes to the issue [{issue}] for update"
+
   @staticmethod
   def Args(parser):
     base.ASYNC_FLAG.AddToParser(parser)
@@ -68,6 +70,15 @@ class Update(base.UpdateCommand):
     if args.IsSpecified("body"):
       update_mask.append("body")
 
+    if not update_mask:
+      raise exceptions.MinimumArgumentException(
+          [
+              "--title",
+              "--body",
+          ],
+          self.NO_CHANGES_MESSAGE.format(issue=issue_ref.Name()),
+      )
+
     update_operation = client.Update(
         issue_ref,
         title=args.title,
@@ -76,20 +87,11 @@ class Update(base.UpdateCommand):
     )
 
     if args.async_:
+      log.UpdatedResource(issue_ref.RelativeName(), is_async=True)
       return update_operation
 
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if update_operation.done or not update_operation.name:
-      if update_operation.error:
-        raise waiter.OperationError(
-            update_operation.error.message or str(update_operation.error)
-        )
-      log.UpdatedResource(issue_ref.RelativeName())
-      return update_operation.response
-
-    response = client.WaitForOperation(
-        client.GetOperationRef(update_operation),
-        "Waiting for issue to be updated",
+    response = client.GetOperationResult(
+        update_operation, "Waiting for issue to be updated"
     )
     log.UpdatedResource(issue_ref.RelativeName())
     return response

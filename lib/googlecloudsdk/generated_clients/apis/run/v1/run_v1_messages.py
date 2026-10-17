@@ -25,17 +25,6 @@ class Addressable(_messages.Message):
   url = _messages.StringField(1)
 
 
-class AllowEgress(_messages.Message):
-  r"""Egress configuration for the sandbox.
-
-  Fields:
-    tlsInterception: Optional. Whether to enable TLS interception for outbound
-      traffic.
-  """
-
-  tlsInterception = _messages.BooleanField(1)
-
-
 class AuditConfig(_messages.Message):
   r"""Specifies the audit configuration for a service. The configuration
   determines which permission types are logged, and what identities, if any,
@@ -1473,9 +1462,12 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
     Values:
       NOT_VERIFIED: Not a verifiable build (the default).
       VERIFIED: Build must be verified.
+      BEST_EFFORT: Build verification is best effort. If provenance generation
+        fails, the build will still succeed.
     """
     NOT_VERIFIED = 0
     VERIFIED = 1
+    BEST_EFFORT = 2
 
   class SourceProvenanceHashValueListEntryValuesEnum(_messages.Enum):
     r"""SourceProvenanceHashValueListEntryValuesEnum enum type.
@@ -1885,8 +1877,8 @@ class GoogleDevtoolsCloudbuildV1GenericArtifactDependency(_messages.Message):
   r"""Represents a generic artifact as a build dependency.
 
   Fields:
-    destPath: Required. Where the artifact files should be placed on the
-      worker.
+    destPath: Optional. Where the artifact files should be placed on the
+      worker. Required when specified in `Build.dependencies`.
     resource: Required. The location to download the artifact files from. Ex:
       projects/p1/locations/us/repositories/r1/packages/p1/versions/v1
   """
@@ -5925,15 +5917,12 @@ class Sandbox(_messages.Message):
   r"""Settings for the secure sandbox environment.
 
   Fields:
-    allowEgress: Optional. Egress configuration for the sandbox. If this field
-      is not set, egress is disabled by default.
     identity: Optional. The identity assigned to the sandbox. Keywords "none"
       and "passthrough" are reserved for standard platform identities. If not
       specified, the system defaults to "none".
   """
 
-  allowEgress = _messages.MessageField('AllowEgress', 1)
-  identity = _messages.StringField(2)
+  identity = _messages.StringField(1)
 
 
 class SandboxConfiguration(_messages.Message):

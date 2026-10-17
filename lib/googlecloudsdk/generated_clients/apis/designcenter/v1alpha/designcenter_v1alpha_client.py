@@ -1070,6 +1070,35 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def IngestIaC(self, request, global_params=None):
+      r"""Ingests IaC for an application template asynchronously.
+
+      Args:
+        request:
+          (DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest)
+          input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('IngestIaC')
+      return self._RunMethod(config, request, global_params=global_params)
+
+    IngestIaC.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}:ingestIaC',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.ingestIaC',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:ingestIaC',
+        request_field='ingestApplicationTemplateIaCRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists application templates in a given space.
 
@@ -1238,6 +1267,34 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
         relative_path='v1alpha/{+name}:deploy',
         request_field='deployApplicationRequest',
         request_type_name='DesigncenterProjectsLocationsSpacesApplicationsDeployRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Export(self, request, global_params=None):
+      r"""Exports Terraform files for an application asynchronously.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationsExportRequest)
+          input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Export')
+      return self._RunMethod(config, request, global_params=global_params)
+
+    Export.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applications/{applicationsId}:export',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applications.export',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:export',
+        request_field='exportApplicationIaCRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationsExportRequest',
         response_type_name='Operation',
         supports_download=False,
     )

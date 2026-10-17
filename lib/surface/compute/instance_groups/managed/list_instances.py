@@ -18,7 +18,10 @@ It's an alias for the instance-groups list-instances command.
 """
 
 
+import itertools
+
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
@@ -66,27 +69,49 @@ class ListInstances(base.ListCommand):
                      default_scope=compute_scope.ScopeEnum.ZONE,
                      scope_lister=flags.GetDefaultScopeLister(client)))
 
+    has_client_side_transforms = bool(
+        getattr(args, 'filter', None)
+        or getattr(args, 'sort_by', None)
+        or getattr(args, 'flatten', None)
+    )
+
+    max_results = None
+    if not has_client_side_transforms:
+      if getattr(args, 'page_size', None) is not None:
+        max_results = int(args.page_size)
+      if getattr(args, 'limit', None) is not None:
+        if max_results is None or args.limit < max_results:
+          max_results = args.limit
+      if max_results is not None:
+        max_results = min(max_results, constants.MAX_RESULTS_PER_PAGE)
+
     if hasattr(group_ref, 'zone'):
       service = client.apitools_client.instanceGroupManagers
       request = (client.messages.
                  ComputeInstanceGroupManagersListManagedInstancesRequest(
                      instanceGroupManager=group_ref.Name(),
                      zone=group_ref.zone,
-                     project=group_ref.project))
+                     project=group_ref.project,
+                     maxResults=max_results))
     elif hasattr(group_ref, 'region'):
       service = client.apitools_client.regionInstanceGroupManagers
       request = (client.messages.
                  ComputeRegionInstanceGroupManagersListManagedInstancesRequest(
                      instanceGroupManager=group_ref.Name(),
                      region=group_ref.region,
-                     project=group_ref.project))
+                     project=group_ref.project,
+                     maxResults=max_results))
 
+    limit = None if has_client_side_transforms else getattr(args, 'limit', None)
     errors = []
-    results = list(request_helper.MakeRequests(
-        requests=[(service, 'ListManagedInstances', request)],
-        http=client.apitools_client.http,
-        batch_url=client.batch_url,
-        errors=errors))
+    results = list(
+        itertools.islice(
+            request_helper.MakeRequests(
+                requests=[(service, 'ListManagedInstances', request)],
+                http=client.apitools_client.http,
+                batch_url=client.batch_url,
+                errors=errors),
+            limit))
 
     if errors:
       utils.RaiseToolException(errors)

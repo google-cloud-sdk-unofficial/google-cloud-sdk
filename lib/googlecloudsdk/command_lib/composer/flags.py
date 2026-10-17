@@ -347,6 +347,11 @@ TRAFFIC_ROUTING_FLAG_GROUP_DESCRIPTION = (
     'greater.'.format(MIN_COMPOSER3_VERSION)
 )
 
+USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG_GROUP_DESCRIPTION = (
+    'Group of arguments for modifying user workloads service accounts in '
+    'Composer {} or greater.'.format(MIN_COMPOSER3_VERSION)
+)
+
 TRIGGERER_ENABLED_GROUP_DESCRIPTION = (
     'Group of arguments for setting triggerer settings during update '
     'in Composer {} or greater.'.format(MIN_TRIGGERER_COMPOSER_VERSION))
@@ -1016,6 +1021,47 @@ USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG = base.Argument(
     """.format(MIN_COMPOSER3_VERSION),
 )
 
+UPDATE_USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG = base.Argument(
+    '--update-user-workloads-service-accounts',
+    metavar='KEY=VALUE',
+    type=arg_parsers.ArgDict(key_type=str, value_type=str),
+    action=arg_parsers.UpdateAction,
+    hidden=True,
+    help="""\
+    A list of `KEY=VALUE` pairs to set user workloads service accounts, where
+    `KEY` is a Kubernetes Service Account name and `VALUE` is a Google Cloud
+    Service Account email. If a user workloads service account exists, its value
+    is updated; otherwise, a new user workloads service account is created.
+    `KEY` may contain lowercase letters, digits, dots, and hyphens, must start
+    and end with a lowercase letter or digit, and must be 1 to 253 characters
+    long. At most 100 service accounts can be specified for each environment.
+    Supported in Composer {} environments or greater.
+    """.format(MIN_COMPOSER3_VERSION),
+)
+
+REMOVE_USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG = base.Argument(
+    '--remove-user-workloads-service-accounts',
+    metavar='NAME',
+    type=arg_parsers.ArgList(),
+    action=arg_parsers.UpdateAction,
+    hidden=True,
+    help="""\
+    A list of Kubernetes Service Account names to remove from user workloads
+    service accounts. Supported in Composer {} environments or greater.
+    """.format(MIN_COMPOSER3_VERSION),
+)
+
+CLEAR_USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG = base.Argument(
+    '--clear-user-workloads-service-accounts',
+    default=None,
+    action='store_true',
+    hidden=True,
+    help="""\
+    Removes all configured user workloads service accounts from the environment.
+    Supported in Composer {} environments or greater.
+    """.format(MIN_COMPOSER3_VERSION),
+)
+
 AIRFLOW_DATABASE_RETENTION_DAYS = base.Argument(
     '--airflow-database-retention-days',
     type=int,
@@ -1662,11 +1708,14 @@ def ValidateDiskSize(parameter_name, disk_size):
         parameter_name, 'Must be an integer quantity of GB.')
 
 
-def _AddPartialDictUpdateFlagsToGroup(update_type_group,
-                                      clear_flag,
-                                      remove_flag,
-                                      update_flag,
-                                      group_help_text=None):
+def _AddPartialDictUpdateFlagsToGroup(
+    update_type_group,
+    clear_flag,
+    remove_flag,
+    update_flag,
+    group_help_text=None,
+    hidden=False,
+):
   """Adds flags related to a partial update of arg represented by a dictionary.
 
   Args:
@@ -1677,8 +1726,11 @@ def _AddPartialDictUpdateFlagsToGroup(update_type_group,
     group_help_text: (optional) str, the help info to apply to the created
       argument group. If not provided, then no help text will be applied to
       group.
+    hidden: (optional) bool, whether the argument group is hidden.
   """
-  group = update_type_group.add_argument_group(help=group_help_text)
+  group = update_type_group.add_argument_group(
+      help=group_help_text, hidden=hidden
+  )
   remove_group = group.add_mutually_exclusive_group(
       help=GENERAL_REMOVAL_FLAG_GROUP_DESCRIPTION)
   clear_flag.AddToParser(remove_group)
@@ -1979,6 +2031,14 @@ def AddComposer3FlagsToGroup(update_type_group, release_track=None):
   elif release_track == base.ReleaseTrack.ALPHA:
     CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA.choice_arg.AddToParser(
         traffic_routing_group
+    )
+    _AddPartialDictUpdateFlagsToGroup(
+        update_type_group,
+        CLEAR_USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG,
+        REMOVE_USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG,
+        UPDATE_USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG,
+        USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG_GROUP_DESCRIPTION,
+        hidden=True,
     )
 
 

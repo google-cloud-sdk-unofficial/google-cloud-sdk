@@ -1078,33 +1078,6 @@ class FirebasedataconnectV1beta(base_api.BaseApiClient):
         supports_download=False,
     )
 
-    def Postgrest(self, request, global_params=None):
-      r"""Retrieves the Open API spec of the PostgREST API.
-
-      Args:
-        request: (FirebasedataconnectProjectsLocationsServicesPostgrestRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (HttpBody) The response message.
-      """
-      config = self.GetMethodConfig('Postgrest')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Postgrest.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/services/{servicesId}/postgrest',
-        http_method='GET',
-        method_id='firebasedataconnect.projects.locations.services.postgrest',
-        ordered_params=['firebasedataconnectService'],
-        path_params=['firebasedataconnectService'],
-        query_params=[],
-        relative_path='v1beta/{+firebasedataconnectService}/postgrest',
-        request_field='',
-        request_type_name='FirebasedataconnectProjectsLocationsServicesPostgrestRequest',
-        response_type_name='HttpBody',
-        supports_download=False,
-    )
-
   class ProjectsLocationsService(base_api.BaseApiService):
     """Service class for the projects_locations resource."""
 

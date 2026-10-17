@@ -1910,6 +1910,7 @@ class Cluster(_messages.Message):
 
 class ClusterAutoscaling(_messages.Message):
   r"""ClusterAutoscaling contains global, per-cluster information required by
+
   Cluster Autoscaler to automatically adjust the size of the cluster and
   create/delete node pools based on the current needs.
 
@@ -1938,6 +1939,8 @@ class ClusterAutoscaling(_messages.Message):
       is used to enable self-hosting of GKE CA by customer.
     resourceLimits: Contains global constraints regarding minimum and maximum
       amount of resources in the cluster.
+    scaleToZeroConfig: Configuration for Cluster Autoscaler scaling a cluster
+      to 0 nodes.
   """
 
   class AutopilotGeneralProfileValueValuesEnum(_messages.Enum):
@@ -1974,6 +1977,7 @@ class ClusterAutoscaling(_messages.Message):
   enableNodeAutoprovisioning = _messages.BooleanField(7)
   managedAutoscalingDisabled = _messages.BooleanField(8)
   resourceLimits = _messages.MessageField('ResourceLimit', 9, repeated=True)
+  scaleToZeroConfig = _messages.MessageField('ScaleToZeroConfig', 10)
 
 
 class ClusterNetworkPerformanceConfig(_messages.Message):
@@ -2665,7 +2669,6 @@ class CompleteConvertToAutopilotRequest(_messages.Message):
   """
 
 
-
 class CompleteIPRotationRequest(_messages.Message):
   r"""CompleteIPRotationRequest moves the cluster master back into single-IP
   mode.
@@ -2696,7 +2699,6 @@ class CompleteNodePoolUpgradeRequest(_messages.Message):
   r"""CompleteNodePoolUpgradeRequest sets the name of target node pool to
   complete upgrade.
   """
-
 
 
 class CompliancePostureConfig(_messages.Message):
@@ -4156,7 +4158,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class EncryptionConfig(_messages.Message):
@@ -9697,6 +9698,21 @@ class SandboxConfig(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 2)
 
 
+class ScaleToZeroConfig(_messages.Message):
+  r"""ScaleToZeroConfig contains configuration for Cluster Autoscaler scaling
+
+  a cluster to 0 nodes if there are no user workloads deployed.
+
+  Fields:
+    delay: Delay before cluster is scaled to 0 nodes by Cluster Autoscaler.
+    enabled: Enabled specifies that Cluster Autoscaler should scale down the
+      cluster to 0 nodes when there are no user workloads.
+  """
+
+  delay = _messages.StringField(1)
+  enabled = _messages.BooleanField(2)
+
+
 class ScheduleUpgradeConfig(_messages.Message):
   r"""Configuration for scheduled upgrades on the cluster.
 
@@ -9738,7 +9754,6 @@ class SecondaryBootDiskUpdateStrategy(_messages.Message):
   r"""SecondaryBootDiskUpdateStrategy is a placeholder which will be extended
   in the future to define different options for updating secondary boot disks.
   """
-
 
 
 class SecretManagerConfig(_messages.Message):
@@ -11501,10 +11516,13 @@ class WindowsNodeConfig(_messages.Message):
         Servercore Base Image.
       OS_VERSION_LTSC2022: LTSC2022 specifies to use LTSC2022 as the Windows
         Servercore Base Image.
+      OS_VERSION_LTSC2025: LTSC2025 specifies to use LTSC2025 as the Windows
+        Servercore Base Image.
     """
     OS_VERSION_UNSPECIFIED = 0
     OS_VERSION_LTSC2019 = 1
     OS_VERSION_LTSC2022 = 2
+    OS_VERSION_LTSC2025 = 3
 
   osVersion = _messages.EnumField('OsVersionValueValuesEnum', 1)
 

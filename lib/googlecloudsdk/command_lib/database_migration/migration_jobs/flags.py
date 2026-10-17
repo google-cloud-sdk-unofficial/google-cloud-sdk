@@ -325,13 +325,11 @@ def AddSqlServerDagConfigFlag(parser, is_update=False):
           'The SQL Server homogeneous DAG migration config. This is used only'
           ' for SQL Server to CloudSQL SQL for SQL Server migrations.'
       ),
-      hidden=True,
   )
   sqlserver_dag_config.add_argument(
       '--sqlserver-dag-source-ag',
       help='The name of the source availability group.',
       required=not is_update,
-      hidden=True,
   )
   sqlserver_dag_config.add_argument(
       '--sqlserver-dag-linked-server',
@@ -340,7 +338,6 @@ def AddSqlServerDagConfigFlag(parser, is_update=False):
           ' instance.'
       ),
       required=not is_update,
-      hidden=True,
   )
 
 

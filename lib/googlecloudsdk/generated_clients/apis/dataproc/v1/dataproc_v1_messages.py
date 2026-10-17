@@ -11363,6 +11363,8 @@ class SessionTemplate(_messages.Message):
     creator: Output only. The email address of the user who created the
       template.
     description: Optional. Brief description of the template.
+    displayName: Optional. User-friendly display name for the session
+      template. Can be up to 63 characters.
     environmentConfig: Optional. Environment configuration for session
       execution.
     jupyterSession: Optional. Jupyter session config.
@@ -11420,15 +11422,16 @@ class SessionTemplate(_messages.Message):
   createTime = _messages.StringField(1)
   creator = _messages.StringField(2)
   description = _messages.StringField(3)
-  environmentConfig = _messages.MessageField('EnvironmentConfig', 4)
-  jupyterSession = _messages.MessageField('JupyterConfig', 5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  preWarmedDriversCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  runtimeConfig = _messages.MessageField('RuntimeConfig', 9)
-  sparkConnectSession = _messages.MessageField('SparkConnectConfig', 10)
-  updateTime = _messages.StringField(11)
-  uuid = _messages.StringField(12)
+  displayName = _messages.StringField(4)
+  environmentConfig = _messages.MessageField('EnvironmentConfig', 5)
+  jupyterSession = _messages.MessageField('JupyterConfig', 6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  preWarmedDriversCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  runtimeConfig = _messages.MessageField('RuntimeConfig', 10)
+  sparkConnectSession = _messages.MessageField('SparkConnectConfig', 11)
+  updateTime = _messages.StringField(12)
+  uuid = _messages.StringField(13)
 
 
 class SetIamPolicyRequest(_messages.Message):

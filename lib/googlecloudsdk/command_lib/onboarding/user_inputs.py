@@ -31,6 +31,7 @@ CLOUD_TOS_ID = 'cloud'
 STARTER_TIER_TOS_ID = 'starter-tier-additional-terms-of-service'
 PANTHEON_TOS_ID = 'pantheon'
 FREE_TRIAL_TOS_ID = 'cloud-free-trial'
+GMP_DEMO_API_KEY_TOS_ID = 'gmp-demo-api-key'
 
 _TOS_HEADER = (
     'To provision resources on the starter tier, review and accept the terms of'
@@ -62,6 +63,10 @@ _TOS_REGISTRY: dict[str, _ToSInfo] = {
     FREE_TRIAL_TOS_ID: _ToSInfo(
         title='Google Cloud Free Trial Terms of Service',
         url='https://cloud.google.com/terms/free-trial',
+    ),
+    GMP_DEMO_API_KEY_TOS_ID: _ToSInfo(
+        title='Google Maps Platform Demo API Key Terms of Service',
+        url='https://cloud.google.com/terms/maps-platform/demo-project-terms',
     ),
 }
 
@@ -98,6 +103,7 @@ _REGION_MESSAGE = (
     'Please select the region where resources (Cloud Run, Firebase, CloudSQL)'
     ' associated with your project will be provisioned in:\n'
 )
+_SINGLE_CLOUD_REGION_MESSAGE = 'One region found and selected: [{region}].'
 
 _PROJECT_MESSAGE = 'Please select the project to use:'
 _SINGLE_PROJECT_MESSAGE = 'One project found and selected: [{project}].'
@@ -240,3 +246,63 @@ def HandleUserInputSelectProject(
   except console_io.OperationCancelledError:
     return None
   return projects[idx] if idx is not None else None
+
+
+def _FormatCloudRegion(region: onboarding_messages.CloudRegion) -> str:
+  """Formats a Google Cloud region for display to the user."""
+  if region.displayName:
+    return f'{region.name} ({region.displayName})'
+  return region.name
+
+
+def HandleUserInputSelectCloudRegion(
+    regions: Sequence[onboarding_messages.CloudRegion],
+    default_region: onboarding_messages.CloudRegion | None = None,
+) -> onboarding_messages.CloudRegion | None:
+  """Prompts the user to select a Google Cloud region to use for onboarding.
+
+  This handles Google Cloud regions (e.g. `us-west1`), not geographic region
+  codes (e.g. `US`).
+
+  If exactly one region is available, it is selected automatically without
+  prompting, and the user is informed of the selection. Otherwise, the
+  suggested default region (matched by name) is pre-selected, and is chosen if
+  the user presses Enter without a value or if prompts are disabled.
+
+  Args:
+    regions: Google Cloud regions the user can select from.
+    default_region: Optional suggested region to pre-select. Ignored if it is
+      not one of `regions`.
+
+  Returns:
+    The region selected by the user (or the only/default region), or None if
+    there are no regions to select from, no region was selected, or the user
+    chose to cancel.
+  """
+  if not regions:
+    return None
+
+  if len(regions) == 1:
+    region = regions[0]
+    log.status.Print(
+        _SINGLE_CLOUD_REGION_MESSAGE.format(region=_FormatCloudRegion(region))
+    )
+    return region
+
+  region_names = [r.name for r in regions]
+  default_idx = (
+      region_names.index(default_region.name)
+      if default_region and default_region.name in region_names
+      else None
+  )
+
+  try:
+    idx = console_io.PromptChoice(
+        [_FormatCloudRegion(r) for r in regions],
+        default=default_idx,
+        message=_REGION_MESSAGE,
+        cancel_option=True,
+    )
+  except console_io.OperationCancelledError:
+    return None
+  return regions[idx] if idx is not None else None

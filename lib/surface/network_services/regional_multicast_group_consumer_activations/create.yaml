@@ -35,8 +35,10 @@ arguments:
     help_text: The description for the regional multicast group consumer activation.
   - arg_name: enable-logging
     api_field: regionalMulticastGroupConsumerActivation.logConfig.enabled
-    action: store_true
-    help_text: Enable logging for the regional multicast group consumer activation.
+    action: store_true_false
+    help_text: |
+      Whether to enable logging for this regional multicast group consumer
+      activation.
   labels:
     api_field: regionalMulticastGroupConsumerActivation.labels
 async:

@@ -543,16 +543,32 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
+class PackageRepository(_messages.Message):
+  r"""A remote package repository endpoint with optional authentication.
+
+  Fields:
+    uri: Required. The URL or URI of the repository or channel (for example,
+      https://us-python.pkg.dev/...).
+  """
+
+  uri = _messages.StringField(1)
+
+
 class PythonPackagesConfig(_messages.Message):
   r"""Configuration for Python packages installed in an environment, resolved
-  and installed with pip from the public PyPI index.
+  and installed with pip from the public PyPI index or a custom package
+  repository.
 
   Fields:
     packages: Optional. Python packages to install, specified as pip
       requirement strings (for example, pandas>=2.0.0 or scipy).
+    repository: Optional. A custom package repository to install Python
+      packages from. If not specified, packages are installed from the public
+      PyPI index.
   """
 
   packages = _messages.StringField(1, repeated=True)
+  repository = _messages.MessageField('PackageRepository', 2)
 
 
 class StandardQueryParameters(_messages.Message):

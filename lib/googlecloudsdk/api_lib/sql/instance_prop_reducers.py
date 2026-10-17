@@ -639,7 +639,9 @@ def _CustomMachineTypeString(cpu, memory_mib):
   return machine_type
 
 
-def MachineType(instance=None, tier=None, memory=None, cpu=None):
+def MachineType(
+    instance=None, tier=None, memory=None, cpu=None, backend_type=None
+):
   """Generates the machine type for the instance.
 
   Adapted from compute.
@@ -650,6 +652,7 @@ def MachineType(instance=None, tier=None, memory=None, cpu=None):
     tier: string, the v1 or v2 tier.
     memory: string, the amount of memory.
     cpu: int, the number of CPUs.
+    backend_type: string, the backend type of the instance.
 
   Returns:
     A string representing the URL naming a machine-type.
@@ -663,6 +666,20 @@ def MachineType(instance=None, tier=None, memory=None, cpu=None):
 
   # Setting the machine type.
   machine_type = None
+  if backend_type and backend_type.replace('-', '_').upper() == 'SEMI_MANAGED':
+    return None
+
+  if instance:
+    instance_backend_type = getattr(instance, 'backendType', None) or getattr(
+        instance, 'backend_type', None
+    )
+    if instance_backend_type:
+      backend_type_str = getattr(
+          instance_backend_type, 'name', str(instance_backend_type)
+      )
+      if backend_type_str.replace('-', '_').upper() == 'SEMI_MANAGED':
+        return None
+
   if tier:
     machine_type = tier
 

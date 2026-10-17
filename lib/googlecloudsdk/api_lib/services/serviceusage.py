@@ -958,6 +958,57 @@ def ListCatalogMembersV2(
     exceptions.ReraiseError(e, exceptions.ListCatalogMembersException)
 
 
+def ListDependentServices(
+    resource: str,
+    service: str,
+    page_size: int = 50,
+    limit: int = sys.maxsize,
+):
+  """Make API call to list services that depend on a specific service.
+
+  Args:
+    resource: The target resource in the format:
+      '{resource_type}/{resource_name}'.
+    service: Service name, for example, 'services/my-service'.
+    page_size: The page size to list. The default page_size is 50.
+    limit: The max number of services to display.
+
+  Raises:
+    exceptions.ListDependentServicesException: when listing dependent services
+      fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    List of service names that depend on the given service.
+  """
+  client = _GetClientInstance(_V2BETA_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageServicesDependentServicesListRequest(
+      parent=f'{resource}/{service}'
+  )
+
+  try:
+    response = list_pager.YieldFromList(
+        _Lister(client.services_dependentServices),
+        request,
+        limit=limit,
+        batch_size_attribute='pageSize',
+        batch_size=page_size,
+        field='services',
+    )
+    service_names = []
+    for dependent_service in response:
+      service_names.append(dependent_service.service)
+    return service_names
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+      apitools_exceptions.HttpBadRequestError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.ListDependentServicesException)
+
+
 def ListDependentServicesV2(
     resource: str,
     service: str,

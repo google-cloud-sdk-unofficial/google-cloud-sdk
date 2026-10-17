@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: |
@@ -434,6 +436,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateReleaseChannel
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateAcceleratedSecurityPatch
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateAuthType
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateLinkedLspProjectNumber
     GA:
       api_version: v1
       modify_request_hooks:
@@ -451,6 +454,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCatalogIntegrationOptOut
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateReleaseChannel
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateAcceleratedSecurityPatch
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateLinkedLspProjectNumber
     collection: looker.projects.locations.instances
     regional_endpoint_compatibility: SUPPORTED
 

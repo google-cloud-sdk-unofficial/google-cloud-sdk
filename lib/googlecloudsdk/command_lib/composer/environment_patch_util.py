@@ -176,6 +176,9 @@ def ConstructPatch(
     enable_high_resilience=None,
     enable_logs_in_cloud_logging_only=None,
     cloud_run_functions_routing=None,
+    clear_user_workloads_service_accounts=None,
+    remove_user_workloads_service_accounts=None,
+    update_user_workloads_service_accounts=None,
 ):
   """Constructs an environment patch.
 
@@ -309,6 +312,14 @@ def ConstructPatch(
       specified only in composer 2.
     cloud_run_functions_routing: str or None, defines the routing mode for cloud
       run functions. Can be specified only in Composer 3.
+    clear_user_workloads_service_accounts: bool or None, whether to clear the
+      user workloads service accounts list. Can be specified only in Composer 3.
+    remove_user_workloads_service_accounts: iterable(string) or None, Iterable
+      of Kubernetes Service Account names to remove. Can be specified only in
+      Composer 3.
+    update_user_workloads_service_accounts: {string: string} or None, dict of
+      Kubernetes Service Account names and Google Service Account emails to set.
+      Can be specified only in Composer 3.
 
   Returns:
     (str, Environment), the field mask and environment to use for update.
@@ -346,6 +357,17 @@ def ConstructPatch(
         remove_airflow_configs,
         update_airflow_configs,
         release_track=release_track)
+  if (
+      clear_user_workloads_service_accounts
+      or remove_user_workloads_service_accounts
+      or update_user_workloads_service_accounts
+  ):
+    return _ConstructUserWorkloadsServiceAccountsPatch(
+        clear_user_workloads_service_accounts,
+        remove_user_workloads_service_accounts,
+        update_user_workloads_service_accounts,
+        release_track=release_track,
+    )
   if clear_env_variables or remove_env_variables or update_env_variables:
     return _ConstructEnvVariablesPatch(
         env_ref,
@@ -736,6 +758,54 @@ def _ConstructAirflowConfigsPatch(clear_airflow_configs,
   return command_util.BuildPartialUpdate(
       clear_airflow_configs, remove_airflow_configs, update_airflow_configs,
       'config.software_config.airflow_config_overrides', entry_cls, _BuildEnv)
+
+
+def _ConstructUserWorkloadsServiceAccountsPatch(
+    clear_user_workloads_service_accounts,
+    remove_user_workloads_service_accounts,
+    update_user_workloads_service_accounts,
+    release_track=base.ReleaseTrack.GA,
+):
+  """Constructs an environment patch for updating user workloads service accounts.
+
+  Args:
+    clear_user_workloads_service_accounts: bool, whether to clear the user
+      workloads service accounts list.
+    remove_user_workloads_service_accounts: iterable(string), Iterable of
+      Kubernetes Service Account names to remove.
+    update_user_workloads_service_accounts: {string: string}, dict mapping
+      Kubernetes Service Account name to Google Service Account email to set.
+    release_track: base.ReleaseTrack, the release track of command. Will dictate
+      which Composer client library will be used.
+
+  Returns:
+    (str, Environment), the field mask and environment to use for update.
+  """
+  messages = api_util.GetMessagesModule(release_track=release_track)
+  env_cls = messages.Environment
+
+  def _BuildServiceAccount(key, value):
+    return messages.UserWorkloadsServiceAccount(
+        kubernetesServiceAccount=key, googleServiceAccount=value
+    )
+
+  def _BuildEnv(entries):
+    user_workloads_config = messages.UserWorkloadsConfig(
+        serviceAccounts=entries
+    )
+    config = messages.EnvironmentConfig(
+        userWorkloadsConfig=user_workloads_config
+    )
+    return env_cls(config=config)
+
+  return command_util.BuildPartialUpdate(
+      clear_user_workloads_service_accounts,
+      remove_user_workloads_service_accounts,
+      update_user_workloads_service_accounts,
+      'config.user_workloads_config.service_accounts',
+      _BuildServiceAccount,
+      _BuildEnv,
+  )
 
 
 def _ConstructEnvVariablesPatch(env_ref,

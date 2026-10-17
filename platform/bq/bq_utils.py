@@ -69,7 +69,7 @@ def _GetVersion() -> str:
     version_str = pkgutil.get_data(root, _VERSION_FILENAME)
   except FileNotFoundError:
     pass
-  if not version_str:
+  if not version_str:  # pyrefly: ignore[unbound-name]
     version_str = 'unknown-version'
   version_str = stringutil.ensure_str(version_str).strip()
   assert (

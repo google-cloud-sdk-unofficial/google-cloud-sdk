@@ -1,0 +1,29 @@
+release_tracks: [BETA, ALPHA]
+hints:
+  read_only: false
+help_text:
+  brief: Stops workload replay on a Cloud SQL instance.
+  description: |
+    Stops executing a captured workload on a separate Cloud SQL instance provisioned for workload replay.
+  examples: |
+    To stop workload replay on a replay instance:
+
+      $ {command} --instance=my-replay-instance
+request:
+  collection: sql.workloadCaptures
+  method: stopReplay
+  regional_endpoint_compatibility: SUPPORTED
+async:
+  collection: sql.operations
+  response_name_field: selfLink
+  extract_resource_result: false
+  state:
+    field: status
+    success_values: ['DONE']
+arguments:
+  resource:
+    help_text: Cloud SQL instance ID of the target replay instance.
+    spec: !REF googlecloudsdk.command_lib.sql.resources:instance
+    is_positional: false
+    override_resource_collection: true
+    is_parent_resource: true

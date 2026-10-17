@@ -1529,9 +1529,10 @@ class EgressSource(_messages.Message):
       in any organization, not just the organization that the perimeter is
       defined in.
     resource: A Google Cloud resource from the service perimeter that you want
-      to allow to access data outside the perimeter. This field supports only
-      projects. The project format is `projects/{project_number}`. You can't
-      use `*` in this field to allow all Google Cloud resources.
+      to allow to access data outside the perimeter. This field supports
+      projects, folders, and organizations in the form `projects/`,
+      `folders/`, and `organizations/`. You can't use `*` in this field to
+      allow all Google Cloud resources.
   """
 
   accessLevel = _messages.StringField(1)
@@ -1559,11 +1560,12 @@ class EgressTo(_messages.Message):
     operations: A list of ApiOperations allowed to be performed by the sources
       specified in the corresponding EgressFrom. A request matches if it uses
       an operation/service in this list.
-    resources: A list of resources, currently only projects in the form
-      `projects/`, that are allowed to be accessed by sources defined in the
-      corresponding EgressFrom. A request matches if it contains a resource in
-      this list. If `*` is specified for `resources`, then this EgressTo rule
-      will authorize access to all resources outside the perimeter.
+    resources: A list of resources, currently projects, folders, and
+      organizations in the form `projects/`, `folders/`, and `organizations/`,
+      that are allowed to be accessed by sources defined in the corresponding
+      EgressFrom. A request matches if it contains a resource in this list. If
+      `*` is specified for `resources`, then this EgressTo rule will authorize
+      access to all resources outside the perimeter.
     roles: IAM roles that represent the set of operations that the sources
       specified in the corresponding EgressFrom. are allowed to perform in
       this ServicePerimeter.
@@ -1793,8 +1795,10 @@ class IngressSource(_messages.Message):
       in.
     resource: A Google Cloud resource that is allowed to ingress the
       perimeter. Requests from these resources will be allowed to access
-      perimeter data. Currently only projects and VPCs are allowed. Project
-      format: `projects/{project_number}` VPC network format:
+      perimeter data. Currently projects, folders, organizations, and VPCs are
+      allowed. Project format: `projects/{project_number}` Folder format:
+      `folders/{folder_id}` Organization format:
+      `organizations/{organization_id}` VPC network format:
       `//compute.googleapis.com/projects/{PROJECT_ID}/global/networks/{NAME}`.
       The project may be in any Google Cloud organization, not just the
       organization that the perimeter is defined in. `*` is not allowed, the
@@ -1815,11 +1819,12 @@ class IngressTo(_messages.Message):
   Fields:
     operations: A list of ApiOperations allowed to be performed by the sources
       specified in corresponding IngressFrom in this ServicePerimeter.
-    resources: A list of resources, currently only projects in the form
-      `projects/`, protected by this ServicePerimeter that are allowed to be
-      accessed by sources defined in the corresponding IngressFrom. If a
-      single `*` is specified, then access to all resources inside the
-      perimeter are allowed.
+    resources: A list of resources, currently projects, folders, and
+      organizations in the form `projects/{project_number}`,
+      `folders/{folder_id}`, and `organizations/{organization_id}`, protected
+      by this ServicePerimeter that are allowed to be accessed by sources
+      defined in the corresponding IngressFrom. If a single `*` is specified,
+      then access to all resources inside the perimeter are allowed.
     roles: IAM roles that represent the set of operations that the sources
       specified in the corresponding IngressFrom are allowed to perform in
       this ServicePerimeter.
@@ -2486,8 +2491,9 @@ class ServicePerimeterConfig(_messages.Message):
       separately. Access is granted if any Ingress Policy grants it. Must be
       empty for a perimeter bridge.
     resources: A list of Google Cloud resources that are inside of the service
-      perimeter. Currently only projects and VPCs are allowed. Project format:
-      `projects/{project_number}` VPC network format:
+      perimeter. Currently projects, folders, and VPCs are allowed. Project
+      format: `projects/{project_number}` Folder format: `folders/{folder_id}`
+      VPC network format:
       `//compute.googleapis.com/projects/{PROJECT_ID}/global/networks/{NAME}`.
     restrictedServices: Google Cloud services that are subject to the Service
       Perimeter restrictions. For example, if `storage.googleapis.com` is

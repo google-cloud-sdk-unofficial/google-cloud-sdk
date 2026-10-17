@@ -20,12 +20,22 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Update exascaleDbStorageVaults
-    description: Update an exascaleDbStorageVault
+    brief: Update labels of an ExascaleDbStorageVault.
+    description: |-
+      Update labels of an ExascaleDbStorageVault. Only labels can be updated on this resource;
+      use `--update-labels`, `--remove-labels` or `--clear-labels` to manage them.
     examples: |-
-      To update the exascaleDbStorageVault, run:
+      To add or update labels on an ExascaleDbStorageVault with id `my-vault` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-vault --location=us-east4 --update-labels=env=prod,team=oasis
+
+      To remove the label `team` from the ExascaleDbStorageVault, run:
+
+        $ {command} my-vault --location=us-east4 --remove-labels=team
+
+      To clear all labels from the ExascaleDbStorageVault, run:
+
+        $ {command} my-vault --location=us-east4 --clear-labels
   arguments:
     params:
     - help_text: |-
@@ -36,60 +46,6 @@
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_exascale_db_storage_vaults
       required: true
-    - arg_name: display-name
-      api_field: exascaleDbStorageVault.displayName
-      required: false
-      repeated: false
-      help_text: |-
-        The display name for the ExascaleDbStorageVault. The name does not have to
-        be unique within your project. The name must be 1-255 characters long and
-        can only contain alphanumeric characters.
-    - arg_name: gcp-oracle-zone
-      api_field: exascaleDbStorageVault.gcpOracleZone
-      required: false
-      repeated: false
-      help_text: |-
-        The GCP Oracle zone where Oracle ExascaleDbStorageVault is hosted.
-        Example: us-east4-b-r2.
-        If not specified, the system will pick a zone based on availability.
-    - group:
-        api_field: exascaleDbStorageVault.properties
-        arg_name: properties
-        clearable: true
-        required: false
-        help_text: |-
-          The properties of the ExascaleDbStorageVault.
-
-          next ID: 12
-        params:
-        - group:
-            api_field: exascaleDbStorageVault.properties.exascaleDbStorageDetails
-            required: false
-            help_text: |-
-              The storage details of the ExascaleDbStorageVault.
-            params:
-            - arg_name: exascale-db-storage-details-total-size-gbs
-              api_field: exascaleDbStorageVault.properties.exascaleDbStorageDetails.totalSizeGbs
-              required: false
-              repeated: false
-              type: int
-              help_text: |-
-                The total storage allocation for the ExascaleDbStorageVault, in gigabytes
-                (GB).
-        - arg_name: properties-description
-          api_field: exascaleDbStorageVault.properties.description
-          required: false
-          repeated: false
-          help_text: |-
-            The description of the ExascaleDbStorageVault.
-        - arg_name: properties-additional-flash-cache-percent
-          api_field: exascaleDbStorageVault.properties.additionalFlashCachePercent
-          required: false
-          repeated: false
-          type: int
-          help_text: |-
-            The size of additional flash cache in percentage of high capacity
-            database storage.
     - arg_name: labels
       api_field: exascaleDbStorageVault.labels
       required: false
@@ -100,19 +56,6 @@
       spec:
       - api_field: key
       - api_field: value
-    - arg_name: exadata-infrastructure
-      help_text: |-
-        The Exadata Infrastructure resource on which
-        ExascaleDbStorageVault
-        resource is created, in the following format:
-        projects/{project}/locations/{region}/cloudExadataInfrastuctures/{cloud_extradata_infrastructure}
-      is_positional: false
-      is_primary_resource: false
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_cloud_exadata_infrastructures
-      resource_method_params:
-        exascaleDbStorageVault.exadataInfrastructure: '{__relative_name__}'
-      required: false
-      clearable: true
     - arg_name: request-id
       api_field: requestId
       required: false

@@ -324,6 +324,7 @@ class Ssh(base.Command):
     instance_name = None
     host_keys = None
     expiration = None
+    identity_file_list = None
 
     if on_prem:
       user, ip = ssh_utils.GetUserAndInstance(args.user_host)
@@ -407,6 +408,8 @@ class Ssh(base.Command):
             messages=holder.client.messages,
         )
         user = oslogin_state.user
+      # identity_file_list will be None if security keys are not enabled.
+      identity_file_list = ssh.WriteSecurityKeys(oslogin_state)
       log.debug(oslogin_state)
 
       if iap_tunnel_args:
@@ -425,8 +428,6 @@ class Ssh(base.Command):
         dest_addr = instance_address
       remote = ssh.Remote(dest_addr, user)
 
-    # identity_file_list will be None if security keys are not enabled.
-    identity_file_list = ssh.WriteSecurityKeys(oslogin_state)
     identity_file = None
     cert_file = None
     options = None

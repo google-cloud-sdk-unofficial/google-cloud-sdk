@@ -14,8 +14,8 @@
 # limitations under the License.
 """Create Secure Source Manager pull request command."""
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.securesourcemanager import pull_requests
+from googlecloudsdk.api_lib.securesourcemanager import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import flags
 from googlecloudsdk.command_lib.source_manager import resource_args
@@ -45,6 +45,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    base.ASYNC_FLAG.AddToParser(parser)
     resource_args.AddRepositoryResourceArgAsFlag(
         parser, "to create pull request in"
     )
@@ -67,17 +68,22 @@ class Create(base.CreateCommand):
         args.head_branch,
     )
 
-    # Log the created pull request name if the operation is successful otherwise
-    # log the error.
-    if create_operation.done and create_operation.response:
-      response_dict = encoding.MessageToPyValue(create_operation.response)
-      pr_name = response_dict.get("name")
-      if pr_name:
-        log.CreatedResource(pr_name)
-    elif create_operation.error:
-      log.error("Operation failed: " + str(create_operation.error))
+    if args.async_:
+      log.status.Print(
+          "Create request issued for pull request in repository [{}].".format(
+              repository_ref.RelativeName()
+          )
+      )
+      return create_operation
 
-    return create_operation
+    response = client.GetOperationResult(
+        create_operation, "Waiting for pull request to be created"
+    )
+    pr_name = util.GetResourceNameFromResponse(response)
+    if pr_name:
+      log.CreatedResource(pr_name)
+
+    return response
 
 
 Create.detailed_help = DETAILED_HELP

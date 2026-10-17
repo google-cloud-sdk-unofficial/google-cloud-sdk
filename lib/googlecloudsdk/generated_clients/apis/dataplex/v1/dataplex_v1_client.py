@@ -2698,6 +2698,33 @@ class DataplexV1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def BatchChangeMetadata(self, request, global_params=None):
+      r"""Batch changes metadata within an EntryGroup.
+
+      Args:
+        request: (GoogleCloudDataplexV1BatchChangeMetadataRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('BatchChangeMetadata')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchChangeMetadata.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/entryGroups/{entryGroupsId}:batchChangeMetadata',
+        http_method='POST',
+        method_id='dataplex.projects.locations.entryGroups.batchChangeMetadata',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:batchChangeMetadata',
+        request_field='<request>',
+        request_type_name='GoogleCloudDataplexV1BatchChangeMetadataRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
       r"""Creates an EntryGroup.
 
@@ -2857,6 +2884,33 @@ class DataplexV1(base_api.BaseApiClient):
         request_field='googleCloudDataplexV1EntryGroup',
         request_type_name='DataplexProjectsLocationsEntryGroupsPatchRequest',
         response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def RequestBatchMetadataChange(self, request, global_params=None):
+      r"""Submits a catalog change request for multiple resources within an EntryGroup. This method creates a ChangeRequest resource that must be reviewed and approved before the proposed changes are applied.
+
+      Args:
+        request: (DataplexProjectsLocationsEntryGroupsRequestBatchMetadataChangeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1RequestBatchMetadataChangeResponse) The response message.
+      """
+      config = self.GetMethodConfig('RequestBatchMetadataChange')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    RequestBatchMetadataChange.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/entryGroups/{entryGroupsId}:requestBatchMetadataChange',
+        http_method='POST',
+        method_id='dataplex.projects.locations.entryGroups.requestBatchMetadataChange',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:requestBatchMetadataChange',
+        request_field='googleCloudDataplexV1RequestBatchMetadataChangeRequest',
+        request_type_name='DataplexProjectsLocationsEntryGroupsRequestBatchMetadataChangeRequest',
+        response_type_name='GoogleCloudDataplexV1RequestBatchMetadataChangeResponse',
         supports_download=False,
     )
 

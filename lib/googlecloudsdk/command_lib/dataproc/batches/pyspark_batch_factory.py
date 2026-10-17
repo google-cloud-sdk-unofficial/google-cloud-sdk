@@ -18,6 +18,9 @@
 
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.dataproc import local_file_uploader
+from googlecloudsdk.command_lib.dataproc.shared_messages import (
+    runtime_config_factory as rcf,
+)
 
 
 class PySparkBatchFactory(object):
@@ -96,3 +99,4 @@ def AddArguments(parser):
   # Cloud Storage bucket to upload workload dependencies.
   # It is required until we figure out a place to upload user files.
   flags.AddBucket(parser)
+  rcf.AddEnvironmentArguments(parser)

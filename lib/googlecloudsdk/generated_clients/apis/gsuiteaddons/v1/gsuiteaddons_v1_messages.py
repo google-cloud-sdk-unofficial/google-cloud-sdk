@@ -756,7 +756,8 @@ class GoogleCloudGsuiteaddonsV1AddOns(_messages.Message):
 
 
 class GoogleCloudGsuiteaddonsV1AppCommand(_messages.Message):
-  r"""Configuration for an App Command.
+  r"""Configuration for an App Command. [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Enums:
     CommandTypeValueValuesEnum: Required. The type of this command.
@@ -805,7 +806,8 @@ class GoogleCloudGsuiteaddonsV1AppCommand(_messages.Message):
 
 
 class GoogleCloudGsuiteaddonsV1AppsScriptEndpointConfig(_messages.Message):
-  r"""Apps Script endpoint configuration.
+  r"""Apps Script endpoint configuration. [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Fields:
     deploymentId: Required. The Apps Script deployment ID.
@@ -818,7 +820,8 @@ class GoogleCloudGsuiteaddonsV1AppsScriptEndpointConfig(_messages.Message):
 
 
 class GoogleCloudGsuiteaddonsV1AppsScriptPerEventEndpointConfig(_messages.Message):
-  r"""Apps Script endpoint configuration for specific event types.
+  r"""Apps Script endpoint configuration for specific event types. [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Fields:
     addedToSpaceEndpoint: Optional. Optional. Function name for added to space
@@ -858,9 +861,13 @@ class GoogleCloudGsuiteaddonsV1Authorization(_messages.Message):
 
 class GoogleCloudGsuiteaddonsV1ChatAppConfig(_messages.Message):
   r"""Represents the configuration of a Google Chat app. Format:
-  `projects/{project}/chatAppConfig`
+  `projects/{project}/chatAppConfig` [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Enums:
+    MarkupSyntaxValueValuesEnum: Optional. The default markup syntax for
+      messages sent or read by this Chat app. Defaults to
+      `MARKUP_SYNTAX_MARKDOWN` if not specified.
     StateValueValuesEnum: Optional. Optional. The state of the app, default to
       ACTIVE if not specified.
 
@@ -880,12 +887,36 @@ class GoogleCloudGsuiteaddonsV1ChatAppConfig(_messages.Message):
       of the app. If this is not provided, the app will be non-interactive,
       meaning that it can use the Chat API, but users can't interact with the
       app.
+    markupSyntax: Optional. The default markup syntax for messages sent or
+      read by this Chat app. Defaults to `MARKUP_SYNTAX_MARKDOWN` if not
+      specified.
     name: Required. Identifier. Resource name of the Chat app configuration.
       Format: `projects/{project}/chatAppConfig` `{project}` is the Google
       Cloud project number.
     state: Optional. Optional. The state of the app, default to ACTIVE if not
       specified.
   """
+
+  class MarkupSyntaxValueValuesEnum(_messages.Enum):
+    r"""Optional. The default markup syntax for messages sent or read by this
+    Chat app. Defaults to `MARKUP_SYNTAX_MARKDOWN` if not specified.
+
+    Values:
+      MARKUP_SYNTAX_UNSPECIFIED: Default value. Unspecified. Existing Chat
+        apps created before `markup_syntax` was introduced have this value and
+        use `MARKUP_SYNTAX_CHAT` until explicitly updated.
+      MARKUP_SYNTAX_CHAT: Uses Google Chat's markup syntax. See
+        https://developers.google.com/workspace/chat/format-messages#format-
+        texts for more information.
+      MARKUP_SYNTAX_MARKDOWN: Uses Markdown syntax. This syntax is based on
+        the [CommonMark](https://commonmark.org/help/) specification, with
+        additional extensions. See
+        https://developers.google.com/workspace/chat/format-messages#format-
+        texts for more information.
+    """
+    MARKUP_SYNTAX_UNSPECIFIED = 0
+    MARKUP_SYNTAX_CHAT = 1
+    MARKUP_SYNTAX_MARKDOWN = 2
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Optional. Optional. The state of the app, default to ACTIVE if not
@@ -907,12 +938,14 @@ class GoogleCloudGsuiteaddonsV1ChatAppConfig(_messages.Message):
   displayName = _messages.StringField(3)
   errorLoggingEnabled = _messages.BooleanField(4)
   interactiveFeatureConfig = _messages.MessageField('GoogleCloudGsuiteaddonsV1InteractiveFeatureConfig', 5)
-  name = _messages.StringField(6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
+  markupSyntax = _messages.EnumField('MarkupSyntaxValueValuesEnum', 6)
+  name = _messages.StringField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
 
 
 class GoogleCloudGsuiteaddonsV1CloudPubSubEndpointConfig(_messages.Message):
-  r"""Pub/Sub endpoint configuration.
+  r"""Pub/Sub endpoint configuration. [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Fields:
     topic: Required. The Pub/Sub topic name where messages are to be
@@ -924,7 +957,8 @@ class GoogleCloudGsuiteaddonsV1CloudPubSubEndpointConfig(_messages.Message):
 
 
 class GoogleCloudGsuiteaddonsV1ConnectionConfig(_messages.Message):
-  r"""How the app receives events.
+  r"""How the app receives events. [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Fields:
     appsScriptEndpointConfig: Apps Script deployment configuration.
@@ -960,7 +994,8 @@ class GoogleCloudGsuiteaddonsV1Deployment(_messages.Message):
 
 
 class GoogleCloudGsuiteaddonsV1DialogflowEndpointConfig(_messages.Message):
-  r"""Dialogflow endpoint configuration.
+  r"""Dialogflow endpoint configuration. [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Enums:
     DialogflowEditionValueValuesEnum: Required. The Dialogflow edition.
@@ -990,7 +1025,8 @@ class GoogleCloudGsuiteaddonsV1DialogflowEndpointConfig(_messages.Message):
 
 
 class GoogleCloudGsuiteaddonsV1HttpEndpointConfig(_messages.Message):
-  r"""HTTP endpoint configuration.
+  r"""HTTP endpoint configuration. [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Fields:
     commonUrl: Optional. The base HTTPS URL for all event types.
@@ -1002,7 +1038,8 @@ class GoogleCloudGsuiteaddonsV1HttpEndpointConfig(_messages.Message):
 
 
 class GoogleCloudGsuiteaddonsV1HttpPerEventEndpointConfig(_messages.Message):
-  r"""HTTP endpoint configuration for specific event types.
+  r"""HTTP endpoint configuration for specific event types. [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Fields:
     addedToSpaceEndpoint: Required. Required. HTTPS URL endpoint for added to
@@ -1037,7 +1074,8 @@ class GoogleCloudGsuiteaddonsV1InstallStatus(_messages.Message):
 
 
 class GoogleCloudGsuiteaddonsV1InteractiveFeatureConfig(_messages.Message):
-  r"""Settings for interactive features of the app.
+  r"""Settings for interactive features of the app. [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Fields:
     allowlistedTestingPrincipals: Optional. Specify the users and groups in
@@ -1075,7 +1113,8 @@ class GoogleCloudGsuiteaddonsV1UninstallDeploymentRequest(_messages.Message):
 
 
 class GoogleCloudGsuiteaddonsV1UrlPattern(_messages.Message):
-  r"""Configuration for a link preview.
+  r"""Configuration for a link preview. [Developer
+  Preview](https://developers.google.com/workspace/preview).
 
   Fields:
     hostPattern: Required. The domain to match. Match a specific subdomain,

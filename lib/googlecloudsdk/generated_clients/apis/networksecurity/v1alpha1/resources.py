@@ -181,6 +181,41 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_DNSARMORSECURITYPOLICIES = (
+      'projects.locations.dnsArmorSecurityPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'dnsArmorSecurityPolicies/{dnsArmorSecurityPoliciesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_DNSARMORSECURITYPOLICIES_RULES = (
+      'projects.locations.dnsArmorSecurityPolicies.rules',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'dnsArmorSecurityPolicies/{dnsArmorSecurityPoliciesId}/rules/'
+              '{rulesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_DNSARMORSECURITYPOLICYASSOCIATIONS = (
+      'projects.locations.dnsArmorSecurityPolicyAssociations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'dnsArmorSecurityPolicyAssociations/'
+              '{dnsArmorSecurityPolicyAssociationsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_DNSTHREATDETECTORS = (
       'projects.locations.dnsThreatDetectors',
       '{+name}',
@@ -188,6 +223,28 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'dnsThreatDetectors/{dnsThreatDetectorsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_DOMAINLISTS = (
+      'projects.locations.domainLists',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/domainLists/'
+              '{domainListsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_DOMAINLISTS_ENTRIES = (
+      'projects.locations.domainLists.entries',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/domainLists/'
+              '{domainListsId}/entries/{entriesId}',
       },
       ['name'],
       True

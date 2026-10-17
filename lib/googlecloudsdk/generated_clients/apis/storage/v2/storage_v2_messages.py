@@ -964,7 +964,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class Encryption(_messages.Message):
   r"""Encryption properties of a bucket.
 
@@ -3239,18 +3238,19 @@ class RetentionPolicy(_messages.Message):
 
 class RotateBucketEncryptionKeyRequest(_messages.Message):
   r"""LINT.IfChange(RotateBucketEncryptionKeyRequest) Request message for
+
   RotateBucketEncryptionKey.
 
   Fields:
-    kmsKey: Required. The id of the bucket Cloud KMS key version to be rotated
-      to the primary key version. e.g.
+    kmsKeyVersion: Required. The id of the bucket Cloud KMS key version to be
+      rotated to the primary key version. e.g.
       projects/P/locations/L/keyRing/R/cryptoKeys/K/cryptoKeyVersions/V
     requestId: Optional. A unique identifier for this request. A random UUID
       is recommended. This request is only idempotent if a `request_id` is
       provided.
   """
 
-  kmsKey = _messages.StringField(1)
+  kmsKeyVersion = _messages.StringField(1)
   requestId = _messages.StringField(2)
 
 

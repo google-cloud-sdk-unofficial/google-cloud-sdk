@@ -146,6 +146,8 @@ apis:
         projects.locations.semanticGovernancePolicyEngine:
           path:
             projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine
+      skip:
+        bug: b/567924093
     v1:
       discovery_doc: aiplatform_v1.json
       gcloud_gapic_library: google/cloud/aiplatform/v1:aiplatform_v1_py
@@ -794,9 +796,11 @@ apis:
       discovery_doc: compute_preview.json
       resources:
         acceleratorInterconnects:
-          path: projects/{project}/zones/{zone}/acceleratorInterconnects/{acceleratorInterconnect}
+          path:
+            projects/{project}/zones/{zone}/acceleratorInterconnects/{acceleratorInterconnect}
         acceleratorInterconnectMemberInstances:
-          path: projects/{project}/zones/{zone}/acceleratorInterconnects/{acceleratorInterconnect}/memberInstances
+          path:
+            projects/{project}/zones/{zone}/acceleratorInterconnects/{acceleratorInterconnect}/memberInstances
         nextHopGateways:
           path: projects/{project}/global/gateways/{nextHopGateway}
         regionSecurityPolicyRules:
@@ -1055,8 +1059,6 @@ apis:
         projects.locations.instances:
           path:
             projects/{projectsId}/locations/{locationsId}/instances/{instancesId}
-      skip:
-        bug: b/539506765
     v1alpha:
       discovery_doc: developerconnect_v1alpha.json
       resources:
@@ -1116,11 +1118,29 @@ apis:
       discovery_doc: dns_v1.json
       mtls_endpoint_override: https://dns.mtls.googleapis.com/dns/v1/
       default: true
+      resources:
+        projects:
+          path: projects/{project}
+        projects.locations:
+          path: projects/{projectsId}/locations/{locationsId}
+          enable_uri_parsing: false
     v1beta2:
       discovery_doc: dns_v1beta2.json
       mtls_endpoint_override: https://dns.mtls.googleapis.com/dns/v1beta2/
+      resources:
+        projects:
+          path: projects/{project}
+        projects.locations:
+          path: projects/{projectsId}/locations/{locationsId}
+          enable_uri_parsing: false
     v1alpha2:
       discovery_doc: dns_v1alpha2.json
+      resources:
+        projects:
+          path: projects/{project}
+        projects.locations:
+          path: projects/{projectsId}/locations/{locationsId}
+          enable_uri_parsing: false
     v2:
       discovery_doc: dns_v2.json
       mtls_endpoint_override: https://dns.mtls.googleapis.com/
@@ -1205,6 +1225,8 @@ apis:
       discovery_doc: firebase_v1beta1.json
       default: true
   firebasedataconnect:
+    v1:
+      discovery_doc: firebasedataconnect_v1.json
     v1alpha:
       discovery_doc: firebasedataconnect_v1alpha.json
     v1beta:
@@ -1214,6 +1236,11 @@ apis:
     v1:
       discovery_doc: firebaserules_v1.json
       default: true
+      # Prevents elision of CreateReleaseRequest (name + release) into just a
+      # Release, which made the {+name} URL parent and the release name share
+      # Release.name (b/568397173).
+      unelidable_request_methods:
+      - firebaserules.projects.releases.create
   firestore:
     v1beta2:
       discovery_doc: firestore_v1beta2.json
@@ -1568,6 +1595,8 @@ apis:
       discovery_doc: logging_v2.json
       gcloud_gapic_library: google/logging/v2:logging_v2_py
       default: true
+      skip:
+        bug: b/567934318
   looker:
     v1alpha2:
       discovery_doc: looker_v1alpha2.json
@@ -1622,6 +1651,22 @@ apis:
     v1alpha:
       discovery_doc: meridian_v1alpha.json
       default: true
+      unelidable_request_methods:
+      - meridian.projects.locations.workspaces.aggcurves.batchCreate
+      - meridian.projects.locations.workspaces.aggcurves.batchTrigger
+      - meridian.projects.locations.workspaces.aggcurves.trigger
+      - meridian.projects.locations.workspaces.datasets.models.artifacts.batchCreate
+      - meridian.projects.locations.workspaces.datasets.models.batchCreate
+      - meridian.projects.locations.workspaces.datasets.models.batchTrain
+      - meridian.projects.locations.workspaces.datasets.models.train
+      - meridian.projects.locations.workspaces.datasets.batchCreate
+      - meridian.projects.locations.workspaces.datasets.batchDelete
+      - meridian.projects.locations.workspaces.datasets.batchUpdate
+      - meridian.projects.locations.workspaces.datasets.batchValidate
+      - meridian.projects.locations.workspaces.datasets.validate
+      resources:
+        projects.datasets.tables:
+          path: projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}
   metastore:
     v1alpha:
       discovery_doc: metastore_v1alpha.json
@@ -1683,8 +1728,6 @@ apis:
       default: false
   networkconnectivity:
     v1alpha1:
-      skip:
-        bug: b/489463293
       discovery_doc: networkconnectivity_v1alpha1.json
       default: true
     v1beta:
@@ -1923,6 +1966,8 @@ apis:
     v2:
       discovery_doc: run_v2.json
       gcloud_gapic_library: google/cloud/run/v2:run_v2_py
+      skip:
+        bug: b/567923545
   runtimeconfig:
     v1beta1:
       discovery_doc: runtimeconfig_v1beta1.json
@@ -2087,6 +2132,8 @@ apis:
             projects/{projectsId}/instances/{instancesId}/databases/{databasesId}/databaseRoles/{rolesName}
           gapic_compatible: false
       default: true
+      skip:
+        bug: b/567934239
   speech:
     v1:
       discovery_doc: speech_v1.json
@@ -2154,6 +2201,8 @@ apis:
         projects.locations.keyRings.cryptoKeys:
           path:
             projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
+      skip:
+        bug: b/567923953
   storagebatchoperations:
     v1:
       discovery_doc: storagebatchoperations_v1.json
@@ -2368,6 +2417,10 @@ apis:
     v1alpha1:
       discovery_doc: marketplacesolutions_v1alpha1.json
       default: true
+  workspacekeyaccess:
+    v1alpha:
+      discovery_doc: workspacekeyaccess_v1alpha.json
+      default: true
   workstations:
     v1beta:
       discovery_doc: workstations_v1beta.json
@@ -2377,6 +2430,10 @@ apis:
   securesourcemanager:
     v1:
       discovery_doc: securesourcemanager_v1.json
+      default: true
+  telemetrymanagement:
+    v1alpha:
+      discovery_doc: telemetrymanagement_v1alpha.json
       default: true
   agentregistry:
     v1alpha:
@@ -3173,6 +3230,10 @@ canonical_surfaces:
   workloadmanager:
     name: workloadmanager
     command: workload-manager
+    hidden: true
+  workspacekeyaccess:
+    name: workspacekeyaccess
+    command: workspace-key-access
     hidden: true
   workstations:
     name: workstations

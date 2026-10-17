@@ -196,11 +196,14 @@ class Create(base.CreateCommand):
       slurm_config_group = slurm_group.add_group(mutex=True)
       flags.AddSlurmConfig(parser=slurm_config_group, api_version=api_version)
       flags.AddSlurmConfFile(parser=slurm_config_group, api_version=api_version)
-      flags.AddSlurmDisableHealthCheckProgram(
+      flags.AddEnableSlurmHealthCheck(
           parser=slurm_group, api_version=api_version
       )
       compute_engine_group = orchestrator_group.add_group(
-          help="Compute Engine orchestrator configuration for the cluster.",
+          help=(
+              "Configuration of orchestration type for Managed Compute"
+              " Clusters."
+          ),
       )
       flags.AddManagedInstanceGroups(
           parser=compute_engine_group, api_version=api_version

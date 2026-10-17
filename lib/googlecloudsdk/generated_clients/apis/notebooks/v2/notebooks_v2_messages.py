@@ -2272,6 +2272,9 @@ class VmImage(_messages.Message):
       running on the instance (for example, "Debian 11, Python 3.10"), derived
       at read time from the image release configuration (the source of truth).
       Set to "Custom" for unrecognized boot-disk images.
+    imageId: Output only. The ID of the specific Compute Engine VM image the
+      instance is currently running (for example, "workbench-
+      instances-2603-20260918-2130-rc0").
     name: Optional. Use VM image name to find the image.
     project: Required. The name of the Google Cloud project that this VM image
       belongs to. Format: `{project_id}`
@@ -2279,8 +2282,9 @@ class VmImage(_messages.Message):
 
   family = _messages.StringField(1)
   imageDescription = _messages.StringField(2)
-  name = _messages.StringField(3)
-  project = _messages.StringField(4)
+  imageId = _messages.StringField(3)
+  name = _messages.StringField(4)
+  project = _messages.StringField(5)
 
 
 encoding.AddCustomJsonFieldMapping(

@@ -131,8 +131,14 @@ class CredentialWrappingMixin(object):
       setattr(http_client, '_googlecloudsdk_credentials', credentials)
 
     self.WrapRequest(
-        http_client, handlers, _HandleAuthError,
-        (google_auth_exceptions.RefreshError,))
+        http_client,
+        handlers,
+        _HandleAuthError,
+        (
+            google_auth_exceptions.RefreshError,
+            google_auth_exceptions.OAuthError,
+        ),
+    )
 
     return http_client
 

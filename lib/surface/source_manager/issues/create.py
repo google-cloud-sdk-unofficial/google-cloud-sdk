@@ -14,9 +14,8 @@
 # limitations under the License.
 """Create Secure Source Manager issue command."""
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.securesourcemanager import issues
-from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.api_lib.securesourcemanager import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
@@ -80,30 +79,19 @@ class Create(base.CreateCommand):
     )
 
     if args.async_:
+      log.status.Print(
+          "Create request issued for issue in repository [{}].".format(
+              repository_ref.RelativeName()
+          )
+      )
       return create_operation
 
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if create_operation.done or not create_operation.name:
-      if create_operation.error:
-        raise waiter.OperationError(
-            create_operation.error.message or str(create_operation.error)
-        )
-      if create_operation.response:
-        response_dict = encoding.MessageToPyValue(create_operation.response)
-        issue_name = response_dict.get("name")
-        if issue_name:
-          log.CreatedResource(issue_name)
-      return create_operation.response
-
-    response = client.WaitForOperation(
-        client.GetOperationRef(create_operation),
-        "Waiting for issue to be created",
+    response = client.GetOperationResult(
+        create_operation, "Waiting for issue to be created"
     )
-    if response:
-      response_dict = encoding.MessageToPyValue(response)
-      issue_name = response_dict.get("name")
-      if issue_name:
-        log.CreatedResource(issue_name)
+    issue_name = util.GetResourceNameFromResponse(response)
+    if issue_name:
+      log.CreatedResource(issue_name)
 
     return response
 

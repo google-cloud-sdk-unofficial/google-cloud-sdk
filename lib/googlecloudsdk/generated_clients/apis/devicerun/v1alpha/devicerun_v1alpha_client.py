@@ -236,6 +236,33 @@ class DevicerunV1alpha(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def BatchGet(self, request, global_params=None):
+      r"""Retrieves multiple automation sessions in a single batch request. Sessions are returned in the same order as the `names` in the request. If any of the requested sessions does not exist, the whole request fails with `NOT_FOUND` and no sessions are returned. When calling this method over HTTP/REST with a large number of `names`, the request URL may exceed the maximum URL length (about 16 KB) and be rejected. In that case, send a `POST` request to the same URL with the `X-HTTP-Method-Override: GET` header and pass the request parameters in a JSON (`application/json`) or form-encoded (`application/x-www-form-urlencoded`) body. See https://cloud.google.com/apis/docs/http#long_request_urls.
+
+      Args:
+        request: (DevicerunProjectsLocationsSessionsBatchGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BatchGetSessionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('BatchGet')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchGet.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/sessions:batchGet',
+        http_method='GET',
+        method_id='devicerun.projects.locations.sessions.batchGet',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['names'],
+        relative_path='v1alpha/{+parent}/sessions:batchGet',
+        request_field='',
+        request_type_name='DevicerunProjectsLocationsSessionsBatchGetRequest',
+        response_type_name='BatchGetSessionsResponse',
+        supports_download=False,
+    )
+
     def Cancel(self, request, global_params=None):
       r"""Cancels an in-progress automation session. This RPC returns immediately and cancellation proceeds asynchronously. If the session is already finished, this RPC will have no effect.
 

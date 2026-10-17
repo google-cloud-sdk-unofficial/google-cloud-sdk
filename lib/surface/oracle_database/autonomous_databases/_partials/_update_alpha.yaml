@@ -42,6 +42,10 @@
       To disable Local Data Guard on an AutonomousDatabase with id `my-instance` in the location `us-east4`, run:
 
         $ {command} my-instance --location=us-east4 --properties-local-data-guard-enabled=false
+
+      To disconnect a standby database from its primary Autonomous Database with id `my-instance` in the location `us-east4`, run:
+
+        $ {command} my-instance --location=us-east4 --properties-disconnect-peer
   arguments:
     params:
     - help_text: |-

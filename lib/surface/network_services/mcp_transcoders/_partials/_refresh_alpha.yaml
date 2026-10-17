@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Refresh an MCP Transcoder.
     description: Refreshes the McpTranscoder by pulling the latest endpoint from Agent Registry.

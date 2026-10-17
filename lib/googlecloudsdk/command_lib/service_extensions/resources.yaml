@@ -126,6 +126,19 @@ lbObservabilityExtension:
     help: |
       The ID of the `LbObservabilityExtension`.
 
+extensionBinding:
+  name: ExtensionBinding
+  collection: networkservices.projects.locations.extensionBindings
+  request_id_field: extensionBindingId
+  attributes:
+  - *project
+  - *location
+  - &extensionBinding:
+    parameter_name: extensionBindingsId
+    attribute_name: extension_binding
+    help: |
+      The ID of the `ExtensionBinding`.
+
 authzExtension:
   name: AuthzExtension
   collection: networkservices.projects.locations.authzExtensions

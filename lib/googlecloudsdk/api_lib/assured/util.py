@@ -42,9 +42,12 @@ def GetClientInstance(
     release_track: ReleaseTrack = ReleaseTrack.GA,
     api_version: Optional[str] = None,
     no_http: bool = False,
+    location: Optional[str] = None,
 ) -> base_api.BaseApiClient:
   api_version = api_version or GetApiVersion(release_track)
-  return apis.GetClientInstance(API_NAME, api_version, no_http)
+  return apis.GetClientInstance(
+      API_NAME, api_version, no_http, location=location
+  )
 
 
 def GetApiVersion(

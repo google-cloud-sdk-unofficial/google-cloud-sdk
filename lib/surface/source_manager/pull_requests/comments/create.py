@@ -14,13 +14,11 @@
 # limitations under the License.
 """Create Secure Source Manager pull request comment command."""
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.securesourcemanager import pull_request_comments
-from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.api_lib.securesourcemanager import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import resource_args
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 
 DETAILED_HELP = {
     "DESCRIPTION": (
@@ -68,37 +66,19 @@ class Create(base.CreateCommand):
     )
 
     if args.async_:
+      log.status.Print(
+          "Create request issued for comment in pull request [{}].".format(
+              pull_request_ref.RelativeName()
+          )
+      )
       return create_operation
 
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if create_operation.done:
-      if create_operation.response:
-        response_dict = encoding.MessageToPyValue(create_operation.response)
-        comment_name = response_dict.get("name")
-        if comment_name:
-          log.CreatedResource(comment_name)
-          return create_operation.response
-      elif create_operation.error:
-        log.error("Operation failed: " + str(create_operation.error))
-      return create_operation
-
-    operation_ref = resources.REGISTRY.ParseRelativeName(
-        create_operation.name,
-        collection="securesourcemanager.projects.locations.operations",
+    response = client.GetOperationResult(
+        create_operation, "Waiting for pull request comment to be created"
     )
-    poller = waiter.CloudOperationPoller(
-        client.client.projects_locations_repositories_pullRequests_pullRequestComments,
-        client.client.projects_locations_operations,
-    )
-    response = waiter.WaitFor(
-        poller, operation_ref, "Waiting for pull request comment to be created"
-    )
-
-    if response:
-      response_dict = encoding.MessageToPyValue(response)
-      comment_name = response_dict.get("name")
-      if comment_name:
-        log.CreatedResource(comment_name)
+    comment_name = util.GetResourceNameFromResponse(response)
+    if comment_name:
+      log.CreatedResource(comment_name)
 
     return response
 

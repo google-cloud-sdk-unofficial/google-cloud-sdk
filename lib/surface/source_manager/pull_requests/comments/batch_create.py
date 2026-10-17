@@ -15,7 +15,6 @@
 """Batch create Secure Source Manager pull request comments command."""
 
 from googlecloudsdk.api_lib.securesourcemanager import pull_request_comments
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.source_manager import resource_args
@@ -89,23 +88,15 @@ class BatchCreate(base.CreateCommand):
     create_operation = client.BatchCreate(pull_request_ref, comments_list)
 
     if args.async_:
-      return create_operation
-
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if create_operation.done or not create_operation.name:
-      if create_operation.error:
-        raise waiter.OperationError(
-            create_operation.error.message or str(create_operation.error)
-        )
       log.status.Print(
-          "Batch create comments request completed for [{}].".format(
+          "Batch create comments request issued for [{}].".format(
               pull_request_ref.RelativeName()
           )
       )
       return create_operation
 
-    response = client.WaitForOperation(
-        client.GetOperationRef(create_operation),
+    response = client.GetOperationResult(
+        create_operation,
         "Waiting for pull request comments to be created",
         has_result=False,
     )

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Update Secure Source Manager pull request command."""
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.securesourcemanager import pull_requests
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -50,6 +49,7 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
+    base.ASYNC_FLAG.AddToParser(parser)
     resource_args.AddPullRequestResourceArg(parser, "to update")
     flags.AddTitle(parser, required=False)
     flags.AddBody(parser, required=False)
@@ -82,17 +82,15 @@ class Update(base.UpdateCommand):
         update_mask=update_mask,
     )
 
-    # Log the updated pull request name if the operation is successful otherwise
-    # log the error.
-    if update_operation.done and update_operation.response:
-      response_dict = encoding.MessageToPyValue(update_operation.response)
-      pr_name = response_dict.get("name", pull_request_ref.RelativeName())
-      if pr_name:
-        log.UpdatedResource(pr_name)
-    elif update_operation.error:
-      log.error("Operation failed: " + str(update_operation.error))
+    if args.async_:
+      log.UpdatedResource(pull_request_ref.RelativeName(), is_async=True)
+      return update_operation
 
-    return update_operation
+    response = client.GetOperationResult(
+        update_operation, "Waiting for pull request to be updated"
+    )
+    log.UpdatedResource(pull_request_ref.RelativeName())
+    return response
 
 
 Update.detailed_help = DETAILED_HELP

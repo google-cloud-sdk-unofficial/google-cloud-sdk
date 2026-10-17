@@ -24,12 +24,27 @@ import re
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import command_release_tracks
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import pkg_resources
 from ruamel import yaml
 import six
 
 PARTIALS_ATTRIBUTE = '_PARTIALS_'
 PARTIALS_DIR = '_partials'
+
+# Logger that records which implementation was loaded for the release tracks
+# of a hybrid command. Each record carries a
+# COMMAND_IMPL_RECORD_ATTRIBUTE dict, so tests can verify the code path that
+# was actually taken instead of only checking the command's output.
+COMMAND_IMPL_LOGGER_NAME = (
+    'googlecloudsdk.calliope.command_loading.command_impl'
+)
+COMMAND_IMPL_RECORD_ATTRIBUTE = 'command_impl'
+LOADED_DECLARATIVE = 'DECLARATIVE'
+LOADED_PYTHON = 'PYTHON'
+# Reason recorded with the selected implementation.
+REASON_PROPERTY = 'property'
 
 
 class CommandLoadFailure(Exception):
@@ -203,6 +218,101 @@ def _CustomLoadYamlFile(path):
   return CreateYamlLoader(path).load(pkg_resources.GetResourceFromFile(path))
 
 
+def _IsPythonCommandSidecar(impl):
+  """Returns True if a release track is a metadata-only Python sidecar.
+
+  Sidecars (`is_python_command: true`) only carry metadata (e.g. hints and
+  guidance) for a Python command and must not be translated. Full declarative
+  commands whose run logic is implemented in code set `custom_implemented_run`
+  instead.
+
+  Args:
+    impl: dict, A single release track implementation from a YAML file.
+
+  Returns:
+    bool, True if the implementation is a sidecar.
+  """
+  return impl.get('is_python_command', False)
+
+
+def _CustomImplementedRunTracks(data):
+  """Returns the release tracks of a YAML file with a custom implemented run.
+
+  These are the tracks of a hybrid command: the YAML defines the command and
+  a Python implementation in the sibling module provides the run logic. The
+  core/command_impl property decides which implementation serves them.
+
+  Args:
+    data: dict|list, The loaded YAML data.
+
+  Returns:
+    {base.ReleaseTrack}, The release tracks.
+  """
+  tracks = set()
+  for i in command_release_tracks.SeparateDeclarativeCommandTracks(data):
+    if i.get('custom_implemented_run', False):
+      tracks.update(
+          base.ReleaseTrack.FromId(t) for t in i.get('release_tracks', [])
+      )
+  return tracks
+
+
+def _WithoutTracks(implementations, tracks):
+  """Removes release tracks from implementations.
+
+  Args:
+    implementations: [(func->base._Common, {base.ReleaseTrack})], The
+      implementations to filter.
+    tracks: {base.ReleaseTrack}, The release tracks to remove.
+
+  Returns:
+    [(func->base._Common, {base.ReleaseTrack})], The implementations with the
+    tracks removed. Implementations left without tracks are dropped.
+  """
+  filtered = []
+  for impl, valid_tracks in implementations:
+    # An implementation without tracks is valid for all of them.
+    remaining = set(valid_tracks or base.ReleaseTrack.AllValues()) - tracks
+    if remaining:
+      filtered.append((impl, remaining))
+  return filtered
+
+
+def _LogImplementationChoice(path, command_impl, loaded, tracks, files):
+  """Logs which implementation was loaded for the tracks of a hybrid command.
+
+  The message goes to the gcloud log file. The structured record attached to
+  the log record lets tests check the code path that was actually taken.
+
+  Args:
+    path: [str], The command path.
+    command_impl: str, The resolved value of the core/command_impl property.
+    loaded: str, LOADED_DECLARATIVE or LOADED_PYTHON.
+    tracks: {base.ReleaseTrack}, The hybrid release tracks.
+    files: [str], The implementation files of the command.
+  """
+  # The Python impl path does not contain the .py extension.
+  files = [p if p.endswith('.yaml') else p + '.py' for p in files]
+  track_ids = sorted(t.id for t in tracks)
+  record = {
+      'command': ' '.join(path),
+      'property': command_impl,
+      'loaded': loaded,
+      'reason': REASON_PROPERTY,
+      'tracks': track_ids,
+      'files': files,
+  }
+  log.getLogger(COMMAND_IMPL_LOGGER_NAME).debug(
+      'command_impl: [%s] property=%s -> loaded %s for tracks [%s] of %s',
+      record['command'],
+      command_impl,
+      loaded,
+      ', '.join(track_ids),
+      ', '.join(files),
+      extra={COMMAND_IMPL_RECORD_ATTRIBUTE: record},
+  )
+
+
 def _GetAllImplementations(
     impl_paths, path, construction_id, is_command, yaml_command_translator
 ):
@@ -233,8 +343,6 @@ def _GetAllImplementations(
     returns the implementation, and the second element is a list of release
     tracks it is valid for.
   """
-  implementations = []
-
   # Command Groups are guaranteed to be implemented in a single python package
   # directory.
   if not is_command:
@@ -249,6 +357,9 @@ def _GetAllImplementations(
           Exception('Command groups cannot be implemented in yaml'),
       )
 
+  python_implementations = []
+  yaml_implementations = []
+  yaml_with_custom_run_tracks = set()
   for impl_file in impl_paths:
     if impl_file.endswith('.yaml'):
 
@@ -261,19 +372,43 @@ def _GetAllImplementations(
         data = _LoadCommandWithPartials(impl_file, path)
       else:
         data = _CustomLoadYamlFile(impl_file)
-      implementations.extend(
+      yaml_with_custom_run_tracks |= _CustomImplementedRunTracks(data)
+      yaml_implementations.extend(
           (_ImplementationsFromYaml(path, data, yaml_command_translator))
       )
     else:
       module = _GetModuleFromPath(impl_file, path, construction_id)
-      implementations.extend(
+      python_implementations.extend(
           _ImplementationsFromModule(
               module.__file__,
               list(module.__dict__.values()),
               is_command=is_command,
           )
       )
-  return implementations
+
+  # A command may split its release tracks between a Python and a YAML file.
+  # Only the tracks of a hybrid command, which have both a Python
+  # implementation and a YAML implementation with `custom_implemented_run`,
+  # are selected by the core/command_impl property. All other tracks load
+  # unchanged.
+  python_tracks = set()
+  for _, valid_tracks in python_implementations:
+    python_tracks |= set(valid_tracks or base.ReleaseTrack.AllValues())
+  hybrid_tracks = yaml_with_custom_run_tracks & python_tracks
+  if hybrid_tracks:
+    command_impl = properties.VALUES.core.command_impl.Get()
+    if command_impl == 'declarative':
+      python_implementations = _WithoutTracks(
+          python_implementations, hybrid_tracks
+      )
+      loaded = LOADED_DECLARATIVE
+    else:
+      yaml_implementations = _WithoutTracks(yaml_implementations, hybrid_tracks)
+      loaded = LOADED_PYTHON
+    _LogImplementationChoice(
+        path, command_impl, loaded, hybrid_tracks, impl_paths
+    )
+  return python_implementations + yaml_implementations
 
 
 def _IsCommandWithPartials(impl_file, path):
@@ -714,18 +849,16 @@ def _ImplementationsFromYaml(path, data, yaml_command_translator):
         Exception('No yaml command translator has been registered'),
     )
 
-  # Filter out sidecar configurations for Python commands, as they should not
-  # be loaded as full declarative commands.
-  def _IsDeclarativeCommand(i):
-    return not i.get('is_python_command', False)
-
+  # Filter out metadata-only sidecar configurations for Python commands, as
+  # they should not be loaded as full declarative commands. Commands with
+  # `custom_implemented_run` are full definitions and are still translated.
   implementations = [
       (
           lambda i=i: yaml_command_translator.Translate(path, i),
           {base.ReleaseTrack.FromId(t) for t in i.get('release_tracks', [])},
       )
       for i in command_release_tracks.SeparateDeclarativeCommandTracks(data)
-      if _IsDeclarativeCommand(i)
+      if not _IsPythonCommandSidecar(i)
   ]
   return implementations
 

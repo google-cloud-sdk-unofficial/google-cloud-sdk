@@ -178,7 +178,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""RPC to batch create agg curves.
 
       Args:
-        request: (BatchCreateAggcurvesRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesAggcurvesBatchCreateRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -195,8 +195,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['parent'],
         query_params=[],
         relative_path='v1alpha/{+parent}/aggcurves:batchCreate',
-        request_field='<request>',
-        request_type_name='BatchCreateAggcurvesRequest',
+        request_field='batchCreateAggcurvesRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesAggcurvesBatchCreateRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -205,7 +205,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""Triggers multiple Aggcurves in a batch.
 
       Args:
-        request: (BatchTriggerAggcurvesRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesAggcurvesBatchTriggerRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -222,8 +222,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['parent'],
         query_params=[],
         relative_path='v1alpha/{+parent}/aggcurves:batchTrigger',
-        request_field='<request>',
-        request_type_name='BatchTriggerAggcurvesRequest',
+        request_field='batchTriggerAggcurvesRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesAggcurvesBatchTriggerRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -340,7 +340,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""Triggers an Aggcurve run.
 
       Args:
-        request: (TriggerAggcurveRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesAggcurvesTriggerRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -357,8 +357,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['name'],
         query_params=[],
         relative_path='v1alpha/{+name}:trigger',
-        request_field='<request>',
-        request_type_name='TriggerAggcurveRequest',
+        request_field='triggerAggcurveRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesAggcurvesTriggerRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -377,7 +377,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""RPC to batch create model artifacts.
 
       Args:
-        request: (BatchCreateModelArtifactsRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesDatasetsModelsArtifactsBatchCreateRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -394,8 +394,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['parent'],
         query_params=[],
         relative_path='v1alpha/{+parent}/artifacts:batchCreate',
-        request_field='<request>',
-        request_type_name='BatchCreateModelArtifactsRequest',
+        request_field='batchCreateModelArtifactsRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsModelsArtifactsBatchCreateRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -522,7 +522,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""Creates a batch of Models in a given project, location, and workspace.
 
       Args:
-        request: (BatchCreateModelsRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesDatasetsModelsBatchCreateRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -539,8 +539,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['parent'],
         query_params=[],
         relative_path='v1alpha/{+parent}/models:batchCreate',
-        request_field='<request>',
-        request_type_name='BatchCreateModelsRequest',
+        request_field='batchCreateModelsRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsModelsBatchCreateRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -549,7 +549,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""Trains multiple Models in a batch.
 
       Args:
-        request: (BatchTrainModelsRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesDatasetsModelsBatchTrainRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -566,8 +566,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['parent'],
         query_params=[],
         relative_path='v1alpha/{+parent}/models:batchTrain',
-        request_field='<request>',
-        request_type_name='BatchTrainModelsRequest',
+        request_field='batchTrainModelsRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsModelsBatchTrainRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -819,7 +819,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""Trains a Model.
 
       Args:
-        request: (TrainModelRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesDatasetsModelsTrainRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -836,8 +836,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['name'],
         query_params=[],
         relative_path='v1alpha/{+name}:train',
-        request_field='<request>',
-        request_type_name='TrainModelRequest',
+        request_field='trainModelRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsModelsTrainRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -883,7 +883,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""Creates a batch of Datasets in a given project, location, and workspace.
 
       Args:
-        request: (BatchCreateDatasetsRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesDatasetsBatchCreateRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -900,8 +900,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['parent'],
         query_params=[],
         relative_path='v1alpha/{+parent}/datasets:batchCreate',
-        request_field='<request>',
-        request_type_name='BatchCreateDatasetsRequest',
+        request_field='batchCreateDatasetsRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsBatchCreateRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -910,7 +910,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""Deletes a batch of Datasets in a given project, location, and workspace.
 
       Args:
-        request: (BatchDeleteDatasetsRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesDatasetsBatchDeleteRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -927,8 +927,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['parent'],
         query_params=[],
         relative_path='v1alpha/{+parent}/datasets:batchDelete',
-        request_field='<request>',
-        request_type_name='BatchDeleteDatasetsRequest',
+        request_field='batchDeleteDatasetsRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsBatchDeleteRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -937,7 +937,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""Updates a batch of Datasets in a given project, location, and workspace.
 
       Args:
-        request: (BatchUpdateDatasetsRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesDatasetsBatchUpdateRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -954,8 +954,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['parent'],
         query_params=[],
         relative_path='v1alpha/{+parent}/datasets:batchUpdate',
-        request_field='<request>',
-        request_type_name='BatchUpdateDatasetsRequest',
+        request_field='batchUpdateDatasetsRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsBatchUpdateRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -964,7 +964,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""Validates a batch of Datasets in a given project, location, and workspace.
 
       Args:
-        request: (BatchValidateDatasetsRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesDatasetsBatchValidateRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -981,8 +981,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['parent'],
         query_params=[],
         relative_path='v1alpha/{+parent}/datasets:batchValidate',
-        request_field='<request>',
-        request_type_name='BatchValidateDatasetsRequest',
+        request_field='batchValidateDatasetsRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsBatchValidateRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -1315,7 +1315,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
       r"""Performs the apply phase of the ValidateDataset verb.
 
       Args:
-        request: (ValidateDatasetRequest) input message
+        request: (MeridianProjectsLocationsWorkspacesDatasetsValidateRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -1332,8 +1332,8 @@ class MeridianV1alpha(base_api.BaseApiClient):
         path_params=['name'],
         query_params=[],
         relative_path='v1alpha/{+name}:validate',
-        request_field='<request>',
-        request_type_name='ValidateDatasetRequest',
+        request_field='validateDatasetRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsValidateRequest',
         response_type_name='Operation',
         supports_download=False,
     )

@@ -26,6 +26,23 @@ class Aggregate(_messages.Message):
   group = _messages.StringField(2)
 
 
+class AppParams(_messages.Message):
+  r"""AppParams contains the parameters for creating an AppHub Application.
+
+  Fields:
+    group: Optional. Grouping used to construct the name of the AppHub
+      Application. Multiple UnitKinds can specify the same group to use the
+      same Application across their respective units. Corresponds to the
+      app_boundary_id in the ADC composite ApplicationTemplate. Defaults to
+      UnitKind.name
+    scope: Optional. Corresponds to the scope in the ADC composite
+      ApplicationTemplate. Defaults to TYPE_REGIONAL.
+  """
+
+  group = _messages.StringField(1)
+  scope = _messages.MessageField('Scope', 2)
+
+
 class Blueprint(_messages.Message):
   r"""Blueprints are OCI Images that contain all of the artifacts needed to
   provision a unit. Metadata such as, type of the engine used to actuate the
@@ -44,6 +61,41 @@ class Blueprint(_messages.Message):
   engine = _messages.StringField(1)
   package = _messages.StringField(2)
   version = _messages.StringField(3)
+
+
+class ComponentRef(_messages.Message):
+  r"""ComponentRef represents a reference to a component resource.
+
+  Fields:
+    component: Optional. Name of the component in composite.Components
+    compositeRef: Optional. Reference to the Composite ApplicationTemplate.
+    revision: Optional. Revision of the component. If the component does not
+      have a revision, this field will be explicitly set to the revision of
+      the composite ApplicationTemplate.
+  """
+
+  component = _messages.StringField(1)
+  compositeRef = _messages.MessageField('CompositeRef', 2)
+  revision = _messages.StringField(3)
+
+
+class CompositeRef(_messages.Message):
+  r"""CompositeRef represents a reference to a composite resource.
+
+  Fields:
+    applicationTemplate: Required. Reference to the ApplicationTemplate
+      resource.
+    revision: Optional. Revision of the ApplicationTemplate to use. Changes to
+      revision will trigger manual resynchronization. If empty,
+      ApplicationTemplate will be ignored.
+    syncOperation: Output only. Reference to on-going AppTemplate import and
+      replication operation (i.e. the operation_id for the long-running
+      operation). This field is opaque for external usage.
+  """
+
+  applicationTemplate = _messages.StringField(1)
+  revision = _messages.StringField(2)
+  syncOperation = _messages.StringField(3)
 
 
 class Decimal(_messages.Message):
@@ -142,16 +194,6 @@ class ErrorBudget(_messages.Message):
 
   allowedCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   allowedPercentage = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-
-
-class FlagUpdate(_messages.Message):
-  r"""FlagUpdate is a UnitOperation that pushes new flag values to Units.
-
-  Fields:
-    flagRelease: Required. Flag release being applied by UnitOperation.
-  """
-
-  flagRelease = _messages.StringField(1)
 
 
 class FromMapping(_messages.Message):
@@ -448,6 +490,8 @@ class Release(_messages.Message):
       arbitrary metadata. They are not queryable and should be preserved when
       modifying objects. More info: https://kubernetes.io/docs/user-
       guide/annotations
+    applicationTemplateComponent: Output only. Reference to component and
+      revision in a composite ApplicationTemplate.
     blueprint: Optional. Blueprints are OCI Images that contain all of the
       artifacts needed to provision a unit.
     createTime: Output only. The timestamp when the resource was created.
@@ -533,18 +577,19 @@ class Release(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
-  blueprint = _messages.MessageField('Blueprint', 2)
-  createTime = _messages.StringField(3)
-  etag = _messages.StringField(4)
-  inputVariableDefaults = _messages.MessageField('UnitVariable', 5, repeated=True)
-  inputVariables = _messages.MessageField('UnitVariable', 6, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  outputVariables = _messages.MessageField('UnitVariable', 9, repeated=True)
-  releaseRequirements = _messages.MessageField('ReleaseRequirements', 10)
-  uid = _messages.StringField(11)
-  unitKind = _messages.StringField(12)
-  updateTime = _messages.StringField(13)
+  applicationTemplateComponent = _messages.MessageField('ComponentRef', 2)
+  blueprint = _messages.MessageField('Blueprint', 3)
+  createTime = _messages.StringField(4)
+  etag = _messages.StringField(5)
+  inputVariableDefaults = _messages.MessageField('UnitVariable', 6, repeated=True)
+  inputVariables = _messages.MessageField('UnitVariable', 7, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 8)
+  name = _messages.StringField(9)
+  outputVariables = _messages.MessageField('UnitVariable', 10, repeated=True)
+  releaseRequirements = _messages.MessageField('ReleaseRequirements', 11)
+  uid = _messages.StringField(12)
+  unitKind = _messages.StringField(13)
+  updateTime = _messages.StringField(14)
 
 
 class ReleaseRequirements(_messages.Message):
@@ -603,11 +648,6 @@ class Rollout(_messages.Message):
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
-    flagRelease: Optional. Immutable. Name of the FlagRelease to be rolled out
-      to the target Units. Release and FlagRelease are mutually exclusive.
-      Note: `release` comment needs to be adjusted to mention that "Release
-      and FlagRelease are mutually exclusive" when visibility restriction will
-      be lifted.
     labels: Optional. The labels on the resource, which can be used for
       categorization. similar to Kubernetes resource labels.
     name: Identifier. The resource name (full URI of the resource) following
@@ -743,22 +783,21 @@ class Rollout(_messages.Message):
   effectiveUnitFilter = _messages.StringField(5)
   endTime = _messages.StringField(6)
   etag = _messages.StringField(7)
-  flagRelease = _messages.StringField(8)
-  labels = _messages.MessageField('LabelsValue', 9)
-  name = _messages.StringField(10)
-  parentRollout = _messages.StringField(11)
-  release = _messages.StringField(12)
-  rolloutKind = _messages.StringField(13)
-  rolloutOrchestrationStrategy = _messages.StringField(14)
-  rootRollout = _messages.StringField(15)
-  startTime = _messages.StringField(16)
-  state = _messages.EnumField('StateValueValuesEnum', 17)
-  stateMessage = _messages.StringField(18)
-  stateTransitionTime = _messages.StringField(19)
-  stats = _messages.MessageField('RolloutStats', 20)
-  uid = _messages.StringField(21)
-  unitFilter = _messages.StringField(22)
-  updateTime = _messages.StringField(23)
+  labels = _messages.MessageField('LabelsValue', 8)
+  name = _messages.StringField(9)
+  parentRollout = _messages.StringField(10)
+  release = _messages.StringField(11)
+  rolloutKind = _messages.StringField(12)
+  rolloutOrchestrationStrategy = _messages.StringField(13)
+  rootRollout = _messages.StringField(14)
+  startTime = _messages.StringField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  stateMessage = _messages.StringField(17)
+  stateTransitionTime = _messages.StringField(18)
+  stats = _messages.MessageField('RolloutStats', 19)
+  uid = _messages.StringField(20)
+  unitFilter = _messages.StringField(21)
+  updateTime = _messages.StringField(22)
 
 
 class RolloutControl(_messages.Message):
@@ -1007,6 +1046,14 @@ class Saas(_messages.Message):
       arbitrary metadata. They are not queryable and should be preserved when
       modifying objects. More info: https://kubernetes.io/docs/user-
       guide/annotations
+    applicationTemplate: Optional. Reference to composite ApplicationTemplate.
+      When specified, the template components will be imported into their
+      equivalent UnitKind, Release and Blueprint resources. Deleted references
+      will not delete imported resources. Should only be specified on source
+      regions, and be unspecified on replica regions.
+    blueprintRepo: Output only. Name of repository in Artifact Registry for
+      system-generated Blueprints, eg. Blueprints of imported
+      ApplicationTemplates.
     conditions: Output only. A set of conditions which indicate the various
       conditions this resource can have.
     createTime: Output only. The timestamp when the resource was created.
@@ -1108,16 +1155,18 @@ class Saas(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
-  conditions = _messages.MessageField('SaasCondition', 2, repeated=True)
-  createTime = _messages.StringField(3)
-  error = _messages.MessageField('Status', 4)
-  etag = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  locations = _messages.MessageField('Location', 7, repeated=True)
-  name = _messages.StringField(8)
-  state = _messages.EnumField('StateValueValuesEnum', 9)
-  uid = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
+  applicationTemplate = _messages.MessageField('CompositeRef', 2)
+  blueprintRepo = _messages.StringField(3)
+  conditions = _messages.MessageField('SaasCondition', 4, repeated=True)
+  createTime = _messages.StringField(5)
+  error = _messages.MessageField('Status', 6)
+  etag = _messages.StringField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  locations = _messages.MessageField('Location', 9, repeated=True)
+  name = _messages.StringField(10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  uid = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
 
 
 class SaasCondition(_messages.Message):
@@ -2246,6 +2295,31 @@ class Schedule(_messages.Message):
   startTime = _messages.StringField(1)
 
 
+class Scope(_messages.Message):
+  r"""Scope of an application.
+
+  Enums:
+    TypeValueValuesEnum: Required. Scope Type.
+
+  Fields:
+    type: Required. Scope Type.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Required. Scope Type.
+
+    Values:
+      TYPE_UNSPECIFIED: Unspecified type.
+      TYPE_REGIONAL: Regional type.
+      TYPE_GLOBAL: Global type.
+    """
+    TYPE_UNSPECIFIED = 0
+    TYPE_REGIONAL = 1
+    TYPE_GLOBAL = 2
+
+  type = _messages.EnumField('TypeValueValuesEnum', 1)
+
+
 class StandardQueryParameters(_messages.Message):
   r"""Query parameters accepted by all methods.
 
@@ -2520,6 +2594,9 @@ class Unit(_messages.Message):
       arbitrary metadata. They are not queryable and should be preserved when
       modifying objects. More info: https://kubernetes.io/docs/user-
       guide/annotations
+    application: Optional. Reference to the AppHub Application this unit
+      belongs to. All resources deployed in this Unit will be associated with
+      the specified Application.
     conditions: Optional. Output only. A set of conditions which indicate the
       various conditions this resource can have.
     createTime: Output only. The timestamp when the resource was created.
@@ -2530,7 +2607,6 @@ class Unit(_messages.Message):
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
-    flagRevisions: Optional. Output only. Flag revisions used by this Unit.
     inputVariables: Optional. Output only. Indicates the current input
       variables deployed by the unit
     labels: Optional. The labels on the resource, which can be used for
@@ -2692,12 +2768,12 @@ class Unit(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
-  conditions = _messages.MessageField('UnitCondition', 2, repeated=True)
-  createTime = _messages.StringField(3)
-  dependencies = _messages.MessageField('UnitDependency', 4, repeated=True)
-  dependents = _messages.MessageField('UnitDependency', 5, repeated=True)
-  etag = _messages.StringField(6)
-  flagRevisions = _messages.StringField(7, repeated=True)
+  application = _messages.StringField(2)
+  conditions = _messages.MessageField('UnitCondition', 3, repeated=True)
+  createTime = _messages.StringField(4)
+  dependencies = _messages.MessageField('UnitDependency', 5, repeated=True)
+  dependents = _messages.MessageField('UnitDependency', 6, repeated=True)
+  etag = _messages.StringField(7)
   inputVariables = _messages.MessageField('UnitVariable', 8, repeated=True)
   labels = _messages.MessageField('LabelsValue', 9)
   maintenance = _messages.MessageField('MaintenanceSettings', 10)
@@ -2821,12 +2897,13 @@ class UnitKind(_messages.Message):
       arbitrary metadata. They are not queryable and should be preserved when
       modifying objects. More info: https://kubernetes.io/docs/user-
       guide/annotations
+    appParams: Optional. AppParams contains the parameters for creating an
+      AppHub Application.
+    applicationTemplateComponent: Optional. Reference to component and
+      revision in a composite ApplicationTemplate.
     boundaryType: Optional. Output only. BoundaryType describes the type of
       boundary the Unit Kind represents.
     createTime: Output only. The timestamp when the resource was created.
-    defaultFlagRevisions: Optional. Default revisions of flags for this
-      UnitKind. Newly created units will use the flag default_flag_revisions
-      present at the time of creation.
     defaultRelease: Optional. A reference to the Release object to use as
       default for creating new units of this UnitKind (optional). If not
       specified, a new unit must explicitly reference which release to use for
@@ -2930,20 +3007,21 @@ class UnitKind(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
-  boundaryType = _messages.EnumField('BoundaryTypeValueValuesEnum', 2)
-  createTime = _messages.StringField(3)
-  defaultFlagRevisions = _messages.StringField(4, repeated=True)
-  defaultRelease = _messages.StringField(5)
-  deleteTime = _messages.StringField(6)
-  dependencies = _messages.MessageField('Dependency', 7, repeated=True)
-  etag = _messages.StringField(8)
-  inputVariableMappings = _messages.MessageField('VariableMapping', 9, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 10)
-  name = _messages.StringField(11)
-  outputVariableMappings = _messages.MessageField('VariableMapping', 12, repeated=True)
-  saas = _messages.StringField(13)
-  uid = _messages.StringField(14)
-  updateTime = _messages.StringField(15)
+  appParams = _messages.MessageField('AppParams', 2)
+  applicationTemplateComponent = _messages.MessageField('ComponentRef', 3)
+  boundaryType = _messages.EnumField('BoundaryTypeValueValuesEnum', 4)
+  createTime = _messages.StringField(5)
+  defaultRelease = _messages.StringField(6)
+  deleteTime = _messages.StringField(7)
+  dependencies = _messages.MessageField('Dependency', 8, repeated=True)
+  etag = _messages.StringField(9)
+  inputVariableMappings = _messages.MessageField('VariableMapping', 10, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 11)
+  name = _messages.StringField(12)
+  outputVariableMappings = _messages.MessageField('VariableMapping', 13, repeated=True)
+  saas = _messages.StringField(14)
+  uid = _messages.StringField(15)
+  updateTime = _messages.StringField(16)
 
 
 class UnitOperation(_messages.Message):
@@ -2991,7 +3069,6 @@ class UnitOperation(_messages.Message):
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
-    flagUpdate: Optional. Flag update operation.
     labels: Optional. The labels on the resource, which can be used for
       categorization. similar to Kubernetes resource labels.
     name: Identifier. The resource name (full URI of the resource) following
@@ -3129,18 +3206,17 @@ class UnitOperation(_messages.Message):
   engineState = _messages.StringField(7)
   errorCategory = _messages.EnumField('ErrorCategoryValueValuesEnum', 8)
   etag = _messages.StringField(9)
-  flagUpdate = _messages.MessageField('FlagUpdate', 10)
-  labels = _messages.MessageField('LabelsValue', 11)
-  name = _messages.StringField(12)
-  parentUnitOperation = _messages.StringField(13)
-  provision = _messages.MessageField('Provision', 14)
-  rollout = _messages.StringField(15)
-  schedule = _messages.MessageField('Schedule', 16)
-  state = _messages.EnumField('StateValueValuesEnum', 17)
-  uid = _messages.StringField(18)
-  unit = _messages.StringField(19)
-  updateTime = _messages.StringField(20)
-  upgrade = _messages.MessageField('Upgrade', 21)
+  labels = _messages.MessageField('LabelsValue', 10)
+  name = _messages.StringField(11)
+  parentUnitOperation = _messages.StringField(12)
+  provision = _messages.MessageField('Provision', 13)
+  rollout = _messages.StringField(14)
+  schedule = _messages.MessageField('Schedule', 15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  uid = _messages.StringField(17)
+  unit = _messages.StringField(18)
+  updateTime = _messages.StringField(19)
+  upgrade = _messages.MessageField('Upgrade', 20)
 
 
 class UnitOperationCondition(_messages.Message):

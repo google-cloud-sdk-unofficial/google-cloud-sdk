@@ -15,7 +15,6 @@
 """Update Secure Source Manager pull request comment command."""
 
 from googlecloudsdk.api_lib.securesourcemanager import pull_request_comments
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import resource_args
 from googlecloudsdk.core import log
@@ -75,18 +74,8 @@ class Update(base.UpdateCommand):
       )
       return update_operation
 
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if update_operation.done or not update_operation.name:
-      if update_operation.error:
-        raise waiter.OperationError(
-            update_operation.error.message or str(update_operation.error)
-        )
-      log.UpdatedResource(pull_request_comment_ref.RelativeName())
-      return update_operation
-
-    response = client.WaitForOperation(
-        client.GetOperationRef(update_operation),
-        "Waiting for pull request comment to be updated",
+    response = client.GetOperationResult(
+        update_operation, "Waiting for pull request comment to be updated"
     )
     log.UpdatedResource(pull_request_comment_ref.RelativeName())
     return response

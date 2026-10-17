@@ -17,6 +17,7 @@
 
 import io
 import json
+import math
 import re
 
 from googlecloudsdk.core import properties
@@ -57,6 +58,13 @@ def _Numify(value):  # pylint: disable=invalid-name
   """Represents value as a number, or infinity if it is not a valid number."""
   if isinstance(value, (six.integer_types, float)):
     return value
+  if isinstance(value, six.string_types):
+    try:
+      num = float(value)
+      if not math.isnan(num):
+        return num
+    except (TypeError, ValueError):
+      pass
   return float('inf')
 
 

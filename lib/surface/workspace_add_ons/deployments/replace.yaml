@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
   help_text:
     brief: Replace a Google Workspace Add-ons deployment
     description: Replace a Google Workspace Add-ons deployment

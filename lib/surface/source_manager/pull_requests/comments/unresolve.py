@@ -15,7 +15,6 @@
 """Unresolve Secure Source Manager pull request comments command."""
 
 from googlecloudsdk.api_lib.securesourcemanager import pull_request_comments
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
@@ -89,28 +88,22 @@ class Unresolve(base.Command):
     )
 
     if args.async_:
-      return unresolve_operation
-
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if unresolve_operation.done or not unresolve_operation.name:
-      if unresolve_operation.error:
-        raise waiter.OperationError(
-            unresolve_operation.error.message or str(unresolve_operation.error)
-        )
       log.status.Print(
-          "Unresolve comments request completed for"
-          f" [{pull_request_ref.RelativeName()}]."
+          "Unresolve comments request issued for [{}].".format(
+              pull_request_ref.RelativeName()
+          )
       )
       return unresolve_operation
 
-    response = client.WaitForOperation(
-        client.GetOperationRef(unresolve_operation),
+    response = client.GetOperationResult(
+        unresolve_operation,
         "Waiting for pull request comments to be unresolved",
         has_result=False,
     )
     log.status.Print(
-        "Unresolve comments request completed for"
-        f" [{pull_request_ref.RelativeName()}]."
+        "Unresolve comments request completed for [{}].".format(
+            pull_request_ref.RelativeName()
+        )
     )
     return response
 

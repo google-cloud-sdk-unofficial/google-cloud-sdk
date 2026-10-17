@@ -31,6 +31,7 @@ from googlecloudsdk.core.console import console_io
 
 _AGENT_RUNTIME_DELETE_DISPLAY_MESSAGE = """\
 Request to delete the agent runtime [{name}] has been sent.
+Operation: [{operation_name}]
 
 You may view the status of your agent runtime with the command
 
@@ -100,6 +101,7 @@ class Delete(base.DeleteCommand):
         log.status.Print(
             _AGENT_RUNTIME_DELETE_DISPLAY_MESSAGE.format(
                 name=resource_name,
+                operation_name=operation.name,
                 command_prefix=agent_runtimes_util.CommandPrefix(
                     self.ReleaseTrack()
                 ),

@@ -114,6 +114,30 @@ def _ProcessPendingUserInput(
     )
     return client.sessions.Patch(patch_request)
 
+  elif pending_input.cloudRegion:
+    supported_regions = pending_input.cloudRegion.supportedRegions or []
+    if not supported_regions:
+      raise onboarding_exceptions.SessionProtocolError(
+          'An error occurred. Please visit the Cloud Console'
+          ' (https://console.cloud.google.com) to get a project.'
+      )
+    selected_region = user_inputs.HandleUserInputSelectCloudRegion(
+        supported_regions,
+        default_region=pending_input.cloudRegion.defaultRegion,
+    )
+    if selected_region is None:
+      raise onboarding_exceptions.CloudRegionNotSelectedError(
+          'No region selected. Onboarding cannot proceed.'
+      )
+
+    updated_session = messages.Session(cloudRegion=selected_region)
+    patch_request = messages.UseronboardingSessionsPatchRequest(
+        name=canonical_name,
+        session=updated_session,
+        updateMask='cloud_region',
+    )
+    return client.sessions.Patch(patch_request)
+
   else:
     field_checks = [
         (pending_input.billingAccount, 'billing account selection'),

@@ -14,12 +14,59 @@
 # limitations under the License.
 """API client helper for Firebase Auth management."""
 
+import urllib.parse
+
 from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.firebase import exceptions as firebase_exceptions
 from googlecloudsdk.api_lib.firebase import util as firebase_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
+
+
+def ValidateRedirectUris(redirect_uris):
+  """Validates and normalizes redirect URIs as HTTP/HTTPS URLs.
+
+  Prepends 'http://' to any URI that does not specify a scheme.
+
+  Args:
+    redirect_uris: list of str, The redirect URIs to validate and normalize.
+
+  Returns:
+    list of str, The normalized redirect URIs.
+
+  Raises:
+    calliope_exceptions.InvalidArgumentException: If any URI is empty or does
+      not have an http or https scheme and a non-empty hostname.
+  """
+  if not redirect_uris:
+    return []
+  normalized_uris = []
+  for uri in redirect_uris:
+    if not uri or not uri.strip():
+      raise calliope_exceptions.InvalidArgumentException(
+          '--redirect-uris',
+          'Redirect URI cannot be empty. Each URI must be a valid URL'
+          ' starting with http:// or https:// (e.g. https://example.com).',
+      )
+    normalized_uri = uri if '://' in uri else f'http://{uri}'
+    try:
+      parsed = urllib.parse.urlsplit(normalized_uri)
+    except ValueError as e:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--redirect-uris',
+          f'Invalid redirect URI [{uri}]: {e}. Each URI must be a valid URL'
+          ' starting with http:// or https:// (e.g. https://example.com).',
+      ) from e
+    if parsed.scheme.lower() not in ('http', 'https') or not parsed.hostname:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--redirect-uris',
+          f'Invalid redirect URI [{uri}]. Each URI must be a valid URL'
+          ' starting with http:// or https:// (e.g. https://example.com).',
+      )
+    normalized_uris.append(normalized_uri)
+  return normalized_uris
 
 
 class FirebaseAuthOperationPoller(waiter.OperationPoller):
@@ -70,7 +117,6 @@ class AuthClient:
         api_version=api_version
     )
 
-
   def EnableGoogleSignIn(
       self,
       project_id,
@@ -95,6 +141,7 @@ class AuthClient:
     Returns:
       Operation: The raw long-running operation message.
     """
+    normalized_redirect_uris = ValidateRedirectUris(redirect_uris)
     parent = firebase_util.GetProjectRef(project_id).RelativeName()
 
     provider_mode = (
@@ -105,7 +152,7 @@ class AuthClient:
         customerSupportEmail=support_email,
         oauthClientId=client_id,
         oauthClientSecret=client_secret,
-        oauthRedirectUris=redirect_uris or [],
+        oauthRedirectUris=normalized_redirect_uris,
     )
 
     auth_input = self.messages.FirebaseAuthInput(
@@ -124,4 +171,3 @@ class AuthClient:
       return self.client.firebase.ProvisionFirebaseApp(req)
     except apitools_exceptions.HttpError as e:
       firebase_util.HandleHttpError(e)
-

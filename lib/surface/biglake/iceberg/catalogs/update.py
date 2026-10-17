@@ -65,6 +65,7 @@ class UpdateCatalog(base.UpdateCommand):
   _support_unity_service_principal_application_id = True
   _support_glue_catalog = True
   _support_snowflake_catalog = True
+  _support_identity_mode = False
 
   @classmethod
   def Args(cls, parser):
@@ -74,6 +75,10 @@ class UpdateCatalog(base.UpdateCommand):
     util.GetCredentialModeEnumMapper(
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
+    if cls._support_identity_mode:
+      util.GetIdentityModeEnumMapper(
+          cls.ReleaseTrack(), hidden=True
+      ).choice_arg.AddToParser(parser)
     util.GetUpdateCatalogTypeEnumMapper(
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
@@ -158,6 +163,13 @@ class UpdateCatalog(base.UpdateCommand):
       catalog.federated_catalog_options.refresh_options.refresh_scope = (
           messages.RefreshScope(namespace_filters=args.namespace_filters)
       )
+    if args.IsKnownAndSpecified('federated_catalog_identity_mode'):
+      update_mask.append('federated_catalog_options.identity_mode')
+      catalog.federated_catalog_options.identity_mode = (
+          util.GetIdentityModeEnumMapper(self.ReleaseTrack()).GetEnumForChoice(
+              args.federated_catalog_identity_mode
+          )
+      )
 
   def Run(self, args):
     client = util.GetClientInstance(self.ReleaseTrack())
@@ -211,6 +223,7 @@ class UpdateCatalog(base.UpdateCommand):
         or args.IsKnownAndSpecified('service_directory_name')
         or args.IsKnownAndSpecified('metadata_service_directory_name')
         or args.IsKnownAndSpecified('snowflake_role')
+        or args.IsKnownAndSpecified('federated_catalog_identity_mode')
     ):
       if not is_federated:
         raise exceptions.InvalidArgumentException(
@@ -318,6 +331,7 @@ class UpdateCatalog(base.UpdateCommand):
           or args.IsKnownAndSpecified('refresh_interval')
           or args.IsKnownAndSpecified('namespace_filters')
           or args.IsKnownAndSpecified('snowflake_role')
+          or args.IsKnownAndSpecified('federated_catalog_identity_mode')
       ):
         self._UpdateFederatedCatalogOptions(
             args, catalog, messages, update_mask
@@ -377,3 +391,4 @@ class UpdateAlpha(UpdateBeta):
   _support_unity_service_principal_application_id = True
   _support_glue_catalog = True
   _support_snowflake_catalog = True
+  _support_identity_mode = True

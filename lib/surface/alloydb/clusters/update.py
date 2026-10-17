@@ -126,6 +126,7 @@ class UpdateBeta(Update):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.parameters.append('--enable-agent-mode')
+    self.parameters.append('--enable-express')
 
   @classmethod
   def Args(cls, parser):
@@ -133,6 +134,7 @@ class UpdateBeta(Update):
     flags.AddAgentModeFlags(parser)
     alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
     flags.AddEdition(parser, alloydb_messages)
+    flags.AddEnableExpress(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
     return cluster_helper.ConstructPatchRequestFromArgsBeta(

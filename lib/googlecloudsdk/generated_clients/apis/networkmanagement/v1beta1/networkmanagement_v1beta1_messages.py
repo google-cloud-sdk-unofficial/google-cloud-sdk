@@ -437,15 +437,10 @@ class CloudRunRevisionEndpoint(_messages.Message):
     uri: A [Cloud Run](https://cloud.google.com/run) [revision](https://cloud.
       google.com/run/docs/reference/rest/v1/namespaces.revisions/get) URI. The
       format is: projects/{project}/locations/{location}/revisions/{revision}
-    workerPoolUri: Output only. The URI of the worker pool that the revision
-      belongs to. The format is:
-      projects/{project}/locations/{location}/workerPools/{workerPool}.
-      Mutually exclusive with service_uri.
   """
 
   serviceUri = _messages.StringField(1)
   uri = _messages.StringField(2)
-  workerPoolUri = _messages.StringField(3)
 
 
 class CloudRunRevisionInfo(_messages.Message):

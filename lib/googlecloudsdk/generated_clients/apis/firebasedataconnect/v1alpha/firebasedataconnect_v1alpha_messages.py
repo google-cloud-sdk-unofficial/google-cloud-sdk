@@ -1004,17 +1004,6 @@ class FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestUpsertReques
   httpBody = _messages.MessageField('HttpBody', 3)
 
 
-class FirebasedataconnectProjectsLocationsServicesPostgrestRequest(_messages.Message):
-  r"""A FirebasedataconnectProjectsLocationsServicesPostgrestRequest object.
-
-  Fields:
-    firebasedataconnectService: Required. The resource name of the service, in
-      the format: `projects/{project}/locations/{location}/services/{service}`
-  """
-
-  firebasedataconnectService = _messages.StringField(1, required=True)
-
-
 class FirebasedataconnectProjectsLocationsServicesPostgrestRpcPostgrestCallFunctionRequest(_messages.Message):
   r"""A FirebasedataconnectProjectsLocationsServicesPostgrestRpcPostgrestCallF
   unctionRequest object.

@@ -450,6 +450,16 @@ class DynamicField(str):
       return False
 
   @staticmethod
+  def _HasPreservedState(instance):
+    try:
+      return (
+          instance.preservedStateFromPolicy is not None
+          or instance.preservedStateFromConfig is not None
+      )
+    except AttributeError:
+      return False
+
+  @staticmethod
   def _HasLastError(instance):
     try:
       return bool(instance.lastAttempt.errors.errors)
@@ -462,6 +472,7 @@ class DynamicField(str):
       'VERSION_NAME': '_HasVersionName',
       'GRACEFUL_SHUTDOWN_TIMESTAMP': '_HasGracefulShutdownTimestamp',
       'TERMINATION_TIMESTAMP': '_HasTerminationTimestamp',
+      'PRESERVED_STATE': '_HasPreservedState',
       'LAST_ERROR': '_HasLastError',
   }
 
@@ -507,11 +518,11 @@ _LIST_INSTANCES_FORMAT_ALPHA = """\
               instanceHealth[0].detailedHealthState.colorizedHealthState()
                 :label=HEALTH_STATE,
               currentAction.colorizedAction():label=ACTION,
-              preservedState():label=PRESERVED_STATE,
               version.instanceTemplate.basename():label=INSTANCE_TEMPLATE,
               version.name:label=VERSION_NAME,
               scheduling.gracefulShutdownTimestamp:label=GRACEFUL_SHUTDOWN_TIMESTAMP,
               scheduling.terminationTimestamp:label=TERMINATION_TIMESTAMP,
+              preservedState():label=PRESERVED_STATE,
               lastAttempt.errors.errors.map().format(
                 "Error {0}: {1}", code, message).list(separator=", ")
                 :label=LAST_ERROR
@@ -542,11 +553,11 @@ _LIST_INSTANCES_FIELDS_ALPHA = (
     'STATUS',
     DynamicField('HEALTH_STATE'),
     DynamicField('ACTION'),
-    'PRESERVED_STATE',
     'INSTANCE_TEMPLATE',
     DynamicField('VERSION_NAME'),
     DynamicField('GRACEFUL_SHUTDOWN_TIMESTAMP'),
     DynamicField('TERMINATION_TIMESTAMP'),
+    DynamicField('PRESERVED_STATE'),
     DynamicField('LAST_ERROR'),
 )
 

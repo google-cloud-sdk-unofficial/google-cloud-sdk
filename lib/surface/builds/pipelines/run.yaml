@@ -1,0 +1,67 @@
+- release_tracks: [ALPHA]
+
+  # Keeps the command out of help text, tab-completion and the public
+  # reference documentation while Cloud Build Pipelines is in preview.
+  hidden: true
+  universe_compatible: true
+
+  hints:
+    read_only: false
+
+  help_text:
+    brief: Trigger an execution of a Cloud Build Pipeline.
+    description: |
+      Trigger an execution (pipeline run) of a Cloud Build Pipeline.
+
+      By default, this command waits for the pipeline run creation operation to
+      complete and prints the created `PipelineRun` resource. Use `--async` to
+      return the in-progress operation immediately without waiting.
+    examples: |
+      To run a pipeline named `main-pipeline` in region `us-central1`:
+
+        $ {command} main-pipeline --region=us-central1
+
+      To run a pipeline with parameter overrides without waiting for the operation to complete:
+
+        $ {command} main-pipeline --region=us-central1 --params=ENV=staging,IMAGE_TAG=v1.2.0 --async
+
+  request:
+    collection: cloudbuild.projects.locations.pipelineRuns
+    api_version: v1
+    method: create
+    regional_endpoint_compatibility: SUPPORTED
+    resource_method_params:
+      parent: projects/{projectsId}/locations/{locationsId}
+      pipelineRun.pipeline: '{__relative_name__}'
+
+  # Adds --async. When omitted, polls the returned operation to completion.
+  async:
+    collection: cloudbuild.projects.locations.operations
+    api_version: v1
+    extract_resource_result: false
+    result_attribute: response
+    request_issued_message: 'Run request issued for: [{__name__}]'
+
+  # TODO(b/567928260): Support inline pipeline definitions (--file,
+  # --service-account, --dry-run) once PipelineRun.inline_pipeline and
+  # CreatePipelineRunRequest.validate_only are available in the v1 API.
+  arguments:
+    resource:
+      help_text: The Cloud Build pipeline to run.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:pipeline
+      is_positional: true
+      override_resource_collection: true
+    params:
+    - arg_name: params
+      api_field: pipelineRun.inputParams.additionalProperties
+      metavar: KEY=VALUE
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+      help_text: |
+        Comma-separated key-value parameter overrides passed to the pipeline
+        run (for example, `ENV=staging,IMAGE_TAG=v1.2.0`). These values override
+        default parameter definitions in the pipeline configuration.

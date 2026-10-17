@@ -368,7 +368,7 @@ class Update(base.UpdateCommand):
     flags.AddRemoveLabelsFlag(group)
     flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
-    flags.AddWizSensorFlags(parser, hidden=True)
+    flags.AddWizSensorFlags(parser, hidden=False)
     flags.AddAgentSandboxConfigFlags(group, hidden=False)
     flags.AddNetworkPolicyFlags(group)
     flags.AddEnableIntraNodeVisibilityFlag(group)
@@ -494,6 +494,8 @@ class Update(base.UpdateCommand):
     group_default_compute_class = group.add_group()
     flags.AddEnableDefaultComputeClassFlag(group_default_compute_class)
     flags.AddDefaultComputeClassFlag(group_default_compute_class)
+    group_scale_to_zero = group.add_group(hidden=True)
+    flags.AddScaleToZeroFlags(group_scale_to_zero, hidden=True)
     flags.AddNetworkTierFlag(group)
     flags.AddAdaptivePodAllocationModeFlag(group)
     flags.AddControlPlaneEgressFlag(group)
@@ -679,6 +681,8 @@ class Update(base.UpdateCommand):
     opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.default_compute_class = args.default_compute_class
+    opts.enable_cluster_scale_to_zero = args.enable_cluster_scale_to_zero
+    opts.cluster_scale_to_zero_delay = args.cluster_scale_to_zero_delay
     opts.network_tier = args.network_tier
     opts.adaptive_pod_allocation_mode = args.adaptive_pod_allocation_mode
     opts.control_plane_egress_mode = args.control_plane_egress
@@ -1427,6 +1431,8 @@ class UpdateBeta(Update):
     group_default_compute_class = group.add_group()
     flags.AddEnableDefaultComputeClassFlag(group_default_compute_class)
     flags.AddDefaultComputeClassFlag(group_default_compute_class)
+    group_scale_to_zero = group.add_group(hidden=True)
+    flags.AddScaleToZeroFlags(group_scale_to_zero, hidden=True)
     group_fleet_flags = group.add_group()
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
@@ -1435,7 +1441,7 @@ class UpdateBeta(Update):
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
-    flags.AddWizSensorFlags(parser, hidden=True)
+    flags.AddWizSensorFlags(parser, hidden=False)
     flags.AddAgentSandboxConfigFlags(group, hidden=False)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group)
@@ -1674,6 +1680,8 @@ class UpdateBeta(Update):
     opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.default_compute_class = args.default_compute_class
+    opts.enable_cluster_scale_to_zero = args.enable_cluster_scale_to_zero
+    opts.cluster_scale_to_zero_delay = args.cluster_scale_to_zero_delay
     opts.network_tier = args.network_tier
     opts.adaptive_pod_allocation_mode = args.adaptive_pod_allocation_mode
     opts.control_plane_egress_mode = args.control_plane_egress
@@ -1867,6 +1875,8 @@ class UpdateAlpha(Update):
     group_default_compute_class = group.add_group()
     flags.AddEnableDefaultComputeClassFlag(group_default_compute_class)
     flags.AddDefaultComputeClassFlag(group_default_compute_class)
+    group_scale_to_zero = group.add_group(hidden=True)
+    flags.AddScaleToZeroFlags(group_scale_to_zero, hidden=True)
     group_fleet_flags = group.add_group()
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
@@ -1875,7 +1885,7 @@ class UpdateAlpha(Update):
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
-    flags.AddWizSensorFlags(parser, hidden=True)
+    flags.AddWizSensorFlags(parser, hidden=False)
     flags.AddAgentSandboxConfigFlags(group, hidden=False)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group)
@@ -2110,6 +2120,8 @@ class UpdateAlpha(Update):
     opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.default_compute_class = args.default_compute_class
+    opts.enable_cluster_scale_to_zero = args.enable_cluster_scale_to_zero
+    opts.cluster_scale_to_zero_delay = args.cluster_scale_to_zero_delay
     opts.network_tier = args.network_tier
     opts.adaptive_pod_allocation_mode = args.adaptive_pod_allocation_mode
     opts.control_plane_egress_mode = args.control_plane_egress

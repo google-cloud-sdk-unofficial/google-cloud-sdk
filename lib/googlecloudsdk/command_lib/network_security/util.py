@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.network_security import GetMessagesModule
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.generated_clients.apis.networksecurity.v1alpha1 import networksecurity_v1alpha1_messages as v1alpha1_messages
@@ -138,6 +139,18 @@ def OrderServerTlsPolicyMutexGroupHook() -> list[base.Action]:
   return [_UnsortedMutexGroupAction()]
 
 
+def UpdateServerTlsPolicyArgumentsHook() -> list[base.Action]:
+  """Returns additional arguments and actions for ServerTlsPolicy update."""
+  remove_labels_group = base.ArgumentGroup(mutex=True)
+  remove_labels_group.AddArgument(labels_util.GetClearLabelsFlag())
+  remove_labels_group.AddArgument(labels_util.GetRemoveLabelsFlag(''))
+  return [
+      _UnsortedMutexGroupAction(),
+      labels_util.GetUpdateLabelsFlag(''),
+      remove_labels_group,
+  ]
+
+
 def SetServerTlsPolicyFields(
     ref: resources.Resource | None,
     args: parser_extensions.Namespace,
@@ -214,9 +227,9 @@ def UpdateServerTlsPolicyFields(
     args: parser_extensions.Namespace,
     request: _PatchServerTlsPolicyRequest,
 ) -> _PatchServerTlsPolicyRequest:
-  """Updates repeated ValidationCA and clears clientValidationRelaxations on ServerTlsPolicy update requests."""
-  del ref
-  messages = GetMessagesModule(args.calliope_command.ReleaseTrack())
+  """Populates ServerTlsPolicy update fields and labels from CLI arguments."""
+  release_track = args.calliope_command.ReleaseTrack()
+  messages = GetMessagesModule(release_track)
   if request.serverTlsPolicy is None:
     request.serverTlsPolicy = messages.ServerTlsPolicy()
 
@@ -255,5 +268,24 @@ def UpdateServerTlsPolicyFields(
       request.serverTlsPolicy.mtlsPolicy = messages.MTLSPolicy()
     request.serverTlsPolicy.mtlsPolicy.clientValidationRelaxations = []
     _AddFieldToUpdateMask('mtlsPolicy.clientValidationRelaxations', request)
+
+  labels_diff = labels_util.Diff.FromUpdateArgs(args)
+  if labels_diff.MayHaveUpdates() and ref is not None:
+    existing_policy = GetClientInstance(
+        release_track
+    ).projects_locations_serverTlsPolicies.Get(
+        messages.NetworksecurityProjectsLocationsServerTlsPoliciesGetRequest(
+            name=ref.RelativeName()
+        )
+    )
+    labels_update = labels_diff.Apply(
+        messages.ServerTlsPolicy.LabelsValue,
+        existing_policy.labels,
+    )
+    if labels_update.needs_update:
+      request.serverTlsPolicy.labels = labels_update.labels
+    else:
+      request.serverTlsPolicy.labels = existing_policy.labels
+    _AddFieldToUpdateMask('labels', request)
 
   return request

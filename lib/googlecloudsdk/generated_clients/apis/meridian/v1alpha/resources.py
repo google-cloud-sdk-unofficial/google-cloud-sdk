@@ -31,6 +31,13 @@ class Collections(enum.Enum):
       ['projectsId'],
       True
   )
+  PROJECTS_DATASETS_TABLES = (
+      'projects.datasets.tables',
+      'projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}',
+      {},
+      ['projectsId', 'datasetsId', 'tablesId'],
+      True
+  )
   PROJECTS_LOCATIONS = (
       'projects.locations',
       '{+name}',

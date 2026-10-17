@@ -54,6 +54,7 @@ def _Update(
     cloud_logging_config=None,
     api_version='v1',
     cleared_fields=None,
+    zone_ref=None,
 ):
   """Helper function to perform the update.
 
@@ -69,17 +70,18 @@ def _Update(
     cleared_fields: the fields that should be included in the request JSON as
       their default value (fields that are their default value will be omitted
       otherwise).
+    zone_ref: the parsed zone resource reference.
 
   Returns:
     The update labels and PATCH call response.
   """
-  registry = util.GetRegistry(api_version)
-
-  zone_ref = registry.Parse(
-      args.zone,
-      util.GetParamsForRegistry(api_version, args),
-      collection='dns.managedZones',
-  )
+  if zone_ref is None:
+    registry = util.GetRegistry(api_version)
+    zone_ref = registry.Parse(
+        args.zone,
+        util.GetParamsForRegistry(api_version, args),
+        collection='dns.managedZones',
+    )
 
   dnssec_config = command_util.ParseDnssecConfigArgs(
       args, zones_client.messages, api_version
@@ -157,6 +159,8 @@ class UpdateGA(base.UpdateCommand):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
     messages = apis.GetMessagesModule('dns', api_version)
     _CommonArgs(parser, messages, api_version=api_version)
+    if cls._BetaOrAlpha():
+      flags.GetForwardingOutboundEndpointsArg().AddToParser(parser)
 
   def Run(self, args):
     api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
@@ -164,15 +168,26 @@ class UpdateGA(base.UpdateCommand):
     zones_client = managed_zones.Client.FromApiVersion(api_version, location)
     messages = zones_client.messages
 
+    registry = util.GetRegistry(api_version)
+    zone_ref = registry.Parse(
+        args.zone,
+        util.GetParamsForRegistry(api_version, args),
+        collection='dns.managedZones',
+    )
+
     forwarding_config = None
-    if args.IsSpecified('forwarding_targets') or args.IsSpecified(
-        'private_forwarding_targets'
+    if (
+        args.IsSpecified('forwarding_targets')
+        or args.IsSpecified('private_forwarding_targets')
+        or args.IsKnownAndSpecified('outbound_endpoints')
     ):
       forwarding_config = (
           command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
               messages=messages,
               server_list=args.forwarding_targets,
               private_server_list=args.private_forwarding_targets,
+              outbound_endpoint_list=getattr(args, 'outbound_endpoints', None),
+              project=zone_ref.project,
           )
       )
 
@@ -203,6 +218,10 @@ class UpdateGA(base.UpdateCommand):
     # value in the HTTP request body's JSON.  Cleared fields is ultimately
     # passed to the JSON encoder in the SDK library internals to achieve this.
     cleared_fields = []
+    if args.IsKnownAndSpecified('outbound_endpoints') and (
+        not args.outbound_endpoints or args.outbound_endpoints == ['']
+    ):
+      cleared_fields.append('forwardingConfig.outboundEndpoints')
     if args.networks is not None or args.gkeclusters is not None:
       # If the user explicitly gave an empty value to networks, clear the field.
       # Note that a value of 'None' means the user did not include the networks
@@ -267,4 +286,5 @@ class UpdateGA(base.UpdateCommand):
         cloud_logging_config=cloud_logging_config,
         api_version=api_version,
         cleared_fields=cleared_fields,
+        zone_ref=zone_ref,
     )

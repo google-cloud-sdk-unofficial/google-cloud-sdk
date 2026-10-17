@@ -14,10 +14,7 @@
 # limitations under the License.
 """Command to pause a pipeline."""
 
-import datetime
-import random
 import subprocess
-import time
 from googlecloudsdk.api_lib.composer import dags_util
 from googlecloudsdk.api_lib.composer import environments_util
 from googlecloudsdk.api_lib.composer import util
@@ -28,9 +25,6 @@ from googlecloudsdk.command_lib.orchestration_pipelines.tools import gcs_utils
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
-
-DEFAULT_POLLING_TIME_SECONDS = datetime.timedelta(seconds=2)
-POLL_JITTER_SECONDS = datetime.timedelta(seconds=0.5)
 
 
 @calliope_base.DefaultUniverseOnly
@@ -193,13 +187,7 @@ class Pause(calliope_base.Command):
             paused_dags[0]
         ):
           return {"result": "success"}
-        time.sleep(
-            DEFAULT_POLLING_TIME_SECONDS.total_seconds()
-            + random.uniform(
-                -POLL_JITTER_SECONDS.total_seconds(),
-                POLL_JITTER_SECONDS.total_seconds(),
-            )
-        )
+        composer_utils.sleep_with_jitter()
       except KeyboardInterrupt:
         break
     return {

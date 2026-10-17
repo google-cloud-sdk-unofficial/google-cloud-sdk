@@ -18,7 +18,7 @@ def ListRoutines(
     reference: 'bq_id_utils.ApiClientHelper.DatasetReference',
     max_results: int,
     page_token: str,
-    filter_expression: str,
+    filter: str,  # pylint: disable=redefined-builtin
 ):
   """Lists routines for the given dataset reference.
 
@@ -27,7 +27,7 @@ def ListRoutines(
     reference: Reference to the dataset.
     max_results: Number of results to return.
     page_token: Token to retrieve the next page of results.
-    filter_expression: An expression for filtering routines.
+    filter: An expression for filtering routines.
 
   Returns:
     A dict that contains entries:
@@ -41,7 +41,7 @@ def ListRoutines(
           datasetId=reference.datasetId,
           maxResults=max_results,
           pageToken=page_token,
-          filter=filter_expression,
+          filter=filter,
       )
       .execute()
   )

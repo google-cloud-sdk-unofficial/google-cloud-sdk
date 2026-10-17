@@ -14,13 +14,10 @@
 # limitations under the License.
 """Merge Secure Source Manager pull request command."""
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.securesourcemanager import pull_requests
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import resource_args
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 
 DETAILED_HELP = {
     "DESCRIPTION": (
@@ -58,44 +55,21 @@ class Merge(base.Command):
     merge_operation = client.Merge(pull_request_ref)
 
     if args.async_:
+      log.status.Print(
+          "Merge request issued for [{}].".format(
+              pull_request_ref.RelativeName()
+          )
+      )
       return merge_operation
 
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if merge_operation.done:
-      if merge_operation.response:
-        response_dict = encoding.MessageToPyValue(merge_operation.response)
-        pr_name = response_dict.get("name")
-        if pr_name:
-          log.status.Print("Merge request issued for [{}].".format(pr_name))
-          return merge_operation.response
-      elif merge_operation.error:
-        log.error("Operation failed: " + str(merge_operation.error))
-      else:
-        log.status.Print(
-            "Merge request issued for [{}].".format(
-                pull_request_ref.RelativeName()
-            )
+    response = client.GetOperationResult(
+        merge_operation, "Waiting for pull request to be merged"
+    )
+    log.status.Print(
+        "Merge request completed for [{}].".format(
+            pull_request_ref.RelativeName()
         )
-      return merge_operation
-
-    operation_ref = resources.REGISTRY.ParseRelativeName(
-        merge_operation.name,
-        collection="securesourcemanager.projects.locations.operations",
     )
-    poller = waiter.CloudOperationPoller(
-        client.client.projects_locations_repositories_pullRequests,
-        client.client.projects_locations_operations,
-    )
-    response = waiter.WaitFor(
-        poller, operation_ref, "Waiting for pull request to be merged"
-    )
-
-    if response:
-      response_dict = encoding.MessageToPyValue(response)
-      pr_name = response_dict.get("name", pull_request_ref.RelativeName())
-      if pr_name:
-        log.status.Print("Merge request issued for [{}].".format(pr_name))
-
     return response
 
 

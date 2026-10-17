@@ -52,7 +52,12 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     self.projects_locations_authzPolicies = self.ProjectsLocationsAuthzPoliciesService(self)
     self.projects_locations_backendAuthenticationConfigs = self.ProjectsLocationsBackendAuthenticationConfigsService(self)
     self.projects_locations_clientTlsPolicies = self.ProjectsLocationsClientTlsPoliciesService(self)
+    self.projects_locations_dnsArmorSecurityPolicies_rules = self.ProjectsLocationsDnsArmorSecurityPoliciesRulesService(self)
+    self.projects_locations_dnsArmorSecurityPolicies = self.ProjectsLocationsDnsArmorSecurityPoliciesService(self)
+    self.projects_locations_dnsArmorSecurityPolicyAssociations = self.ProjectsLocationsDnsArmorSecurityPolicyAssociationsService(self)
     self.projects_locations_dnsThreatDetectors = self.ProjectsLocationsDnsThreatDetectorsService(self)
+    self.projects_locations_domainLists_entries = self.ProjectsLocationsDomainListsEntriesService(self)
+    self.projects_locations_domainLists = self.ProjectsLocationsDomainListsService(self)
     self.projects_locations_firewallAttachments = self.ProjectsLocationsFirewallAttachmentsService(self)
     self.projects_locations_firewallEndpointAssociations = self.ProjectsLocationsFirewallEndpointAssociationsService(self)
     self.projects_locations_firewallEndpoints_wildfireVerdictChangeRequests = self.ProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsService(self)
@@ -2289,6 +2294,441 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsDnsArmorSecurityPoliciesRulesService(base_api.BaseApiService):
+    """Service class for the projects_locations_dnsArmorSecurityPolicies_rules resource."""
+
+    _NAME = 'projects_locations_dnsArmorSecurityPolicies_rules'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.ProjectsLocationsDnsArmorSecurityPoliciesRulesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new DnsArmorSecurityPolicyRule in a given policy.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicies/{dnsArmorSecurityPoliciesId}/rules',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicies.rules.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['dnsArmorSecurityPolicyRuleId', 'requestId'],
+        relative_path='v1alpha1/{+parent}/rules',
+        request_field='dnsArmorSecurityPolicyRule',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single DnsArmorSecurityPolicyRule.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicies/{dnsArmorSecurityPoliciesId}/rules/{rulesId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicies.rules.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'requestId'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single DnsArmorSecurityPolicyRule.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DnsArmorSecurityPolicyRule) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicies/{dnsArmorSecurityPoliciesId}/rules/{rulesId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicies.rules.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesGetRequest',
+        response_type_name='DnsArmorSecurityPolicyRule',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DnsArmorSecurityPolicyRules in a given policy. Supports reading across collections by using wildcard `-` in place of the policy ID.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDnsArmorSecurityPolicyRulesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicies/{dnsArmorSecurityPoliciesId}/rules',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicies.rules.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/rules',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesListRequest',
+        response_type_name='ListDnsArmorSecurityPolicyRulesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single DnsArmorSecurityPolicyRule.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicies/{dnsArmorSecurityPoliciesId}/rules/{rulesId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicies.rules.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='dnsArmorSecurityPolicyRule',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDnsArmorSecurityPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_dnsArmorSecurityPolicies resource."""
+
+    _NAME = 'projects_locations_dnsArmorSecurityPolicies'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.ProjectsLocationsDnsArmorSecurityPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new DnsArmorSecurityPolicy in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicies',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['dnsArmorSecurityPolicyId', 'requestId'],
+        relative_path='v1alpha1/{+parent}/dnsArmorSecurityPolicies',
+        request_field='dnsArmorSecurityPolicy',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single DnsArmorSecurityPolicy.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicies/{dnsArmorSecurityPoliciesId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'requestId'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single DnsArmorSecurityPolicy.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DnsArmorSecurityPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicies/{dnsArmorSecurityPoliciesId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesGetRequest',
+        response_type_name='DnsArmorSecurityPolicy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DnsArmorSecurityPolicies in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDnsArmorSecurityPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicies',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/dnsArmorSecurityPolicies',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesListRequest',
+        response_type_name='ListDnsArmorSecurityPoliciesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single DnsArmorSecurityPolicy.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicies/{dnsArmorSecurityPoliciesId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicies.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='dnsArmorSecurityPolicy',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDnsArmorSecurityPolicyAssociationsService(base_api.BaseApiService):
+    """Service class for the projects_locations_dnsArmorSecurityPolicyAssociations resource."""
+
+    _NAME = 'projects_locations_dnsArmorSecurityPolicyAssociations'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.ProjectsLocationsDnsArmorSecurityPolicyAssociationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new DnsArmorSecurityPolicyAssociation in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicyAssociations',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicyAssociations.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['dnsArmorSecurityPolicyAssociationId', 'requestId'],
+        relative_path='v1alpha1/{+parent}/dnsArmorSecurityPolicyAssociations',
+        request_field='dnsArmorSecurityPolicyAssociation',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single DnsArmorSecurityPolicyAssociation.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicyAssociations/{dnsArmorSecurityPolicyAssociationsId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicyAssociations.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'requestId'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single DnsArmorSecurityPolicyAssociation.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DnsArmorSecurityPolicyAssociation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicyAssociations/{dnsArmorSecurityPolicyAssociationsId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicyAssociations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsGetRequest',
+        response_type_name='DnsArmorSecurityPolicyAssociation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DnsArmorSecurityPolicyAssociations in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDnsArmorSecurityPolicyAssociationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicyAssociations',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicyAssociations.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/dnsArmorSecurityPolicyAssociations',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsListRequest',
+        response_type_name='ListDnsArmorSecurityPolicyAssociationsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single DnsArmorSecurityPolicyAssociation.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/dnsArmorSecurityPolicyAssociations/{dnsArmorSecurityPolicyAssociationsId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.dnsArmorSecurityPolicyAssociations.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='dnsArmorSecurityPolicyAssociation',
+        request_type_name='NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsDnsThreatDetectorsService(base_api.BaseApiService):
     """Service class for the projects_locations_dnsThreatDetectors resource."""
 
@@ -2431,6 +2871,323 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
         request_field='dnsThreatDetector',
         request_type_name='NetworksecurityProjectsLocationsDnsThreatDetectorsPatchRequest',
         response_type_name='DnsThreatDetector',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDomainListsEntriesService(base_api.BaseApiService):
+    """Service class for the projects_locations_domainLists_entries resource."""
+
+    _NAME = 'projects_locations_domainLists_entries'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.ProjectsLocationsDomainListsEntriesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def BatchCreate(self, request, global_params=None):
+      r"""Batch creates DomainListEntries in a given domain list.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsEntriesBatchCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('BatchCreate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchCreate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists/{domainListsId}/entries:batchCreate',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.domainLists.entries.batchCreate',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha1/{+parent}/entries:batchCreate',
+        request_field='batchCreateDomainListEntriesRequest',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsEntriesBatchCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def BatchDelete(self, request, global_params=None):
+      r"""Batch deletes DomainListEntries in a given domain list.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsEntriesBatchDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('BatchDelete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchDelete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists/{domainListsId}/entries:batchDelete',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.domainLists.entries.batchDelete',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha1/{+parent}/entries:batchDelete',
+        request_field='batchDeleteDomainListEntriesRequest',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsEntriesBatchDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new DomainListEntry in a given domain list.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsEntriesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists/{domainListsId}/entries',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.domainLists.entries.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['domainListEntryId', 'requestId'],
+        relative_path='v1alpha1/{+parent}/entries',
+        request_field='domainListEntry',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsEntriesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single DomainListEntry.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsEntriesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists/{domainListsId}/entries/{entriesId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.domainLists.entries.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'requestId'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsEntriesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single DomainListEntry.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsEntriesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DomainListEntry) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists/{domainListsId}/entries/{entriesId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.domainLists.entries.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsEntriesGetRequest',
+        response_type_name='DomainListEntry',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DomainListEntries in a given domain list.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsEntriesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDomainListEntriesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists/{domainListsId}/entries',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.domainLists.entries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/entries',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsEntriesListRequest',
+        response_type_name='ListDomainListEntriesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDomainListsService(base_api.BaseApiService):
+    """Service class for the projects_locations_domainLists resource."""
+
+    _NAME = 'projects_locations_domainLists'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.ProjectsLocationsDomainListsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new DomainList in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.domainLists.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['domainListId', 'requestId'],
+        relative_path='v1alpha1/{+parent}/domainLists',
+        request_field='domainList',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single DomainList.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists/{domainListsId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.domainLists.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'force', 'requestId'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single DomainList.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DomainList) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists/{domainListsId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.domainLists.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsGetRequest',
+        response_type_name='DomainList',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DomainLists in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDomainListsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.domainLists.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/domainLists',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsListRequest',
+        response_type_name='ListDomainListsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single DomainList.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsDomainListsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/domainLists/{domainListsId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.domainLists.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='domainList',
+        request_type_name='NetworksecurityProjectsLocationsDomainListsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

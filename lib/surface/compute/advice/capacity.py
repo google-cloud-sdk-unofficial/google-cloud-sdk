@@ -75,12 +75,13 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Capacity(base.Command):
   """Get capacity advice for Compute Engine resources."""
 
   detailed_help = DETAILED_HELP
-  category = base.COMPUTE_CATEGORY
 
   @staticmethod
   def Args(parser):

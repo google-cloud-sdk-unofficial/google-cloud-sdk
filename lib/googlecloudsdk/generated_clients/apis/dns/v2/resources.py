@@ -40,6 +40,16 @@ class Collections(enum.Enum):
       ['project', 'location', 'managedZone', 'dnsKeyId'],
       True
   )
+  LOCATIONS = (
+      'locations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}',
+      },
+      ['name'],
+      True
+  )
   MANAGEDZONEOPERATIONS = (
       'managedZoneOperations',
       'projects/{project}/locations/{location}/managedZones/{managedZone}/'
@@ -53,6 +63,28 @@ class Collections(enum.Enum):
       'projects/{project}/locations/{location}/managedZones/{managedZone}',
       {},
       ['project', 'location', 'managedZone'],
+      True
+  )
+  OPERATIONS = (
+      'operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  OUTBOUNDENDPOINTS = (
+      'outboundEndpoints',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'outboundEndpoints/{outboundEndpointsId}',
+      },
+      ['name'],
       True
   )
   POLICIES = (

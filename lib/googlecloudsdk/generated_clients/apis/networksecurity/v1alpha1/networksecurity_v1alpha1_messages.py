@@ -322,66 +322,6 @@ class AntivirusOverride(_messages.Message):
   protocol = _messages.EnumField('ProtocolValueValuesEnum', 2)
 
 
-class AntivirusThreatOverride(_messages.Message):
-  r"""Defines what action to take for VIRUS threats per protocol.
-
-  Enums:
-    ActionValueValuesEnum: Required. Threat action override. For some threat
-      types, only a subset of actions applies.
-    ProtocolValueValuesEnum: Required. Protocol to match.
-
-  Fields:
-    action: Required. Threat action override. For some threat types, only a
-      subset of actions applies.
-    protocol: Required. Protocol to match.
-  """
-
-  class ActionValueValuesEnum(_messages.Enum):
-    r"""Required. Threat action override. For some threat types, only a subset
-    of actions applies.
-
-    Values:
-      THREAT_ACTION_UNSPECIFIED: Threat action not specified.
-      DEFAULT_ACTION: The default action (as specified by the vendor) is
-        taken.
-      ALLOW: The packet matching this rule will be allowed to transmit.
-      ALERT: The packet matching this rule will be allowed to transmit, but a
-        threat_log entry will be sent to the consumer project.
-      DENY: The packet matching this rule will be dropped, and a threat_log
-        entry will be sent to the consumer project.
-    """
-    THREAT_ACTION_UNSPECIFIED = 0
-    DEFAULT_ACTION = 1
-    ALLOW = 2
-    ALERT = 3
-    DENY = 4
-
-  class ProtocolValueValuesEnum(_messages.Enum):
-    r"""Required. Protocol to match.
-
-    Values:
-      PROTOCOL_UNSPECIFIED: Protocol not specified.
-      SMTP: SMTP protocol
-      SMB: SMB protocol
-      POP3: POP3 protocol
-      IMAP: IMAP protocol
-      HTTP2: HTTP2 protocol
-      HTTP: HTTP protocol
-      FTP: FTP protocol
-    """
-    PROTOCOL_UNSPECIFIED = 0
-    SMTP = 1
-    SMB = 2
-    POP3 = 3
-    IMAP = 4
-    HTTP2 = 5
-    HTTP = 6
-    FTP = 7
-
-  action = _messages.EnumField('ActionValueValuesEnum', 1)
-  protocol = _messages.EnumField('ProtocolValueValuesEnum', 2)
-
-
 class AuthorizationPolicy(_messages.Message):
   r"""AuthorizationPolicy is a resource that specifies how a server should
   authorize incoming connections. This resource in itself does not change the
@@ -1166,6 +1106,97 @@ class BackendAuthenticationConfig(_messages.Message):
   wellKnownRoots = _messages.EnumField('WellKnownRootsValueValuesEnum', 9)
 
 
+class BatchCreateDomainListEntriesRequest(_messages.Message):
+  r"""Message for batch creating DomainListEntries.
+
+  Fields:
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+    requests: Required. The request messages specifying the entries to create.
+      A maximum of 1000 entries can be created in a batch.
+  """
+
+  requestId = _messages.StringField(1)
+  requests = _messages.MessageField('CreateDomainListEntryRequest', 2, repeated=True)
+
+
+class BatchDeleteDomainListEntriesRequest(_messages.Message):
+  r"""Message for batch deleting DomainListEntries.
+
+  Fields:
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+    requests: Required. The request messages specifying the entries to delete.
+      A maximum of 1000 entries can be deleted in a batch.
+  """
+
+  requestId = _messages.StringField(1)
+  requests = _messages.MessageField('DeleteDomainListEntryRequest', 2, repeated=True)
+
+
+class BatchOperationMetadata(_messages.Message):
+  r"""Represents the metadata of a batch long-running operation.
+
+  Messages:
+    FailedRequestsValue: Output only. Partial errors for batch entries keyed
+      by their index in the request.
+
+  Fields:
+    apiVersion: Output only. API version used to start the operation.
+    createTime: Output only. The time the operation was created.
+    endTime: Output only. The time the operation finished running.
+    failedRequests: Output only. Partial errors for batch entries keyed by
+      their index in the request.
+    requestedCancellation: Output only. Identifies whether the user has
+      requested cancellation of the operation. Operations that have
+      successfully been cancelled have google.longrunning.Operation.error
+      value with a google.rpc.Status.code of 1, corresponding to
+      `Code.CANCELLED`.
+    statusMessage: Output only. Human-readable status of the operation, if
+      any.
+    target: Output only. Server-defined resource path for the target of the
+      operation.
+    verb: Output only. Name of the verb executed by the operation.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class FailedRequestsValue(_messages.Message):
+    r"""Output only. Partial errors for batch entries keyed by their index in
+    the request.
+
+    Messages:
+      AdditionalProperty: An additional property for a FailedRequestsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type FailedRequestsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a FailedRequestsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A Status attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('Status', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  apiVersion = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  endTime = _messages.StringField(3)
+  failedRequests = _messages.MessageField('FailedRequestsValue', 4)
+  requestedCancellation = _messages.BooleanField(5)
+  statusMessage = _messages.StringField(6)
+  target = _messages.StringField(7)
+  verb = _messages.StringField(8)
+
+
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
@@ -1270,6 +1301,28 @@ class CloneAddressGroupItemsRequest(_messages.Message):
   sourceAddressGroup = _messages.StringField(2)
 
 
+class CreateDomainListEntryRequest(_messages.Message):
+  r"""Message for creating a DomainListEntry.
+
+  Fields:
+    domainListEntry: Required. The `DomainListEntry` resource to create.
+    domainListEntryId: Required. Id of the requesting DomainListEntry object,
+      which is the domain name of the entry. It must follow standard DNS
+      domain name format.
+    parent: Required. Value for parent of the DomainListEntry resource.
+      Format:
+      projects/{project}/locations/{location}/domainLists/{domain_list}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  domainListEntry = _messages.MessageField('DomainListEntry', 1)
+  domainListEntryId = _messages.StringField(2)
+  parent = _messages.StringField(3)
+  requestId = _messages.StringField(4)
+
+
 class CustomInterceptProfile(_messages.Message):
   r"""CustomInterceptProfile defines in-band integration behavior (intercept).
   It is used by firewall rules with an APPLY_SECURITY_PROFILE_GROUP action.
@@ -1321,6 +1374,24 @@ class CustomMirroringProfile(_messages.Message):
   mirroringEndpointGroupType = _messages.EnumField('MirroringEndpointGroupTypeValueValuesEnum', 3)
 
 
+class DeleteDomainListEntryRequest(_messages.Message):
+  r"""Message for deleting a DomainListEntry.
+
+  Fields:
+    etag: Optional. If provided, the entry will only be deleted if the etag
+      matches.
+    name: Required. Name of the DomainListEntry resource. Format: projects/{pr
+      oject}/locations/{location}/domainLists/{domain_list}/entries/{entry}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2)
+  requestId = _messages.StringField(3)
+
+
 class Destination(_messages.Message):
   r"""Specification of traffic destination attributes.
 
@@ -1355,6 +1426,350 @@ class DisableUllMirroringCollectorRequest(_messages.Message):
   """
 
   requestId = _messages.StringField(1)
+
+
+class DnsArmorSecurityPolicy(_messages.Message):
+  r"""Message describing DnsArmorSecurityPolicy object.
+
+  Enums:
+    StateValueValuesEnum: Output only. Current state of the resource.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs.
+
+  Fields:
+    createTime: Output only. Create time of the resource.
+    description: Optional. Free-text description of the resource. Maximum
+      length: 1024 characters.
+    etag: An opaque tag indicating the current version of the policy.
+    labels: Optional. Labels as key value pairs.
+    loggingEnabled: Optional. Whether Cloud Logging is enabled for this
+      policy.
+    name: Identifier. Name of the DnsArmorSecurityPolicy resource. Format: pro
+      jects/{project}/locations/{location}/dnsArmorSecurityPolicies/{dns_armor
+      _security_policy}
+    state: Output only. Current state of the resource.
+    updateTime: Output only. Most recent update time of the resource.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Current state of the resource.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      ACTIVE: Resource is active and serving.
+      CREATING: Resource is being created.
+      DELETING: Resource is being deleted.
+      UPDATING: Resource is being updated.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    DELETING = 3
+    UPDATING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  loggingEnabled = _messages.BooleanField(5)
+  name = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
+class DnsArmorSecurityPolicyAssociation(_messages.Message):
+  r"""Message describing DnsArmorSecurityPolicyAssociation object.
+
+  Enums:
+    StateValueValuesEnum: Output only. Current state of the resource.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs.
+
+  Fields:
+    createTime: Output only. Create time of the resource.
+    description: Optional. Free-text description of the resource. Maximum
+      length: 1024 characters.
+    dnsArmorSecurityPolicy: Required. Security policy associated with the
+      network. Format: projects/{project}/locations/{location}/dnsArmorSecurit
+      yPolicies/{dns_armor_security_policy}
+    etag: An opaque tag indicating the current version of the association.
+    labels: Optional. Labels as key value pairs.
+    name: Identifier. Name of the DnsArmorSecurityPolicyAssociation resource.
+      Format: projects/{project}/locations/{location}/dnsArmorSecurityPolicyAs
+      sociations/{dns_armor_security_policy_association}
+    network: Required. Network associated with the security policy. Format:
+      projects/{project}/global/networks/{network}
+    priority: Required. Priority of the rule. Must be an integer between 0 and
+      2147483647. Lower numbers have higher priority. Each association within
+      a network must have a unique priority.
+    state: Output only. Current state of the resource.
+    updateTime: Output only. Most recent update time of the resource.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Current state of the resource.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      ACTIVE: Resource is active and serving.
+      CREATING: Resource is being created.
+      DELETING: Resource is being deleted.
+      UPDATING: Resource is being updated.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    DELETING = 3
+    UPDATING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  dnsArmorSecurityPolicy = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  network = _messages.StringField(7)
+  priority = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  updateTime = _messages.StringField(10)
+
+
+class DnsArmorSecurityPolicyRule(_messages.Message):
+  r"""Message describing DnsArmorSecurityPolicyRule object.
+
+  Enums:
+    ActionValueValuesEnum: Required. Action to perform when a DNS query
+      matches this rule.
+    StateValueValuesEnum: Output only. Current state of the resource.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs.
+
+  Fields:
+    action: Required. Action to perform when a DNS query matches this rule.
+    automaticChainTrustEnabled: Optional. Whether to trust the entire
+      CNAME/DNAME redirection chain when the initial query matches an `ALLOW`
+      rule. Only applicable when `action` is `ALLOW`.
+    blockResponse: Optional. Configuration for the DNS response returned when
+      `action` is `BLOCK`. Required if and only if `action` is `BLOCK`.
+    createTime: Output only. Create time of the resource.
+    description: Optional. Free-text description of the resource. Maximum
+      length: 1024 characters.
+    domainList: Required. Referenced domain list for this rule. Format:
+      projects/{project}/locations/{location}/domainLists/{domain_list}
+    etag: An opaque tag indicating the current version of the rule.
+    labels: Optional. Labels as key value pairs.
+    name: Identifier. Name of the DnsArmorSecurityPolicyRule resource. Format:
+      projects/{project}/locations/{location}/dnsArmorSecurityPolicies/{dns_ar
+      mor_security_policy}/rules/{rule}
+    priority: Required. The priority of the rule. Lower numbers indicate
+      higher priority. Must be unique within the security policy and in range
+      0 - 2147483647.
+    recordTypes: Optional. DNS record types to match (e.g., "A", "AAAA", "MX",
+      "TXT", "CNAME"). If unspecified, the rule matches all DNS query record
+      types.
+    state: Output only. Current state of the resource.
+    updateTime: Output only. Most recent update time of the resource.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""Required. Action to perform when a DNS query matches this rule.
+
+    Values:
+      ACTION_UNSPECIFIED: Unspecified action.
+      ALLOW: Allow matching DNS queries to proceed.
+      BLOCK: Block matching DNS queries and return the configured
+        `block_response`. If action is BLOCK, block_response must be
+        specified.
+      ALERT: Log matching DNS queries without blocking traffic (dry-run
+        validation).
+    """
+    ACTION_UNSPECIFIED = 0
+    ALLOW = 1
+    BLOCK = 2
+    ALERT = 3
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Current state of the resource.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      ACTIVE: Resource is active and serving.
+      CREATING: Resource is being created.
+      DELETING: Resource is being deleted.
+      UPDATING: Resource is being updated.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    DELETING = 3
+    UPDATING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+  automaticChainTrustEnabled = _messages.BooleanField(2)
+  blockResponse = _messages.MessageField('DnsArmorSecurityPolicyRuleBlockResponse', 3)
+  createTime = _messages.StringField(4)
+  description = _messages.StringField(5)
+  domainList = _messages.StringField(6)
+  etag = _messages.StringField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  name = _messages.StringField(9)
+  priority = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  recordTypes = _messages.StringField(11, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
+
+
+class DnsArmorSecurityPolicyRuleBlockResponse(_messages.Message):
+  r"""Configuration for the DNS response returned when `action` is `BLOCK`.
+
+  Enums:
+    ErrorCodeValueValuesEnum: Return the specified DNS response error code.
+
+  Fields:
+    errorCode: Return the specified DNS response error code.
+    extendedDnsErrorConfig: Return REFUSED with Extended DNS Error (RFC 8914)
+      configuration.
+    overrideData: Return the specified custom DNS override data.
+  """
+
+  class ErrorCodeValueValuesEnum(_messages.Enum):
+    r"""Return the specified DNS response error code.
+
+    Values:
+      ERROR_CODE_UNSPECIFIED: Unspecified error code.
+      NXDOMAIN: Return RCODE 3 (NXDOMAIN).
+      NOERROR: Return RCODE 0 (NOERROR).
+    """
+    ERROR_CODE_UNSPECIFIED = 0
+    NXDOMAIN = 1
+    NOERROR = 2
+
+  errorCode = _messages.EnumField('ErrorCodeValueValuesEnum', 1)
+  extendedDnsErrorConfig = _messages.MessageField('DnsArmorSecurityPolicyRuleBlockResponseExtendedDnsErrorConfig', 2)
+  overrideData = _messages.MessageField('DnsArmorSecurityPolicyRuleBlockResponseOverrideData', 3)
+
+
+class DnsArmorSecurityPolicyRuleBlockResponseExtendedDnsErrorConfig(_messages.Message):
+  r"""Configuration for Extended DNS Error (RFC 8914) responses.
+
+  Fields:
+    extraText: Optional. Diagnostic text appended to the EDE EXTRA-TEXT field.
+    infoCode: Optional. Extended DNS Error Info-Code (RFC 8914) to include in
+      the OPT pseudo-RR. Supported codes: 15 (Blocked, default), 16
+      (Censored), 17 (Filtered), 18 (Prohibited).
+  """
+
+  extraText = _messages.StringField(1)
+  infoCode = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class DnsArmorSecurityPolicyRuleBlockResponseOverrideData(_messages.Message):
+  r"""Custom DNS override configuration for sinkholing blocked queries.
+
+  Fields:
+    rrSets: Required. Custom resource record sets returned in the DNS
+      response.
+  """
+
+  rrSets = _messages.MessageField('DnsArmorSecurityPolicyRuleBlockResponseOverrideDataResourceRecordSet', 1, repeated=True)
+
+
+class DnsArmorSecurityPolicyRuleBlockResponseOverrideDataResourceRecordSet(_messages.Message):
+  r"""A DNS Resource Record Set used when overriding a blocked DNS response.
+  (- Mimics a subset of the Cloud DNS ResourceRecordSet resource
+  https://docs.cloud.google.com/dns/docs/reference/rest/v1/resourceRecordSets
+  -)
+
+  Fields:
+    domainName: Required. The domain name for the record (e.g.,
+      "sinkhole.example.com.").
+    rrdatas: Required. The resource record data values (e.g., IP addresses or
+      target domain names).
+    ttl: Required. Number of seconds that this record can be cached by
+      resolvers.
+    type: Required. The DNS record type. Supported types are "A", "AAAA", and
+      "CNAME".
+  """
+
+  domainName = _messages.StringField(1)
+  rrdatas = _messages.StringField(2, repeated=True)
+  ttl = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  type = _messages.StringField(4)
 
 
 class DnsThreatDetector(_messages.Message):
@@ -1424,6 +1839,116 @@ class DnsThreatDetector(_messages.Message):
   name = _messages.StringField(4)
   provider = _messages.EnumField('ProviderValueValuesEnum', 5)
   updateTime = _messages.StringField(6)
+
+
+class DomainList(_messages.Message):
+  r"""Message describing DomainList object.
+
+  Enums:
+    StateValueValuesEnum: Output only. Current state of the resource.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs.
+
+  Fields:
+    createTime: Output only. Create time of the resource.
+    description: Optional. Free-text description of the resource. Maximum
+      length: 1024 characters.
+    etag: An opaque tag indicating the current version of the list.
+    gcsUri: Optional. Input only. Cloud Storage URI containing domain list
+      entries for import during creation. Format: gs://{bucket}/{path}
+    labels: Optional. Labels as key value pairs.
+    name: Identifier. Name of the DomainList resource. Format:
+      projects/{project}/locations/{location}/domainLists/{domain_list}
+    state: Output only. Current state of the resource.
+    updateTime: Output only. Most recent update time of the resource.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Current state of the resource.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      ACTIVE: Resource is active and serving.
+      CREATING: Resource is being created.
+      DELETING: Resource is being deleted.
+      UPDATING: Resource is being updated.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    DELETING = 3
+    UPDATING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  gcsUri = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
+class DomainListEntry(_messages.Message):
+  r"""Message describing DomainListEntry object.
+
+  Enums:
+    StateValueValuesEnum: Output only. Current state of the resource.
+
+  Fields:
+    createTime: Output only. Create time of the resource.
+    etag: An opaque tag indicating the current version of the entry.
+    name: Identifier. Name of the DomainListEntry resource, which is the
+      domain name of the entry. Format: projects/{project}/locations/{location
+      }/domainLists/{domain_list}/entries/{entry}
+    state: Output only. Current state of the resource.
+    updateTime: Output only. Most recent update time of the resource.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Current state of the resource.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      ACTIVE: Resource is active and serving.
+      CREATING: Resource is being created.
+      DELETING: Resource is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CREATING = 2
+    DELETING = 3
+
+  createTime = _messages.StringField(1)
+  etag = _messages.StringField(2)
+  name = _messages.StringField(3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  updateTime = _messages.StringField(5)
 
 
 class Empty(_messages.Message):
@@ -3155,6 +3680,53 @@ class ListClientTlsPoliciesResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListDnsArmorSecurityPoliciesResponse(_messages.Message):
+  r"""Message for response to listing DnsArmorSecurityPolicies.
+
+  Fields:
+    dnsArmorSecurityPolicies: The list of DnsArmorSecurityPolicy resources.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  dnsArmorSecurityPolicies = _messages.MessageField('DnsArmorSecurityPolicy', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListDnsArmorSecurityPolicyAssociationsResponse(_messages.Message):
+  r"""Message for response to listing DnsArmorSecurityPolicyAssociations.
+
+  Fields:
+    dnsArmorSecurityPolicyAssociations: The list of
+      DnsArmorSecurityPolicyAssociation resources.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  dnsArmorSecurityPolicyAssociations = _messages.MessageField('DnsArmorSecurityPolicyAssociation', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListDnsArmorSecurityPolicyRulesResponse(_messages.Message):
+  r"""Message for response to listing DnsArmorSecurityPolicyRules.
+
+  Fields:
+    dnsArmorSecurityPolicyRules: The list of DnsArmorSecurityPolicyRule
+      resources.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  dnsArmorSecurityPolicyRules = _messages.MessageField('DnsArmorSecurityPolicyRule', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListDnsThreatDetectorsResponse(_messages.Message):
   r"""The response message to requesting a list of DnsThreatDetectors.
 
@@ -3166,6 +3738,36 @@ class ListDnsThreatDetectorsResponse(_messages.Message):
   """
 
   dnsThreatDetectors = _messages.MessageField('DnsThreatDetector', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListDomainListEntriesResponse(_messages.Message):
+  r"""Message for response to listing DomainListEntries.
+
+  Fields:
+    domainListEntries: The list of DomainListEntry resources.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  domainListEntries = _messages.MessageField('DomainListEntry', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListDomainListsResponse(_messages.Message):
+  r"""Message for response to listing DomainLists.
+
+  Fields:
+    domainLists: The list of DomainList resources.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  domainLists = _messages.MessageField('DomainList', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -6176,6 +6778,322 @@ class NetworksecurityProjectsLocationsClientTlsPoliciesTestIamPermissionsRequest
   resource = _messages.StringField(2, required=True)
 
 
+class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesCreateRequest
+  object.
+
+  Fields:
+    dnsArmorSecurityPolicy: A DnsArmorSecurityPolicy resource to be passed as
+      the request body.
+    dnsArmorSecurityPolicyId: Optional. Id of the requesting
+      DnsArmorSecurityPolicy object. Must conform to RFC-1034: 1-63 lowercase
+      alphanumeric characters or hyphens, starting with a letter and ending
+      with a letter or number. If not specified, the service will generate
+      one.
+    parent: Required. Value for parent of the DnsArmorSecurityPolicy resource.
+      Format: projects/{project}/locations/{location}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  dnsArmorSecurityPolicy = _messages.MessageField('DnsArmorSecurityPolicy', 1)
+  dnsArmorSecurityPolicyId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. If provided, the policy will only be deleted if the etag
+      matches.
+    name: Required. Name of the DnsArmorSecurityPolicy resource. Format: proje
+      cts/{project}/locations/{location}/dnsArmorSecurityPolicies/{dns_armor_s
+      ecurity_policy}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the DnsArmorSecurityPolicy resource. Format: proje
+      cts/{project}/locations/{location}/dnsArmorSecurityPolicies/{dns_armor_s
+      ecurity_policy}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    pageSize: Optional. Requested page size. The default value is 500; the
+      maximum value is 1000, and values above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListDnsArmorSecurityPolicies` call. Provide this to retrieve the
+      subsequent page.
+    parent: Required. Parent value for ListDnsArmorSecurityPoliciesRequest.
+      Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesPatchRequest
+  object.
+
+  Fields:
+    dnsArmorSecurityPolicy: A DnsArmorSecurityPolicy resource to be passed as
+      the request body.
+    name: Identifier. Name of the DnsArmorSecurityPolicy resource. Format: pro
+      jects/{project}/locations/{location}/dnsArmorSecurityPolicies/{dns_armor
+      _security_policy}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten. If not set, all populated fields in the request will be
+      overwritten.
+  """
+
+  dnsArmorSecurityPolicy = _messages.MessageField('DnsArmorSecurityPolicy', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesCreateRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesCreateRequest
+  object.
+
+  Fields:
+    dnsArmorSecurityPolicyRule: A DnsArmorSecurityPolicyRule resource to be
+      passed as the request body.
+    dnsArmorSecurityPolicyRuleId: Optional. Id of the requesting
+      DnsArmorSecurityPolicyRule object. Must conform to RFC-1034: 1-63
+      lowercase alphanumeric characters or hyphens, starting with a letter and
+      ending with a letter or number. If not specified, the service will
+      generate one.
+    parent: Required. Value for parent of the DnsArmorSecurityPolicyRule
+      resource. Format: projects/{project}/locations/{location}/dnsArmorSecuri
+      tyPolicies/{dns_armor_security_policy}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  dnsArmorSecurityPolicyRule = _messages.MessageField('DnsArmorSecurityPolicyRule', 1)
+  dnsArmorSecurityPolicyRuleId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesDeleteRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. If provided, the rule will only be deleted if the etag
+      matches.
+    name: Required. Name of the DnsArmorSecurityPolicyRule resource. Format: p
+      rojects/{project}/locations/{location}/dnsArmorSecurityPolicies/{dns_arm
+      or_security_policy}/rules/{rule}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesGetRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the DnsArmorSecurityPolicyRule resource. Format: p
+      rojects/{project}/locations/{location}/dnsArmorSecurityPolicies/{dns_arm
+      or_security_policy}/rules/{rule}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesListRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    pageSize: Optional. Requested page size. The default value is 500; the
+      maximum value is 1000, and values above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous call.
+    parent: Required. Parent value for ListDnsArmorSecurityPolicyRulesRequest.
+      Format: projects/{project}/locations/{location}/dnsArmorSecurityPolicies
+      /{dns_armor_security_policy} Supports reading across collections by
+      using wildcard `-` in place of {dns_armor_security_policy}.
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesPatchRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesRulesPatchRequest
+  object.
+
+  Fields:
+    dnsArmorSecurityPolicyRule: A DnsArmorSecurityPolicyRule resource to be
+      passed as the request body.
+    name: Identifier. Name of the DnsArmorSecurityPolicyRule resource. Format:
+      projects/{project}/locations/{location}/dnsArmorSecurityPolicies/{dns_ar
+      mor_security_policy}/rules/{rule}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten. If not set, all populated fields in the request will be
+      overwritten.
+  """
+
+  dnsArmorSecurityPolicyRule = _messages.MessageField('DnsArmorSecurityPolicyRule', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsCrea
+  teRequest object.
+
+  Fields:
+    dnsArmorSecurityPolicyAssociation: A DnsArmorSecurityPolicyAssociation
+      resource to be passed as the request body.
+    dnsArmorSecurityPolicyAssociationId: Optional. Id of the requesting
+      DnsArmorSecurityPolicyAssociation object. Must conform to RFC-1034: 1-63
+      lowercase alphanumeric characters or hyphens, starting with a letter and
+      ending with a letter or number. If not specified, the service will
+      generate one.
+    parent: Required. Value for parent of the
+      DnsArmorSecurityPolicyAssociation resource. Format:
+      projects/{project}/locations/{location}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  dnsArmorSecurityPolicyAssociation = _messages.MessageField('DnsArmorSecurityPolicyAssociation', 1)
+  dnsArmorSecurityPolicyAssociationId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsDele
+  teRequest object.
+
+  Fields:
+    etag: Optional. If provided, the association will only be deleted if the
+      etag matches.
+    name: Required. Name of the DnsArmorSecurityPolicyAssociation resource.
+      Format: projects/{project}/locations/{location}/dnsArmorSecurityPolicyAs
+      sociations/{dns_armor_security_policy_association}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsGetRequest(_messages.Message):
+  r"""A
+  NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the DnsArmorSecurityPolicyAssociation resource.
+      Format: projects/{project}/locations/{location}/dnsArmorSecurityPolicyAs
+      sociations/{dns_armor_security_policy_association}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsList
+  Request object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    pageSize: Optional. Requested page size. The default value is 500; the
+      maximum value is 1000, and values above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous call.
+    parent: Required. Parent value for
+      ListDnsArmorSecurityPolicyAssociationsRequest. Format:
+      projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDnsArmorSecurityPolicyAssociationsPatc
+  hRequest object.
+
+  Fields:
+    dnsArmorSecurityPolicyAssociation: A DnsArmorSecurityPolicyAssociation
+      resource to be passed as the request body.
+    name: Identifier. Name of the DnsArmorSecurityPolicyAssociation resource.
+      Format: projects/{project}/locations/{location}/dnsArmorSecurityPolicyAs
+      sociations/{dns_armor_security_policy_association}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten. If not set, all populated fields in the request will be
+      overwritten.
+  """
+
+  dnsArmorSecurityPolicyAssociation = _messages.MessageField('DnsArmorSecurityPolicyAssociation', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class NetworksecurityProjectsLocationsDnsThreatDetectorsCreateRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsDnsThreatDetectorsCreateRequest
   object.
@@ -6252,6 +7170,203 @@ class NetworksecurityProjectsLocationsDnsThreatDetectorsPatchRequest(_messages.M
   dnsThreatDetector = _messages.MessageField('DnsThreatDetector', 1)
   name = _messages.StringField(2, required=True)
   updateMask = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsDomainListsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsCreateRequest object.
+
+  Fields:
+    domainList: A DomainList resource to be passed as the request body.
+    domainListId: Optional. Id of the requesting DomainList object. Must
+      conform to RFC-1034: 1-63 lowercase alphanumeric characters or hyphens,
+      starting with a letter and ending with a letter or number. If not
+      specified, the service will generate one.
+    parent: Required. Value for parent of the DomainList resource. Format:
+      projects/{project}/locations/{location}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  domainList = _messages.MessageField('DomainList', 1)
+  domainListId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsDomainListsDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsDeleteRequest object.
+
+  Fields:
+    etag: Optional. If provided, the list will only be deleted if the etag
+      matches.
+    force: Optional. If set to true, any entries associated with this domain
+      list will also be deleted.
+    name: Required. Name of the DomainList resource. Format:
+      projects/{project}/locations/{location}/domainLists/{domain_list}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  etag = _messages.StringField(1)
+  force = _messages.BooleanField(2)
+  name = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsDomainListsEntriesBatchCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsEntriesBatchCreateRequest
+  object.
+
+  Fields:
+    batchCreateDomainListEntriesRequest: A BatchCreateDomainListEntriesRequest
+      resource to be passed as the request body.
+    parent: Required. The parent domain list where entries will be created.
+      Format:
+      projects/{project}/locations/{location}/domainLists/{domain_list}
+  """
+
+  batchCreateDomainListEntriesRequest = _messages.MessageField('BatchCreateDomainListEntriesRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsDomainListsEntriesBatchDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsEntriesBatchDeleteRequest
+  object.
+
+  Fields:
+    batchDeleteDomainListEntriesRequest: A BatchDeleteDomainListEntriesRequest
+      resource to be passed as the request body.
+    parent: Required. The parent domain list where entries will be deleted.
+      Format:
+      projects/{project}/locations/{location}/domainLists/{domain_list}
+  """
+
+  batchDeleteDomainListEntriesRequest = _messages.MessageField('BatchDeleteDomainListEntriesRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsDomainListsEntriesCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsEntriesCreateRequest
+  object.
+
+  Fields:
+    domainListEntry: A DomainListEntry resource to be passed as the request
+      body.
+    domainListEntryId: Required. Id of the requesting DomainListEntry object,
+      which is the domain name of the entry. It must follow standard DNS
+      domain name format.
+    parent: Required. Value for parent of the DomainListEntry resource.
+      Format:
+      projects/{project}/locations/{location}/domainLists/{domain_list}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  domainListEntry = _messages.MessageField('DomainListEntry', 1)
+  domainListEntryId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsDomainListsEntriesDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsEntriesDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. If provided, the entry will only be deleted if the etag
+      matches.
+    name: Required. Name of the DomainListEntry resource. Format: projects/{pr
+      oject}/locations/{location}/domainLists/{domain_list}/entries/{entry}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsDomainListsEntriesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsEntriesGetRequest object.
+
+  Fields:
+    name: Required. Name of the DomainListEntry resource. Format: projects/{pr
+      oject}/locations/{location}/domainLists/{domain_list}/entries/{entry}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsDomainListsEntriesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsEntriesListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    pageSize: Optional. Requested page size. The default value is 500; the
+      maximum value is 1000, and values above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous call.
+    parent: Required. Parent value for ListDomainListEntriesRequest. Format:
+      projects/{project}/locations/{location}/domainLists/{domain_list}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class NetworksecurityProjectsLocationsDomainListsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsGetRequest object.
+
+  Fields:
+    name: Required. Name of the DomainList resource. Format:
+      projects/{project}/locations/{location}/domainLists/{domain_list}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsDomainListsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    pageSize: Optional. Requested page size. The default value is 500; the
+      maximum value is 1000, and values above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous call.
+    parent: Required. Parent value for ListDomainListsRequest. Format:
+      projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class NetworksecurityProjectsLocationsDomainListsPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsDomainListsPatchRequest object.
+
+  Fields:
+    domainList: A DomainList resource to be passed as the request body.
+    name: Identifier. Name of the DomainList resource. Format:
+      projects/{project}/locations/{location}/domainLists/{domain_list}
+    requestId: Optional. A unique identifier for this request. Must be a
+      UUID4. This request is only idempotent if a `request_id` is provided.
+      See https://google.aip.dev/155 for more details.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten. If not set, all populated fields in the request will be
+      overwritten.
+  """
+
+  domainList = _messages.MessageField('DomainList', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class NetworksecurityProjectsLocationsFirewallAttachmentsCreateRequest(_messages.Message):
@@ -11330,8 +12445,6 @@ class ThreatPreventionProfile(_messages.Message):
   Fields:
     antivirusOverrides: Optional. Configuration for overriding antivirus
       actions per protocol.
-    antivirusThreatOverrides: Optional. Configuration for overriding VIRUS
-      threat actions per protocol.
     severityOverrides: Optional. Configuration for overriding threats actions
       by severity match.
     threatOverrides: Optional. Configuration for overriding threats actions by
@@ -11341,9 +12454,8 @@ class ThreatPreventionProfile(_messages.Message):
   """
 
   antivirusOverrides = _messages.MessageField('AntivirusOverride', 1, repeated=True)
-  antivirusThreatOverrides = _messages.MessageField('AntivirusThreatOverride', 2, repeated=True)
-  severityOverrides = _messages.MessageField('SeverityOverride', 3, repeated=True)
-  threatOverrides = _messages.MessageField('ThreatOverride', 4, repeated=True)
+  severityOverrides = _messages.MessageField('SeverityOverride', 2, repeated=True)
+  threatOverrides = _messages.MessageField('ThreatOverride', 3, repeated=True)
 
 
 class TlsCertificateFiles(_messages.Message):

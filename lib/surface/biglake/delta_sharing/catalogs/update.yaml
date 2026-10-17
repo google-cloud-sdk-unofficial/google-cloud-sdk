@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
   help_text:
     brief: Update a BigLake Delta Sharing catalog.
     description: |
@@ -43,6 +45,9 @@
       help_text: The interval for refreshing metadata from the remote catalog (e.g. 300s or 5m).
       type: "googlecloudsdk.calliope.arg_parsers:Duration:"
       processor: googlecloudsdk.command_lib.biglake.delta_sharing:GetDurationString
+    - arg_name: service-directory-name
+      api_field: deltaSharingCatalog.federatedCatalogOptions.serviceDirectoryName
+      help_text: The service directory resource name for private networking.
     - arg_name: cross-cloud-cache
       api_field: deltaSharingCatalog.federatedCatalogOptions.crossCloudCacheOptions.enabled
       help_text: |-
@@ -55,6 +60,8 @@
       - arg_value: disabled
       processor: googlecloudsdk.command_lib.biglake.delta_sharing:ParseCrossCloudCache
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Update a BigLake Delta Sharing catalog.
     description: |
@@ -99,6 +106,9 @@
       help_text: The interval for refreshing metadata from the remote catalog (e.g. 300s or 5m).
       type: "googlecloudsdk.calliope.arg_parsers:Duration:"
       processor: googlecloudsdk.command_lib.biglake.delta_sharing:GetDurationString
+    - arg_name: service-directory-name
+      api_field: deltaSharingCatalog.federatedCatalogOptions.serviceDirectoryName
+      help_text: The service directory resource name for private networking.
     - arg_name: cross-cloud-cache
       api_field: deltaSharingCatalog.federatedCatalogOptions.crossCloudCacheOptions.enabled
       help_text: |-

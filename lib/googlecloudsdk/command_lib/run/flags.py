@@ -1936,7 +1936,9 @@ def AddWorkerPoolScalingFlag(
       ' configure manual scaling with the given integer as a fixed instance'
       ' count. If "auto" is specified without any other scaling factor (CPU'
       ' utilization or a Pub/Sub subscription), it will default to CPU'
-      ' utilization scaling with the system default target.'
+      ' utilization scaling with the system default target. Automatic scaling'
+      ' is in private preview and is only available to allowlisted projects.'
+      ' Contact your account team or support to get your project allowlisted.'
   )
   parser.add_argument(
       '--scaling',
@@ -2624,7 +2626,9 @@ def AddWorkerPoolCpuUtilizationFlag(parser, *, hidden=False) -> None:
       'This represents the CPU utilization target threshold for scaling up'
       ' new instances. Set a value between 0.1 and 0.90 inclusive, or "default"'
       ' to use the system default target. Values are rounded to the second'
-      ' decimal place.'
+      ' decimal place. This feature is in private preview and is only'
+      ' available to allowlisted projects. Contact your account team or'
+      ' support to get your project allowlisted.'
   )
   parser.add_argument(
       '--scaling-cpu-target',
@@ -2636,11 +2640,16 @@ def AddWorkerPoolCpuUtilizationFlag(parser, *, hidden=False) -> None:
 
 def AddWorkerPoolClearCpuUtilizationFlag(parser, *, hidden=False) -> None:
   """Add flag to clear cpu utilization scaling target for worker pools."""
+  help_text = (
+      'Clears the CPU utilization scaling target. This feature is in private'
+      ' preview and is only available to allowlisted projects. Contact your'
+      ' account team or support to get your project allowlisted.'
+  )
   parser.add_argument(
       '--clear-scaling-cpu-target',
       action='store_true',
       hidden=hidden,
-      help='Clears the CPU utilization scaling target.',
+      help=help_text,
   )
 
 
@@ -5521,11 +5530,12 @@ def SourceArg():
   )
 
 
-def NoBuildArg():
+def NoBuildArg(hidden: bool = False):
   return base.Argument(
       '--no-build',
       action='store_true',
       default=False,
+      hidden=hidden,
       help=(
           'When set, the cloud build step will be skipped and the provided'
           ' source code will be extracted directly on the base image. Your'

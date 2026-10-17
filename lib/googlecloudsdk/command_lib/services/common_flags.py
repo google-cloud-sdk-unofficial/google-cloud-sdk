@@ -429,17 +429,22 @@ def _allowed_application(parser):
   base.Argument(
       '--allowed-application',
       type=arg_parsers.ArgDict(
-          spec={
-              'sha1_fingerprint': str,
-              'package_name': str
-          },
+          spec={'sha1_fingerprint': str, 'package_name': str},
           required_keys=['sha1_fingerprint', 'package_name'],
-          max_length=2),
+          max_length=2,
+      ),
       metavar='sha1_fingerprint=SHA1_FINGERPRINT,package_name=PACKAGE_NAME',
       action='append',
-      help=('Repeatable. Specify multiple allowed applications. '
-            'The accepted keys are `sha1_fingerprint` and `package_name`.'
-           )).AddToParser(parser)
+      help=(
+          'Repeatable. Specify multiple allowed applications. '
+          'The accepted keys are `sha1_fingerprint` and `package_name`. '
+          '`sha1_fingerprint` accepts both a 20-byte colon-delimited hex '
+          'string (e.g. '
+          '`DA:39:A3:EE:5E:6B:4B:0D:32:55:BF:EF:95:60:18:90:AF:D8:07:09`) '
+          'and a 40-character non-delimited hex string (e.g. '
+          '`DA39A3EE5E6B4B0D3255BFEF95601890AFD80709`).'
+      ),
+  ).AddToParser(parser)
 
 
 def _annotations(parser):

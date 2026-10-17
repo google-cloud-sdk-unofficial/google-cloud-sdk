@@ -29,6 +29,10 @@ class ProjectNotSelectedError(OnboardingError):
   """Raised when a required project selection is not made."""
 
 
+class CloudRegionNotSelectedError(OnboardingError):
+  """Raised when a required Google Cloud region selection is not made."""
+
+
 class UnsupportedUserInputError(OnboardingError):
   """Raised when a pending user input is not supported by the CLI."""
 

@@ -52,10 +52,16 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
     self.organizations_boundaries = self.OrganizationsBoundariesService(self)
     self.organizations_capabilityConfigs = self.OrganizationsCapabilityConfigsService(self)
     self.organizations_effectiveSettings = self.OrganizationsEffectiveSettingsService(self)
+    self.organizations_locations_semanticTagBindings = self.OrganizationsLocationsSemanticTagBindingsService(self)
+    self.organizations_locations_semanticTagValues = self.OrganizationsLocationsSemanticTagValuesService(self)
+    self.organizations_locations = self.OrganizationsLocationsService(self)
     self.organizations_settings = self.OrganizationsSettingsService(self)
     self.organizations = self.OrganizationsService(self)
     self.projects_capabilityConfigs = self.ProjectsCapabilityConfigsService(self)
     self.projects_effectiveSettings = self.ProjectsEffectiveSettingsService(self)
+    self.projects_locations_semanticTagBindings = self.ProjectsLocationsSemanticTagBindingsService(self)
+    self.projects_locations_semanticTagValues = self.ProjectsLocationsSemanticTagValuesService(self)
+    self.projects_locations = self.ProjectsLocationsService(self)
     self.projects_settings = self.ProjectsSettingsService(self)
     self.projects = self.ProjectsService(self)
     self.tagBindings = self.TagBindingsService(self)
@@ -1558,6 +1564,333 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class OrganizationsLocationsSemanticTagBindingsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_semanticTagBindings resource."""
+
+    _NAME = 'organizations_locations_semanticTagBindings'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.OrganizationsLocationsSemanticTagBindingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a `SemanticTagBinding` under the specified parent. Binds a target Google Cloud resource to a `SemanticTagValue`. The binding ID is server-generated. Returns `ALREADY_EXISTS` if a binding already exists for the same target resource, semantic tag key, and semantic tag value. Returns `FAILED_PRECONDITION` if: - Scope mismatch: An organization-scoped value can only be bound to resources within that organization, and a project-scoped value can only be bound to resources within that project. System-managed values can be bound to any resource. Cross-project and cross-organization bindings are not permitted. - Scope exclusivity: If a key allows multiple values on a resource, all bound values for that key on the resource must originate from the same scope tier (all system-managed, all organization-scoped, or all project-scoped).
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagBindings',
+        http_method='POST',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagBindings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['validateOnly'],
+        relative_path='v3/{+parent}/semanticTagBindings',
+        request_field='semanticTagBinding',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a specific `SemanticTagBinding` by its resource name, detaching the `SemanticTagValue` from the target Google Cloud resource.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagBindings/{semanticTagBindingsId}',
+        http_method='DELETE',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagBindings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['validateOnly'],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a specific `SemanticTagBinding` by its resource name.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SemanticTagBinding) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagBindings/{semanticTagBindingsId}',
+        http_method='GET',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagBindings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsGetRequest',
+        response_type_name='SemanticTagBinding',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all `SemanticTagBinding` resources attached to a specific Google Cloud resource. The target resource name must be provided via the `target_resource` field.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSemanticTagBindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagBindings',
+        http_method='GET',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagBindings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'targetResource'],
+        relative_path='v3/{+parent}/semanticTagBindings',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsListRequest',
+        response_type_name='ListSemanticTagBindingsResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsSemanticTagValuesService(base_api.BaseApiService):
+    """Service class for the organizations_locations_semanticTagValues resource."""
+
+    _NAME = 'organizations_locations_semanticTagValues'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.OrganizationsLocationsSemanticTagValuesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a `SemanticTagValue` under an organization or project. The value payload is validated against the associated `SemanticTagKey` schema.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagValuesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagValues',
+        http_method='POST',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagValues.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['semanticTagValueId', 'validateOnly'],
+        relative_path='v3/{+parent}/semanticTagValues',
+        request_field='semanticTagValue',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagValuesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a `SemanticTagValue`. Fails with `FAILED_PRECONDITION` if the value is currently bound to any Google Cloud resource.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagValuesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagValues/{semanticTagValuesId}',
+        http_method='DELETE',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagValues.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['validateOnly'],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagValuesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a `SemanticTagValue` by its resource name.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagValuesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SemanticTagValue) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagValues/{semanticTagValuesId}',
+        http_method='GET',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagValues.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagValuesGetRequest',
+        response_type_name='SemanticTagValue',
+        supports_download=False,
+    )
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a `SemanticTagValue`. The returned policy may be empty if no such policy or resource exists. The `resource` field should be the `SemanticTagValue`'s resource name.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagValuesGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagValues/{semanticTagValuesId}:getIamPolicy',
+        http_method='POST',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagValues.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v3/{+resource}:getIamPolicy',
+        request_field='getIamPolicyRequest',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagValuesGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists `SemanticTagValue` resources under an organization or project (including system-managed predefined values maintained in `projects/gcp-semantic-tags-catalog`).
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagValuesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSemanticTagValuesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagValues',
+        http_method='GET',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagValues.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v3/{+parent}/semanticTagValues',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagValuesListRequest',
+        response_type_name='ListSemanticTagValuesResponse',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on a `SemanticTagValue`, replacing any existing policy. The `resource` field should be the `SemanticTagValue`'s resource name.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagValuesSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagValues/{semanticTagValuesId}:setIamPolicy',
+        http_method='POST',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagValues.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v3/{+resource}:setIamPolicy',
+        request_field='setIamPolicyRequest',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagValuesSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified `SemanticTagValue`. The `resource` field should be the `SemanticTagValue`'s resource name.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsLocationsSemanticTagValuesTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/locations/{locationsId}/semanticTagValues/{semanticTagValuesId}:testIamPermissions',
+        http_method='POST',
+        method_id='cloudresourcemanager.organizations.locations.semanticTagValues.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v3/{+resource}:testIamPermissions',
+        request_field='testIamPermissionsRequest',
+        request_type_name='CloudresourcemanagerOrganizationsLocationsSemanticTagValuesTestIamPermissionsRequest',
+        response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsService(base_api.BaseApiService):
+    """Service class for the organizations_locations resource."""
+
+    _NAME = 'organizations_locations'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.OrganizationsLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
   class OrganizationsSettingsService(base_api.BaseApiService):
     """Service class for the organizations_settings resource."""
 
@@ -2055,6 +2388,333 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         response_type_name='EffectiveSetting',
         supports_download=False,
     )
+
+  class ProjectsLocationsSemanticTagBindingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_semanticTagBindings resource."""
+
+    _NAME = 'projects_locations_semanticTagBindings'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.ProjectsLocationsSemanticTagBindingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a `SemanticTagBinding` under the specified parent. Binds a target Google Cloud resource to a `SemanticTagValue`. The binding ID is server-generated. Returns `ALREADY_EXISTS` if a binding already exists for the same target resource, semantic tag key, and semantic tag value. Returns `FAILED_PRECONDITION` if: - Scope mismatch: An organization-scoped value can only be bound to resources within that organization, and a project-scoped value can only be bound to resources within that project. System-managed values can be bound to any resource. Cross-project and cross-organization bindings are not permitted. - Scope exclusivity: If a key allows multiple values on a resource, all bound values for that key on the resource must originate from the same scope tier (all system-managed, all organization-scoped, or all project-scoped).
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagBindingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagBindings',
+        http_method='POST',
+        method_id='cloudresourcemanager.projects.locations.semanticTagBindings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['validateOnly'],
+        relative_path='v3/{+parent}/semanticTagBindings',
+        request_field='semanticTagBinding',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagBindingsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a specific `SemanticTagBinding` by its resource name, detaching the `SemanticTagValue` from the target Google Cloud resource.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagBindingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagBindings/{semanticTagBindingsId}',
+        http_method='DELETE',
+        method_id='cloudresourcemanager.projects.locations.semanticTagBindings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['validateOnly'],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagBindingsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a specific `SemanticTagBinding` by its resource name.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagBindingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SemanticTagBinding) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagBindings/{semanticTagBindingsId}',
+        http_method='GET',
+        method_id='cloudresourcemanager.projects.locations.semanticTagBindings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagBindingsGetRequest',
+        response_type_name='SemanticTagBinding',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all `SemanticTagBinding` resources attached to a specific Google Cloud resource. The target resource name must be provided via the `target_resource` field.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagBindingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSemanticTagBindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagBindings',
+        http_method='GET',
+        method_id='cloudresourcemanager.projects.locations.semanticTagBindings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'targetResource'],
+        relative_path='v3/{+parent}/semanticTagBindings',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagBindingsListRequest',
+        response_type_name='ListSemanticTagBindingsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSemanticTagValuesService(base_api.BaseApiService):
+    """Service class for the projects_locations_semanticTagValues resource."""
+
+    _NAME = 'projects_locations_semanticTagValues'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.ProjectsLocationsSemanticTagValuesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a `SemanticTagValue` under an organization or project. The value payload is validated against the associated `SemanticTagKey` schema.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagValuesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagValues',
+        http_method='POST',
+        method_id='cloudresourcemanager.projects.locations.semanticTagValues.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['semanticTagValueId', 'validateOnly'],
+        relative_path='v3/{+parent}/semanticTagValues',
+        request_field='semanticTagValue',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagValuesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a `SemanticTagValue`. Fails with `FAILED_PRECONDITION` if the value is currently bound to any Google Cloud resource.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagValuesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagValues/{semanticTagValuesId}',
+        http_method='DELETE',
+        method_id='cloudresourcemanager.projects.locations.semanticTagValues.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['validateOnly'],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagValuesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a `SemanticTagValue` by its resource name.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagValuesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SemanticTagValue) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagValues/{semanticTagValuesId}',
+        http_method='GET',
+        method_id='cloudresourcemanager.projects.locations.semanticTagValues.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagValuesGetRequest',
+        response_type_name='SemanticTagValue',
+        supports_download=False,
+    )
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a `SemanticTagValue`. The returned policy may be empty if no such policy or resource exists. The `resource` field should be the `SemanticTagValue`'s resource name.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagValuesGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagValues/{semanticTagValuesId}:getIamPolicy',
+        http_method='POST',
+        method_id='cloudresourcemanager.projects.locations.semanticTagValues.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v3/{+resource}:getIamPolicy',
+        request_field='getIamPolicyRequest',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagValuesGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists `SemanticTagValue` resources under an organization or project (including system-managed predefined values maintained in `projects/gcp-semantic-tags-catalog`).
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagValuesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSemanticTagValuesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagValues',
+        http_method='GET',
+        method_id='cloudresourcemanager.projects.locations.semanticTagValues.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v3/{+parent}/semanticTagValues',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagValuesListRequest',
+        response_type_name='ListSemanticTagValuesResponse',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on a `SemanticTagValue`, replacing any existing policy. The `resource` field should be the `SemanticTagValue`'s resource name.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagValuesSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagValues/{semanticTagValuesId}:setIamPolicy',
+        http_method='POST',
+        method_id='cloudresourcemanager.projects.locations.semanticTagValues.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v3/{+resource}:setIamPolicy',
+        request_field='setIamPolicyRequest',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagValuesSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified `SemanticTagValue`. The `resource` field should be the `SemanticTagValue`'s resource name.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagValuesTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagValues/{semanticTagValuesId}:testIamPermissions',
+        http_method='POST',
+        method_id='cloudresourcemanager.projects.locations.semanticTagValues.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v3/{+resource}:testIamPermissions',
+        request_field='testIamPermissionsRequest',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagValuesTestIamPermissionsRequest',
+        response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsService(base_api.BaseApiService):
+    """Service class for the projects_locations resource."""
+
+    _NAME = 'projects_locations'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.ProjectsLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
 
   class ProjectsSettingsService(base_api.BaseApiService):
     """Service class for the projects_settings resource."""

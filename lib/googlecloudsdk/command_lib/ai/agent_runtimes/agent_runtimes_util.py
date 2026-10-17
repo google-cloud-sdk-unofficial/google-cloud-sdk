@@ -23,7 +23,10 @@ the CLI experience.
 
 from __future__ import annotations
 
+import functools
+import json
 import os
+import re
 from typing import Any
 
 from apitools.base.py import encoding
@@ -33,7 +36,9 @@ from googlecloudsdk.api_lib.ai.agent_runtimes import client
 from googlecloudsdk.api_lib.cloudbuild import snapshot
 from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.api_lib.util import messages as messages_util
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import exceptions as gcloud_exceptions
+from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import operations_util
@@ -56,6 +61,7 @@ _SOURCE_ARCHIVE_NAME = 'source.tar.gz'
 _DEFAULT_SECRET_VERSION = 'latest'
 _AGENT_RUNTIME_CREATE_DISPLAY_MESSAGE = """\
 Request to create the agent runtime [{id}] has been sent.
+Operation: [{operation_name}]
 
 You may view the status of your agent runtime with the command
 
@@ -93,6 +99,9 @@ _FLAG_TO_MASKS = {
     'dns_peering_configs': (
         'spec.deployment_spec.psc_interface_config.dns_peering_configs',
     ),
+    'clear_dns_peering_configs': (
+        'spec.deployment_spec.psc_interface_config.dns_peering_configs',
+    ),
     'client_to_agent_gateway': ('spec.deployment_spec.agent_gateway_config',),
     'agent_to_anywhere_gateway': ('spec.deployment_spec.agent_gateway_config',),
     'keep_alive_probe_path': ('spec.deployment_spec.keep_alive_probe',),
@@ -102,6 +111,24 @@ _FLAG_TO_MASKS = {
     'traffic_split_to_revisions': ('traffic_config',),
 }
 
+_BACKEND_FIELD_PATTERNS = (
+    r'spec\.[a-zA-Z0-9_.]+',
+    r'traffic_config(?:\.[a-zA-Z0-9_.]*)?',
+    r'secret_env',
+    r'env',
+    r'display_name',
+    r'description',
+    r'labels',
+)
+_FIELD_REGEX = '|'.join(_BACKEND_FIELD_PATTERNS)
+_UNQUOTED_FIELD_REGEX = (
+    r'spec\.[a-zA-Z0-9_.]+|traffic_config(?:\.[a-zA-Z0-9_.]*)?'
+)
+
+_BACKEND_ERROR_FIELD_RE = re.compile(
+    rf'(?P<quote>\\?[\x27\"\`])(?P<quoted_field>{_FIELD_REGEX})(?P=quote)'
+    rf'|\b(?P<unquoted_field>{_UNQUOTED_FIELD_REGEX})\b'
+)
 
 # --- Operation & Execution Helpers ---
 
@@ -142,6 +169,9 @@ def CommandPrefix(release_track) -> str:
   return ' '.join(filter(None, ('gcloud', release_track.prefix)))
 
 
+# --- Validation Helpers ---
+
+
 def ValidateRegion(region: str) -> None:
   """Validates that the region is supported in the default universe."""
   if properties.IsDefaultUniverse():
@@ -150,49 +180,371 @@ def ValidateRegion(region: str) -> None:
     )
 
 
-def CreateRuntime(
-    region_ref: resources.Resource,
-    args: Any,
-    release_track: Any,
-    asynchronous: bool = False,
-) -> Any:
-  """Creates an agent runtime and waits for the operation."""
-  region = region_ref.AsDict()['locationsId']
-  ValidateRegion(region)
-  validation.ValidateDisplayName(args.display_name)
-  with endpoint_util.AiplatformEndpointOverrides(
-      constants.BETA_VERSION, region=region
+def ValidateDisplayName(
+    display_name: str | None, required: bool = False
+) -> None:
+  """Validates the display name flag."""
+  if required and not display_name:
+    raise gcloud_exceptions.RequiredArgumentException(
+        '--display-name',
+        'The --display-name flag is required when creating a new agent'
+        ' runtime.',
+    )
+  if display_name is not None:
+    validation.ValidateDisplayName(display_name)
+
+
+def ValidateTrafficSplitToRevisions(
+    traffic_split_to_revisions: dict[str, int] | None,
+) -> None:
+  """Validates traffic split percentage distribution across revisions."""
+  if traffic_split_to_revisions is None:
+    return
+  for revision, percentage in traffic_split_to_revisions.items():
+    if percentage < 0:
+      raise gcloud_exceptions.InvalidArgumentException(
+          '--traffic-split-to-revisions',
+          'Traffic percentage for [{}] must be non-negative, got [{}].'.format(
+              revision, percentage
+          ),
+      )
+  total = sum(traffic_split_to_revisions.values())
+  if total != 100:
+    raise gcloud_exceptions.InvalidArgumentException(
+        '--traffic-split-to-revisions',
+        'The sum of all traffic split percentages must be 100, got'
+        ' [{}].'.format(total),
+    )
+
+
+_UPDATE_ONLY_FLAGS = (
+    '--etag',
+    '--traffic-split-to-revisions',
+    '--traffic-split-always-latest',
+    '--update-env-vars',
+    '--remove-env-vars',
+    '--clear-env-vars',
+    '--update-secret-env-vars',
+    '--remove-secret-env-vars',
+    '--clear-secret-env-vars',
+    '--update-labels',
+    '--remove-labels',
+    '--clear-labels',
+)
+
+
+def ValidateCreateArgs(args: Any, for_deploy: bool = False) -> None:
+  """Validates flags when creating a new agent runtime."""
+  ValidateDisplayName(args.display_name, required=True)
+  if for_deploy:
+    if not args.image and not args.source:
+      raise gcloud_exceptions.OneOfArgumentsRequiredException(
+          ['--image', '--source'],
+          'Exactly one of [--image, --source] must be specified when creating a'
+          ' new agent runtime.',
+      )
+    for flag in _UPDATE_ONLY_FLAGS:
+      dest = flag.lstrip('-').replace('-', '_')
+      if getattr(args, dest, None):
+        raise gcloud_exceptions.InvalidArgumentException(
+            flag,
+            'The {} flag only applies when updating an existing agent'
+            ' runtime.'.format(flag),
+        )
+
+
+_UPDATE_FLAGS = (
+    '--display-name',
+    '--description',
+    '--image',
+    '--source',
+    '--agent-framework',
+    '--agent-card-file',
+    '--class-methods-file',
+    '--service-account',
+    '--default-service-account',
+    '--use-agent-identity',
+    '--min-instances',
+    '--max-instances',
+    '--container-concurrency',
+    '--agent-server-mode',
+    '--cpu-limit',
+    '--memory-limit',
+    '--env-vars',
+    '--update-env-vars',
+    '--remove-env-vars',
+    '--clear-env-vars',
+    '--secret-env-vars',
+    '--update-secret-env-vars',
+    '--remove-secret-env-vars',
+    '--clear-secret-env-vars',
+    '--network-attachment',
+    '--dns-peering-configs',
+    '--clear-dns-peering-configs',
+    '--client-to-agent-gateway',
+    '--agent-to-anywhere-gateway',
+    '--keep-alive-probe-path',
+    '--keep-alive-probe-port',
+    '--keep-alive-probe-timeout',
+    '--traffic-split-always-latest',
+    '--traffic-split-to-revisions',
+    '--update-labels',
+    '--remove-labels',
+    '--clear-labels',
+)
+
+
+def _HasAtLeastOneUpdateFlag(args: Any) -> bool:
+  """Returns True if at least one updateable flag was specified."""
+  if any(_IsFlagSpecified(args, flag) for flag in _FLAG_TO_MASKS):
+    return True
+  labels_diff = labels_util.Diff.FromUpdateArgs(args)
+  return labels_diff.MayHaveUpdates()
+
+
+def ValidateUpdateArgs(args: Any, for_deploy: bool = False) -> None:
+  """Validates flags when updating an existing agent runtime."""
+  if for_deploy:
+    if args.kms_key_name:
+      raise gcloud_exceptions.InvalidArgumentException(
+          '--kms-key-name',
+          'The --kms-key-name flag only applies when creating a new agent'
+          ' runtime.',
+      )
+    if _IsFlagSpecified(args, 'labels'):
+      raise gcloud_exceptions.InvalidArgumentException(
+          '--labels',
+          'The --labels flag only applies when creating a new agent'
+          ' runtime. Use --update-labels, --remove-labels, or --clear-labels to'
+          ' modify labels of an existing runtime.',
+      )
+  if not _HasAtLeastOneUpdateFlag(args):
+    raise gcloud_exceptions.MinimumArgumentException(
+        _UPDATE_FLAGS,
+        'Please specify at least one property to update.',
+    )
+  ValidateDisplayName(args.display_name, required=False)
+  ValidateTrafficSplitToRevisions(args.traffic_split_to_revisions)
+
+
+# --- API Execution Helpers ---
+
+
+def _CandidatesForField(field: str) -> list[str]:
+  """Returns candidate flag dest names for a given backend resource field.
+
+  Args:
+    field: The backend field or update mask path.
+
+  Returns:
+    Sorted list of candidate flag destination names.
+  """
+  if field in ('labels', 'labels_diff'):
+    return ['update_labels', 'remove_labels', 'clear_labels', 'labels']
+  if field in (
+      'encryption_spec',
+      'encryption_spec.kms_key_name',
+      'kms_key_name',
   ):
-    runtimes_client = client.AgentRuntimesClient(version=constants.BETA_VERSION)
-    agent_runtime = AgentRuntimeBuilder(runtimes_client).Build(args)
-    try:
-      operation = runtimes_client.Create(
-          region_ref.RelativeName(), agent_runtime
-      )
-    except apitools_exceptions.HttpError as error:
-      raise api_exceptions.HttpException(
-          error,
-          'ResponseError: code={status_code}, message={status_message}',
-      )
-    op_ref = ParseOperation(operation.name)
-    runtime_id = op_ref.AsDict().get('reasoningEnginesId')
+    return ['kms_key_name']
+  if field == 'spec.identity_type':
+    return ['use_agent_identity']
+  if field == 'spec.service_account':
+    return ['service_account', 'default_service_account']
+  matches = set()
+  for flag, masks in _FLAG_TO_MASKS.items():
+    for mask in masks:
+      if (
+          mask == field
+          or field.startswith(mask + '.')
+          or mask.startswith(field + '.')
+          or mask.endswith('.' + field)
+          or field.endswith('.' + mask)
+      ):
+        matches.add(flag)
+  return sorted(matches)
+
+
+def _ReplaceFieldMatch(match: re.Match[str], args: Any = None) -> str:
+  """Replaces a matched backend field name with corresponding CLI flags.
+
+  Args:
+    match: The regex match object for the backend field.
+    args: The parsed command-line arguments namespace.
+
+  Returns:
+    The formatted replacement string with user-facing flags.
+  """
+  quote = match.group('quote') or ''
+  field = match.group('quoted_field') or match.group('unquoted_field')
+  candidates = _CandidatesForField(field)
+  if not candidates:
+    return match.group(0)
+  used = [
+      flag
+      for flag in candidates
+      if args is not None and getattr(args, flag, None) is not None
+  ]
+  flags_to_show = used if used else candidates
+  formatted = ['--' + flag.replace('_', '-') for flag in flags_to_show]
+  flags_str = (
+      formatted[0] if len(formatted) == 1 else '[' + ', '.join(formatted) + ']'
+  )
+  if quote:
+    return f'{quote}{flags_str}{quote}'
+  return flags_str
+
+
+def TranslateBackendErrorMessage(message: str, args: Any = None) -> str:
+  """Translates protobuf field paths in backend error messages to CLI flags."""
+  if not message:
+    return message
+
+  return _BACKEND_ERROR_FIELD_RE.sub(
+      functools.partial(_ReplaceFieldMatch, args=args), message
+  )
+
+
+def _ExecuteApiCall(api_call, *args, cmd_args: Any = None, **kwargs):
+  """Executes an apitools client method and wraps HttpError."""
+  try:
+    return api_call(*args, **kwargs)
+  except apitools_exceptions.HttpError as error:
+    if cmd_args is not None and error.content:
+      try:
+        payload = json.loads(error.content)
+        payload['error']['message'] = TranslateBackendErrorMessage(
+            payload['error']['message'], cmd_args
+        )
+        error.content = json.dumps(payload)
+      except (ValueError, KeyError, TypeError):
+        pass
+    raise api_exceptions.HttpException(
+        error, 'ResponseError: code={status_code}, message={status_message}'
+    )
+
+
+def _WaitForOperation(
+    operation: Any,
+    message: str,
+    asynchronous: bool = False,
+    cmd_args: Any = None,
+) -> tuple[Any, resources.Resource]:
+  """Waits for an operation or returns early if asynchronous."""
+  op_ref = ParseOperation(operation.name)
+  try:
     response = operations_util.WaitForOpMaybe(
         operations_client=operations.OperationsClient(),
         op=operation,
         op_ref=op_ref,
         asynchronous=asynchronous,
-        message='Waiting for the agent runtime to be created...',
+        message=message,
     )
+  except waiter.OperationError as e:
+    error_msg = str(e)
+    if 'Body:' in error_msg:
+      try:
+        body = error_msg.split('Body:', 1)[1]
+        payload = json.loads(body[body.find('{') : body.rfind('}') + 1])
+        error_msg = payload['error']['message']
+      except (ValueError, KeyError, TypeError):
+        pass
+    if cmd_args is not None:
+      error_msg = TranslateBackendErrorMessage(error_msg, cmd_args)
+    raise waiter.OperationError(error_msg) from e
+  return response, op_ref
+
+
+def CreateRuntime(
+    region_ref: resources.Resource,
+    args: Any,
+    release_track: Any,
+    asynchronous: bool = False,
+    for_deploy: bool = False,
+) -> Any:
+  """Creates an agent runtime and waits for the operation."""
+  ValidateCreateArgs(args, for_deploy=for_deploy)
+  region = region_ref.AsDict()['locationsId']
+  ValidateRegion(region)
+  with endpoint_util.AiplatformEndpointOverrides(
+      constants.BETA_VERSION, region=region
+  ):
+    runtimes_client = client.AgentRuntimesClient(version=constants.BETA_VERSION)
+    agent_runtime = AgentRuntimeBuilder(runtimes_client).Build(args)
+    operation = _ExecuteApiCall(
+        runtimes_client.Create,
+        region_ref.RelativeName(),
+        agent_runtime,
+        cmd_args=args,
+    )
+    response, op_ref = _WaitForOperation(
+        operation,
+        message='Waiting for the agent runtime to be created...',
+        asynchronous=asynchronous,
+        cmd_args=args,
+    )
+    runtime_id = op_ref.AsDict().get('reasoningEnginesId')
     if asynchronous:
       log.status.Print(
           _AGENT_RUNTIME_CREATE_DISPLAY_MESSAGE.format(
               id=runtime_id,
+              operation_name=operation.name,
               region=region,
               command_prefix=CommandPrefix(release_track),
           )
       )
     else:
       log.CreatedResource(runtime_id, kind='agent runtime')
+    return response
+
+
+def UpdateRuntime(
+    runtime_ref: resources.Resource,
+    args: Any,
+    release_track: Any,
+    asynchronous: bool = False,
+    for_deploy: bool = False,
+) -> Any:
+  """Updates an existing agent runtime and waits for the operation."""
+  del release_track  # Unused for now.
+  ValidateUpdateArgs(args, for_deploy=for_deploy)
+  region = runtime_ref.locationsId
+  ValidateRegion(region)
+
+  with endpoint_util.AiplatformEndpointOverrides(
+      constants.BETA_VERSION, region=region
+  ):
+    runtimes_client = client.AgentRuntimesClient(version=constants.BETA_VERSION)
+    existing_runtime = _ExecuteApiCall(
+        runtimes_client.Get,
+        runtime_ref.RelativeName(),
+        cmd_args=args,
+    )
+    agent_runtime = AgentRuntimeBuilder(runtimes_client).BuildForUpdate(
+        args, existing_runtime=existing_runtime
+    )
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    has_labels_update = (
+        labels_diff.MayHaveUpdates() and agent_runtime.labels is not None
+    )
+    update_mask_paths = GetUpdateMaskPaths(
+        args, has_labels_update=has_labels_update
+    )
+    update_mask = ','.join(update_mask_paths) if update_mask_paths else None
+    operation = _ExecuteApiCall(
+        runtimes_client.Update,
+        runtime_ref.RelativeName(),
+        agent_runtime,
+        update_mask=update_mask,
+        cmd_args=args,
+    )
+    response, _ = _WaitForOperation(
+        operation,
+        message='Waiting for the agent runtime to be updated...',
+        asynchronous=asynchronous,
+        cmd_args=args,
+    )
+    log.UpdatedResource(runtime_ref.reasoningEnginesId, kind='agent runtime')
     return response
 
 
@@ -250,8 +602,12 @@ def _SourceArchive(source: str) -> bytes:
     The bytes of the compressed archive.
 
   Raises:
-    InvalidArgumentException: If `source` is not a directory.
+    InvalidArgumentException: If `source` does not exist or is not a directory.
   """
+  if not os.path.exists(source):
+    raise gcloud_exceptions.InvalidArgumentException(
+        '--source', 'Directory [{}] does not exist.'.format(source)
+    )
   if not os.path.isdir(source):
     raise gcloud_exceptions.InvalidArgumentException(
         '--source', 'Expected a directory but got [{}].'.format(source)
@@ -266,8 +622,13 @@ def _SourceArchive(source: str) -> bytes:
 
 
 def _IsFlagSpecified(args, flag_name: str) -> bool:
+  if hasattr(args, 'IsKnownAndSpecified'):
+    return args.IsKnownAndSpecified(flag_name)
   if hasattr(args, 'IsSpecified'):
-    return args.IsSpecified(flag_name)
+    try:
+      return args.IsSpecified(flag_name)
+    except parser_errors.UnknownDestinationException:
+      return False
   val = getattr(args, flag_name, None)
   return val is not None
 
@@ -365,8 +726,8 @@ class AgentRuntimeBuilder:
     return traffic_config_cls(
         trafficSplitManual=manual_cls(
             targets=[
-                target_cls(runtimeRevisionName=rev, percent=pct)
-                for rev, pct in sorted(targets.items())
+                target_cls(runtimeRevisionName=revision, percent=percentage)
+                for revision, percentage in sorted(targets.items())
             ]
         )
     )
@@ -524,15 +885,6 @@ class AgentRuntimeBuilder:
     if args.source is None:
       return None
 
-    image_spec = None
-    if args.build_args:
-      image_spec_cls = (
-          self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpecSourceCodeSpecImageSpec
-      )
-      image_spec = image_spec_cls(
-          buildArgs=_StringMap(image_spec_cls.BuildArgsValue, args.build_args)
-      )
-
     python_spec = None
     if any((
         args.entrypoint_module,
@@ -548,6 +900,18 @@ class AgentRuntimeBuilder:
               version=args.python_version,
           )
       )
+
+    image_spec = None
+    if not python_spec:
+      image_spec_cls = (
+          self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpecSourceCodeSpecImageSpec
+      )
+      build_args = (
+          _StringMap(image_spec_cls.BuildArgsValue, args.build_args)
+          if getattr(args, 'build_args', None)
+          else None
+      )
+      image_spec = image_spec_cls(buildArgs=build_args)
 
     inline_source = (
         self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpecSourceCodeSpecInlineSource(
@@ -694,20 +1058,25 @@ class AgentRuntimeBuilder:
 
   def _PscInterfaceConfig(self, args) -> Any:
     """Builds `deployment_spec.psc_interface_config`."""
-    dns_peering_config_cls = (
-        self._messages.GoogleCloudAiplatformV1beta1DnsPeeringConfig
-    )
-    dns_peering_configs = [
-        dns_peering_config_cls(
-            domain=config['domain'],
-            targetNetwork=config['target-network'],
-            targetProject=config['target-project'],
-        )
-        for config in args.dns_peering_configs or []
-    ]
+    if getattr(args, 'clear_dns_peering_configs', False):
+      dns_peering_configs = []
+    elif args.dns_peering_configs:
+      dns_peering_config_cls = (
+          self._messages.GoogleCloudAiplatformV1beta1DnsPeeringConfig
+      )
+      dns_peering_configs = [
+          dns_peering_config_cls(
+              domain=config['domain'],
+              targetNetwork=config['target-network'],
+              targetProject=config['target-project'],
+          )
+          for config in args.dns_peering_configs
+      ]
+    else:
+      dns_peering_configs = None
     return _BuildIfAny(
         self._messages.GoogleCloudAiplatformV1beta1PscInterfaceConfig,
-        dnsPeeringConfigs=dns_peering_configs or None,
+        dnsPeeringConfigs=dns_peering_configs,
         networkAttachment=args.network_attachment,
     )
 

@@ -6,7 +6,7 @@
     examples: |
       To list file diffs for pull request `1` of repository `my-repo` and location `us-central1`, run the following command:
 
-      $ {command} --pull-request=1 --repository=my-repo --region=us-central1
+      $ {command} 1 --repository=my-repo --region=us-central1
 
   command_type: LIST
 

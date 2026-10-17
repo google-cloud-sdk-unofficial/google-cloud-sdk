@@ -233,6 +233,24 @@ def _AddAgentModeConfig(
     cluster.agentModeConfig = alloydb_messages.AgentModeConfig(mode=agent_mode)
 
 
+def _AddExpressConfig(
+    cluster: messages.Message,
+    alloydb_messages: types.ModuleType,
+    args: argparse.Namespace,
+) -> None:
+  """Sets expressConfig on cluster if enable_express is specified in args.
+
+  Args:
+    cluster: The cluster message to populate.
+    alloydb_messages: The AlloyDB messages module.
+    args: The parsed command-line arguments.
+  """
+  if getattr(args, 'enable_express', None) is not None:
+    cluster.expressConfig = alloydb_messages.ExpressConfig(
+        enabled=args.enable_express
+    )
+
+
 def _ConstructClusterForCreateRequestBeta(alloydb_messages, args):
   """Returns the cluster for beta create request based on args."""
   cluster = _ConstructClusterForCreateRequestGA(alloydb_messages, args)
@@ -247,6 +265,7 @@ def _ConstructClusterForCreateRequestBeta(alloydb_messages, args):
   if getattr(args, 'edition', None) is not None:
     cluster.edition = args.edition
   _AddAgentModeConfig(cluster, alloydb_messages, args)
+  _AddExpressConfig(cluster, alloydb_messages, args)
 
   return cluster
 
@@ -611,6 +630,9 @@ def _ConstructClusterAndMaskForPatchRequestBeta(alloydb_messages, args):
   if getattr(args, 'enable_agent_mode', None) is not None:
     _AddAgentModeConfig(cluster, alloydb_messages, args)
     update_masks.append('agent_mode_config.mode')
+  if getattr(args, 'enable_express', None) is not None:
+    _AddExpressConfig(cluster, alloydb_messages, args)
+    update_masks.append('express_config.enabled')
 
   return cluster, update_masks
 

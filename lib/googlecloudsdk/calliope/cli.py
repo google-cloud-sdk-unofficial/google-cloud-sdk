@@ -1000,6 +1000,14 @@ class CLI(object):
           from googlecloudsdk.core import gocloud_verifier
           gocloud_verifier.Verify(args, go_payload_json)
         except Exception as e:  # pylint: disable=broad-except
+          # In strict mode, any verification failure fails the command. Read
+          # the environment directly: if the import above failed,
+          # gocloud_verifier is not defined here.
+          if (
+              encoding.GetEncodedValue(os.environ, 'GOCLOUD_STRICT_PARITY')
+              == '1'
+          ):
+            raise
           log.debug('Go verification failed: %s', e)
 
       # -h|--help|--document are dispatched by parse_args and never get here.

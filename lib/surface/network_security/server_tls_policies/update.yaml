@@ -29,7 +29,7 @@ help_text:
           --clear-client-validation-relaxations
 
 arguments:
-  additional_arguments_hook: googlecloudsdk.command_lib.network_security.util:OrderServerTlsPolicyMutexGroupHook
+  additional_arguments_hook: googlecloudsdk.command_lib.network_security.util:UpdateServerTlsPolicyArgumentsHook
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:serverTlsPolicy
     help_text: |
@@ -148,8 +148,6 @@ arguments:
                   List of gRPC endpoint target URIs used to obtain the Certificate
                   Authority certificates to validate peer certificates for a
                   ServerTlsPolicy configured for Traffic Director.
-  labels:
-    api_field: serverTlsPolicy.labels
 
 async:
   collection: networksecurity.projects.locations.operations

@@ -373,17 +373,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_MULTICASTGROUPDEFINITIONS = (
-      'projects.locations.multicastGroupDefinitions',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'multicastGroupDefinitions/{multicastGroupDefinitionsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_MULTICASTGROUPPRODUCERACTIVATIONS = (
       'projects.locations.multicastGroupProducerActivations',
       '{+name}',
@@ -415,17 +404,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'multicastGroupRanges/{multicastGroupRangesId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_MULTICASTGROUPS = (
-      'projects.locations.multicastGroups',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/multicastGroups/'
-              '{multicastGroupsId}',
       },
       ['name'],
       True

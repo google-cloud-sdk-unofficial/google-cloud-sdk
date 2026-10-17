@@ -1013,6 +1013,8 @@ class CreateClusterOptions(object):
       disable_multi_nic_lustre=None,
       enable_default_compute_class=None,
       default_compute_class=None,
+      enable_cluster_scale_to_zero=None,
+      cluster_scale_to_zero_delay=None,
       enable_k8s_certs_via_dns=None,
       boot_disk_provisioned_iops=None,
       boot_disk_provisioned_throughput=None,
@@ -1348,6 +1350,8 @@ class CreateClusterOptions(object):
     self.disable_multi_nic_lustre = disable_multi_nic_lustre
     self.enable_default_compute_class = enable_default_compute_class
     self.default_compute_class = default_compute_class
+    self.enable_cluster_scale_to_zero = enable_cluster_scale_to_zero
+    self.cluster_scale_to_zero_delay = cluster_scale_to_zero_delay
     self.enable_k8s_certs_via_dns = enable_k8s_certs_via_dns
     self.boot_disk_provisioned_iops = boot_disk_provisioned_iops
     self.boot_disk_provisioned_throughput = boot_disk_provisioned_throughput
@@ -1571,6 +1575,8 @@ class UpdateClusterOptions(object):
       disable_multi_nic_lustre=None,
       enable_default_compute_class=None,
       default_compute_class=None,
+      enable_cluster_scale_to_zero=None,
+      cluster_scale_to_zero_delay=None,
       enable_k8s_certs_via_dns=None,
       boot_disk_provisioned_iops=None,
       boot_disk_provisioned_throughput=None,
@@ -1832,6 +1838,8 @@ class UpdateClusterOptions(object):
     self.disable_multi_nic_lustre = disable_multi_nic_lustre
     self.enable_default_compute_class = enable_default_compute_class
     self.default_compute_class = default_compute_class
+    self.enable_cluster_scale_to_zero = enable_cluster_scale_to_zero
+    self.cluster_scale_to_zero_delay = cluster_scale_to_zero_delay
     self.enable_k8s_certs_via_dns = enable_k8s_certs_via_dns
     self.boot_disk_provisioned_iops = boot_disk_provisioned_iops
     self.boot_disk_provisioned_throughput = boot_disk_provisioned_throughput
@@ -4316,18 +4324,21 @@ class APIAdapter(object):
 
       gpu_driver_version = options.accelerators.get('gpu-driver-version', None)
       if gpu_driver_version is not None:
+        specific_version = None
+        driver_version_enum = (
+            self.messages.GPUDriverInstallationConfig.GpuDriverVersionValueValuesEnum
+        )
         if gpu_driver_version.lower() == 'default':
-          gpu_driver_version = (
-              self.messages.GPUDriverInstallationConfig.GpuDriverVersionValueValuesEnum.DEFAULT
-          )
+          gpu_driver_version = driver_version_enum.DEFAULT
         elif gpu_driver_version.lower() == 'latest':
-          gpu_driver_version = (
-              self.messages.GPUDriverInstallationConfig.GpuDriverVersionValueValuesEnum.LATEST
-          )
+          gpu_driver_version = driver_version_enum.LATEST
         elif gpu_driver_version.lower() == 'disabled':
-          gpu_driver_version = (
-              self.messages.GPUDriverInstallationConfig.GpuDriverVersionValueValuesEnum.INSTALLATION_DISABLED
-          )
+          gpu_driver_version = driver_version_enum.INSTALLATION_DISABLED
+        elif re.match(
+            r'^(R\d{3}|\d{3}\.\d{2,3}\.\d{2})$', gpu_driver_version
+        ):
+          specific_version = gpu_driver_version
+          gpu_driver_version = driver_version_enum.SPECIFIC
         else:
           raise util.Error(GPU_DRIVER_VERSION_ERROR_MSG)
 
@@ -4336,6 +4347,8 @@ class APIAdapter(object):
                 gpuDriverVersion=gpu_driver_version
             )
         )
+        if specific_version is not None:
+          gpu_driver_installation_config.specificVersion = specific_version
         accelerator_config.gpuDriverInstallationConfig = (
             gpu_driver_installation_config
         )
@@ -4767,6 +4780,10 @@ class APIAdapter(object):
             options.default_compute_class
         )
       autoscaling.defaultComputeClassConfig = default_compute_class_config
+
+    scale_to_zero_config = _GetScaleToZeroConfig(options, self.messages)
+    if scale_to_zero_config is not None:
+      autoscaling.scaleToZeroConfig = scale_to_zero_config
     resource_limits = []
     if options.autoprovisioning_config_file is not None:
       util.ValidateAutoprovisioningConfigFile(
@@ -11051,6 +11068,10 @@ class V1Beta1Adapter(V1Adapter):
         )
       autoscaling.defaultComputeClassConfig = default_compute_class_config
 
+    scale_to_zero_config = _GetScaleToZeroConfig(options, self.messages)
+    if scale_to_zero_config is not None:
+      autoscaling.scaleToZeroConfig = scale_to_zero_config
+
     resource_limits = []
     if options.autoprovisioning_config_file is not None:
       util.ValidateAutoprovisioningConfigFile(
@@ -11978,6 +11999,10 @@ class V1Alpha1Adapter(V1Beta1Adapter):
             options.default_compute_class
         )
       autoscaling.defaultComputeClassConfig = default_compute_class_config
+
+    scale_to_zero_config = _GetScaleToZeroConfig(options, self.messages)
+    if scale_to_zero_config is not None:
+      autoscaling.scaleToZeroConfig = scale_to_zero_config
 
     if options.autopilot_general_profile is not None:
       autopilot_general_profile_enum = _GetAutopilotGeneralProfileEnum(
@@ -13280,6 +13305,21 @@ def _GetControlPlaneEgress(options, messages):
   return control_plane_egress
 
 
+def _GetScaleToZeroConfig(options, messages):
+  """Builds ScaleToZeroConfig from cluster options if specified."""
+  if (
+      options.enable_cluster_scale_to_zero is None
+      and options.cluster_scale_to_zero_delay is None
+  ):
+    return None
+  scale_to_zero_config = messages.ScaleToZeroConfig()
+  if options.enable_cluster_scale_to_zero is not None:
+    scale_to_zero_config.enabled = options.enable_cluster_scale_to_zero
+  if options.cluster_scale_to_zero_delay is not None:
+    scale_to_zero_config.delay = str(options.cluster_scale_to_zero_delay) + 's'
+  return scale_to_zero_config
+
+
 def _GetAutopilotGeneralProfileEnum(options, messages):
   """Converts the user-provided autopilot-general-profile to the API enum.
 
@@ -13463,4 +13503,6 @@ def _ClusterAutoscalingOptionsChanged(options):
       or options.enable_default_compute_class is not None
       or options.default_compute_class is not None
       or options.autopilot_general_profile is not None
+      or options.enable_cluster_scale_to_zero is not None
+      or options.cluster_scale_to_zero_delay is not None
   )

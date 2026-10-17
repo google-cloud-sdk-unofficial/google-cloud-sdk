@@ -7664,7 +7664,8 @@ class SslConfig(_messages.Message):
   Messages:
     SslFlagsValue: Optional. SSL flags used for establishing SSL connection to
       the source database. Only source specific flags are supported. An object
-      containing a list of "key": "value" pairs. Example: {
+      containing a list of "key": "value" pairs. Examples: {
+      "server_certificate_dn": "CN=server.com,OU=RDS,O=Amazon.com,C=US"} or {
       "server_certificate_hostname": "server.com"}.
 
   Fields:
@@ -7679,7 +7680,8 @@ class SslConfig(_messages.Message):
       used then the 'client_certificate' field is mandatory.
     sslFlags: Optional. SSL flags used for establishing SSL connection to the
       source database. Only source specific flags are supported. An object
-      containing a list of "key": "value" pairs. Example: {
+      containing a list of "key": "value" pairs. Examples: {
+      "server_certificate_dn": "CN=server.com,OU=RDS,O=Amazon.com,C=US"} or {
       "server_certificate_hostname": "server.com"}.
     type: Optional. The ssl config type according to 'client_key',
       'client_certificate' and 'ca_certificate'.
@@ -7708,8 +7710,9 @@ class SslConfig(_messages.Message):
   class SslFlagsValue(_messages.Message):
     r"""Optional. SSL flags used for establishing SSL connection to the source
     database. Only source specific flags are supported. An object containing a
-    list of "key": "value" pairs. Example: { "server_certificate_hostname":
-    "server.com"}.
+    list of "key": "value" pairs. Examples: { "server_certificate_dn":
+    "CN=server.com,OU=RDS,O=Amazon.com,C=US"} or {
+    "server_certificate_hostname": "server.com"}.
 
     Messages:
       AdditionalProperty: An additional property for a SslFlagsValue object.

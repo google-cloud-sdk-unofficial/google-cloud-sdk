@@ -1921,6 +1921,23 @@ class DataplexProjectsLocationsEntryGroupsPatchRequest(_messages.Message):
   validateOnly = _messages.BooleanField(4)
 
 
+class DataplexProjectsLocationsEntryGroupsRequestBatchMetadataChangeRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsEntryGroupsRequestBatchMetadataChangeRequest
+  object.
+
+  Fields:
+    googleCloudDataplexV1RequestBatchMetadataChangeRequest: A
+      GoogleCloudDataplexV1RequestBatchMetadataChangeRequest resource to be
+      passed as the request body.
+    name: Required. The resource name of the Entry Group on which the change
+      applies. Format:
+      projects/{project}/locations/{location}/entryGroups/{entry_group}
+  """
+
+  googleCloudDataplexV1RequestBatchMetadataChangeRequest = _messages.MessageField('GoogleCloudDataplexV1RequestBatchMetadataChangeRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DataplexProjectsLocationsEntryGroupsSetIamPolicyRequest(_messages.Message):
   r"""A DataplexProjectsLocationsEntryGroupsSetIamPolicyRequest object.
 
@@ -4937,6 +4954,126 @@ class GoogleCloudDataplexV1AssetStatus(_messages.Message):
   updateTime = _messages.StringField(3)
 
 
+class GoogleCloudDataplexV1BatchChangeMetadataRequest(_messages.Message):
+  r"""Request message for batch changing metadata. Requires permission to
+  perform the underlying change, depending on the type and content of the
+  change. Per operation, required permissions are: - for CreateEntry:
+  dataplex.entries.create - for UpdateEntry: dataplex.entries.update - for
+  DeleteEntry: dataplex.entries.delete - for CreateEntryLink:
+  dataplex.entryLinks.create - for UpdateEntryLink: dataplex.entryLinks.update
+  - for DeleteEntryLink: dataplex.entryLinks.deleteAnd per used type
+  permissions are: - for EntryType: dataplex.entryTypes.use or
+  dataplex.entryGroups.useEntry for reusable built-in types, - for AspectType:
+  dataplex.aspectTypes.use or dataplex.entryGroups.useAspect for reusable
+  built-in types and - for EntryLinkType: dataplex.entryLinkTypes.use or
+  dataplex.entryGroups.useEntryLink for reusable built-in types.
+
+  Fields:
+    changes: Required. The list of changes to apply. Only a single change per
+      resource is supported. Maximum number of changes supported is 250.
+    description: Optional. Text description of the batch change.
+    name: Required. The resource name of the EntryGroup on which the batch
+      change applies. Format: projects/{project_number_or_id}/locations/{locat
+      ion_id}/entryGroups/{entry_group_id}
+  """
+
+  changes = _messages.MessageField('GoogleCloudDataplexV1BatchChangeMetadataRequestChange', 1, repeated=True)
+  description = _messages.MessageField('GoogleCloudDataplexV1BatchChangeMetadataRequestDescription', 2)
+  name = _messages.StringField(3)
+
+
+class GoogleCloudDataplexV1BatchChangeMetadataRequestChange(_messages.Message):
+  r"""Detailed description of an individual change.
+
+  Fields:
+    createEntryLinkRequest: Payload for creating an EntryLink.
+    createEntryRequest: Payload for creating an Entry.
+    deleteEntryLinkRequest: Payload for deleting an EntryLink.
+    deleteEntryRequest: Payload for deleting an Entry.
+    updateEntryLinkRequest: Payload for updating an EntryLink.
+    updateEntryRequest: Payload for updating an Entry.
+  """
+
+  createEntryLinkRequest = _messages.MessageField('GoogleCloudDataplexV1CreateEntryLinkRequest', 1)
+  createEntryRequest = _messages.MessageField('GoogleCloudDataplexV1CreateEntryRequest', 2)
+  deleteEntryLinkRequest = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryLinkRequest', 3)
+  deleteEntryRequest = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryRequest', 4)
+  updateEntryLinkRequest = _messages.MessageField('GoogleCloudDataplexV1UpdateEntryLinkRequest', 5)
+  updateEntryRequest = _messages.MessageField('GoogleCloudDataplexV1UpdateEntryRequest', 6)
+
+
+class GoogleCloudDataplexV1BatchChangeMetadataRequestDescription(_messages.Message):
+  r"""Description of the batch change.
+
+  Fields:
+    content: Optional. The text description content.
+    job: Optional. The job that created the batch change.
+  """
+
+  content = _messages.StringField(1)
+  job = _messages.MessageField('GoogleCloudDataplexV1BatchChangeMetadataRequestDescriptionJob', 2)
+
+
+class GoogleCloudDataplexV1BatchChangeMetadataRequestDescriptionJob(_messages.Message):
+  r"""Description of the job that created the batch change.
+
+  Fields:
+    name: Optional. The name of the job that created the batch change. For
+      example: projects/{project_number}/locations/{location_id}/enrichmentTas
+      ks/{enrichment_task_id}/runs/{enrichment_run_id}
+    runTime: Optional. The start time of the job run that created the batch
+      change.
+  """
+
+  name = _messages.StringField(1)
+  runTime = _messages.StringField(2)
+
+
+class GoogleCloudDataplexV1BatchChangeMetadataResponse(_messages.Message):
+  r"""Response message for BatchChangeMetadata.
+
+  Messages:
+    FailedRequestsValue: A map of failed requests for a batch change, where
+      the key is the 0-based index of the failed request in the batch and the
+      value is the error status. If all operations succeeded, this map is
+      empty.
+
+  Fields:
+    failedRequests: A map of failed requests for a batch change, where the key
+      is the 0-based index of the failed request in the batch and the value is
+      the error status. If all operations succeeded, this map is empty.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class FailedRequestsValue(_messages.Message):
+    r"""A map of failed requests for a batch change, where the key is the
+    0-based index of the failed request in the batch and the value is the
+    error status. If all operations succeeded, this map is empty.
+
+    Messages:
+      AdditionalProperty: An additional property for a FailedRequestsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type FailedRequestsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a FailedRequestsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A GoogleRpcStatus attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('GoogleRpcStatus', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  failedRequests = _messages.MessageField('FailedRequestsValue', 1)
+
+
 class GoogleCloudDataplexV1BusinessGlossaryEvent(_messages.Message):
   r"""Payload associated with Business Glossary related log events.
 
@@ -5013,6 +5150,10 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
       the ChangeRequest.
     author: Output only. The email address of the user who created the
       ChangeRequest.
+    batchChangeMetadataRequest: Payload for executing a batch of catalog
+      changes.
+    batchChangeMetadataResponse: Output only. Result of applying a batch
+      change metadata request.
     changeType: Output only. The type of change represented by the
       change_payload. This field is derived from the populated field in the
       change_payload oneof.
@@ -5077,6 +5218,7 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
       UPDATE_GLOSSARY_TERM: Request to update a GlossaryTerm.
       DELETE_GLOSSARY_TERM: Request to delete a GlossaryTerm.
       REQUEST_DATA_PRODUCT_ACCESS: Request to request Data Product access.
+      BATCH_CHANGE_METADATA: Request to execute a batch of catalog changes.
     """
     CHANGE_TYPE_UNSPECIFIED = 0
     CREATE_ENTRY = 1
@@ -5094,6 +5236,7 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
     UPDATE_GLOSSARY_TERM = 13
     DELETE_GLOSSARY_TERM = 14
     REQUEST_DATA_PRODUCT_ACCESS = 15
+    BATCH_CHANGE_METADATA = 16
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current state of the ChangeRequest.
@@ -5105,6 +5248,9 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
       REJECTED: The change has been rejected.
       EXPIRED: The change request has expired.
       REVOKED: The approved change has been revoked.
+      APPLYING: The change request has been approved and changes are currently
+        being applied.
+      FAILED: The change request execution failed.
     """
     STATE_UNSPECIFIED = 0
     NEW = 1
@@ -5112,6 +5258,8 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
     REJECTED = 3
     EXPIRED = 4
     REVOKED = 5
+    APPLYING = 6
+    FAILED = 7
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -5139,33 +5287,35 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
 
   approver = _messages.StringField(1)
   author = _messages.StringField(2)
-  changeType = _messages.EnumField('ChangeTypeValueValuesEnum', 3)
-  createEntry = _messages.MessageField('GoogleCloudDataplexV1CreateEntryRequest', 4)
-  createEntryLink = _messages.MessageField('GoogleCloudDataplexV1CreateEntryLinkRequest', 5)
-  createGlossary = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryRequest', 6)
-  createGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryCategoryRequest', 7)
-  createGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryTermRequest', 8)
-  createTime = _messages.StringField(9)
-  dataProductAccessRequest = _messages.MessageField('GoogleCloudDataplexV1DataProductAccessRequest', 10)
-  deleteEntry = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryRequest', 11)
-  deleteEntryLink = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryLinkRequest', 12)
-  deleteGlossary = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryRequest', 13)
-  deleteGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryCategoryRequest', 14)
-  deleteGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryTermRequest', 15)
-  etag = _messages.StringField(16)
-  justification = _messages.StringField(17)
-  labels = _messages.MessageField('LabelsValue', 18)
-  name = _messages.StringField(19)
-  rejectionComment = _messages.StringField(20)
-  resource = _messages.StringField(21)
-  reviewerComment = _messages.StringField(22)
-  state = _messages.EnumField('StateValueValuesEnum', 23)
-  uid = _messages.StringField(24)
-  updateEntry = _messages.MessageField('GoogleCloudDataplexV1UpdateEntryRequest', 25)
-  updateGlossary = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryRequest', 26)
-  updateGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryCategoryRequest', 27)
-  updateGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryTermRequest', 28)
-  updateTime = _messages.StringField(29)
+  batchChangeMetadataRequest = _messages.MessageField('GoogleCloudDataplexV1BatchChangeMetadataRequest', 3)
+  batchChangeMetadataResponse = _messages.MessageField('GoogleCloudDataplexV1BatchChangeMetadataResponse', 4)
+  changeType = _messages.EnumField('ChangeTypeValueValuesEnum', 5)
+  createEntry = _messages.MessageField('GoogleCloudDataplexV1CreateEntryRequest', 6)
+  createEntryLink = _messages.MessageField('GoogleCloudDataplexV1CreateEntryLinkRequest', 7)
+  createGlossary = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryRequest', 8)
+  createGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryCategoryRequest', 9)
+  createGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1CreateGlossaryTermRequest', 10)
+  createTime = _messages.StringField(11)
+  dataProductAccessRequest = _messages.MessageField('GoogleCloudDataplexV1DataProductAccessRequest', 12)
+  deleteEntry = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryRequest', 13)
+  deleteEntryLink = _messages.MessageField('GoogleCloudDataplexV1DeleteEntryLinkRequest', 14)
+  deleteGlossary = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryRequest', 15)
+  deleteGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryCategoryRequest', 16)
+  deleteGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1DeleteGlossaryTermRequest', 17)
+  etag = _messages.StringField(18)
+  justification = _messages.StringField(19)
+  labels = _messages.MessageField('LabelsValue', 20)
+  name = _messages.StringField(21)
+  rejectionComment = _messages.StringField(22)
+  resource = _messages.StringField(23)
+  reviewerComment = _messages.StringField(24)
+  state = _messages.EnumField('StateValueValuesEnum', 25)
+  uid = _messages.StringField(26)
+  updateEntry = _messages.MessageField('GoogleCloudDataplexV1UpdateEntryRequest', 27)
+  updateGlossary = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryRequest', 28)
+  updateGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryCategoryRequest', 29)
+  updateGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryTermRequest', 30)
+  updateTime = _messages.StringField(31)
 
 
 class GoogleCloudDataplexV1ContactIdentity(_messages.Message):
@@ -10973,6 +11123,61 @@ class GoogleCloudDataplexV1RejectChangeRequestRequest(_messages.Message):
   etag = _messages.StringField(2)
 
 
+class GoogleCloudDataplexV1RequestBatchMetadataChangeRequest(_messages.Message):
+  r"""Request message for submitting a set of catalog changes proposals.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels for the metadata change
+      request.
+
+  Fields:
+    changePayload: Required. The detailed specification of the proposed
+      changes. This payload is intended to be embedded as the change_payload
+      in the resulting ChangeRequest.
+    justification: Optional. Justification for the metadata change request.
+    labels: Optional. User-defined labels for the metadata change request.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels for the metadata change request.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  changePayload = _messages.MessageField('GoogleCloudDataplexV1BatchChangeMetadataRequest', 1)
+  justification = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+
+
+class GoogleCloudDataplexV1RequestBatchMetadataChangeResponse(_messages.Message):
+  r"""Response message containing the reference to the created change request.
+
+  Fields:
+    changeRequest: The resource name of the created ChangeRequest. Format:
+      projects/{project}/locations/{location}/changeRequests/{change_request}
+  """
+
+  changeRequest = _messages.StringField(1)
+
+
 class GoogleCloudDataplexV1RequestDataProductAccessRequest(_messages.Message):
   r"""Message for requesting access to a Data Product.
 
@@ -12049,6 +12254,25 @@ class GoogleCloudDataplexV1TriggerSchedule(_messages.Message):
   """
 
   cron = _messages.StringField(1)
+
+
+class GoogleCloudDataplexV1UpdateEntryLinkRequest(_messages.Message):
+  r"""Request message for UpdateEntryLink method.
+
+  Fields:
+    allowMissing: Optional. If set to true and the entry link doesn't exist,
+      the service will create it.
+    aspectKeys: Optional. The map keys of the Aspects which the service should
+      modify. It should be the aspect type reference in the format
+      {project_id_or_number}.{location_id}.{aspect_type_id}.If this field is
+      left empty, the service treats it as specifying exactly those Aspects
+      present in the request.
+    entryLink: Required. Entry Link resource.
+  """
+
+  allowMissing = _messages.BooleanField(1)
+  aspectKeys = _messages.StringField(2, repeated=True)
+  entryLink = _messages.MessageField('GoogleCloudDataplexV1EntryLink', 3)
 
 
 class GoogleCloudDataplexV1UpdateEntryRequest(_messages.Message):

@@ -21,6 +21,7 @@ import logging
 import threading
 import time
 
+from google.auth import exceptions as google_auth_exceptions
 from googlecloudsdk.api_lib.compute import iap_tunnel_websocket_helper as helper
 from googlecloudsdk.api_lib.compute import iap_tunnel_websocket_utils as utils
 from googlecloudsdk.core import context_aware
@@ -28,6 +29,7 @@ from googlecloudsdk.core import ecp_proxy_manager
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.util import retry
 import six
 from six.moves import queue
@@ -86,6 +88,59 @@ class SubprotocolInvalidAckError(exceptions.Error):
 
 class SubprotocolOutOfOrderAckError(exceptions.Error):
   pass
+
+
+# google.auth errors that indicate transient network or I/O problems. These are
+# typically raised without an explicit retryable flag (which defaults to False),
+# so they must be classified by type rather than by `retryable`.
+_TRANSIENT_GOOGLE_AUTH_ERRORS = (
+    google_auth_exceptions.TransportError,
+    google_auth_exceptions.TimeoutError,
+    google_auth_exceptions.ResponseError,
+)
+
+# gcloud credential errors that always require user action (re-login, reauth,
+# or a context aware access policy change), so retrying cannot help.
+_FATAL_CREDS_ERRORS = (
+    creds_exceptions.NoActiveAccountException,
+    creds_exceptions.TokenRefreshDeniedByCAAError,
+    creds_exceptions.TokenRefreshReauthError,
+    creds_exceptions.WebLoginRequiredReauthError,
+)
+
+
+def _IsNonRetryableAuthError(exc):
+  """Returns True if exc is an auth error that retrying will not resolve.
+
+  Transient errors (network failures, timeouts, and refresh errors explicitly
+  marked retryable such as 5xx responses) return False so the reconnect loop
+  keeps retrying. Permanent errors (e.g. an OAuth/STS invalid_grant, or errors
+  requiring the user to re-login) return True so the tunnel fails fast instead
+  of repeatedly calling the token endpoint.
+
+  Args:
+    exc: Exception, the exception raised while attempting to reconnect.
+
+  Returns:
+    bool, True if exc is a non-retryable authentication error.
+  """
+  if isinstance(exc, _FATAL_CREDS_ERRORS):
+    return True
+  if isinstance(exc, creds_exceptions.TokenRefreshError):
+    # TokenRefreshError wraps the underlying google.auth error. Classify based
+    # on the cause; if it is unknown, keep the previous (retry) behavior.
+    cause = exc.__cause__ or exc.__context__
+    if isinstance(cause, google_auth_exceptions.GoogleAuthError):
+      return _IsNonRetryableAuthError(cause)
+    return False
+  if isinstance(exc, _TRANSIENT_GOOGLE_AUTH_ERRORS):
+    return False
+  if isinstance(
+      exc,
+      (google_auth_exceptions.RefreshError, google_auth_exceptions.OAuthError),
+  ):
+    return not exc.retryable
+  return False
 
 
 class IapTunnelWebSocket(object):
@@ -214,12 +269,15 @@ class IapTunnelWebSocket(object):
 
     def ShouldRetry(exc_type, exc_value, exc_traceback, state):
       # We retry on most exceptions (e.g. connection drops), but we fail fast
-      # if the ECP proxy fails to start (EcpProxyStartError) since retrying
-      # will not resolve a local configuration or binary startup failure.
-      del exc_value, exc_traceback, state  # Unused
+      # if the ECP proxy fails to start (EcpProxyStartError) or if credential
+      # refresh fails with a non-retryable error (e.g. invalid_grant), since
+      # retrying will not resolve a local configuration, binary startup, or
+      # permanent authentication failure. Transient auth errors (network
+      # failures, timeouts, retryable refresh errors) are still retried.
+      del exc_traceback, state  # Unused
       if issubclass(exc_type, EcpProxyStartError):
         return False
-      return True
+      return not _IsNonRetryableAuthError(exc_value)
 
     try:
       r.RetryOnException(
@@ -234,6 +292,18 @@ class IapTunnelWebSocket(object):
     except EcpProxyStartError as e:
       log.warning(
           '[%d] ECP HTTP Proxy failed to start during reconnect: %s',
+          self._conn_id,
+          e,
+      )
+      self._StopConnectionAsync()
+    except (
+        creds_exceptions.Error,
+        google_auth_exceptions.GoogleAuthError,
+    ) as e:
+      if not _IsNonRetryableAuthError(e):
+        raise
+      log.warning(
+          '[%d] Authentication failed during reconnect: %s',
           self._conn_id,
           e,
       )

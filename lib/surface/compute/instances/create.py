@@ -129,6 +129,7 @@ def _CommonArgs(
     support_vsock_mode=False,
     support_standard_tier=False,
     support_local_ssd_encryption_mode=False,
+    support_local_ssd_cmek_encryption=False,
     support_expose_host_topology=False,
     include_kms_key_service_account=False,
     support_external_ip_tier=False,
@@ -284,7 +285,9 @@ def _CommonArgs(
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
   if support_local_ssd_encryption_mode:
-    instances_flags.AddLocalSsdEncryptionModeArgs(parser)
+    instances_flags.AddLocalSsdEncryptionModeArgs(
+        parser, support_cmek_encryption=support_local_ssd_cmek_encryption
+    )
 
   if support_instance_kms:
     instances_flags.AddInstanceKmsArgs(
@@ -1014,6 +1017,7 @@ class CreateBeta(Create):
         support_dns64_eligible=cls._support_dns64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
         support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
+        support_local_ssd_cmek_encryption=True,
         support_standard_tier=True,
         support_expose_host_topology=cls._support_expose_host_topology,
         include_kms_key_service_account=True,
@@ -1154,6 +1158,7 @@ class CreateAlpha(CreateBeta):
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
         support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
+        support_local_ssd_cmek_encryption=True,
         support_standard_tier=True,
         support_expose_host_topology=cls._support_expose_host_topology,
         include_kms_key_service_account=True,

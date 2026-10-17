@@ -15,7 +15,6 @@
 """Open Secure Source Manager issue command."""
 
 from googlecloudsdk.api_lib.securesourcemanager import issues
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import resource_args
 from googlecloudsdk.core import log
@@ -59,23 +58,13 @@ class Open(base.Command):
     open_operation = client.Open(issue_ref, etag=args.etag)
 
     if args.async_:
+      log.status.Print(
+          "Open request issued for [{}].".format(issue_ref.RelativeName())
+      )
       return open_operation
 
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if open_operation.done or not open_operation.name:
-      if open_operation.error:
-        raise waiter.OperationError(
-            open_operation.error.message or str(open_operation.error)
-        )
-      log.status.Print(
-          "Open request completed for [{}].".format(issue_ref.RelativeName())
-      )
-      return open_operation.response
-
-    response = client.WaitForOperation(
-        client.GetOperationRef(open_operation),
-        "Waiting for issue to be opened",
-        has_result=True,
+    response = client.GetOperationResult(
+        open_operation, "Waiting for issue to be opened"
     )
     log.status.Print(
         "Open request completed for [{}].".format(issue_ref.RelativeName())

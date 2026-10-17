@@ -17,10 +17,11 @@
 from googlecloudsdk.api_lib.dataflow import apis as dataflow_apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import config_store_util
+from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new Dataflow ConfigStore setting."""
 
@@ -85,4 +86,8 @@ class Create(base.CreateCommand):
         configStoreSettingId=setting_ref.Name(),
         configStoreSetting=setting_obj,
     )
-    return service.Create(request)
+    response = service.Create(request)
+    log.CreatedResource(
+        setting_ref.RelativeName(), kind='ConfigStore setting'
+    )
+    return response

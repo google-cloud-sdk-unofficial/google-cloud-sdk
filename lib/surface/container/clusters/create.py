@@ -214,6 +214,27 @@ def ParseCreateOptionsBase(
 
   flags.ValidateNotificationConfigFlag(args)
 
+  if (
+      is_autopilot
+      and args.IsKnownAndSpecified('enable_cluster_scale_to_zero')
+      and not args.enable_cluster_scale_to_zero
+  ):
+    raise exceptions.InvalidArgumentException(
+        '--no-enable-cluster-scale-to-zero',
+        'Cannot disable cluster scale-to-zero on Autopilot clusters.',
+    )
+
+  if (
+      not is_autopilot
+      and args.IsKnownAndSpecified('cluster_scale_to_zero_delay')
+      and not args.enable_cluster_scale_to_zero
+  ):
+    raise exceptions.InvalidArgumentException(
+        '--cluster-scale-to-zero-delay',
+        '--enable-cluster-scale-to-zero must be specified when'
+        ' --cluster-scale-to-zero-delay is specified.',
+    )
+
   ephemeral_storage_local_ssd = None
   if args.IsKnownAndSpecified('ephemeral_storage_local_ssd'):
     ephemeral_storage_local_ssd = (
@@ -603,6 +624,8 @@ def ParseCreateOptionsBase(
       enable_agent_sandbox=enable_agent_sandbox,
       enable_default_compute_class=get_default('enable_default_compute_class'),
       default_compute_class=get_default('default_compute_class'),
+      enable_cluster_scale_to_zero=get_default('enable_cluster_scale_to_zero'),
+      cluster_scale_to_zero_delay=get_default('cluster_scale_to_zero_delay'),
       enable_k8s_certs_via_dns=get_default('enable_k8s_certs_via_dns'),
       boot_disk_provisioned_iops=get_default('boot_disk_provisioned_iops'),
       boot_disk_provisioned_throughput=get_default(
@@ -900,6 +923,7 @@ flags_to_add = {
         ),
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'defaultComputeClass': flags.AddDefaultComputeClassFlag,
+        'scaleToZeroFlags': lambda p: flags.AddScaleToZeroFlags(p, hidden=True),
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
         'adaptivePodAllocationMode': (
@@ -919,7 +943,7 @@ flags_to_add = {
         ),
         'enableSliceController': flags.AddEnableSliceControllerFlag,
         'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
-        'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=True),
+        'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=False),
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1149,6 +1173,7 @@ flags_to_add = {
         'disableMultiNicLustre': flags.AddDisableMultiNicLustreFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'defaultComputeClass': flags.AddDefaultComputeClassFlag,
+        'scaleToZeroFlags': lambda p: flags.AddScaleToZeroFlags(p, hidden=True),
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
         'adaptivePodAllocationMode': (
@@ -1178,7 +1203,7 @@ flags_to_add = {
             p, hidden=True
         ),
         'enableScheduledUpgrades': flags.AddEnableScheduledUpgradesFlag,
-        'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=True),
+        'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=False),
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1414,6 +1439,7 @@ flags_to_add = {
         'disableMultiNicLustre': flags.AddDisableMultiNicLustreFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'defaultComputeClass': flags.AddDefaultComputeClassFlag,
+        'scaleToZeroFlags': lambda p: flags.AddScaleToZeroFlags(p, hidden=True),
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
         'adaptivePodAllocationMode': (
@@ -1443,7 +1469,7 @@ flags_to_add = {
             p, hidden=True
         ),
         'enableScheduledUpgrades': flags.AddEnableScheduledUpgradesFlag,
-        'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=True),
+        'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=False),
     },
 }
 # LINT.ThenChange(create_auto.py:auto_flags)
@@ -1608,7 +1634,7 @@ class Create(base.CreateCommand):
           'Note: ' + constants.KUBERNETES_GPU_DRIVER_AUTO_INSTALL_MSG
       )
       # gpu-driver-version: The NVIDIA driver version to install. It must be one
-      # of: default, latest, disabled.
+      # of: default, latest, disabled, or a specific version (e.g. R535).
       # https://cloud.google.com/sdk/gcloud/reference/container/clusters/create
       gpu_driver_version = options.accelerators.get('gpu-driver-version', None)
       # disabled: Skip automatic driver installation. User must manually install

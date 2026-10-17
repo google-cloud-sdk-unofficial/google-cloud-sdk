@@ -247,18 +247,6 @@ multicastDomainGroup:
     attribute_name: multicast_domain_group
     help: Id of the multicast domain group.
 
-multicastGroupDefinition:
-  name: multicast group definition
-  collection: networkservices.projects.locations.multicastGroupDefinitions
-  request_id_field: multicastGroupDefinitionId
-  attributes:
-  - *project
-  - *location
-  - &multicastGroupDefinition
-    parameter_name: multicastGroupDefinitionsId
-    attribute_name: multicast_group_definition
-    help: Id of the multicast group definition.
-
 multicastGroupRange:
   name: multicast group range
   collection: networkservices.projects.locations.multicastGroupRanges
@@ -283,17 +271,6 @@ multicastDomainActivation:
     attribute_name: multicast_domain_activation
     help: Id of the multicast domain activation.
 
-multicastGroup:
-  name: multicast group
-  collection: networkservices.projects.locations.multicastGroups
-  request_id_field: multicastGroupId
-  attributes:
-  - *project
-  - *location
-  - &multicastGroup
-    parameter_name: multicastGroupsId
-    attribute_name: multicast_group
-    help: Id of the multicast group.
 
 multicastGroupRangeActivation:
   name: multicast group range activation

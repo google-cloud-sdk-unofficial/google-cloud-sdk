@@ -34,7 +34,12 @@ class Walker(object):
   """
 
   def __init__(
-      self, cli, progress_callback=None, ignore_load_errors=False, restrict=None
+      self,
+      cli,
+      progress_callback=None,
+      ignore_load_errors=False,
+      restrict=None,
+      preload=True,
   ):
     """Constructor.
 
@@ -50,6 +55,8 @@ class Walker(object):
         restricts the walk to the 'gcloud topic' and 'gcloud alpha test'
         commands/groups. When provided here, any groups above the restrictions
         in the tree will not be loaded or visited.
+      preload: bool, True to eagerly load all sub-elements up-front in the
+        constructor. False to allow lazy walkers to load sub-elements on-demand.
     """
     top = cli._TopElement()  # pylint: disable=protected-access
     if restrict:
@@ -59,17 +66,20 @@ class Walker(object):
       self._roots = [top]
 
     self._num_nodes = 0
-    if progress_callback:
-      with progress_tracker.ProgressTracker('Loading CLI Tree'):
+    if preload:
+      if progress_callback:
+        with progress_tracker.ProgressTracker('Loading CLI Tree'):
+          for root in self._roots:
+            self._num_nodes += 1.0 + root.LoadAllSubElements(
+                recursive=True, ignore_load_errors=ignore_load_errors
+            )
+      else:
         for root in self._roots:
           self._num_nodes += 1.0 + root.LoadAllSubElements(
               recursive=True, ignore_load_errors=ignore_load_errors
           )
     else:
-      for root in self._roots:
-        self._num_nodes += 1.0 + root.LoadAllSubElements(
-            recursive=True, ignore_load_errors=ignore_load_errors
-        )
+      self._num_nodes = 1.0
 
     self._num_visited = 0
     self._progress_callback = (
@@ -77,6 +87,7 @@ class Walker(object):
     )
 
   def _GetSubElement(self, top_element, path):
+
     parts = path.split('.')[1:]
     current = top_element
     for part in parts:

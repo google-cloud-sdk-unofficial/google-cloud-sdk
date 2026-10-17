@@ -48,7 +48,6 @@ class CalendarModeExtension(base.Command):
   """Get advice on the optimal end time for extending a future reservation."""
 
   detailed_help = DETAILED_HELP
-  category = base.COMPUTE_CATEGORY
 
   _FR_ARG = resource_args.GetFutureReservationResourceArg()
 

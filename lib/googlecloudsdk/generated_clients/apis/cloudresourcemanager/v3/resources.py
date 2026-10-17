@@ -175,6 +175,35 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  ORGANIZATIONS_LOCATIONS = (
+      'organizations.locations',
+      'organizations/{organizationsId}/locations/{locationsId}',
+      {},
+      ['organizationsId', 'locationsId'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS_SEMANTICTAGBINDINGS = (
+      'organizations.locations.semanticTagBindings',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}/'
+              'semanticTagBindings/{semanticTagBindingsId}',
+      },
+      ['name'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS_SEMANTICTAGVALUES = (
+      'organizations.locations.semanticTagValues',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}/'
+              'semanticTagValues/{semanticTagValuesId}',
+      },
+      ['name'],
+      True
+  )
   ORGANIZATIONS_SETTINGS = (
       'organizations.settings',
       '{+name}',
@@ -211,6 +240,35 @@ class Collections(enum.Enum):
       {
           '':
               'projects/{projectsId}/effectiveSettings/{effectiveSettingsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS = (
+      'projects.locations',
+      'projects/{projectsId}/locations/{locationsId}',
+      {},
+      ['projectsId', 'locationsId'],
+      True
+  )
+  PROJECTS_LOCATIONS_SEMANTICTAGBINDINGS = (
+      'projects.locations.semanticTagBindings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'semanticTagBindings/{semanticTagBindingsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SEMANTICTAGVALUES = (
+      'projects.locations.semanticTagValues',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'semanticTagValues/{semanticTagValuesId}',
       },
       ['name'],
       True

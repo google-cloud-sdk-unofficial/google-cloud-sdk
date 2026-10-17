@@ -3376,7 +3376,7 @@ class GoogleIamV3PolicyBinding(_messages.Message):
       `iam.googleapis.com/WorkforcePoolIdentity` -
       `iam.googleapis.com/WorkloadPoolIdentity` -
       `iam.googleapis.com/ServiceAccount` -
-      `iam.googleapis.com/AgentPoolIdentity` (available in Preview)
+      `iam.googleapis.com/AgentPoolIdentity`
     createTime: Output only. The time when the policy binding was created.
     disabled: Output only. Whether evaluation of the policy binding is
       disabled.
@@ -3871,6 +3871,7 @@ class GoogleTypeExpr(_messages.Message):
 
 class LogsProtoCloudIamAgentMetadata(_messages.Message):
   r"""Metadata about the agent that is used for logging.
+  LINT.IfChange(AgentMetadata)
 
   Fields:
     agentName: The name of the agent being used. This is expected to be

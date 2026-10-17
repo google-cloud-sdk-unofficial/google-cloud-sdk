@@ -23,22 +23,33 @@ from googlecloudsdk.calliope.base import ReleaseTrack
 from googlecloudsdk.command_lib.assured import flags
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
+    'DESCRIPTION': (
         'List all Assured Workloads environments that belong to a given parent'
-        ' organization.',
-    'EXAMPLES':
-        """ \
-        The following example command lists all Assured Workloads environments
-        with these properties:
+        ' organization.'
+    ),
+    'EXAMPLES': (
+        """\
+        To list all Assured Workloads environments belonging to organization 123 in us-central1:
 
-        * belonging to an organization with ID 123
-        * located in the `us-central1` region
-        * returning no more than 30 results
-        * requesting 10 results at a time from the backend
+          $ {command} --organization=123 --location=us-central1
 
-          $ {command} --organization=123 --location=us-central1 --limit=30 --page-size=10
-        """,
+        To list Assured Workloads V2 environments:
+
+          $ {command} --organization=123 --location=us-central1 --version=v2
+        """
+    ),
 }
+
+_FORMAT_V2 = """
+    table(
+        name.segment(-1):label=ID,
+        targetResourceDisplayName:label=DISPLAY_NAME,
+        computedTargetResource:label=TARGET_RESOURCE,
+        framework.framework:label=FRAMEWORK,
+        state:label=STATE,
+        createTime:label=CREATE_TIME
+    )
+"""
 
 
 @base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
@@ -51,14 +62,40 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     flags.AddListWorkloadsFlags(parser)
+    flags.AddVersionFlag(parser)
 
   def Run(self, args):
     """Run the list command."""
+    version = flags.GetApiVersion(args, release_track=self.ReleaseTrack())
+    if version == 'v2':
+      args.GetDisplayInfo().AddFormat(_FORMAT_V2)
+      server_filter = args.filter
+      args.filter = (
+          None  # Prevent Calliope from applying client-side post-filter
+      )
+      with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
+          release_track=self.ReleaseTrack(), region=args.location
+      ):
+        client = apis.WorkloadsClient(
+            release_track=self.ReleaseTrack(), api_version='v2'
+        )
+        return client.ListV2(
+            parent=message_util.CreateAssuredParent(
+                args.organization, args.location
+            ),
+            limit=args.limit,
+            page_size=args.page_size,
+            filter_str=server_filter,
+        )
+
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
-        release_track=self.ReleaseTrack(), region=args.location):
+        release_track=self.ReleaseTrack(), region=args.location
+    ):
       client = apis.WorkloadsClient(release_track=self.ReleaseTrack())
       return client.List(
-          parent=message_util.CreateAssuredParent(args.organization,
-                                                  args.location),
+          parent=message_util.CreateAssuredParent(
+              args.organization, args.location
+          ),
           limit=args.limit,
-          page_size=args.page_size)
+          page_size=args.page_size,
+      )

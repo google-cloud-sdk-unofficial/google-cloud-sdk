@@ -1562,8 +1562,13 @@ def WrapGoogleAuthExternalAccountRefresh(cred):
   def _WrappedRefresh(request):
     try:
       orig_refresh(request)
-    except (ValueError, TypeError, google_auth_exceptions.RefreshError) as e:
-      raise c_exceptions.TokenRefreshError(e)
+    except (
+        ValueError,
+        TypeError,
+        google_auth_exceptions.RefreshError,
+        google_auth_exceptions.OAuthError,
+    ) as e:
+      raise c_exceptions.TokenRefreshError(e) from e
 
   cred.refresh = _WrappedRefresh
   return cred

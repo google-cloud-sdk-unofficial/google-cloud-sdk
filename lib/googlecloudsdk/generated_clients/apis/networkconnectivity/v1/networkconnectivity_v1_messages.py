@@ -7649,6 +7649,9 @@ class Transport(_messages.Message):
       DEPROVISIONED: The Transport was deleted on the remote provider's end
         and is no longer operational. GCP has insufficient information to move
         the resource back to PENDING_KEY state.
+      SUSPENDED: The Transport is suspended due to an Abuse suspension or
+        Wipeout Hide event. Underlying connectivity is administratively
+        disabled.
     """
     STATE_UNSPECIFIED = 0
     CREATING = 1
@@ -7657,6 +7660,7 @@ class Transport(_messages.Message):
     ACTIVE = 4
     DELETING = 5
     DEPROVISIONED = 6
+    SUSPENDED = 7
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):

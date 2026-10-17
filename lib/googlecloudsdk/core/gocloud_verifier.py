@@ -23,9 +23,23 @@ and reports mismatches.
 import datetime
 import functools
 import json
+import os
 
 from googlecloudsdk.calliope import namespace_hydrator
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import encoding
+
+# If this environment variable is '1', a parity mismatch fails the command.
+_STRICT_PARITY_ENV = 'GOCLOUD_STRICT_PARITY'
+
+
+class ParityMismatchError(Exception):
+  """Go and Python parsed the arguments of a command differently."""
+
+
+def IsStrictParity():
+  """Returns True if a parity mismatch must fail the command."""
+  return encoding.GetEncodedValue(os.environ, _STRICT_PARITY_ENV) == '1'
 
 
 # ==============================================================================
@@ -136,7 +150,17 @@ def _NormalizePythonArgs(ns):
 
 
 def Verify(py_namespace, go_payload_json):
-  """Hydrates Go namespace from payload JSON and compares with Python namespace."""
+  """Compares the Python namespace with the Go namespace from the payload.
+
+  Logs the mismatches at debug level.
+
+  Args:
+    py_namespace: The namespace that the Python parser made.
+    go_payload_json: str, The GOCLOUD_PAYLOAD JSON that Go sent.
+
+  Raises:
+    ParityMismatchError: If there are mismatches and IsStrictParity() is True.
+  """
   payload = _ParseGoPayload(go_payload_json)
   if not payload:
     return
@@ -165,6 +189,12 @@ def Verify(py_namespace, go_payload_json):
 
   if mismatches:
     _ReportMismatches(py_cmd_path, mismatches)
+    if IsStrictParity():
+      raise ParityMismatchError(
+          'GOCLOUD ARG PARITY MISMATCH for command [{}]: {}'.format(
+              ' '.join(py_cmd_path), mismatches
+          )
+      )
 
 
 def _ParseGoPayload(go_payload_json):

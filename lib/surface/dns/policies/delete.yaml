@@ -1,5 +1,7 @@
 - &GA
   release_tracks: [GA]
+  hints:
+    read_only: false
   help_text:
     brief: Deletes a Cloud DNS policy.
     description: |

@@ -19,6 +19,7 @@ import argparse
 import json
 
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps
@@ -1006,3 +1007,128 @@ def _GetGdceClusterResourceSpec():
       locationsId=_GdceLocationAttributeConfig(),
       clustersId=GdceClusterConfig(),
   )
+
+
+def _EnvironmentLocationAttributeConfig():
+  fallthroughs = [
+      deps.PropertyFallthrough(properties.VALUES.dataproc.location),
+      deps.PropertyFallthrough(properties.VALUES.dataproc.region),
+  ]
+  return concepts.ResourceParameterAttributeConfig(
+      name='location',
+      help_text=(
+          'Google Cloud location for the {resource}. Overrides the default '
+          '`dataproc/location` or `dataproc/region` property value for this '
+          'command invocation.'
+      ),
+      fallthroughs=fallthroughs,
+  )
+
+
+def AddEnvironmentLocationResourceArg(
+    parser: parser_arguments.ArgumentInterceptor, verb: str, api_version: str
+) -> None:
+  """Adds resource arg for projects/{}/locations/{} in environments list.
+
+  Args:
+    parser: The argparse parser to add the resource argument to.
+    verb: The verb describing the operation, used in help text.
+    api_version: The Dataproc API version of the resource spec.
+  """
+  spec = concepts.ResourceSpec(
+      'dataproc.projects.locations',
+      api_version=api_version,
+      resource_name='location',
+      disable_auto_completers=True,
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=_EnvironmentLocationAttributeConfig(),
+  )
+  concept_parsers.ConceptParser.ForResource(
+      '--location',
+      spec,
+      'Google Cloud location to {0} in.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+def _EnvironmentAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='environment',
+      help_text='Environment ID.',
+  )
+
+
+def _GetEnvironmentResourceSpec(api_version):
+  return concepts.ResourceSpec(
+      'dataproc.projects.locations.environments',
+      api_version=api_version,
+      resource_name='environment',
+      disable_auto_completers=True,
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=_EnvironmentLocationAttributeConfig(),
+      environmentsId=_EnvironmentAttributeConfig(),
+  )
+
+
+def AddEnvironmentResourceArg(
+    parser: parser_arguments.ArgumentInterceptor,
+    verb: str,
+    api_version: str,
+    positional: bool = True,
+) -> None:
+  """Adds environment resource argument to parser.
+
+  Args:
+    parser: The argparse parser to add the resource argument to.
+    verb: The verb describing the operation, used in help text.
+    api_version: The Dataproc API version of the resource spec.
+    positional: Whether to add the argument as a positional `ENVIRONMENT`
+      argument instead of the `--environment` flag.
+  """
+  arg_name = 'environment' if positional else '--environment'
+  concept_parsers.ConceptParser.ForResource(
+      arg_name,
+      _GetEnvironmentResourceSpec(api_version),
+      'ID of the environment to {0}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+def _EnvironmentRevisionAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='revision',
+      help_text='Environment revision ID.',
+  )
+
+
+def _GetEnvironmentRevisionResourceSpec(api_version):
+  return concepts.ResourceSpec(
+      'dataproc.projects.locations.environments.revisions',
+      api_version=api_version,
+      resource_name='revision',
+      disable_auto_completers=True,
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=_EnvironmentLocationAttributeConfig(),
+      environmentsId=_EnvironmentAttributeConfig(),
+      revisionsId=_EnvironmentRevisionAttributeConfig(),
+  )
+
+
+def AddEnvironmentRevisionResourceArg(
+    parser: parser_arguments.ArgumentInterceptor, verb: str, api_version: str
+) -> None:
+  """Adds a positional environment revision resource argument to parser.
+
+  The parent environment is specified with the `--environment` flag.
+
+  Args:
+    parser: The argparse parser to add the resource argument to.
+    verb: The verb describing the operation, used in help text.
+    api_version: The Dataproc API version of the resource spec.
+  """
+  concept_parsers.ConceptParser.ForResource(
+      'revision',
+      _GetEnvironmentRevisionResourceSpec(api_version),
+      'ID of the environment revision to {0}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)

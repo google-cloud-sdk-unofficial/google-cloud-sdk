@@ -18,9 +18,12 @@
 import sys
 
 from googlecloudsdk.calliope import walker
+from googlecloudsdk.core import log
+from googlecloudsdk.core import yaml
 
 
 def NormalizeRestrict(restrict, top_name='gcloud'):
+
   """Normalizes command restriction paths for CLI tree walking.
 
   Args:
@@ -86,13 +89,19 @@ class ReadOnlyCommandWalker(walker.Walker):
     self._top_name = getattr(cli, 'name', 'gcloud')
     restrict = NormalizeRestrict(restrict, top_name=self._top_name)
     self._init_restrict = restrict
-    super().__init__(cli, ignore_load_errors=True, restrict=restrict)
+    super().__init__(
+        cli, ignore_load_errors=True, restrict=restrict, preload=False
+    )
     self.commands = []
     self._state = state
 
   def _GetReadOnlyState(self, node):
     """Returns 'readonly', 'mutating', or 'unannotated' for a command node."""
-    hints = getattr(node, 'hints', None)
+    try:
+      hints = getattr(node, 'hints', None)
+    except (yaml.Error, OSError) as e:
+      log.debug('Failed to load hints for %s: %s', ' '.join(node.GetPath()), e)
+      hints = None
     read_only_hint = getattr(hints, 'read_only', None)
     if isinstance(read_only_hint, bool):
       return 'readonly' if read_only_hint else 'mutating'
@@ -100,6 +109,7 @@ class ReadOnlyCommandWalker(walker.Walker):
 
   def _MatchesState(self, node):
     """Returns True if the command node matches the target read_only state."""
+
     return self._GetReadOnlyState(node) == self._state
 
   def _IsReadOnly(self, node):
@@ -175,7 +185,10 @@ class ReadOnlyCommandWalker(walker.Walker):
       if not _Include(node, traverse=True):
         return
 
+      node.LoadAllSubElements(recursive=False, ignore_load_errors=True)
+
       parent = self._Visit(node, parent, is_group=True)
+
       commands_and_groups = []
 
       if node.commands:
@@ -202,11 +215,10 @@ class ReadOnlyCommandWalker(walker.Walker):
       top = self._cli._TopElement()  # pylint: disable=protected-access
       resolved = [self._GetSubElement(top, r) for r in restrict]
       roots = [r for r in resolved if r]
-      for root in roots:
-        root.LoadAllSubElements(recursive=True, ignore_load_errors=True)
 
     self.commands = []
     self._num_visited = 0
     for root in roots:
       yield from _Walk(root, None)
     self.Done()
+

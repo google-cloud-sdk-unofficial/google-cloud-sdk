@@ -174,9 +174,7 @@ def AddDbmPortFlag(parser):
   help_text = """\
     The Database Mirroring (DBM) port.
   """
-  parser.add_argument(
-      '--dbm-port', help=help_text, required=False, type=int, hidden=True
-  )
+  parser.add_argument('--dbm-port', help=help_text, required=False, type=int)
 
 
 def AddSslConfigGroup(parser, release_track):
@@ -212,10 +210,17 @@ def AddSslServerOnlyOrRequiredConfigGroup(parser):
 def AddSslFlags(parser):
   """Adds a --ssl-flags flag to the given parser."""
   help_text = """\
-    Comma-separated list of SSL flags used for establishing SSL connection to
-    the database. Use an equals sign to separate the flag name and value.
+    List of SSL flags used for establishing SSL connection to the database.
+    Use an equals sign to separate the flag name and value. By default, flags
+    are separated by commas.
     Example:
     `--ssl-flags ssl_mode=enable,server_certificate_hostname=server.com`.
+
+    If flag values contain commas (such as RFC 2253 distinguished names for
+    `server_certificate_dn`), use an alternative delimiter with the `^DELIM^`
+    prefix syntax.
+    Example:
+    `--ssl-flags="^;^server_certificate_dn=CN=db.example.com,OU=RDS,O=Amazon.com,C=US"`.
   """
   parser.add_argument(
       '--ssl-flags',

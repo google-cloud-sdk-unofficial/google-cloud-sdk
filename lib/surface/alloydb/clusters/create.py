@@ -202,6 +202,7 @@ class CreateBeta(Create):
     alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
     flags.AddEdition(parser, alloydb_messages)
     flags.AddAgentModeFlags(parser)
+    flags.AddEnableExpress(parser)
 
   def ConstructCreateRequestFromArgs(
       self, alloydb_messages, location_ref, args

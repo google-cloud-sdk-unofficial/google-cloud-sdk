@@ -19,7 +19,16 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'BeyondCorp App Connector is deprecated and will be removed in a'
+        ' future release.'
+    ),
+    error='BeyondCorp App Connector has been removed.',
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class App(base.Group):
   """Manages application connectors and connections.
 

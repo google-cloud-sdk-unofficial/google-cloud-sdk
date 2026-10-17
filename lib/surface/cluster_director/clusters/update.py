@@ -216,11 +216,14 @@ class Update(base.UpdateCommand):
           api_version=api_version,
           include_update_flags=True,
       )
-      flags.AddSlurmDisableHealthCheckProgram(
-          parser=slurm_group, api_version=api_version, include_update_flags=True
+      flags.AddEnableSlurmHealthCheck(
+          parser=slurm_group, api_version=api_version
       )
       compute_engine_group = orchestrator_group.add_group(
-          help="Compute Engine orchestrator configuration for the cluster.",
+          help=(
+              "Configuration of orchestration type for Managed Compute"
+              " Clusters."
+          ),
       )
       flags.AddManagedInstanceGroups(
           parser=compute_engine_group,

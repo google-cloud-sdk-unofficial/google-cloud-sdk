@@ -101,7 +101,7 @@ class ComponentRef(_messages.Message):
 
   Fields:
     component: Optional. Name of the component in composite.Components
-    compositeRef: Reference to the Composite ApplicationTemplate.
+    compositeRef: Optional. Reference to the Composite ApplicationTemplate.
     revision: Optional. Revision of the component. If the component does not
       have a revision, this field will be explicitly set to the revision of
       the composite ApplicationTemplate.
@@ -342,9 +342,9 @@ class Flag(_messages.Message):
       server agree on the ordering of a resource being written.
     evaluationSpec: Optional. Specification of how the flag value should be
       evaluated. If a bool flag is created without an evaluation_spec
-      specified, two default variants, "Enabled" (with bool_value = true) and
-      "Disabled" (with bool_value = false), are created by default, and
-      "Disabled" is set as the default_target.
+      specified, two default variants, "Enabled" (with boolean_value = true)
+      and "Disabled" (with boolean_value = false), are created by default, and
+      "Disabled" is set as the default_variant.
     flagSet: Optional. Flag set this flag belongs to.
     flagValueType: Optional. Immutable. Flag value type.
     key: Required. Immutable. Flag key used in runtime evaluation APIs
@@ -1545,9 +1545,6 @@ class Rollout(_messages.Message):
       server agree on the ordering of a resource being written.
     flagRelease: Optional. Immutable. Name of the FlagRelease to be rolled out
       to the target Units. Release and FlagRelease are mutually exclusive.
-      Note: `release` comment needs to be adjusted to mention that "Release
-      and FlagRelease are mutually exclusive" when visibility restriction will
-      be lifted.
     labels: Optional. The labels on the resource, which can be used for
       categorization. similar to Kubernetes resource labels.
     name: Identifier. The resource name (full URI of the resource) following
@@ -1949,8 +1946,8 @@ class Saas(_messages.Message):
       arbitrary metadata. They are not queryable and should be preserved when
       modifying objects. More info: https://kubernetes.io/docs/user-
       guide/annotations
-    applicationTemplate: Reference to composite ApplicationTemplate. When
-      specified, the template components will be imported into their
+    applicationTemplate: Optional. Reference to composite ApplicationTemplate.
+      When specified, the template components will be imported into their
       equivalent UnitKind, Release and Blueprint resources. Deleted references
       will not delete imported resources. Should only be specified on source
       regions, and be unspecified on replica regions.

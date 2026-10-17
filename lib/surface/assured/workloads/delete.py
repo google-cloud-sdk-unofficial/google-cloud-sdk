@@ -14,56 +14,102 @@
 # limitations under the License.
 """Command to delete an existing Assured Workload."""
 
+import textwrap
+from typing import Any
 
 from googlecloudsdk.api_lib.assured import endpoint_util
 from googlecloudsdk.api_lib.assured import workloads as apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope.base import ReleaseTrack
+from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.assured import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        'Delete a given Assured Workloads environment.',
-    'EXAMPLES':
-        """ \
-        To delete an Assured Workload environment in the us-central1 region,
-        belonging to an organization with ID 123, with workload ID 456 and an
-        etag of 789, run:
+    'DESCRIPTION': 'Delete a given Assured Workloads environment.',
+    'EXAMPLES': textwrap.dedent("""\
+        To delete a V1 Assured Workload using a full resource name:
 
-          $ {command} organizations/123/locations/us-central1/workloads/456 --etag=789
-        """,
+          $ {command} organizations/123/locations/us-central1/workloads/456 \\
+              --etag=789
+
+        To delete a V1 Assured Workload using discrete resource flags:
+
+          $ {command} 456 --organization=123 --location=us-central1 --etag=789
+
+        To delete a V2 Assured Workload using a full resource name:
+
+          $ {command} organizations/123/locations/us-central1/workloads/456 \\
+              --version=v2
+
+        To delete a V2 Assured Workload using discrete resource flags:
+
+          $ {command} 456 --organization=123 --location=us-central1 --version=v2
+
+        To delete a V2 Assured Workload asynchronously:
+
+          $ {command} 456 --organization=123 --location=us-central1 --async \\
+              --version=v2
+        """),
 }
 
 
-@base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete Assured Workloads environment."""
 
   detailed_help = _DETAILED_HELP
 
-  @staticmethod
-  def Args(parser):
-    flags.AddDeleteWorkloadFlags(parser)
+  resource_name: str | None = None
+  _is_async: bool = False
 
-  def Run(self, args):
+  @staticmethod
+  def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
+    """Register flags for this command."""
+    flags.AddUnifiedDeleteWorkloadFlags(parser)
+
+  def Run(self, args: parser_extensions.Namespace) -> Any:
+    """Run the delete command."""
+    flags.ValidateDeleteWorkloadVersionFlags(args)
     workload_resource = args.CONCEPTS.workload.Parse()
     region = workload_resource.Parent().Name()
     workload = workload_resource.RelativeName()
 
     if not console_io.PromptContinue(
         message='You are about to delete Workload [{}]'.format(workload),
-        default=True):
+        default=True,
+    ):
       log.status.Print('Aborted by user.')
-      return
+      return None
 
+    version = flags.GetApiVersion(args, release_track=self.ReleaseTrack())
+    etag = args.etag if args.IsKnownAndSpecified('etag') else None
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
-        release_track=self.ReleaseTrack(), region=region):
-      client = apis.WorkloadsClient(release_track=self.ReleaseTrack())
+        release_track=self.ReleaseTrack(), region=region
+    ):
       self.resource_name = workload
-      return client.Delete(name=self.resource_name, etag=args.etag)
+      if version == 'v2':
+        client = apis.WorkloadsClient(
+            release_track=self.ReleaseTrack(), api_version='v2'
+        )
+        self._is_async = args.IsKnownAndSpecified('async_') and args.async_
+        if self._is_async:
+          return client.DeleteAsyncV2(name=workload, etag=etag)
+        return client.DeleteV2(name=workload, etag=etag)
 
-  def Epilog(self, resources_were_displayed):
-    log.DeletedResource(self.resource_name,
-                        kind='Assured Workloads environment')
+      client = apis.WorkloadsClient(release_track=self.ReleaseTrack())
+      self._is_async = False
+      return client.Delete(name=self.resource_name, etag=etag)
+
+  def Epilog(self, resources_were_displayed: bool) -> None:
+    """Displays resource deletion message upon command completion."""
+    if self.resource_name:
+      log.DeletedResource(
+          self.resource_name,
+          kind='Assured Workloads environment',
+          is_async=self._is_async,
+      )

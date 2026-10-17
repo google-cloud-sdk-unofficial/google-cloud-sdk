@@ -43,6 +43,7 @@ class Close(base.Command):
 
   @staticmethod
   def Args(parser):
+    base.ASYNC_FLAG.AddToParser(parser)
     resource_args.AddPullRequestResourceArg(parser, "to close")
 
   def Run(self, args):
@@ -52,10 +53,23 @@ class Close(base.Command):
     )
     close_operation = client.Close(pull_request_ref)
 
-    log.status.Print(
-        "Close request issued for [{}].".format(pull_request_ref.RelativeName())
+    if args.async_:
+      log.status.Print(
+          "Close request issued for [{}].".format(
+              pull_request_ref.RelativeName()
+          )
+      )
+      return close_operation
+
+    response = client.GetOperationResult(
+        close_operation, "Waiting for pull request to be closed"
     )
-    return close_operation
+    log.status.Print(
+        "Close request completed for [{}].".format(
+            pull_request_ref.RelativeName()
+        )
+    )
+    return response
 
 
 Close.detailed_help = DETAILED_HELP

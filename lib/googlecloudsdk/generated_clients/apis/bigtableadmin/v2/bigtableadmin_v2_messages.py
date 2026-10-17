@@ -820,6 +820,21 @@ class BigtableadminProjectsInstancesClustersUpdateMemoryLayerRequest(_messages.M
   updateMask = _messages.StringField(3)
 
 
+class BigtableadminProjectsInstancesClustersUpdateNodeScalingFactorRequest(_messages.Message):
+  r"""A BigtableadminProjectsInstancesClustersUpdateNodeScalingFactorRequest
+  object.
+
+  Fields:
+    name: Required. The unique name of the cluster to update. Values are of
+      the form `projects/{project}/instances/{instance}/clusters/{cluster}`.
+    updateNodeScalingFactorRequest: A UpdateNodeScalingFactorRequest resource
+      to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  updateNodeScalingFactorRequest = _messages.MessageField('UpdateNodeScalingFactorRequest', 2)
+
+
 class BigtableadminProjectsInstancesDeleteRequest(_messages.Message):
   r"""A BigtableadminProjectsInstancesDeleteRequest object.
 
@@ -5302,6 +5317,37 @@ class UpdateMemoryLayerRequest(_messages.Message):
 
   memoryLayer = _messages.MessageField('MemoryLayer', 1)
   updateMask = _messages.StringField(2)
+
+
+class UpdateNodeScalingFactorRequest(_messages.Message):
+  r"""Request message for BigtableInstanceAdmin.UpdateNodeScalingFactor.
+
+  Enums:
+    NodeScalingFactorValueValuesEnum: Required. The node scaling factor to set
+      for the cluster.
+
+  Fields:
+    nodeScalingFactor: Required. The node scaling factor to set for the
+      cluster.
+  """
+
+  class NodeScalingFactorValueValuesEnum(_messages.Enum):
+    r"""Required. The node scaling factor to set for the cluster.
+
+    Values:
+      NODE_SCALING_FACTOR_UNSPECIFIED: No node scaling specified. Defaults to
+        NODE_SCALING_FACTOR_1X.
+      NODE_SCALING_FACTOR_1X: The cluster is running with a scaling factor of
+        1.
+      NODE_SCALING_FACTOR_2X: The cluster is running with a scaling factor of
+        2. All node count values must be in increments of 2 with this scaling
+        factor enabled, otherwise an INVALID_ARGUMENT error will be returned.
+    """
+    NODE_SCALING_FACTOR_UNSPECIFIED = 0
+    NODE_SCALING_FACTOR_1X = 1
+    NODE_SCALING_FACTOR_2X = 2
+
+  nodeScalingFactor = _messages.EnumField('NodeScalingFactorValueValuesEnum', 1)
 
 
 class UpdateSchemaBundleMetadata(_messages.Message):

@@ -2034,6 +2034,14 @@ MAP = _ApiDefMap({
         ),
     },
     'firebasedataconnect': {
+        'v1': (
+            ('googlecloudsdk.generated_clients.apis.firebasedataconnect.v1', 'firebasedataconnect_v1_client.FirebasedataconnectV1', 'firebasedataconnect_v1_messages', 'https://firebasedataconnect.googleapis.com/'),
+            None,
+            False,
+            True,
+            '',
+            {},
+        ),
         'v1alpha': (
             ('googlecloudsdk.generated_clients.apis.firebasedataconnect.v1alpha', 'firebasedataconnect_v1alpha_client.FirebasedataconnectV1alpha', 'firebasedataconnect_v1alpha_messages', 'https://firebasedataconnect.googleapis.com/'),
             None,
@@ -3737,6 +3745,16 @@ MAP = _ApiDefMap({
             {},
         ),
     },
+    'telemetrymanagement': {
+        'v1alpha': (
+            ('googlecloudsdk.generated_clients.apis.telemetrymanagement.v1alpha', 'telemetrymanagement_v1alpha_client.TelemetrymanagementV1alpha', 'telemetrymanagement_v1alpha_messages', 'https://telemetrymanagement.googleapis.com/'),
+            None,
+            True,
+            True,
+            '',
+            {},
+        ),
+    },
     'testing': {
         'v1': (
             ('googlecloudsdk.generated_clients.apis.testing.v1', 'testing_v1_client.TestingV1', 'testing_v1_messages', 'https://testing.googleapis.com/'),
@@ -4022,6 +4040,16 @@ MAP = _ApiDefMap({
     'workloadmanager': {
         'v1': (
             ('googlecloudsdk.generated_clients.apis.workloadmanager.v1', 'workloadmanager_v1_client.WorkloadmanagerV1', 'workloadmanager_v1_messages', 'https://workloadmanager.googleapis.com/'),
+            None,
+            True,
+            True,
+            '',
+            {},
+        ),
+    },
+    'workspacekeyaccess': {
+        'v1alpha': (
+            ('googlecloudsdk.generated_clients.apis.workspacekeyaccess.v1alpha', 'workspacekeyaccess_v1alpha_client.WorkspacekeyaccessV1alpha', 'workspacekeyaccess_v1alpha_messages', 'https://workspacekeyaccess.googleapis.com/'),
             None,
             True,
             True,

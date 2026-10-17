@@ -14,8 +14,10 @@
 # limitations under the License.
 """Deploy a container to Cloud Run that will handle workloads that are not ingress based."""
 
+from collections.abc import Mapping
 import enum
 import os.path
+from typing import Any
 
 from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import run_util
@@ -33,6 +35,7 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_name_conversion
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.run import validators
 from googlecloudsdk.command_lib.run.sourcedeploys import source_container_context
 from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run.v2 import flags_parser
@@ -41,8 +44,11 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
+
+# A no-build container has no image of its own: it runs the base image with
+# the uploaded source mounted, so the image field is set to this sentinel.
+_NO_BUILD_IMAGE = 'scratch'
 
 
 class BuildType(enum.Enum):
@@ -74,6 +80,8 @@ Container Flags
   group.AddArgument(flags.GpuFlag())
   if release_track != base.ReleaseTrack.GA:
     group.AddArgument(flags.SandboxLauncherFlag())
+    group.AddArgument(flags.NoBuildArg(hidden=True))
+    group.AddArgument(flags.BaseImageArg(hidden=True))
 
   return group
 
@@ -179,50 +187,67 @@ class Deploy(base.Command):
       )
     return containers
 
-  def _ValidateAndGetLegacyBuildContainers(
+  def _ValidateAndGetSourceContainers(
       self, containers: dict[str, parser_extensions.Namespace]
-  ) -> dict[str, parser_extensions.Namespace]:
-    legacy_build_containers = {
+  ) -> tuple[
+      dict[str, parser_extensions.Namespace],
+      dict[str, parser_extensions.Namespace],
+  ]:
+    """Validates source containers and groups them by build mode.
+
+    Args:
+      containers: map of container name to container args from the CLI input.
+
+    Returns:
+      A (legacy_build_containers, no_build_containers) tuple mapping container
+      name to container args for legacy SubmitBuild and --no-build source
+      containers.
+    """
+    # Containers without --image are deployed from source: --no-build sources
+    # are uploaded as-is, and all other sources are built by Cloud Build.
+    source_containers = {
         name: container
         for name, container in containers.items()
-        if (
-            not container.IsSpecified('image')
-            or flags.FlagIsExplicitlySet(container, 'source')
-        )
+        if not container.IsSpecified('image')
     }
-    if len(legacy_build_containers) > 1:
-      needs_image = [
-          name
-          for name, container in legacy_build_containers.items()
-          if not flags.FlagIsExplicitlySet(container, 'source')
-      ]
-      if needs_image:
-        raise exceptions.RequiredImageArgumentException(needs_image)
+
+    validators.ValidateImplicitSourceContainers(source_containers)
+
+    no_build_containers = {}
+    legacy_build_containers = {}
+    for name, container in source_containers.items():
+      if getattr(container, 'no_build', False):
+        no_build_containers[name] = container
+      else:
+        legacy_build_containers[name] = container
+
+    validators.ValidateNoBuildFromSource(
+        no_build_containers, self.ReleaseTrack()
+    )
+
+    # Any number of --no-build containers may be deployed together, but a
+    # legacy SubmitBuild container cannot be combined with another source
+    # container.
+    if len(legacy_build_containers) > 1 or (
+        legacy_build_containers and no_build_containers
+    ):
       raise c_exceptions.InvalidArgumentException(
-          '--container', 'At most one container can be deployed from source.'
+          '--source',
+          'A Cloud Build source (--source without --no-build) must be the only'
+          ' source; combining it with other --source containers is not'
+          ' supported.',
       )
-    for name, container in legacy_build_containers.items():
-      if not flags.FlagIsExplicitlySet(container, 'source'):
-        if console_io.CanPrompt():
-          container.source = flags.PromptForDefaultSource(name)
-        else:
-          if name:
-            message = (
-                'Container {} requires a container image to deploy (e.g.'
-                ' `gcr.io/cloudrun/hello:latest`) if no build source is'
-                ' provided.'.format(name)
-            )
-          else:
-            message = (
-                'Requires a container image to deploy (e.g.'
-                ' `gcr.io/cloudrun/hello:latest`) if no build source is'
-                ' provided.'
-            )
-          raise c_exceptions.RequiredArgumentException(
-              '--image',
-              message,
-          )
-    return legacy_build_containers
+
+    for container in legacy_build_containers.values():
+      # Currently, worker pool Cloud Build deployments do not pass --base-image
+      # to SubmitBuild, so --base-image is only supported with --no-build or
+      # prebuilt images.
+      if getattr(container, 'base_image', None):
+        raise c_exceptions.InvalidArgumentException(
+            '--base-image',
+            'Base image is not supported for worker pools built from source',
+        )
+    return legacy_build_containers, no_build_containers
 
   def _GetRequiredApis(self):
     if self.ReleaseTrack() == base.ReleaseTrack.GA:
@@ -288,8 +313,8 @@ class Deploy(base.Command):
   def Run(self, args: parser_extensions.Namespace):
     """Deploy a WorkerPool container to Cloud Run."""
     containers = self._ValidateAndGetContainers(args)
-    legacy_build_containers = self._ValidateAndGetLegacyBuildContainers(
-        containers
+    legacy_build_containers, no_build_containers = (
+        self._ValidateAndGetSourceContainers(containers)
     )
 
     worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
@@ -325,6 +350,14 @@ class Deploy(base.Command):
           args, worker_pool
       )
 
+      source_container_contexts = [
+          source_container_context.SourceContainerContext(
+              name=name or None,
+              base_image=getattr(container, 'base_image', None),
+              source=container.source,
+          )
+          for name, container in no_build_containers.items()
+      ]
       legacy_build_context = None
       operation_message = 'Deploying container to'
       if legacy_build_containers:
@@ -337,6 +370,8 @@ class Deploy(base.Command):
             skip_activation_prompt,
             worker_pool_ref,
         )
+      elif source_container_contexts:
+        operation_message = 'Deploying sources to'
       pretty_print.Info(
           messages_util.GetStartDeployMessage(
               conn_context,
@@ -345,7 +380,14 @@ class Deploy(base.Command):
               resource_kind_lower='worker pool',
           )
       )
-      config_changes = self._GetBaseChanges(args)
+
+      # A --no-build source runs on its base image, so the container image is
+      # only a placeholder.
+      for container_args in no_build_containers.values():
+        container_args.image = _NO_BUILD_IMAGE
+      config_changes = _GetBaseImageChanges(containers)
+
+      config_changes.extend(self._GetBaseChanges(args))
       dry_run = getattr(args, 'dry_run', False)
       header = 'Deploying'
       if worker_pool is None:
@@ -360,13 +402,16 @@ class Deploy(base.Command):
           and legacy_build_context.repo_to_create
           and not dry_run
       )
+      include_upload_source = include_legacy_build or bool(
+          source_container_contexts
+      )
 
       with progress_tracker.StagedProgressTracker(
           header,
           stages.WorkerPoolStages(
               include_build=include_legacy_build,
               include_create_repo=include_create_repo,
-              include_upload_source=include_legacy_build,
+              include_upload_source=include_upload_source,
           ),
           failure_message='Deployment failed',
           suppress_output=args.async_ or dry_run,
@@ -381,9 +426,11 @@ class Deploy(base.Command):
             self.ReleaseTrack(),
             tracker=tracker,
             prefetch=worker_pool,
+            source_container_contexts=source_container_contexts,
             legacy_build_context=legacy_build_context,
             skip_activation_prompt=skip_activation_prompt,
             force_new_revision=True,
+            kms_key=args.key,
             **kwargs
         )
         if not response:
@@ -436,6 +483,38 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
   return pack
 
 
+def _GetBaseImageChanges(
+    containers: Mapping[str, Any],
+) -> list[config_changes_mod.BaseImageUriChange]:
+  """Returns base_image_uri config changes for containers.
+
+  Args:
+    containers: map of container name to container args from the CLI input.
+
+  Returns:
+    A list of config changes setting or clearing base image URI.
+  """
+  changes = []
+  for name, container_args in containers.items():
+    if getattr(container_args, 'clear_base_image', False):
+      changes.append(
+          config_changes_mod.BaseImageUriChange(
+              '',
+              container_name=name or None,
+              non_ingress_type=True,
+          )
+      )
+    elif flags.FlagIsExplicitlySet(container_args, 'base_image'):
+      changes.append(
+          config_changes_mod.BaseImageUriChange(
+              container_args.base_image,
+              container_name=name or None,
+              non_ingress_type=True,
+          )
+      )
+  return changes
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.RegionalEndpointsSupported
 class BetaDeploy(Deploy):
@@ -469,6 +548,7 @@ class AlphaDeploy(BetaDeploy):
     flags.AddWorkerPoolAddPubsubSubscriptionFlag(parser, hidden=True)
     flags.AddWorkerPoolRemovePubsubSubscriptionFlag(parser, hidden=True)
     flags.AddWorkerPoolClearPubsubSubscriptionsFlag(parser, hidden=True)
+    flags.AddVpcConnectorArgs(parser)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

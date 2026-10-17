@@ -402,6 +402,17 @@ class AndroidSwitchLocaleDeviceAction(_messages.Message):
   localeCode = _messages.StringField(1)
 
 
+class BatchGetSessionsResponse(_messages.Message):
+  r"""Response including the requested sessions.
+
+  Fields:
+    sessions: The requested sessions, in the same order as the `names` in the
+      request.
+  """
+
+  sessions = _messages.MessageField('Session', 1, repeated=True)
+
+
 class CancelSessionRequest(_messages.Message):
   r"""Request to cancel a session."""
 
@@ -1122,6 +1133,23 @@ class DevicerunProjectsLocationsOperationsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   returnPartialSuccess = _messages.BooleanField(5)
+
+
+class DevicerunProjectsLocationsSessionsBatchGetRequest(_messages.Message):
+  r"""A DevicerunProjectsLocationsSessionsBatchGetRequest object.
+
+  Fields:
+    names: Required. The names of the sessions to retrieve. A maximum of 500
+      sessions can be retrieved in a batch. Format:
+      `projects/{project}/locations/{location}/sessions/{session}`.
+    parent: Required. The parent resource shared by all sessions being
+      retrieved. Format: `projects/{project}/locations/{location}`. The
+      `parent` field in the `BatchGetSessionsRequest` message must match the
+      `parent` of all `Session` resource names in `names`.
+  """
+
+  names = _messages.StringField(1, repeated=True)
+  parent = _messages.StringField(2, required=True)
 
 
 class DevicerunProjectsLocationsSessionsCancelRequest(_messages.Message):

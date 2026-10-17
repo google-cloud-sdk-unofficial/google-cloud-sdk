@@ -1,5 +1,7 @@
 - &GA
   release_tracks: [GA]
+  hints:
+    read_only: true
   help_text:
     brief: View the list of all your Cloud DNS policies.
     description: |
@@ -43,6 +45,8 @@
 - <<: *GA
 
   release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
   request:
     collection: dns.policies
     method: list

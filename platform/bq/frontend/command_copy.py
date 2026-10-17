@@ -299,10 +299,10 @@ class Copy(bigquery_command.BigqueryCmd):
     if bq_flags.LOCATION.value:
       kwds['location'] = bq_flags.LOCATION.value
     if self.label is not None:
-      kwds['labels'] = frontend_utils.ParseLabels(self.label)
+      kwds['labels'] = frontend_utils.ParseLabels(self.label)  # pyrefly: ignore[bad-assignment]
 
     if self.destination_kms_key:
-      kwds['encryption_configuration'] = {
+      kwds['encryption_configuration'] = {  # pyrefly: ignore[bad-assignment]
           'kmsKeyName': self.destination_kms_key
       }
     if self.expiration:

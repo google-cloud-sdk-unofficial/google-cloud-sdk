@@ -36,7 +36,7 @@ def ListDatasets(
     max_results: Optional[int] = None,
     page_token: Optional[str] = None,
     list_all: Optional[bool] = None,
-    filter_expression: Optional[str] = None,
+    filter: Optional[str] = None,  # pylint: disable=redefined-builtin
 ):
   """List the datasets associated with this reference."""
   return ListDatasetsWithTokenAndUnreachable(
@@ -46,7 +46,7 @@ def ListDatasets(
       max_results,
       page_token,
       list_all,
-      filter_expression,
+      filter,
   )['datasets']
 
 
@@ -62,7 +62,7 @@ def ListDatasetsWithTokenAndUnreachable(
     max_results: Optional[int] = None,
     page_token: Optional[str] = None,
     list_all: Optional[bool] = None,
-    filter_expression: Optional[str] = None,
+    filter: Optional[str] = None,  # pylint: disable=redefined-builtin
 ):
   """List the datasets associated with this reference."""
   reference = bq_client_utils.NormalizeProjectReference(
@@ -74,7 +74,7 @@ def ListDatasetsWithTokenAndUnreachable(
       method='ListDatasets',
   )
   request = bq_processor_utils.PrepareListRequest(
-      reference, max_results, page_token, filter_expression
+      reference, max_results, page_token, filter
   )
   if list_all is not None:
     request['all'] = list_all

@@ -47,6 +47,9 @@ if 'v1alpha' not in apis_map.MAP.get(API_NAME, {}):
 RULES_API_NAME = 'firebaserules'
 RULES_DEFAULT_API_VERSION = 'v1'
 
+SQL_API_NAME = 'firebasedataconnect'
+SQL_DEFAULT_API_VERSION = 'v1'
+
 
 def GetApiVersion(release_track=base.ReleaseTrack.BETA):
   """Returns the API version for the given release track."""
@@ -86,6 +89,16 @@ def GetRulesMessagesModule(api_version=RULES_DEFAULT_API_VERSION):
   return apis.GetMessagesModule(RULES_API_NAME, api_version)
 
 
+def GetSqlClientInstance(api_version=SQL_DEFAULT_API_VERSION, no_http=False):
+  """Returns a client instance for the Firebase SQL Connect API."""
+  return apis.GetClientInstance(SQL_API_NAME, api_version, no_http=no_http)
+
+
+def GetSqlMessagesModule(api_version=SQL_DEFAULT_API_VERSION):
+  """Returns the message module for the Firebase SQL Connect API."""
+  return apis.GetMessagesModule(SQL_API_NAME, api_version)
+
+
 def GetClientClass(api_version=DEFAULT_API_VERSION):
   """Returns the client class for the Firebase Management API."""
   version = _ResolveApiVersion(api_version=api_version)
@@ -96,6 +109,11 @@ def GetClientClass(api_version=DEFAULT_API_VERSION):
 def GetRulesClientClass(api_version=RULES_DEFAULT_API_VERSION):
   """Returns the client class for the Firebase Security Rules API."""
   return apis.GetClientClass(RULES_API_NAME, api_version)
+
+
+def GetSqlClientClass(api_version=SQL_DEFAULT_API_VERSION):
+  """Returns the client class for the Firebase SQL Connect API."""
+  return apis.GetClientClass(SQL_API_NAME, api_version)
 
 
 def GetProjectRef(project_id, api_version=None, release_track=None):

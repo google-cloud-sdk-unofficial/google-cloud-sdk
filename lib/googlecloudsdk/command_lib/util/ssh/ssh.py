@@ -760,6 +760,12 @@ def WriteSecurityKeys(oslogin_state):
 
   key_dir = os.path.realpath(files.ExpandHomeDir(SECURITY_KEY_DIR))
 
+  if all(
+      isinstance(k, str) and (k.startswith(key_dir) or os.path.exists(k))
+      for k in security_keys
+  ):
+    return list(security_keys)
+
   files.MakeDir(key_dir, mode=0o700)
   key_files = []
 
@@ -776,6 +782,7 @@ def WriteSecurityKeys(oslogin_state):
     files.WriteFileContents(file_path, key, private=True)
     key_files.append(file_path)
 
+  oslogin_state.security_keys = key_files
   return key_files
 
 
@@ -1071,6 +1078,19 @@ def CheckSshSecurityKeySupport(env=None):
   return False
 
 
+def _SanitizeSecurityKey(key):
+  """Redacts private key material if present."""
+  if not isinstance(key, str):
+    key = str(key)
+  if (
+      'PRIVATE KEY' in key
+      or key.strip().startswith('-----BEGIN')
+      or '\n' in key
+  ):
+    return '[private key content omitted]'
+  return key
+
+
 class OsloginState(object):
   """Class for holding OS Login State.
 
@@ -1086,7 +1106,8 @@ class OsloginState(object):
       keys.
     environment: str, A hint about the current environment. ('ssh' or 'putty')
     security_keys: list, A list of 'private' keys associated with the security
-      keys configured in the user's account.
+      keys configured in the user's account, or paths to temporary files where
+      the security keys were written.
     signed_ssh_key: bool, True if a valid signed ssh key exists.
     require_certificates: bool, True if passing a certificate is required.
     is_default_universe: bool, False if the instance is in a partner universe
@@ -1123,6 +1144,9 @@ class OsloginState(object):
     self.is_default_universe = is_default_universe
 
   def __str__(self):
+    formatted_keys = '\n'.join(
+        _SanitizeSecurityKey(k) for k in self.security_keys
+    )
     return textwrap.dedent("""\
         OS Login Enabled: {0}
         2FA Enabled: {1}
@@ -1144,13 +1168,14 @@ class OsloginState(object):
         self.third_party_user,
         self.ssh_security_key_support,
         self.environment,
-        '\n'.join(self.security_keys),
+        formatted_keys,
         self.signed_ssh_key,
         self.require_certificates,
         self.is_default_universe,
     )
 
   def __repr__(self):
+    sanitized_keys = [_SanitizeSecurityKey(k) for k in self.security_keys]
     return (
         'OsloginState(oslogin_enabled={0}, oslogin_2fa_enabled={1}, '
         'security_keys_enabled={2}, user={3}, third_party_user={4}'
@@ -1164,7 +1189,7 @@ class OsloginState(object):
             self.third_party_user,
             self.ssh_security_key_support,
             self.environment,
-            self.security_keys,
+            sanitized_keys,
             self.signed_ssh_key,
             self.require_certificates,
             self.is_default_universe,

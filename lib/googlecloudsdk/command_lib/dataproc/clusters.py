@@ -17,7 +17,7 @@
 import collections
 import re
 import textwrap
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import utils as api_utils
 from googlecloudsdk.api_lib.dataproc import compute_helpers
@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.dataproc import storage_helpers
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
@@ -50,6 +51,18 @@ VALID_DISK_TYPES = (
 )
 
 ALLOWED_DISK_CONFIG_KEYSET = frozenset({'type', 'size', 'iops', 'throughput'})
+
+_HO_CORES_VALIDATOR = arg_parsers.CustomFunctionValidator(
+    lambda c: c in [2, 4, 8, 16, 32],
+    'Core count must be one of: 2, 4, 8, 16, 32.',
+    parser=arg_parsers.BoundedInt(),
+)
+
+_HO_HARDWARE_CLASS_VALIDATOR = arg_parsers.CustomFunctionValidator(
+    lambda h: h in ['STANDARD', 'PERFORMANCE'],
+    'Hardware class must be one of: STANDARD, PERFORMANCE.',
+    parser=str.upper,
+)
 
 
 # beta is unused but still useful when we add new beta features
@@ -220,6 +233,26 @@ def ArgsForClusterRef(
       for the master node group.
       """,
   )
+  if beta or alpha:
+    master_machine_type_group.add_argument(
+        '--master-flexible-config',
+        type=arg_parsers.ArgDict(
+            spec={
+                'cores': _HO_CORES_VALIDATOR,
+                'hardware-class': _HO_HARDWARE_CLASS_VALIDATOR,
+                'num-instances': arg_parsers.BoundedInt(1, 1),
+                'boot-disk-size': arg_parsers.BinarySize(lower_bound='10GB'),
+            }
+        ),
+        metavar='KEY=VALUE',
+        help=(
+            'Configuration for master instances in High Obtainability (HO)'
+            ' mode. Supported keys are: cores (power of 2: 2, 4, 8, 16, 32),'
+            ' hardware-class (STANDARD, PERFORMANCE),'
+            ' num-instances (must be 1 for master),'
+            ' and boot-disk-size (e.g. 100GB).'
+        ),
+    )
 
   worker_machine_type_group = parser.add_argument_group(mutex=True)
   worker_machine_type_group.add_argument(
@@ -264,6 +297,25 @@ def ArgsForClusterRef(
       for the primary worker node group.
       """,
   )
+  if beta or alpha:
+    worker_machine_type_group.add_argument(
+        '--worker-flexible-config',
+        type=arg_parsers.ArgDict(
+            spec={
+                'cores': _HO_CORES_VALIDATOR,
+                'hardware-class': _HO_HARDWARE_CLASS_VALIDATOR,
+                'num-instances': arg_parsers.BoundedInt(lower_bound=1),
+                'boot-disk-size': arg_parsers.BinarySize(lower_bound='10GB'),
+            }
+        ),
+        metavar='KEY=VALUE',
+        help=(
+            'Configuration for primary worker instances in High Obtainability'
+            ' (HO) mode. Supported keys are: cores (power of 2: 2, 4, 8, 16,'
+            ' 32), hardware-class (STANDARD, PERFORMANCE), num-instances'
+            ' (positive integer), and boot-disk-size (e.g. 100GB).'
+        ),
+    )
 
   parser.add_argument(
       '--min-secondary-worker-fraction',
@@ -332,6 +384,26 @@ def ArgsForClusterRef(
       for the secondary worker node group.
       """,
   )
+  if beta or alpha:
+    secondary_worker_machine_type_group.add_argument(
+        '--secondary-worker-flexible-config',
+        type=arg_parsers.ArgDict(
+            spec={
+                'cores': _HO_CORES_VALIDATOR,
+                'hardware-class': _HO_HARDWARE_CLASS_VALIDATOR,
+                'num-instances': arg_parsers.BoundedInt(lower_bound=0),
+                'boot-disk-size': arg_parsers.BinarySize(lower_bound='10GB'),
+            }
+        ),
+        metavar='KEY=VALUE',
+        help=(
+            'Configuration for secondary worker instances in High'
+            ' Obtainability (HO) mode. Supported keys are: cores (power of 2:'
+            ' 2, 4, 8, 16, 32), hardware-class (STANDARD, PERFORMANCE),'
+            ' num-instances (non-negative integer), and boot-disk-size (e.g.'
+            ' 100GB).'
+        ),
+    )
 
   parser.add_argument(
       '--cluster-type',
@@ -1377,6 +1449,8 @@ def GetClusterConfig(
   Returns:
     cluster_config: Dataproc cluster configuration
   """
+  ValidateHighObtainabilityArgs(args)
+
   master_accelerator_type = None
   worker_accelerator_type = None
   secondary_worker_accelerator_type = None
@@ -1519,6 +1593,12 @@ def GetClusterConfig(
         )
     )
 
+  is_ho = (
+      getattr(args, 'master_flexible_config', None) is not None
+      or getattr(args, 'worker_flexible_config', None) is not None
+      or getattr(args, 'secondary_worker_flexible_config', None) is not None
+  )
+
   gce_cluster_config = dataproc.messages.GceClusterConfig(
       networkUri=network_ref and network_ref.SelfLink(),
       subnetworkUri=subnetwork_ref and subnetwork_ref.SelfLink(),
@@ -1528,7 +1608,9 @@ def GetClusterConfig(
       serviceAccount=args.service_account,
       serviceAccountScopes=expanded_scopes,
       zoneUri=(
-          '' if args.multizone else properties.VALUES.compute.zone.GetOrFail()
+          ''
+          if (args.multizone or is_ho)
+          else properties.VALUES.compute.zone.GetOrFail()
       ),
       autoZoneExcludeZoneUris=args.auto_zone_exclude_zones,
   )
@@ -1645,6 +1727,64 @@ def GetClusterConfig(
         'for worker.'
     )
 
+  master_flex = getattr(args, 'master_flexible_config', None)
+  has_master_ho = master_flex is not None
+
+  worker_flex = getattr(args, 'worker_flexible_config', None)
+  has_worker_ho = worker_flex is not None
+
+  if has_master_ho:
+    master_disk_size = _GetBootDiskSizeGb(master_flex.get('boot-disk-size'))
+    master_flexible_config = CreateFlexibleInstanceGroupConfig(
+        dataproc,
+        num_instances=master_flex.get('num-instances', 1),
+        core_count=master_flex.get('cores'),
+        hardware_class=master_flex.get('hardware-class'),
+        boot_disk_size_gb=master_disk_size,
+    )
+    master_config = None
+  else:
+    master_flexible_config = None
+    master_config = dataproc.messages.InstanceGroupConfig(
+        numInstances=args.num_masters,
+        imageUri=image_ref and image_ref.SelfLink(),
+        machineTypeUri=args.master_machine_type,
+        accelerators=master_accelerators,
+        diskConfig=master_disk_config,
+        minCpuPlatform=args.master_min_cpu_platform,
+        instanceFlexibilityPolicy=master_policy,
+    )
+
+  is_single_node = (
+      getattr(args, 'single_node', False)
+      or getattr(args, 'cluster_type', None) == 'single-node'
+  )
+  if is_single_node and has_master_ho:
+    worker_flexible_config = None
+    worker_config = None
+  elif has_worker_ho:
+    worker_disk_size = _GetBootDiskSizeGb(worker_flex.get('boot-disk-size'))
+    worker_flexible_config = CreateFlexibleInstanceGroupConfig(
+        dataproc,
+        num_instances=worker_flex.get('num-instances'),
+        core_count=worker_flex.get('cores'),
+        hardware_class=worker_flex.get('hardware-class'),
+        boot_disk_size_gb=worker_disk_size,
+    )
+    worker_config = None
+  else:
+    worker_flexible_config = None
+    worker_config = dataproc.messages.InstanceGroupConfig(
+        numInstances=args.num_workers,
+        minNumInstances=args.min_num_workers,
+        imageUri=image_ref and image_ref.SelfLink(),
+        machineTypeUri=args.worker_machine_type,
+        accelerators=worker_accelerators,
+        diskConfig=worker_disk_config,
+        minCpuPlatform=args.worker_min_cpu_platform,
+        instanceFlexibilityPolicy=worker_policy,
+    )
+
   cluster_config = dataproc.messages.ClusterConfig(
       configBucket=args.bucket,
       tempBucket=args.temp_bucket,
@@ -1652,30 +1792,15 @@ def GetClusterConfig(
       clusterTier=_GetClusterTier(dataproc, args.tier),
       engine=_GetEngine(dataproc, args.engine),
       gceClusterConfig=gce_cluster_config,
-      masterConfig=dataproc.messages.InstanceGroupConfig(
-          numInstances=args.num_masters,
-          imageUri=image_ref and image_ref.SelfLink(),
-          machineTypeUri=args.master_machine_type,
-          accelerators=master_accelerators,
-          diskConfig=master_disk_config,
-          minCpuPlatform=args.master_min_cpu_platform,
-          instanceFlexibilityPolicy=master_policy,
-      ),
-      workerConfig=dataproc.messages.InstanceGroupConfig(
-          numInstances=args.num_workers,
-          minNumInstances=args.min_num_workers,
-          imageUri=image_ref and image_ref.SelfLink(),
-          machineTypeUri=args.worker_machine_type,
-          accelerators=worker_accelerators,
-          diskConfig=worker_disk_config,
-          minCpuPlatform=args.worker_min_cpu_platform,
-          instanceFlexibilityPolicy=worker_policy,
-      ),
+      masterConfig=master_config,
+      masterFlexibleConfig=master_flexible_config,
+      workerConfig=worker_config,
+      workerFlexibleConfig=worker_flexible_config,
       initializationActions=init_actions,
       softwareConfig=software_config,
   )
 
-  if args.min_worker_fraction:
+  if args.min_worker_fraction and cluster_config.workerConfig:
     cluster_config.workerConfig.startupConfig = dataproc.messages.StartupConfig(
         requiredRegistrationFraction=args.min_worker_fraction,
     )
@@ -1904,7 +2029,20 @@ def GetClusterConfig(
       args.num_secondary_worker_local_ssds,
       args.num_preemptible_worker_local_ssds,
   )
-  if (
+  sec_worker_flex = getattr(args, 'secondary_worker_flexible_config', None)
+  has_secondary_worker_ho = sec_worker_flex is not None
+  if has_secondary_worker_ho:
+    sec_disk_size = _GetBootDiskSizeGb(sec_worker_flex.get('boot-disk-size'))
+    cluster_config.secondaryWorkerFlexibleConfig = (
+        CreateFlexibleInstanceGroupConfig(
+            dataproc,
+            num_instances=sec_worker_flex.get('num-instances'),
+            core_count=sec_worker_flex.get('cores'),
+            hardware_class=sec_worker_flex.get('hardware-class'),
+            boot_disk_size_gb=sec_disk_size,
+        )
+    )
+  elif (
       num_secondary_workers is not None
       or secondary_worker_boot_disk_size_gb is not None
       or secondary_worker_boot_disk_type is not None
@@ -2773,6 +2911,333 @@ def AddReservationAffinityGroup(parser, group_text, affinity_text):
 The name of the reservation, required when `--reservation-affinity=specific`.
 """,
   )
+
+
+def _GetBootDiskSizeGb(size: Optional[int]) -> Optional[int]:
+  """Converts boot disk size from BinarySize (bytes) to GB integer."""
+  if not size:
+    return None
+  # When parsed by BinarySize on CLI, size is in bytes. Use standard BytesToGb.
+  return api_utils.BytesToGb(size) if size >= (2**30) else size
+
+
+def CreateFlexibleInstanceGroupConfig(
+    dataproc: Any,
+    num_instances: Optional[int] = None,
+    core_count: Optional[int] = None,
+    hardware_class: Optional[Any] = None,
+    boot_disk_size_gb: Optional[int] = None,
+) -> Any:
+  """Creates a FlexibleInstanceGroupConfig message."""
+  kwargs = {}
+  if boot_disk_size_gb is not None:
+    kwargs['bootDiskSizeGb'] = boot_disk_size_gb
+  if core_count is not None:
+    kwargs['coreCount'] = core_count
+  if hardware_class is not None:
+    if isinstance(
+        hardware_class,
+        dataproc.messages.FlexibleInstanceGroupConfig.HardwareClassValueValuesEnum,
+    ):
+      kwargs['hardwareClass'] = hardware_class
+    else:
+      kwargs['hardwareClass'] = arg_utils.ChoiceToEnum(
+          hardware_class,
+          dataproc.messages.FlexibleInstanceGroupConfig.HardwareClassValueValuesEnum,
+      )
+  if num_instances is not None:
+    if hasattr(dataproc.messages.FlexibleInstanceGroupConfig, 'numInstances'):
+      kwargs['numInstances'] = num_instances
+    elif hasattr(
+        dataproc.messages.FlexibleInstanceGroupConfig, 'instanceCount'
+    ):
+      kwargs['instanceCount'] = num_instances
+  return dataproc.messages.FlexibleInstanceGroupConfig(**kwargs)
+
+
+_MASTER_STANDARD_FLAGS = (
+    ('--master-machine-type', 'master_machine_type'),
+    ('--master-machine-types', 'master_machine_types'),
+    ('--master-instance-selection', 'master_instance_selection'),
+    (
+        '--master-instance-flexibility-policy-file',
+        'master_instance_flexibility_policy_file',
+    ),
+    ('--master-boot-disk-size', 'master_boot_disk_size'),
+    ('--master-boot-disk-size-gb', 'master_boot_disk_size_gb'),
+    ('--master-boot-disk-type', 'master_boot_disk_type'),
+    (
+        '--master-boot-disk-provisioned-iops',
+        'master_boot_disk_provisioned_iops',
+    ),
+    (
+        '--master-boot-disk-provisioned-throughput',
+        'master_boot_disk_provisioned_throughput',
+    ),
+    ('--num-master-local-ssds', 'num_master_local_ssds'),
+    ('--master-local-ssd-interface', 'master_local_ssd_interface'),
+    ('--master-attached-disks', 'master_attached_disks'),
+    ('--master-accelerator', 'master_accelerator'),
+    ('--master-min-cpu-platform', 'master_min_cpu_platform'),
+)
+
+_WORKER_STANDARD_FLAGS = (
+    ('--num-workers', 'num_workers'),
+    ('--min-num-workers', 'min_num_workers'),
+    ('--min-worker-fraction', 'min_worker_fraction'),
+    ('--worker-machine-type', 'worker_machine_type'),
+    ('--worker-machine-types', 'worker_machine_types'),
+    ('--worker-instance-selection', 'worker_instance_selection'),
+    (
+        '--worker-instance-flexibility-policy-file',
+        'worker_instance_flexibility_policy_file',
+    ),
+    ('--worker-boot-disk-size', 'worker_boot_disk_size'),
+    ('--worker-boot-disk-size-gb', 'worker_boot_disk_size_gb'),
+    ('--worker-boot-disk-type', 'worker_boot_disk_type'),
+    (
+        '--worker-boot-disk-provisioned-iops',
+        'worker_boot_disk_provisioned_iops',
+    ),
+    (
+        '--worker-boot-disk-provisioned-throughput',
+        'worker_boot_disk_provisioned_throughput',
+    ),
+    ('--num-worker-local-ssds', 'num_worker_local_ssds'),
+    ('--worker-local-ssd-interface', 'worker_local_ssd_interface'),
+    ('--worker-attached-disks', 'worker_attached_disks'),
+    ('--worker-accelerator', 'worker_accelerator'),
+    ('--worker-min-cpu-platform', 'worker_min_cpu_platform'),
+)
+
+_SECONDARY_WORKER_STANDARD_FLAGS = (
+    ('--num-secondary-workers', 'num_secondary_workers'),
+    ('--num-preemptible-workers', 'num_preemptible_workers'),
+    ('--secondary-worker-type', 'secondary_worker_type'),
+    ('--secondary-worker-machine-types', 'secondary_worker_machine_types'),
+    (
+        '--secondary-worker-instance-selection',
+        'secondary_worker_instance_selection',
+    ),
+    (
+        '--secondary-worker-instance-flexibility-policy-file',
+        'secondary_worker_instance_flexibility_policy_file',
+    ),
+    ('--secondary-worker-boot-disk-size', 'secondary_worker_boot_disk_size'),
+    (
+        '--preemptible-worker-boot-disk-size',
+        'preemptible_worker_boot_disk_size',
+    ),
+    ('--secondary-worker-boot-disk-type', 'secondary_worker_boot_disk_type'),
+    (
+        '--preemptible-worker-boot-disk-type',
+        'preemptible_worker_boot_disk_type',
+    ),
+    (
+        '--secondary-worker-boot-disk-provisioned-iops',
+        'secondary_worker_boot_disk_provisioned_iops',
+    ),
+    (
+        '--secondary-worker-boot-disk-provisioned-throughput',
+        'secondary_worker_boot_disk_provisioned_throughput',
+    ),
+    ('--num-secondary-worker-local-ssds', 'num_secondary_worker_local_ssds'),
+    (
+        '--num-preemptible-worker-local-ssds',
+        'num_preemptible_worker_local_ssds',
+    ),
+    (
+        '--secondary-worker-local-ssd-interface',
+        'secondary_worker_local_ssd_interface',
+    ),
+    ('--secondary-worker-attached-disks', 'secondary_worker_attached_disks'),
+    ('--secondary-worker-accelerator', 'secondary_worker_accelerator'),
+    ('--preemptible-worker-accelerator', 'preemptible_worker_accelerator'),
+    (
+        '--secondary-worker-standard-capacity-base',
+        'secondary_worker_standard_capacity_base',
+    ),
+    (
+        '--secondary-worker-standard-capacity-percent-above-base',
+        'secondary_worker_standard_capacity_percent_above_base',
+    ),
+    ('--min-secondary-worker-fraction', 'min_secondary_worker_fraction'),
+)
+
+
+def _GetConflictingFlags(args: Any, flag_specs: Any) -> List[str]:
+  conflicts = []
+  for flag_name, dest in flag_specs:
+    if args.IsKnownAndSpecified(dest) and flag_name not in conflicts:
+      conflicts.append(flag_name)
+  return conflicts
+
+
+def ValidateHighObtainabilityArgs(args: Any) -> None:
+  """Validates mutual exclusivity and constraints for High Obtainability (HO) mode flags."""
+  master_flex = getattr(args, 'master_flexible_config', None)
+  worker_flex = getattr(args, 'worker_flexible_config', None)
+  sec_worker_flex = getattr(args, 'secondary_worker_flexible_config', None)
+
+  has_master_ho = master_flex is not None
+  has_worker_ho = worker_flex is not None
+  has_sec_worker_ho = sec_worker_flex is not None
+
+  specified_ho_flags = []
+  if has_master_ho:
+    specified_ho_flags.append('--master-flexible-config')
+  if has_worker_ho:
+    specified_ho_flags.append('--worker-flexible-config')
+  if has_sec_worker_ho:
+    specified_ho_flags.append('--secondary-worker-flexible-config')
+
+  if not specified_ho_flags:
+    return
+
+  ho_flag = specified_ho_flags[0]
+
+  # AutoZone requirement: explicit zone is forbidden in HO mode
+  if args.IsKnownAndSpecified('zone'):
+    raise calliope_exceptions.ConflictingArgumentsException(
+        '--zone', *specified_ho_flags
+    )
+
+  # Master mutual exclusivity
+  if has_master_ho:
+    master_conflicts = _GetConflictingFlags(args, _MASTER_STANDARD_FLAGS)
+    if getattr(args, 'num_masters', None) is not None and args.num_masters > 1:
+      if '--num-masters' not in master_conflicts:
+        master_conflicts.append('--num-masters')
+    if master_conflicts:
+      raise calliope_exceptions.ConflictingArgumentsException(
+          '--master-flexible-config', *master_conflicts
+      )
+
+  # Primary Worker mutual exclusivity
+  if has_worker_ho:
+    worker_conflicts = _GetConflictingFlags(args, _WORKER_STANDARD_FLAGS)
+    if worker_conflicts:
+      raise calliope_exceptions.ConflictingArgumentsException(
+          '--worker-flexible-config', *worker_conflicts
+      )
+
+  # Secondary Worker mutual exclusivity
+  if has_sec_worker_ho:
+    sec_worker_conflicts = _GetConflictingFlags(
+        args, _SECONDARY_WORKER_STANDARD_FLAGS
+    )
+    if sec_worker_conflicts:
+      raise calliope_exceptions.ConflictingArgumentsException(
+          '--secondary-worker-flexible-config', *sec_worker_conflicts
+      )
+
+  # Single-node cluster validation
+  is_single_node = (
+      getattr(args, 'single_node', False)
+      or getattr(args, 'cluster_type', None) == 'single-node'
+  )
+  is_zero_scale = getattr(args, 'cluster_type', None) == 'zero-scale'
+
+  if is_single_node:
+    single_node_conflicts = []
+    if has_worker_ho:
+      single_node_conflicts.append('--worker-flexible-config')
+    if has_sec_worker_ho:
+      single_node_conflicts.append('--secondary-worker-flexible-config')
+    if single_node_conflicts:
+      raise calliope_exceptions.ConflictingArgumentsException(
+          '--single-node', *single_node_conflicts
+      )
+
+  # Cluster-wide consistency
+  # 1. Master must use flexible config if HO is used
+  if not has_master_ho:
+    raise calliope_exceptions.InvalidArgumentException(
+        ho_flag,
+        'Master must use flexible instance group config'
+        ' (--master-flexible-config) when High Obtainability (HO) mode is'
+        ' enabled.',
+    )
+
+  # 2. Multi-node clusters must have flexible worker config
+  if not is_single_node and not is_zero_scale and not has_worker_ho:
+    raise calliope_exceptions.InvalidArgumentException(
+        ho_flag,
+        'Worker must use flexible instance group config'
+        ' (--worker-flexible-config) when High Obtainability (HO) mode is'
+        ' enabled.',
+    )
+
+  # 3. Secondary worker cannot use standard config when HO mode is enabled
+  if not has_sec_worker_ho:
+    sec_worker_conflicts = _GetConflictingFlags(
+        args, _SECONDARY_WORKER_STANDARD_FLAGS
+    )
+    if sec_worker_conflicts:
+      raise calliope_exceptions.ConflictingArgumentsException(
+          *sec_worker_conflicts, *specified_ho_flags
+      )
+
+
+def ValidateHighObtainabilityUpdateArgs(args: Any) -> None:
+  """Validates arguments for cluster update command in High Obtainability mode."""
+  worker_flex = getattr(args, 'worker_flexible_config', None)
+  sec_worker_flex = getattr(args, 'secondary_worker_flexible_config', None)
+
+  if worker_flex is not None:
+    flex_count = worker_flex.get('num-instances')
+    if flex_count is not None and flex_count <= 0:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--worker-flexible-config',
+          'Number of worker instances must be positive.',
+      )
+    num_workers = getattr(args, 'num_workers', None)
+    if (
+        num_workers is not None
+        and flex_count is not None
+        and num_workers != flex_count
+    ):
+      raise calliope_exceptions.ConflictingArgumentsException(
+          '--num-workers', '--worker-flexible-config'
+      )
+
+  if sec_worker_flex is not None:
+    sec_flex_count = sec_worker_flex.get('num-instances')
+    if sec_flex_count is not None and sec_flex_count < 0:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--secondary-worker-flexible-config',
+          'Number of secondary worker instances cannot be negative.',
+      )
+    sec_instances_legacy = _FirstNonNone(
+        getattr(args, 'num_secondary_workers', None),
+        getattr(args, 'num_preemptible_workers', None),
+    )
+    if (
+        sec_instances_legacy is not None
+        and sec_flex_count is not None
+        and sec_instances_legacy != sec_flex_count
+    ):
+      legacy_flag = (
+          '--num-secondary-workers'
+          if getattr(args, 'num_secondary_workers', None) is not None
+          else '--num-preemptible-workers'
+      )
+      raise calliope_exceptions.ConflictingArgumentsException(
+          legacy_flag, '--secondary-worker-flexible-config'
+      )
+    if getattr(args, 'min_secondary_worker_fraction', None) is not None:
+      raise calliope_exceptions.ConflictingArgumentsException(
+          '--min-secondary-worker-fraction',
+          '--secondary-worker-flexible-config',
+      )
+    if (
+        getattr(args, 'secondary_worker_standard_capacity_base', None)
+        is not None
+    ):
+      raise calliope_exceptions.ConflictingArgumentsException(
+          '--secondary-worker-standard-capacity-base',
+          '--secondary-worker-flexible-config',
+      )
 
 
 def ValidateReservationAffinityGroup(args):

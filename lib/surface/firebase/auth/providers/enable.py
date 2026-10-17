@@ -93,11 +93,17 @@ class Enable(base.Command):
         '--redirect-uris',
         type=arg_parsers.ArgList(),
         metavar='URI',
-        help='Authorized redirect URIs (Google provider only).',
+        help=(
+            'Authorized redirect URIs (Google provider only). Each URI must be'
+            ' a valid URL starting with `http://` or `https://` (e.g.'
+            ' `https://example.com`). If no scheme is specified, `http://` is'
+            ' prepended.'
+        ),
     )
 
   def Run(self, args):
     project_id = properties.VALUES.core.project.Get(required=True)
+    redirect_uris = auth_util.ValidateRedirectUris(args.redirect_uris)
 
     log.status.Print(f'Enabling Google Sign-In for app {args.app}...')
     client = auth_util.AuthClient(release_track=self.ReleaseTrack())
@@ -108,7 +114,7 @@ class Enable(base.Command):
         support_email=args.support_email,
         client_id=args.client_id,
         client_secret=args.client_secret,
-        redirect_uris=args.redirect_uris,
+        redirect_uris=redirect_uris,
     )
     poller = auth_util.FirebaseAuthOperationPoller(
         client.client, client.messages
@@ -117,4 +123,3 @@ class Enable(base.Command):
     result = waiter.WaitFor(poller, op.name, wait_message)
     log.status.Print('Successfully enabled Google Sign-In')
     return result
-

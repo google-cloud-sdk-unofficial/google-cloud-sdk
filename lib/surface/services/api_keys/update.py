@@ -56,7 +56,7 @@ DETAILED_HELP = {
 
         To update key's allowed android application:
 
-          $ {command} projects/myproject/locations/global/keys/my-key-id --allowed-application=sha1_fingerprint=foo1,package_name=bar1 --allowed-application=sha1_fingerprint=foo2,package_name=bar2
+          $ {command} projects/myproject/locations/global/keys/my-key-id --allowed-application=sha1_fingerprint=DA:39:A3:EE:5E:6B:4B:0D:32:55:BF:EF:95:60:18:90:AF:D8:07:09,package_name=bar1 --allowed-application=sha1_fingerprint=DA39A3EE5E6B4B0D3255BFEF95601890AFD80709,package_name=bar2
 
         To update keys' allowed api target with multiple services:
 

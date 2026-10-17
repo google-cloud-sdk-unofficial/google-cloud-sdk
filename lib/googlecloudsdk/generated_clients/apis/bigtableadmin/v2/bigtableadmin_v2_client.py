@@ -836,6 +836,33 @@ class BigtableadminV2(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def UpdateNodeScalingFactor(self, request, global_params=None):
+      r"""Update a cluster's node scaling factor. This updates the cluster's `node_scaling_factor` to the requested value. Changing the node scaling factor adjusts the node count granularity requirements (e.g. node counts must be multiples of the target scaling factor) when manually scaling or configuring autoscaling. See https://docs.cloud.google.com/bigtable/docs/scaling#node-scaling To qualify for a node scaling factor update: * Autoscaling must be disabled * `serve_nodes` must be manually scaled to a multiple of the target scaling factor (e.g., an even node count when updating to 2x) Note that node scaling factor updates (both upgrades and downgrades) are only supported for SSD clusters.
+
+      Args:
+        request: (BigtableadminProjectsInstancesClustersUpdateNodeScalingFactorRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('UpdateNodeScalingFactor')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateNodeScalingFactor.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/instances/{instancesId}/clusters/{clustersId}:updateNodeScalingFactor',
+        http_method='POST',
+        method_id='bigtableadmin.projects.instances.clusters.updateNodeScalingFactor',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:updateNodeScalingFactor',
+        request_field='updateNodeScalingFactorRequest',
+        request_type_name='BigtableadminProjectsInstancesClustersUpdateNodeScalingFactorRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsInstancesLogicalViewsService(base_api.BaseApiService):
     """Service class for the projects_instances_logicalViews resource."""
 

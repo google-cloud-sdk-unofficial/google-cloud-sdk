@@ -15,7 +15,6 @@
 """Close Secure Source Manager issue command."""
 
 from googlecloudsdk.api_lib.securesourcemanager import issues
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import resource_args
 from googlecloudsdk.core import log
@@ -59,23 +58,13 @@ class Close(base.Command):
     close_operation = client.Close(issue_ref, etag=args.etag)
 
     if args.async_:
+      log.status.Print(
+          "Close request issued for [{}].".format(issue_ref.RelativeName())
+      )
       return close_operation
 
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if close_operation.done or not close_operation.name:
-      if close_operation.error:
-        raise waiter.OperationError(
-            close_operation.error.message or str(close_operation.error)
-        )
-      log.status.Print(
-          "Close request completed for [{}].".format(issue_ref.RelativeName())
-      )
-      return close_operation.response
-
-    response = client.WaitForOperation(
-        client.GetOperationRef(close_operation),
-        "Waiting for issue to be closed",
-        has_result=True,
+    response = client.GetOperationResult(
+        close_operation, "Waiting for issue to be closed"
     )
     log.status.Print(
         "Close request completed for [{}].".format(issue_ref.RelativeName())

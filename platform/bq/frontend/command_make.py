@@ -106,6 +106,13 @@ class Make(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     flags.DEFINE_string(
+        'dataplex_entry_group',
+        None,
+        'Dataplex entry group for metadata destination in the created transfer'
+        ' configuration.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
         'params',
         None,
         'Parameters for the created transfer configuration in JSON format. '
@@ -1305,6 +1312,7 @@ class Make(bigquery_command.BigqueryCmd):
           notification_pubsub_topic=self.notification_pubsub_topic,
           schedule_args=schedule_args,
           location=location,
+          dataplex_entry_group=self.dataplex_entry_group,
       )
       self.printSuccessMessage('Transfer configuration', transfer_name)
     elif self.transfer_run:

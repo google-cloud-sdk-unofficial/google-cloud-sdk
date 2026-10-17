@@ -138,21 +138,23 @@ def ValidateUnifiedBuildProperty(deploy_from_source, containers, release_track):
           )
 
 
-def ValidateNoBuildFromSource(source_containers, release_track):
+def ValidateNoBuildFromSource(
+    source_containers: Mapping[str, Any],
+    release_track: base.ReleaseTrack,
+) -> None:
   """Extra validation for Zip deployments.
 
   This is a no-op for if the --no-build flag is not set.
 
   Args:
-    source_containers: The map of source container name to container
-      object.
+    source_containers: The map of source container name to container object.
     release_track: The release track of the command.
   """
   for _, container_args in source_containers.items():
     if not IsNoBuildFromSource(release_track, container_args):
       continue
 
-    if not container_args.IsSpecified('base_image'):
+    if not getattr(container_args, 'base_image', None):
       raise c_exceptions.InvalidArgumentException(
           '--no-build',
           'Source deployment must specify --base-image when skipping Cloud'

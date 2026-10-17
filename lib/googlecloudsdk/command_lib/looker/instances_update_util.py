@@ -490,6 +490,15 @@ def UpdateAcceleratedSecurityPatch(unused_instance_ref, args, patch_request):
   return patch_request
 
 
+def UpdateLinkedLspProjectNumber(unused_instance_ref, args, patch_request):
+  """Hook to add linked LSP project number to the update mask of the request."""
+  if args.IsSpecified('linked_lsp_project_number'):
+    patch_request = AddFieldToUpdateMask(
+        'linked_lsp_project_number', patch_request
+    )
+  return patch_request
+
+
 def UpdateAuthType(unused_instance_ref, args, patch_request):
   """Hook to update auth type to the update mask of the request."""
   if args.IsSpecified('workforce_auth_enabled'):

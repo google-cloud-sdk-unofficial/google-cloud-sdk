@@ -1188,17 +1188,17 @@ class CloudExadataInfrastructure(_messages.Message):
   Fields:
     createTime: Output only. The date and time that the Exadata Infrastructure
       was created.
-    displayName: Optional. User friendly name for this resource.
+    displayName: Optional. Immutable. User friendly name for this resource.
     entitlementId: Output only. Entitlement ID of the private offer against
       which this infrastructure resource is provisioned.
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle Exadata
-      Infrastructure is hosted. Example: us-east4-b-r2. If not specified, the
-      system will pick a zone based on availability.
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where Oracle
+      Exadata Infrastructure is hosted. Example: us-east4-b-r2. If not
+      specified, the system will pick a zone based on availability.
     labels: Optional. Labels or tags associated with the resource.
     name: Identifier. The name of the Exadata Infrastructure resource with the
       format: projects/{project}/locations/{region}/cloudExadataInfrastructure
       s/{cloud_exadata_infrastructure}
-    properties: Optional. Various properties of the infra.
+    properties: Optional. Immutable. Various properties of the infra.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1379,21 +1379,23 @@ class CloudVmCluster(_messages.Message):
     LabelsValue: Optional. Labels or tags associated with the VM Cluster.
 
   Fields:
-    backupOdbSubnet: Optional. The name of the backup OdbSubnet associated
-      with the VM Cluster. Format: projects/{project}/locations/{location}/odb
-      Networks/{odb_network}/odbSubnets/{odb_subnet}
-    backupSubnetCidr: Optional. CIDR range of the backup subnet.
-    cidr: Optional. Network settings. CIDR to use for cluster IP allocation.
+    backupOdbSubnet: Optional. Immutable. The name of the backup OdbSubnet
+      associated with the VM Cluster. Format: projects/{project}/locations/{lo
+      cation}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
+    backupSubnetCidr: Optional. Immutable. CIDR range of the backup subnet.
+    cidr: Optional. Immutable. Network settings. CIDR to use for cluster IP
+      allocation.
     createTime: Output only. The date and time that the VM cluster was
       created.
-    displayName: Optional. User friendly name for this resource.
-    exadataInfrastructure: Required. The name of the Exadata Infrastructure
-      resource on which VM cluster resource is created, in the following
-      format: projects/{project}/locations/{region}/cloudExadataInfrastuctures
-      /{cloud_extradata_infrastructure}
-    exascaleDbStorageVault: Optional. The name of ExascaleDbStorageVault
-      associated with the VM Cluster. Format: projects/{project}/locations/{lo
-      cation}/exascaleDbStorageVaults/{exascale_db_storage_vault}
+    displayName: Optional. Immutable. User friendly name for this resource.
+    exadataInfrastructure: Required. Immutable. The name of the Exadata
+      Infrastructure resource on which VM cluster resource is created, in the
+      following format: projects/{project}/locations/{region}/cloudExadataInfr
+      astuctures/{cloud_extradata_infrastructure}
+    exascaleDbStorageVault: Optional. Immutable. The name of
+      ExascaleDbStorageVault associated with the VM Cluster. Format: projects/
+      {project}/locations/{location}/exascaleDbStorageVaults/{exascale_db_stor
+      age_vault}
     gcpOracleZone: Output only. The GCP Oracle zone where Oracle
       CloudVmCluster is hosted. This will be the same as the gcp_oracle_zone
       of the CloudExadataInfrastructure. Example: us-east4-b-r2.
@@ -1402,17 +1404,17 @@ class CloudVmCluster(_messages.Message):
     labels: Optional. Labels or tags associated with the VM Cluster.
     name: Identifier. The name of the VM Cluster resource with the format:
       projects/{project}/locations/{region}/cloudVmClusters/{cloud_vm_cluster}
-    network: Optional. The name of the VPC network. Format:
+    network: Optional. Immutable. The name of the VPC network. Format:
       projects/{project}/global/networks/{network}
-    odbNetwork: Optional. The name of the OdbNetwork associated with the VM
-      Cluster. Format:
+    odbNetwork: Optional. Immutable. The name of the OdbNetwork associated
+      with the VM Cluster. Format:
       projects/{project}/locations/{location}/odbNetworks/{odb_network} It is
       optional but if specified, this should match the parent ODBNetwork of
       the odb_subnet and backup_odb_subnet.
-    odbSubnet: Optional. The name of the OdbSubnet associated with the VM
-      Cluster for IP allocation. Format: projects/{project}/locations/{locatio
-      n}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
-    properties: Optional. Various properties of the VM Cluster.
+    odbSubnet: Optional. Immutable. The name of the OdbSubnet associated with
+      the VM Cluster for IP allocation. Format: projects/{project}/locations/{
+      location}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
+    properties: Optional. Immutable. Various properties of the VM Cluster.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -2420,27 +2422,27 @@ class DbSystem(_messages.Message):
 
   Fields:
     createTime: Output only. The date and time that the DbSystem was created.
-    displayName: Required. The display name for the System db. The name does
-      not have to be unique within your project.
+    displayName: Required. Immutable. The display name for the System db. The
+      name does not have to be unique within your project.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the DbSystem
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle DbSystem is
-      hosted. Example: us-east4-b-r2. If not specified, the system will pick a
-      zone based on availability.
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where Oracle
+      DbSystem is hosted. Example: us-east4-b-r2. If not specified, the system
+      will pick a zone based on availability.
     labels: Optional. The labels or tags associated with the DbSystem.
     name: Identifier. The name of the DbSystem resource in the following
       format: projects/{project}/locations/{region}/dbSystems/{db_system}
     ociUrl: Output only. HTTPS link to OCI resources exposed to Customer via
       UI Interface.
-    odbNetwork: Optional. The name of the OdbNetwork associated with the
-      DbSystem. Format:
+    odbNetwork: Optional. Immutable. The name of the OdbNetwork associated
+      with the DbSystem. Format:
       projects/{project}/locations/{location}/odbNetworks/{odb_network} It is
       optional but if specified, this should match the parent ODBNetwork of
       the OdbSubnet.
-    odbSubnet: Required. The name of the OdbSubnet associated with the
-      DbSystem for IP allocation. Format: projects/{project}/locations/{locati
-      on}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
-    properties: Optional. The properties of the DbSystem.
+    odbSubnet: Required. Immutable. The name of the OdbSubnet associated with
+      the DbSystem for IP allocation. Format: projects/{project}/locations/{lo
+      cation}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
+    properties: Optional. Immutable. The properties of the DbSystem.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -3202,16 +3204,17 @@ class ExascaleDbStorageVault(_messages.Message):
   Fields:
     createTime: Output only. The date and time when the ExascaleDbStorageVault
       was created.
-    displayName: Required. The display name for the ExascaleDbStorageVault.
-      The name does not have to be unique within your project. The name must
-      be 1-255 characters long and can only contain alphanumeric characters.
+    displayName: Required. Immutable. The display name for the
+      ExascaleDbStorageVault. The name does not have to be unique within your
+      project. The name must be 1-255 characters long and can only contain
+      alphanumeric characters.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the ExascaleDbStorageVault.
-    exadataInfrastructure: Optional. The Exadata Infrastructure resource on
-      which ExascaleDbStorageVault resource is created, in the following
-      format: projects/{project}/locations/{region}/cloudExadataInfrastuctures
-      /{cloud_extradata_infrastructure}
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle
+    exadataInfrastructure: Optional. Immutable. The Exadata Infrastructure
+      resource on which ExascaleDbStorageVault resource is created, in the
+      following format: projects/{project}/locations/{region}/cloudExadataInfr
+      astuctures/{cloud_extradata_infrastructure}
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where Oracle
       ExascaleDbStorageVault is hosted. Example: us-east4-b-r2. If not
       specified, the system will pick a zone based on availability.
     labels: Optional. The labels or tags associated with the
@@ -3219,7 +3222,8 @@ class ExascaleDbStorageVault(_messages.Message):
     name: Identifier. The resource name of the ExascaleDbStorageVault. Format:
       projects/{project}/locations/{location}/exascaleDbStorageVaults/{exascal
       e_db_storage_vault}
-    properties: Required. The properties of the ExascaleDbStorageVault.
+    properties: Required. Immutable. The properties of the
+      ExascaleDbStorageVault.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -3627,7 +3631,7 @@ class GoldengateConnection(_messages.Message):
       was created.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the GoldengateConnection.
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where Oracle
       GoldengateConnection is hosted. Example: us-east4-b-r2. If not
       specified, the system will pick a zone based on availability.
     labels: Optional. The labels or tags associated with the
@@ -3637,15 +3641,16 @@ class GoldengateConnection(_messages.Message):
       tions/{goldengate_connection}
     ociUrl: Output only. HTTPS link to OCI resources exposed to Customer via
       UI Interface.
-    odbNetwork: Optional. The name of the OdbNetwork associated with the
-      GoldengateConnection. The format is
+    odbNetwork: Optional. Immutable. The name of the OdbNetwork associated
+      with the GoldengateConnection. The format is
       projects/{project}/locations/{location}/odbNetworks/{odb_network}. It is
       optional but if specified, this should match the parent ODBNetwork of
       the OdbSubnet.
-    odbSubnet: Optional. The name of the OdbSubnet associated with the
-      GoldengateConnection for IP allocation. Format: projects/{project}/locat
-      ions/{location}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
-    properties: Required. The properties of the GoldengateConnection.
+    odbSubnet: Optional. Immutable. The name of the OdbSubnet associated with
+      the GoldengateConnection for IP allocation. Format: projects/{project}/l
+      ocations/{location}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
+    properties: Required. Immutable. The properties of the
+      GoldengateConnection.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -3693,7 +3698,7 @@ class GoldengateConnectionAssignment(_messages.Message):
   Fields:
     createTime: Output only. The time when the connection assignment was
       created.
-    displayName: Optional. The display name for the
+    displayName: Optional. Immutable. The display name for the
       GoldengateConnectionAssignment.
     entitlementId: Output only. The OCID of the entitlement linked to this
       resource.
@@ -3702,7 +3707,7 @@ class GoldengateConnectionAssignment(_messages.Message):
     name: Identifier. The name of the GoldengateConnectionAssignment resource
       in the following format: projects/{project}/locations/{region}/goldengat
       eConnectionAssignments/{goldengate_connection_assignment}
-    properties: Required. The properties of the
+    properties: Required. Immutable. The properties of the
       GoldengateConnectionAssignment.
   """
 
@@ -4214,10 +4219,11 @@ class GoldengateDeployment(_messages.Message):
   Fields:
     createTime: Output only. The date and time that the GoldengateDeployment
       was created.
-    displayName: Required. The display name for the GoldengateDeployment.
+    displayName: Required. Immutable. The display name for the
+      GoldengateDeployment.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the GoldengateDeployment
-    gcpOracleZone: Optional. The GCP Oracle zone where Oracle
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where Oracle
       GoldengateDeployment is hosted. Example: us-east4-b-r2. If not
       specified, the system will pick a zone based on availability.
     labels: Optional. The labels or tags associated with the
@@ -4227,11 +4233,12 @@ class GoldengateDeployment(_messages.Message):
       ments/{goldengate_deployment}
     ociUrl: Output only. HTTPS link to OCI resources exposed to Customer via
       UI Interface.
-    odbNetwork: Optional. The name of the OdbNetwork associated with the
+    odbNetwork: Optional. Immutable. The name of the OdbNetwork associated
+      with the GoldengateDeployment.
+    odbSubnet: Required. Immutable. The name of the OdbSubnet associated with
+      the GoldengateDeployment for IP allocation.
+    properties: Required. Immutable. The properties of the
       GoldengateDeployment.
-    odbSubnet: Required. The name of the OdbSubnet associated with the
-      GoldengateDeployment for IP allocation.
-    properties: Required. The properties of the GoldengateDeployment.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -6976,26 +6983,26 @@ class OdbSubnet(_messages.Message):
   r"""Represents OdbSubnet resource.
 
   Enums:
-    PurposeValueValuesEnum: Required. Purpose of the subnet.
+    PurposeValueValuesEnum: Required. Immutable. Purpose of the subnet.
     StateValueValuesEnum: Output only. State of the ODB Subnet.
 
   Messages:
     LabelsValue: Optional. Labels or tags associated with the resource.
 
   Fields:
-    cidrRange: Required. The CIDR range of the subnet.
+    cidrRange: Required. Immutable. The CIDR range of the subnet.
     createTime: Output only. The date and time that the OdbNetwork was
       created.
     labels: Optional. Labels or tags associated with the resource.
     name: Identifier. The name of the OdbSubnet resource in the following
       format: projects/{project}/locations/{location}/odbNetworks/{odb_network
       }/odbSubnets/{odb_subnet}
-    purpose: Required. Purpose of the subnet.
+    purpose: Required. Immutable. Purpose of the subnet.
     state: Output only. State of the ODB Subnet.
   """
 
   class PurposeValueValuesEnum(_messages.Enum):
-    r"""Required. Purpose of the subnet.
+    r"""Required. Immutable. Purpose of the subnet.
 
     Values:
       PURPOSE_UNSPECIFIED: Default unspecified value.
@@ -7646,6 +7653,39 @@ class OracledatabaseProjectsLocationsCloudExadataInfrastructuresListRequest(_mes
   parent = _messages.StringField(5, required=True)
 
 
+class OracledatabaseProjectsLocationsCloudExadataInfrastructuresPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsCloudExadataInfrastructuresPatchRequest
+  object.
+
+  Fields:
+    cloudExadataInfrastructure: A CloudExadataInfrastructure resource to be
+      passed as the request body.
+    name: Identifier. The name of the Exadata Infrastructure resource with the
+      format: projects/{project}/locations/{region}/cloudExadataInfrastructure
+      s/{cloud_exadata_infrastructure}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the Exadata resource by the update. The fields specified
+      in the `update_mask` are relative to the resource, not the full request.
+      A field will be overwritten if it is in the mask. If the user does not
+      provide a mask then the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value). To
+      clear or unset a field, the field must be explicitly specified in the
+      `update_mask`.
+  """
+
+  cloudExadataInfrastructure = _messages.MessageField('CloudExadataInfrastructure', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class OracledatabaseProjectsLocationsCloudVmClustersCreateRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsCloudVmClustersCreateRequest object.
 
@@ -7746,6 +7786,35 @@ class OracledatabaseProjectsLocationsCloudVmClustersListRequest(_messages.Messag
   pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(3)
   parent = _messages.StringField(4, required=True)
+
+
+class OracledatabaseProjectsLocationsCloudVmClustersPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsCloudVmClustersPatchRequest object.
+
+  Fields:
+    cloudVmCluster: A CloudVmCluster resource to be passed as the request
+      body.
+    name: Identifier. The name of the VM Cluster resource with the format:
+      projects/{project}/locations/{region}/cloudVmClusters/{cloud_vm_cluster}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the VM Cluster
+      should be updated. A field specified in the mask is overwritten. If a
+      mask isn't provided, the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value). To
+      clear or unset a field, the field must be explicitly specified in the
+      `update_mask`.
+  """
+
+  cloudVmCluster = _messages.MessageField('CloudVmCluster', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class OracledatabaseProjectsLocationsDatabaseCharacterSetsListRequest(_messages.Message):
@@ -7936,6 +8005,32 @@ class OracledatabaseProjectsLocationsDbSystemsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsDbSystemsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDbSystemsPatchRequest object.
+
+  Fields:
+    dbSystem: A DbSystem resource to be passed as the request body.
+    name: Identifier. The name of the DbSystem resource in the following
+      format: projects/{project}/locations/{region}/dbSystems/{db_system}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the DbSystem
+      should be updated. A field specified in the mask is updated. If a mask
+      isn't provided, the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value).
+  """
+
+  dbSystem = _messages.MessageField('DbSystem', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class OracledatabaseProjectsLocationsDbVersionsListRequest(_messages.Message):
@@ -8226,6 +8321,37 @@ class OracledatabaseProjectsLocationsExascaleDbStorageVaultsListRequest(_message
   parent = _messages.StringField(5, required=True)
 
 
+class OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest
+  object.
+
+  Fields:
+    exascaleDbStorageVault: A ExascaleDbStorageVault resource to be passed as
+      the request body.
+    name: Identifier. The resource name of the ExascaleDbStorageVault. Format:
+      projects/{project}/locations/{location}/exascaleDbStorageVaults/{exascal
+      e_db_storage_vault}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the
+      ExascaleDbStorageVault should be updated. A field specified in the mask
+      is updated. If a mask isn't provided, the service treats this as an
+      implied field mask equivalent to all fields that are populated (have a
+      non-empty value). To clear or unset a field, the field must be
+      explicitly specified in the `update_mask`.
+  """
+
+  exascaleDbStorageVault = _messages.MessageField('ExascaleDbStorageVault', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class OracledatabaseProjectsLocationsGetRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsGetRequest object.
 
@@ -8388,6 +8514,38 @@ class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsListRequest(
   parent = _messages.StringField(5, required=True)
 
 
+class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsPatchRequest(_messages.Message):
+  r"""A
+  OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsPatchRequest
+  object.
+
+  Fields:
+    goldengateConnectionAssignment: A GoldengateConnectionAssignment resource
+      to be passed as the request body.
+    name: Identifier. The name of the GoldengateConnectionAssignment resource
+      in the following format: projects/{project}/locations/{region}/goldengat
+      eConnectionAssignments/{goldengate_connection_assignment}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the
+      GoldengateConnectionAssignment should be updated. A field specified in
+      the mask is updated. If a mask isn't provided, the service treats this
+      as an implied field mask equivalent to all fields that are populated
+      (have a non-empty value). To clear or unset a field, the field must be
+      explicitly specified in the `update_mask`.
+  """
+
+  goldengateConnectionAssignment = _messages.MessageField('GoldengateConnectionAssignment', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsTestRequest(_messages.Message):
   r"""A
   OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsTestRequest
@@ -8515,6 +8673,37 @@ class OracledatabaseProjectsLocationsGoldengateConnectionsListRequest(_messages.
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldengateConnectionsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateConnectionsPatchRequest
+  object.
+
+  Fields:
+    goldengateConnection: A GoldengateConnection resource to be passed as the
+      request body.
+    name: Identifier. The name of the GoldengateConnection resource in the
+      following format: projects/{project}/locations/{region}/goldengateConnec
+      tions/{goldengate_connection}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the
+      GoldengateConnection should be updated. A field specified in the mask is
+      updated. If a mask isn't provided, the service treats this as an implied
+      field mask equivalent to all fields that are populated (have a non-empty
+      value). To clear or unset a field, the field must be explicitly
+      specified in the `update_mask`.
+  """
+
+  goldengateConnection = _messages.MessageField('GoldengateConnection', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsListRequest(_messages.Message):
@@ -8676,6 +8865,37 @@ class OracledatabaseProjectsLocationsGoldengateDeploymentsListRequest(_messages.
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldengateDeploymentsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentsPatchRequest
+  object.
+
+  Fields:
+    goldengateDeployment: A GoldengateDeployment resource to be passed as the
+      request body.
+    name: Identifier. The name of the GoldengateDeployment resource in the
+      following format: projects/{project}/locations/{region}/goldengateDeploy
+      ments/{goldengate_deployment}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the
+      GoldengateDeployment should be updated. A field specified in the mask is
+      updated. If a mask isn't provided, the service treats this as an implied
+      field mask equivalent to all fields that are populated (have a non-empty
+      value). To clear or unset a field, the field must be explicitly
+      specified in the `update_mask`.
+  """
+
+  goldengateDeployment = _messages.MessageField('GoldengateDeployment', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class OracledatabaseProjectsLocationsGoldengateDeploymentsStartRequest(_messages.Message):
@@ -8894,6 +9114,36 @@ class OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsListRequest(_messages.
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The name of the OdbSubnet resource in the following
+      format: projects/{project}/locations/{location}/odbNetworks/{odb_network
+      }/odbSubnets/{odb_subnet}
+    odbSubnet: A OdbSubnet resource to be passed as the request body.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the OdbSubnet
+      should be updated. A field specified in the mask is updated. If a mask
+      isn't provided, the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value). To
+      clear or unset a field, the field must be explicitly specified in the
+      `update_mask`.
+  """
+
+  name = _messages.StringField(1, required=True)
+  odbSubnet = _messages.MessageField('OdbSubnet', 2)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class OracledatabaseProjectsLocationsOperationsCancelRequest(_messages.Message):

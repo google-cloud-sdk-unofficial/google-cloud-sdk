@@ -1,9 +1,25 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
     brief: Describe an alert.
     description: Describe an alert.
+    examples: |
+      To describe an alert, run:
+
+        $ {command} MY-ALERT
+
+      To describe an alert in JSON, run:
+
+        $ {command} MY-ALERT --format=json
+
+      To describe an alert contained within a specific project, run:
+
+        $ {command} MY-ALERT --project=MY-PROJECT
+
+      To describe an alert with a fully qualified alert ID, run:
+
+        $ {command} projects/MY-PROJECT/alerts/MY-ALERT
 
   request:
     collection: monitoring.projects.alerts

@@ -142,7 +142,12 @@ class GoogleCloudBillingBudgetsV1Budget(_messages.Message):
       `spend_cap.output_state` is `ENFORCED`, only `spend_cap.input_state` can
       be modified in an `UpdateBudget` request (e.g., setting `input_state` to
       `AWAITING_NEXT_PERIOD` to lift the cap); modifying any other budget
-      field while enforced will fail with `FAILED_PRECONDITION`.
+      field while enforced will fail with `FAILED_PRECONDITION`. If the
+      existing resource is a spend cap and an `update_mask` is supplied in an
+      `UpdateBudget` request, `spend_cap` or `spend_cap.input_state` must be
+      specified in the update mask. To convert a spend cap budget to a regular
+      budget, specify `spend_cap` in the `update_mask` and omit `spend_cap`
+      from the budget in the request.
     thresholdRules: Optional. Rules that trigger alerts (notifications of
       thresholds being crossed) when spend exceeds the specified percentages
       of the budget. Optional for `pubsubTopic` notifications. Required if
@@ -493,9 +498,12 @@ class GoogleCloudBillingBudgetsV1SpendCap(_messages.Message):
     InputStateValueValuesEnum: Required. The desired state specified by the
       user. Valid values for mutation: - `CONFIGURED`: Must be set when
       creating a spend cap (`CreateBudget`). Also valid when updating
-      (`UpdateBudget`) to activate the spend cap. - `AWAITING_NEXT_PERIOD`:
-      Valid only when updating (`UpdateBudget`) to explicitly lift an enforced
-      cap. Supplying any other value will result in an INVALID_ARGUMENT error.
+      (`UpdateBudget`) to activate the spend cap. If the spend cap is in state
+      `AWAITING_NEXT_PERIOD`, `input_state` must be set to `CONFIGURED`. -
+      `AWAITING_NEXT_PERIOD`: Valid only when updating (`UpdateBudget`) to
+      explicitly lift an enforced cap. Not allowed if the spend cap is in
+      state `AWAITING_NEXT_PERIOD`. Supplying any other value will result in
+      an INVALID_ARGUMENT error.
     OutputStateValueValuesEnum: Output only. The actual resting state of the
       spend cap.
 
@@ -503,9 +511,12 @@ class GoogleCloudBillingBudgetsV1SpendCap(_messages.Message):
     inputState: Required. The desired state specified by the user. Valid
       values for mutation: - `CONFIGURED`: Must be set when creating a spend
       cap (`CreateBudget`). Also valid when updating (`UpdateBudget`) to
-      activate the spend cap. - `AWAITING_NEXT_PERIOD`: Valid only when
-      updating (`UpdateBudget`) to explicitly lift an enforced cap. Supplying
-      any other value will result in an INVALID_ARGUMENT error.
+      activate the spend cap. If the spend cap is in state
+      `AWAITING_NEXT_PERIOD`, `input_state` must be set to `CONFIGURED`. -
+      `AWAITING_NEXT_PERIOD`: Valid only when updating (`UpdateBudget`) to
+      explicitly lift an enforced cap. Not allowed if the spend cap is in
+      state `AWAITING_NEXT_PERIOD`. Supplying any other value will result in
+      an INVALID_ARGUMENT error.
     outputState: Output only. The actual resting state of the spend cap.
     reconciling: Output only. Indicates whether the server is actively
       processing a state transition or async workflow.
@@ -515,9 +526,11 @@ class GoogleCloudBillingBudgetsV1SpendCap(_messages.Message):
     r"""Required. The desired state specified by the user. Valid values for
     mutation: - `CONFIGURED`: Must be set when creating a spend cap
     (`CreateBudget`). Also valid when updating (`UpdateBudget`) to activate
-    the spend cap. - `AWAITING_NEXT_PERIOD`: Valid only when updating
-    (`UpdateBudget`) to explicitly lift an enforced cap. Supplying any other
-    value will result in an INVALID_ARGUMENT error.
+    the spend cap. If the spend cap is in state `AWAITING_NEXT_PERIOD`,
+    `input_state` must be set to `CONFIGURED`. - `AWAITING_NEXT_PERIOD`: Valid
+    only when updating (`UpdateBudget`) to explicitly lift an enforced cap.
+    Not allowed if the spend cap is in state `AWAITING_NEXT_PERIOD`. Supplying
+    any other value will result in an INVALID_ARGUMENT error.
 
     Values:
       STATE_UNSPECIFIED: Unspecified state.

@@ -1,0 +1,50 @@
+- release_tracks: [ALPHA]
+
+  # Keeps the command out of help text, tab-completion and the public
+  # reference documentation while Cloud Build Pipelines is in preview.
+  hidden: true
+  universe_compatible: true
+
+  hints:
+    read_only: true
+
+  help_text:
+    brief: List Cloud Build pipeline runs.
+    description: List Cloud Build pipeline runs in a given project and location.
+    examples: |
+      To list pipeline runs in region `us-central1`:
+
+        $ {command} --region=us-central1
+
+      To list pipeline runs across all regions:
+
+        $ {command} --region=-
+
+      To list failed pipeline runs for pipeline `main-pipeline` in region `us-central1`:
+
+        $ {command} --region=us-central1 --filter="pipeline:main-pipeline AND state=FAILED"
+
+  request:
+    collection: cloudbuild.projects.locations.pipelineRuns
+    api_version: v1
+    regional_endpoint_compatibility: SUPPORTED
+
+  # Enables --uri. The generator builds each URI from the `name` returned by
+  # the server, so an aggregated listing still yields per-region URIs.
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The location to list pipeline runs in.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:pipeline_location
+
+  output:
+    format: |
+      table(
+        name.segment(-1):label=RUN_ID,
+        pipeline.segment(-1):label=PIPELINE,
+        state:label=STATE,
+        startTime.date(undefined="-"):label=START_TIME,
+        duration(start=startTime,end=finishTime,precision=0,calendar=false,undefined="  -").slice(2:).join(""):label=DURATION
+      )

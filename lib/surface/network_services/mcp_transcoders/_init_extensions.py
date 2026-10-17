@@ -22,10 +22,16 @@ from googlecloudsdk.calliope import base
 class McpTranscodersAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
 
+  category = base.MANAGEMENT_TOOLS_CATEGORY
+
 
 class McpTranscodersBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
 
+  category = base.MANAGEMENT_TOOLS_CATEGORY
+
 
 class McpTranscodersGa(base.Group):
   """Optional no-auto-generated code for GA."""
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

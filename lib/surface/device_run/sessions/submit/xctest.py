@@ -59,7 +59,7 @@ class SessionNameNotFoundError(exceptions.Error):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class XcTest(base.Command):
   """Submit a Device Run session with an iOS XCTest job."""
 

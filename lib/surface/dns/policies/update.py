@@ -24,25 +24,32 @@ from googlecloudsdk.command_lib.dns import util as command_util
 from googlecloudsdk.core import log
 
 
-def _AddArgsCommon(parser):
+def _AddArgsCommon(parser, is_beta_or_alpha=False):
   flags.GetPolicyDescriptionArg().AddToParser(parser)
   flags.GetPolicyNetworksArg().AddToParser(parser)
   flags.GetPolicyInboundForwardingArg().AddToParser(parser)
   flags.GetPolicyAltNameServersArg().AddToParser(parser)
   flags.GetPolicyLoggingArg().AddToParser(parser)
   flags.GetPolicyPrivateAltNameServersArg().AddToParser(parser)
+  if is_beta_or_alpha:
+    flags.GetPolicyOutboundEndpointsArg().AddToParser(parser)
   flags.GetEnableDns64AllQueriesArg(update=True).AddToParser(parser)
 
 
-def _ArgsNeededForUpdateCommon():
-  return (
+def _ArgsNeededForUpdateCommon(is_beta_or_alpha=False):
+  """Returns a tuple of argument names that trigger a policy update."""
+  args = (
       'networks',
       'description',
       'enable_inbound_forwarding',
       'enable_logging',
       'alternative_name_servers',
+      'private_alternative_name_servers',
       'enable_dns64_all_queries',
   )
+  if is_beta_or_alpha:
+    args += ('outbound_endpoints',)
+  return args
 
 
 @base.UniverseCompatible
@@ -94,8 +101,10 @@ class UpdateGA(base.UpdateCommand):
       to_update.networks = command_util.ParsePolicyNetworks(
           args.networks, policy_ref.project, api_version)
 
-    if args.IsSpecified('alternative_name_servers') or args.IsSpecified(
-        'private_alternative_name_servers'):
+    if (
+        args.IsSpecified('alternative_name_servers')
+        or args.IsSpecified('private_alternative_name_servers')
+    ):
       if args.alternative_name_servers == ['']:
         args.alternative_name_servers = []
       if args.private_alternative_name_servers == ['']:
@@ -103,7 +112,8 @@ class UpdateGA(base.UpdateCommand):
       to_update.alternativeNameServerConfig = command_util.ParseAltNameServers(
           version=api_version,
           server_list=args.alternative_name_servers,
-          private_server_list=args.private_alternative_name_servers)
+          private_server_list=args.private_alternative_name_servers,
+      )
 
     if args.IsSpecified('enable_inbound_forwarding'):
       to_update.enableInboundForwarding = args.enable_inbound_forwarding
@@ -152,7 +162,7 @@ class UpdateBeta(UpdateGA):
   def Args(parser):
     resource_args.AddPolicyResourceArg(
         parser, verb='to update', api_version='v1beta2')
-    _AddArgsCommon(parser)
+    _AddArgsCommon(parser, is_beta_or_alpha=True)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -163,7 +173,7 @@ class UpdateBeta(UpdateGA):
     # Get Policy
     policy_ref = args.CONCEPTS.policy.Parse()
     to_update = self._FetchPolicy(policy_ref, api_version)
-    args_needed_for_update = _ArgsNeededForUpdateCommon()
+    args_needed_for_update = _ArgsNeededForUpdateCommon(is_beta_or_alpha=True)
     if not any(args.IsSpecified(arg) for arg in args_needed_for_update):
       log.status.Print('Nothing to update.')
       return to_update
@@ -174,16 +184,24 @@ class UpdateBeta(UpdateGA):
       to_update.networks = command_util.ParsePolicyNetworks(
           args.networks, policy_ref.project, api_version)
 
-    if args.IsSpecified('alternative_name_servers') or args.IsSpecified(
-        'private_alternative_name_servers'):
+    if (
+        args.IsSpecified('alternative_name_servers')
+        or args.IsSpecified('private_alternative_name_servers')
+        or args.IsSpecified('outbound_endpoints')
+    ):
       if args.alternative_name_servers == ['']:
         args.alternative_name_servers = []
       if args.private_alternative_name_servers == ['']:
         args.private_alternative_name_servers = []
+      if args.outbound_endpoints == ['']:
+        args.outbound_endpoints = []
       to_update.alternativeNameServerConfig = command_util.ParseAltNameServers(
           version=api_version,
           server_list=args.alternative_name_servers,
-          private_server_list=args.private_alternative_name_servers)
+          private_server_list=args.private_alternative_name_servers,
+          outbound_endpoint_list=args.outbound_endpoints,
+          project=policy_ref.project,
+      )
 
     if args.IsSpecified('enable_inbound_forwarding'):
       to_update.enableInboundForwarding = args.enable_inbound_forwarding
@@ -230,5 +248,5 @@ class UpdateAlpha(UpdateBeta):
   def Args(parser):
     resource_args.AddPolicyResourceArg(
         parser, verb='to update', api_version='v1alpha2')
-    _AddArgsCommon(parser)
+    _AddArgsCommon(parser, is_beta_or_alpha=True)
     parser.display_info.AddFormat('json')

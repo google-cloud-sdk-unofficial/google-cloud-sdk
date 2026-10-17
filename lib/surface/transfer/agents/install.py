@@ -95,12 +95,14 @@ Credentials file not found at {creds_file_path}.
 Afterwards, re-run {executed_command}.
 """
 
+_DEFAULT_CLOUD_WEB_DOMAIN = 'cloud.google.com'
+
 CHECK_AGENT_CONNECTED_HELP_TEXT_FORMAT = """
 To confirm your agents are connected, go to the following link in your browser,
 and check that agent status is 'Connected' (it can take a moment for the status
 to update and may require a page refresh):
 
-https://console.cloud.google.com/transfer/on-premises/agent-pools/pool/\
+https://console.{cloud_web_domain}/transfer/on-premises/agent-pools/pool/\
 {pool}/agents?project={project}
 
 If your agent does not appear in the pool, check its local logs by running
@@ -439,6 +441,23 @@ def _get_container_run_command(
   return base_container_command + agent_args
 
 
+def _get_cloud_web_domain():
+  """Returns the console web domain for the active universe.
+
+  Falls back to the default web domain if the universe descriptor does not
+  define one.
+
+  Returns:
+    str: The cloud web domain (e.g. 'cloud.google.com').
+  """
+  if properties.IsDefaultUniverse():
+    return _DEFAULT_CLOUD_WEB_DOMAIN
+  return (
+      universe_descriptor.GetUniverseDomainDescriptor().cloud_web_domain
+      or _DEFAULT_CLOUD_WEB_DOMAIN
+  )
+
+
 def _execute_container_command(args, project, creds_file_path):
   """Generates, executes, and returns agent install and run command.
 
@@ -506,7 +525,7 @@ def _create_additional_agents(agent_count, agent_id_prefix, container_command):
       container_command_copy[idx_agent_prefix] = (
           '--agent-id-prefix={}{}'.format(agent_id_prefix, str(count))
       )
-    # Less error handling than before. Just propogate any process errors.
+    # Less error handling than before. Just propagate any process errors.
     subprocess.run(container_command_copy, check=True)
     _log_created_agent(container_command_copy)
 
@@ -783,6 +802,7 @@ class Install(base.Command):
 
     log.status.Print(
         CHECK_AGENT_CONNECTED_HELP_TEXT_FORMAT.format(
+            cloud_web_domain=_get_cloud_web_domain(),
             pool=args.pool,
             project=project,
             logs_command=_get_container_subcommand(

@@ -2086,6 +2086,20 @@ def AddAgentModeFlags(parser: argparse.ArgumentParser) -> None:
   )
 
 
+def AddEnableExpress(parser: argparse.ArgumentParser) -> None:
+  """Adds the `--enable-express` flag to the parser.
+
+  Args:
+    parser: argparse.ArgumentParser: Parser object for command line inputs.
+  """
+  parser.add_argument(
+      '--enable-express',
+      action=arg_parsers.StoreTrueFalseAction,
+      required=False,
+      help='Enable or disable Express configuration for the cluster.',
+  )
+
+
 def GetValidatedMaintenanceVersion(args, alloydb_messages):
   """Returns the maintenance version from the args."""
   if args.maintenance_version.lower() == 'latest':

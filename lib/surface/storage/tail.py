@@ -76,7 +76,6 @@ def _calculate_start_byte(
   return max(0, object_size - abs(int(bytes_to_read)))
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Tail(base.Command):
@@ -99,7 +98,7 @@ class Tail(base.Command):
 
       The following command outputs the last 100 bytes of an object:
 
-        $ {command} gs://my-bucket/object --bytes 100
+        $ {command} gs://my-bucket/object --bytes=100
 
       The following command continuously streams new data as it is appended to
       the appendable object:

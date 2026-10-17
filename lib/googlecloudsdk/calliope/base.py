@@ -617,14 +617,31 @@ class _BaseSidecarDescriptor(object):
       return None
 
   def _Parse(self, content):
+
     """Parses the YAML content and returns it."""
     if not content:
       return []
 
-    # We don't catch yaml.YAMLParseError here because all sidecar files are
-    # discovered and validated against the schema at test time (see
-    # yaml_sidecar_validation_test.py). Malformed files will be caught there.
-    data = yaml.load(content)
+    try:
+      data = yaml.load(content)
+    except yaml.YAMLParseError:
+      # If parsing fails due to custom tags like !REF from hybrid declarative
+      # files, fall back to safe parsing that ignores unknown tags.
+      try:
+        from ruamel import yaml as ruamel_yaml  # pylint: disable=g-import-not-at-top
+
+        class _SidecarSafeLoader(ruamel_yaml.SafeLoader):
+          pass
+
+        _SidecarSafeLoader.add_multi_constructor(
+            '!', lambda loader, tag, node: None
+        )
+        data = ruamel_yaml.load(content, _SidecarSafeLoader)
+      except Exception:  # pylint: disable=broad-except
+        return []
+    except Exception:  # pylint: disable=broad-except
+      return []
+
     if not data:
       return []
     if isinstance(data, dict):
@@ -633,6 +650,7 @@ class _BaseSidecarDescriptor(object):
 
 
 class HintsDescriptor(_BaseSidecarDescriptor):
+
   """A descriptor that lazily loads the YAML sidecar file and extracts hints.
 
   This descriptor handles the file I/O and parsing of the `.yaml` sidecar

@@ -1044,12 +1044,16 @@ class CloudApi(object):
     """
     raise NotImplementedError('upload_object must be overridden.')
 
-  def create_managed_folder(self, bucket_name, managed_folder_name):
+  def create_managed_folder(
+      self, bucket_name, managed_folder_name, rapid_cache_config=None
+  ):
     """Creates a managed folder.
 
     Args:
       bucket_name (str): The bucket to create the managed folder in.
       managed_folder_name (str): The name of the managed folder to create.
+      rapid_cache_config (messages.RapidCacheConfig|None): Optional Rapid Cache
+        configuration for the managed folder.
 
     Returns:
       A resource_reference.ManagedFolderResource for the new managed folder.
@@ -1060,6 +1064,33 @@ class CloudApi(object):
         this interface.
     """
     raise NotImplementedError('create_managed_folder must be overridden.')
+
+  def update_managed_folder(
+      self,
+      bucket_name,
+      managed_folder_name,
+      managed_folder_metadata=None,
+      if_metageneration_match=None,
+  ):
+    """Updates a managed folder.
+
+    Args:
+      bucket_name (str): The bucket containing the managed folder.
+      managed_folder_name (str): The name of the managed folder to update.
+      managed_folder_metadata (messages.ManagedFolder|None): The metadata to
+        update on the managed folder.
+      if_metageneration_match (int|None): If set, the update only succeeds if
+        the managed folder's metageneration matches this value.
+
+    Returns:
+      A resource_reference.ManagedFolderResource for the updated managed folder.
+
+    Raises:
+      CloudApiError: API returned an error.
+      NotImplementedError: This function was not implemented by a class using
+        this interface.
+    """
+    raise NotImplementedError('update_managed_folder must be overridden.')
 
   def delete_managed_folder(self, bucket_name, managed_folder_name):
     """Deletes a managed folder.

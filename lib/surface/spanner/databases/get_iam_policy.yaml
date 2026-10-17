@@ -21,3 +21,8 @@
     resource:
       help_text: The Cloud Spanner database for which to display the IAM policy.
       spec: !REF googlecloudsdk.command_lib.spanner.resources:database
+
+- release_tracks: [BETA, GA]
+  is_python_command: true
+  hints:
+    read_only: true

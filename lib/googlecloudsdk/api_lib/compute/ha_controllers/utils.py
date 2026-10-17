@@ -425,14 +425,25 @@ def _BuildCreateRegionalDiskRequest(
     source_disk,
     disk_metadata,
     destination_disk_type,
+    increase_pd_standard_size=False,
 ):
   """Returns the request to create a regional disk."""
   disk_size = source_disk.diskSizeGb
+  disk_name = holder.resources.Parse(source_disk.source).Name()
+  if (
+      'pd-standard' in destination_disk_type
+      and disk_size < PD_STANDARD_DISK_SIZE
+      and not increase_pd_standard_size
+  ):
+    log.warning(GetDiskTypeChangeWarningMessage(disk_name))
+    destination_disk_type = destination_disk_type.replace(
+        'pd-standard', 'pd-balanced'
+    )
   min_disk_size = _GetMinDiskSize(destination_disk_type)
   if disk_size < min_disk_size:
     log.warning(
         GetDiskSizeChangeWarningMessage(
-            holder.resources.Parse(source_disk.source).Name(),
+            disk_name,
             disk_size,
             min_disk_size,
         )
@@ -473,14 +484,24 @@ def _BuildCreateRegionalDiskRequest(
   return disk_request
 
 
+def GetDiskTypeChangeWarningMessage(disk_name):
+  """Returns the warning message for the disk type change."""
+  return (
+      f'The {disk_name} disk does not meet the minimum size for a regional'
+      ' pd-standard disk. To minimize costs, the disk type will be changed from'
+      ' pd-standard to pd-balanced.'
+  )
+
+
 def GetDiskSizeChangeWarningMessage(
     disk_name, original_disk_size, new_disk_size
 ):
   """Returns the warning message for the disk size change."""
   return (
       f'The {disk_name} disk does not meet the minimum size for a regional'
-      f' disk. This command increases the disk size from {original_disk_size}'
-      f' GB to {new_disk_size} GB.'
+      ' disk. Because changing the disk type to pd-balanced has failed,'
+      f' the disk size will be increased from {original_disk_size} GB to'
+      f' {new_disk_size} GB.'
   )
 
 
@@ -543,19 +564,20 @@ def _SetDiskResourceEncryptionKey(holder, source_disk, disk_resource):
     )
 
 
-def PerformCreateRegionalDiskBatchRequest(
+def _BuildCreateRegionalDiskRequests(
     holder,
     project,
     region,
     zone,
     replica_zone,
-    zonal_disks,
+    disks,
     disk_metadata,
     destination_disk_types,
+    increase_pd_standard_size=False,
 ):
-  """Performs a batch request to create a regional disk and returns the error list, or an empty list if the request was successful."""
+  """Returns the list of requests to create regional disks."""
   requests = []
-  for disk in zonal_disks:
+  for disk in disks:
     snapshot_url = holder.resources.Create(
         'compute.snapshots',
         project=project,
@@ -572,17 +594,109 @@ def PerformCreateRegionalDiskBatchRequest(
             disk,
             disk_metadata[disk.deviceName],
             destination_disk_types[disk.deviceName],
+            increase_pd_standard_size=increase_pd_standard_size,
         )
     )
+  return requests
+
+
+def PerformCreateRegionalDiskBatchRequest(
+    holder,
+    project,
+    region,
+    zone,
+    replica_zone,
+    zonal_disks,
+    disk_metadata,
+    destination_disk_types,
+):
+  """Performs a batch request to create a regional disk and returns the error list, or an empty list if the request was successful."""
+  pd_standard_disks = []
+  other_disks = []
+  for disk in zonal_disks:
+    if (
+        'pd-standard' in destination_disk_types[disk.deviceName]
+        and disk.diskSizeGb < PD_STANDARD_DISK_SIZE
+    ):
+      pd_standard_disks.append(disk)
+    else:
+      other_disks.append(disk)
+
   errors = []
-  _ = list(
-      request_helper.MakeRequests(
-          requests=requests,
-          http=holder.client.apitools_client.http,
-          errors=errors,
-          batch_url=holder.client.batch_url,
+  if other_disks:
+    other_requests = _BuildCreateRegionalDiskRequests(
+        holder,
+        project,
+        region,
+        zone,
+        replica_zone,
+        other_disks,
+        disk_metadata,
+        destination_disk_types,
+    )
+    _ = list(
+        request_helper.MakeRequests(
+            requests=other_requests,
+            http=holder.client.apitools_client.http,
+            errors=errors,
+            batch_url=holder.client.batch_url,
+        )
+    )
+
+  if pd_standard_disks:
+    pd_standard_requests = _BuildCreateRegionalDiskRequests(
+        holder,
+        project,
+        region,
+        zone,
+        replica_zone,
+        pd_standard_disks,
+        disk_metadata,
+        destination_disk_types,
+        increase_pd_standard_size=False,
+    )
+    pd_standard_errors = []
+    responses = list(
+        request_helper.MakeRequests(
+            requests=pd_standard_requests,
+            http=holder.client.apitools_client.http,
+            errors=pd_standard_errors,
+            batch_url=holder.client.batch_url,
+        )
+    )
+    if pd_standard_errors:
+      created_disk_names = {
+          getattr(response, 'name', None)
+          for response in responses
+          if getattr(response, 'name', None)
+      }
+      failed_pd_standard_disks = [
+          disk
+          for disk in pd_standard_disks
+          if CreateRegionalDiskName(holder, disk) not in created_disk_names
+      ]
+      retry_requests = _BuildCreateRegionalDiskRequests(
+          holder,
+          project,
+          region,
+          zone,
+          replica_zone,
+          failed_pd_standard_disks,
+          disk_metadata,
+          destination_disk_types,
+          increase_pd_standard_size=True,
       )
-  )
+      retry_errors = []
+      _ = list(
+          request_helper.MakeRequests(
+              requests=retry_requests,
+              http=holder.client.apitools_client.http,
+              errors=retry_errors,
+              batch_url=holder.client.batch_url,
+          )
+      )
+      errors.extend(retry_errors)
+
   return errors
 
 

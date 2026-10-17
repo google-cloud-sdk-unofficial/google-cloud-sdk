@@ -17,10 +17,11 @@
 from googlecloudsdk.api_lib.dataflow import apis as dataflow_apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import config_store_util
+from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Dataflow ConfigStore setting."""
 
@@ -73,4 +74,8 @@ class Delete(base.DeleteCommand):
     }
     service, request_cls = service_map[resource_type]
     request = request_cls(name=setting_ref.RelativeName())
-    return service.Delete(request)
+    response = service.Delete(request)
+    log.DeletedResource(
+        setting_ref.RelativeName(), kind='ConfigStore setting'
+    )
+    return response

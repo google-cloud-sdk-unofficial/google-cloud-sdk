@@ -114,6 +114,8 @@ class Create(base.CreateCommand):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
     messages = apis.GetMessagesModule('dns', api_version)
     _AddArgsCommon(parser, messages, api_version=api_version)
+    if cls._BetaOrAlpha():
+      flags.GetForwardingOutboundEndpointsArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
   def Run(self, args):
@@ -202,12 +204,19 @@ class Create(base.CreateCommand):
       )
 
     forwarding_config = None
-    if args.forwarding_targets or args.private_forwarding_targets:
+    outbound_endpoints = getattr(args, 'outbound_endpoints', None)
+    if (
+        args.forwarding_targets
+        or args.private_forwarding_targets
+        or outbound_endpoints
+    ):
       forwarding_config = (
           command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
               messages=messages,
               server_list=args.forwarding_targets,
               private_server_list=args.private_forwarding_targets,
+              outbound_endpoint_list=outbound_endpoints,
+              project=zone_ref.project,
           )
       )
 

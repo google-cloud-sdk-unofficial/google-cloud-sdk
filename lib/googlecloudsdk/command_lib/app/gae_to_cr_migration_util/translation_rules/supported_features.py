@@ -20,14 +20,13 @@ from typing import Any, Mapping, Sequence
 
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.config import feature_helper
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import network
 from googlecloudsdk.core import properties
-
 
 ENTRYPOINT_FEATURE_KEYS = util.ENTRYPOINT_FEATURE_KEYS
 _ALLOW_ENV_VARIABLES_KEY = 'env_variables'
 _ALLOW_SERVICE_ACCOUNT_KEY = 'service_account'
 _FORWARDED_PORTS_KEYS = ('network.forwarded_ports',)
-_INSTANCE_IP_MODE_KEYS = ('network.instance_ip_mode',)
 _NETWORK_KEYS = (
     'network.name',
     'network.subnetwork_name',
@@ -39,7 +38,6 @@ _EXCLUDE_FEATURES = tuple(
         util.ENTRYPOINT_FEATURE_KEYS,
         (_ALLOW_ENV_VARIABLES_KEY,),
         _FORWARDED_PORTS_KEYS,
-        _INSTANCE_IP_MODE_KEYS,
         _NETWORK_KEYS,
     ])
 )
@@ -62,7 +60,10 @@ def translate_supported_features(
           flag in ('--vpc-connector', '--vpc-egress') for flag in feature.flags
       ):
         continue
-      input_value = f'"{input_data[key]}"'
+      val = input_data[key]
+      if any(flag == '--vpc-egress' for flag in feature.flags):
+        val = network.map_vpc_egress_setting(val)
+      input_value = f'"{val}"'
       output_flags += util.generate_output_flags(feature.flags, input_value)
 
   output_flags += _get_output_flags_for_env_variables(

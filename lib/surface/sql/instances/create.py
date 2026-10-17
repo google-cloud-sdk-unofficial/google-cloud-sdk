@@ -468,7 +468,6 @@ def RunBaseCreateCommand(args, release_track):
       raise sql_exceptions.ArgumentError(
           '`--edition=enterprise-plus` requires `--tier`'
       )
-
   instance_resource = (
       command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
           sql_messages,
@@ -520,10 +519,19 @@ def RunBaseCreateCommand(args, release_track):
           )
       )
 
+    if (
+        args.IsKnownAndSpecified('backend_type')
+        and args.backend_type.replace('-', '_').upper() == 'SEMI_MANAGED'
+    ):
+      status = 'Creating Semi-Managed Cloud SQL instance'
+    elif args.database_version:
+      status = 'Creating Cloud SQL instance for ' + args.database_version
+    else:
+      status = 'Creating Cloud SQL instance'
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client,
         operation_ref,
-        'Creating Cloud SQL instance for ' + args.database_version,
+        status,
         max_wait_seconds=args.timeout,
     )
 

@@ -16,7 +16,6 @@
 
 from googlecloudsdk.api_lib.securesourcemanager import issue_comments
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.source_manager import resource_args
@@ -72,12 +71,6 @@ class Update(base.UpdateCommand):
     update_mask = []
     if args.IsSpecified("body"):
       update_mask.append("body")
-
-    if not update_mask:
-      raise exceptions.MinimumArgumentException(
-          ["--body"],
-          "At least one argument is required.",
-      )
 
     update_operation = client.Update(
         issue_comment_ref,

@@ -682,6 +682,43 @@ Sets the default compute class for the cluster.
   )
 
 
+def AddScaleToZeroFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+    hidden: bool = True,
+) -> None:
+  """Adds scale-to-zero flags to parser.
+
+  Args:
+    parser: A given parser.
+    hidden: If true, suppress help text for added options.
+  """
+  parser.add_argument(
+      '--enable-cluster-scale-to-zero',
+      required=False,
+      action=arg_parsers.StoreTrueFalseAction,
+      hidden=hidden,
+      help="""\
+Enable cluster scale-to-zero for Autopilot and standard clusters.
+
+To disable cluster scale-to-zero in an existing cluster, explicitly set flag
+`--no-enable-cluster-scale-to-zero`.
+      """,
+  )
+  parser.add_argument(
+      '--cluster-scale-to-zero-delay',
+      required=False,
+      default=None,
+      type=arg_parsers.Duration(lower_bound='0s', upper_bound='3h'),
+      hidden=hidden,
+      metavar='DURATION',
+      help="""\
+Additional delay before the cluster is scaled to 0 nodes when there are no
+non-daemonset workloads (e.g. 1h, 10m). Defaults to 3h when scale-to-zero is
+enabled without an explicit delay. The maximum allowed value is 3h.
+      """,
+  )
+
+
 def AddHPAProfilesFlag(parser, hidden=False):
   """Adds workload autoscaling profiles flag to parser.
 
@@ -4137,17 +4174,32 @@ def AddWizSensorFlags(
   wiz_sensor_group.add_argument(
       '--wiz-sensor-registry-secret-uri',
       type=secret_uri_validator,
-      help='The GCP Secret Manager URI for the Wiz registry secret.',
+      help=(
+          'The Secret Manager URI for the Wiz registry secret, for example,'
+          ' projects/my-project/secrets/my-registry-secret/versions/1 or'
+          ' projects/my-project/secrets/my-registry-secret/versions/latest.'
+          ' Requires the Wiz Sensor and Secret Sync addons to be enabled.'
+      ),
   )
   wiz_sensor_group.add_argument(
       '--wiz-sensor-api-key-secret-uri',
       type=secret_uri_validator,
-      help='The GCP Secret Manager URI for the Wiz API key secret.',
+      help=(
+          'The Secret Manager URI for the Wiz API key secret, for example,'
+          ' projects/my-project/secrets/my-api-key/versions/1 or'
+          ' projects/my-project/secrets/my-api-key/versions/latest.'
+          ' Requires the Wiz Sensor and Secret Sync addons to be enabled.'
+      ),
   )
   wiz_sensor_group.add_argument(
       '--wiz-sensor-proxy-secret-uri',
       type=secret_uri_validator,
-      help='The GCP Secret Manager URI for the Wiz proxy configuration.',
+      help=(
+          'The Secret Manager URI for the Wiz proxy configuration, for example,'
+          ' projects/my-project/secrets/my-proxy-secret/versions/1 or'
+          ' projects/my-project/secrets/my-proxy-secret/versions/latest.'
+          ' Requires the Wiz Sensor and Secret Sync addons to be enabled.'
+      ),
   )
 
 

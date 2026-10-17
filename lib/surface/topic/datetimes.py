@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 # NOTE: If the name of this topic is modified, please make sure to update all
 # references to it in error messages and other help messages as there are no
 # tests to catch such changes.
+@base.UniverseCompatible
 class DateTimes(base.TopicCommand):
   """Date/time input format supplementary help.
 
@@ -156,11 +157,12 @@ class DateTimes(base.TopicCommand):
 
   An absolute duration specifies a period of time. It has the same syntax as
   a relative duration except that there is no leading *+* or *-*, and the
-  leading *P* is optional.
+  leading *P* is optional. If *P* is omitted, *T* is implied and *M* always
+  represents minutes. To specify months, the leading *P* must be included.
 
   For example:
 
-  * 1 month: 1m
+  * 1 month: p1m
   * 1 hour 30 minutes: 1h30m
-  * 30 minutes: t30m
+  * 30 minutes: 30m
   """

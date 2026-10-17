@@ -135,8 +135,30 @@ def WaitForOperation(dataproc, operation, message, timeout_s, poll_period_s=5):
   Raises:
     OperationError: if the operation times out or finishes with an error.
   """
-  request = dataproc.messages.DataprocProjectsRegionsOperationsGetRequest(
-      name=operation.name)
+  is_location_op = (
+      hasattr(
+          dataproc.messages, 'DataprocProjectsLocationsOperationsGetRequest'
+      )
+      and (
+          '/locations/' in operation.name
+          or not hasattr(
+              dataproc.messages, 'DataprocProjectsRegionsOperationsGetRequest'
+          )
+      )
+  )
+  if is_location_op:
+    request = dataproc.messages.DataprocProjectsLocationsOperationsGetRequest(
+        name=operation.name
+    )
+    operations_service = dataproc.client.projects_locations_operations
+  else:
+    request = dataproc.messages.DataprocProjectsRegionsOperationsGetRequest(
+        name=operation.name
+    )
+    operations_service = dataproc.client.projects_regions_operations
+  # The v2 API has no ClusterOperationMetadata, so only parse warnings from the
+  # operation metadata when the message type exists.
+  has_cluster_metadata = hasattr(dataproc.messages, 'ClusterOperationMetadata')
   log.status.Print('Waiting on operation [{0}].'.format(operation.name))
   start_time = time.time()
   warnings_so_far = 0
@@ -154,21 +176,26 @@ def WaitForOperation(dataproc, operation, message, timeout_s, poll_period_s=5):
   with progress_tracker.ProgressTracker(message, autotick=True):
     while timeout_s > (time.time() - start_time):
       try:
-        operation = dataproc.client.projects_regions_operations.Get(request)
-        metadata = ParseOperationJsonMetadata(
-            operation.metadata, dataproc.messages.ClusterOperationMetadata)
-        _LogWarnings(metadata.warnings)
-        warnings_so_far = len(metadata.warnings)
-        if operation.done:
-          break
+        operation = operations_service.Get(request)
       except apitools_exceptions.HttpError as http_exception:
         # Do not retry on 4xx errors.
         if IsClientHttpException(http_exception):
           raise
+      else:
+        if has_cluster_metadata:
+          metadata = ParseOperationJsonMetadata(
+              operation.metadata, dataproc.messages.ClusterOperationMetadata
+          )
+          _LogWarnings(metadata.warnings)
+          warnings_so_far = len(metadata.warnings)
+        if operation.done:
+          break
       time.sleep(poll_period_s)
-  metadata = ParseOperationJsonMetadata(
-      operation.metadata, dataproc.messages.ClusterOperationMetadata)
-  _LogWarnings(metadata.warnings)
+  if has_cluster_metadata:
+    metadata = ParseOperationJsonMetadata(
+        operation.metadata, dataproc.messages.ClusterOperationMetadata
+    )
+    _LogWarnings(metadata.warnings)
   if not operation.done:
     raise exceptions.OperationTimeoutError('Operation [{0}] timed out.'.format(
         operation.name))

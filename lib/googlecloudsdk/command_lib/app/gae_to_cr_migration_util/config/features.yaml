@@ -200,8 +200,3 @@ supported:
     app_yaml: network.forwarded_ports
   flags:
   - --port
-- path:
-    admin_api: network.instanceIpMode
-    app_yaml: network.instance_ip_mode
-  flags:
-  - --ingress

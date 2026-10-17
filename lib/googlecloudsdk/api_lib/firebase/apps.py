@@ -48,6 +48,16 @@ class FirebaseAppsOperationPoller(waiter.OperationPoller):
     return {}
 
 
+def _InferPlatformFromAppId(app_id):
+  """Infers the platform ('android', 'ios', or 'web') from a Firebase App ID."""
+  if not app_id:
+    return None
+  parts = app_id.split(':')
+  if len(parts) >= 3 and parts[2].lower() in VALID_PLATFORMS:
+    return parts[2].lower()
+  return None
+
+
 def _FormatApp(app, platform):
   """Formats an app message into a dictionary for display."""
   return {
@@ -184,3 +194,56 @@ class AppsClient:
         poller, op.name, wait_message, max_wait_ms=300000, sleep_ms=2000
     )
     return result or {}
+
+  def GetSdkConfig(self, app_id, project_id=None):
+    """Get the SDK configuration for a Firebase app.
+
+    Args:
+      app_id: str, Firebase App ID (e.g. '1:1234567890:web:abcdef123456').
+      project_id: str, Optional Google Cloud project ID. Defaults to wildcard
+        '-' when omitted.
+
+    Returns:
+      dict containing the SDK configuration.
+    """
+    platform_lower = _InferPlatformFromAppId(app_id)
+    if not platform_lower or platform_lower not in VALID_PLATFORMS:
+      raise firebase_exceptions.InvalidAppTypeError(
+          'Could not determine valid platform (android, ios, or web) from App'
+          f' ID [{app_id}].'
+      )
+
+    parent = (
+        firebase_util.GetProjectRef(project_id).RelativeName()
+        if project_id
+        else 'projects/-'
+    )
+    platform_handlers = {
+        'android': (
+            'androidApps',
+            self.client.projects_androidApps,
+            self.messages.FirebaseProjectsAndroidAppsGetConfigRequest,
+        ),
+        'ios': (
+            'iosApps',
+            self.client.projects_iosApps,
+            self.messages.FirebaseProjectsIosAppsGetConfigRequest,
+        ),
+        'web': (
+            'webApps',
+            self.client.projects_webApps,
+            self.messages.FirebaseProjectsWebAppsGetConfigRequest,
+        ),
+    }
+    collection, service, request_cls = platform_handlers[platform_lower]
+
+    try:
+      req = request_cls(name=f'{parent}/{collection}/{app_id}/config')
+      config = service.GetConfig(req)
+    except apitools_exceptions.HttpError as e:
+      firebase_util.HandleHttpError(e)
+
+    result = encoding.MessageToPyValue(config)
+    if getattr(config, 'configFileContents', None) is not None:
+      result['configFileContents'] = config.configFileContents.decode('utf-8')
+    return result

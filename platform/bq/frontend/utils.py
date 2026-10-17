@@ -760,9 +760,10 @@ def GetExternalDataConfig(
   then returns either the parsed file contents, or the parsed configuration from
   string. The file content is expected to be JSON representation of
   ExternalDataConfiguration. The specification is expected to be of the form
-  schema@format=uri i.e. schema is separated from format and uri by '@'. If the
-  uri itself contains '@' or '=' then the JSON file option should be used.
-  "format=" can be omitted for CSV files.
+  [schema@][format=]uri[@connection_id] i.e. schema and connection_id are
+  separated from format and uri by '@'. If the uri itself contains '@' (except
+  for Azure Data Lake abfs:// or abfss:// URIs) or '=' then the JSON file
+  option should be used. "format=" can be omitted for CSV files.
 
   Raises:
     UsageError: when incorrect usage or invalid args are used.
@@ -789,6 +790,16 @@ def GetExternalDataConfig(
     ) % (file_path_or_simple_spec)
 
     parts = file_path_or_simple_spec.split('@')
+    # Azure Data Lake URIs (abfs:// and abfss://) contain an '@' separating the
+    # container and account name
+    # (https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction-abfs-uri).
+    # Rejoin the split URI before extracting schema, format/URI, and connection ID.
+    for i, part in enumerate(parts[:-1]):
+      uri_part = part.split('=', 1)[-1]
+      if uri_part.lower().startswith(('abfs://', 'abfss://')):
+        parts = parts[:i] + [f'{part}@{parts[i + 1]}'] + parts[i + 2 :]
+        break
+
     if len(parts) == 1:
       # Schema and connection are not specified.
       format_and_uri = parts[0]
@@ -806,8 +817,9 @@ def GetExternalDataConfig(
         # Schema and format=uri are specified.
         schema = parts[0]
         format_and_uri = parts[1]
-    elif len(parts) == 3:
-      # Schema and connection both are specified
+    elif len(parts) == 3 and '://' not in parts[0]:
+      # Schema and connection both are specified (parts[0] must be a schema,
+      # not a URI followed by multiple '@' connection IDs).
       schema = parts[0]
       format_and_uri = parts[1]
       connection_id = parts[2]

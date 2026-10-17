@@ -14,13 +14,10 @@
 # limitations under the License.
 """Open Secure Source Manager pull request command."""
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.securesourcemanager import pull_requests
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import resource_args
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 
 DETAILED_HELP = {
     "DESCRIPTION": (
@@ -58,44 +55,21 @@ class Open(base.Command):
     open_operation = client.Open(pull_request_ref)
 
     if args.async_:
+      log.status.Print(
+          "Open request issued for [{}].".format(
+              pull_request_ref.RelativeName()
+          )
+      )
       return open_operation
 
-    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
-    if open_operation.done:
-      if open_operation.response:
-        response_dict = encoding.MessageToPyValue(open_operation.response)
-        pr_name = response_dict.get("name")
-        if pr_name:
-          log.status.Print("Open request issued for [{}].".format(pr_name))
-          return open_operation.response
-      elif open_operation.error:
-        log.error("Operation failed: " + str(open_operation.error))
-      else:
-        log.status.Print(
-            "Open request issued for [{}].".format(
-                pull_request_ref.RelativeName()
-            )
+    response = client.GetOperationResult(
+        open_operation, "Waiting for pull request to be opened"
+    )
+    log.status.Print(
+        "Open request completed for [{}].".format(
+            pull_request_ref.RelativeName()
         )
-      return open_operation
-
-    operation_ref = resources.REGISTRY.ParseRelativeName(
-        open_operation.name,
-        collection="securesourcemanager.projects.locations.operations",
     )
-    poller = waiter.CloudOperationPoller(
-        client.client.projects_locations_repositories_pullRequests,
-        client.client.projects_locations_operations,
-    )
-    response = waiter.WaitFor(
-        poller, operation_ref, "Waiting for pull request to be opened"
-    )
-
-    if response:
-      response_dict = encoding.MessageToPyValue(response)
-      pr_name = response_dict.get("name", pull_request_ref.RelativeName())
-      if pr_name:
-        log.status.Print("Open request issued for [{}].".format(pr_name))
-
     return response
 
 

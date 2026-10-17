@@ -1,0 +1,46 @@
+release_tracks: [ALPHA, BETA]
+hints:
+  read_only: false
+help_text:
+  brief: |
+    Import (create or update) extensionBinding from a file.
+  description: |
+    Import `ExtensionBinding` resource defined in a YAML file.
+  examples: |
+    To import `ExtensionBinding` resource named
+    `my-extension-binding` from a YAML file in `us-central1`, run:
+
+        $ {command} my-extension-binding --source=my-extension-binding.yaml --location=us-central1
+
+request:
+  collection: networkservices.projects.locations.extensionBindings
+  regional_endpoint_compatibility: SUPPORTED
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:extensionBinding
+    help_text: |
+      The ID of the new or updated `ExtensionBinding` resource.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.extensionBindings
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    method: create

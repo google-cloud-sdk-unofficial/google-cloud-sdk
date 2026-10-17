@@ -36,9 +36,81 @@ def _GetServiceName(service: str) -> str:
 
 @base.Hidden
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.RegionalEndpointsSupported
+class ListDependentsBeta(base.ListCommand):
+  """List services that depend on a specific service.
+
+  List services that depend on a specific service.
+
+  ## EXAMPLES
+
+   List services that depend on service `my-service`:
+
+    $ {command} my-service
+
+   List services that depend on service `my-service` for a specific project
+   `12345678`:
+
+    $ {command} my-service --project=12345678
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument('service', help='Name of the service.')
+    common_flags.add_resource_args(parser)
+
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 50)
+
+    # Remove unneeded list-related flags from parser
+    base.URI_FLAG.RemoveFromParser(parser)
+
+    parser.display_info.AddFormat("""
+          table(
+            name:label=NAME:sort=1
+          )
+        """)
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      List of services that depend on the given service.
+    """
+    if args.IsSpecified('folder'):
+      resource_name = _FOLDER_RESOURCE.format(args.folder)
+    elif args.IsSpecified('organization'):
+      resource_name = _ORGANIZATION_RESOURCE.format(args.organization)
+    elif args.IsSpecified('project'):
+      resource_name = _PROJECT_RESOURCE.format(args.project)
+    else:
+      project = properties.VALUES.core.project.Get(required=True)
+      resource_name = _PROJECT_RESOURCE.format(project)
+
+    service = _GetServiceName(args.service)
+
+    if args.IsSpecified('limit'):
+      limit = args.limit
+    else:
+      limit = sys.maxsize
+
+    response = serviceusage.ListDependentServices(
+        resource_name,
+        service,
+        args.page_size,
+        limit=limit,
+    )
+
+    return [_Service(name=dep) for dep in response]
+
+
+@base.Hidden
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.RegionalEndpointsSupported
 class ListDependents(base.ListCommand):
   """List services that depend on a specific service.
@@ -47,12 +119,12 @@ class ListDependents(base.ListCommand):
 
   ## EXAMPLES
 
-   List services that depend on service my-service:
+   List services that depend on service `my-service`:
 
     $ {command} my-service
 
-   List services that depend on service my-service for a specific project
-   '12345678':
+   List services that depend on service `my-service` for a specific project
+   `12345678`:
 
     $ {command} my-service --project=12345678
   """

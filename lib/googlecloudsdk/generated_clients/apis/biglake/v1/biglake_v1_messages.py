@@ -947,6 +947,65 @@ class BiglakeProjectsCatalogsNamespacesTestIamPermissionsRequest(_messages.Messa
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
+class BiglakeProjectsCatalogsNamespacesViewsGetIamPolicyRequest(_messages.Message):
+  r"""A BiglakeProjectsCatalogsNamespacesViewsGetIamPolicyRequest object.
+
+  Fields:
+    options_requestedPolicyVersion: Optional. The maximum policy version that
+      will be used to format the policy. Valid values are 0, 1, and 3.
+      Requests specifying an invalid value will be rejected. Requests for
+      policies with any conditional role bindings must specify version 3.
+      Policies with no conditional role bindings may specify any valid value
+      or leave the field unset. The policy in the response might use the
+      policy version that you specified, or it might use a lower policy
+      version. For example, if you specify version 3, but the policy has no
+      conditional role bindings, the response uses version 1. To learn which
+      resources support conditions in their IAM policies, see the [IAM
+      documentation](https://cloud.google.com/iam/help/conditions/resource-
+      policies).
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  resource = _messages.StringField(2, required=True)
+
+
+class BiglakeProjectsCatalogsNamespacesViewsSetIamPolicyRequest(_messages.Message):
+  r"""A BiglakeProjectsCatalogsNamespacesViewsSetIamPolicyRequest object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
+      request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
+
+
+class BiglakeProjectsCatalogsNamespacesViewsTestIamPermissionsRequest(_messages.Message):
+  r"""A BiglakeProjectsCatalogsNamespacesViewsTestIamPermissionsRequest
+  object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
+      passed as the request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+
+
 class BiglakeProjectsCatalogsSetIamPolicyRequest(_messages.Message):
   r"""A BiglakeProjectsCatalogsSetIamPolicyRequest object.
 
@@ -1292,6 +1351,17 @@ class FederatedCatalogOptions(_messages.Message):
       Cloud Interconnect.
     snowflake_catalog_info: Optional. Information specific to Snowflake
       Horizon Catalog.
+    trust_config: Optional. A reference to the Certificate Manager TrustConfig
+      resource used to verify the TLS certificate of the remote catalog.
+      Format:
+      `projects/{project}/locations/{location}/trustConfigs/{trust_config}`.
+      Users with self-signed certificates or private CAs must add their public
+      CA certificates to the trust config in PEM format and give the BigLake
+      service account permissions to access it. Currently only supported for
+      generic Iceberg REST catalogs (google.cloud.biglake.v1main.IcebergCatalo
+      g.FederatedCatalogOptions.generic_iceberg_catalog_info). For more
+      details, see https://cloud.google.com/certificate-manager/docs/trust-
+      configs.
     unity_catalog_info: Optional. Information specific to Databricks Unity
       Catalog.
     user_identity_federation_oidc_claims: Output only. The OIDC claims emitted
@@ -1327,9 +1397,10 @@ class FederatedCatalogOptions(_messages.Message):
   secret_name = _messages.StringField(9)
   service_directory_name = _messages.StringField(10)
   snowflake_catalog_info = _messages.MessageField('SnowflakeCatalogInfo', 11)
-  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 12)
-  user_identity_federation_oidc_claims = _messages.MessageField('UserIdentityFederationOidcClaims', 13)
-  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 14)
+  trust_config = _messages.StringField(12)
+  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 13)
+  user_identity_federation_oidc_claims = _messages.MessageField('UserIdentityFederationOidcClaims', 14)
+  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 15)
 
 
 class FieldSchema(_messages.Message):
@@ -1375,6 +1446,20 @@ class GenericIcebergCatalogInfo(_messages.Message):
       specified: - `User-Agent` - `Authorization` - `Accept` - `Content-Type`
       - `If-None-Match` - `X-Iceberg-Access-Delegation` - `X-Snowflake-
       Workload-Identity-Provider` - `X-Amz-Date` - `X-Amz-Security-Token`
+    oidc_audience: Optional. The audience claim (`aud`) to include in the
+      generated OpenID Connect (OIDC) token. When specified, Lakehouse
+      generates a Google-signed OIDC ID token on behalf of the BigLake service
+      account associated with this catalog, with this audience value. This
+      token is attached to requests sent to the remote Iceberg REST catalog to
+      authenticate the caller. The token issuer is always
+      "https://accounts.google.com". This value identifies the intended
+      recipient of the token. It must match the audience value your external
+      Iceberg REST catalog expects. This value must be a single case-sensitive
+      string. Multiple values (arrays) are not supported. For more
+      information, see [RFC 7519, Section
+      4.1.3](https://tools.ietf.org/html/rfc7519#section-4.1.3). One of
+      `oidc_audience` OR google.cloud.biglake.v1main.IcebergCatalog.FederatedC
+      atalogOptions.secret_name must be set for a generic catalog.
     warehouse: Required. The warehouse name in the remote Iceberg REST
       Catalog. This is passed as a query parameter in the config request, for
       example: `v1/config?warehouse=`. Subsequent calls to list and get
@@ -1415,7 +1500,8 @@ class GenericIcebergCatalogInfo(_messages.Message):
 
   base_url = _messages.StringField(1)
   custom_headers = _messages.MessageField('CustomHeadersValue', 2)
-  warehouse = _messages.StringField(3)
+  oidc_audience = _messages.StringField(3)
+  warehouse = _messages.StringField(4)
 
 
 class GlueCatalogInfo(_messages.Message):
@@ -2921,6 +3007,8 @@ encoding.AddCustomJsonFieldMapping(
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'snowflake_catalog_info', 'snowflake-catalog-info')
 encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'trust_config', 'trust-config')
+encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'unity_catalog_info', 'unity-catalog-info')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'user_identity_federation_oidc_claims', 'user-identity-federation-oidc-claims')
@@ -2930,6 +3018,8 @@ encoding.AddCustomJsonFieldMapping(
     GenericIcebergCatalogInfo, 'base_url', 'base-url')
 encoding.AddCustomJsonFieldMapping(
     GenericIcebergCatalogInfo, 'custom_headers', 'custom-headers')
+encoding.AddCustomJsonFieldMapping(
+    GenericIcebergCatalogInfo, 'oidc_audience', 'oidc-audience')
 encoding.AddCustomJsonFieldMapping(
     GlueCatalogInfo, 'aws_region', 'aws-region')
 encoding.AddCustomJsonFieldMapping(
@@ -3024,3 +3114,5 @@ encoding.AddCustomJsonFieldMapping(
     BiglakeProjectsCatalogsNamespacesGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(
     BiglakeProjectsCatalogsNamespacesTablesGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
+encoding.AddCustomJsonFieldMapping(
+    BiglakeProjectsCatalogsNamespacesViewsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')

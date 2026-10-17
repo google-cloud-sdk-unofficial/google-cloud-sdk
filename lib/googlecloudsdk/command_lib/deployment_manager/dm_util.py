@@ -36,11 +36,13 @@ def PrintFingerprint(fingerprint):
 def DecodeFingerprint(fingerprint):
   """Returns the base64 url decoded fingerprint."""
   try:
-    decoded_fingerprint = base64.urlsafe_b64decode(
-        http_encoding.Encode(fingerprint))
-  except (TypeError, binascii.Error):
+    encoded = http_encoding.Encode(fingerprint)
+    encoded = encoded.translate(bytes.maketrans(b'-_', b'+/'))
+    decoded_fingerprint = base64.b64decode(encoded, validate=True)
+  except (TypeError, ValueError, binascii.Error) as exc:
     raise calliope_exceptions.InvalidArgumentException(
-        '--fingerprint', 'fingerprint cannot be decoded.')
+        '--fingerprint', 'fingerprint cannot be decoded.'
+    ) from exc
   return decoded_fingerprint
 
 

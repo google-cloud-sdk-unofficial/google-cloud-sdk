@@ -58,12 +58,18 @@ class AccessSummary(_messages.Message):
       AUTH_PROVIDER_TYPE_API_KEY: API key auth provider type.
       AUTH_PROVIDER_TYPE_GEMINI_ENTERPRISE: Gemini Enterprise auth provider
         type.
+      AUTH_PROVIDER_TYPE_CROSS_APP_ACCESS: Cross-App Access auth provider
+        type.
+      AUTH_PROVIDER_TYPE_CONNECTOR_REFERENCE: Connector Reference auth
+        provider type.
     """
     AUTH_PROVIDER_TYPE_UNSPECIFIED = 0
     AUTH_PROVIDER_TYPE_THREE_LEGGED_OAUTH = 1
     AUTH_PROVIDER_TYPE_TWO_LEGGED_OAUTH = 2
     AUTH_PROVIDER_TYPE_API_KEY = 3
     AUTH_PROVIDER_TYPE_GEMINI_ENTERPRISE = 4
+    AUTH_PROVIDER_TYPE_CROSS_APP_ACCESS = 5
+    AUTH_PROVIDER_TYPE_CONNECTOR_REFERENCE = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -100,6 +106,10 @@ class AccessSummary(_messages.Message):
   tokenUrl = _messages.StringField(9)
   userId = _messages.StringField(10)
   workloadId = _messages.StringField(11)
+
+
+class AgentIdentityPool(_messages.Message):
+  r"""Marker message to indicate the managed Agent Identity Pool is used."""
 
 
 class AgentidentityProjectsLocationsAccessSummariesGetRequest(_messages.Message):
@@ -488,6 +498,22 @@ class AgentidentityProjectsLocationsAuthProvidersQueryWorkloadsRequest(_messages
   pageToken = _messages.StringField(3)
 
 
+class AgentidentityProjectsLocationsAuthProvidersResolveAuthorizationRequest(_messages.Message):
+  r"""A AgentidentityProjectsLocationsAuthProvidersResolveAuthorizationRequest
+  object.
+
+  Fields:
+    name: Required. The name of the auth provider to resolve authorization
+      for. Format:
+      projects/{project}/locations/{location}/authProviders/{auth_provider}
+    resolveAuthorizationRequest: A ResolveAuthorizationRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  resolveAuthorizationRequest = _messages.MessageField('ResolveAuthorizationRequest', 2)
+
+
 class AgentidentityProjectsLocationsAuthProvidersRevokeAuthorizationRequest(_messages.Message):
   r"""A AgentidentityProjectsLocationsAuthProvidersRevokeAuthorizationRequest
   object.
@@ -751,15 +777,20 @@ class AuthProviderTypeParams(_messages.Message):
 
   Fields:
     apiKey: Parameters for API key authentication.
+    connectorReferenceAuthProvider: Parameters for Connector Reference
+      authentication.
     geAuthProvider: Parameters for Gemini Enterprise authentication.
     threeLeggedOauth: Parameters for 3-legged OAuth (3LO) authentication.
     twoLeggedOauth: Parameters for 2-legged OAuth (2LO) authentication.
+    xaaAuthProvider: Parameters for Cross-App Access authentication.
   """
 
   apiKey = _messages.MessageField('ApiKeyParams', 1)
-  geAuthProvider = _messages.MessageField('GeminiEnterpriseAuthProviderParams', 2)
-  threeLeggedOauth = _messages.MessageField('ThreeLeggedOAuth', 3)
-  twoLeggedOauth = _messages.MessageField('TwoLeggedOAuth', 4)
+  connectorReferenceAuthProvider = _messages.MessageField('ConnectorReferenceAuthProvider', 2)
+  geAuthProvider = _messages.MessageField('GeminiEnterpriseAuthProviderParams', 3)
+  threeLeggedOauth = _messages.MessageField('ThreeLeggedOAuth', 4)
+  twoLeggedOauth = _messages.MessageField('TwoLeggedOAuth', 5)
+  xaaAuthProvider = _messages.MessageField('CrossAppAccessAuthProvider', 6)
 
 
 class Authorization(_messages.Message):
@@ -886,6 +917,152 @@ class Binding(_messages.Message):
   role = _messages.StringField(3)
 
 
+class ClientAssertionJwtAuth(_messages.Message):
+  r"""Configuration for client ID and client assertion JWT authentication.
+
+  Fields:
+    clientId: Required. The client identifier.
+  """
+
+  clientId = _messages.StringField(1)
+
+
+class ClientSecretAuth(_messages.Message):
+  r"""Configuration for client ID and client secret authentication.
+
+  Fields:
+    clientId: Required. The client identifier.
+    clientSecret: Required. Input only. The client secret.
+  """
+
+  clientId = _messages.StringField(1)
+  clientSecret = _messages.StringField(2)
+
+
+class ConnectorReferenceAuthProvider(_messages.Message):
+  r"""Configuration parameters for the Connector Reference auth provider.
+
+  Messages:
+    AuthorizationDetailsValueListEntry: A AuthorizationDetailsValueListEntry
+      object.
+
+  Fields:
+    authorizationDetails: Optional. Rich Authorization Requests (RFC 9396)
+      detailing targeted OAuth resources/scopes, formatted as a JSON array of
+      JSON objects.
+    connector: Required. The name of the referenced connector.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AuthorizationDetailsValueListEntry(_messages.Message):
+    r"""A AuthorizationDetailsValueListEntry object.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        AuthorizationDetailsValueListEntry object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AuthorizationDetailsValueListEntry
+      object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  authorizationDetails = _messages.MessageField('AuthorizationDetailsValueListEntry', 1, repeated=True)
+  connector = _messages.StringField(2)
+
+
+class CrossAppAccessAuthProvider(_messages.Message):
+  r"""Configuration parameters for the Cross-App Access auth provider.
+
+  Messages:
+    AdditionalParametersValue: Optional. Additional parameters to be passed to
+      the token endpoint.
+
+  Fields:
+    additionalParameters: Optional. Additional parameters to be passed to the
+      token endpoint.
+    clientAssertionJwtAuth: Option 2: Authenticate using a standard
+      `client_id` and a Client Assertion JWT.
+    clientSecretAuth: Option 1: Authenticate using a standard `client_id` and
+      `client_secret`.
+    customIssuer: Configuration when using a custom or third-party
+      authorization server as the issuer.
+    googleAccount: Configuration when using Google Accounts as the issuer.
+    idJagInput: Configuration for when the input is already an ID-JAG.
+    idTokenInput: Configuration for when the input is an ID token.
+    workforceIdentityFederation: Configuration when using Workforce Identity
+      Federation as the issuer.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AdditionalParametersValue(_messages.Message):
+    r"""Optional. Additional parameters to be passed to the token endpoint.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        AdditionalParametersValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        AdditionalParametersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AdditionalParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  additionalParameters = _messages.MessageField('AdditionalParametersValue', 1)
+  clientAssertionJwtAuth = _messages.MessageField('ClientAssertionJwtAuth', 2)
+  clientSecretAuth = _messages.MessageField('ClientSecretAuth', 3)
+  customIssuer = _messages.MessageField('CustomIssuer', 4)
+  googleAccount = _messages.MessageField('GoogleAccount', 5)
+  idJagInput = _messages.MessageField('DirectIdJagInput', 6)
+  idTokenInput = _messages.MessageField('IdTokenProcessingConfig', 7)
+  workforceIdentityFederation = _messages.MessageField('WorkforceIdentityFederation', 8)
+
+
+class CustomIssuer(_messages.Message):
+  r"""Configuration for a custom or third-party authorization server issuer.
+
+  Fields:
+    issuer: Optional. The issuer identifier of the target Authorization
+      Server.
+    tokenUrl: Required. The token endpoint of the target OAuth authorization
+      server to retrieve resource tokens.
+  """
+
+  issuer = _messages.StringField(1)
+  tokenUrl = _messages.StringField(2)
+
+
+class DirectIdJagInput(_messages.Message):
+  r"""Marker message indicating the input is already an ID-JAG, so no fetching
+  is required.
+  """
+
+
+
 class DisableAuthProviderRequest(_messages.Message):
   r"""Request message for `DisableAuthProvider`.
 
@@ -963,6 +1140,57 @@ class Expr(_messages.Message):
 
 class GeminiEnterpriseAuthProviderParams(_messages.Message):
   r"""Configuration for Gemini Enterprise authentication."""
+
+
+class GoogleAccount(_messages.Message):
+  r"""Configuration for Google Account usage as the issuer."""
+
+
+class IdTokenProcessingConfig(_messages.Message):
+  r"""Defines how to process an input ID token to obtain an ID-JAG.
+
+  Messages:
+    IdJagAdditionalClaimsValue: Optional. Optional additional claims to
+      include when fetching an ID-JAG.
+
+  Fields:
+    agentIdentityPool: Indicates the managed Agent Identity pool should be
+      used to fetch the ID-JAG.
+    idJagAdditionalClaims: Optional. Optional additional claims to include
+      when fetching an ID-JAG.
+    idJagAuthProvider: The resource name of the ID-JAG auth provider. Format:
+      "projects/{project}/locations/{location}/authProviders/{auth_provider}"
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class IdJagAdditionalClaimsValue(_messages.Message):
+    r"""Optional. Optional additional claims to include when fetching an ID-
+    JAG.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        IdJagAdditionalClaimsValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a IdJagAdditionalClaimsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  agentIdentityPool = _messages.MessageField('AgentIdentityPool', 1)
+  idJagAdditionalClaims = _messages.MessageField('IdJagAdditionalClaimsValue', 2)
+  idJagAuthProvider = _messages.StringField(3)
 
 
 class ListAccessSummariesResponse(_messages.Message):
@@ -1208,6 +1436,29 @@ class QueryWorkloadsResponse(_messages.Message):
   workloadIds = _messages.StringField(2, repeated=True)
 
 
+class ResolveAuthorizationRequest(_messages.Message):
+  r"""Request message for `ResolveAuthorization`.
+
+  Fields:
+    clientUserId: Required. The user ID of the client for whom the
+      authorization is resolved.
+  """
+
+  clientUserId = _messages.StringField(1)
+
+
+class ResolveAuthorizationResponse(_messages.Message):
+  r"""Response message for `ResolveAuthorization`.
+
+  Fields:
+    authorization: The resource name of the resolved authorization. Format: pr
+      ojects/{project}/locations/{location}/authProviders/{auth_provider}/auth
+      orizations/{authorization}
+  """
+
+  authorization = _messages.StringField(1)
+
+
 class RevokeAuthorizationRequest(_messages.Message):
   r"""Request message for `RevokeAuthorization`.
 
@@ -1383,6 +1634,10 @@ class UndeleteAuthProviderRequest(_messages.Message):
   """
 
   requestId = _messages.StringField(1)
+
+
+class WorkforceIdentityFederation(_messages.Message):
+  r"""Configuration for Workforce Identity Federation usage as the issuer."""
 
 
 encoding.AddCustomJsonFieldMapping(

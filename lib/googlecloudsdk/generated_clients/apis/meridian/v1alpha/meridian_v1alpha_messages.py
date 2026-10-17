@@ -750,6 +750,22 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class ChannelCalibration(_messages.Message):
+  r"""The incrementality experiments available for a single channel.
+
+  Fields:
+    alpha: Optional. Optional channel-specific adstock decay rate (`alpha`) in
+      `[0.0, 1.0]`.
+    channel: Required. The channel to calibrate. Must be a paid media channel
+      or a paid Reach & Frequency channel.
+    experiments: Required. One or more experiment results for this channel.
+  """
+
+  alpha = _messages.FloatField(1)
+  channel = _messages.StringField(2)
+  experiments = _messages.MessageField('IncrementalityExperiment', 3, repeated=True)
+
+
 class ChannelDateRangeCalibration(_messages.Message):
   r"""Specifies ROI calibration date intervals for a subset of channels. In
   Marketing Mix Modeling, ROI calibration incorporates experimental ground
@@ -1814,6 +1830,38 @@ class ErrorInfo(_messages.Message):
   status = _messages.MessageField('Status', 3)
 
 
+class ExperimentAdjustments(_messages.Message):
+  r"""Optional user overrides of the automatic adjustment factors that
+  Meridian applies to an incrementality experiment result before merging it
+  into a prior.
+
+  Fields:
+    pointEstimateAdjustment: Optional. Additive adjustment to the point
+      estimate scaling factor (`gamma`).
+    standardErrorAdjustment: Optional. Additive adjustment to the total
+      variance inflation factor (`tau`).
+  """
+
+  pointEstimateAdjustment = _messages.FloatField(1)
+  standardErrorAdjustment = _messages.FloatField(2)
+
+
+class ExperimentPriorCalibration(_messages.Message):
+  r"""Declarative specification for deriving channel ROI priors from
+  incrementality experiment results.
+
+  Fields:
+    channelCalibrations: Required. Per-channel experiment calibration
+      evidence.
+    defaultAlpha: Optional. Global adstock decay rate (`alpha`) in `[0.0,
+      1.0]` applied to calibrated channels that do not specify a per-channel
+      `alpha`.
+  """
+
+  channelCalibrations = _messages.MessageField('ChannelCalibration', 1, repeated=True)
+  defaultAlpha = _messages.FloatField(2)
+
+
 class FeatureSelection(_messages.Message):
   r"""Dynamic feature selection for a specific model iteration. Dictates the
   active subset of channels and controls from the workspace configuration to
@@ -2635,6 +2683,51 @@ class Hyperparameters(_messages.Message):
   uniqueSigmaForEachGeo = _messages.BooleanField(35)
 
 
+class IncrementalityExperiment(_messages.Message):
+  r"""Any generic incrementality experiment result used to calibrate a
+  channel's ROI prior.
+
+  Enums:
+    KpiTypeValueValuesEnum: Required. The unit of `point_estimate` and
+      `standard_error`.
+
+  Fields:
+    adjustments: Optional. Optional overrides of the automatically derived
+      adjustment factors.
+    dateInterval: Required. The `[start_date, end_date)` window over which the
+      experiment ran, where `start_date` is inclusive and `end_date` is
+      exclusive.
+    kpiType: Required. The unit of `point_estimate` and `standard_error`.
+    pointEstimate: Required. The measured incremental effect of the experiment
+      (ROI when `kpi_type` is `REVENUE`, or IKPC when `kpi_type` is
+      `NON_REVENUE`).
+    standardError: Required. The standard error of `point_estimate`, in the
+      same units.
+    totalSpend: Required. Total media spend on this channel during the
+      experiment window.
+  """
+
+  class KpiTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The unit of `point_estimate` and `standard_error`.
+
+    Values:
+      KPI_TYPE_UNSPECIFIED: <no description>
+      NON_REVENUE: Some generic user-defined KPI unit.
+      REVENUE: KPI defined as revenue specifically, or some KPI unit after
+        conversion to revenue.
+    """
+    KPI_TYPE_UNSPECIFIED = 0
+    NON_REVENUE = 1
+    REVENUE = 2
+
+  adjustments = _messages.MessageField('ExperimentAdjustments', 1)
+  dateInterval = _messages.MessageField('DateInterval', 2)
+  kpiType = _messages.EnumField('KpiTypeValueValuesEnum', 3)
+  pointEstimate = _messages.FloatField(4)
+  standardError = _messages.FloatField(5)
+  totalSpend = _messages.FloatField(6)
+
+
 class InferenceData(_messages.Message):
   r"""InferenceData data contains none, only prior, or both prior and
   posterior sampled parameters and their sampling states and trace from
@@ -3217,6 +3310,37 @@ class MeridianProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class MeridianProjectsLocationsWorkspacesAggcurvesBatchCreateRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesAggcurvesBatchCreateRequest object.
+
+  Fields:
+    batchCreateAggcurvesRequest: A BatchCreateAggcurvesRequest resource to be
+      passed as the request body.
+    parent: Required. The parent resource where the agg curves will be
+      created. Format:
+      projects/{project}/locations/{location}/workspaces/{workspace}
+  """
+
+  batchCreateAggcurvesRequest = _messages.MessageField('BatchCreateAggcurvesRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class MeridianProjectsLocationsWorkspacesAggcurvesBatchTriggerRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesAggcurvesBatchTriggerRequest
+  object.
+
+  Fields:
+    batchTriggerAggcurvesRequest: A BatchTriggerAggcurvesRequest resource to
+      be passed as the request body.
+    parent: Required. The parent resource where all agg curves will be
+      triggered. Format:
+      projects/{project}/locations/{location}/workspaces/{workspace}
+  """
+
+  batchTriggerAggcurvesRequest = _messages.MessageField('BatchTriggerAggcurvesRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class MeridianProjectsLocationsWorkspacesAggcurvesCreateRequest(_messages.Message):
   r"""A MeridianProjectsLocationsWorkspacesAggcurvesCreateRequest object.
 
@@ -3283,6 +3407,19 @@ class MeridianProjectsLocationsWorkspacesAggcurvesListRequest(_messages.Message)
   parent = _messages.StringField(5, required=True)
 
 
+class MeridianProjectsLocationsWorkspacesAggcurvesTriggerRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesAggcurvesTriggerRequest object.
+
+  Fields:
+    name: Required. Name of the resource to trigger.
+    triggerAggcurveRequest: A TriggerAggcurveRequest resource to be passed as
+      the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  triggerAggcurveRequest = _messages.MessageField('TriggerAggcurveRequest', 2)
+
+
 class MeridianProjectsLocationsWorkspacesCreateRequest(_messages.Message):
   r"""A MeridianProjectsLocationsWorkspacesCreateRequest object.
 
@@ -3331,6 +3468,63 @@ class MeridianProjectsLocationsWorkspacesDatasetsAcceptProposalRequest(_messages
 
   acceptDatasetProposalRequest = _messages.MessageField('AcceptDatasetProposalRequest', 1)
   name = _messages.StringField(2, required=True)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsBatchCreateRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsBatchCreateRequest object.
+
+  Fields:
+    batchCreateDatasetsRequest: A BatchCreateDatasetsRequest resource to be
+      passed as the request body.
+    parent: Required. The parent resource where the datasets will be created.
+      Format: projects/{project}/locations/{location}/workspaces/{workspace}
+  """
+
+  batchCreateDatasetsRequest = _messages.MessageField('BatchCreateDatasetsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsBatchDeleteRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsBatchDeleteRequest object.
+
+  Fields:
+    batchDeleteDatasetsRequest: A BatchDeleteDatasetsRequest resource to be
+      passed as the request body.
+    parent: Required. The parent resource where the datasets will be deleted.
+      Format: projects/{project}/locations/{location}/workspaces/{workspace}
+  """
+
+  batchDeleteDatasetsRequest = _messages.MessageField('BatchDeleteDatasetsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsBatchUpdateRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsBatchUpdateRequest object.
+
+  Fields:
+    batchUpdateDatasetsRequest: A BatchUpdateDatasetsRequest resource to be
+      passed as the request body.
+    parent: Required. The parent resource where the datasets reside. Format:
+      projects/{project}/locations/{location}/workspaces/{workspace}
+  """
+
+  batchUpdateDatasetsRequest = _messages.MessageField('BatchUpdateDatasetsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsBatchValidateRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsBatchValidateRequest
+  object.
+
+  Fields:
+    batchValidateDatasetsRequest: A BatchValidateDatasetsRequest resource to
+      be passed as the request body.
+    parent: Required. The parent resource where the datasets reside. Format:
+      projects/{project}/locations/{location}/workspaces/{workspace}
+  """
+
+  batchValidateDatasetsRequest = _messages.MessageField('BatchValidateDatasetsRequest', 1)
+  parent = _messages.StringField(2, required=True)
 
 
 class MeridianProjectsLocationsWorkspacesDatasetsCreateRequest(_messages.Message):
@@ -3495,6 +3689,23 @@ class MeridianProjectsLocationsWorkspacesDatasetsListRequest(_messages.Message):
   parent = _messages.StringField(5, required=True)
 
 
+class MeridianProjectsLocationsWorkspacesDatasetsModelsArtifactsBatchCreateRequest(_messages.Message):
+  r"""A
+  MeridianProjectsLocationsWorkspacesDatasetsModelsArtifactsBatchCreateRequest
+  object.
+
+  Fields:
+    batchCreateModelArtifactsRequest: A BatchCreateModelArtifactsRequest
+      resource to be passed as the request body.
+    parent: Required. The parent resource shared by all artifacts being
+      created. Format: `projects/{project}/locations/{location}/workspaces/{wo
+      rkspace}/datasets/{dataset}/models/{model}`
+  """
+
+  batchCreateModelArtifactsRequest = _messages.MessageField('BatchCreateModelArtifactsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class MeridianProjectsLocationsWorkspacesDatasetsModelsArtifactsCreateRequest(_messages.Message):
   r"""A
   MeridianProjectsLocationsWorkspacesDatasetsModelsArtifactsCreateRequest
@@ -3566,6 +3777,38 @@ class MeridianProjectsLocationsWorkspacesDatasetsModelsArtifactsReadArtifactCont
 
   name = _messages.StringField(1, required=True)
   sendAsFile = _messages.BooleanField(2)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsModelsBatchCreateRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsModelsBatchCreateRequest
+  object.
+
+  Fields:
+    batchCreateModelsRequest: A BatchCreateModelsRequest resource to be passed
+      as the request body.
+    parent: Required. The parent resource where the models will be created.
+      Format: projects/{project}/locations/{location}/workspaces/{workspace}/d
+      atasets/{dataset}
+  """
+
+  batchCreateModelsRequest = _messages.MessageField('BatchCreateModelsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsModelsBatchTrainRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsModelsBatchTrainRequest
+  object.
+
+  Fields:
+    batchTrainModelsRequest: A BatchTrainModelsRequest resource to be passed
+      as the request body.
+    parent: Required. The parent resource where the models reside. Format: pro
+      jects/{project}/locations/{location}/workspaces/{workspace}/datasets/{da
+      taset}
+  """
+
+  batchTrainModelsRequest = _messages.MessageField('BatchTrainModelsRequest', 1)
+  parent = _messages.StringField(2, required=True)
 
 
 class MeridianProjectsLocationsWorkspacesDatasetsModelsCreateRequest(_messages.Message):
@@ -3760,6 +4003,21 @@ class MeridianProjectsLocationsWorkspacesDatasetsModelsRunModelScenarioPlanningR
   runModelScenarioPlanningRequest = _messages.MessageField('RunModelScenarioPlanningRequest', 2)
 
 
+class MeridianProjectsLocationsWorkspacesDatasetsModelsTrainRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsModelsTrainRequest object.
+
+  Fields:
+    name: Required. The name of the model to train. Format: projects/{project}
+      /locations/{location}/workspaces/{workspace}/datasets/{dataset}/models/{
+      model}
+    trainModelRequest: A TrainModelRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  trainModelRequest = _messages.MessageField('TrainModelRequest', 2)
+
+
 class MeridianProjectsLocationsWorkspacesDatasetsPatchRequest(_messages.Message):
   r"""A MeridianProjectsLocationsWorkspacesDatasetsPatchRequest object.
 
@@ -3823,6 +4081,20 @@ class MeridianProjectsLocationsWorkspacesDatasetsTriggerPreModelingAgentRequest(
 
   name = _messages.StringField(1, required=True)
   triggerPreModelingAgentRequest = _messages.MessageField('TriggerPreModelingAgentRequest', 2)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsValidateRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsValidateRequest object.
+
+  Fields:
+    name: Required. The name of the dataset to validate. Format: projects/{pro
+      ject}/locations/{location}/workspaces/{workspace}/datasets/{dataset}
+    validateDatasetRequest: A ValidateDatasetRequest resource to be passed as
+      the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  validateDatasetRequest = _messages.MessageField('ValidateDatasetRequest', 2)
 
 
 class MeridianProjectsLocationsWorkspacesDeleteRequest(_messages.Message):
@@ -4281,6 +4553,8 @@ class ModelSpec(_messages.Message):
   r"""Model specification.
 
   Fields:
+    experimentPriorCalibration: Optional. Declarative prior calibration from
+      incrementality experiment results.
     featureSelection: Optional. Dynamic feature selection filters for this
       model iteration. If omitted or empty, all channels and controls defined
       in the associated workspace configuration are used.
@@ -4291,11 +4565,12 @@ class ModelSpec(_messages.Message):
     samplingParameters: Optional. Parameters controlling the sampling process.
   """
 
-  featureSelection = _messages.MessageField('FeatureSelection', 1)
-  hyperparameters = _messages.MessageField('Hyperparameters', 2)
-  priorDistributions = _messages.MessageField('PriorDistributions', 3)
-  priorTfpDistributions = _messages.MessageField('PriorTfpDistributions', 4)
-  samplingParameters = _messages.MessageField('SamplingParameters', 5)
+  experimentPriorCalibration = _messages.MessageField('ExperimentPriorCalibration', 1)
+  featureSelection = _messages.MessageField('FeatureSelection', 2)
+  hyperparameters = _messages.MessageField('Hyperparameters', 3)
+  priorDistributions = _messages.MessageField('PriorDistributions', 4)
+  priorTfpDistributions = _messages.MessageField('PriorTfpDistributions', 5)
+  samplingParameters = _messages.MessageField('SamplingParameters', 6)
 
 
 class ModelSpecTemplate(_messages.Message):

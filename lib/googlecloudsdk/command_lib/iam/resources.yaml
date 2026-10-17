@@ -515,7 +515,6 @@ oauth_client_credential:
   disable_auto_completers: false
 
 workforce_pool_installed_app:
-  hidden: true
   name: workforce pool installed app
   collection: iam.locations.workforcePools.installedApps
   request_id_field: workforcePoolInstalledAppId

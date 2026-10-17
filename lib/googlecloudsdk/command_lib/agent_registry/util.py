@@ -163,3 +163,38 @@ def SetUpdateMaskInUpdate(
     request_msg.updateMask = ','.join(normalized_paths)
   return request_msg
 
+
+_GetSkillEncryptionSpecRequest = (
+    ar_messages.AgentregistryProjectsLocationsGetSkillEncryptionSpecRequest
+)
+_UpdateSkillEncryptionSpecRequest = (
+    ar_messages.AgentregistryProjectsLocationsUpdateSkillEncryptionSpecRequest
+)
+_SkillEncryptionSpecRequest = (
+    _GetSkillEncryptionSpecRequest | _UpdateSkillEncryptionSpecRequest
+)
+
+
+def SetSkillEncryptionSpecName(
+    resource_ref: resources.Resource | None,
+    args: parser_extensions.Namespace,
+    request_msg: _SkillEncryptionSpecRequest,
+) -> _SkillEncryptionSpecRequest:
+  """Points a location request at the location's SkillEncryptionSpec.
+
+  SkillEncryptionSpec is a singleton resource, which declarative commands do
+  not support as a resource argument. The skill-encryption-spec commands take
+  a location resource argument instead, and this hook appends the singleton
+  segment to the request name.
+
+  Args:
+    resource_ref: The location resource reference.
+    args: The command line arguments.
+    request_msg: The request message to modify.
+
+  Returns:
+    The modified request message.
+  """
+  del resource_ref, args  # Unused
+  request_msg.name = f'{request_msg.name}/skillEncryptionSpec'
+  return request_msg

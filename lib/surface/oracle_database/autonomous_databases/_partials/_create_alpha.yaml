@@ -49,6 +49,14 @@
        --location=us-east4 --database=testadb --admin-password=123Abpassdord \
        --properties-compute-count=2 --properties-db-version=19c \
        --properties-license-type=LICENSE_INCLUDED --properties-db-workload=DW
+
+      Cross-region disaster recovery standby configuration:
+
+        $ {command} my-standby --location=us-east4 \
+       --source-config-autonomous-database=projects/my-project/locations/us-central1/autonomousDatabases/my-primary \
+       --source-config-type=cross-region-disaster-recovery \
+       --source-config-disaster-recovery-type=backup-based \
+       --source-config-automatic-backups-replication-enabled
   arguments:
     params:
     - help_text: |-

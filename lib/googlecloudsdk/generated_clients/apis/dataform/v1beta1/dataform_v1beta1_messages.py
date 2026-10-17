@@ -2848,8 +2848,8 @@ class InvocationConfig(_messages.Message):
       https://cloud.google.com/bigquery/docs/running-queries#queries.
 
   Fields:
-    endUserAuthConfig: Optional. Configuration for end user authentication.
-      Note that this should not be set when `service_account` is used.
+    endUserAuthConfig: Optional. Configuration for end user authentication. Do
+      not set if `service_account` is used.
     executionMode: Optional. Specifies the execution mode for the workflow
       invocation.
     fullyRefreshIncrementalTablesEnabled: Optional. When set to true, any

@@ -69,6 +69,7 @@ auto_flags = [
     'enableAutoIpam',
     'enableK8sTokensViaDns',
     'enableDefaultComputeClass',
+    'scaleToZeroFlags',
     'enableK8sCertsViaDns',
     'adaptivePodAllocationMode',
     'membershipType',

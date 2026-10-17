@@ -21420,39 +21420,6 @@ class ComputeInstancesTestIamPermissionsRequest(_messages.Message):
   zone = _messages.StringField(4, required=True)
 
 
-class ComputeInstancesTroubleshootRequest(_messages.Message):
-  r"""A ComputeInstancesTroubleshootRequest object.
-
-  Fields:
-    instance: Name of the instance scoping this request.
-    params_endTime: Input only. Timestamp representing the end of the
-      troubleshooting window in RFC3339 text format. If omitted, defaults to
-      'now'.
-    params_startTime: Input only. Timestamp representing the beginning of the
-      troubleshooting window in RFC3339 text format. If omitted, defaults to
-      the last 12 hours.
-    project: Project ID for this request.
-    requestId: An optional request ID to identify requests. Specify a unique
-      request ID so that if you must retry your request, the server will know
-      to ignore the request if it has already been completed.  For example,
-      consider a situation where you make an initial request and the request
-      times out. If you make the request again with the same request ID, the
-      server can check if original operation with the same request ID was
-      received, and if so, will ignore the second request. This prevents
-      clients from accidentally creating duplicate commitments.  The request
-      ID must be a valid UUID with the exception that zero UUID is not
-      supported (00000000-0000-0000-0000-000000000000).
-    zone: The name of the zone for this request.
-  """
-
-  instance = _messages.StringField(1, required=True)
-  params_endTime = _messages.StringField(2)
-  params_startTime = _messages.StringField(3)
-  project = _messages.StringField(4, required=True)
-  requestId = _messages.StringField(5)
-  zone = _messages.StringField(6, required=True)
-
-
 class ComputeInstancesUpdateAccessConfigRequest(_messages.Message):
   r"""A ComputeInstancesUpdateAccessConfigRequest object.
 
@@ -34481,6 +34448,18 @@ class ComputeRegionSslCertificatesDeleteRequest(_messages.Message):
   sslCertificate = _messages.StringField(4, required=True)
 
 
+class ComputeRegionSslCertificatesFetchEncryptionKeyRequest(_messages.Message):
+  r"""A ComputeRegionSslCertificatesFetchEncryptionKeyRequest object.
+
+  Fields:
+    project: Project ID for this request.
+    region: Name of the region scoping this request.
+  """
+
+  project = _messages.StringField(1, required=True)
+  region = _messages.StringField(2, required=True)
+
+
 class ComputeRegionSslCertificatesGetRequest(_messages.Message):
   r"""A ComputeRegionSslCertificatesGetRequest object.
 
@@ -39249,6 +39228,16 @@ class ComputeSslCertificatesDeleteRequest(_messages.Message):
   project = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
   sslCertificate = _messages.StringField(3, required=True)
+
+
+class ComputeSslCertificatesFetchEncryptionKeyRequest(_messages.Message):
+  r"""A ComputeSslCertificatesFetchEncryptionKeyRequest object.
+
+  Fields:
+    project: Project ID for this request.
+  """
+
+  project = _messages.StringField(1, required=True)
 
 
 class ComputeSslCertificatesGetRequest(_messages.Message):
@@ -73492,6 +73481,8 @@ class NetworkAttachmentConnectedEndpoint(_messages.Message):
         producer to reach its VPC.
       REJECTED: The consumer prohibits traffic from the producer to reach its
         VPC.
+      RESERVED: There is no traffic flowing in this state, only the address is
+        reserved.
       STATUS_UNSPECIFIED: <no description>
     """
     ACCEPTED = 0
@@ -73499,7 +73490,8 @@ class NetworkAttachmentConnectedEndpoint(_messages.Message):
     NEEDS_ATTENTION = 2
     PENDING = 3
     REJECTED = 4
-    STATUS_UNSPECIFIED = 5
+    RESERVED = 5
+    STATUS_UNSPECIFIED = 6
 
   ipAddress = _messages.StringField(1)
   ipv6Address = _messages.StringField(2)
@@ -99171,6 +99163,17 @@ class SslCertificateSelfManagedSslCertificate(_messages.Message):
   privateKey = _messages.StringField(3)
 
 
+class SslCertificatesFetchEncryptionKeyResponse(_messages.Message):
+  r"""Response for `SslCertificatesService.FetchEncryptionKey` and
+  `RegionSslCertificatesService.FetchEncryptionKey` methods.
+
+  Fields:
+    publicKeyset: The Tink public keyset serialized in JSON format.
+  """
+
+  publicKeyset = _messages.StringField(1)
+
+
 class SslCertificatesScopedList(_messages.Message):
   r"""A SslCertificatesScopedList object.
 
@@ -113210,7 +113213,3 @@ encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_1', '1')
 encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
-encoding.AddCustomJsonFieldMapping(
-    ComputeInstancesTroubleshootRequest, 'params_endTime', 'params.endTime')
-encoding.AddCustomJsonFieldMapping(
-    ComputeInstancesTroubleshootRequest, 'params_startTime', 'params.startTime')

@@ -1263,6 +1263,227 @@ class CloudresourcemanagerOrganizationsGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsCreateRequest(_messages.Message):
+  r"""A
+  CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource under which the binding will be
+      created. Format: `projects/{project}/locations/{location}` or
+      `organizations/{organization}/locations/{location}`.
+    semanticTagBinding: A SemanticTagBinding resource to be passed as the
+      request body.
+    validateOnly: Optional. If true, validates the request without creating
+      the binding.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  semanticTagBinding = _messages.MessageField('SemanticTagBinding', 2)
+  validateOnly = _messages.BooleanField(3)
+
+
+class CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsDeleteRequest(_messages.Message):
+  r"""A
+  CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Resource name of the `SemanticTagBinding` to delete.
+      Format: `projects/{project}/locations/{location}/semanticTagBindings/{se
+      mantic_tag_binding_id}` or `organizations/{organization}/locations/{loca
+      tion}/semanticTagBindings/{semantic_tag_binding_id}`. Example:
+      `projects/my-proj/locations/us-central1/semanticTagBindings/b-8f3a1c2e`
+    validateOnly: Optional. If true, validates the request without deleting
+      the binding.
+  """
+
+  name = _messages.StringField(1, required=True)
+  validateOnly = _messages.BooleanField(2)
+
+
+class CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsGetRequest(_messages.Message):
+  r"""A
+  CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsGetRequest
+  object.
+
+  Fields:
+    name: Required. Resource name of the `SemanticTagBinding` to retrieve.
+      Format: `projects/{project}/locations/{location}/semanticTagBindings/{se
+      mantic_tag_binding_id}` or `organizations/{organization}/locations/{loca
+      tion}/semanticTagBindings/{semantic_tag_binding_id}`. Example:
+      `projects/my-proj/locations/us-central1/semanticTagBindings/b-8f3a1c2e`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsListRequest(_messages.Message):
+  r"""A
+  CloudresourcemanagerOrganizationsLocationsSemanticTagBindingsListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      For example, `semantic_tag_key = "projects/gcp-semantic-tags-
+      catalog/locations/us-central1/semanticTagKeys/network.security-tier"`.
+    pageSize: Optional. The maximum number of `SemanticTagBinding` resources
+      to return. The service may return fewer than this value. If unspecified,
+      at most 50 bindings will be returned. The maximum value is 500; values
+      above 500 will be coerced to 500.
+    pageToken: Optional. A page token, received from a previous
+      `ListSemanticTagBindings` call. Provide this to retrieve the subsequent
+      page.
+    parent: Required. The parent resource whose bindings are being listed.
+      Format: `projects/{project}/locations/{location}` or
+      `organizations/{organization}/locations/{location}`.
+    targetResource: Required. Full resource name of the target Google Cloud
+      resource whose bindings are being listed. Example:
+      `//compute.googleapis.com/projects/my-proj/zones/us-
+      central1-a/instances/vm-1`
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  targetResource = _messages.StringField(5)
+
+
+class CloudresourcemanagerOrganizationsLocationsSemanticTagValuesCreateRequest(_messages.Message):
+  r"""A
+  CloudresourcemanagerOrganizationsLocationsSemanticTagValuesCreateRequest
+  object.
+
+  Fields:
+    parent: Required. Parent resource name. Format:
+      `organizations/{organization}/locations/{location}` or
+      `projects/{project}/locations/{location}`.
+    semanticTagValue: A SemanticTagValue resource to be passed as the request
+      body.
+    semanticTagValueId: Required. User-specified ID for this
+      `SemanticTagValue`. For example: "cc-01". Must be 1-63 characters
+      matching `^[a-zA-Z0-9_-]+$`.
+    validateOnly: Optional. If true, validates the request without creating
+      the resource.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  semanticTagValue = _messages.MessageField('SemanticTagValue', 2)
+  semanticTagValueId = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
+
+
+class CloudresourcemanagerOrganizationsLocationsSemanticTagValuesDeleteRequest(_messages.Message):
+  r"""A
+  CloudresourcemanagerOrganizationsLocationsSemanticTagValuesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Resource name of the `SemanticTagValue` to delete. Fails
+      with `FAILED_PRECONDITION` if active bindings reference this value.
+    validateOnly: Optional. If true, validates the request without deleting
+      the resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+  validateOnly = _messages.BooleanField(2)
+
+
+class CloudresourcemanagerOrganizationsLocationsSemanticTagValuesGetIamPolicyRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsLocationsSemanticTagValuesGetIamPolic
+  yRequest object.
+
+  Fields:
+    getIamPolicyRequest: A GetIamPolicyRequest resource to be passed as the
+      request body.
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  getIamPolicyRequest = _messages.MessageField('GetIamPolicyRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
+class CloudresourcemanagerOrganizationsLocationsSemanticTagValuesGetRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsLocationsSemanticTagValuesGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the `SemanticTagValue` to retrieve.
+      Examples: - Customer-managed: `organizations/1001/locations/us-
+      central1/semanticTagValues/cc-01` - System-managed predefined:
+      `projects/gcp-semantic-tags-catalog/locations/us-
+      central1/semanticTagValues/prod`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerOrganizationsLocationsSemanticTagValuesListRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsLocationsSemanticTagValuesListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      For example, `semantic_tag_key = "projects/gcp-semantic-tags-
+      catalog/locations/us-central1/semanticTagKeys/costcenter"`.
+    pageSize: Optional. The maximum number of `SemanticTagValue` resources to
+      return. The service may return fewer than this value. If unspecified, at
+      most 50 values will be returned. The maximum value is 500; values above
+      500 will be coerced to 500.
+    pageToken: Optional. A page token received from a previous
+      `ListSemanticTagValues` call. Provide this to retrieve the subsequent
+      page.
+    parent: Required. The parent resource whose `SemanticTagValue` resources
+      are being listed. Examples: - `projects/gcp-semantic-tags-
+      catalog/locations/us-central1` (system predefined values) -
+      `organizations/1001/locations/us-central1` (customer-managed values) -
+      `projects/my-project/locations/us-central1` (customer-managed values)
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class CloudresourcemanagerOrganizationsLocationsSemanticTagValuesSetIamPolicyRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsLocationsSemanticTagValuesSetIamPolic
+  yRequest object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
+      request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
+
+
+class CloudresourcemanagerOrganizationsLocationsSemanticTagValuesTestIamPermissionsRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsLocationsSemanticTagValuesTestIamPerm
+  issionsRequest object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
+      passed as the request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+
+
 class CloudresourcemanagerOrganizationsSearchRequest(_messages.Message):
   r"""A CloudresourcemanagerOrganizationsSearchRequest object.
 
@@ -1562,6 +1783,223 @@ class CloudresourcemanagerProjectsListRequest(_messages.Message):
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3)
   showDeleted = _messages.BooleanField(4)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagBindingsCreateRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagBindingsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource under which the binding will be
+      created. Format: `projects/{project}/locations/{location}` or
+      `organizations/{organization}/locations/{location}`.
+    semanticTagBinding: A SemanticTagBinding resource to be passed as the
+      request body.
+    validateOnly: Optional. If true, validates the request without creating
+      the binding.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  semanticTagBinding = _messages.MessageField('SemanticTagBinding', 2)
+  validateOnly = _messages.BooleanField(3)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagBindingsDeleteRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagBindingsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Resource name of the `SemanticTagBinding` to delete.
+      Format: `projects/{project}/locations/{location}/semanticTagBindings/{se
+      mantic_tag_binding_id}` or `organizations/{organization}/locations/{loca
+      tion}/semanticTagBindings/{semantic_tag_binding_id}`. Example:
+      `projects/my-proj/locations/us-central1/semanticTagBindings/b-8f3a1c2e`
+    validateOnly: Optional. If true, validates the request without deleting
+      the binding.
+  """
+
+  name = _messages.StringField(1, required=True)
+  validateOnly = _messages.BooleanField(2)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagBindingsGetRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagBindingsGetRequest
+  object.
+
+  Fields:
+    name: Required. Resource name of the `SemanticTagBinding` to retrieve.
+      Format: `projects/{project}/locations/{location}/semanticTagBindings/{se
+      mantic_tag_binding_id}` or `organizations/{organization}/locations/{loca
+      tion}/semanticTagBindings/{semantic_tag_binding_id}`. Example:
+      `projects/my-proj/locations/us-central1/semanticTagBindings/b-8f3a1c2e`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagBindingsListRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagBindingsListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      For example, `semantic_tag_key = "projects/gcp-semantic-tags-
+      catalog/locations/us-central1/semanticTagKeys/network.security-tier"`.
+    pageSize: Optional. The maximum number of `SemanticTagBinding` resources
+      to return. The service may return fewer than this value. If unspecified,
+      at most 50 bindings will be returned. The maximum value is 500; values
+      above 500 will be coerced to 500.
+    pageToken: Optional. A page token, received from a previous
+      `ListSemanticTagBindings` call. Provide this to retrieve the subsequent
+      page.
+    parent: Required. The parent resource whose bindings are being listed.
+      Format: `projects/{project}/locations/{location}` or
+      `organizations/{organization}/locations/{location}`.
+    targetResource: Required. Full resource name of the target Google Cloud
+      resource whose bindings are being listed. Example:
+      `//compute.googleapis.com/projects/my-proj/zones/us-
+      central1-a/instances/vm-1`
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  targetResource = _messages.StringField(5)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagValuesCreateRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagValuesCreateRequest
+  object.
+
+  Fields:
+    parent: Required. Parent resource name. Format:
+      `organizations/{organization}/locations/{location}` or
+      `projects/{project}/locations/{location}`.
+    semanticTagValue: A SemanticTagValue resource to be passed as the request
+      body.
+    semanticTagValueId: Required. User-specified ID for this
+      `SemanticTagValue`. For example: "cc-01". Must be 1-63 characters
+      matching `^[a-zA-Z0-9_-]+$`.
+    validateOnly: Optional. If true, validates the request without creating
+      the resource.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  semanticTagValue = _messages.MessageField('SemanticTagValue', 2)
+  semanticTagValueId = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagValuesDeleteRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagValuesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Resource name of the `SemanticTagValue` to delete. Fails
+      with `FAILED_PRECONDITION` if active bindings reference this value.
+    validateOnly: Optional. If true, validates the request without deleting
+      the resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+  validateOnly = _messages.BooleanField(2)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagValuesGetIamPolicyRequest(_messages.Message):
+  r"""A
+  CloudresourcemanagerProjectsLocationsSemanticTagValuesGetIamPolicyRequest
+  object.
+
+  Fields:
+    getIamPolicyRequest: A GetIamPolicyRequest resource to be passed as the
+      request body.
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  getIamPolicyRequest = _messages.MessageField('GetIamPolicyRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagValuesGetRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagValuesGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the `SemanticTagValue` to retrieve.
+      Examples: - Customer-managed: `organizations/1001/locations/us-
+      central1/semanticTagValues/cc-01` - System-managed predefined:
+      `projects/gcp-semantic-tags-catalog/locations/us-
+      central1/semanticTagValues/prod`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagValuesListRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagValuesListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      For example, `semantic_tag_key = "projects/gcp-semantic-tags-
+      catalog/locations/us-central1/semanticTagKeys/costcenter"`.
+    pageSize: Optional. The maximum number of `SemanticTagValue` resources to
+      return. The service may return fewer than this value. If unspecified, at
+      most 50 values will be returned. The maximum value is 500; values above
+      500 will be coerced to 500.
+    pageToken: Optional. A page token received from a previous
+      `ListSemanticTagValues` call. Provide this to retrieve the subsequent
+      page.
+    parent: Required. The parent resource whose `SemanticTagValue` resources
+      are being listed. Examples: - `projects/gcp-semantic-tags-
+      catalog/locations/us-central1` (system predefined values) -
+      `organizations/1001/locations/us-central1` (customer-managed values) -
+      `projects/my-project/locations/us-central1` (customer-managed values)
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagValuesSetIamPolicyRequest(_messages.Message):
+  r"""A
+  CloudresourcemanagerProjectsLocationsSemanticTagValuesSetIamPolicyRequest
+  object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
+      request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagValuesTestIamPermissionsRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagValuesTestIamPermissio
+  nsRequest object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
+      passed as the request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
 class CloudresourcemanagerProjectsMoveRequest(_messages.Message):
@@ -2124,6 +2562,45 @@ class CloudresourcemanagerTagValuesTestIamPermissionsRequest(_messages.Message):
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
+class CompositeValue(_messages.Message):
+  r"""Composite map of field names to values.
+
+  Messages:
+    FieldsValue: Optional. Immutable. Map of field names to their
+      corresponding values.
+
+  Fields:
+    fields: Optional. Immutable. Map of field names to their corresponding
+      values.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class FieldsValue(_messages.Message):
+    r"""Optional. Immutable. Map of field names to their corresponding values.
+
+    Messages:
+      AdditionalProperty: An additional property for a FieldsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type FieldsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a FieldsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A FieldValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('FieldValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  fields = _messages.MessageField('FieldsValue', 1)
+
+
 class CreateBoundaryMetadata(_messages.Message):
   r"""A status object which is used as the `metadata` field for the Operation
   returned by CreateBoundary. Currently empty.
@@ -2167,6 +2644,14 @@ class CreateProjectMetadata(_messages.Message):
   createTime = _messages.StringField(1)
   gettable = _messages.BooleanField(2)
   ready = _messages.BooleanField(3)
+
+
+class CreateSemanticTagBindingMetadata(_messages.Message):
+  r"""Metadata for the `CreateSemanticTagBinding` long-running operation."""
+
+
+class CreateSemanticTagValueMetadata(_messages.Message):
+  r"""Runtime operation information for creating a `SemanticTagValue`."""
 
 
 class CreateTagBindingMetadata(_messages.Message):
@@ -2214,6 +2699,14 @@ class DeleteProjectMetadata(_messages.Message):
   returned by `DeleteProject`.
   """
 
+
+
+class DeleteSemanticTagBindingMetadata(_messages.Message):
+  r"""Metadata for the `DeleteSemanticTagBinding` long-running operation."""
+
+
+class DeleteSemanticTagValueMetadata(_messages.Message):
+  r"""Runtime operation information for deleting a `SemanticTagValue`."""
 
 
 class DeleteTagBindingMetadata(_messages.Message):
@@ -2429,6 +2922,16 @@ class FetchResourceSemanticsResponse(_messages.Message):
 
   fullResourceName = _messages.StringField(1)
   semantics = _messages.MessageField('SemanticsValue', 2)
+
+
+class FieldValue(_messages.Message):
+  r"""Represents a single value within a CompositeValue.
+
+  Fields:
+    stringValue: Optional. Immutable. Primitive string value.
+  """
+
+  stringValue = _messages.StringField(1)
 
 
 class Folder(_messages.Message):
@@ -2800,6 +3303,32 @@ class ListProjectsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   projects = _messages.MessageField('Project', 2, repeated=True)
+
+
+class ListSemanticTagBindingsResponse(_messages.Message):
+  r"""Response message for `ListSemanticTagBindings`.
+
+  Fields:
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    semanticTagBindings: The list of `SemanticTagBinding` resources.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  semanticTagBindings = _messages.MessageField('SemanticTagBinding', 2, repeated=True)
+
+
+class ListSemanticTagValuesResponse(_messages.Message):
+  r"""Response message for `ListSemanticTagValues`.
+
+  Fields:
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    semanticTagValues: The list of `SemanticTagValue` resources.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  semanticTagValues = _messages.MessageField('SemanticTagValue', 2, repeated=True)
 
 
 class ListSettingsResponse(_messages.Message):
@@ -3396,6 +3925,75 @@ class SearchProjectsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   projects = _messages.MessageField('Project', 2, repeated=True)
+
+
+class SemanticTagBinding(_messages.Message):
+  r"""Represents a binding between a target Google Cloud resource and a
+  `SemanticTagValue`.
+
+  Fields:
+    createTime: Output only. Timestamp when this binding was created.
+    name: Identifier. Resource name of the `SemanticTagBinding`. Format: `proj
+      ects/{project}/locations/{location}/semanticTagBindings/{semantic_tag_bi
+      nding_id}` or `organizations/{organization}/locations/{location}/semanti
+      cTagBindings/{semantic_tag_binding_id}`. Example: `projects/my-
+      proj/locations/us-central1/semanticTagBindings/b-8f3a1c2e`
+    semanticTagKey: Output only. Resource name of the `SemanticTagKey` this
+      binding is for. Inferred by the server from the bound
+      `semantic_tag_value`. Example: `projects/gcp-semantic-tags-
+      catalog/locations/us-central1/semanticTagKeys/network.security-tier`
+    semanticTagValue: Required. Immutable. Resource name of the regional
+      `SemanticTagValue` being bound. Example: - System-managed predefined
+      value: `projects/gcp-semantic-tags-catalog/locations/us-
+      central1/semanticTagValues/prod` - Customer-managed, org-parented value:
+      `organizations/1001/locations/us-central1/semanticTagValues/us-only` -
+      Customer-managed, project-parented value: `projects/my-
+      project/locations/us-central1/semanticTagValues/us-only`
+    targetResource: Required. Immutable. Full resource name of the target
+      Google Cloud resource being bound. Example:
+      `//compute.googleapis.com/projects/my-proj/zones/us-
+      central1-a/instances/vm-1` or
+      `//cloudresourcemanager.googleapis.com/projects/123456`
+  """
+
+  createTime = _messages.StringField(1)
+  name = _messages.StringField(2)
+  semanticTagKey = _messages.StringField(3)
+  semanticTagValue = _messages.StringField(4)
+  targetResource = _messages.StringField(5)
+
+
+class SemanticTagValue(_messages.Message):
+  r"""Represents a concrete `SemanticTagValue` that can be bound to resources.
+
+  Fields:
+    compositeValue: Optional. Immutable. Composite map of field names to
+      values.
+    createTime: Output only. Creation timestamp of the value.
+    description: Optional. Description of the semantic tag value. Maximum
+      length is 1024 characters.
+    displayName: Optional. User-friendly display name. Maximum length is 63
+      characters.
+    name: Identifier. Resource name of the `SemanticTagValue`. Format: -
+      Customer-managed (organization): `organizations/{organization}/locations
+      /{location}/semanticTagValues/{semantic_tag_value}` - Customer-managed
+      (project): `projects/{project}/locations/{location}/semanticTagValues/{s
+      emantic_tag_value}` - System-managed predefined: `projects/gcp-semantic-
+      tags-
+      catalog/locations/{location}/semanticTagValues/{semantic_tag_value}`
+    semanticTagKey: Required. Immutable. Canonical `SemanticTagKey` resource
+      name this value is associated with. Format: `projects/gcp-semantic-tags-
+      catalog/locations/{location}/semanticTagKeys/{semantic_tag_key}`
+    stringValue: Optional. Immutable. Primitive string value.
+  """
+
+  compositeValue = _messages.MessageField('CompositeValue', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  name = _messages.StringField(5)
+  semanticTagKey = _messages.StringField(6)
+  stringValue = _messages.StringField(7)
 
 
 class SetIamPolicyRequest(_messages.Message):

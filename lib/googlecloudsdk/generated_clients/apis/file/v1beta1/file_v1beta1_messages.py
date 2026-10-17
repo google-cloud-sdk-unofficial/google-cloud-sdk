@@ -257,6 +257,9 @@ class CreateFromSourceRequest(_messages.Message):
       created volume.
     quota: Optional. The limit for how much data can be written to this
       volume, in MiB.
+    requestId: Optional. A unique ID used to identify the request, so retries
+      are idempotent. Must be a valid UUID4; the zero UUID
+      (`00000000-0000-0000-0000-000000000000`) is not supported.
     volumeId: Required. Unique identifier for the volume which also appears in
       the volumes resource name.
   """
@@ -264,7 +267,8 @@ class CreateFromSourceRequest(_messages.Message):
   backup = _messages.StringField(1)
   ipAcls = _messages.MessageField('NfsExportOptions', 2, repeated=True)
   quota = _messages.IntegerField(3)
-  volumeId = _messages.StringField(4)
+  requestId = _messages.StringField(4)
+  volumeId = _messages.StringField(5)
 
 
 class DailyCycle(_messages.Message):
@@ -3317,10 +3321,14 @@ class UnfreezeVolumeRequest(_messages.Message):
       unfrozen volume
     quota: Optional. The limit for how much data can be written to this
       volume, in MiB.
+    requestId: Optional. A unique ID used to identify the request, so retries
+      are idempotent. Must be a valid UUID4; the zero UUID
+      (`00000000-0000-0000-0000-000000000000`) is not supported.
   """
 
   ipAcls = _messages.MessageField('NfsExportOptions', 1, repeated=True)
   quota = _messages.IntegerField(2)
+  requestId = _messages.StringField(3)
 
 
 class UpdatePolicy(_messages.Message):

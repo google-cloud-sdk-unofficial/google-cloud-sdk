@@ -62,23 +62,17 @@ class AirflowRbacBinding(_messages.Message):
 
 class AirflowRbacConfig(_messages.Message):
   r"""Declarative configuration for Airflow RBAC. The following example: ``` {
-  "baseGroup":"managed-airflow-rbac-groups@example.com" "bindings": [ {
-  "role":"Admin", "members": ["group:example-group@example.com"] }, {
-  "role":"Viewer", "members": ["user:example-user@example.com",
-  "group:example-group@example.com"] } ] } ``` would define an Airflow RBAC
-  configuration with 2 bindings.
+  "bindings": [ { "role":"Admin", "members": ["group:example-
+  group@example.com"] }, { "role":"Viewer", "members": ["user:example-
+  user@example.com", "group:example-group@example.com"] } ] } ``` would define
+  an Airflow RBAC configuration with 2 bindings.
 
   Fields:
-    baseGroup: Optional. Specifies the base group email. Base group is a group
-      of groups, which means every group specified in the bindings needs to be
-      a child (direct or indirect) of the base group. Should start with
-      managed-airflow-rbac-groups@ prefix.
     bindings: Required. Binds the identities (prefixed users/groups emails) to
       the Airflow roles.
   """
 
-  baseGroup = _messages.StringField(1)
-  bindings = _messages.MessageField('AirflowRbacBinding', 2, repeated=True)
+  bindings = _messages.MessageField('AirflowRbacBinding', 1, repeated=True)
 
 
 class AllowedIpRange(_messages.Message):
