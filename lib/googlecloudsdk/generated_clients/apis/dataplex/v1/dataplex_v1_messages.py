@@ -528,46 +528,6 @@ class DataplexProjectsLocationsChangeRequestsTestIamPermissionsRequest(_messages
   resource = _messages.StringField(2, required=True)
 
 
-class DataplexProjectsLocationsDataAttributeBindingsCreateRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataAttributeBindingsCreateRequest object.
-
-  Fields:
-    dataAttributeBindingId: Required. DataAttributeBinding identifier. * Must
-      contain only lowercase letters, numbers and hyphens. * Must start with a
-      letter. * Must be between 1-63 characters. * Must end with a number or a
-      letter. * Must be unique within the Location.
-    googleCloudDataplexV1DataAttributeBinding: A
-      GoogleCloudDataplexV1DataAttributeBinding resource to be passed as the
-      request body.
-    parent: Required. The resource name of the parent data taxonomy
-      projects/{project_number}/locations/{location_id}
-    validateOnly: Optional. Only validate the request, but do not perform
-      mutations. The default is false.
-  """
-
-  dataAttributeBindingId = _messages.StringField(1)
-  googleCloudDataplexV1DataAttributeBinding = _messages.MessageField('GoogleCloudDataplexV1DataAttributeBinding', 2)
-  parent = _messages.StringField(3, required=True)
-  validateOnly = _messages.BooleanField(4)
-
-
-class DataplexProjectsLocationsDataAttributeBindingsDeleteRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataAttributeBindingsDeleteRequest object.
-
-  Fields:
-    etag: Required. If the client provided etag value does not match the
-      current etag value, the DeleteDataAttributeBindingRequest method returns
-      an ABORTED error response. Etags must be used when calling the
-      DeleteDataAttributeBinding.
-    name: Required. The resource name of the DataAttributeBinding: projects/{p
-      roject_number}/locations/{location_id}/dataAttributeBindings/{data_attri
-      bute_binding_id}
-  """
-
-  etag = _messages.StringField(1)
-  name = _messages.StringField(2, required=True)
-
-
 class DataplexProjectsLocationsDataAttributeBindingsGetIamPolicyRequest(_messages.Message):
   r"""A DataplexProjectsLocationsDataAttributeBindingsGetIamPolicyRequest
   object.
@@ -591,68 +551,6 @@ class DataplexProjectsLocationsDataAttributeBindingsGetIamPolicyRequest(_message
 
   options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   resource = _messages.StringField(2, required=True)
-
-
-class DataplexProjectsLocationsDataAttributeBindingsGetRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataAttributeBindingsGetRequest object.
-
-  Fields:
-    name: Required. The resource name of the DataAttributeBinding: projects/{p
-      roject_number}/locations/{location_id}/dataAttributeBindings/{data_attri
-      bute_binding_id}
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class DataplexProjectsLocationsDataAttributeBindingsListRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataAttributeBindingsListRequest object.
-
-  Fields:
-    filter: Optional. Filter request. Filter using resource:
-      filter=resource:"resource-name" Filter using attribute:
-      filter=attributes:"attribute-name" Filter using attribute in paths list:
-      filter=paths.attributes:"attribute-name"
-    orderBy: Optional. Order by fields for the result.
-    pageSize: Optional. Maximum number of DataAttributeBindings to return. The
-      service may return fewer than this value. If unspecified, at most 10
-      DataAttributeBindings will be returned. The maximum value is 1000;
-      values above 1000 will be coerced to 1000.
-    pageToken: Optional. Page token received from a previous
-      ListDataAttributeBindings call. Provide this to retrieve the subsequent
-      page. When paginating, all other parameters provided to
-      ListDataAttributeBindings must match the call that provided the page
-      token.
-    parent: Required. The resource name of the Location:
-      projects/{project_number}/locations/{location_id}
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class DataplexProjectsLocationsDataAttributeBindingsPatchRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataAttributeBindingsPatchRequest object.
-
-  Fields:
-    googleCloudDataplexV1DataAttributeBinding: A
-      GoogleCloudDataplexV1DataAttributeBinding resource to be passed as the
-      request body.
-    name: Output only. The relative resource name of the Data Attribute
-      Binding, of the form: projects/{project_number}/locations/{location}/dat
-      aAttributeBindings/{data_attribute_binding_id}
-    updateMask: Required. Mask of fields to update.
-    validateOnly: Optional. Only validate the request, but do not perform
-      mutations. The default is false.
-  """
-
-  googleCloudDataplexV1DataAttributeBinding = _messages.MessageField('GoogleCloudDataplexV1DataAttributeBinding', 1)
-  name = _messages.StringField(2, required=True)
-  updateMask = _messages.StringField(3)
-  validateOnly = _messages.BooleanField(4)
 
 
 class DataplexProjectsLocationsDataAttributeBindingsSetIamPolicyRequest(_messages.Message):
@@ -1503,45 +1401,6 @@ class DataplexProjectsLocationsDataScansTestIamPermissionsRequest(_messages.Mess
   resource = _messages.StringField(2, required=True)
 
 
-class DataplexProjectsLocationsDataTaxonomiesAttributesCreateRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataTaxonomiesAttributesCreateRequest object.
-
-  Fields:
-    dataAttributeId: Required. DataAttribute identifier. * Must contain only
-      lowercase letters, numbers and hyphens. * Must start with a letter. *
-      Must be between 1-63 characters. * Must end with a number or a letter. *
-      Must be unique within the DataTaxonomy.
-    googleCloudDataplexV1DataAttribute: A GoogleCloudDataplexV1DataAttribute
-      resource to be passed as the request body.
-    parent: Required. The resource name of the parent data taxonomy projects/{
-      project_number}/locations/{location_id}/dataTaxonomies/{data_taxonomy_id
-      }
-    validateOnly: Optional. Only validate the request, but do not perform
-      mutations. The default is false.
-  """
-
-  dataAttributeId = _messages.StringField(1)
-  googleCloudDataplexV1DataAttribute = _messages.MessageField('GoogleCloudDataplexV1DataAttribute', 2)
-  parent = _messages.StringField(3, required=True)
-  validateOnly = _messages.BooleanField(4)
-
-
-class DataplexProjectsLocationsDataTaxonomiesAttributesDeleteRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataTaxonomiesAttributesDeleteRequest object.
-
-  Fields:
-    etag: Optional. If the client provided etag value does not match the
-      current etag value, the DeleteDataAttribute method returns an ABORTED
-      error response.
-    name: Required. The resource name of the DataAttribute: projects/{project_
-      number}/locations/{location_id}/dataTaxonomies/{dataTaxonomy}/attributes
-      /{data_attribute_id}
-  """
-
-  etag = _messages.StringField(1)
-  name = _messages.StringField(2, required=True)
-
-
 class DataplexProjectsLocationsDataTaxonomiesAttributesGetIamPolicyRequest(_messages.Message):
   r"""A DataplexProjectsLocationsDataTaxonomiesAttributesGetIamPolicyRequest
   object.
@@ -1565,63 +1424,6 @@ class DataplexProjectsLocationsDataTaxonomiesAttributesGetIamPolicyRequest(_mess
 
   options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   resource = _messages.StringField(2, required=True)
-
-
-class DataplexProjectsLocationsDataTaxonomiesAttributesGetRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataTaxonomiesAttributesGetRequest object.
-
-  Fields:
-    name: Required. The resource name of the dataAttribute: projects/{project_
-      number}/locations/{location_id}/dataTaxonomies/{dataTaxonomy}/attributes
-      /{data_attribute_id}
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class DataplexProjectsLocationsDataTaxonomiesAttributesListRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataTaxonomiesAttributesListRequest object.
-
-  Fields:
-    filter: Optional. Filter request.
-    orderBy: Optional. Order by fields for the result.
-    pageSize: Optional. Maximum number of DataAttributes to return. The
-      service may return fewer than this value. If unspecified, at most 10
-      dataAttributes will be returned. The maximum value is 1000; values above
-      1000 will be coerced to 1000.
-    pageToken: Optional. Page token received from a previous
-      ListDataAttributes call. Provide this to retrieve the subsequent page.
-      When paginating, all other parameters provided to ListDataAttributes
-      must match the call that provided the page token.
-    parent: Required. The resource name of the DataTaxonomy: projects/{project
-      _number}/locations/{location_id}/dataTaxonomies/{data_taxonomy_id}
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class DataplexProjectsLocationsDataTaxonomiesAttributesPatchRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataTaxonomiesAttributesPatchRequest object.
-
-  Fields:
-    googleCloudDataplexV1DataAttribute: A GoogleCloudDataplexV1DataAttribute
-      resource to be passed as the request body.
-    name: Output only. The relative resource name of the dataAttribute, of the
-      form: projects/{project_number}/locations/{location_id}/dataTaxonomies/{
-      dataTaxonomy}/attributes/{data_attribute_id}.
-    updateMask: Required. Mask of fields to update.
-    validateOnly: Optional. Only validate the request, but do not perform
-      mutations. The default is false.
-  """
-
-  googleCloudDataplexV1DataAttribute = _messages.MessageField('GoogleCloudDataplexV1DataAttribute', 1)
-  name = _messages.StringField(2, required=True)
-  updateMask = _messages.StringField(3)
-  validateOnly = _messages.BooleanField(4)
 
 
 class DataplexProjectsLocationsDataTaxonomiesAttributesSetIamPolicyRequest(_messages.Message):
@@ -1659,42 +1461,6 @@ class DataplexProjectsLocationsDataTaxonomiesAttributesTestIamPermissionsRequest
   resource = _messages.StringField(2, required=True)
 
 
-class DataplexProjectsLocationsDataTaxonomiesCreateRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataTaxonomiesCreateRequest object.
-
-  Fields:
-    dataTaxonomyId: Required. DataTaxonomy identifier. * Must contain only
-      lowercase letters, numbers and hyphens. * Must start with a letter. *
-      Must be between 1-63 characters. * Must end with a number or a letter. *
-      Must be unique within the Project.
-    googleCloudDataplexV1DataTaxonomy: A GoogleCloudDataplexV1DataTaxonomy
-      resource to be passed as the request body.
-    parent: A string attribute.
-    validateOnly: Optional. Only validate the request, but do not perform
-      mutations. The default is false.
-  """
-
-  dataTaxonomyId = _messages.StringField(1)
-  googleCloudDataplexV1DataTaxonomy = _messages.MessageField('GoogleCloudDataplexV1DataTaxonomy', 2)
-  parent = _messages.StringField(3, required=True)
-  validateOnly = _messages.BooleanField(4)
-
-
-class DataplexProjectsLocationsDataTaxonomiesDeleteRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataTaxonomiesDeleteRequest object.
-
-  Fields:
-    etag: Optional. If the client provided etag value does not match the
-      current etag value,the DeleteDataTaxonomy method returns an ABORTED
-      error.
-    name: Required. The resource name of the DataTaxonomy: projects/{project_n
-      umber}/locations/{location_id}/dataTaxonomies/{data_taxonomy_id}
-  """
-
-  etag = _messages.StringField(1)
-  name = _messages.StringField(2, required=True)
-
-
 class DataplexProjectsLocationsDataTaxonomiesGetIamPolicyRequest(_messages.Message):
   r"""A DataplexProjectsLocationsDataTaxonomiesGetIamPolicyRequest object.
 
@@ -1717,62 +1483,6 @@ class DataplexProjectsLocationsDataTaxonomiesGetIamPolicyRequest(_messages.Messa
 
   options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   resource = _messages.StringField(2, required=True)
-
-
-class DataplexProjectsLocationsDataTaxonomiesGetRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataTaxonomiesGetRequest object.
-
-  Fields:
-    name: A string attribute.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class DataplexProjectsLocationsDataTaxonomiesListRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataTaxonomiesListRequest object.
-
-  Fields:
-    filter: Optional. Filter request.
-    orderBy: Optional. Order by fields for the result.
-    pageSize: Optional. Maximum number of DataTaxonomies to return. The
-      service may return fewer than this value. If unspecified, at most 10
-      DataTaxonomies will be returned. The maximum value is 1000; values above
-      1000 will be coerced to 1000.
-    pageToken: Optional. Page token received from a previous
-      ListDataTaxonomies call. Provide this to retrieve the subsequent page.
-      When paginating, all other parameters provided to ListDataTaxonomies
-      must match the call that provided the page token.
-    parent: Required. The resource name of the DataTaxonomy location, of the
-      form: projects/{project_number}/locations/{location_id} where
-      location_id refers to a Google Cloud region.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class DataplexProjectsLocationsDataTaxonomiesPatchRequest(_messages.Message):
-  r"""A DataplexProjectsLocationsDataTaxonomiesPatchRequest object.
-
-  Fields:
-    googleCloudDataplexV1DataTaxonomy: A GoogleCloudDataplexV1DataTaxonomy
-      resource to be passed as the request body.
-    name: Output only. The relative resource name of the DataTaxonomy, of the
-      form: projects/{project_number}/locations/{location_id}/dataTaxonomies/{
-      data_taxonomy_id}.
-    updateMask: Required. Mask of fields to update.
-    validateOnly: Optional. Only validate the request, but do not perform
-      mutations. The default is false.
-  """
-
-  googleCloudDataplexV1DataTaxonomy = _messages.MessageField('GoogleCloudDataplexV1DataTaxonomy', 1)
-  name = _messages.StringField(2, required=True)
-  updateMask = _messages.StringField(3)
-  validateOnly = _messages.BooleanField(4)
 
 
 class DataplexProjectsLocationsDataTaxonomiesSetIamPolicyRequest(_messages.Message):
@@ -4034,7 +3744,7 @@ class DataplexProjectsLocationsMetadataFeedsDeleteRequest(_messages.Message):
 
   Fields:
     name: Required. The resource name of the metadata feed, in the format proj
-      ects/{project_id_or_number}/locations/{location_id}/MetadataFeeds/{metad
+      ects/{project_id_or_number}/locations/{location_id}/metadataFeeds/{metad
       ata_feed_id}.
   """
 
@@ -4046,7 +3756,7 @@ class DataplexProjectsLocationsMetadataFeedsGetRequest(_messages.Message):
 
   Fields:
     name: Required. The resource name of the metadata feed, in the format proj
-      ects/{project_id_or_number}/locations/{location_id}/MetadataFeeds/{metad
+      ects/{project_id_or_number}/locations/{location_id}/metadataFeeds/{metad
       ata_feed_id}.
   """
 
@@ -5528,23 +5238,6 @@ class GoogleCloudDataplexV1CreateGlossaryTermRequest(_messages.Message):
   termId = _messages.StringField(3)
 
 
-class GoogleCloudDataplexV1DataAccessSpec(_messages.Message):
-  r"""DataAccessSpec holds the access control configuration to be enforced on
-  data stored within resources (eg: rows, columns in BigQuery Tables). When
-  associated with data, the data is only accessible to principals explicitly
-  granted access through the DataAccessSpec. Principals with access to the
-  containing resource are not implicitly granted access.
-
-  Fields:
-    readers: Optional. The format of strings follows the pattern followed by
-      IAM in the bindings. user:{email}, serviceAccount:{email} group:{email}.
-      The set of principals to be granted reader role on data stored within
-      resources.
-  """
-
-  readers = _messages.StringField(1, repeated=True)
-
-
 class GoogleCloudDataplexV1DataAsset(_messages.Message):
   r"""Represents a data asset resource that can be packaged and shared via a
   data product.
@@ -5661,183 +5354,36 @@ class GoogleCloudDataplexV1DataAsset(_messages.Message):
 class GoogleCloudDataplexV1DataAssetAccessGroupConfig(_messages.Message):
   r"""Configuration for access group inherited from the parent data product.
 
+  Enums:
+    StateValueValuesEnum: Output only. The state of the iam role application.
+
   Fields:
     iamRoles: Optional. IAM roles granted on the resource to this access
       group. Role name follows
       https://cloud.google.com/iam/docs/reference/rest/v1/roles.Example: [
       "roles/bigquery.dataViewer" ]
+    state: Output only. The state of the iam role application.
   """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the iam role application.
+
+    Values:
+      STATE_UNSPECIFIED: State is unspecified.
+      APPLYING: The iam role is being applied.
+      APPLIED: The iam role has been successfully applied.
+      FAILED: The iam role application failed due to transient error.
+      UNSUPPORTED: The iam role application is not supported for the asset
+        resource type.
+    """
+    STATE_UNSPECIFIED = 0
+    APPLYING = 1
+    APPLIED = 2
+    FAILED = 3
+    UNSUPPORTED = 4
 
   iamRoles = _messages.StringField(1, repeated=True)
-
-
-class GoogleCloudDataplexV1DataAttribute(_messages.Message):
-  r"""Denotes one dataAttribute in a dataTaxonomy, for example, PII.
-  DataAttribute resources can be defined in a hierarchy. A single
-  dataAttribute resource can contain specs of multiple types PII -
-  ResourceAccessSpec : - readers :foo@bar.com - DataAccessSpec : - readers
-  :bar@foo.com
-
-  Messages:
-    LabelsValue: Optional. User-defined labels for the DataAttribute.
-
-  Fields:
-    attributeCount: Output only. The number of child attributes present for
-      this attribute.
-    createTime: Output only. The time when the DataAttribute was created.
-    dataAccessSpec: Optional. Specified when applied to data stored on the
-      resource (eg: rows, columns in BigQuery Tables).
-    description: Optional. Description of the DataAttribute.
-    displayName: Optional. User friendly display name.
-    etag: This checksum is computed by the server based on the value of other
-      fields, and may be sent on update and delete requests to ensure the
-      client has an up-to-date value before proceeding.
-    labels: Optional. User-defined labels for the DataAttribute.
-    name: Output only. The relative resource name of the dataAttribute, of the
-      form: projects/{project_number}/locations/{location_id}/dataTaxonomies/{
-      dataTaxonomy}/attributes/{data_attribute_id}.
-    parentId: Optional. The ID of the parent DataAttribute resource, should
-      belong to the same data taxonomy. Circular dependency in parent chain is
-      not valid. Maximum depth of the hierarchy allowed is 4. a -> b -> c -> d
-      -> e, depth = 4
-    resourceAccessSpec: Optional. Specified when applied to a resource (eg:
-      Cloud Storage bucket, BigQuery dataset, BigQuery table).
-    uid: Output only. System generated globally unique ID for the
-      DataAttribute. This ID will be different if the DataAttribute is deleted
-      and re-created with the same name.
-    updateTime: Output only. The time when the DataAttribute was last updated.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. User-defined labels for the DataAttribute.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  attributeCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  createTime = _messages.StringField(2)
-  dataAccessSpec = _messages.MessageField('GoogleCloudDataplexV1DataAccessSpec', 3)
-  description = _messages.StringField(4)
-  displayName = _messages.StringField(5)
-  etag = _messages.StringField(6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  parentId = _messages.StringField(9)
-  resourceAccessSpec = _messages.MessageField('GoogleCloudDataplexV1ResourceAccessSpec', 10)
-  uid = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
-
-
-class GoogleCloudDataplexV1DataAttributeBinding(_messages.Message):
-  r"""DataAttributeBinding represents binding of attributes to resources. Eg:
-  Bind 'CustomerInfo' entity with 'PII' attribute.
-
-  Messages:
-    LabelsValue: Optional. User-defined labels for the DataAttributeBinding.
-
-  Fields:
-    attributes: Optional. List of attributes to be associated with the
-      resource, provided in the form: projects/{project}/locations/{location}/
-      dataTaxonomies/{dataTaxonomy}/attributes/{data_attribute_id}
-    createTime: Output only. The time when the DataAttributeBinding was
-      created.
-    description: Optional. Description of the DataAttributeBinding.
-    displayName: Optional. User friendly display name.
-    etag: This checksum is computed by the server based on the value of other
-      fields, and may be sent on update and delete requests to ensure the
-      client has an up-to-date value before proceeding. Etags must be used
-      when calling the DeleteDataAttributeBinding and the
-      UpdateDataAttributeBinding method.
-    labels: Optional. User-defined labels for the DataAttributeBinding.
-    name: Output only. The relative resource name of the Data Attribute
-      Binding, of the form: projects/{project_number}/locations/{location}/dat
-      aAttributeBindings/{data_attribute_binding_id}
-    paths: Optional. The list of paths for items within the associated
-      resource (eg. columns and partitions within a table) along with
-      attribute bindings.
-    resource: Optional. Immutable. The resource name of the resource that is
-      associated to attributes. Presently, only entity resource is supported
-      in the form: projects/{project}/locations/{location}/lakes/{lake}/zones/
-      {zone}/entities/{entity_id} Must belong in the same project and region
-      as the attribute binding, and there can only exist one active binding
-      for a resource.
-    uid: Output only. System generated globally unique ID for the
-      DataAttributeBinding. This ID will be different if the
-      DataAttributeBinding is deleted and re-created with the same name.
-    updateTime: Output only. The time when the DataAttributeBinding was last
-      updated.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. User-defined labels for the DataAttributeBinding.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  attributes = _messages.StringField(1, repeated=True)
-  createTime = _messages.StringField(2)
-  description = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  etag = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  paths = _messages.MessageField('GoogleCloudDataplexV1DataAttributeBindingPath', 8, repeated=True)
-  resource = _messages.StringField(9)
-  uid = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
-
-
-class GoogleCloudDataplexV1DataAttributeBindingPath(_messages.Message):
-  r"""Represents a subresource of the given resource, and associated bindings
-  with it. Currently supported subresources are column and partition schema
-  fields within a table.
-
-  Fields:
-    attributes: Optional. List of attributes to be associated with the path of
-      the resource, provided in the form: projects/{project}/locations/{locati
-      on}/dataTaxonomies/{dataTaxonomy}/attributes/{data_attribute_id}
-    name: Required. The name identifier of the path. Nested columns should be
-      of the form: 'address.city'.
-  """
-
-  attributes = _messages.StringField(1, repeated=True)
-  name = _messages.StringField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
 
 
 class GoogleCloudDataplexV1DataDiscoveryResult(_messages.Message):
@@ -6512,6 +6058,9 @@ class GoogleCloudDataplexV1DataProductAccessGroup(_messages.Message):
   data product's data assets.
 
   Fields:
+    defaultIamRoleConfig: Optional. Default IAM role configuration to be
+      applied on the data assets associated with this data product, for this
+      access group.
     description: Optional. Description of the access group.
     displayName: Required. User friendly display name of the access group. Eg.
       "Analyst", "Developer", etc.
@@ -6521,10 +6070,22 @@ class GoogleCloudDataplexV1DataProductAccessGroup(_messages.Message):
       group.
   """
 
-  description = _messages.StringField(1)
-  displayName = _messages.StringField(2)
-  id = _messages.StringField(3)
-  principal = _messages.MessageField('GoogleCloudDataplexV1DataProductPrincipal', 4)
+  defaultIamRoleConfig = _messages.MessageField('GoogleCloudDataplexV1DataProductAccessGroupDefaultIamRoleConfig', 1)
+  description = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  id = _messages.StringField(4)
+  principal = _messages.MessageField('GoogleCloudDataplexV1DataProductPrincipal', 5)
+
+
+class GoogleCloudDataplexV1DataProductAccessGroupDefaultIamRoleConfig(_messages.Message):
+  r"""Default IAM role configuration for an access group.
+
+  Fields:
+    role: Optional. The IAM role resource name to be applied as default.
+      Example: "roles/bigquery.dataViewer".
+  """
+
+  role = _messages.StringField(1)
 
 
 class GoogleCloudDataplexV1DataProductAccessRequest(_messages.Message):
@@ -8017,6 +7578,8 @@ class GoogleCloudDataplexV1DataScanEvent(_messages.Message):
     catalogPublishingStatus: The status of publishing the data scan as
       Dataplex Universal Catalog metadata.
     createTime: The time when the data scan job was created.
+    dataDocumentation: Data documentation result for data documentation
+      (insights) scan.
     dataProfile: Data profile result for data profile type data scan.
     dataProfileConfigs: Applied configs for data profile type data scan.
     dataQuality: Data quality result for data quality type data scan.
@@ -8095,21 +7658,60 @@ class GoogleCloudDataplexV1DataScanEvent(_messages.Message):
 
   catalogPublishingStatus = _messages.MessageField('GoogleCloudDataplexV1DataScanCatalogPublishingStatus', 1)
   createTime = _messages.StringField(2)
-  dataProfile = _messages.MessageField('GoogleCloudDataplexV1DataScanEventDataProfileResult', 3)
-  dataProfileConfigs = _messages.MessageField('GoogleCloudDataplexV1DataScanEventDataProfileAppliedConfigs', 4)
-  dataQuality = _messages.MessageField('GoogleCloudDataplexV1DataScanEventDataQualityResult', 5)
-  dataQualityConfigs = _messages.MessageField('GoogleCloudDataplexV1DataScanEventDataQualityAppliedConfigs', 6)
-  dataSource = _messages.StringField(7)
-  endTime = _messages.StringField(8)
-  jobId = _messages.StringField(9)
-  message = _messages.StringField(10)
-  postScanActionsResult = _messages.MessageField('GoogleCloudDataplexV1DataScanEventPostScanActionsResult', 11)
-  scope = _messages.EnumField('ScopeValueValuesEnum', 12)
-  specVersion = _messages.StringField(13)
-  startTime = _messages.StringField(14)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  trigger = _messages.EnumField('TriggerValueValuesEnum', 16)
-  type = _messages.EnumField('TypeValueValuesEnum', 17)
+  dataDocumentation = _messages.MessageField('GoogleCloudDataplexV1DataScanEventDataDocumentationResult', 3)
+  dataProfile = _messages.MessageField('GoogleCloudDataplexV1DataScanEventDataProfileResult', 4)
+  dataProfileConfigs = _messages.MessageField('GoogleCloudDataplexV1DataScanEventDataProfileAppliedConfigs', 5)
+  dataQuality = _messages.MessageField('GoogleCloudDataplexV1DataScanEventDataQualityResult', 6)
+  dataQualityConfigs = _messages.MessageField('GoogleCloudDataplexV1DataScanEventDataQualityAppliedConfigs', 7)
+  dataSource = _messages.StringField(8)
+  endTime = _messages.StringField(9)
+  jobId = _messages.StringField(10)
+  message = _messages.StringField(11)
+  postScanActionsResult = _messages.MessageField('GoogleCloudDataplexV1DataScanEventPostScanActionsResult', 12)
+  scope = _messages.EnumField('ScopeValueValuesEnum', 13)
+  specVersion = _messages.StringField(14)
+  startTime = _messages.StringField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  trigger = _messages.EnumField('TriggerValueValuesEnum', 17)
+  type = _messages.EnumField('TypeValueValuesEnum', 18)
+
+
+class GoogleCloudDataplexV1DataScanEventDataDocumentationResult(_messages.Message):
+  r"""Data documentation result for data scan job.
+
+  Fields:
+    billableTokenUsage: Breakdown of token consumption for the data
+      documentation scan.
+  """
+
+  billableTokenUsage = _messages.MessageField('GoogleCloudDataplexV1DataScanEventDataDocumentationResultTokenUsage', 1)
+
+
+class GoogleCloudDataplexV1DataScanEventDataDocumentationResultTokenUsage(_messages.Message):
+  r"""Captures structured token usage breakdown for LLM-powered scans.
+
+  Fields:
+    cachedContentTokenCount: Billable cached content tokens (billed at
+      discounted prompt caching SKU).
+    candidatesTokenCount: Generated candidate response tokens.
+    inputTokenCount: Billable non-cached input tokens.
+    outputTokenCount: Billable output tokens (candidates + thoughts).
+    promptTokenCount: Base prompt and system instructions tokens.
+    thoughtsTokenCount: Reasoning / Chain-of-Thought tokens.
+    toolUsePromptTokenCount: Tool use context tokens (schema, profile, query
+      history).
+    totalTokenCount: Total billable tokens (billable_input + billable_cached +
+      billable_output). Evaluates to 0 for failed or cancelled jobs.
+  """
+
+  cachedContentTokenCount = _messages.IntegerField(1)
+  candidatesTokenCount = _messages.IntegerField(2)
+  inputTokenCount = _messages.IntegerField(3)
+  outputTokenCount = _messages.IntegerField(4)
+  promptTokenCount = _messages.IntegerField(5)
+  thoughtsTokenCount = _messages.IntegerField(6)
+  toolUsePromptTokenCount = _messages.IntegerField(7)
+  totalTokenCount = _messages.IntegerField(8)
 
 
 class GoogleCloudDataplexV1DataScanEventDataProfileAppliedConfigs(_messages.Message):
@@ -8134,10 +7736,12 @@ class GoogleCloudDataplexV1DataScanEventDataProfileResult(_messages.Message):
   r"""Data profile result for data scan job.
 
   Fields:
+    dcuConsumed: Dataplex Compute Units (DCUs) used in the data scan job.
     rowCount: The count of rows processed in the data scan job.
   """
 
-  rowCount = _messages.IntegerField(1)
+  dcuConsumed = _messages.FloatField(1)
+  rowCount = _messages.IntegerField(2)
 
 
 class GoogleCloudDataplexV1DataScanEventDataQualityAppliedConfigs(_messages.Message):
@@ -8469,69 +8073,6 @@ class GoogleCloudDataplexV1DataSource(_messages.Message):
 
   entity = _messages.StringField(1)
   resource = _messages.StringField(2)
-
-
-class GoogleCloudDataplexV1DataTaxonomy(_messages.Message):
-  r"""DataTaxonomy represents a set of hierarchical DataAttributes resources,
-  grouped with a common theme Eg: 'SensitiveDataTaxonomy' can have attributes
-  to manage PII data. It is defined at project level.
-
-  Messages:
-    LabelsValue: Optional. User-defined labels for the DataTaxonomy.
-
-  Fields:
-    attributeCount: Output only. The number of attributes in the DataTaxonomy.
-    classCount: Output only. The number of classes in the DataTaxonomy.
-    createTime: Output only. The time when the DataTaxonomy was created.
-    description: Optional. Description of the DataTaxonomy.
-    displayName: Optional. User friendly display name.
-    etag: This checksum is computed by the server based on the value of other
-      fields, and may be sent on update and delete requests to ensure the
-      client has an up-to-date value before proceeding.
-    labels: Optional. User-defined labels for the DataTaxonomy.
-    name: Output only. The relative resource name of the DataTaxonomy, of the
-      form: projects/{project_number}/locations/{location_id}/dataTaxonomies/{
-      data_taxonomy_id}.
-    uid: Output only. System generated globally unique ID for the
-      dataTaxonomy. This ID will be different if the DataTaxonomy is deleted
-      and re-created with the same name.
-    updateTime: Output only. The time when the DataTaxonomy was last updated.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. User-defined labels for the DataTaxonomy.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  attributeCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  classCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  displayName = _messages.StringField(5)
-  etag = _messages.StringField(6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  uid = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
 
 
 class GoogleCloudDataplexV1DeleteEntryLinkRequest(_messages.Message):
@@ -10521,37 +10062,6 @@ class GoogleCloudDataplexV1ListDataAssetsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
-class GoogleCloudDataplexV1ListDataAttributeBindingsResponse(_messages.Message):
-  r"""List DataAttributeBindings response.
-
-  Fields:
-    dataAttributeBindings: DataAttributeBindings under the given parent
-      Location.
-    nextPageToken: Token to retrieve the next page of results, or empty if
-      there are no more results in the list.
-    unreachableLocations: Locations that could not be reached.
-  """
-
-  dataAttributeBindings = _messages.MessageField('GoogleCloudDataplexV1DataAttributeBinding', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-  unreachableLocations = _messages.StringField(3, repeated=True)
-
-
-class GoogleCloudDataplexV1ListDataAttributesResponse(_messages.Message):
-  r"""List DataAttributes response.
-
-  Fields:
-    dataAttributes: DataAttributes under the given parent DataTaxonomy.
-    nextPageToken: Token to retrieve the next page of results, or empty if
-      there are no more results in the list.
-    unreachableLocations: Locations that could not be reached.
-  """
-
-  dataAttributes = _messages.MessageField('GoogleCloudDataplexV1DataAttribute', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-  unreachableLocations = _messages.StringField(3, repeated=True)
-
-
 class GoogleCloudDataplexV1ListDataDomainBindingsResponse(_messages.Message):
   r"""List DataDomainBindings response.
 
@@ -10617,21 +10127,6 @@ class GoogleCloudDataplexV1ListDataScansResponse(_messages.Message):
   dataScans = _messages.MessageField('GoogleCloudDataplexV1DataScan', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
-
-
-class GoogleCloudDataplexV1ListDataTaxonomiesResponse(_messages.Message):
-  r"""List DataTaxonomies response.
-
-  Fields:
-    dataTaxonomies: DataTaxonomies under the given parent location.
-    nextPageToken: Token to retrieve the next page of results, or empty if
-      there are no more results in the list.
-    unreachableLocations: Locations that could not be reached.
-  """
-
-  dataTaxonomies = _messages.MessageField('GoogleCloudDataplexV1DataTaxonomy', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-  unreachableLocations = _messages.StringField(3, repeated=True)
 
 
 class GoogleCloudDataplexV1ListEncryptionConfigsResponse(_messages.Message):
@@ -11665,26 +11160,6 @@ class GoogleCloudDataplexV1RequestDataProductAccessResponse(_messages.Message):
   """
 
   changeRequestName = _messages.StringField(1)
-
-
-class GoogleCloudDataplexV1ResourceAccessSpec(_messages.Message):
-  r"""ResourceAccessSpec holds the access control configuration to be enforced
-  on the resources, for example, Cloud Storage bucket, BigQuery dataset,
-  BigQuery table.
-
-  Fields:
-    owners: Optional. The set of principals to be granted owner role on the
-      resource.
-    readers: Optional. The format of strings follows the pattern followed by
-      IAM in the bindings. user:{email}, serviceAccount:{email} group:{email}.
-      The set of principals to be granted reader role on the resource.
-    writers: Optional. The set of principals to be granted writer role on the
-      resource.
-  """
-
-  owners = _messages.StringField(1, repeated=True)
-  readers = _messages.StringField(2, repeated=True)
-  writers = _messages.StringField(3, repeated=True)
 
 
 class GoogleCloudDataplexV1RunDataScanRequest(_messages.Message):

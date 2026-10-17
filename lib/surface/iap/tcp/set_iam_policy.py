@@ -20,7 +20,6 @@ from googlecloudsdk.command_lib.iap import util as iap_util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class SetIamPolicyCommand(base.Command):
   """Set the IAM policy for an IAP TCP IAM resource.
 

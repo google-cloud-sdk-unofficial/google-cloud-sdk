@@ -15,7 +15,6 @@
 
 """The calliope CLI/API is a framework for building library interfaces."""
 
-
 import argparse
 import collections
 import json
@@ -31,10 +30,12 @@ from googlecloudsdk.calliope import backend
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import command_loading
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import namespace_serializer
 from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.core import argv_utils
 from googlecloudsdk.core import config
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
@@ -44,9 +45,7 @@ from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import pkg_resources
-
 import six
-
 
 _COMMAND_SUFFIX = '.py'
 _FLAG_FILE_LINE_NAME = '---flag-file-line-'
@@ -86,7 +85,8 @@ def _AddFlagsFileFlags(inject, flags_file, parent_locations=None):
 
   if parent_locations and parent_locations.FileInStack(flags_file):
     raise parser_errors.ArgumentError(
-        '{} recursive reference ({}).'.format(flag, parent_locations))
+        '{} recursive reference ({}).'.format(flag, parent_locations)
+    )
 
   # Load the YAML flag:value dict or list of dicts. List of dicts allows
   # flags to be specified more than once.
@@ -95,12 +95,14 @@ def _AddFlagsFileFlags(inject, flags_file, parent_locations=None):
     contents = sys.stdin.read()
   elif not os.path.exists(flags_file):
     raise parser_errors.ArgumentError(
-        '{} [{}] not found.'.format(flag, flags_file))
+        '{} [{}] not found.'.format(flag, flags_file)
+    )
   else:
     contents = files.ReadFileContents(flags_file)
   if not contents:
     raise parser_errors.ArgumentError(
-        '{} [{}] is empty.'.format(flag, flags_file))
+        '{} [{}] is empty.'.format(flag, flags_file)
+    )
   data = yaml.load(contents, location_value=True)
   group = data if isinstance(data, list) else [data]
 
@@ -111,7 +113,8 @@ def _AddFlagsFileFlags(inject, flags_file, parent_locations=None):
     if not isinstance(member.value, dict):
       raise parser_errors.ArgumentError(
           '{}:{}: {} file must contain a dictionary or list of dictionaries '
-          'of flags.'.format(flags_file, member.lc.line + 1, flag))
+          'of flags.'.format(flags_file, member.lc.line + 1, flag)
+      )
 
     for arg, obj in six.iteritems(member.value):
 
@@ -177,7 +180,7 @@ def _ApplyFlagsFile(args):
     elif arg == flag:
       peek = True
     elif arg.startswith(flag_eq):
-      _AddFlagsFileFlags(new_args, arg[len(flag_eq):])
+      _AddFlagsFileFlags(new_args, arg[len(flag_eq) :])
     else:
       new_args.append(arg)
 
@@ -216,8 +219,9 @@ class RunHook(object):
     """
     if not re.match(self.__include_commands, command_path):
       return False
-    if self.__exclude_commands and re.match(self.__exclude_commands,
-                                            command_path):
+    if self.__exclude_commands and re.match(
+        self.__exclude_commands, command_path
+    ):
       return False
     self.__func(command_path=command_path)
     return True
@@ -237,7 +241,8 @@ FLAG_INTERNAL_FLAG_FILE_LINE = calliope_base.Argument(
     default=None,
     action=_SetFlagsFileLine,
     hidden=True,
-    help='Internal *--flags-file* flag, line number, and source file.')
+    help='Internal *--flags-file* flag, line number, and source file.',
+)
 
 
 class CLILoader(object):
@@ -247,10 +252,16 @@ class CLILoader(object):
   # optional.
   PATH_RE = re.compile(r'(?:([\w\.]+)\.)?([^\.]+)')
 
-  def __init__(self, name, command_root_directory,
-               allow_non_existing_modules=False, logs_dir=None,
-               version_func=None, known_error_handler=None,
-               yaml_command_translator=None):
+  def __init__(
+      self,
+      name,
+      command_root_directory,
+      allow_non_existing_modules=False,
+      logs_dir=None,
+      version_func=None,
+      known_error_handler=None,
+      yaml_command_translator=None,
+  ):
     """Initialize Calliope.
 
     Args:
@@ -262,8 +273,8 @@ class CLILoader(object):
         exist, False to raise an exception if a module does not exist.
       logs_dir: str, The path to the root directory to store logs in, or None
         for no log files.
-      version_func: func, A function to call for a top-level -v and
-        --version flag. If None, no flags will be available.
+      version_func: func, A function to call for a top-level -v and --version
+        flag. If None, no flags will be available.
       known_error_handler: f(x)->None, A function to call when an known error is
         handled. It takes a single argument that is the exception.
       yaml_command_translator: YamlCommandTranslator, An instance of a
@@ -276,7 +287,8 @@ class CLILoader(object):
     self.__command_root_directory = command_root_directory
     if not self.__command_root_directory:
       raise command_loading.LayoutException(
-          'You must specify a command root directory.')
+          'You must specify a command root directory.'
+      )
 
     self.__allow_non_existing_modules = allow_non_existing_modules
 
@@ -308,15 +320,17 @@ class CLILoader(object):
     Args:
       release_track: base.ReleaseTrack, The release track you are adding.
       path: str, The full path the directory containing the root of this group.
-      component: str, The name of the component this release track is in, if
-        you want calliope to auto install it for users.
+      component: str, The name of the component this release track is in, if you
+        want calliope to auto install it for users.
 
     Raises:
       ValueError: If an invalid track is registered.
     """
     if not release_track.prefix:
-      raise ValueError('You may only register alternate release tracks that '
-                       'have a different prefix.')
+      raise ValueError(
+          'You may only register alternate release tracks that '
+          'have a different prefix.'
+      )
     self.__release_tracks[release_track] = (path, component)
 
   def AddModule(self, name, path, component=None):
@@ -349,8 +363,9 @@ class CLILoader(object):
     """
     return self.__modules_by_parent
 
-  def RegisterPreRunHook(self, func,
-                         include_commands=None, exclude_commands=None):
+  def RegisterPreRunHook(
+      self, func, include_commands=None, exclude_commands=None
+  ):
     """Register a function to be run before command execution.
 
     Args:
@@ -363,8 +378,9 @@ class CLILoader(object):
     hook = RunHook(func, include_commands, exclude_commands)
     self.__pre_run_hooks.append(hook)
 
-  def RegisterPostRunHook(self, func,
-                          include_commands=None, exclude_commands=None):
+  def RegisterPostRunHook(
+      self, func, include_commands=None, exclude_commands=None
+  ):
     """Register a function to be run after command execution.
 
     Args:
@@ -387,9 +403,11 @@ class CLILoader(object):
       [str], The component names of the components that should be installed.
     """
     path_string = '.'.join(command_path)
-    return [component
-            for path, component in six.iteritems(self.__missing_components)
-            if path_string == path or path_string.startswith(path + '.')]
+    return [
+        component
+        for path, component in six.iteritems(self.__missing_components)
+        if path_string == path or path_string.startswith(path + '.')
+    ]
 
   def ReplicateCommandPathForAllOtherTracks(self, command_path):
     """Finds other release tracks this command could be in.
@@ -453,27 +471,39 @@ class CLILoader(object):
       root, cmd_or_grp_name = match.group(1, 2)
       impl_path = self.__ValidateCommandOrGroupInfo(
           module_dir_path,
-          allow_non_existing_modules=self.__allow_non_existing_modules)
+          allow_non_existing_modules=self.__allow_non_existing_modules,
+      )
       # Create a mapping under the parent for each release track that exists.
       for track in [calliope_base.ReleaseTrack.GA, *self.__release_tracks]:
         if impl_path:
           parent_group_name = '.'.join(
-              [self.__name] + ([track.prefix] if track.prefix else []) +
-              ([root.replace('_', '-')] if root else []))
+              [self.__name]
+              + ([track.prefix] if track.prefix else [])
+              + ([root.replace('_', '-')] if root else [])
+          )
           self.__modules_by_parent[parent_group_name].append(
-              (cmd_or_grp_name, is_command, impl_path))
+              (cmd_or_grp_name, is_command, impl_path)
+          )
         elif component:
           group_name = '.'.join(
-              [self.__name] + ([track.prefix] if track.prefix else []) +
-              [module_dot_path.replace('_', '-')])
+              [self.__name]
+              + ([track.prefix] if track.prefix else [])
+              + [module_dot_path.replace('_', '-')]
+          )
           self.__missing_components[group_name] = component
 
     # The root group of the CLI.
     impl_path = self.__ValidateCommandOrGroupInfo(
-        self.__command_root_directory, allow_non_existing_modules=False)
+        self.__command_root_directory, allow_non_existing_modules=False
+    )
     top_group = backend.CommandGroup(
-        [impl_path], [self.__name], calliope_base.ReleaseTrack.GA,
-        uuid.uuid4().hex, self, None)
+        [impl_path],
+        [self.__name],
+        calliope_base.ReleaseTrack.GA,
+        uuid.uuid4().hex,
+        self,
+        None,
+    )
     self.__AddBuiltinGlobalFlags(top_group)
 
     # Sub groups for each alternate release track.
@@ -481,7 +511,8 @@ class CLILoader(object):
     for track, (module_dir, component) in six.iteritems(self.__release_tracks):
       impl_path = self.__ValidateCommandOrGroupInfo(
           module_dir,
-          allow_non_existing_modules=self.__allow_non_existing_modules)
+          allow_non_existing_modules=self.__allow_non_existing_modules,
+      )
       if impl_path:
         # Add the release track sub group into the top group.
         # pylint: disable=protected-access
@@ -489,7 +520,8 @@ class CLILoader(object):
         # Override the release track because this is specifically a top level
         # release track group.
         track_group = top_group.LoadSubElement(
-            track.prefix, allow_empty=True, release_track_override=track)
+            track.prefix, allow_empty=True, release_track_override=track
+        )
         # Copy all the root elements of the top group into the release group.
         top_group.CopyAllSubElementsTo(track_group, ignore=track_names)
       elif component:
@@ -499,7 +531,8 @@ class CLILoader(object):
     return cli
 
   def __ValidateCommandOrGroupInfo(
-      self, impl_path, allow_non_existing_modules=False):
+      self, impl_path, allow_non_existing_modules=False
+  ):
     """Generates the information necessary to be able to load a command group.
 
     The group might actually be loaded now if it is the root of the SDK, or the
@@ -524,8 +557,8 @@ class CLILoader(object):
       if allow_non_existing_modules:
         return None
       raise command_loading.LayoutException(
-          'The given module directory does not exist: {0}'.format(
-              impl_path))
+          'The given module directory does not exist: {0}'.format(impl_path)
+      )
     return impl_path
 
   def __AddBuiltinGlobalFlags(self, top_element):
@@ -545,12 +578,16 @@ class CLILoader(object):
 
     if self.__version_func is not None:
       top_element.ai.add_argument(
-          '-v', '--version',
+          '-v',
+          '--version',
           do_not_propagate=True,
           category=calliope_base.COMMONLY_USED_FLAGS,
           action=actions.FunctionExitAction(self.__version_func),
-          help='Print version information and exit. This flag is only available'
-          ' at the global level.')
+          help=(
+              'Print version information and exit. This flag is only available'
+              ' at the global level.'
+          ),
+      )
 
     top_element.ai.add_argument(
         '--configuration',
@@ -561,7 +598,8 @@ class CLILoader(object):
         For more information on how to use configurations, run:
         `gcloud topic configurations`.  You can also use the {0} environment
         variable to set the equivalent of this flag for a terminal
-        session.""".format(config.CLOUDSDK_ACTIVE_CONFIG_NAME))
+        session.""".format(config.CLOUDSDK_ACTIVE_CONFIG_NAME),
+    )
 
     top_element.ai.add_argument(
         '--verbosity',
@@ -569,7 +607,8 @@ class CLILoader(object):
         default=log.DEFAULT_VERBOSITY_STRING,
         category=calliope_base.COMMONLY_USED_FLAGS,
         help='Override the default verbosity for this command.',
-        action=actions.StoreProperty(properties.VALUES.core.verbosity))
+        action=actions.StoreProperty(properties.VALUES.core.verbosity),
+    )
 
     top_element.ai.add_argument(
         '--user-output-enabled',
@@ -584,29 +623,35 @@ class CLILoader(object):
         '--log-http',
         default=None,  # Tri-valued, None => don't override the property.
         action=actions.StoreBooleanProperty(properties.VALUES.core.log_http),
-        help='Log all HTTP server requests and responses to stderr.')
+        help='Log all HTTP server requests and responses to stderr.',
+    )
 
     top_element.ai.add_argument(
         '--authority-selector',
         default=None,
         action=actions.StoreProperty(properties.VALUES.auth.authority_selector),
         hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')
+        help='THIS ARGUMENT NEEDS HELP TEXT.',
+    )
 
     top_element.ai.add_argument(
         '--authorization-token-file',
         default=None,
         action=actions.StoreProperty(
-            properties.VALUES.auth.authorization_token_file),
+            properties.VALUES.auth.authorization_token_file
+        ),
         hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')
+        help='THIS ARGUMENT NEEDS HELP TEXT.',
+    )
 
     top_element.ai.add_argument(
         '--credential-file-override',
         action=actions.StoreProperty(
-            properties.VALUES.auth.credential_file_override),
+            properties.VALUES.auth.credential_file_override
+        ),
         hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')
+        help='THIS ARGUMENT NEEDS HELP TEXT.',
+    )
 
     # Timeout value for HTTP requests.
     top_element.ai.add_argument(
@@ -614,7 +659,8 @@ class CLILoader(object):
         default=None,
         action=actions.StoreProperty(properties.VALUES.core.http_timeout),
         hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')
+        help='THIS ARGUMENT NEEDS HELP TEXT.',
+    )
 
     # --flags-file source line number hook.
     FLAG_INTERNAL_FLAG_FILE_LINE.AddToParser(top_element.ai)
@@ -623,8 +669,8 @@ class CLILoader(object):
     """Generate a CLI object from the given data.
 
     Args:
-      top_element: The top element of the command tree
-        (that extends backend.CommandCommon).
+      top_element: The top element of the command tree (that extends
+        backend.CommandCommon).
 
     Returns:
       CLI, The generated CLI tool.
@@ -632,8 +678,9 @@ class CLILoader(object):
     # Don't bother setting up logging if we are just doing a completion.
     if '_ARGCOMPLETE' not in os.environ or '_ARGCOMPLETE_TRACE' in os.environ:
       log.AddFileLogging(self.__logs_dir)
-      verbosity_string = encoding.GetEncodedValue(os.environ,
-                                                  '_ARGCOMPLETE_TRACE')
+      verbosity_string = encoding.GetEncodedValue(
+          os.environ, '_ARGCOMPLETE_TRACE'
+      )
       if verbosity_string:
         verbosity = log.VALID_VERBOSITY_STRINGS.get(verbosity_string)
         log.SetVerbosity(verbosity)
@@ -642,8 +689,13 @@ class CLILoader(object):
     if properties.VALUES.core.disable_command_lazy_loading.GetBool():
       top_element.LoadAllSubElements(recursive=True)
 
-    cli = CLI(self.__name, top_element, self.__pre_run_hooks,
-              self.__post_run_hooks, self.__known_error_handler)
+    cli = CLI(
+        self.__name,
+        top_element,
+        self.__pre_run_hooks,
+        self.__post_run_hooks,
+        self.__known_error_handler,
+    )
     return cli
 
 
@@ -662,8 +714,9 @@ class _CompletionFinder(argcomplete.CompletionFinder):
       self._parser = ai
     return active_parsers
 
-  def _get_completions(self, comp_words, cword_prefix, cword_prequote,
-                       last_wordbreak_pos):
+  def _get_completions(
+      self, comp_words, cword_prefix, cword_prequote, last_wordbreak_pos
+  ):
     active_parsers = self._patch_argument_parser()
 
     parsed_args = parser_extensions.Namespace()
@@ -677,10 +730,12 @@ class _CompletionFinder(argcomplete.CompletionFinder):
     self.completing = False
 
     completions = self.collect_completions(
-        active_parsers, parsed_args, cword_prefix, lambda *_: None)
+        active_parsers, parsed_args, cword_prefix, lambda *_: None
+    )
     completions = self.filter_completions(completions)
     return self.quote_completions(
-        completions, cword_prequote, last_wordbreak_pos)
+        completions, cword_prequote, last_wordbreak_pos
+    )
 
   def quote_completions(self, completions, cword_prequote, last_wordbreak_pos):
     """Returns the completion (less aggressively) quoted for the shell.
@@ -722,15 +777,17 @@ class _CompletionFinder(argcomplete.CompletionFinder):
       # This workaround has the same effect as __ltrim_colon_completions in
       # bash_completion (extended to characters other than the colon).
       if last_wordbreak_pos:
-        completions = [c[last_wordbreak_pos + 1:] for c in completions]
+        completions = [c[last_wordbreak_pos + 1 :] for c in completions]
       special_chars = no_quote_special
     elif cword_prequote == '"':
       special_chars = double_quote_special
     else:
       special_chars = single_quote_special
 
-    if encoding.GetEncodedValue(os.environ,
-                                '_ARGCOMPLETE_SHELL') in no_escaping_shells:
+    if (
+        encoding.GetEncodedValue(os.environ, '_ARGCOMPLETE_SHELL')
+        in no_escaping_shells
+    ):
       # these shells escape special characters themselves.
       special_chars = ''
     elif cword_prequote == "'":
@@ -781,10 +838,7 @@ def _ArgComplete(ai, **kwargs):
 
     completer = _CompletionFinder()
     # pylint: disable=not-callable
-    completer(
-        ai,
-        always_complete_options=False,
-        **kwargs)
+    completer(ai, always_complete_options=False, **kwargs)
   finally:
     if namespace:
       argcomplete.argparse.Namespace = namespace
@@ -827,8 +881,14 @@ def _SubParsersActionCall(self, parser, namespace, values, option_string=None):
 class CLI(object):
   """A generated command line tool."""
 
-  def __init__(self, name, top_element, pre_run_hooks, post_run_hooks,
-               known_error_handler):
+  def __init__(
+      self,
+      name,
+      top_element,
+      pre_run_hooks,
+      post_run_hooks,
+      known_error_handler,
+  ):
     # pylint: disable=protected-access
     self.__name = name
     self.__parser = top_element._parser
@@ -920,12 +980,12 @@ class CLI(object):
         args.CONCEPTS.Reset()
 
       # Go verification hook
-      go_args_json = encoding.GetEncodedValue(os.environ, 'GOCLOUD_ARGS')
-      if go_args_json:
+      go_payload_json = encoding.GetEncodedValue(os.environ, 'GOCLOUD_PAYLOAD')
+      if go_payload_json:
         try:
           # pylint: disable=g-import-not-at-top
           from googlecloudsdk.core import gocloud_verifier
-          gocloud_verifier.Verify(args, go_args_json)
+          gocloud_verifier.Verify(args, go_payload_json)
         except Exception as e:  # pylint: disable=broad-except
           log.debug('Go verification failed: %s', e)
 
@@ -935,7 +995,7 @@ class CLI(object):
           calliope_command, args, command_path_string, specified_arg_names
       )
 
-    except exceptions.DryRunError as exc:
+    except core_exceptions.DryRunError as exc:
       return exc.request
     except Exception as exc:  # pylint: disable=broad-except
       self._HandleAllErrors(exc, command_path_string, specified_arg_names)
@@ -967,17 +1027,29 @@ class CLI(object):
     properties.VALUES.PushInvocationValues()
 
     command_path_string = '.'.join(calliope_command.GetPath())
-    # Specified arg names is implemented in a follow-up.
     specified_arg_names = []
 
     try:
-      # Namespace hydration is implemented in a follow-up.
-      args = parser_extensions.Namespace()
+      # pylint: disable=g-import-not-at-top
+      from googlecloudsdk.calliope import namespace_hydrator
+      hydrated_ns = namespace_hydrator.HydrateNamespace(
+          calliope_command, payload
+      )
+      specified_arg_names = hydrated_ns.GetSpecifiedArgNames()
+
       return self._RunCommand(
-          calliope_command, args, command_path_string, specified_arg_names
+          calliope_command,
+          hydrated_ns,
+          command_path_string,
+          specified_arg_names,
+          # This namespace was hydrated from the caller's payload, not parsed
+          # by Python. Dumping it would report the caller's parse back to
+          # itself, and under PARITY_DUMP_NAMESPACE it would also exit before
+          # the command ever runs.
+          serialize_namespace=False,
       )
 
-    except exceptions.DryRunError as exc:
+    except core_exceptions.DryRunError as exc:
       return exc.request
     except Exception as exc:  # pylint: disable=broad-except
       self._HandleAllErrors(exc, command_path_string, specified_arg_names)
@@ -987,9 +1059,29 @@ class CLI(object):
       named_configs.FLAG_OVERRIDE_STACK.Pop()
 
   def _RunCommand(
-      self, calliope_command, args, command_path_string, specified_arg_names
+      self,
+      calliope_command,
+      args,
+      command_path_string,
+      specified_arg_names,
+      serialize_namespace=True,
   ):
-    """Executes a resolved Calliope command and manages hooks, metrics, and error handling."""
+    """Executes a resolved Calliope command and manages hooks, metrics, and error handling.
+
+    Args:
+      calliope_command: The resolved calliope._Command to run.
+      args: The parsed argparse.Namespace.
+      command_path_string: Dotted command path, for metrics and error reporting.
+      specified_arg_names: Names of the args the user explicitly specified.
+      serialize_namespace: Whether the namespace-dump hook may fire. Only the
+        native Python parse path sets this. Callers that receive a namespace
+        hydrated elsewhere (see ExecutePayload) must pass False, because dumping
+        such a namespace would report the caller's own parse back as if Python
+        had produced it.
+
+    Returns:
+      The resources returned by the command's Run method.
+    """
     # Now that we have parsed the args, reload the settings so the flags will
     # take effect.  These will use the values from the properties.
     old_user_output_enabled = log.SetUserOutputEnabled(None)
@@ -1008,6 +1100,16 @@ class CLI(object):
       )
 
       self._ValidateAssertions(calliope_command)
+
+      # Serialize the parsed namespace before the pre-run hooks execute. Those
+      # hooks have side effects (they can spawn the ECP credential proxy), and
+      # a namespace dump is meant to observe parsing only. Assertion validation
+      # above is deliberately left ahead of this call so that a command which
+      # Python rejects post-parse still reports that failure.
+      if serialize_namespace:
+        namespace_serializer.HandleNamespaceSerialization(
+            args, calliope_command
+        )
 
       for hook in self.__pre_run_hooks:
         hook.Run(command_path_string)
@@ -1082,16 +1184,25 @@ class CLI(object):
     error_extra_info = {'error_code': getattr(exc, 'exit_code', 1)}
 
     # Returns exc.payload.status if available. Otherwise, None.
-    http_status_code = getattr(getattr(exc, 'payload', None),
-                               'status_code', None)
+    http_status_code = getattr(
+        getattr(exc, 'payload', None), 'status_code', None
+    )
     if http_status_code is not None:
       error_extra_info['http_status_code'] = http_status_code
 
     metrics.Commands(
-        command_path_string, config.CLOUD_SDK_VERSION, specified_arg_names,
-        error=exc.__class__, error_extra_info=error_extra_info)
-    metrics.Error(command_path_string, exc.__class__, specified_arg_names,
-                  error_extra_info=error_extra_info)
+        command_path_string,
+        config.CLOUD_SDK_VERSION,
+        specified_arg_names,
+        error=exc.__class__,
+        error_extra_info=error_extra_info,
+    )
+    metrics.Error(
+        command_path_string,
+        exc.__class__,
+        specified_arg_names,
+        error_extra_info=error_extra_info,
+    )
 
     exceptions.HandleError(exc, command_path_string, self.__known_error_handler)
 

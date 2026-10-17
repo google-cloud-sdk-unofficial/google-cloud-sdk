@@ -14,222 +14,123 @@
 
       To return federated principal bindings (workforce or workload identities), set `--filter` to
       `principal:federatedPrincipal`.
-    GA:
-      examples: |
-        To list cloud access bindings, run:
+    examples: |
+      To list cloud access bindings, run the following command:
 
-          $ {command}
+        $ {command}
 
-        This command prints a list of Google Cloud user access bindings, `gcpUserAccessBindings`,
-        in YAML format. By default, the binding is printed in the following format:
+      This command prints a list of Google Cloud user access bindings, `gcpUserAccessBindings`,
+      in YAML format. By default, the binding is printed in the following format:
 
-          ---
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunAccessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          groupKey: a3dad
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
-          sessionSettings:
-            sessionLength: 57600s
-            sessionLengthEnabled: true
-            sessionReauthMethod: LOGIN
+        ---
+        accessLevels:
+        - accessPolicies/9522/accessLevels/device_trusted
+        dryRunAccessLevels:
+        - accessPolicies/9522/accessLevels/specific_location
+        groupKey: a3dad
+        name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+        sessionSettings:
+          sessionLength: 57600s
+          sessionLengthEnabled: true
+          sessionReauthMethod: LOGIN
 
-        Or
+      Or
 
-          ---
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunAccessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          groupKey: a3dad
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
-          scopedAccessSettings:
-          - activeSettings:
-              accessLevels:
-              - accessPolicies/9522/accessLevels/device_trusted
-            dryRunSettings:
-              accessLevels:
-              - accessPolicies/9522/accessLevels/specific_location
-            scope:
-              clientScope:
-                restrictedClientApplication:
-                  clientId: 123.apps.googleusercontent.com
-          - activeSettings:
-              accessLevels:
-              - accessPolicies/9522/accessLevels/device_trusted
-            dryRunSettings:
-              accessLevels:
-              - accessPolicies/9522/accessLevels/specific_location
-            scope:
-              clientScope:
-                restrictedClientApplication:
-                  name: Cloud Console
-          - activeSettings:
-              sessionSettings:
-                sessionLength: 57600s
-                sessionLengthEnabled: true
-                sessionReauthMethod: LOGIN
-            scope:
-              clientScope:
-                restrictedClientApplication:
-                  clientId: 123.apps.googleusercontent.com
-          sessionSettings:
-            sessionLength: 57600s
-            sessionLengthEnabled: true
-            sessionReauthMethod: LOGIN
+        ---
+        accessLevels:
+        - accessPolicies/9522/accessLevels/device_trusted
+        dryRunAccessLevels:
+        - accessPolicies/9522/accessLevels/specific_location
+        groupKey: a3dad
+        name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+        scopedAccessSettings:
+        - activeSettings:
+            accessLevels:
+            - accessPolicies/9522/accessLevels/device_trusted
+          dryRunSettings:
+            accessLevels:
+            - accessPolicies/9522/accessLevels/specific_location
+          scope:
+            clientScope:
+              restrictedClientApplication:
+                clientId: 123.apps.googleusercontent.com
+        - activeSettings:
+            accessLevels:
+            - accessPolicies/9522/accessLevels/device_trusted
+          dryRunSettings:
+            accessLevels:
+            - accessPolicies/9522/accessLevels/specific_location
+          scope:
+            clientScope:
+              restrictedClientApplication:
+                name: Cloud Console
+        - activeSettings:
+            sessionSettings:
+              sessionLength: 57600s
+              sessionLengthEnabled: true
+              sessionReauthMethod: LOGIN
+          scope:
+            clientScope:
+              restrictedClientApplication:
+                clientId: 123.apps.googleusercontent.com
+        sessionSettings:
+          sessionLength: 57600s
+          sessionLengthEnabled: true
+          sessionReauthMethod: LOGIN
 
-        If filter is specified as
-        `principal:federatedPrincipal`,
-        the output is printed in the following format:
+      If filter is specified as
+      `principal:serviceAccount OR principal:serviceAccountProjectNumber`,
+      the output is printed in the following format:
 
-          ---
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunAccessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          principal:
-            federatedPrincipal: principal://iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool-id/subject/subject-id
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+        ---
+        accessLevels:
+        - accessPolicies/9522/accessLevels/device_trusted
+        dryRunAccessLevels:
+        - accessPolicies/9522/accessLevels/specific_location
+        principal:
+        serviceAccount: service_account@project.iam.gserviceaccount.com
+        name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
 
-        If filter is specified as
-        `principal:serviceAccount OR principal:serviceAccountProjectNumber`,
-        the output is printed in the following format:
+      Or
 
-          ---
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunAccessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          principal:
-          serviceAccount: service_account@project.iam.gserviceaccount.com
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+        ---
+        accessLevels:
+        - accessPolicies/9522/accessLevels/device_trusted
+        dryRunAccessLevels:
+        - accessPolicies/9522/accessLevels/specific_location
+        principal:
+        serviceAccountProjectNumber: 123456789
+        name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
 
-        Or
+      If filter is specified as
+      `principal:federatedPrincipal`,
+      the output is printed in the following format for a workload identity:
 
-          ---
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunAccessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          principal:
-          serviceAccountProjectNumber: 123456789
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+        ---
+        accessLevels:
+        - accessPolicies/9522/accessLevels/device_trusted
+        dryRunAccessLevels:
+        - accessPolicies/9522/accessLevels/specific_location
+        principal:
+          federatedPrincipal: principal://iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool-id/subject/subject-id
+        name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
 
-    ALPHA:
-      examples: |
-        To list cloud access bindings, run:
+      Or for all workforce pools in an organization with project-scoped session settings:
 
-          $ {command}
-
-        This command prints a list of Google Cloud user access bindings, `gcpUserAccessBindings`,
-        in YAML format. By default, the binding is printed in the following format:
-
-          ---
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunAccessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          groupKey: a3dad
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
-
-        Or
-
-          ---
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunAccessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          groupKey: a3dad
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
-          scopedAccessSettings:
-          - activeSettings:
-              accessLevels:
-              - accessPolicies/9522/accessLevels/device_trusted
-            dryRunSettings:
-              accessLevels:
-              - accessPolicies/9522/accessLevels/specific_location
-            scope:
-              clientScope:
-                restrictedClientApplication:
-                  clientId: 123.apps.googleusercontent.com
-          - activeSettings:
-              accessLevels:
-              - accessPolicies/9522/accessLevels/device_trusted
-            dryRunSettings:
-              accessLevels:
-              - accessPolicies/9522/accessLevels/specific_location
-            scope:
-              clientScope:
-                restrictedClientApplication:
-                  name: Cloud Console
-          - activeSettings:
-              sessionSettings:
-                sessionLength: 57600s
-                sessionLengthEnabled: true
-                sessionReauthMethod: LOGIN
-            scope:
-              clientScope:
-                restrictedClientApplication:
-                  clientId: 123.apps.googleusercontent.com
-          sessionSettings:
-            sessionLength: 57600s
-            sessionLengthEnabled: true
-            sessionReauthMethod: LOGIN
-
-        If filter is specified as
-        `principal:serviceAccount OR principal:serviceAccountProjectNumber`,
-        the output is printed in the following format:
-
-          ---
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunAccessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          principal:
-          serviceAccount: service_account@project.iam.gserviceaccount.com
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
-
-        Or
-
-          ---
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunAccessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          principal:
-          serviceAccountProjectNumber: 123456789
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
-
-        If filter is specified as
-        `principal:federatedPrincipal`,
-        the output is printed in the following format for a workload identity:
-
-          ---
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunAccessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          principal:
-            federatedPrincipal: principal://iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool-id/subject/subject-id
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
-
-        Or for all workforce pools in an organization with project-scoped session settings:
-
-          ---
-          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
-          principal:
-            federatedPrincipal: principalSet://cloudresourcemanager.googleapis.com/organizations/256/type/WorkforcePool
-          scopedAccessSettings:
-          - activeSettings:
-              sessionSettings:
-                sessionLength: 7776000s
-                sessionLengthEnabled: true
-                sessionReauthMethod: LOGIN
-            scope:
-              clientScope:
-                restrictedProject:
-                  name: projects/1234567890
+        ---
+        name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+        principal:
+          federatedPrincipal: principalSet://cloudresourcemanager.googleapis.com/organizations/256/type/WorkforcePool
+        scopedAccessSettings:
+        - activeSettings:
+            sessionSettings:
+              sessionLength: 7776000s
+              sessionLengthEnabled: true
+              sessionReauthMethod: LOGIN
+          scope:
+            clientScope:
+              restrictedProject:
+                name: projects/1234567890
 
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings

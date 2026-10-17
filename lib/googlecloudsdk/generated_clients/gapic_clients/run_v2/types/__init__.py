@@ -147,6 +147,7 @@ from .vendor_settings import (
     WorkloadIdentityConfig,
     EncryptionKeyRevocationAction,
     ExecutionEnvironment,
+    FunctionalType,
     IdentityType,
     IngressTraffic,
 )
@@ -261,6 +262,7 @@ __all__ = (
     'WorkloadIdentityConfig',
     'EncryptionKeyRevocationAction',
     'ExecutionEnvironment',
+    'FunctionalType',
     'IdentityType',
     'IngressTraffic',
     'CreateWorkerPoolRequest',

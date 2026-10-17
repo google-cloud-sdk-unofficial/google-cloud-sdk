@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-release_tracks: [ALPHA]
-auto_generated: true
+release_tracks: [ALPHA, BETA]
 hidden: false
 
 help_text:
@@ -30,6 +29,8 @@ request:
   collection: networksecurity.projects.locations.rateLimitPolicies
   ALPHA:
     api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
 
 arguments:
   resource:
@@ -47,4 +48,6 @@ import:
     collection: networksecurity.projects.locations.rateLimitPolicies
     ALPHA:
       api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     method: create

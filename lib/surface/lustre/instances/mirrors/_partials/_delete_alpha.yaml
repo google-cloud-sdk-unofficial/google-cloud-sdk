@@ -30,7 +30,7 @@
     params:
     - help_text: |-
         Name of the mirror to delete, in the format:
-        projects/{project}/locations/{location}/instances/{instance}/mirrors/{mirror}
+        `projects/{project}/locations/{location}/instances/{instance}/mirrors/{mirror}`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_instances_mirrors

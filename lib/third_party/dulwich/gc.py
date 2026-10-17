@@ -1,33 +1,105 @@
+# gc.py -- Git garbage collection implementation
+# Copyright (C) 2025 Jelmer Vernooij <jelmer@jelmer.uk>
+#
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+# Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
+# General Public License as published by the Free Software Foundation; version 2.0
+# or (at your option) any later version. You can redistribute it and/or
+# modify it under the terms of either of these two licenses.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# You should have received a copy of the licenses; if not, see
+# <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
+# and <http://www.apache.org/licenses/LICENSE-2.0> for a copy of the Apache
+# License, Version 2.0.
+#
+
 """Git garbage collection implementation."""
 
-import collections
+__all__ = [
+    "DEFAULT_GC_AUTO",
+    "DEFAULT_GC_AUTO_PACK_LIMIT",
+    "DEFAULT_GC_PRUNE_EXPIRE",
+    "GCStats",
+    "find_reachable_objects",
+    "find_unreachable_objects",
+    "garbage_collect",
+    "get_prune_grace_period",
+    "maybe_auto_gc",
+    "prune_unreachable_objects",
+    "should_run_gc",
+]
+
+import logging
 import os
 import time
+from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from dulwich.object_store import (
     BaseObjectStore,
     DiskObjectStore,
-    PackBasedObjectStore,
 )
 from dulwich.objects import Commit, ObjectID, Tag, Tree
 from dulwich.refs import RefsContainer
 
 if TYPE_CHECKING:
     from .config import Config
-    from .repo import BaseRepo
+    from .repo import BaseRepo, Repo
 
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_GC_AUTO = 6700
 DEFAULT_GC_AUTO_PACK_LIMIT = 50
+DEFAULT_GC_PRUNE_EXPIRE = 1209600  # 2 weeks in seconds
+
+
+def get_prune_grace_period(config: "Config") -> int:
+    """Read gc.pruneExpire from config and return grace period in seconds.
+
+    If gc.pruneExpire is not set, returns the default of 2 weeks.
+
+    Args:
+        config: Repository configuration
+
+    Returns:
+        Grace period in seconds
+
+    Raises:
+        ValueError: If the configured value cannot be parsed
+    """
+    from .approxidate import parse_approxidate
+
+    try:
+        raw_value = config.get(b"gc", b"pruneExpire")
+        if isinstance(raw_value, bytes):
+            value = raw_value.decode("utf-8")
+        else:
+            value = raw_value
+    except KeyError:
+        return DEFAULT_GC_PRUNE_EXPIRE
+
+    value = value.strip()
+    if value == "now":
+        return 0
+
+    timestamp = parse_approxidate(value)
+    return max(0, int(time.time() - timestamp))
 
 
 @dataclass
 class GCStats:
     """Statistics from garbage collection."""
 
-    pruned_objects: set[bytes] = field(default_factory=set)
+    pruned_objects: set[ObjectID] = field(default_factory=set)
     bytes_freed: int = 0
     packs_before: int = 0
     packs_after: int = 0
@@ -39,8 +111,8 @@ def find_reachable_objects(
     object_store: BaseObjectStore,
     refs_container: RefsContainer,
     include_reflogs: bool = True,
-    progress=None,
-) -> set[bytes]:
+    progress: Callable[[str], None] | None = None,
+) -> set[ObjectID]:
     """Find all reachable objects in the repository.
 
     Args:
@@ -52,8 +124,8 @@ def find_reachable_objects(
     Returns:
         Set of reachable object SHAs
     """
-    reachable = set()
-    pending: collections.deque[ObjectID] = collections.deque()
+    reachable: set[ObjectID] = set()
+    pending: deque[ObjectID] = deque()
 
     # Start with all refs
     for ref in refs_container.allkeys():
@@ -96,6 +168,7 @@ def find_reachable_objects(
         elif isinstance(obj, Tree):
             # Tree entries
             for entry in obj.items():
+                assert entry.sha is not None
                 if entry.sha not in reachable:
                     pending.append(entry.sha)
                     reachable.add(entry.sha)
@@ -112,8 +185,8 @@ def find_unreachable_objects(
     object_store: BaseObjectStore,
     refs_container: RefsContainer,
     include_reflogs: bool = True,
-    progress=None,
-) -> set[bytes]:
+    progress: Callable[[str], None] | None = None,
+) -> set[ObjectID]:
     """Find all unreachable objects in the repository.
 
     Args:
@@ -129,7 +202,7 @@ def find_unreachable_objects(
         object_store, refs_container, include_reflogs, progress
     )
 
-    unreachable = set()
+    unreachable: set[ObjectID] = set()
     for sha in object_store:
         if sha not in reachable:
             unreachable.add(sha)
@@ -138,12 +211,12 @@ def find_unreachable_objects(
 
 
 def prune_unreachable_objects(
-    object_store: PackBasedObjectStore,
+    object_store: DiskObjectStore,
     refs_container: RefsContainer,
-    grace_period: Optional[int] = None,
+    grace_period: int | None = None,
     dry_run: bool = False,
-    progress=None,
-) -> tuple[set[bytes], int]:
+    progress: Callable[[str], None] | None = None,
+) -> tuple[set[ObjectID], int]:
     """Remove unreachable objects from the repository.
 
     Args:
@@ -160,7 +233,7 @@ def prune_unreachable_objects(
         object_store, refs_container, progress=progress
     )
 
-    pruned = set()
+    pruned: set[ObjectID] = set()
     bytes_freed = 0
 
     for sha in unreachable:
@@ -206,13 +279,13 @@ def prune_unreachable_objects(
 
 
 def garbage_collect(
-    repo,
+    repo: "Repo",
     auto: bool = False,
     aggressive: bool = False,
     prune: bool = True,
-    grace_period: Optional[int] = 1209600,  # 2 weeks default
+    grace_period: int | None = 1209600,  # 2 weeks default
     dry_run: bool = False,
-    progress=None,
+    progress: Callable[[str], None] | None = None,
 ) -> GCStats:
     """Run garbage collection on a repository.
 
@@ -293,10 +366,10 @@ def garbage_collect(
     if not dry_run:
         if prune and unreachable_to_prune:
             # Repack excluding unreachable objects
-            object_store.repack(exclude=unreachable_to_prune)
+            object_store.repack(exclude=unreachable_to_prune, progress=progress)
         else:
             # Normal repack
-            object_store.repack()
+            object_store.repack(progress=progress)
 
     # Prune orphaned temporary files
     if progress:
@@ -311,7 +384,7 @@ def garbage_collect(
     return stats
 
 
-def should_run_gc(repo: "BaseRepo", config: Optional["Config"] = None) -> bool:
+def should_run_gc(repo: "BaseRepo", config: "Config | None" = None) -> bool:
     """Check if automatic garbage collection should run.
 
     Args:
@@ -368,12 +441,17 @@ def should_run_gc(repo: "BaseRepo", config: Optional["Config"] = None) -> bool:
     return False
 
 
-def maybe_auto_gc(repo: "BaseRepo", config: Optional["Config"] = None) -> bool:
+def maybe_auto_gc(
+    repo: "Repo",
+    config: "Config | None" = None,
+    progress: Callable[[str], None] | None = None,
+) -> bool:
     """Run automatic garbage collection if needed.
 
     Args:
         repo: Repository to potentially GC
         config: Configuration to use (defaults to repo config)
+        progress: Optional progress reporting callback
 
     Returns:
         True if GC was run, False otherwise
@@ -384,7 +462,7 @@ def maybe_auto_gc(repo: "BaseRepo", config: Optional["Config"] = None) -> bool:
     # Check for gc.log file - only for disk-based repos
     if not hasattr(repo, "controldir"):
         # For non-disk repos, just run GC without gc.log handling
-        garbage_collect(repo, auto=True)
+        garbage_collect(repo, auto=True, progress=progress)
         return True
 
     gc_log_path = os.path.join(repo.controldir(), "gc.log")
@@ -410,7 +488,9 @@ def maybe_auto_gc(repo: "BaseRepo", config: Optional["Config"] = None) -> bool:
         if time.time() - stat_info.st_mtime < expiry_seconds:
             # gc.log exists and is not expired - skip GC
             with open(gc_log_path, "rb") as f:
-                print(f.read().decode("utf-8", errors="replace"))
+                logger.info(
+                    "gc.log content: %s", f.read().decode("utf-8", errors="replace")
+                )
             return False
 
     # TODO: Support gc.autoDetach to run in background
@@ -418,7 +498,7 @@ def maybe_auto_gc(repo: "BaseRepo", config: Optional["Config"] = None) -> bool:
 
     try:
         # Run GC with auto=True flag
-        garbage_collect(repo, auto=True)
+        garbage_collect(repo, auto=True, progress=progress)
 
         # Remove gc.log on successful completion
         if os.path.exists(gc_log_path):

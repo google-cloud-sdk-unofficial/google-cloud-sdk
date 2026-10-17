@@ -273,7 +273,20 @@ class Show(bigquery_command.BigqueryCmd):
     Arguments:
       identifier: the identifier of the resource to show.
     """
-    # pylint: disable=g-doc-exception
+    # Early delegation to gcloud (before bq_cached_client.Client.Get()).
+    # This prevents premature and redundant evaluation of BQ CLI credentials,
+    # .bigqueryrc, and discovery document construction when delegating to
+    # gcloud.
+    if self.migration_workflow:
+      # TODO: b/563038048 - Remove arg validation and delegate that to gcloud.
+      if not identifier:
+        raise app.UsageError('Must provide an identifier for show.')
+      self.DelegateToGcloudAndExit(
+          'migration_workflows',
+          'show',
+          identifier,
+      )
+
     client = bq_cached_client.Client.Get()
     custom_format = 'show'
     object_info = None
@@ -423,13 +436,6 @@ class Show(bigquery_command.BigqueryCmd):
       )
       object_info = client_connection.GetConnection(
           client=client.GetConnectionV1ApiClient(), reference=reference
-      )
-    elif self.migration_workflow:
-      reference = None
-      self.DelegateToGcloudAndExit(
-          'migration_workflows',
-          'show',
-          identifier,
       )
     elif self.row_access_policy:
       try:

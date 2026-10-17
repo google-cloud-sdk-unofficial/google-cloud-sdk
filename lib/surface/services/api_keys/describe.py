@@ -41,6 +41,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class DescribeGa(base.DescribeCommand):
@@ -64,7 +65,7 @@ class DescribeGa(base.DescribeCommand):
     """
 
     client = apikeys.GetClientInstance(self.ReleaseTrack())
-    messages = client.MESSAGES_MODULE
+    messages = apikeys.GetMessagesModule(self.ReleaseTrack())
 
     key_ref = args.CONCEPTS.key.Parse()
     request = messages.ApikeysProjectsLocationsKeysGetRequest(

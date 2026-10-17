@@ -3,15 +3,12 @@
 
 __all__ = ("fifo_cache", "lfu_cache", "lru_cache", "rr_cache", "ttl_cache")
 
-import functools
 import math
 import random
 import time
 from threading import Condition
 
-from . import FIFOCache, LFUCache, LRUCache, RRCache, TTLCache
-from . import cached
-from . import keys
+from . import FIFOCache, LFUCache, LRUCache, RRCache, TTLCache, cached, keys
 
 
 class _UnboundTTLCache(TTLCache):
@@ -19,7 +16,7 @@ class _UnboundTTLCache(TTLCache):
         TTLCache.__init__(self, math.inf, ttl, timer)
 
     @property
-    def maxsize(self):
+    def maxsize(self):  # type: ignore
         return None
 
 
@@ -30,7 +27,7 @@ def _cache(cache, maxsize, typed):
         # using a condition variable
         key = keys.typedkey if typed else keys.hashkey
         wrapper = cached(cache=cache, key=key, condition=Condition(), info=True)(func)
-        wrapper.cache_parameters = lambda: {"maxsize": maxsize, "typed": typed}
+        wrapper.cache_parameters = lambda: {"maxsize": maxsize, "typed": typed}  # type: ignore
         return wrapper
 
     return decorator

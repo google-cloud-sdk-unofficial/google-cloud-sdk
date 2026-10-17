@@ -170,7 +170,7 @@ class Insert(bigquery_command.BigqueryCmd):
       if errors:
         for entry in result['insertErrors']:
           entry_errors = entry['errors']
-          sys.stdout.write('record %d errors: ' % (entry['index'],))
+          sys.stdout.write('record %d errors: ' % (entry.get('index', 0),))
           for error in entry_errors:
             print(
                 '\t%s: %s'

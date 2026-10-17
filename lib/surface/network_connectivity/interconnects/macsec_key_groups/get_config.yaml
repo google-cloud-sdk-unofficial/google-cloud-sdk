@@ -1,0 +1,21 @@
+- release_tracks: [BETA]
+  hidden: true
+
+  help_text:
+    brief: Get the MACsec configuration of a MACsec key group.
+    description: Retrieve and display the full MACsec configuration of a MACsec key group, including sensitive key material.
+    examples: |
+      To display the MACsec configuration of a MACsec key group named 'my-key-group' in the 'us-central1' region, run:
+
+        $ {command} my-key-group --region=us-central1
+
+  request:
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.interconnectKeyGroups
+    method: fetchConfig
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:macsecKeyGroup
+      help_text: Name of the MACsec key group to get configuration for.

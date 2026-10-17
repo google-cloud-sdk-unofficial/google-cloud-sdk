@@ -40,6 +40,7 @@ def _ListArgs(parser):
       help=('Show soft-deleted keys by specifying this flag.'))
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
@@ -76,5 +77,10 @@ class List(base.ListCommand):
     """
 
     project_id = properties.VALUES.core.project.GetOrFail()
-    return apikeys.ListKeys(project_id, args.show_deleted, args.page_size,
-                            args.limit)
+    return apikeys.ListKeys(
+        project_id,
+        args.show_deleted,
+        args.page_size,
+        args.limit,
+        release_track=self.ReleaseTrack(),
+    )

@@ -29,3 +29,8 @@
 
   iam:
     policy_version: 3
+
+- release_tracks: [BETA, GA]
+  is_python_command: true
+  hints:
+    read_only: false

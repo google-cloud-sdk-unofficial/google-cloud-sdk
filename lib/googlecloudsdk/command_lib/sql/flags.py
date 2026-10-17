@@ -599,6 +599,7 @@ def AddDatabaseVersion(
       'POSTGRES_16',
       'POSTGRES_17',
       'POSTGRES_18',
+      'POSTGRES_19',
       'SQLSERVER_2017_EXPRESS',
       'SQLSERVER_2017_WEB',
       'SQLSERVER_2017_STANDARD',
@@ -616,6 +617,10 @@ def AddDatabaseVersion(
       'SQLSERVER_2025_ENTERPRISE',
   ]
   # End of engine-specific content.
+
+  hidden_choices = [
+      'POSTGRES_19',
+  ]
 
   help_text_unspecified_part = (
       DEFAULT_INSTANCE_DATABASE_VERSION + ' is used.'
@@ -644,6 +649,9 @@ def AddDatabaseVersion(
       if support_default_version
       else None,
       choices=_MajorVersionMatchList(choices) if restrict_choices else None,
+      hidden_choices=_MajorVersionMatchList(hidden_choices)
+      if restrict_choices
+      else None,
       help=help_text,
       hidden=hidden,
   )
@@ -4400,6 +4408,24 @@ def AddDatabaseCenterIntegrationEnabled(parser, show_negated_in_help=True,
       hidden=hidden,
       **kwargs
   )
+
+
+# TODO(b/531563818): Mark the flag hidden=False once it is ready to be public.
+def AddDatabaseCenterIntegration(parser, hidden=True):
+  """Adds '--database-center-integration' flag to the parser."""
+  flag = base.ChoiceArgument(
+      '--database-center-integration',
+      required=False,
+      choices={
+          'enabled': 'Enable Database Center integration.',
+          'disabled': 'Disable Database Center integration.',
+          'unspecified': 'Unspecified Database Center integration.',
+      },
+      default=None,
+      help_str='State of the Database Center integration for this instance.',
+      hidden=hidden,
+  )
+  flag.AddToParser(parser)
 
 
 def GetInstanceClearOverrides(args: parser_extensions.Namespace) -> list[str]:

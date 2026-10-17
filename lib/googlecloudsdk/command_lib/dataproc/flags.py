@@ -256,7 +256,7 @@ def AddHistoryServerClusterResourceArg(parser):
 
 
 def AddZoneAndExcludedZonesFlags(parser, short_flags=True):
-  """Add zone and excluded zones flag."""
+  """Add zone, excluded zones, and multizone flags."""
   zone_and_excluded_zones_group = parser.add_argument_group(mutex=True)
   zone_and_excluded_zones_group.add_argument(
       '--zone',
@@ -269,7 +269,8 @@ def AddZoneAndExcludedZonesFlags(parser, short_flags=True):
             """,
       action=actions.StoreProperty(properties.VALUES.compute.zone),
   )
-  zone_and_excluded_zones_group.add_argument(
+  auto_zone_group = zone_and_excluded_zones_group.add_argument_group()
+  auto_zone_group.add_argument(
       '--auto-zone-exclude-zones',
       type=arg_parsers.ArgList(),
       default=[],
@@ -278,6 +279,14 @@ def AddZoneAndExcludedZonesFlags(parser, short_flags=True):
             A comma-separated list of compute zones (such as `us-central1-a`)
             to exclude when [Dataproc Auto Zone placement](https://docs.cloud.google.com/dataproc/docs/concepts/configuring-clusters/auto-zone)
             picks the zone for the cluster.
+            """,
+  )
+  auto_zone_group.add_argument(
+      '--multizone',
+      action='store_true',
+      help="""\
+            Create a multi-zonal cluster where instances can be created across
+            multiple zones within the region.
             """,
   )
 

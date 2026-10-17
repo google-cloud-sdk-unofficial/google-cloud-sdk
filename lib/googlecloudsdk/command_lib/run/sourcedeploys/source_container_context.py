@@ -26,6 +26,7 @@ class SourceContainerContext:
   base_image: str = None  # base image to be used for deploy/build
   source: str = None  # local source code location
   source_bucket: str = None  # GCS bucket to use for upload
+  upload_through_run_api: bool = False  # whether to upload through Run API
 
 
 @dataclasses.dataclass
@@ -45,3 +46,5 @@ class LegacyBuildSourceContainerContext:
   deploy_from_source_container_name: str = ''  # container name
   enable_automatic_updates: bool = None  # whether to enable automatic updates
   source_bucket: str = None  # GCS bucket to use for upload
+  upload_through_run_api: bool = False  # whether to upload through Run API
+

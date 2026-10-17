@@ -4858,7 +4858,7 @@ class PublicKey(_messages.Message):
   Fields:
     algorithm: The Algorithm associated with this key.
     name: The name of the CryptoKeyVersion public key. Provided here for
-      verification. NOTE: This field is in Beta.
+      verification.
     pem: The public key, encoded in PEM format. For more information, see the
       [RFC 7468](https://tools.ietf.org/html/rfc7468) sections for [General
       Considerations](https://tools.ietf.org/html/rfc7468#section-2) and
@@ -4873,8 +4873,7 @@ class PublicKey(_messages.Message):
       checksum. Note: This field is defined as int64 for reasons of
       compatibility across different languages. However, it is a non-negative
       integer, which will never exceed `2^32-1`, and can be safely
-      downconverted to uint32 in languages that support this type. NOTE: This
-      field is in Beta.
+      downconverted to uint32 in languages that support this type.
     protectionLevel: The ProtectionLevel of the CryptoKeyVersion public key.
     publicKey: This field contains the public key (with integrity
       verification), formatted according to the public_key_format field.

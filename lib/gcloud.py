@@ -89,7 +89,7 @@ def _import_gcloud_main():
 
 
 MIN_SUPPORTED_PY3_VERSION = (3, 10)
-MAX_SUPPORTED_PY3_VERSION = (3, 14)
+MAX_SUPPORTED_PY3_VERSION = (3, 15)
 
 
 def python_version_string(python_version):

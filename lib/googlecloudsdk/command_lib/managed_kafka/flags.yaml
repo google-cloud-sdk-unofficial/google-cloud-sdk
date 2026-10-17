@@ -111,6 +111,14 @@ broker-disk:
   help_text: |
     The amount of local disk to provision for each broker. Can be specified as a plain integer (defaults to GiB) or with units (e.g., 500Gi, 500GiB, 1Ti, 1TiB). Minimum: 100 Gibibytes.
 
+kafka-version:
+  api_field: cluster.kafkaVersion
+  arg_name: kafka-version
+  hidden: true
+  help_text: |
+    The Apache Kafka version of the cluster (for example, `3.7.x`, `4.3.x`).
+    If not specified during cluster creation, defaults to `3.7.x`.
+
 # Trying to define this as a resouce causes test failures in yaml_command_schema_test so we define
 # it as a flag instead.
 kafka-cluster:

@@ -149,6 +149,20 @@ class Empty(_messages.Message):
 
 
 
+class GenerateInsightsRequest(_messages.Message):
+  r"""Message for requesting insights generation for a network path.
+
+  Fields:
+    interval: Required. Time interval for which to generate insights.
+      `start_time` is required and can be at most 30 days in the past.
+      `end_time` is optional; if omitted or empty, it defaults to NOW (so the
+      timeframe becomes `start_time` until NOW). The interval duration
+      (`end_time - start_time`) cannot exceed 24 hours.
+  """
+
+  interval = _messages.MessageField('Interval', 1)
+
+
 class GenerateMonitoringPointConfigResponse(_messages.Message):
   r"""Message for response for getting Monitoring Point configuration of a
   NetworkMonitoringProvider resource.
@@ -294,6 +308,24 @@ class HttpBody(_messages.Message):
   contentType = _messages.StringField(1)
   data = _messages.BytesField(2)
   extensions = _messages.MessageField('ExtensionsValueListEntry', 3, repeated=True)
+
+
+class Interval(_messages.Message):
+  r"""Represents a time interval, encoded as a Timestamp start (inclusive) and
+  a Timestamp end (exclusive). The start must be less than or equal to the
+  end. When the start equals the end, the interval is empty (matches no time).
+  When both start and end are unspecified, the interval matches any time.
+
+  Fields:
+    endTime: Optional. Exclusive end of the interval. If specified, a
+      Timestamp matching this interval will have to be before the end.
+    startTime: Optional. Inclusive start of the interval. If specified, a
+      Timestamp matching this interval will have to be the same or after the
+      start.
+  """
+
+  endTime = _messages.StringField(1)
+  startTime = _messages.StringField(2)
 
 
 class ListAppliancesResponse(_messages.Message):
@@ -1195,6 +1227,22 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsDi
   """
 
   alarmId = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsGenerateInsightsRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPat
+  hsGenerateInsightsRequest object.
+
+  Fields:
+    generateInsightsRequest: A GenerateInsightsRequest resource to be passed
+      as the request body.
+    name: Required. Name of the NetworkPath resource. Format: projects/{projec
+      t}/locations/{location}/networkMonitoringProviders/{network_monitoring_p
+      rovider}/networkPaths/{network_path}
+  """
+
+  generateInsightsRequest = _messages.MessageField('GenerateInsightsRequest', 1)
   name = _messages.StringField(2, required=True)
 
 

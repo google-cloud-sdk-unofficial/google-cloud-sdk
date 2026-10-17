@@ -21,6 +21,7 @@ from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 
 
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
@@ -47,6 +48,7 @@ class Start(base.Command):
     return 'workstations.projects.locations.workstationClusters.workstationConfigs.workstations'
 
   def Run(self, args):
-    client = workstations.Workstations(self.ReleaseTrack())
+    location = args.CONCEPTS.workstation.Parse().locationsId
+    client = workstations.Workstations(self.ReleaseTrack(), location=location)
     response = client.Start(args)
     return response

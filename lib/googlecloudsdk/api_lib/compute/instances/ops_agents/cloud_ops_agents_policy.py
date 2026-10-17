@@ -31,6 +31,11 @@ _StrEnum = (
 )
 
 
+def _GetObjectDict(obj: Any) -> dict[str, Any]:
+  """Returns the __dict__ attribute of an object for JSON serialization."""
+  return obj.__dict__
+
+
 @dataclasses.dataclass(repr=False)
 class OpsAgentsPolicy(object):
   """An Ops Agents policy encapsulates the underlying VMM Policy.
@@ -107,7 +112,7 @@ class OpsAgentsPolicy(object):
 
     return json.dumps(
         policy_map,
-        default=lambda o: o.__dict__,
+        default=_GetObjectDict,
         separators=(',', ':'),
         sort_keys=True,
     )
@@ -167,6 +172,25 @@ def CreateAgentsRule(
           agents_rule['packageState']
       ),
   )
+
+
+def GetAgentsRuleFromDescription(
+    description: Optional[str],
+) -> Optional[OpsAgentsPolicy.AgentsRule]:
+  """Returns an agents rule from a OSPolicy description."""
+  if description is None:
+    return None
+  description_parts = description.split(' | ', maxsplit=1)
+  if len(description_parts) < 2:
+    return None
+  try:
+    agents_rule_json = json.loads(description_parts[1])
+  except json.JSONDecodeError:
+    return None
+  try:
+    return CreateAgentsRule(agents_rule_json)
+  except exceptions.PolicyValidationError:
+    return None
 
 
 def CreateOpsAgentsPolicy(

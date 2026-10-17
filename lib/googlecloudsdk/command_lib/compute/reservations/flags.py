@@ -30,12 +30,28 @@ def GetDescriptionFlag(is_fr=False):
       help=help_text)
 
 
-def GetRequireSpecificAllocation():
+def GetRequireSpecificAllocation(is_update=False):
+  """Gets the --require-specific-reservation flag.
+
+  Args:
+    is_update: If True, the flag also accepts the negative
+      `--no-require-specific-reservation` form. This is required for update
+      commands, which must be able to turn the property off as well as on.
+
+  Returns:
+    The --require-specific-reservation flag.
+  """
   help_text = """\
   Indicates whether the reservation can be consumed by VMs with "any reservation"
   defined. If enabled, then only VMs that target this reservation by name using
   `--reservation-affinity=specific` can consume from this reservation.
   """
+  if is_update:
+    return base.Argument(
+        '--require-specific-reservation',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=help_text,
+    )
   return base.Argument(
       '--require-specific-reservation', action='store_true', help=help_text)
 

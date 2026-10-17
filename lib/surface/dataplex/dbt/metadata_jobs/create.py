@@ -101,7 +101,7 @@ class _ImportJobPoller(waiter.OperationPoller):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.Command):
   """Transform dbt-core artifacts and import them into Dataplex Catalog.
 

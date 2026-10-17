@@ -73,26 +73,22 @@ def ValidateNoAutomaticUpdatesForContainers(
         )
 
 
-def ValidateNumberOfSourceContainers(
+def ValidateImplicitSourceContainers(
     source_containers: Mapping[str, Any],
 ) -> None:
-  """Validates container configurations for source deployments."""
-  # we support at most one source container for now.
-  # this check ensure we have 0 to 1 source containers.
-  if len(source_containers) > 1:
-    needs_image = [
-        name
-        for name, container in source_containers.items()
-        if not flags.FlagIsExplicitlySet(container, 'source')
-    ]
-    if needs_image:
-      raise exceptions.RequiredImageArgumentException(needs_image)
-    raise c_exceptions.InvalidArgumentException(
-        '--container', 'At most one container can be deployed from source.'
+  """Validates containers implicitly using source."""
+  # allows at most one container that implicitly uses source
+  containers_has_no_source_or_image = [
+      name
+      for name, container in source_containers.items()
+      if not flags.FlagIsExplicitlySet(container, 'source')
+  ]
+  if len(containers_has_no_source_or_image) > 1:
+    raise exceptions.RequiredImageArgumentException(
+        containers_has_no_source_or_image
     )
 
   # helper to prompt for source if not provided.
-  # this should be changed when we extend to support multiple source containers.
   for name, container in source_containers.items():
     if not flags.FlagIsExplicitlySet(container, 'source'):
       if console_io.CanPrompt():
@@ -116,10 +112,7 @@ def ValidateNumberOfSourceContainers(
         )
 
   # ensure no_build and local_build are not used together.
-  # condition should change when we extend to support multiple source
-  # containers.
-  if len(source_containers) == 1:
-    container = next(iter(source_containers.values()))
+  for container in source_containers.values():
     if getattr(container, 'no_build', False) and getattr(
         container, 'local_build', False
     ):
@@ -145,57 +138,51 @@ def ValidateUnifiedBuildProperty(deploy_from_source, containers, release_track):
           )
 
 
-def ValidateUploadThroughRunApi(deploy_from_source, release_track):
-  if not deploy_from_source or len(deploy_from_source) != 1:
-    return False
-  container = next(iter(deploy_from_source.items()))[1]
-  if not flags.IsRunUploadSupported(release_track) or not container.IsSpecified(
-      'run_upload'
-  ):
-    return
-
-
-def ValidateNoBuildFromSource(deploy_from_source, release_track):
+def ValidateNoBuildFromSource(source_containers, release_track):
   """Extra validation for Zip deployments.
 
   This is a no-op for if the --no-build flag is not set.
 
   Args:
-    deploy_from_source: The build from source map of container name to container
+    source_containers: The map of source container name to container
       object.
     release_track: The release track of the command.
   """
-  if not IsNoBuildFromSource(release_track, deploy_from_source):
-    return
+  for _, container_args in source_containers.items():
+    if not IsNoBuildFromSource(release_track, container_args):
+      continue
 
-  # TODO(b/424567464): Remove this check once we support multiple containers
-  # with --no-build.
-  container = next(iter(deploy_from_source.items()))[1]
-  if not container.IsSpecified('base_image'):
-    raise c_exceptions.InvalidArgumentException(
-        '--no-build',
-        'Source deployment must specify --base-image when skippingCloud Build.',
-    )
-  if (
-      container.IsSpecified('image')
-      and getattr(container, 'image') != 'scratch'
-  ):
-    raise c_exceptions.InvalidArgumentException(
-        '--image',
-        'Source deployment --image must be set to "scratch" when skipping'
-        'Cloud Build.',
-    )
+    if not container_args.IsSpecified('base_image'):
+      raise c_exceptions.InvalidArgumentException(
+          '--no-build',
+          'Source deployment must specify --base-image when skipping Cloud'
+          ' Build.',
+      )
+    if (
+        container_args.IsSpecified('image')
+        and getattr(container_args, 'image') != 'scratch'
+    ):
+      raise c_exceptions.InvalidArgumentException(
+          '--image',
+          'Source deployment --image must be set to "scratch" when skipping'
+          'Cloud Build.',
+      )
 
 
-def IsNoBuildFromSource(release_track, build_from_source):
+def IsNoBuildFromSource(release_track, container_args):
   """Checks if this is a source deployment that should skip the Cloud Build step."""
   if release_track == base.ReleaseTrack.GA:
     return False
 
-  if not build_from_source or len(build_from_source) != 1:
+  return container_args.IsSpecified('no_build')
+
+
+def IsLocalBuildFromSource(release_track, container_args):
+  """Checks if this is a source deployment that should use local build."""
+  if release_track != base.ReleaseTrack.ALPHA:
     return False
-  container = next(iter(build_from_source.items()))[1]
-  return container.IsSpecified('no_build')
+
+  return container_args.IsSpecified('local_build')
 
 
 def GetValidLocalBuildSourceContainer(release_track, build_from_source):
@@ -217,6 +204,15 @@ def GetValidLocalBuildSourceContainer(release_track, build_from_source):
     )
 
   if local_build_containers:
+    if (
+        local_build_containers[0].IsSpecified('image')
+        and getattr(local_build_containers[0], 'image') != 'scratch'
+    ):
+      raise c_exceptions.InvalidArgumentException(
+          '--image',
+          'Source deployment --image must be set to "scratch" when skipping'
+          'Cloud Build.',
+      )
     local_build.ValidateLocalBuildSource(local_build_containers[0].source)
     return local_build_containers[0]
 

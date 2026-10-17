@@ -81,6 +81,7 @@ class DialogflowV2(base_api.BaseApiClient):
     self.projects_locations_agent_versions = self.ProjectsLocationsAgentVersionsService(self)
     self.projects_locations_agent = self.ProjectsLocationsAgentService(self)
     self.projects_locations_answerRecords = self.ProjectsLocationsAnswerRecordsService(self)
+    self.projects_locations_companionAgents = self.ProjectsLocationsCompanionAgentsService(self)
     self.projects_locations_conversationDatasets = self.ProjectsLocationsConversationDatasetsService(self)
     self.projects_locations_conversationModels_evaluations = self.ProjectsLocationsConversationModelsEvaluationsService(self)
     self.projects_locations_conversationModels = self.ProjectsLocationsConversationModelsService(self)
@@ -5591,6 +5592,151 @@ class DialogflowV2(base_api.BaseApiClient):
         request_field='googleCloudDialogflowV2AnswerRecord',
         request_type_name='DialogflowProjectsLocationsAnswerRecordsPatchRequest',
         response_type_name='GoogleCloudDialogflowV2AnswerRecord',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsCompanionAgentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_companionAgents resource."""
+
+    _NAME = 'projects_locations_companionAgents'
+
+    def __init__(self, client):
+      super(DialogflowV2.ProjectsLocationsCompanionAgentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a companion agent.
+
+      Args:
+        request: (DialogflowProjectsLocationsCompanionAgentsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDialogflowV2CompanionAgent) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/companionAgents',
+        http_method='POST',
+        method_id='dialogflow.projects.locations.companionAgents.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['companionAgentId'],
+        relative_path='v2/{+parent}/companionAgents',
+        request_field='googleCloudDialogflowV2CompanionAgent',
+        request_type_name='DialogflowProjectsLocationsCompanionAgentsCreateRequest',
+        response_type_name='GoogleCloudDialogflowV2CompanionAgent',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a companion agent.
+
+      Args:
+        request: (DialogflowProjectsLocationsCompanionAgentsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/companionAgents/{companionAgentsId}',
+        http_method='DELETE',
+        method_id='dialogflow.projects.locations.companionAgents.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='DialogflowProjectsLocationsCompanionAgentsDeleteRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a companion agent.
+
+      Args:
+        request: (DialogflowProjectsLocationsCompanionAgentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDialogflowV2CompanionAgent) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/companionAgents/{companionAgentsId}',
+        http_method='GET',
+        method_id='dialogflow.projects.locations.companionAgents.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='DialogflowProjectsLocationsCompanionAgentsGetRequest',
+        response_type_name='GoogleCloudDialogflowV2CompanionAgent',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists companion agents.
+
+      Args:
+        request: (DialogflowProjectsLocationsCompanionAgentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDialogflowV2ListCompanionAgentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/companionAgents',
+        http_method='GET',
+        method_id='dialogflow.projects.locations.companionAgents.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v2/{+parent}/companionAgents',
+        request_field='',
+        request_type_name='DialogflowProjectsLocationsCompanionAgentsListRequest',
+        response_type_name='GoogleCloudDialogflowV2ListCompanionAgentsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a companion agent.
+
+      Args:
+        request: (DialogflowProjectsLocationsCompanionAgentsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDialogflowV2CompanionAgent) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/companionAgents/{companionAgentsId}',
+        http_method='PATCH',
+        method_id='dialogflow.projects.locations.companionAgents.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v2/{+name}',
+        request_field='googleCloudDialogflowV2CompanionAgent',
+        request_type_name='DialogflowProjectsLocationsCompanionAgentsPatchRequest',
+        response_type_name='GoogleCloudDialogflowV2CompanionAgent',
         supports_download=False,
     )
 

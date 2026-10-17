@@ -34,6 +34,9 @@ properties:
       projects/{project}/regions/{region}/networkAttachments/{network_attachme
       nt_id}
     type: string
+  tlsConfig:
+    description: The TLS configuration for the egress traffic.
+    $ref: EgressNetworkConfigTlsConfig.yaml
   trustConfig:
     description: |-
       Deprecated: Use tls_config instead. The trust config resource name.

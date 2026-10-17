@@ -458,6 +458,38 @@ class FlagTypes:
         repeated=True,
     )
 
+  def _GetManagedInstanceGroupSpec(self) -> dict[str, Any]:
+    return {
+        "id": str,
+        "computeId": str,
+        "targetSize": int,
+        "acceleratorTopology": str,
+        "enablePublicIps": bool,
+        "startupScript": arg_parsers.ArgObject(),
+        "bootDisk": self.GetProtoBootDiskType(),
+        "storageConfigs": STORAGE_CONFIG,
+    }
+
+  def GetManagedInstanceGroupsObject(self) -> arg_parsers.ArgObject:
+    """Returns an ArgObject for parsing Managed Instance Group configs."""
+    return arg_parsers.ArgObject(
+        spec=self._GetManagedInstanceGroupSpec(),
+        required_keys=["id", "computeId"],
+        enable_shorthand=True,
+        repeated=True,
+        disable_key_description=True,
+    )
+
+  def GetManagedInstanceGroupsUpdateObject(self) -> arg_parsers.ArgObject:
+    """Returns an ArgObject for parsing Managed Instance Group updates."""
+    return arg_parsers.ArgObject(
+        spec=self._GetManagedInstanceGroupSpec(),
+        required_keys=["id"],
+        enable_shorthand=True,
+        repeated=True,
+        disable_key_description=True,
+    )
+
   def GetSlurmLoginNodeObject(self) -> arg_parsers.ArgObject:
     """Returns an ArgObject for parsing Slurm Login Node configurations."""
     if self.is_alpha:
@@ -630,6 +662,30 @@ class FlagTypes:
           ),
           "orchestrator": arg_parsers.ArgObject(
               spec={
+                  "computeEngine": arg_parsers.ArgObject(
+                      spec={
+                          "managedInstanceGroups": arg_parsers.ArgObject(
+                              key_type=str,
+                              value_type=arg_parsers.ArgObject(
+                                  spec={
+                                      "computeId": str,
+                                      "targetSize": int,
+                                      "enablePublicIps": bool,
+                                      "startupScript": arg_parsers.ArgObject(),
+                                      "bootDisk": self.GetProtoBootDiskType(),
+                                      "storageConfigs": STORAGE_CONFIG,
+                                      "resourcePolicyConfig": (
+                                          arg_parsers.ArgObject(
+                                              spec={
+                                                  "acceleratorTopology": str,
+                                              }
+                                          )
+                                      ),
+                                  }
+                              ),
+                          ),
+                      }
+                  ),
                   "slurm": arg_parsers.ArgObject(
                       spec={
                           "defaultPartition": str,

@@ -541,10 +541,17 @@ class Report(_messages.Message):
       `2026-01-05T12:00:00`, the default range is `2025-12-29T00:00:00` to
       `2026-01-05T00:00:00` Pacific time.
     metrics: Required. A list of metrics to include in the report. Supported
-      values: * `cost` * `cpu_mean_utilization` * `cpu_usage_core_seconds` *
-      `cpu_allocation_core_seconds` * `cpu_p95_utilization` *
-      `memory_mean_utilization` * `memory_usage_byte_seconds` *
-      `memory_allocation_byte_seconds` * `memory_p95_utilization`
+      values: * `cost` * `resource_cost` * `network_cost` *
+      `network_cost_standard_internet` * `network_cost_premium_internet` *
+      `network_cost_inter_region` * `network_cost_inter_zone` *
+      `network_cost_load_balancing_inbound` *
+      `network_cost_load_balancing_outbound` *
+      `network_cost_interconnect_inbound` *
+      `network_cost_interconnect_outbound` * `cpu_mean_utilization` *
+      `cpu_usage_core_seconds` * `cpu_allocation_core_seconds` *
+      `cpu_p95_utilization` * `memory_mean_utilization` *
+      `memory_usage_byte_seconds` * `memory_allocation_byte_seconds` *
+      `memory_p95_utilization`
     name: Identifier. The name of this report.
     scopes: Optional. The resource containers for which to fetch data. Default
       is the project specified in the report's parent. No more than one scope

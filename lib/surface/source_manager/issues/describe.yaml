@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+  hidden: true
+
+  help_text:
+    brief: Describe a Secure Source Manager issue.
+    description: Describe a Secure Source Manager issue.
+    examples: |
+      To describe an issue 1 in repository `my-repo` and location `us-central1`, run the following command:
+
+      $ {command} 1 --repository=my-repo --region=us-central1
+
+  request:
+    api_version: v1
+    collection: securesourcemanager.projects.locations.repositories.issues
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The Secure Source Manager issue to describe.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:issue

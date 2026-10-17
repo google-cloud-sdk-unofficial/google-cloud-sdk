@@ -26,22 +26,40 @@ https://git-scm.com/book/en/v2/Git-Tools-Credential-Storage
 
 """
 
+__all__ = [
+    "match_partial_url",
+    "match_urls",
+    "urlmatch_credential_sections",
+]
+
 import sys
 from collections.abc import Iterator
-from typing import Optional
 from urllib.parse import ParseResult, urlparse
 
 from .config import ConfigDict, SectionLike
 
 
 def match_urls(url: ParseResult, url_prefix: ParseResult) -> bool:
+    """Check if a URL matches a URL prefix.
+
+    Args:
+      url: Parsed URL to check
+      url_prefix: Parsed URL prefix to match against
+
+    Returns:
+      True if url matches the prefix
+    """
     base_match = (
         url.scheme == url_prefix.scheme
         and url.hostname == url_prefix.hostname
         and url.port == url_prefix.port
     )
     user_match = url.username == url_prefix.username if url_prefix.username else True
-    path_match = url.path.rstrip("/").startswith(url_prefix.path.rstrip())
+    # Match the path on path-segment boundaries, like git's urlmatch: a config
+    # path scopes the entry to that path and anything below it, so "/foo"
+    # matches "/foo" and "/foo/bar" but not "/foobar".
+    prefix_path = url_prefix.path.rstrip("/")
+    path_match = url.path == prefix_path or url.path.startswith(prefix_path + "/")
     return base_match and user_match and path_match
 
 
@@ -68,7 +86,7 @@ def match_partial_url(valid_url: ParseResult, partial_url: str) -> bool:
 
 
 def urlmatch_credential_sections(
-    config: ConfigDict, url: Optional[str]
+    config: ConfigDict, url: str | None
 ) -> Iterator[SectionLike]:
     """Returns credential sections from the config which match the given URL."""
     encoding = config.encoding or sys.getdefaultencoding()

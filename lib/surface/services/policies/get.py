@@ -18,6 +18,7 @@ import json
 
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.services import common_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -36,10 +37,10 @@ _INVALID_TIMESTAMP = (
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Get(base.Command):
-  """Get consumer policy for a project, folder or organization.
+class GetBeta(base.Command):
+  """Get the consumer policy for a project, folder or organization.
 
-  Get consumer policy for a project, folder or
+  Get the consumer policy for a project, folder or
   organization.
 
   ## EXAMPLES
@@ -47,14 +48,18 @@ class Get(base.Command):
    Get consumer policy for default policy on current project:
 
    $ {command}
+
       OR
+
    $ {command} --policy-name=default
 
    Get consumer policy for default policy on current project and save the
    content in an output file:
 
    $ {command} --output-file=/path/to/the/file.yaml
-       OR
+
+      OR
+
    $ {command} --output-file=/path/to/the/file.json
   """
 
@@ -74,7 +79,7 @@ class Get(base.Command):
         '--output-file',
         help=(
             'Path to the file to write policy contents to. Supported format:'
-            '.yaml or .json.'
+            ' .yaml or .json.'
         ),
     )
 
@@ -103,24 +108,124 @@ class Get(base.Command):
     )
 
     if args.IsSpecified('output_file'):
-      if not (
-          args.output_file.endswith('.json')
-          or args.output_file.endswith('.yaml')
-      ):
-        log.error(
+      if not args.output_file.endswith(('.json', '.yaml', '.yml')):
+        raise exceptions.InvalidArgumentException(
+            '--output-file',
             'Invalid output-file format. Please provide path to a yaml or json'
-            ' file.'
+            ' file.',
         )
+      if args.output_file.endswith('.json'):
+        data = json.dumps(_ConvertToDict(policy), sort_keys=False)
       else:
-        if args.output_file.endswith('.json'):
-          data = json.dumps(_ConvertToDict(policy), sort_keys=False)
-        else:
-          data = yaml.dump(_ConvertToDict(policy), round_trip=True)
-        files.WriteFileContents(args.output_file, data)
+        data = yaml.dump(_ConvertToDict(policy), round_trip=True)
+      files.WriteFileContents(args.output_file, data)
 
-        log.status.Print(
-            'Policy written to the output file %s ' % args.output_file
+      log.status.Print(
+          'Policy written to the output file %s ' % args.output_file
+      )
+    elif args.IsSpecified('format'):
+      return policy
+    else:
+      result = _ConvertToDict(policy)
+      for k, v in result.items():
+        if k != 'enableRules' and v:
+          log.status.Print(k + ': ' + v)
+        elif k == 'enableRules':
+          log.status.Print(k + ':')
+          for enable_rule in v:
+            _PrintRules(enable_rule)
+      return
+
+
+@base.Hidden
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Get(base.Command):
+  """Get the consumer policy for a project, folder or organization.
+
+  Get the consumer policy for a project, folder or
+  organization.
+
+  ## EXAMPLES
+
+   Get consumer policy for default policy on current project:
+
+   $ {command}
+
+      OR
+
+   $ {command} --policy-name=default
+
+   Get consumer policy for default policy on current project and save the
+   content in an output file:
+
+   $ {command} --output-file=/path/to/the/file.yaml
+
+      OR
+
+   $ {command} --output-file=/path/to/the/file.json
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument(
+        '--policy-name',
+        help=(
+            'Name of the consumer policy. Currently only "default" is'
+            ' supported.'
+        ),
+        default='default',
+    )
+    common_flags.add_resource_args(parser)
+
+    parser.add_argument(
+        '--output-file',
+        help=(
+            'Path to the file to write policy contents to. Supported format:'
+            ' .yaml or .json.'
+        ),
+    )
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Resource name and its parent name.
+    """
+    if args.IsSpecified('folder'):
+      resource_name = _FOLDER_RESOURCE.format(args.folder)
+    elif args.IsSpecified('organization'):
+      resource_name = _ORGANIZATION_RESOURCE.format(args.organization)
+    elif args.IsSpecified('project'):
+      resource_name = _PROJECT_RESOURCE.format(args.project)
+    else:
+      project = properties.VALUES.core.project.Get(required=True)
+      resource_name = _PROJECT_RESOURCE.format(project)
+
+    policy = serviceusage.GetConsumerPolicyV2(
+        resource_name + _CONSUMER_POLICY_DEFAULT.format(args.policy_name),
+    )
+
+    if args.IsSpecified('output_file'):
+      if not args.output_file.endswith(('.json', '.yaml', '.yml')):
+        raise exceptions.InvalidArgumentException(
+            '--output-file',
+            'Invalid output-file format. Please provide path to a yaml or json'
+            ' file.',
         )
+      if args.output_file.endswith('.json'):
+        data = json.dumps(_ConvertToDict(policy), sort_keys=False)
+      else:
+        data = yaml.dump(_ConvertToDict(policy), round_trip=True)
+      files.WriteFileContents(args.output_file, data)
+
+      log.status.Print(
+          'Policy written to the output file %s ' % args.output_file
+      )
     elif args.IsSpecified('format'):
       return policy
     else:
@@ -154,10 +259,15 @@ def _ConvertToDict(policy):
   }
 
   for enable_rule in policy.enableRules:
+    rule_dict = {}
     if enable_rule.services:
-      output['enableRules'].append({'services': list(enable_rule.services)})
+      rule_dict['services'] = list(enable_rule.services)
+    if enable_rule.catalogs:
+      rule_dict['catalogs'] = list(enable_rule.catalogs)
+    if rule_dict:
+      output['enableRules'].append(rule_dict)
 
-  if not policy.enableRules:
+  if not output['enableRules']:
     del output['enableRules']
 
   if policy.updateTime == _INVALID_TIMESTAMP:
@@ -169,7 +279,7 @@ def _ConvertToDict(policy):
 
 
 def _PrintRules(rule):
-  keys = ['services']
+  keys = ['services', 'catalogs']
   for key in keys:
     if key in rule.keys():
       log.status.Print(' ' + key + ':')

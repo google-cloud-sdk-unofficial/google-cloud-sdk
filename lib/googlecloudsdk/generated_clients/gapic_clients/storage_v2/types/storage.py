@@ -2176,6 +2176,11 @@ class ListObjectsRequest(proto.Message):
             Optional. If true, only list all soft-deleted
             versions of the object. Soft delete policy is
             required to set this option.
+        include_soft_deleted (bool):
+            Optional. If true, include soft-deleted
+            objects in addition to live objects in the
+            results. Soft delete policy is required to set
+            this option.
         include_folders_as_prefixes (bool):
             Optional. If true, includes folders and managed folders
             (besides objects) in the returned ``prefixes``. Requires
@@ -2239,6 +2244,10 @@ class ListObjectsRequest(proto.Message):
     soft_deleted: bool = proto.Field(
         proto.BOOL,
         number=12,
+    )
+    include_soft_deleted: bool = proto.Field(
+        proto.BOOL,
+        number=16,
     )
     include_folders_as_prefixes: bool = proto.Field(
         proto.BOOL,

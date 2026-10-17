@@ -50,6 +50,7 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA):
       flags.ImageArg(image=_EXAMPLE_INSTANCE_IMAGE, required=False)
   )
   group.AddArgument(flags.PortArg())
+  group.AddArgument(flags.Http2Flag(resource_kind='instance'))
   group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
@@ -62,6 +63,8 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA):
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
   group.AddArgument(flags.SandboxLauncherFlag())
+  if release_track == base.ReleaseTrack.ALPHA:
+    group.AddArgument(flags.BaseImageArg(hidden=True))
   return group
 
 
@@ -151,11 +154,13 @@ class Deploy(base.Command):
     concept_parsers.ConceptParser([instance_presentation]).AddToParser(parser)
     parser.display_info.AddFormat('none')
 
-  @staticmethod
-  def Args(parser):
-    Deploy.CommonArgs(parser)
-    container_args = ContainerArgGroup()
-    container_parser.AddContainerFlags(parser, container_args)
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
     flags.RemoveContainersFlag().AddToParser(parser)
 
   def Run(self, args: argparse.Namespace) -> messages.Instance:

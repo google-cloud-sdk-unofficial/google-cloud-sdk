@@ -62,7 +62,6 @@ arguments:
     GA:
       api_field: googleCloudAiplatformV1SemanticGovernancePolicy.mcpTools
   - arg_name: agent-response-denial-message
-    hidden: true
     help_text: |
       Sets `agent_response_customization.denial_message` on the policy: a
       custom message shown to the end user when the policy denies a request.

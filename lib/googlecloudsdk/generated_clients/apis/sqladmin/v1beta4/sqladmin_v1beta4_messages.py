@@ -2622,6 +2622,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class ExecuteSqlPayload(_messages.Message):
   r"""The request payload used to execute SQL statements.
 
@@ -8767,27 +8768,6 @@ class SqlWorkloadCapturesListRequest(_messages.Message):
 
 
 class SqlWorkloadCapturesStartReplayRequest(_messages.Message):
-  r"""A SqlWorkloadCapturesStartReplayRequest object.
-
-  Fields:
-    instance: Required. Cloud SQL instance ID. This does not include the
-      project ID.
-    project: Required. Project ID of the project that contains the instance.
-    sqlWorkloadCapturesStartReplayRequestBody: A
-      SqlWorkloadCapturesStartReplayRequestBody resource to be passed as the
-      request body.
-    workloadId: Required. The ID of the workload to replay.
-  """
-
-  instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-  sqlWorkloadCapturesStartReplayRequestBody = _messages.MessageField(
-      'SqlWorkloadCapturesStartReplayRequestBody', 3
-  )
-  workloadId = _messages.StringField(4, required=True)
-
-
-class SqlWorkloadCapturesStartReplayRequestBody(_messages.Message):
   r"""Request to start executing a captured workload on a replay instance (the
   Cloud SQL instance where the recorded SQL queries are executed).
 
@@ -8800,24 +8780,6 @@ class SqlWorkloadCapturesStartReplayRequestBody(_messages.Message):
 
 
 class SqlWorkloadCapturesStartRequest(_messages.Message):
-  r"""A SqlWorkloadCapturesStartRequest object.
-
-  Fields:
-    instance: Required. Cloud SQL instance ID. This does not include the
-      project ID.
-    project: Required. Project ID of the project that contains the instance.
-    sqlWorkloadCapturesStartRequestBody: A SqlWorkloadCapturesStartRequestBody
-      resource to be passed as the request body.
-  """
-
-  instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-  sqlWorkloadCapturesStartRequestBody = _messages.MessageField(
-      'SqlWorkloadCapturesStartRequestBody', 3
-  )
-
-
-class SqlWorkloadCapturesStartRequestBody(_messages.Message):
   r"""Request to start recording traffic from the primary instance (captured
   workload).
 
@@ -8830,27 +8792,6 @@ class SqlWorkloadCapturesStartRequestBody(_messages.Message):
 
 
 class SqlWorkloadCapturesStopReplayRequest(_messages.Message):
-  r"""A SqlWorkloadCapturesStopReplayRequest object.
-
-  Fields:
-    instance: Required. Cloud SQL instance ID. This does not include the
-      project ID.
-    project: Required. Project ID of the project that contains the instance.
-    sqlWorkloadCapturesStopReplayRequestBody: A
-      SqlWorkloadCapturesStopReplayRequestBody resource to be passed as the
-      request body.
-    workloadId: Required. The ID of the workload to replay.
-  """
-
-  instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-  sqlWorkloadCapturesStopReplayRequestBody = _messages.MessageField(
-      'SqlWorkloadCapturesStopReplayRequestBody', 3
-  )
-  workloadId = _messages.StringField(4, required=True)
-
-
-class SqlWorkloadCapturesStopReplayRequestBody(_messages.Message):
   r"""Request to stop executing a captured workload on a replay instance.
 
   Fields:
@@ -8862,24 +8803,6 @@ class SqlWorkloadCapturesStopReplayRequestBody(_messages.Message):
 
 
 class SqlWorkloadCapturesStopRequest(_messages.Message):
-  r"""A SqlWorkloadCapturesStopRequest object.
-
-  Fields:
-    instance: Required. Cloud SQL instance ID. This does not include the
-      project ID.
-    project: Required. Project ID of the project that contains the instance.
-    sqlWorkloadCapturesStopRequestBody: A SqlWorkloadCapturesStopRequestBody
-      resource to be passed as the request body.
-  """
-
-  instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-  sqlWorkloadCapturesStopRequestBody = _messages.MessageField(
-      'SqlWorkloadCapturesStopRequestBody', 3
-  )
-
-
-class SqlWorkloadCapturesStopRequestBody(_messages.Message):
   r"""Request to stop recording traffic from the primary instance.
 
   Fields:
@@ -9836,13 +9759,18 @@ class WorkloadCapture(_messages.Message):
     Values:
       STATE_UNSPECIFIED: Default value. This value is unused.
       RUNNING: Workload capture is currently running.
-      COMPLETED: Workload capture completed successfully.
+      COMPLETED: Workload capture completed successfully. This state is set
+        when the user explicitly stops the capture.
       FAILED: Workload capture failed.
+      TERMINATED: Workload capture was terminated automatically. This state is
+        set when Cloud SQL automatically stops the capture due to a
+        conflicting operation or when the maximum duration is reached.
     """
     STATE_UNSPECIFIED = 0
     RUNNING = 1
     COMPLETED = 2
     FAILED = 3
+    TERMINATED = 4
 
   endTime = _messages.StringField(1)
   replayInstance = _messages.StringField(2)

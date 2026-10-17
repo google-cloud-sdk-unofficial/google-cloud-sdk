@@ -17,6 +17,7 @@
 
 from googlecloudsdk.api_lib.storage import feature_config_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.core import properties
 
@@ -36,9 +37,9 @@ class Create(base.Command):
       ),
       'EXAMPLES': (
           """
-      To create a Feature Config with config name "my_config" and auto-annotate model "face-detector":
+      To create a Feature Config with config ID "sample_config", auto-annotate model "face-detector", and specified processing location:
 
-         $ {command} my_config --auto-annotate-models=face-detector
+         $ {command} sample_config --auto-annotate-models=face-detector --auto-annotate-processing-location=us
       """
       ),
   }
@@ -51,11 +52,27 @@ class Create(base.Command):
     )
     flags.add_feature_config_description_flag(parser)
     flags.add_feature_config_filter_flags(parser)
-    models_group = parser.add_mutually_exclusive_group(required=True)
-    flags.add_feature_config_auto_annotate_models_flag(models_group)
+    feature_config_type_group = parser.add_mutually_exclusive_group(
+        required=True,
+    )
+    auto_annotate_group = feature_config_type_group.add_group(
+        mutex=False,
+    )
+    flags.add_feature_config_auto_annotate_models_flag(
+        auto_annotate_group, required=True
+    )
+    flags.add_feature_config_auto_annotate_processing_location_flag(
+        auto_annotate_group, required=True
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
+    if not args.auto_annotate_processing_location.strip():
+      raise exceptions.InvalidArgumentException(
+          '--auto-annotate-processing-location',
+          'Processing location cannot be empty.',
+      )
+
     client = feature_config_api.FeatureConfigApi()
     project = properties.VALUES.core.project.Get(required=True)
     parent = f'projects/{project}/locations/global'
@@ -65,6 +82,7 @@ class Create(base.Command):
         feature_config_id=args.CONFIG_ID,
         description=args.description,
         auto_annotate_models=args.auto_annotate_models,
+        auto_annotate_processing_location=args.auto_annotate_processing_location,
         include_locations=args.include_locations,
         exclude_locations=args.exclude_locations,
         include_bucket_id_regexes=args.include_bucket_id_regexes,

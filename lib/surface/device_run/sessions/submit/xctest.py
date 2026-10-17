@@ -168,6 +168,18 @@ class XcTest(base.Command):
         ),
     )
     parser.add_argument(
+        '--locale',
+        type=str,
+        help=(
+            'Specify the locale (language and region) to switch the iOS'
+            ' application to before running the test. The format is'
+            ' `language-region`, e.g., `en-US` or `zh-CN`. The typical'
+            ' language value is a two- or three-letter language code as'
+            ' defined in ISO 639. The typical region value is a two-letter'
+            ' ISO 3166 code or a three-digit UN M.49 area code.'
+        ),
+    )
+    parser.add_argument(
         '--bucket-name',
         type=str,
         help=(
@@ -307,6 +319,13 @@ class XcTest(base.Command):
       )
       device_actions.append(push_action)
 
+    if args.locale:
+      locale_action = messages.DeviceAction(
+          iosSwitchLocale=messages.IosSwitchLocaleDeviceAction(
+              localeCode=args.locale
+          )
+      )
+      device_actions.append(locale_action)
     xctest_timeout = (
         f'{args.xctest_timeout}s' if args.xctest_timeout is not None else None
     )

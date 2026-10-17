@@ -480,7 +480,7 @@ class PythonVersion(object):
   # See class docstring for descriptions of what these mean
   MIN_REQUIRED_PY3_VERSION = (3, 6)
   MIN_SUPPORTED_PY3_VERSION = (3, 10)
-  MAX_SUPPORTED_PY3_VERSION = (3, 14)
+  MAX_SUPPORTED_PY3_VERSION = (3, 15)
   UPCOMING_SUNSET_PY3_VERSION = None
   UPCOMING_PY3_MIN_SUPPORTED_VERSION = None
   UPCOMING_PY3_DEPRECATION_DATE = None

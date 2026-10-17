@@ -16,14 +16,14 @@
 """Command for deleting ZoneVmExtensionPolicies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.zone_vm_extension_policies import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.vm_extension_policies import flags as vm_extension_policies_flags
 from googlecloudsdk.command_lib.compute.zone_vm_extension_policies import flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine zone VM extension policy."""
 
@@ -36,10 +36,12 @@ class Delete(base.DeleteCommand):
    """,
   }
 
-  @staticmethod
-  def Args(parser):
-    Delete.ZoneVmExtensionPoliciesArg = flags.MakeZoneVmExtensionPolicyArg()
-    Delete.ZoneVmExtensionPoliciesArg.AddArgument(
+  ZONE_VM_EXTENSION_POLICIES_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.ZONE_VM_EXTENSION_POLICIES_ARG = flags.MakeZoneVmExtensionPolicyArg()
+    cls.ZONE_VM_EXTENSION_POLICIES_ARG.AddArgument(
         parser, operation_type='delete'
     )
 
@@ -53,20 +55,23 @@ class Delete(base.DeleteCommand):
       Response calling the ZoneVmExtensionPoliciesService.Delete API.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-
-    resource_ref = Delete.ZoneVmExtensionPoliciesArg.ResolveAsResource(
+    resource_ref = flags.ResolveZoneVmExtensionPolicyResource(
         args,
-        holder.resources
+        holder,
+        self.ZONE_VM_EXTENSION_POLICIES_ARG,
     )
+    policy_client = client.ZoneVmExtensionPolicy.FromRef(
+        resource_ref, holder.client
+    )
+    return policy_client.Delete()
 
-    return client.MakeRequests([(
-        client.apitools_client.zoneVmExtensionPolicies,
-        'Delete',
-        messages.ComputeZoneVmExtensionPoliciesDeleteRequest(
-            project=resource_ref.project,
-            zone=resource_ref.zone,
-            vmExtensionPolicy=resource_ref.Name(),
-        ),
-    )])
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete a Compute Engine zone VM extension policy."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(DeleteAlpha, cls).Args(parser)
+    vm_extension_policies_flags.AddScopeFlags(parser)

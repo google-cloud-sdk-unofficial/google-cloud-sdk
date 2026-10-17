@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
 
   help_text:
     description: Delete one or more reCAPTCHA Firewall Policies from a given cloud project.

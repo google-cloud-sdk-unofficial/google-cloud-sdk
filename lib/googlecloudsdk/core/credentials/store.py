@@ -24,7 +24,7 @@ import contextlib
 import datetime
 import os
 import textwrap
-from typing import Optional
+from typing import Any, Optional
 
 import dateutil
 from googlecloudsdk.api_lib.auth import external_account as auth_external_account
@@ -37,6 +37,7 @@ from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import gce as c_gce
 from googlecloudsdk.core.credentials import iam_endpoint
+from googlecloudsdk.core.updater import installers
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import times
@@ -1016,8 +1017,7 @@ def Refresh(credentials,
       to refresh.
     is_impersonated_credential: bool, True treat provided credential as an
       impersonated service account credential. If False, treat as service
-      account or user credential. Needed to avoid circular dependency on
-      IMPERSONATION_TOKEN_PROVIDER.
+      account or user credential.
     include_email: bool, Specifies whether or not the service account email is
       included in the identity token. Only applicable to impersonated service
       account.
@@ -1170,8 +1170,7 @@ def _RefreshGoogleAuthIdToken(
       to refresh.
     is_impersonated_credential: bool, True treat provided credential as an
       impersonated service account credential. If False, treat as service
-      account or user credential. Needed to avoid circular dependency on
-      IMPERSONATION_TOKEN_PROVIDER.
+      account or user credential.
     include_email: bool, Specifies whether or not the service account email is
       included in the identity token. Only applicable to impersonated service
       account.
@@ -1293,7 +1292,6 @@ def _RefreshServiceAccountIdTokenGoogleAuth(cred, request_client):
   # Import only when necessary to decrease the startup time.
   # pylint: disable=g-import-not-at-top
   from google.auth import exceptions as google_auth_exceptions
-  from google.auth import iam as google_auth_iam
   from google.oauth2 import service_account as google_auth_service_account
   # pylint: enable=g-import-not-at-top
 
@@ -1304,12 +1302,7 @@ def _RefreshServiceAccountIdTokenGoogleAuth(cred, request_client):
       config.CLOUDSDK_CLIENT_ID,
       universe_domain=properties.VALUES.core.universe_domain.Get(),
   )
-  google_auth_iam._IAM_IDTOKEN_ENDPOINT = (  # pylint: disable=protected-access
-      google_auth_iam._IAM_IDTOKEN_ENDPOINT.replace(  # pylint: disable=protected-access
-          iam_endpoint.IAM_ENDPOINT_GDU,
-          iam_endpoint.GetEffectiveIamEndpoint(),
-      )
-  )
+  iam_endpoint.OverrideIamIdTokenEndpoint()
 
   try:
     id_token_cred.refresh(request_client)
@@ -1701,3 +1694,10 @@ class _LegacyGenerator(object):
 
     full_path = os.path.realpath(files.ExpandHomeDir(filepath))
     files.WriteFileContents(full_path, contents, private=True)
+
+
+def _LoadInstallerCredential() -> Any:
+  return LoadFreshCredential()
+
+
+installers.SetCredentialLoader(_LoadInstallerCredential, creds_exceptions.Error)

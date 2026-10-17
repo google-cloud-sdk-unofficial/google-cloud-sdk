@@ -148,7 +148,7 @@ class ConversionWorkspacesOperationsClient(
             convertConversionWorkspaceRequest=self.messages.ConvertConversionWorkspaceRequest(
                 filter=self.CombineFilters(
                     filter_expr,
-                    self.parent_client.crud.GetGlobalFilter(name=name),
+                    self.GetGlobalFilter(name=name),
                 ),
                 autoCommit=auto_commit,
             ),
@@ -241,11 +241,11 @@ class ConversionWorkspacesOperationsClient(
                 rulesSourceFilename=os.path.basename(config_file),
             ),
         )
-      except files.MissingFileError:
+      except files.MissingFileError as e:
         raise exceptions.BadArgumentException(
             '--config-flies',
             f'specified file [{config_file}] does not exist.',
-        )
+        ) from e
 
     return rules_files
 

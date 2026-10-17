@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
   universe_compatible: false
 
   help_text:
@@ -67,6 +69,8 @@
     method: create
 
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Create a new regional endpoint.

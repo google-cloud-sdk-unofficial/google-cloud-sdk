@@ -440,6 +440,10 @@ class Instance(proto.Message):
             default URI of this Instance.
         iap_enabled (bool):
             Optional. IAP settings on the Instance.
+        ssh_enabled (bool):
+            Optional. Enables SSH access to the Instance.
+
+            This field is a member of `oneof`_ ``_ssh_enabled``.
         restart_policy (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Instance.RestartPolicy):
             Optional. Restart policy for the Instance.
         termination_grace_period (google.protobuf.duration_pb2.Duration):
@@ -654,6 +658,11 @@ class Instance(proto.Message):
     iap_enabled: bool = proto.Field(
         proto.BOOL,
         number=30,
+    )
+    ssh_enabled: bool = proto.Field(
+        proto.BOOL,
+        number=32,
+        optional=True,
     )
     restart_policy: RestartPolicy = proto.Field(
         proto.ENUM,

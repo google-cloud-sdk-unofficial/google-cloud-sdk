@@ -2602,6 +2602,33 @@ class NetappV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetInventory(self, request, global_params=None):
+      r"""Retrieves hierarchical storage resources for a specific location across a project.
+
+      Args:
+        request: (NetappProjectsLocationsGetInventoryRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Inventory) The response message.
+      """
+      config = self.GetMethodConfig('GetInventory')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetInventory.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/inventory',
+        http_method='GET',
+        method_id='netapp.projects.locations.getInventory',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['view'],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='NetappProjectsLocationsGetInventoryRequest',
+        response_type_name='Inventory',
+        supports_download=False,
+    )
+
     def GetTrial(self, request, global_params=None):
       r"""GetTrial gets a Trial.
 

@@ -305,7 +305,7 @@ REMOTE_{command}_REPO must be one of: [{enums}].
 ({facade} only) Repo upstream for {facade_lower} remote repository.
 REMOTE_{command}_REPO can be either:
   - one of the following enums: [{enums}].
-  - an http/https custom registry uri (ex: https://my.{facade_lower}.registry)
+  - an https custom registry uri (ex: https://my.{facade_lower}.registry)
 """.format(
       facade=facade,
       facade_lower=facade.lower(),
@@ -344,7 +344,7 @@ REMOTE_{facade_upper}_REPO must be one of: [{enums}].
 ({facade} only) Repository base for {facade_lower} remote repository.
 REMOTE_{facade_upper}_REPO can be either:
   - one of the following enums: [{enums}].
-  - an http/https custom registry uri (ex: https://my.{facade_lower}.registry)
+  - an https custom registry uri (ex: https://my.{facade_lower}.registry)
 """.format(
       facade=facade,
       facade_lower=facade.lower(),

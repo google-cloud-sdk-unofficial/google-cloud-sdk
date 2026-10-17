@@ -14,7 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the compute network firewall policies commands."""
 
-
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -94,11 +93,7 @@ def NetworkFirewallPolicyAssociationArgument(
   )
 
 
-def AddArgsCreateAssociation(
-    parser,
-    support_priority=False,
-    support_associated_policy_to_be_replaced=False,
-):
+def AddArgsCreateAssociation(parser):
   """Adds the arguments of association creation."""
   parser.add_argument('--name', help='Name of the association.')
 
@@ -108,23 +103,18 @@ def AddArgsCreateAssociation(
       help='Name of the network with which the association is created.',
   )
 
-  if support_priority:
-    parser.add_argument(
-        '--priority',
-        required=False,
-        hidden=True,
-        help='Priority of the association.',
-    )
+  parser.add_argument(
+      '--priority',
+      required=False,
+      help='Priority of the association.',
+  )
 
-  group = parser
-  if support_associated_policy_to_be_replaced:
-    group = parser.add_group(mutex=True, required=False)
-    group.add_argument(
-        '--associated-policy-to-be-replaced',
-        required=False,
-        hidden=True,
-        help='Name of an already associated firewall policy to replace.',
-    )
+  group = parser.add_group(mutex=True, required=False)
+  group.add_argument(
+      '--associated-policy-to-be-replaced',
+      required=False,
+      help='Name of an already associated firewall policy to replace.',
+  )
 
   group.add_argument(
       '--replace-association-on-target',

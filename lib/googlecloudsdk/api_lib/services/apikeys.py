@@ -32,7 +32,13 @@ _RELEASE_TRACK_TO_API_VERSION = {
 }
 
 
-def ListKeys(project, show_deleted=None, page_size=None, limit=None):
+def ListKeys(
+    project,
+    show_deleted=None,
+    page_size=None,
+    limit=None,
+    release_track=calliope_base.ReleaseTrack.GA,
+):
   """List API Keys for a given project.
 
   Args:
@@ -40,6 +46,7 @@ def ListKeys(project, show_deleted=None, page_size=None, limit=None):
     show_deleted: Includes deleted keys in the list.
     page_size: The page size to list.
     limit: The max number of metrics to return.
+    release_track: The release track of the command.
 
   Raises:
     exceptions.PermissionDeniedException: when listing keys fails.
@@ -47,31 +54,40 @@ def ListKeys(project, show_deleted=None, page_size=None, limit=None):
   Returns:
     The list of keys
   """
-  client = GetClientInstance(calliope_base.ReleaseTrack.GA)
+  client = GetClientInstance(release_track)
   messages = client.MESSAGES_MODULE
 
   request = messages.ApikeysProjectsLocationsKeysListRequest(
-      parent=GetParentResourceName(project), showDeleted=show_deleted)
+      parent=GetParentResourceName(project), showDeleted=show_deleted
+  )
   return list_pager.YieldFromList(
       client.projects_locations_keys,
       request,
       limit=limit,
       batch_size_attribute='pageSize',
       batch_size=page_size,
-      field='keys')
+      field='keys',
+  )
 
 
-def GetClientInstance(release_track=calliope_base.ReleaseTrack.ALPHA):
+def GetClientInstance(release_track=calliope_base.ReleaseTrack.GA):
   """Returns an API client for ApiKeys."""
   api_version = _RELEASE_TRACK_TO_API_VERSION.get(release_track)
   return core_apis.GetClientInstance(_API_NAME, api_version)
 
 
-def GetOperation(name):
+def GetMessagesModule(release_track=calliope_base.ReleaseTrack.GA):
+  """Returns the messages module for ApiKeys."""
+  api_version = _RELEASE_TRACK_TO_API_VERSION.get(release_track)
+  return core_apis.GetMessagesModule(_API_NAME, api_version)
+
+
+def GetOperation(name, release_track=calliope_base.ReleaseTrack.GA):
   """Make API call to get an operation.
 
   Args:
     name: The name of the operation.
+    release_track: The release track of the command.
 
   Raises:
     exceptions.OperationErrorException: when the getting operation API fails.
@@ -80,23 +96,48 @@ def GetOperation(name):
   Returns:
     The result of the operation
   """
-  client = GetClientInstance()
+  client = GetClientInstance(release_track)
   messages = client.MESSAGES_MODULE
   request = messages.ApikeysOperationsGetRequest(name=name)
   try:
     return client.operations.Get(request)
-  except (apitools_exceptions.HttpForbiddenError,
-          apitools_exceptions.HttpNotFoundError) as e:
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
     exceptions.ReraiseError(e, exceptions.OperationErrorException)
+
+
+def _ResolveMessageClass(messages, candidates):
+  """Safely resolves the first matching message class from a messages module."""
+  for candidate in candidates:
+    if hasattr(messages, candidate):
+      return getattr(messages, candidate)
+  raise AttributeError(
+      f'None of the candidate message classes {candidates} found in messages'
+      ' module.'
+  )
 
 
 def GetAllowedAndroidApplications(args, messages):
   """Create list of allowed android applications."""
   allowed_applications = []
-  for application in getattr(args, 'allowed_application', []) or []:
-    android_application = messages.V2AndroidApplication(
+  entries = getattr(args, 'allowed_application', []) or []
+  if not entries:
+    return allowed_applications
+  app_cls = _ResolveMessageClass(
+      messages,
+      [
+          'V2AndroidApplication',
+          'AndroidApplication',
+          'V3AndroidApplication',
+      ],
+  )
+  for application in entries:
+    android_application = app_cls(
         sha1Fingerprint=application['sha1_fingerprint'],
-        packageName=application['package_name'])
+        packageName=application['package_name'],
+    )
     allowed_applications.append(android_application)
   return allowed_applications
 
@@ -104,31 +145,55 @@ def GetAllowedAndroidApplications(args, messages):
 def GetApiTargets(args, messages):
   """Create list of target apis."""
   api_targets = []
-  for api_target in getattr(args, 'api_target', []) or []:
+  entries = getattr(args, 'api_target', []) or []
+  if not entries:
+    return api_targets
+  target_cls = _ResolveMessageClass(
+      messages,
+      [
+          'V2ApiTarget',
+          'ApiTarget',
+          'V3ApiTarget',
+      ],
+  )
+  for api_target in entries:
     api_targets.append(
-        messages.V2ApiTarget(
+        target_cls(
             service=api_target.get('service'),
-            methods=api_target.get('methods', [])))
+            methods=api_target.get('methods', []),
+        )
+    )
   return api_targets
 
 
 def GetAnnotations(args, messages):
   """Create list of annotations."""
   annotations = getattr(args, 'annotations', {})
-  additional_property_messages = []
   if not annotations:
     return None
 
+  key_cls = _ResolveMessageClass(
+      messages,
+      [
+          'V2Key',
+          'Key',
+          'V3Key',
+      ],
+  )
+
+  additional_property_messages = []
   for key, value in annotations.items():
     additional_property_messages.append(
-        messages.V2Key.AnnotationsValue.AdditionalProperty(
-            key=key, value=value))
+        key_cls.AnnotationsValue.AdditionalProperty(key=key, value=value)
+    )
 
-  annotation_value_message = messages.V2Key.AnnotationsValue(
-      additionalProperties=additional_property_messages)
+  annotation_value_message = key_cls.AnnotationsValue(
+      additionalProperties=additional_property_messages
+  )
 
   return annotation_value_message
 
 
 def GetParentResourceName(project):
   return _PARENT_RESOURCE % (project)
+

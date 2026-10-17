@@ -43,7 +43,9 @@ def ExpandScopeAliases(scopes):
   return sorted(expanded_scopes)
 
 
-def GetComputeResources(release_track, cluster_name, dataproc_region):
+def GetComputeResources(
+    release_track, cluster_name, dataproc_region, multizone=False
+):
   """Returns a resources object with resolved GCE zone and region."""
   holder = compute_base.ComputeApiHolder(release_track)
   region_prop = properties.VALUES.compute.region
@@ -52,8 +54,8 @@ def GetComputeResources(release_track, cluster_name, dataproc_region):
 
   # Prompt for scope if necessary. If Dataproc regional stack is used, omitting
   # the zone allows the server to pick a zone
-  zone = properties.VALUES.compute.zone.Get()
-  if not zone and dataproc_region == 'global':
+  zone = None if multizone else properties.VALUES.compute.zone.Get()
+  if not multizone and not zone and dataproc_region == 'global':
     _, zone = scope_prompter.PromptForScope(
         resource_name='cluster',
         underspecified_names=[cluster_name],
@@ -77,7 +79,7 @@ def GetComputeResources(release_track, cluster_name, dataproc_region):
     region_name = compute_utils.ZoneNameToRegionName(zone_name)
     region_prop.Set(region_name)
   else:
-    # Auto zone
+    # Auto zone or multizone
     zone_prop.Set('')
     # Set GCE region to dataproc region (which is a 1:1 mapping)
     region_prop.Set(dataproc_region)

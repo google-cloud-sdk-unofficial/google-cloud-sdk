@@ -372,6 +372,7 @@ def ValidateInstanceFlexibilityArgs(args):
   flexibility_policy_args = [
       'instance_selection_machine_types',
       'instance_selection',
+      'instance_flexibility_policy',
   ]
   specified_args = []
   for arg in flexibility_policy_args:
@@ -400,6 +401,19 @@ def ValidateInstanceFlexibilityArgs(args):
         raise exceptions.InvalidArgumentException(
             'instance_selection', 'Missing machine type in instance selection.'
         )
+  if args.IsKnownAndSpecified('instance_flexibility_policy'):
+    new_instance_selections = (
+        args.instance_flexibility_policy.get('instanceSelections') or {}
+    )
+    for instance_selection in new_instance_selections.values():
+      if (
+          'machineTypes' not in instance_selection
+          or not instance_selection['machineTypes']
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--instance-flexibility-policy',
+            'Missing machine type in instance selection.',
+        )
 
 
 def AddCommonBulkInsertArgs(
@@ -424,6 +438,7 @@ def AddCommonBulkInsertArgs(
     support_workload_identity_config=False,
     support_identity_type=False,
     support_instance_selection_min_cpu_platform=False,
+    support_flex_policy_flag_with_mincpu_and_disks=False,
     support_vsock_mode=False,
     support_expose_host_topology=False,
     include_kms_key_service_account=False,
@@ -448,6 +463,8 @@ def AddCommonBulkInsertArgs(
       supported.
     support_instance_selection_min_cpu_platform: bool, whether min CPU platform
       is supported.
+    support_flex_policy_flag_with_mincpu_and_disks: bool, whether
+      --instance-flexibility-policy flag with min CPU and disks is supported.
     support_vsock_mode: bool, whether vsock mode is supported.
     support_expose_host_topology: bool, whether expose host topology is
       supported.
@@ -594,6 +611,7 @@ def AddCommonBulkInsertArgs(
     compute_flags.AddInstanceFlexibilityPolicyArgs(
         parser,
         support_instance_selection_min_cpu_platform=support_instance_selection_min_cpu_platform,
+        support_flex_policy_flag_with_mincpu_and_disks=support_flex_policy_flag_with_mincpu_and_disks,
     )
   if support_workload_identity_config:
     instances_flags.AddWorkloadIdentityConfigArgs(

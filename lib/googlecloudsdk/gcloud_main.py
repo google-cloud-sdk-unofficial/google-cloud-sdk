@@ -222,10 +222,11 @@ def main(gcloud_cli=None, credential_providers=None):
     gcloud_cli = CreateCLI([])
 
   payload_str = encoding.GetEncodedValue(os.environ, 'GOCLOUD_PAYLOAD')
+  exec_mode = encoding.GetEncodedValue(os.environ, 'GOCLOUD_EXEC_MODE')
 
   with creds_context_managers.CredentialProvidersManager(credential_providers):
     try:
-      if payload_str:
+      if payload_str and exec_mode not in ('bootstrap', 'bootstrap-fallback'):
         gcloud_cli.ExecutePayload(payload_str)
       else:
         gcloud_cli.Execute()

@@ -164,6 +164,8 @@ class AutomatedBackupPolicy(_messages.Message):
   r"""Defines an automated backup policy for a table
 
   Fields:
+    disabled: Optional. If `true`, automated backups are explicitly disabled
+      on this table. This allows users to opt out of default enablement.
     frequency: How frequently automated backups should occur. The only
       supported value at this time is 24 hours. An undefined frequency is
       treated as 24 hours.
@@ -182,10 +184,11 @@ class AutomatedBackupPolicy(_messages.Message):
       retained. Values must be at least 3 days and at most 90 days.
   """
 
-  frequency = _messages.StringField(1)
-  keepHotDuration = _messages.StringField(2)
-  locations = _messages.StringField(3, repeated=True)
-  retentionPeriod = _messages.StringField(4)
+  disabled = _messages.BooleanField(1)
+  frequency = _messages.StringField(2)
+  keepHotDuration = _messages.StringField(3)
+  locations = _messages.StringField(4, repeated=True)
+  retentionPeriod = _messages.StringField(5)
 
 
 class AutoscalingLimits(_messages.Message):
@@ -4799,6 +4802,10 @@ class Table(_messages.Message):
       prohibited: * The table. * The column families in the table. * The
       instance containing the table. Note one can still delete the data stored
       in the table through Data APIs.
+    effectiveAutomatedBackupPolicy: Output only. The effective automated
+      backup policy applied to the table. This represents the policy actually
+      in effect, which may be a system-default policy if the user has not
+      explicitly configured one. Views: `SCHEMA_VIEW`, `FULL`.
     granularity: Immutable. The granularity at which timestamps are stored in
       this table. Timestamps not matching the granularity will be rejected. If
       unspecified at creation time, the value will be set to `MILLIS`. Views:
@@ -4934,12 +4941,13 @@ class Table(_messages.Message):
   clusterStates = _messages.MessageField('ClusterStatesValue', 3)
   columnFamilies = _messages.MessageField('ColumnFamiliesValue', 4)
   deletionProtection = _messages.BooleanField(5)
-  granularity = _messages.EnumField('GranularityValueValuesEnum', 6)
-  name = _messages.StringField(7)
-  restoreInfo = _messages.MessageField('RestoreInfo', 8)
-  rowKeySchema = _messages.MessageField('GoogleBigtableAdminV2TypeStruct', 9)
-  stats = _messages.MessageField('TableStats', 10)
-  tieredStorageConfig = _messages.MessageField('TieredStorageConfig', 11)
+  effectiveAutomatedBackupPolicy = _messages.MessageField('AutomatedBackupPolicy', 6)
+  granularity = _messages.EnumField('GranularityValueValuesEnum', 7)
+  name = _messages.StringField(8)
+  restoreInfo = _messages.MessageField('RestoreInfo', 9)
+  rowKeySchema = _messages.MessageField('GoogleBigtableAdminV2TypeStruct', 10)
+  stats = _messages.MessageField('TableStats', 11)
+  tieredStorageConfig = _messages.MessageField('TieredStorageConfig', 12)
 
 
 class TableProgress(_messages.Message):

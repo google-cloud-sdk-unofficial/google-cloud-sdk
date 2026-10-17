@@ -49,26 +49,22 @@ class ConversionWorkspacesClient:
     """
     self.crud = (
         conversion_workspaces_crud_client.ConversionWorkspacesCRUDClient(
-            parent_client=self,
             release_track=release_track,
             location=location,
         )
     )
 
     self.operations = conversion_workspaces_operations_client.ConversionWorkspacesOperationsClient(
-        parent_client=self,
         release_track=release_track,
         location=location,
     )
 
     self.entities = conversion_workspaces_entities_client.ConversionWorkspacesEntitiesClient(
-        parent_client=self,
         release_track=release_track,
         location=location,
     )
 
     self.lro = conversion_workspaces_lro_client.ConversionWorkspacesLROClient(
-        parent_client=self,
         release_track=release_track,
         location=location,
     )

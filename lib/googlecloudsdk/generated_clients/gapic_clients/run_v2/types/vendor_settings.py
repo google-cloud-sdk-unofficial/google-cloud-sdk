@@ -27,6 +27,7 @@ __protobuf__ = proto.module(
         'ExecutionEnvironment',
         'EncryptionKeyRevocationAction',
         'IdentityType',
+        'FunctionalType',
         'VpcAccess',
         'BinaryAuthorization',
         'RevisionScaling',
@@ -113,6 +114,23 @@ class IdentityType(proto.Enum):
     IDENTITY_TYPE_UNSPECIFIED = 0
     IDENTITY_TYPE_SERVICE_ACCOUNT = 1
     IDENTITY_TYPE_AGENT_IDENTITY = 3
+
+
+class FunctionalType(proto.Enum):
+    r"""Represents the functional type.
+
+    Values:
+        FUNCTIONAL_TYPE_UNSPECIFIED (0):
+            Specifies that the functional type is
+            unspecified.
+        FUNCTIONAL_TYPE_AGENT (1):
+            Represents an AGENT functional type.
+        FUNCTIONAL_TYPE_MCP_SERVER (2):
+            Represents an MCP_SERVER functional type.
+    """
+    FUNCTIONAL_TYPE_UNSPECIFIED = 0
+    FUNCTIONAL_TYPE_AGENT = 1
+    FUNCTIONAL_TYPE_MCP_SERVER = 2
 
 
 class VpcAccess(proto.Message):

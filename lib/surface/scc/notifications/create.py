@@ -84,6 +84,7 @@ class Create(base.CreateCommand):
   def Args(parser):
 
     notifications_flags.PUBSUB_TOPIC_REQUIRED_FLAG.AddToParser(parser)
+    notifications_flags.DELETION_NOTIFICATIONS_ENABLED_FLAG.AddToParser(parser)
     notifications_flags.DESCRIPTION_FLAG.AddToParser(parser)
     notifications_flags.FILTER_FLAG.AddToParser(parser)
 
@@ -130,6 +131,10 @@ class Create(base.CreateCommand):
     req.notificationConfig = messages.NotificationConfig()
     req.notificationConfig.description = args.description
     req.notificationConfig.pubsubTopic = args.pubsub_topic
+    if args.IsKnownAndSpecified('deletion_notifications_enabled'):
+      req.notificationConfig.deletionNotificationsEnabled = (
+          args.deletion_notifications_enabled
+      )
 
     # Use the full config name if provided.
     if '/notificationConfigs/' in args.NOTIFICATIONCONFIGID:

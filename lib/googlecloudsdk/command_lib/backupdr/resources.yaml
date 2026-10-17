@@ -118,6 +118,140 @@ backupPlanAssociations:
     help: The ID of the Backup Plan Association
   disable_auto_completers: false
 
+restoreVerificationPlans:
+  name: restore_verification_plan
+  collection: backupdr.projects.locations.restoreVerificationPlans
+  api_version: v1alpha
+  request_id_field: restoreVerificationPlansId
+  attributes:
+  - *project
+  - *location
+  - &restoreVerificationPlansId
+    parameter_name: restoreVerificationPlansId
+    attribute_name: restore_verification_plan
+    help: The ID of the Restore Verification Plan.
+  disable_auto_completers: false
+
+restoreVerificationPlanDefault:
+  name: restore_verification_plan
+  collection: backupdr.projects.locations.restoreVerificationPlans
+  api_version: v1alpha
+  request_id_field: restoreVerificationPlansId
+  attributes:
+  - *project
+  - *locationDefaultGlobal
+  - &restoreVerificationPlansDefault
+    parameter_name: restoreVerificationPlansId
+    attribute_name: restore_verification_plan
+    help: The ID of the Restore Verification Plan.
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all restore verification plans
+
+restoreVerificationPlanAssociations:
+  name: restore_verification_plan_association
+  collection: backupdr.projects.locations.restoreVerificationPlans.associations
+  api_version: v1alpha
+  request_id_field: associationsId
+  attributes:
+  - *project
+  - *location
+  - &restoreVerificationPlansParentId
+    parameter_name: restoreVerificationPlansId
+    attribute_name: restore_verification_plan
+    help: The ID of the Restore Verification Plan.
+  - &associationsId
+    parameter_name: associationsId
+    attribute_name: restore_verification_plan_association
+    help: The ID of the Restore Verification Plan Association.
+  disable_auto_completers: false
+
+restoreVerificationPlanAssociationDefault:
+  name: restore_verification_plan_association
+  collection: backupdr.projects.locations.restoreVerificationPlans.associations
+  api_version: v1alpha
+  request_id_field: associationsId
+  attributes:
+  - *project
+  - *locationDefaultGlobal
+  - *restoreVerificationPlansParentId
+  - &associationsDefault
+    parameter_name: associationsId
+    attribute_name: restore_verification_plan_association
+    help: The ID of the Restore Verification Plan Association.
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all restore verification plan associations
+
+restoreTemplates:
+  name: restore_template
+  collection: backupdr.projects.locations.restoreTemplates
+  api_version: v1alpha
+  request_id_field: restoreTemplatesId
+  attributes:
+  - *project
+  - *location
+  - &restoreTemplatesId
+    parameter_name: restoreTemplatesId
+    attribute_name: restore_template
+    help: The ID of the Restore Template.
+  disable_auto_completers: false
+
+restoreTemplateDefault:
+  name: restore_template
+  collection: backupdr.projects.locations.restoreTemplates
+  api_version: v1alpha
+  request_id_field: restoreTemplatesId
+  attributes:
+  - *project
+  - *locationDefaultGlobal
+  - &restoreTemplatesDefault
+    parameter_name: restoreTemplatesId
+    attribute_name: restore_template
+    help: The ID of the Restore Template.
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all restore templates
+
+restoreTemplateExecutions:
+  name: restore_template_execution
+  collection: backupdr.projects.locations.restoreTemplates.executions
+  api_version: v1alpha
+  request_id_field: executionsId
+  attributes:
+  - *project
+  - *location
+  - &restoreTemplatesParentId
+    parameter_name: restoreTemplatesId
+    attribute_name: restore_template
+    help: The ID of the Restore Template.
+  - &executionsId
+    parameter_name: executionsId
+    attribute_name: restore_template_execution
+    help: The ID of the Restore Template Execution.
+  disable_auto_completers: false
+
+restoreTemplateExecutionDefault:
+  name: restore_template_execution
+  collection: backupdr.projects.locations.restoreTemplates.executions
+  api_version: v1alpha
+  request_id_field: executionsId
+  attributes:
+  - *project
+  - *locationDefaultGlobal
+  - *restoreTemplatesParentId
+  - &executionsDefault
+    parameter_name: executionsId
+    attribute_name: restore_template_execution
+    help: The ID of the Restore Template Execution.
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all executions
+
 backupVault:
   name: backup_vault
   collection: backupdr.projects.locations.backupVaults

@@ -1,6 +1,7 @@
 # merge_drivers.py -- Merge driver support for dulwich
 # Copyright (C) 2025 Jelmer Vernooij <jelmer@jelmer.uk>
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
 # General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
@@ -20,10 +21,20 @@
 
 """Merge driver support for dulwich."""
 
+__all__ = [
+    "MergeDriver",
+    "MergeDriverRegistry",
+    "ProcessMergeDriver",
+    "get_merge_driver_registry",
+]
+
 import os
+import shlex
 import subprocess
+import sys
 import tempfile
-from typing import Any, Optional, Protocol
+from collections.abc import Callable
+from typing import Protocol
 
 from .config import Config
 
@@ -36,7 +47,7 @@ class MergeDriver(Protocol):
         ancestor: bytes,
         ours: bytes,
         theirs: bytes,
-        path: Optional[str] = None,
+        path: str | None = None,
         marker_size: int = 7,
     ) -> tuple[bytes, bool]:
         """Perform a three-way merge.
@@ -53,6 +64,15 @@ class MergeDriver(Protocol):
             If success is False, the content may contain conflict markers
         """
         ...
+
+
+def _shell_quote(value: str) -> str:
+    """Shell-quote ``value`` for the platform's default shell."""
+    if sys.platform == "win32":
+        if any(c in value for c in "\r\n\x00"):
+            raise ValueError("value contains unescapable character for cmd.exe")
+        return '"' + value.replace('"', '""') + '"'
+    return shlex.quote(value)
 
 
 class ProcessMergeDriver:
@@ -73,7 +93,7 @@ class ProcessMergeDriver:
         ancestor: bytes,
         ours: bytes,
         theirs: bytes,
-        path: Optional[str] = None,
+        path: str | None = None,
         marker_size: int = 7,
     ) -> tuple[bytes, bool]:
         """Perform merge using external process.
@@ -101,14 +121,18 @@ class ProcessMergeDriver:
             with open(theirs_path, "wb") as f:
                 f.write(theirs)
 
-            # Prepare command with placeholders
+            # %P is attacker-controllable; quote everything (CVE-2026-42563).
             cmd = self.command
-            cmd = cmd.replace("%O", ancestor_path)
-            cmd = cmd.replace("%A", ours_path)
-            cmd = cmd.replace("%B", theirs_path)
-            cmd = cmd.replace("%L", str(marker_size))
+            cmd = cmd.replace("%O", _shell_quote(ancestor_path))
+            cmd = cmd.replace("%A", _shell_quote(ours_path))
+            cmd = cmd.replace("%B", _shell_quote(theirs_path))
+            cmd = cmd.replace("%L", _shell_quote(str(marker_size)))
             if path:
-                cmd = cmd.replace("%P", path)
+                try:
+                    quoted_path = _shell_quote(path)
+                except ValueError:
+                    return ours, False
+                cmd = cmd.replace("%P", quoted_path)
 
             # Execute merge command
             try:
@@ -136,25 +160,25 @@ class ProcessMergeDriver:
 class MergeDriverRegistry:
     """Registry for merge drivers."""
 
-    def __init__(self, config: Optional[Config] = None):
+    def __init__(self, config: Config | None = None):
         """Initialize merge driver registry.
 
         Args:
             config: Git configuration object
         """
         self._drivers: dict[str, MergeDriver] = {}
-        self._factories: dict[str, Any] = {}
+        self._factories: dict[str, Callable[[], MergeDriver]] = {}
         self._config = config
 
         # Register built-in drivers
         self._register_builtin_drivers()
 
-    def _register_builtin_drivers(self):
+    def _register_builtin_drivers(self) -> None:
         """Register built-in merge drivers."""
         # The "text" driver is the default three-way merge
         # We don't register it here as it's handled by the default merge code
 
-    def register_driver(self, name: str, driver: MergeDriver):
+    def register_driver(self, name: str, driver: MergeDriver) -> None:
         """Register a merge driver instance.
 
         Args:
@@ -163,7 +187,7 @@ class MergeDriverRegistry:
         """
         self._drivers[name] = driver
 
-    def register_factory(self, name: str, factory):
+    def register_factory(self, name: str, factory: Callable[[], MergeDriver]) -> None:
         """Register a factory function for creating merge drivers.
 
         Args:
@@ -172,7 +196,7 @@ class MergeDriverRegistry:
         """
         self._factories[name] = factory
 
-    def get_driver(self, name: str) -> Optional[MergeDriver]:
+    def get_driver(self, name: str) -> MergeDriver | None:
         """Get a merge driver by name.
 
         Args:
@@ -193,14 +217,14 @@ class MergeDriverRegistry:
 
         # Finally check configuration
         if self._config:
-            driver = self._create_from_config(name)
-            if driver:
-                self._drivers[name] = driver
-                return driver
+            config_driver = self._create_from_config(name)
+            if config_driver is not None:
+                self._drivers[name] = config_driver
+                return config_driver
 
         return None
 
-    def _create_from_config(self, name: str) -> Optional[MergeDriver]:
+    def _create_from_config(self, name: str) -> MergeDriver | None:
         """Create a merge driver from git configuration.
 
         Args:
@@ -224,10 +248,10 @@ class MergeDriverRegistry:
 
 
 # Global registry instance
-_merge_driver_registry: Optional[MergeDriverRegistry] = None
+_merge_driver_registry: MergeDriverRegistry | None = None
 
 
-def get_merge_driver_registry(config: Optional[Config] = None) -> MergeDriverRegistry:
+def get_merge_driver_registry(config: Config | None = None) -> MergeDriverRegistry:
     """Get the global merge driver registry.
 
     Args:

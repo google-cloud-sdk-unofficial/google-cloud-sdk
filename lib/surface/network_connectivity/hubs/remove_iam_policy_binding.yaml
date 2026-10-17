@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Remove an IAM policy binding from the IAM policy of a hub resource.
@@ -26,6 +28,8 @@
       set_iam_policy_request: NetworkconnectivityProjectsLocationsGlobalHubsSetIamPolicyRequest
 
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Remove an IAM policy binding from the IAM policy of a hub resource.

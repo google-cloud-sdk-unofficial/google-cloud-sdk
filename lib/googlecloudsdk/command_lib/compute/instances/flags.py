@@ -33,6 +33,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -649,6 +650,11 @@ def AddLocalSsdArgs(parser):
       help="""\
       Attaches a local SSD to the instances.
 
+      This flag requires a value. To attach a local SSD with the default
+      settings, specify at least one of the keys below (for example,
+      `--local-ssd=interface=SCSI`) or pass an empty value
+      (`--local-ssd=""`).
+
       *device-name*::: Optional. A name that indicates the disk name
       the guest operating system will see. Can only be specified if
       `interface` is `SCSI`. If omitted, a device name
@@ -702,6 +708,11 @@ def AddLocalSsdArgsWithSize(parser):
       action='append',
       help="""\
       Attaches a local SSD to the instances.
+
+      This flag requires a value. To attach a local SSD with the default
+      settings, specify at least one of the keys below (for example,
+      `--local-ssd=interface=SCSI`) or pass an empty value
+      (`--local-ssd=""`).
 
       *device-name*::: Optional. A name that indicates the disk name
       the guest operating system will see. Can only be specified if `interface`
@@ -4595,4 +4606,43 @@ def AddExtensionNameArg(parser):
       '--extension-name',
       required=True,
       help='The name of the extension to get the state for.',
+  )
+
+
+def AddManagementInterfaceArgs(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds management interface args for instances update."""
+  group = parser.add_mutually_exclusive_group()
+  group.add_argument(
+      '--clear-management-interfaces',
+      action='store_true',
+      default=None,
+      help="""\
+      Clears management interfaces from the instance.
+      """,
+  )
+  group.add_argument(
+      '--management-interface',
+      type=arg_parsers.ArgDict(
+          spec={
+              'key': str,
+              'type': str,
+              'network': str,
+              'subnetwork': str,
+              'network-ip': str,
+              'trust-config': str,
+          },
+          required_keys=['key'],
+      ),
+      help="""\
+      Specifies a management interface for the instance.
+
+      *key*::: (Required) The unique key identifying the management interface.
+      *type*::: The type of management interface (e.g. `HOST_MANAGEMENT`).
+      *network*::: The network for the management interface.
+      *subnetwork*::: The subnetwork for the management interface.
+      *network-ip*::: The IPv4 address for the management interface.
+      *trust-config*::: The resource URL of the trust config for authentication.
+      """,
   )

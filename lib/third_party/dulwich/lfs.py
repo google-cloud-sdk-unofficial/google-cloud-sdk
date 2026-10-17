@@ -19,18 +19,51 @@
 # License, Version 2.0.
 #
 
+"""Git Large File Storage (LFS) support.
+
+This module provides support for Git LFS, which is a Git extension for
+versioning large files. It replaces large files with text pointers inside Git,
+while storing the file contents on a remote server.
+
+Key components:
+- LFS pointer file parsing and creation
+- LFS object storage and retrieval
+- HTTP client for LFS server communication
+- Integration with dulwich repositories
+"""
+
+__all__ = [
+    "FileLFSClient",
+    "HTTPLFSClient",
+    "LFSAction",
+    "LFSBatchObject",
+    "LFSBatchResponse",
+    "LFSClient",
+    "LFSError",
+    "LFSErrorInfo",
+    "LFSFilterDriver",
+    "LFSPointer",
+    "LFSStore",
+]
+
 import hashlib
 import json
 import logging
 import os
 import tempfile
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, BinaryIO, Optional, Union
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, BinaryIO
 from urllib.parse import urljoin, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request, url2pathname, urlopen
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    import urllib3
+
+    from .client import AuthCallbackPoolManager
     from .config import Config
     from .repo import Repo
 
@@ -40,8 +73,8 @@ class LFSAction:
     """LFS action structure."""
 
     href: str
-    header: Optional[dict[str, str]] = None
-    expires_at: Optional[str] = None
+    header: dict[str, str] | None = None
+    expires_at: str | None = None
 
 
 @dataclass
@@ -58,9 +91,9 @@ class LFSBatchObject:
 
     oid: str
     size: int
-    authenticated: Optional[bool] = None
-    actions: Optional[dict[str, LFSAction]] = None
-    error: Optional[LFSErrorInfo] = None
+    authenticated: bool | None = None
+    actions: dict[str, LFSAction] | None = None
+    error: LFSErrorInfo | None = None
 
 
 @dataclass
@@ -69,17 +102,19 @@ class LFSBatchResponse:
 
     transfer: str
     objects: list[LFSBatchObject]
-    hash_algo: Optional[str] = None
+    hash_algo: str | None = None
 
 
 class LFSStore:
     """Stores objects on disk, indexed by SHA256."""
 
     def __init__(self, path: str) -> None:
+        """Initialize LFSStore."""
         self.path = path
 
     @classmethod
     def create(cls, lfs_dir: str) -> "LFSStore":
+        """Create a new LFS store."""
         if not os.path.isdir(lfs_dir):
             os.mkdir(lfs_dir)
         tmp_dir = os.path.join(lfs_dir, "tmp")
@@ -92,6 +127,7 @@ class LFSStore:
 
     @classmethod
     def from_repo(cls, repo: "Repo", create: bool = False) -> "LFSStore":
+        """Create LFS store from repository."""
         lfs_dir = os.path.join(repo.controldir(), "lfs")
         if create:
             return cls.create(lfs_dir)
@@ -99,6 +135,7 @@ class LFSStore:
 
     @classmethod
     def from_controldir(cls, controldir: str, create: bool = False) -> "LFSStore":
+        """Create LFS store from control directory."""
         lfs_dir = os.path.join(controldir, "lfs")
         if create:
             return cls.create(lfs_dir)
@@ -119,35 +156,49 @@ class LFSStore:
 
         Returns: object SHA
         """
+        # First pass: compute SHA256 and collect data
         sha = hashlib.sha256()
+        data_chunks = []
+        for chunk in chunks:
+            sha.update(chunk)
+            data_chunks.append(chunk)
+
+        sha_hex = sha.hexdigest()
+        path = self._sha_path(sha_hex)
+
+        # If object already exists, no need to write
+        if os.path.exists(path):
+            return sha_hex
+
+        # Object doesn't exist, write it
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
         tmpdir = os.path.join(self.path, "tmp")
         with tempfile.NamedTemporaryFile(dir=tmpdir, mode="wb", delete=False) as f:
-            for chunk in chunks:
-                sha.update(chunk)
+            for chunk in data_chunks:
                 f.write(chunk)
             f.flush()
             tmppath = f.name
-        path = self._sha_path(sha.hexdigest())
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
 
         # Handle concurrent writes - if file already exists, just remove temp file
         if os.path.exists(path):
             os.remove(tmppath)
         else:
             os.rename(tmppath, path)
-        return sha.hexdigest()
+        return sha_hex
 
 
 class LFSPointer:
     """Represents an LFS pointer file."""
 
     def __init__(self, oid: str, size: int) -> None:
+        """Initialize LFSPointer."""
         self.oid = oid
         self.size = size
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> Optional["LFSPointer"]:
+    def from_bytes(cls, data: bytes) -> "LFSPointer | None":
         """Parse LFS pointer from bytes.
 
         Returns None if data is not a valid LFS pointer.
@@ -208,9 +259,8 @@ class LFSPointer:
 class LFSFilterDriver:
     """LFS filter driver implementation."""
 
-    def __init__(
-        self, lfs_store: "LFSStore", config: Optional["Config"] = None
-    ) -> None:
+    def __init__(self, lfs_store: "LFSStore", config: "Config | None" = None) -> None:
+        """Initialize LFSFilterDriver."""
         self.lfs_store = lfs_store
         self.config = config
 
@@ -251,7 +301,7 @@ class LFSFilterDriver:
                 return content
             except LFSError as e:
                 # Download failed, fall back to returning pointer
-                logging.warning("LFS object download failed for %s: %s", pointer.oid, e)
+                logger.warning("LFS object download failed for %s: %s", pointer.oid, e)
 
                 # Return pointer as-is when object is missing and download failed
                 return data
@@ -288,8 +338,17 @@ class LFSFilterDriver:
 
         return content
 
+    def cleanup(self) -> None:
+        """Clean up any resources held by this filter driver."""
+        # LFSFilterDriver doesn't hold any resources that need cleanup
 
-def _get_lfs_user_agent(config):
+    def reuse(self, config: "Config | None", filter_name: str) -> bool:
+        """Check if this filter driver should be reused with the given configuration."""
+        # LFSFilterDriver is stateless and lightweight, no need to cache
+        return False
+
+
+def _get_lfs_user_agent(config: "Config | None") -> str:
     """Get User-Agent string for LFS requests, respecting git config."""
     try:
         if config:
@@ -305,30 +364,130 @@ def _get_lfs_user_agent(config):
     return f"git-lfs/dulwich/{version_str}"
 
 
-class LFSClient:
-    """LFS client for network operations."""
+def _is_valid_lfs_url(url: str) -> bool:
+    """Check if a URL is valid for LFS.
 
-    def __init__(self, url: str, config: Optional["Config"] = None) -> None:
+    Git LFS supports http://, https://, and file:// URLs.
+
+    Args:
+        url: URL to validate
+
+    Returns:
+        True if URL is a valid LFS URL, False otherwise
+    """
+    parsed = urlparse(url)
+
+    # Must have a scheme
+    if not parsed.scheme:
+        return False
+
+    # Only support http, https, and file schemes
+    if parsed.scheme not in ("http", "https", "file"):
+        return False
+
+    # http/https require a hostname
+    if parsed.scheme in ("http", "https"):
+        return bool(parsed.netloc)
+
+    # file:// URLs must have a path (netloc is typically empty)
+    if parsed.scheme == "file":
+        return bool(parsed.path)
+
+    return False
+
+
+class LFSClient:
+    """Base class for LFS client operations."""
+
+    def __init__(self, url: str, config: "Config | None" = None) -> None:
         """Initialize LFS client.
 
         Args:
-            url: LFS server URL
+            url: LFS server URL (http://, https://, or file://)
             config: Optional git config for authentication/proxy settings
         """
         self._base_url = url.rstrip("/") + "/"  # Ensure trailing slash for urljoin
         self.config = config
-        self._pool_manager = None
+
+    @property
+    def url(self) -> str:
+        """Get the LFS server URL without trailing slash."""
+        return self._base_url.rstrip("/")
+
+    def download(self, oid: str, size: int, ref: str | None = None) -> bytes:
+        """Download an LFS object.
+
+        Args:
+            oid: Object ID (SHA256)
+            size: Expected size
+            ref: Optional ref name
+
+        Returns:
+            Object content
+        """
+        raise NotImplementedError
+
+    def upload(
+        self, oid: str, size: int, content: bytes, ref: str | None = None
+    ) -> None:
+        """Upload an LFS object.
+
+        Args:
+            oid: Object ID (SHA256)
+            size: Object size
+            content: Object content
+            ref: Optional ref name
+        """
+        raise NotImplementedError
 
     @classmethod
-    def from_config(cls, config: "Config") -> Optional["LFSClient"]:
-        """Create LFS client from git config."""
+    def from_url(cls, url: str, config: "Config | None" = None) -> "LFSClient":
+        """Create appropriate LFS client based on URL scheme.
+
+        Args:
+            url: LFS server URL (http://, https://, or file://)
+            config: Optional git config for authentication/proxy settings
+
+        Returns:
+            HTTPLFSClient for http/https URLs, FileLFSClient for file URLs
+
+        Raises:
+            ValueError: If URL is invalid or has unsupported scheme
+        """
+        if not _is_valid_lfs_url(url):
+            raise ValueError(
+                f"Invalid LFS URL: {url!r}. "
+                "URL must be an absolute URL with scheme http://, https://, or file://."
+            )
+
+        parsed = urlparse(url)
+        if parsed.scheme in ("http", "https"):
+            return HTTPLFSClient(url, config)
+        elif parsed.scheme == "file":
+            return FileLFSClient(url, config)
+        else:
+            # Shouldn't happen if _is_valid_lfs_url works correctly
+            raise ValueError(f"Unsupported LFS URL scheme: {parsed.scheme}")
+
+    @classmethod
+    def from_config(cls, config: "Config") -> "LFSClient | None":
+        """Create LFS client from git config.
+
+        Returns the appropriate subclass (HTTPLFSClient or FileLFSClient)
+        based on the URL scheme.
+        """
         # Try to get LFS URL from config first
         try:
             url = config.get((b"lfs",), b"url").decode()
         except KeyError:
             pass
         else:
-            return cls(url, config)
+            # from_url will validate and raise ValueError if invalid
+            try:
+                return cls.from_url(url, config)
+            except ValueError as e:
+                # Re-raise with more context about where the URL came from
+                raise ValueError(f"Invalid lfs.url in config: {url!r}. {e!s}") from e
 
         # Fall back to deriving from remote URL (same as git-lfs)
         try:
@@ -345,27 +504,68 @@ class LFSClient:
                         host, path = host_and_path.split(":", 1)
                         remote_url = f"https://{host}/{path}"
 
-            # Ensure URL ends with .git for consistent LFS endpoint
-            if not remote_url.endswith(".git"):
-                remote_url = f"{remote_url}.git"
+            # Detect filesystem paths and file:// URLs; for those, the LFS
+            # "endpoint" is the remote's local LFS store rather than an HTTP
+            # path under /info/lfs.
+            parsed = urlparse(remote_url)
+            # Windows drive letters (e.g., C:\) get parsed as single-letter schemes
+            is_windows_path = (
+                len(parsed.scheme) == 1
+                and parsed.scheme.isalpha()
+                and (len(remote_url) < 2 or remote_url[1] == ":")
+            )
+            if not parsed.scheme or is_windows_path:
+                local_path = remote_url
+            elif parsed.scheme == "file":
+                local_path = url2pathname(parsed.path)
+            else:
+                local_path = None
 
-            # Standard LFS endpoint is remote_url + "/info/lfs"
-            lfs_url = f"{remote_url}/info/lfs"
+            if local_path is not None:
+                # For file remotes, point directly at the remote's LFS store.
+                # Worktrees keep LFS data under <remote>/.git/lfs; bare repos
+                # keep it under <remote>/lfs. Probe for an existing layout and
+                # fall back to the worktree layout if neither exists yet.
+                candidates = [
+                    os.path.join(local_path, ".git", "lfs"),
+                    os.path.join(local_path, "lfs"),
+                ]
+                lfs_path = next(
+                    (p for p in candidates if os.path.isdir(p)), candidates[0]
+                )
+                lfs_url = Path(lfs_path).as_uri()
+            else:
+                # Ensure URL ends with .git for consistent LFS endpoint
+                if not remote_url.endswith(".git"):
+                    remote_url = f"{remote_url}.git"
 
-            parsed = urlparse(lfs_url)
-            if not parsed.scheme or not parsed.netloc:
-                return None
+                # Standard LFS endpoint is remote_url + "/info/lfs"
+                lfs_url = f"{remote_url}/info/lfs"
 
-            return LFSClient(lfs_url, config)
+            # Return appropriate client based on derived URL scheme
+            return cls.from_url(lfs_url, config)
 
         return None
 
-    @property
-    def url(self) -> str:
-        """Get the LFS server URL without trailing slash."""
-        return self._base_url.rstrip("/")
 
-    def _get_pool_manager(self):
+class HTTPLFSClient(LFSClient):
+    """LFS client for HTTP/HTTPS operations."""
+
+    def __init__(self, url: str, config: "Config | None" = None) -> None:
+        """Initialize HTTP LFS client.
+
+        Args:
+            url: LFS server URL (http:// or https://)
+            config: Optional git config for authentication/proxy settings
+        """
+        super().__init__(url, config)
+        self._pool_manager: (
+            urllib3.PoolManager | urllib3.ProxyManager | AuthCallbackPoolManager | None
+        ) = None
+
+    def _get_pool_manager(
+        self,
+    ) -> "urllib3.PoolManager | urllib3.ProxyManager | AuthCallbackPoolManager":
         """Get urllib3 pool manager with git config applied."""
         if self._pool_manager is None:
             from dulwich.client import default_urllib3_manager
@@ -377,8 +577,8 @@ class LFSClient:
         self,
         method: str,
         path: str,
-        data: Optional[bytes] = None,
-        headers: Optional[dict[str, str]] = None,
+        data: bytes | None = None,
+        headers: dict[str, str] | None = None,
     ) -> bytes:
         """Make an HTTP request to the LFS server."""
         url = urljoin(self._base_url, path)
@@ -393,6 +593,7 @@ class LFSClient:
         # Use urllib3 pool manager with git config applied
         pool_manager = self._get_pool_manager()
         response = pool_manager.request(method, url, headers=req_headers, body=data)
+        assert response is not None
         if response.status >= 400:
             raise ValueError(
                 f"HTTP {response.status}: {response.data.decode('utf-8', errors='ignore')}"
@@ -402,8 +603,8 @@ class LFSClient:
     def batch(
         self,
         operation: str,
-        objects: list[dict[str, Union[str, int]]],
-        ref: Optional[str] = None,
+        objects: list[dict[str, str | int]],
+        ref: str | None = None,
     ) -> LFSBatchResponse:
         """Perform batch operation to get transfer URLs.
 
@@ -416,7 +617,7 @@ class LFSClient:
             Batch response from server
         """
         data: dict[
-            str, Union[str, list[str], list[dict[str, Union[str, int]]], dict[str, str]]
+            str, str | list[str] | list[dict[str, str | int]] | dict[str, str]
         ] = {
             "operation": operation,
             "transfers": ["basic"],
@@ -433,7 +634,7 @@ class LFSClient:
         response_data = json.loads(response)
         return self._parse_batch_response(response_data)
 
-    def _parse_batch_response(self, data: dict) -> LFSBatchResponse:
+    def _parse_batch_response(self, data: Mapping[str, Any]) -> LFSBatchResponse:
         """Parse JSON response into LFSBatchResponse dataclass."""
         objects = []
         for obj_data in data.get("objects", []):
@@ -468,7 +669,7 @@ class LFSClient:
             hash_algo=data.get("hash_algo"),
         )
 
-    def download(self, oid: str, size: int, ref: Optional[str] = None) -> bytes:
+    def download(self, oid: str, size: int, ref: str | None = None) -> bytes:
         """Download an LFS object.
 
         Args:
@@ -502,6 +703,7 @@ class LFSClient:
 
         pool_manager = self._get_pool_manager()
         response = pool_manager.request("GET", download_url, headers=download_headers)
+        assert response is not None
         content = response.data
 
         # Verify size
@@ -516,7 +718,7 @@ class LFSClient:
         return content
 
     def upload(
-        self, oid: str, size: int, content: bytes, ref: Optional[str] = None
+        self, oid: str, size: int, content: bytes, ref: str | None = None
     ) -> None:
         """Upload an LFS object.
 
@@ -570,6 +772,89 @@ class LFSClient:
             with urlopen(req) as response:
                 if response.status >= 400:
                     raise LFSError(f"Verification failed with status {response.status}")
+
+
+class FileLFSClient(LFSClient):
+    """LFS client for file:// URLs that accesses local filesystem."""
+
+    def __init__(self, url: str, config: "Config | None" = None) -> None:
+        """Initialize File LFS client.
+
+        Args:
+            url: LFS server URL (file://)
+            config: Optional git config (unused for file:// URLs)
+        """
+        super().__init__(url, config)
+
+        # Convert file:// URL to filesystem path
+        from urllib.request import url2pathname
+
+        parsed = urlparse(url)
+        if parsed.scheme != "file":
+            raise ValueError(f"FileLFSClient requires file:// URL, got {url!r}")
+
+        # url2pathname handles the conversion properly across platforms
+        path = url2pathname(parsed.path)
+        self._local_store = LFSStore(path)
+
+    def download(self, oid: str, size: int, ref: str | None = None) -> bytes:
+        """Download an LFS object from local filesystem.
+
+        Args:
+            oid: Object ID (SHA256)
+            size: Expected size
+            ref: Optional ref name (ignored for file:// URLs)
+
+        Returns:
+            Object content
+
+        Raises:
+            LFSError: If object not found or size mismatch
+        """
+        try:
+            with self._local_store.open_object(oid) as f:
+                content = f.read()
+        except KeyError as exc:
+            raise LFSError(f"Object not found: {oid}") from exc
+
+        # Verify size
+        if len(content) != size:
+            raise LFSError(f"Size mismatch: expected {size}, got {len(content)}")
+
+        # Verify SHA256
+        actual_oid = hashlib.sha256(content).hexdigest()
+        if actual_oid != oid:
+            raise LFSError(f"OID mismatch: expected {oid}, got {actual_oid}")
+
+        return content
+
+    def upload(
+        self, oid: str, size: int, content: bytes, ref: str | None = None
+    ) -> None:
+        """Upload an LFS object to local filesystem.
+
+        Args:
+            oid: Object ID (SHA256)
+            size: Object size
+            content: Object content
+            ref: Optional ref name (ignored for file:// URLs)
+
+        Raises:
+            LFSError: If size or OID mismatch
+        """
+        # Verify size
+        if len(content) != size:
+            raise LFSError(f"Size mismatch: expected {size}, got {len(content)}")
+
+        # Verify SHA256
+        actual_oid = hashlib.sha256(content).hexdigest()
+        if actual_oid != oid:
+            raise LFSError(f"OID mismatch: expected {oid}, got {actual_oid}")
+
+        # Store the object
+        stored_oid = self._local_store.write_object([content])
+        if stored_oid != oid:
+            raise LFSError(f"Storage OID mismatch: expected {oid}, got {stored_oid}")
 
 
 class LFSError(Exception):

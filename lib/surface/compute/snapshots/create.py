@@ -86,19 +86,18 @@ def _GAArgs(parser):
           ' snapshot.'
       ),
   )
+  snap_flags.AddKmsKeyArg(parser, include_kms_key_service_account=True)
 
 
 def _BetaArgs(parser):
   _GAArgs(parser)
   snap_flags.AddScopeArg(parser)
-  snap_flags.AddKmsKeyArg(parser, include_kms_key_service_account=True)
 
 
 def _AlphaArgs(parser):
   _GAArgs(parser)
   snap_flags.AddMaxRetentionDays(parser)
   snap_flags.AddScopeArg(parser)
-  snap_flags.AddKmsKeyArg(parser, include_kms_key_service_account=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
@@ -111,7 +110,7 @@ class Create(base.CreateCommand):
     _GAArgs(parser)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, support_kms=True)
 
   def _Run(
       self,

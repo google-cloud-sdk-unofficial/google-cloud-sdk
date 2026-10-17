@@ -28,6 +28,7 @@ from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import exceptions
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.builds import submit_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -134,6 +135,173 @@ class Jobs:
       raise exceptions.HttpException(error)
 
   @staticmethod
+  def _BuildUpdatedSchedule(
+      set_schedule,
+      existing_schedules,
+      autoscaling_schedule,
+      autoscaling_schedule_duration_seconds,
+      autoscaling_schedule_timezone,
+      autoscaling_schedule_priority,
+      autoscaling_min_num_workers,
+      autoscaling_max_num_workers,
+      autoscaling_worker_utilization_hint,
+      autoscaling_latency_tier,
+  ):
+    """Builds an updated AutoscalingSchedule object."""
+    old_sched = next(
+        (s for s in existing_schedules if s.name == set_schedule), None
+    )
+    if old_sched is None and (
+        autoscaling_schedule is None
+        or autoscaling_schedule_duration_seconds is None
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--set-schedule',
+          'When creating a new schedule, both --autoscaling-schedule and'
+          ' --autoscaling-schedule-duration-seconds must be specified.',
+      )
+
+    old_crontab = old_sched.crontab if old_sched else None
+    old_duration = old_sched.duration if old_sched else None
+    old_time_zone = old_sched.timeZone if old_sched else None
+    old_priority = old_sched.priority if old_sched else None
+    old_params = old_sched.parameters if old_sched else None
+    old_min_workers = old_params.minWorkerCount if old_params else None
+    old_max_workers = old_params.maxWorkerCount if old_params else None
+    old_cpu_target = old_params.cpuUtilizationTarget if old_params else None
+    old_latency_target = old_params.latencyTarget if old_params else None
+
+    crontab_val = (
+        autoscaling_schedule
+        if autoscaling_schedule is not None
+        else old_crontab
+    )
+    duration_str = (
+        f'{int(autoscaling_schedule_duration_seconds)}s'
+        if autoscaling_schedule_duration_seconds is not None
+        else old_duration
+    )
+    time_zone_val = (
+        autoscaling_schedule_timezone
+        if autoscaling_schedule_timezone is not None
+        else old_time_zone
+    )
+    priority_val = (
+        autoscaling_schedule_priority
+        if autoscaling_schedule_priority is not None
+        else old_priority
+    )
+    min_workers_val = (
+        autoscaling_min_num_workers
+        if autoscaling_min_num_workers is not None
+        else old_min_workers
+    )
+    max_workers_val = (
+        autoscaling_max_num_workers
+        if autoscaling_max_num_workers is not None
+        else old_max_workers
+    )
+    cpu_target_val = (
+        autoscaling_worker_utilization_hint
+        if autoscaling_worker_utilization_hint is not None
+        else old_cpu_target
+    )
+    latency_target_val = (
+        autoscaling_latency_tier
+        if autoscaling_latency_tier is not None
+        else old_latency_target
+    )
+
+    params = GetMessagesModule().Parameters(
+        minWorkerCount=min_workers_val,
+        maxWorkerCount=max_workers_val,
+        cpuUtilizationTarget=cpu_target_val,
+        latencyTarget=latency_target_val,
+    )
+    return GetMessagesModule().AutoscalingSchedule(
+        name=set_schedule,
+        crontab=crontab_val,
+        duration=duration_str,
+        timeZone=time_zone_val,
+        priority=priority_val,
+        parameters=params,
+    )
+
+  @staticmethod
+  def _GetUpdatedSchedulesList(
+      job_id,
+      project_id,
+      region_id,
+      set_schedule=None,
+      unset_schedule=None,
+      unset_schedules=None,
+      autoscaling_schedule=None,
+      autoscaling_schedule_duration_seconds=None,
+      autoscaling_schedule_timezone=None,
+      autoscaling_schedule_priority=None,
+      autoscaling_min_num_workers=None,
+      autoscaling_max_num_workers=None,
+      autoscaling_worker_utilization_hint=None,
+      autoscaling_latency_tier=None,
+  ):
+    """Computes the updated list of schedules and whether an update occurred."""
+    if unset_schedules:
+      return [], True
+
+    if set_schedule is None and unset_schedule is None:
+      return [], False
+
+    existing_job = Jobs.Get(
+        job_id,
+        project_id=project_id,
+        region_id=region_id,
+        view=(
+            GetMessagesModule()
+            .DataflowProjectsLocationsJobsGetRequest
+            .ViewValueValuesEnum
+            .JOB_VIEW_ALL
+        ),
+    )
+    existing_schedules = []
+    if (
+        existing_job
+        and existing_job.runtimeUpdatableParams
+        and existing_job.runtimeUpdatableParams.schedules
+    ):
+      existing_schedules = list(existing_job.runtimeUpdatableParams.schedules)
+
+    if unset_schedule is not None:
+      if not any(s.name == unset_schedule for s in existing_schedules):
+        raise calliope_exceptions.InvalidArgumentException(
+            '--unset-schedule',
+            f'Schedule [{unset_schedule}] not found on job [{job_id}].',
+        )
+      return [
+          s for s in existing_schedules if s.name != unset_schedule
+      ], True
+
+    if set_schedule is not None:
+      new_schedule = Jobs._BuildUpdatedSchedule(
+          set_schedule,
+          existing_schedules,
+          autoscaling_schedule,
+          autoscaling_schedule_duration_seconds,
+          autoscaling_schedule_timezone,
+          autoscaling_schedule_priority,
+          autoscaling_min_num_workers,
+          autoscaling_max_num_workers,
+          autoscaling_worker_utilization_hint,
+          autoscaling_latency_tier,
+      )
+      schedules_list = [
+          s for s in existing_schedules if s.name != set_schedule
+      ]
+      schedules_list.append(new_schedule)
+      return schedules_list, True
+
+    return [], False
+
+  @staticmethod
   def UpdateOptions(
       job_id,
       project_id=None,
@@ -144,6 +312,17 @@ class Jobs:
       unset_worker_utilization_hint=None,
       latency_tier=None,
       unset_latency_tier=None,
+      set_schedule=None,
+      unset_schedule=None,
+      unset_schedules=None,
+      autoscaling_schedule=None,
+      autoscaling_schedule_duration_seconds=None,
+      autoscaling_schedule_timezone=None,
+      autoscaling_schedule_priority=None,
+      autoscaling_min_num_workers=None,
+      autoscaling_max_num_workers=None,
+      autoscaling_worker_utilization_hint=None,
+      autoscaling_latency_tier=None,
   ):
     """Update pipeline options on a running job.
 
@@ -160,6 +339,19 @@ class Jobs:
       unset_worker_utilization_hint: Unsets worker_utilization_hint value
       latency_tier: The latency tier for autoscaling
       unset_latency_tier: Unsets latency_tier value
+      set_schedule: Unique identifier for an autoscaling schedule
+      unset_schedule: Unique identifier of an autoscaling schedule to remove
+      unset_schedules: Removes all autoscaling schedules from the job
+      autoscaling_schedule: Crontab expression for the schedule start time
+      autoscaling_schedule_duration_seconds: Duration in seconds for  the
+        schedule
+      autoscaling_schedule_timezone: Time zone for the schedule
+      autoscaling_schedule_priority: Priority of the schedule
+      autoscaling_min_num_workers: Minimum worker count when schedule is active
+      autoscaling_max_num_workers: Maximum worker count when schedule is active
+      autoscaling_worker_utilization_hint: Target worker utilization hint  when
+        schedule is active
+      autoscaling_latency_tier: Latency tier when schedule is active
 
     Returns:
       The updated Job
@@ -167,6 +359,24 @@ class Jobs:
 
     project_id = project_id or GetProject()
     region_id = region_id or DATAFLOW_API_DEFAULT_REGION
+
+    schedules_list, has_schedule_update = Jobs._GetUpdatedSchedulesList(
+        job_id,
+        project_id,
+        region_id,
+        set_schedule=set_schedule,
+        unset_schedule=unset_schedule,
+        unset_schedules=unset_schedules,
+        autoscaling_schedule=autoscaling_schedule,
+        autoscaling_schedule_duration_seconds=autoscaling_schedule_duration_seconds,
+        autoscaling_schedule_timezone=autoscaling_schedule_timezone,
+        autoscaling_schedule_priority=autoscaling_schedule_priority,
+        autoscaling_min_num_workers=autoscaling_min_num_workers,
+        autoscaling_max_num_workers=autoscaling_max_num_workers,
+        autoscaling_worker_utilization_hint=autoscaling_worker_utilization_hint,
+        autoscaling_latency_tier=autoscaling_latency_tier,
+    )
+
     job = GetMessagesModule().Job(
         runtimeUpdatableParams=GetMessagesModule().RuntimeUpdatableParams(
             minNumWorkers=min_num_workers,
@@ -177,6 +387,7 @@ class Jobs:
                 else worker_utilization_hint
             ),
             latencyTier=(None if unset_latency_tier else latency_tier),
+            schedules=schedules_list if has_schedule_update else [],
         )
     )
 
@@ -194,6 +405,8 @@ class Jobs:
       )
     if latency_tier is not None or unset_latency_tier:
       update_mask_pieces.append('runtime_updatable_params.latency_tier')
+    if has_schedule_update:
+      update_mask_pieces.append('runtime_updatable_params.schedules')
     update_mask = ','.join(update_mask_pieces)
 
     request = GetMessagesModule().DataflowProjectsLocationsJobsUpdateRequest(

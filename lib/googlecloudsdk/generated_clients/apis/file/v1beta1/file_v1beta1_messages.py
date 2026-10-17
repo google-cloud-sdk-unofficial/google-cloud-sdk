@@ -3375,6 +3375,12 @@ class UpdatePolicy(_messages.Message):
 class Volume(_messages.Message):
   r"""Volume representation of a Cloud Filestore volume.
 
+  Enums:
+    StateValueValuesEnum: Optional. The state of the volume. This field is
+      caller-settable via `UpdateVolume` to transition a volume from `HOT` to
+      `COLD` (freezing the volume). In `CreateVolume`, this field is output-
+      only and initialized to `HOT`.
+
   Messages:
     LabelsValue: Optional. Resource labels to represent user provided
       metadata.
@@ -3390,7 +3396,31 @@ class Volume(_messages.Message):
       /{project}/locations/{location}/volumePools/{volume_pool}/volumes/{volum
       e}`.
     quotaMib: Optional. The maximum size of the volume in mebibytes (MiB).
+    state: Optional. The state of the volume. This field is caller-settable
+      via `UpdateVolume` to transition a volume from `HOT` to `COLD` (freezing
+      the volume). In `CreateVolume`, this field is output-only and
+      initialized to `HOT`.
   """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Optional. The state of the volume. This field is caller-settable via
+    `UpdateVolume` to transition a volume from `HOT` to `COLD` (freezing the
+    volume). In `CreateVolume`, this field is output-only and initialized to
+    `HOT`.
+
+    Values:
+      STATE_UNSPECIFIED: The state of the volume is unknown.
+      CREATING: The volume is being created.
+      HOT: The volume is hot and bound to a physical share.
+      WARM: The volume is warm - volume is unmountable and doesn't count as an
+        active share, but is on hot storage.
+      COLD: The volume is cold and released from its physical share.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    HOT = 2
+    WARM = 3
+    COLD = 4
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -3423,6 +3453,7 @@ class Volume(_messages.Message):
   mountPoint = _messages.MessageField('MountPoint', 5)
   name = _messages.StringField(6)
   quotaMib = _messages.IntegerField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
 
 
 class VolumePool(_messages.Message):

@@ -313,7 +313,6 @@ def AddRetryConfigFlags(parser):
   """Add flags for task-level retry configuration."""
   retry_config_group = base.ArgumentGroup(
       help='Flags for configuring task-level retry behaviors.',
-      hidden=True,
   )
   retry_config_group.AddArgument(
       base.Argument(
@@ -363,7 +362,6 @@ def AddBatchDeleteTaskFlags(parser):
   """Add flags for batch task deletion."""
   parser.add_argument(
       '--from-file',
-      hidden=True,
       help=(
           'Path to a file containing task IDs/names to delete, one per line'
           ' or in JSON/YAML format.'
@@ -371,7 +369,6 @@ def AddBatchDeleteTaskFlags(parser):
   )
   parser.add_argument(
       '--failed-tasks-file',
-      hidden=True,
       help=(
           'Path to a file to output JSON details of tasks that failed or were'
           ' skipped during batch deletion.'
@@ -809,7 +806,6 @@ def AddBatchCreateTaskFlags(parser):
   parser.add_argument(
       '--tasks-from-file',
       required=True,
-      hidden=True,
       help=(
           'Path to a JSON or YAML file containing a list of tasks to create, or'
           ' - to read from stdin.'
@@ -817,7 +813,6 @@ def AddBatchCreateTaskFlags(parser):
   )
   parser.add_argument(
       '--failed-tasks-file',
-      hidden=True,
       help=(
           'Optional path to a file where a JSON record of failed tasks will'
           ' be written.'
@@ -827,7 +822,6 @@ def AddBatchCreateTaskFlags(parser):
       '--dry-run',
       action='store_true',
       default=False,
-      hidden=True,
       help=(
           'If set to true, validates the task specifications without creating'
           ' the tasks.'

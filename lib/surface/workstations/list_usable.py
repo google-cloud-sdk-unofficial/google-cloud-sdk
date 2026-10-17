@@ -20,6 +20,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workstations import flags
 
 
+@base.RegionalEndpointsSupported
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
@@ -56,6 +58,7 @@ class ListUsable(base.ListCommand):
     return 'workstations.projects.locations.workstationClusters.workstationConfigs.usableWorkstations'
 
   def Run(self, args):
-    client = workstations.Workstations(self.ReleaseTrack())
+    location = args.CONCEPTS.config.Parse().locationsId
+    client = workstations.Workstations(self.ReleaseTrack(), location=location)
     response = client.ListUsableWorkstations(args)
     return response

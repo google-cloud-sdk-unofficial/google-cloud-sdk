@@ -16,7 +16,16 @@
 """Shared flags definitions for multiple commands."""
 
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+
+DELETION_NOTIFICATIONS_ENABLED_FLAG = base.Argument(
+    '--deletion-notifications-enabled',
+    action=arg_parsers.StoreTrueFalseAction,
+    help="""\
+    Indicates whether the notifications will be sent for deleted findings.
+    """,
+)
 
 DESCRIPTION_FLAG = base.Argument(
     '--description',

@@ -15,15 +15,11 @@
 """Database Migration Service conversion workspaces Base Client."""
 
 import abc
-from typing import Iterable, Optional, TYPE_CHECKING
+from typing import Any, Iterable, Mapping, Optional
 
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.generated_clients.apis.datamigration.v1 import datamigration_v1_client as client
-
-# pylint: disable=g-bad-import-order
-if TYPE_CHECKING:
-  from googlecloudsdk.api_lib.database_migration.conversion_workspaces import conversion_workspaces_client  # pylint: disable=g-import-not-at-top
 
 
 class BaseConversionWorkspacesClient(abc.ABC):
@@ -33,15 +29,9 @@ class BaseConversionWorkspacesClient(abc.ABC):
   provides the common services used by the clients in order to send API
   requests.
 
-  Each client inheriting from this class handles a specific part of the API, and
-  might need to call other clients in order to complete its
-  functionality. Accessing other clients is done through the parent_client
-  property.
-
   Attributes:
     release_track: The release track of the client, controlling the API version
       to use.
-    parent_client: The parent client of the conversion workspaces client.
     location: The location of the resources.
     client: The client used to send API requests.
     messages: The messages module used to construct API requests.
@@ -50,7 +40,6 @@ class BaseConversionWorkspacesClient(abc.ABC):
   def __init__(
       self,
       release_track: base.ReleaseTrack,
-      parent_client: 'conversion_workspaces_client.ConversionWorkspacesClient',
       location: Optional[str] = None,
   ):
     """Initializes the instance with an API client based on the release track.
@@ -58,12 +47,10 @@ class BaseConversionWorkspacesClient(abc.ABC):
     Args:
       release_track: The release track of the client, controlling the API
         version to use.
-      parent_client: The parent client of the conversion workspaces client.
       location: The location of the resources.
     """
 
     self.release_track = release_track
-    self.parent_client = parent_client
 
     self.client: client.DatamigrationV1 = api_util.GetClientInstance(
         release_track=release_track,
@@ -94,6 +81,47 @@ class BaseConversionWorkspacesClient(abc.ABC):
     """Returns the location service."""
     return self.client.projects_locations
 
+  def ReadWorkspace(self, name: str):
+    """Reads a conversion workspace resource."""
+    return self.cw_service.Get(
+        self.messages.DatamigrationProjectsLocationsConversionWorkspacesGetRequest(
+            name=name,
+        )
+    )
+
+  def GetGlobalFilter(self, name: str) -> str:
+    """Get global filter for a conversion workspace.
+
+    If no global filter is set, '*' will be returned.
+
+    Args:
+      name: The name of the conversion workspace.
+
+    Returns:
+      The global filter for the conversion workspace.
+    """
+    return self._GetAdditionalProperties(name).get('filter', '*')
+
+  def _GetAdditionalProperties(self, name: str) -> Mapping[str, Any]:
+    """Get conversion workspace additional properties.
+
+    Args:
+      name: The name of the conversion workspace.
+
+    Returns:
+      The conversion workspace additional properties.
+    """
+    conversion_workspace = self.ReadWorkspace(name=name)
+    if not conversion_workspace.globalSettings:
+      return {}
+
+    return {
+        additional_property.key: additional_property.value
+        for additional_property in (
+            conversion_workspace.globalSettings.additionalProperties
+        )
+    }
+
   def CombineFilters(
       self,
       *filter_exprs: Iterable[Optional[str]],
@@ -108,18 +136,13 @@ class BaseConversionWorkspacesClient(abc.ABC):
       provided).
     """
 
-    filter_exprs = tuple(
-        filter(
-            lambda filter_expr: filter_expr and filter_expr != '*',
-            filter_exprs,
-        )
+    cleaned_filters = tuple(
+        expr for expr in filter_exprs if expr and expr != '*'
     )
 
-    if not filter_exprs:
+    if not cleaned_filters:
       return None
-    if len(filter_exprs) == 1:
-      return filter_exprs[0]
+    if len(cleaned_filters) == 1:
+      return cleaned_filters[0]
 
-    return ' AND '.join(
-        map(lambda filter_expr: f'({filter_expr})', filter_exprs)
-    )
+    return ' AND '.join(f'({expr})' for expr in cleaned_filters)

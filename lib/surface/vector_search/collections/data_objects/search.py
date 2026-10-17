@@ -86,6 +86,10 @@ class Search(base.Command):
 
           $ {command} --collection=my-collection --location=us-central1 --vector-search-field="genre_embedding" --vector-from-file="vector.json" --use-knn --top-k=7
 
+          To search data objects from collection `my-collection` in location `us-central1` using vector search with an index hint and a target recall of 0.95, run:
+
+          $ {command} --collection=my-collection --location=us-central1 --vector-search-field="genre_embedding" --vector-from-file="vector.json" --use-index="my-index" --dense-scann-target-recall=0.95
+
       """
       ),
   }
@@ -116,8 +120,28 @@ class Search(base.Command):
             """
         ),
     )
+    # Dense ScaNN tuning params. `--dense-scann-target-recall` (the declarative
+    # param, GA) is mutually exclusive with the low-level overrides (BETA only),
+    # matching the server-side validation.
+    dense_scann_group = use_index_group.add_mutually_exclusive_group(
+        'Dense ScaNN Tuning'
+    )
+    dense_scann_group.add_argument(
+        '--dense-scann-target-recall',
+        type=arg_parsers.BoundedFloat(0.0, 1.0),
+        metavar='TARGET_RECALL',
+        help=(
+            'Optional advanced tuning parameter: the query-time target recall'
+            ' for dense ScaNN search, a value in [0, 1]. Cannot be combined'
+            ' with --dense-scann-search-leaves-pct or'
+            ' --dense-scann-initial-candidate-count.'
+        ),
+    )
     if cls.ReleaseTrack() == base.ReleaseTrack.BETA:
-      use_index_group.add_argument(
+      low_level_group = dense_scann_group.add_group(
+          'Low-level Dense ScaNN Overrides'
+      )
+      low_level_group.add_argument(
           '--dense-scann-search-leaves-pct',
           type=int,
           metavar='PERCENTAGE',
@@ -126,7 +150,7 @@ class Search(base.Command):
               ' [0, 100].'
           ),
       )
-      use_index_group.add_argument(
+      low_level_group.add_argument(
           '--dense-scann-initial-candidate-count',
           type=int,
           metavar='CANDIDATE_COUNT',
@@ -255,7 +279,13 @@ class Search(base.Command):
               name=index_name
           )
       )
-      if self.ReleaseTrack() == base.ReleaseTrack.BETA and (
+      dense_scann_params = None
+      if args.dense_scann_target_recall is not None:
+        dense_scann_params = client.GetMessage(
+            'SearchHint.IndexHint.DenseScannParams'
+        )()
+        dense_scann_params.targetRecall = args.dense_scann_target_recall
+      elif self.ReleaseTrack() == base.ReleaseTrack.BETA and (
           args.dense_scann_search_leaves_pct
           or args.dense_scann_initial_candidate_count
       ):
@@ -270,6 +300,7 @@ class Search(base.Command):
           dense_scann_params.initialCandidateCount = (
               args.dense_scann_initial_candidate_count
           )
+      if dense_scann_params is not None:
         index_hint_msg.denseScannParams = dense_scann_params
       return client.GetMessage('SearchHint')(
           indexHint=index_hint_msg

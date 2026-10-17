@@ -54,7 +54,7 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA):
   flags_to_add = [
       flags.ImageArg(image=_EXAMPLE_INSTANCE_IMAGE, required=False),
       flags.PortArg(),
-      flags.Http2Flag(),
+      flags.Http2Flag(resource_kind='instance'),
       flags.MutexEnvVarsFlags(release_track=release_track),
       flags.MemoryFlag(),
       flags.CpuFlag(),
@@ -68,6 +68,8 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA):
       flags.StartupProbeFlag(),
       flags.SandboxLauncherFlag(),
   ]
+  if release_track == base.ReleaseTrack.ALPHA:
+    flags_to_add.append(flags.BaseImageArg(hidden=True))
   for flag in flags_to_add:
     group.AddArgument(flag)
   return group
@@ -141,8 +143,10 @@ class Update(base.Command):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     flags.AddGracePeriodFlag(parser)
-    container_args = ContainerArgGroup()
-    container_parser.AddContainerFlags(parser, container_args)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
     flags.RemoveContainersFlag().AddToParser(parser)
 
   def Run(self, args):

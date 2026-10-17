@@ -214,6 +214,18 @@ def _ParseInstanceType(sql_messages, instance_type):
   return None
 
 
+def _ParseDatabaseCenterIntegration(sql_messages, integration_state):
+  if integration_state:
+    if integration_state.lower() == 'unspecified':
+      return (
+          sql_messages.DatabaseInstance.DatabaseCenterIntegrationValueValuesEnum.DATABASE_CENTER_INTEGRATION_UNSPECIFIED
+      )
+    return sql_messages.DatabaseInstance.DatabaseCenterIntegrationValueValuesEnum.lookup_by_name(
+        integration_state.upper()
+    )
+  return None
+
+
 def _ParseBackendType(sql_messages, backend_type):
   if backend_type:
     return (
@@ -1246,6 +1258,13 @@ class _BaseInstances(object):
           args.database_center_integration_enabled
       )
 
+    if args.IsKnownAndSpecified('database_center_integration'):
+      instance_resource.databaseCenterIntegration = (
+          _ParseDatabaseCenterIntegration(
+              sql_messages, args.database_center_integration
+          )
+      )
+
     if args.IsKnownAndSpecified('master_instance_name'):
       instance_resource.masterInstanceName = args.master_instance_name
 
@@ -1455,6 +1474,13 @@ class _BaseInstances(object):
     if args.IsKnownAndSpecified('database_center_integration_enabled'):
       instance_resource.databaseCenterIntegrationEnabled = (
           args.database_center_integration_enabled
+      )
+
+    if args.IsKnownAndSpecified('database_center_integration'):
+      instance_resource.databaseCenterIntegration = (
+          _ParseDatabaseCenterIntegration(
+              sql_messages, args.database_center_integration
+          )
       )
 
     if args.upgrade_sql_network_architecture:

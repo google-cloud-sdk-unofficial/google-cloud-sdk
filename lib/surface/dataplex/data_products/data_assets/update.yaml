@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: |
       Update a Dataplex data asset resource.
@@ -19,6 +18,7 @@
       help_text: |
         Arguments and flags that specify the Dataplex Data Asset you want to update.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_asset
+      is_positional: true
     params:
     - arg_name: access-groups
       api_field: googleCloudDataplexV1DataAsset.accessGroupConfigs.additionalProperties

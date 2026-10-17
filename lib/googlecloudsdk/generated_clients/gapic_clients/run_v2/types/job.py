@@ -524,6 +524,8 @@ class Job(proto.Message):
             63 characters.
 
             This field is a member of `oneof`_ ``create_execution``.
+        functional_type (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.FunctionalType):
+            Optional. The functional type of the Job.
         etag (str):
             Optional. A system-generated fingerprint for
             this version of the resource. May be used to
@@ -643,6 +645,11 @@ class Job(proto.Message):
         proto.STRING,
         number=27,
         oneof='create_execution',
+    )
+    functional_type: vendor_settings.FunctionalType = proto.Field(
+        proto.ENUM,
+        number=31,
+        enum=vendor_settings.FunctionalType,
     )
     etag: str = proto.Field(
         proto.STRING,

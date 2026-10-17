@@ -83,6 +83,41 @@ class AgentModeInfo(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 1)
 
 
+class AgentPoolConfig(_messages.Message):
+  r"""Message describing the configuration of an AGENT_POOL instance.
+
+  Fields:
+    maxPoolSize: Optional. Maximum autoscaling ceiling for concurrent nodes.
+    minPoolSize: Optional. Minimum number of warm nodes to keep provisioned in
+      the pool. Defaults to 0. Setting this to 0 enables Scale-to-Zero, where
+      the pool scales down to zero instances when there is no active traffic,
+      incurring no compute costs while idle. Note that the first request after
+      an idle period will experience cold-start latency while a new node is
+      provisioned. Setting this to 1 or more keeps that number of nodes
+      permanently warm to eliminate cold starts, but incurs continuous compute
+      charges.
+    pscAutoConnections: Required. Configuration for PSC Service Automation in
+      consumer VPCs. Contains the list of consumer project and network pairs
+      to which the AGENT_POOL instance's PSC Service Attachment should be
+      automatically connected.
+  """
+
+  maxPoolSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  minPoolSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pscAutoConnections = _messages.MessageField('PscAutoConnectionConfig', 3, repeated=True)
+
+
+class AgentPoolInfo(_messages.Message):
+  r"""Message describing the operational information of an AGENT_POOL
+  instance.
+
+  Fields:
+    dnsName: Output only. The DNS name of the agent pool endpoint.
+  """
+
+  dnsName = _messages.StringField(1)
+
+
 class AlloydbProjectsLocationsBackupsCreateRequest(_messages.Message):
   r"""A AlloydbProjectsLocationsBackupsCreateRequest object.
 
@@ -3143,6 +3178,10 @@ class Instance(_messages.Message):
       when an instance can/cannot be activated (for example, a read pool
       instance should be stopped before stopping primary etc.). Please refer
       to the API documentation for more details.
+    agentPoolConfig: Optional. Configuration for AGENT_POOL instances. Only
+      available if agent mode is enabled in the cluster.
+    agentPoolInfo: Output only. Operational information for AGENT_POOL
+      instances. Only available if agent mode is enabled in the cluster.
     annotations: Annotations to allow client tools to store small amount of
       arbitrary data. This is distinct from labels. https://google.aip.dev/128
     availabilityType: Availability type of an Instance. If empty, defaults to
@@ -3317,11 +3356,14 @@ class Instance(_messages.Message):
         in 2 or more zones in a region).
       SECONDARY: SECONDARY instances support read operations only. SECONDARY
         instance is a cross-region read replica
+      AGENT_POOL: AGENT_POOL instances are serverless, auto-scaling read-only
+        nodes. Only available if agent mode is enabled in the cluster.
     """
     INSTANCE_TYPE_UNSPECIFIED = 0
     PRIMARY = 1
     READ_POOL = 2
     SECONDARY = 3
+    AGENT_POOL = 4
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current serving state of the instance.
@@ -3446,43 +3488,45 @@ class Instance(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   activationPolicy = _messages.EnumField('ActivationPolicyValueValuesEnum', 1)
-  annotations = _messages.MessageField('AnnotationsValue', 2)
-  availabilityType = _messages.EnumField('AvailabilityTypeValueValuesEnum', 3)
-  clientConnectionConfig = _messages.MessageField('ClientConnectionConfig', 4)
-  connectionPoolConfig = _messages.MessageField('ConnectionPoolConfig', 5)
-  createTime = _messages.StringField(6)
-  dataApiAccess = _messages.EnumField('DataApiAccessValueValuesEnum', 7)
-  databaseFlags = _messages.MessageField('DatabaseFlagsValue', 8)
-  deleteTime = _messages.StringField(9)
-  displayName = _messages.StringField(10)
-  enablePublicIp = _messages.BooleanField(11)
-  endpointInfos = _messages.MessageField('EndpointInfo', 12, repeated=True)
-  etag = _messages.StringField(13)
-  gcaConfig = _messages.MessageField('GCAInstanceConfig', 14)
-  gceZone = _messages.StringField(15)
-  geminiConfig = _messages.MessageField('GeminiInstanceConfig', 16)
-  instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 17)
-  ipAddress = _messages.StringField(18)
-  labels = _messages.MessageField('LabelsValue', 19)
-  machineConfig = _messages.MessageField('MachineConfig', 20)
-  maintenanceVersionName = _messages.StringField(21)
-  name = _messages.StringField(22)
-  networkConfig = _messages.MessageField('InstanceNetworkConfig', 23)
-  nodes = _messages.MessageField('Node', 24, repeated=True)
-  observabilityConfig = _messages.MessageField('ObservabilityInstanceConfig', 25)
-  outboundPublicIpAddresses = _messages.StringField(26, repeated=True)
-  pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 27)
-  pscInstanceInfo = _messages.MessageField('PscInstanceInfo', 28)
-  publicIpAddress = _messages.StringField(29)
-  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 30)
-  readPoolConfig = _messages.MessageField('ReadPoolConfig', 31)
-  reconciling = _messages.BooleanField(32)
-  satisfiesPzs = _messages.BooleanField(33)
-  state = _messages.EnumField('StateValueValuesEnum', 34)
-  uid = _messages.StringField(35)
-  updatePolicy = _messages.MessageField('UpdatePolicy', 36)
-  updateTime = _messages.StringField(37)
-  writableNode = _messages.MessageField('Node', 38)
+  agentPoolConfig = _messages.MessageField('AgentPoolConfig', 2)
+  agentPoolInfo = _messages.MessageField('AgentPoolInfo', 3)
+  annotations = _messages.MessageField('AnnotationsValue', 4)
+  availabilityType = _messages.EnumField('AvailabilityTypeValueValuesEnum', 5)
+  clientConnectionConfig = _messages.MessageField('ClientConnectionConfig', 6)
+  connectionPoolConfig = _messages.MessageField('ConnectionPoolConfig', 7)
+  createTime = _messages.StringField(8)
+  dataApiAccess = _messages.EnumField('DataApiAccessValueValuesEnum', 9)
+  databaseFlags = _messages.MessageField('DatabaseFlagsValue', 10)
+  deleteTime = _messages.StringField(11)
+  displayName = _messages.StringField(12)
+  enablePublicIp = _messages.BooleanField(13)
+  endpointInfos = _messages.MessageField('EndpointInfo', 14, repeated=True)
+  etag = _messages.StringField(15)
+  gcaConfig = _messages.MessageField('GCAInstanceConfig', 16)
+  gceZone = _messages.StringField(17)
+  geminiConfig = _messages.MessageField('GeminiInstanceConfig', 18)
+  instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 19)
+  ipAddress = _messages.StringField(20)
+  labels = _messages.MessageField('LabelsValue', 21)
+  machineConfig = _messages.MessageField('MachineConfig', 22)
+  maintenanceVersionName = _messages.StringField(23)
+  name = _messages.StringField(24)
+  networkConfig = _messages.MessageField('InstanceNetworkConfig', 25)
+  nodes = _messages.MessageField('Node', 26, repeated=True)
+  observabilityConfig = _messages.MessageField('ObservabilityInstanceConfig', 27)
+  outboundPublicIpAddresses = _messages.StringField(28, repeated=True)
+  pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 29)
+  pscInstanceInfo = _messages.MessageField('PscInstanceInfo', 30)
+  publicIpAddress = _messages.StringField(31)
+  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 32)
+  readPoolConfig = _messages.MessageField('ReadPoolConfig', 33)
+  reconciling = _messages.BooleanField(34)
+  satisfiesPzs = _messages.BooleanField(35)
+  state = _messages.EnumField('StateValueValuesEnum', 36)
+  uid = _messages.StringField(37)
+  updatePolicy = _messages.MessageField('UpdatePolicy', 38)
+  updateTime = _messages.StringField(39)
+  writableNode = _messages.MessageField('Node', 40)
 
 
 class InstanceDowntimeStatus(_messages.Message):
@@ -3512,11 +3556,14 @@ class InstanceDowntimeStatus(_messages.Message):
         in 2 or more zones in a region).
       SECONDARY: SECONDARY instances support read operations only. SECONDARY
         instance is a cross-region read replica
+      AGENT_POOL: AGENT_POOL instances are serverless, auto-scaling read-only
+        nodes. Only available if agent mode is enabled in the cluster.
     """
     INSTANCE_TYPE_UNSPECIFIED = 0
     PRIMARY = 1
     READ_POOL = 2
     SECONDARY = 3
+    AGENT_POOL = 4
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. Donwtime state for the instance.
@@ -3595,11 +3642,14 @@ class InstanceUpgradeDetails(_messages.Message):
         in 2 or more zones in a region).
       SECONDARY: SECONDARY instances support read operations only. SECONDARY
         instance is a cross-region read replica
+      AGENT_POOL: AGENT_POOL instances are serverless, auto-scaling read-only
+        nodes. Only available if agent mode is enabled in the cluster.
     """
     INSTANCE_TYPE_UNSPECIFIED = 0
     PRIMARY = 1
     READ_POOL = 2
     SECONDARY = 3
+    AGENT_POOL = 4
 
   class UpgradeStatusValueValuesEnum(_messages.Enum):
     r"""Upgrade status of the instance.

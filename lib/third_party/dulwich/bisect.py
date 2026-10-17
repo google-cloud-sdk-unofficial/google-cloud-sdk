@@ -1,6 +1,7 @@
 # bisect.py -- Git bisect algorithm implementation
 # Copyright (C) 2025 Jelmer Vernooij <jelmer@jelmer.uk>
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
 # General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
@@ -20,11 +21,14 @@
 
 """Git bisect implementation."""
 
+__all__ = ["BisectState"]
+
 import os
-from typing import Optional
+from collections.abc import Sequence, Set
 
 from dulwich.object_store import peel_sha
-from dulwich.objects import Commit
+from dulwich.objects import Commit, ObjectID
+from dulwich.refs import HEADREF, Ref
 from dulwich.repo import Repo
 
 
@@ -32,6 +36,11 @@ class BisectState:
     """Manages the state of a bisect session."""
 
     def __init__(self, repo: Repo) -> None:
+        """Initialize BisectState.
+
+        Args:
+            repo: Repository to perform bisect on
+        """
         self.repo = repo
         self._bisect_dir = os.path.join(repo.controldir(), "BISECT_START")
 
@@ -42,9 +51,9 @@ class BisectState:
 
     def start(
         self,
-        bad: Optional[bytes] = None,
-        good: Optional[list[bytes]] = None,
-        paths: Optional[list[str]] = None,
+        bad: ObjectID | None = None,
+        good: Sequence[ObjectID] | None = None,
+        paths: Sequence[bytes] | None = None,
         no_checkout: bool = False,
         term_bad: str = "bad",
         term_good: str = "good",
@@ -68,11 +77,12 @@ class BisectState:
 
         # Store current branch/commit
         try:
-            ref_chain, sha = self.repo.refs.follow(b"HEAD")
+            ref_chain, sha = self.repo.refs.follow(HEADREF)
             if sha is None:
                 # No HEAD exists
                 raise ValueError("Cannot start bisect: repository has no HEAD")
             # Use the first non-HEAD ref in the chain, or the SHA itself
+            current_branch: Ref | ObjectID
             if len(ref_chain) > 1:
                 current_branch = ref_chain[1]  # The actual branch ref
             else:
@@ -98,7 +108,9 @@ class BisectState:
         names_file = os.path.join(self.repo.controldir(), "BISECT_NAMES")
         with open(names_file, "w") as f:
             if paths:
-                f.write("\n".join(paths) + "\n")
+                f.write(
+                    "\n".join(path.decode("utf-8", "replace") for path in paths) + "\n"
+                )
             else:
                 f.write("\n")
 
@@ -117,7 +129,7 @@ class BisectState:
             for g in good:
                 self.mark_good(g)
 
-    def mark_bad(self, rev: Optional[bytes] = None) -> Optional[bytes]:
+    def mark_bad(self, rev: ObjectID | None = None) -> ObjectID | None:
         """Mark a commit as bad.
 
         Args:
@@ -147,7 +159,7 @@ class BisectState:
 
         return self._find_next_commit()
 
-    def mark_good(self, rev: Optional[bytes] = None) -> Optional[bytes]:
+    def mark_good(self, rev: ObjectID | None = None) -> ObjectID | None:
         """Mark a commit as good.
 
         Args:
@@ -179,7 +191,7 @@ class BisectState:
 
         return self._find_next_commit()
 
-    def skip(self, revs: Optional[list[bytes]] = None) -> Optional[bytes]:
+    def skip(self, revs: Sequence[ObjectID] | None = None) -> ObjectID | None:
         """Skip one or more commits.
 
         Args:
@@ -206,7 +218,7 @@ class BisectState:
 
         return self._find_next_commit()
 
-    def reset(self, commit: Optional[bytes] = None) -> None:
+    def reset(self, commit: ObjectID | None = None) -> None:
         """Reset bisect state and return to original branch/commit.
 
         Args:
@@ -243,13 +255,13 @@ class BisectState:
         if commit is None:
             if original.startswith(b"refs/"):
                 # It's a branch reference - need to create a symbolic ref
-                self.repo.refs.set_symbolic_ref(b"HEAD", original)
+                self.repo.refs.set_symbolic_ref(HEADREF, Ref(original))
             else:
                 # It's a commit SHA
-                self.repo.refs[b"HEAD"] = original
+                self.repo.refs[HEADREF] = ObjectID(original)
         else:
             commit = peel_sha(self.repo.object_store, commit)[1].id
-            self.repo.refs[b"HEAD"] = commit
+            self.repo.refs[HEADREF] = commit
 
     def get_log(self) -> str:
         """Get the bisect log."""
@@ -282,16 +294,16 @@ class BisectState:
             if cmd == "start":
                 self.start()
             elif cmd == "bad":
-                rev = args[0].encode("ascii") if args else None
+                rev = ObjectID(args[0].encode("ascii")) if args else None
                 self.mark_bad(rev)
             elif cmd == "good":
-                rev = args[0].encode("ascii") if args else None
+                rev = ObjectID(args[0].encode("ascii")) if args else None
                 self.mark_good(rev)
             elif cmd == "skip":
-                revs = [arg.encode("ascii") for arg in args] if args else None
+                revs = [ObjectID(arg.encode("ascii")) for arg in args] if args else None
                 self.skip(revs)
 
-    def _find_next_commit(self) -> Optional[bytes]:
+    def _find_next_commit(self) -> ObjectID | None:
         """Find the next commit to test using binary search.
 
         Returns:
@@ -304,15 +316,15 @@ class BisectState:
             return None
 
         with open(bad_ref_path, "rb") as f:
-            bad_sha = f.read().strip()
+            bad_sha = ObjectID(f.read().strip())
 
         # Get all good commits
-        good_shas = []
+        good_shas: list[ObjectID] = []
         bisect_refs_dir = os.path.join(self.repo.controldir(), "refs", "bisect")
         for filename in os.listdir(bisect_refs_dir):
             if filename.startswith("good-"):
                 with open(os.path.join(bisect_refs_dir, filename), "rb") as f:
-                    good_shas.append(f.read().strip())
+                    good_shas.append(ObjectID(f.read().strip()))
 
         if not good_shas:
             self._append_to_log(
@@ -321,11 +333,11 @@ class BisectState:
             return None
 
         # Get skip commits
-        skip_shas = set()
+        skip_shas: set[ObjectID] = set()
         for filename in os.listdir(bisect_refs_dir):
             if filename.startswith("skip-"):
                 with open(os.path.join(bisect_refs_dir, filename), "rb") as f:
-                    skip_shas.add(f.read().strip())
+                    skip_shas.add(ObjectID(f.read().strip()))
 
         # Find commits between good and bad
         candidates = self._find_bisect_candidates(bad_sha, good_shas, skip_shas)
@@ -360,8 +372,8 @@ class BisectState:
         return next_commit
 
     def _find_bisect_candidates(
-        self, bad_sha: bytes, good_shas: list[bytes], skip_shas: set
-    ) -> list[bytes]:
+        self, bad_sha: ObjectID, good_shas: Sequence[ObjectID], skip_shas: Set[ObjectID]
+    ) -> list[ObjectID]:
         """Find all commits between good and bad commits.
 
         Args:
@@ -375,9 +387,9 @@ class BisectState:
         # Use git's graph walking to find commits
         # This is a simplified version - a full implementation would need
         # to handle merge commits properly
-        candidates = []
-        visited = set(good_shas)
-        queue = [bad_sha]
+        candidates: list[ObjectID] = []
+        visited: set[ObjectID] = set(good_shas)
+        queue: list[ObjectID] = [bad_sha]
 
         while queue:
             sha = queue.pop(0)
@@ -403,12 +415,13 @@ class BisectState:
 
         return candidates
 
-    def _get_commit_subject(self, sha: bytes) -> str:
+    def _get_commit_subject(self, sha: ObjectID) -> str:
         """Get the subject line of a commit message."""
         obj = self.repo.object_store[sha]
         if isinstance(obj, Commit):
             message = obj.message.decode("utf-8", errors="replace")
-            return message.split("\n")[0]
+            lines = message.split("\n")
+            return lines[0] if lines else ""
         return ""
 
     def _append_to_log(self, line: str) -> None:

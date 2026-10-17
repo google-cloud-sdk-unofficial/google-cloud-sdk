@@ -9180,6 +9180,8 @@ class UllMirroringCollectorRuleMatch(_messages.Message):
     ipProtocols: Optional. IP protocols to match. When unset, matches any IP
       protocol. Examples: "tcp", "udp", "icmp". If unset, matches any IP
       protocol.
+    primaryIpRanges: Optional. Primary IP ranges to match (for the capture
+      point). When unset, matches any primary IP.
     srcIpRanges: Optional. Source IP ranges to match. When unset, matches any
       source IP range.
   """
@@ -9200,7 +9202,8 @@ class UllMirroringCollectorRuleMatch(_messages.Message):
   direction = _messages.EnumField('DirectionValueValuesEnum', 1)
   dstIpRanges = _messages.StringField(2, repeated=True)
   ipProtocols = _messages.StringField(3, repeated=True)
-  srcIpRanges = _messages.StringField(4, repeated=True)
+  primaryIpRanges = _messages.StringField(4, repeated=True)
+  srcIpRanges = _messages.StringField(5, repeated=True)
 
 
 class UllMirroringEngine(_messages.Message):

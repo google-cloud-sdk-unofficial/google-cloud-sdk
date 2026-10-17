@@ -48,6 +48,7 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
     self.projects_locations_databaseCharacterSets = self.ProjectsLocationsDatabaseCharacterSetsService(self)
     self.projects_locations_databaseConnections = self.ProjectsLocationsDatabaseConnectionsService(self)
     self.projects_locations_databases = self.ProjectsLocationsDatabasesService(self)
+    self.projects_locations_dbSystemComputePerformances = self.ProjectsLocationsDbSystemComputePerformancesService(self)
     self.projects_locations_dbSystemInitialStorageSizes = self.ProjectsLocationsDbSystemInitialStorageSizesService(self)
     self.projects_locations_dbSystemShapes = self.ProjectsLocationsDbSystemShapesService(self)
     self.projects_locations_dbSystems = self.ProjectsLocationsDbSystemsService(self)
@@ -186,6 +187,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
       super(OracledatabaseV1alpha.ProjectsLocationsAutonomousDatabasesService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def ChangeDisasterRecoveryConfig(self, request, global_params=None):
+      r"""Changes the disaster recovery configuration of a cross-region Autonomous Database peer. Send this request to the standby database through its regional endpoint.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsAutonomousDatabasesChangeDisasterRecoveryConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('ChangeDisasterRecoveryConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ChangeDisasterRecoveryConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/autonomousDatabases/{autonomousDatabasesId}:changeDisasterRecoveryConfig',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.autonomousDatabases.changeDisasterRecoveryConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:changeDisasterRecoveryConfig',
+        request_field='changeDisasterRecoveryConfigRequest',
+        request_type_name='OracledatabaseProjectsLocationsAutonomousDatabasesChangeDisasterRecoveryConfigRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
     def Create(self, request, global_params=None):
       r"""Creates a new Autonomous Database in a given project and location.
@@ -1256,6 +1284,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def ExecuteSql(self, request, global_params=None):
+      r"""Executes a SQL statement on a DatabaseConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExecuteSqlResponse) The response message.
+      """
+      config = self.GetMethodConfig('ExecuteSql')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ExecuteSql.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}:executeSql',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.databaseConnections.executeSql',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:executeSql',
+        request_field='executeSqlRequest',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest',
+        response_type_name='ExecuteSqlResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single DatabaseConnection.
 
@@ -1425,6 +1480,70 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsDatabasesListRequest',
         response_type_name='ListDatabasesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDbSystemComputePerformancesService(base_api.BaseApiService):
+    """Service class for the projects_locations_dbSystemComputePerformances resource."""
+
+    _NAME = 'projects_locations_dbSystemComputePerformances'
+
+    def __init__(self, client):
+      super(OracledatabaseV1alpha.ProjectsLocationsDbSystemComputePerformancesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single DbSystemComputePerformance.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDbSystemComputePerformancesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DbSystemComputePerformance) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/dbSystemComputePerformances/{dbSystemComputePerformancesId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.dbSystemComputePerformances.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsDbSystemComputePerformancesGetRequest',
+        response_type_name='DbSystemComputePerformance',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all the DbSystemComputePerformances for the given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDbSystemComputePerformancesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDbSystemComputePerformancesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/dbSystemComputePerformances',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.dbSystemComputePerformances.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/dbSystemComputePerformances',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsDbSystemComputePerformancesListRequest',
+        response_type_name='ListDbSystemComputePerformancesResponse',
         supports_download=False,
     )
 

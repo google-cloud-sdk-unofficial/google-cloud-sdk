@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
   help_text:
     brief: |
       Show metadata for a workflow
@@ -25,6 +27,8 @@
     - googlecloudsdk.command_lib.workflows.hooks:print_default_location_warning
 
 - release_tracks: [GA]
+  hints:
+    read_only: true
   help_text:
     brief: |
       Show metadata for a workflow

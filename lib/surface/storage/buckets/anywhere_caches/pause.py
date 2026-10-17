@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import pau
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'The `gcloud storage buckets anywhere-caches pause` command is'
         ' deprecated and will be removed on September 23, 2026. Pause'

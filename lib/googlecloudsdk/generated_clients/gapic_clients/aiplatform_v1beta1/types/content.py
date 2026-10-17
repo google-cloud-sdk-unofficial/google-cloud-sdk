@@ -503,7 +503,31 @@ class AudioTranscriptionConfig(proto.Message):
             generation.
         diarization (bool):
             Optional. Configures speaker diarization.
+        mode (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.AudioTranscriptionConfig.Mode):
+            Optional. Configures transcription mode. Supported values:
+            ``VERBATIM``, ``SMART``. If unspecified, defaults to
+            ``VERBATIM`` transcription. In ``SMART`` mode, the model
+            performs disfluency removal (eliminating filler words,
+            repetitions, and false starts), light grammatical cleanup,
+            automatic formatting (paragraphs, bullet points, numbered
+            lists), and minor user edits (inline self-corrections).
+            Timestamps and diarization are incompatible with mode
+            ``SMART``.
     """
+    class Mode(proto.Enum):
+        r"""Transcription mode.
+
+        Values:
+            MODE_UNSPECIFIED (0):
+                Unspecified transcription mode.
+            VERBATIM (1):
+                Verbatim transcription mode.
+            SMART (2):
+                Smart transcription mode.
+        """
+        MODE_UNSPECIFIED = 0
+        VERBATIM = 1
+        SMART = 2
 
     class LanguageAuto(proto.Message):
         r"""Deprecated: Use top-level ``language_codes`` instead. Indicates the
@@ -558,6 +582,11 @@ class AudioTranscriptionConfig(proto.Message):
     diarization: bool = proto.Field(
         proto.BOOL,
         number=6,
+    )
+    mode: Mode = proto.Field(
+        proto.ENUM,
+        number=9,
+        enum=Mode,
     )
 
 

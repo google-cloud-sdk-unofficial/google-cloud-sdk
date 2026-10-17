@@ -109,7 +109,9 @@ class Update(base.Command):
     flags.AddCloudSQLFlags(parser)
     flags.AddCmekKeyFlag(parser)
     flags.AddCmekKeyRevocationActionTypeFlag(parser)
+    flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddCpuThrottlingFlag(parser)
+    flags.AddCpuUtilizationFlag(parser)
     flags.AddCustomAudiencesFlag(parser)
     flags.AddDefaultUrlFlag(parser)
     flags.AddDeployHealthCheckFlag(parser)
@@ -391,8 +393,6 @@ class BetaUpdate(Update):
   def Args(cls, parser):
     cls.CommonArgs(parser)
 
-    flags.AddCpuUtilizationFlag(parser)
-    flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddSshFlag(parser)
 
     # Flags specific to managed CR
@@ -435,8 +435,6 @@ class AlphaUpdate(BetaUpdate):
     flags.AMBIENT_NETWORKING_FLAG.AddToParser(parser)
     flags.AMBIENT_SCOPE_FLAG.AddToParser(parser)
     flags.AddOverflowScalingFlag(parser)
-    flags.AddCpuUtilizationFlag(parser)
-    flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddClearPresetFlag(parser)
     flags.AddSshFlag(parser)
     flags.AddGracePeriodFlag(parser)

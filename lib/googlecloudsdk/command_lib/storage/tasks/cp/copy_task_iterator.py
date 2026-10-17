@@ -29,7 +29,6 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import gcs_resource_reference
 from googlecloudsdk.command_lib.storage.resources import resource_reference
-from googlecloudsdk.command_lib.storage.resources import resource_util
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_task_factory
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
 from googlecloudsdk.core import log
@@ -501,10 +500,11 @@ class CopyTaskIterator:
         copy_util.raise_if_mv_early_deletion_fee_applies(source.resource)
 
       if self._skip_unsupported:
-        unsupported_type = resource_util.get_unsupported_object_type(
-            source.resource)
+        unsupported_type = resource_reference.get_unsupported_object_type(
+            source.resource
+        )
         if unsupported_type:
-          message = resource_util.UNSUPPORTED_OBJECT_WARNING_FORMAT.format(
+          message = resource_reference.UNSUPPORTED_OBJECT_WARNING_FORMAT.format(
               source.resource.storage_url, unsupported_type.value
           )
           self._print_skip_and_maybe_send_to_manifest(message, source)

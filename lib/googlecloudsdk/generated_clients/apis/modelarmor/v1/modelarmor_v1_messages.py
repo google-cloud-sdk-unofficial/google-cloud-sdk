@@ -194,6 +194,31 @@ class Date(_messages.Message):
   year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
+class Dictionary(_messages.Message):
+  r"""Message defining a custom dictionary of words or phrases for syntactic
+  match. Dictionary words are case-insensitive and all characters other than
+  letters and digits in the unicode [Basic Multilingual Plane](https://en.wiki
+  pedia.org/wiki/Plane_%28Unicode%29#Basic_Multilingual_Plane) will be
+  replaced with whitespace when scanning for matches. For example, the
+  dictionary phrase `Sam Johnson` will match all three phrases `sam johnson`,
+  `Sam, Johnson`, and `Sam (Johnson)`. Additionally, the characters
+  surrounding any match must be of a different type than the adjacent
+  characters within the word, so letters must be next to non-letters and
+  digits must be next to non-digits. For example, the dictionary word `jen`
+  will match the first three letters of the text `jen123` but will return no
+  matches for `jennifer`. Dictionary words containing a large number of
+  characters that are not letters or digits may result in unexpected matches
+  because such characters are treated as whitespace. For details about the
+  size limits of dictionaries, see [Quotas and
+  limits](https://docs.cloud.google.com/model-armor/quotas).
+
+  Fields:
+    wordList: Message defining a list of words or phrases.
+  """
+
+  wordList = _messages.MessageField('WordList', 1)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -203,10 +228,53 @@ class Empty(_messages.Message):
 
 
 
+class ExclusionRule(_messages.Message):
+  r"""The rule that specifies conditions when filter detections are excluded
+  from results.
+
+  Enums:
+    MatchingScopeValueValuesEnum: Optional. Specifies the scope of the input
+      that should be matched against the exclusion rule. If unspecified,
+      defaults to MATCHING_SCOPE_PARTIAL_MATCH.
+
+  Fields:
+    dictionary: Dictionary which defines the rule.
+    matchingScope: Optional. Specifies the scope of the input that should be
+      matched against the exclusion rule. If unspecified, defaults to
+      MATCHING_SCOPE_PARTIAL_MATCH.
+    regex: Regular expression which defines the rule.
+  """
+
+  class MatchingScopeValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the scope of the input that should be matched
+    against the exclusion rule. If unspecified, defaults to
+    MATCHING_SCOPE_PARTIAL_MATCH.
+
+    Values:
+      MATCHING_SCOPE_UNSPECIFIED: Unspecified matching scope.
+      MATCHING_SCOPE_FULL_MATCH: Full match. - Dictionary: the dictionary
+        match covers the entire input content - Regular expression: the
+        regular expression pattern matches the entire input content
+      MATCHING_SCOPE_PARTIAL_MATCH: Partial match. - Dictionary: at least one
+        of the tokens in the input content matches - Regular expression:
+        substring of the input content matches the regular expression pattern
+    """
+    MATCHING_SCOPE_UNSPECIFIED = 0
+    MATCHING_SCOPE_FULL_MATCH = 1
+    MATCHING_SCOPE_PARTIAL_MATCH = 2
+
+  dictionary = _messages.MessageField('Dictionary', 1)
+  matchingScope = _messages.EnumField('MatchingScopeValueValuesEnum', 2)
+  regex = _messages.MessageField('Regex', 3)
+
+
 class FilterConfig(_messages.Message):
   r"""Filters configuration.
 
   Fields:
+    filterRuleSettings: Optional. Settings for customizing filter rules. Note:
+      This field is not supported in FloorSetting and Streaming Sanitization
+      APIs.
     maliciousUriFilterSettings: Optional. Malicious URI filter settings.
     piAndJailbreakFilterSettings: Optional. Prompt injection and Jailbreak
       filter settings.
@@ -214,10 +282,11 @@ class FilterConfig(_messages.Message):
     sdpSettings: Optional. Sensitive Data Protection settings.
   """
 
-  maliciousUriFilterSettings = _messages.MessageField('MaliciousUriFilterSettings', 1)
-  piAndJailbreakFilterSettings = _messages.MessageField('PiAndJailbreakFilterSettings', 2)
-  raiSettings = _messages.MessageField('RaiFilterSettings', 3)
-  sdpSettings = _messages.MessageField('SdpFilterSettings', 4)
+  filterRuleSettings = _messages.MessageField('FilterRuleSettings', 1)
+  maliciousUriFilterSettings = _messages.MessageField('MaliciousUriFilterSettings', 2)
+  piAndJailbreakFilterSettings = _messages.MessageField('PiAndJailbreakFilterSettings', 3)
+  raiSettings = _messages.MessageField('RaiFilterSettings', 4)
+  sdpSettings = _messages.MessageField('SdpFilterSettings', 5)
 
 
 class FilterResult(_messages.Message):
@@ -238,6 +307,54 @@ class FilterResult(_messages.Message):
   raiFilterResult = _messages.MessageField('RaiFilterResult', 4)
   sdpFilterResult = _messages.MessageField('SdpFilterResult', 5)
   virusScanFilterResult = _messages.MessageField('VirusScanFilterResult', 6)
+
+
+class FilterRule(_messages.Message):
+  r"""A single rule to be applied to filters, specified in `FilterRuleSet`.
+
+  Fields:
+    exclusionRule: Exclusion rule.
+  """
+
+  exclusionRule = _messages.MessageField('ExclusionRule', 1)
+
+
+class FilterRuleSet(_messages.Message):
+  r"""A set of rules that modifies the behavior of specific filters based on
+  the rules defined within the set.
+
+  Enums:
+    FilterTypesValueListEntryValuesEnum:
+
+  Fields:
+    filterTypes: Required. List of filters this rule set is applied to.
+    rules: Required. Set of rules to be applied to filterTypes.
+  """
+
+  class FilterTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""FilterTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      RULE_FILTER_TYPE_UNSPECIFIED: Unspecified filter type.
+      PROMPT_INJECTION_AND_JAILBREAK: Prompt injection and jailbreak filter.
+      RESPONSIBLE_AI: Responsible AI filter.
+    """
+    RULE_FILTER_TYPE_UNSPECIFIED = 0
+    PROMPT_INJECTION_AND_JAILBREAK = 1
+    RESPONSIBLE_AI = 2
+
+  filterTypes = _messages.EnumField('FilterTypesValueListEntryValuesEnum', 1, repeated=True)
+  rules = _messages.MessageField('FilterRule', 2, repeated=True)
+
+
+class FilterRuleSettings(_messages.Message):
+  r"""Settings for customizing filter rules.
+
+  Fields:
+    ruleSets: Optional. List of rule sets to be applied to filters.
+  """
+
+  ruleSets = _messages.MessageField('FilterRuleSet', 1, repeated=True)
 
 
 class FilterVersionConfig(_messages.Message):
@@ -1329,6 +1446,16 @@ class RangeInfo(_messages.Message):
   start = _messages.IntegerField(2)
 
 
+class Regex(_messages.Message):
+  r"""Message defining a custom regular expression.
+
+  Fields:
+    pattern: Required. The regular expression pattern.
+  """
+
+  pattern = _messages.StringField(1)
+
+
 class SanitizationMetadata(_messages.Message):
   r"""Message describing Sanitization metadata.
 
@@ -2216,6 +2343,18 @@ class VirusScanFilterResult(_messages.Message):
   scannedContentType = _messages.EnumField('ScannedContentTypeValueValuesEnum', 4)
   scannedSize = _messages.IntegerField(5)
   virusDetails = _messages.MessageField('VirusDetail', 6, repeated=True)
+
+
+class WordList(_messages.Message):
+  r"""Message defining a list of words or phrases.
+
+  Fields:
+    words: Required. Words or phrases defining the dictionary. The dictionary
+      must contain at least one phrase and every phrase must contain at least
+      two characters that are letters or digits.
+  """
+
+  words = _messages.StringField(1, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(

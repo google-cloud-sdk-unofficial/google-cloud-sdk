@@ -26,28 +26,44 @@ Important: When checking if directories are ignored, include a trailing slash in
 For example, use "dir/" instead of "dir" to check if a directory is ignored.
 """
 
+__all__ = [
+    "IgnoreFilter",
+    "IgnoreFilterManager",
+    "IgnoreFilterStack",
+    "Pattern",
+    "default_user_ignore_filter_path",
+    "match_pattern",
+    "read_ignore_patterns",
+    "translate",
+]
+
+import logging
 import os.path
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from contextlib import suppress
-from typing import TYPE_CHECKING, BinaryIO, Optional, Union
+from typing import TYPE_CHECKING, BinaryIO
 
 if TYPE_CHECKING:
     from .repo import Repo
 
 from .config import Config, get_xdg_config_home_path
+from .wildmatch import MalformedPattern
+from .wildmatch import translate as translate_wildmatch
+
+logger = logging.getLogger(__name__)
 
 
-def _pattern_to_str(pattern: Union["Pattern", bytes, str]) -> str:
+def _pattern_to_str(pattern: "Pattern | bytes | str") -> str:
     """Convert a pattern to string, handling both Pattern objects and raw patterns."""
     if isinstance(pattern, Pattern):
-        pattern_data: Union[bytes, str] = pattern.pattern
+        pattern_data: bytes | str = pattern.pattern
     else:
         pattern_data = pattern
     return pattern_data.decode() if isinstance(pattern_data, bytes) else pattern_data
 
 
-def _check_parent_exclusion(path: str, matching_patterns: list) -> bool:
+def _check_parent_exclusion(path: str, matching_patterns: Sequence["Pattern"]) -> bool:
     """Check if a parent directory exclusion prevents negation patterns from taking effect.
 
     Args:
@@ -57,21 +73,46 @@ def _check_parent_exclusion(path: str, matching_patterns: list) -> bool:
     Returns:
         True if parent exclusion applies (negation should be ineffective), False otherwise
     """
-    # Find the last negation pattern
-    final_negation = next(
-        (p for p in reversed(matching_patterns) if not p.is_exclude), None
-    )
-    if not final_negation:
+    final_negation_index = None
+    for i in range(len(matching_patterns) - 1, -1, -1):
+        if not matching_patterns[i].is_exclude:
+            final_negation_index = i
+            break
+    if final_negation_index is None:
         return False
 
+    final_negation = matching_patterns[final_negation_index]
     final_pattern_str = _pattern_to_str(final_negation)
+    parent_status: dict[str, bool | None] = {
+        parent: None for parent in _parent_directories(path)
+    }
+    seen_pattern_ids: set[int] = set()
 
-    # Check if any exclusion pattern excludes a parent directory
-    return any(
-        pattern.is_exclude
-        and _pattern_excludes_parent(_pattern_to_str(pattern), path, final_pattern_str)
-        for pattern in matching_patterns
-    )
+    for pattern in matching_patterns[:final_negation_index]:
+        pattern_id = id(pattern)
+        if pattern_id in seen_pattern_ids:
+            continue
+        seen_pattern_ids.add(pattern_id)
+        pattern_str = _pattern_to_str(pattern)
+        for parent in parent_status:
+            if not pattern.match(os.fsencode(parent)):
+                continue
+            if pattern.is_exclude:
+                if _pattern_excludes_parent(pattern_str, path, final_pattern_str):
+                    parent_status[parent] = True
+            else:
+                parent_status[parent] = False
+
+    return any(status is True for status in parent_status.values())
+
+
+def _parent_directories(path: str) -> list[str]:
+    """Return parent directories for a path, with trailing slashes."""
+    path = path.rstrip("/")
+    if not path or "/" not in path:
+        return []
+    parts = path.split("/")
+    return ["/".join(parts[:i]) + "/" for i in range(1, len(parts))]
 
 
 def _pattern_excludes_parent(
@@ -120,82 +161,6 @@ def _pattern_excludes_parent(
     return False
 
 
-def _translate_segment(segment: bytes) -> bytes:
-    """Translate a single path segment to regex, following Git rules exactly."""
-    if segment == b"*":
-        return b"[^/]+"
-
-    res = b""
-    i, n = 0, len(segment)
-    while i < n:
-        c = segment[i : i + 1]
-        i += 1
-        if c == b"*":
-            res += b"[^/]*"
-        elif c == b"?":
-            res += b"[^/]"
-        elif c == b"\\":
-            if i < n:
-                res += re.escape(segment[i : i + 1])
-                i += 1
-            else:
-                res += re.escape(c)
-        elif c == b"[":
-            j = i
-            if j < n and segment[j : j + 1] == b"!":
-                j += 1
-            if j < n and segment[j : j + 1] == b"]":
-                j += 1
-            while j < n and segment[j : j + 1] != b"]":
-                j += 1
-            if j >= n:
-                res += b"\\["
-            else:
-                stuff = segment[i:j].replace(b"\\", b"\\\\")
-                i = j + 1
-                if stuff.startswith(b"!"):
-                    stuff = b"^" + stuff[1:]
-                elif stuff.startswith(b"^"):
-                    stuff = b"\\" + stuff
-                res += b"[" + stuff + b"]"
-        else:
-            res += re.escape(c)
-    return res
-
-
-def _handle_double_asterisk(segments: list[bytes], i: int) -> tuple[bytes, bool]:
-    """Handle ** segment processing, returns (regex_part, skip_next)."""
-    # Check if ** is at end
-    remaining = segments[i + 1 :]
-    if all(s == b"" for s in remaining):
-        # ** at end - matches everything
-        return b".*", False
-
-    # Check if next segment is also **
-    if i + 1 < len(segments) and segments[i + 1] == b"**":
-        # Consecutive ** segments
-        # Check if this ends with a directory pattern (trailing /)
-        remaining_after_next = segments[i + 2 :]
-        is_dir_pattern = (
-            len(remaining_after_next) == 1 and remaining_after_next[0] == b""
-        )
-
-        if is_dir_pattern:
-            # Pattern like c/**/**/ - requires at least one intermediate directory
-            return b"[^/]+/(?:[^/]+/)*", True
-        else:
-            # Pattern like c/**/**/d - allows zero intermediate directories
-            return b"(?:[^/]+/)*", True
-    else:
-        # ** in middle - handle differently depending on what follows
-        if i == 0:
-            # ** at start - any prefix
-            return b"(?:.*/)??", False
-        else:
-            # ** in middle - match zero or more complete directory segments
-            return b"(?:[^/]+/)*", False
-
-
 def _handle_leading_patterns(pat: bytes, res: bytes) -> tuple[bytes, bytes]:
     """Handle leading patterns like ``/**/``, ``**/``, or ``/``."""
     if pat.startswith(b"/**/"):
@@ -212,13 +177,13 @@ def _handle_leading_patterns(pat: bytes, res: bytes) -> tuple[bytes, bytes]:
 
 
 def translate(pat: bytes) -> bytes:
-    """Translate a gitignore pattern to a regular expression following Git rules exactly."""
-    res = b"(?ms)"
+    """Translate a gitignore pattern to a regular expression following Git rules exactly.
 
-    # Check for invalid patterns with // - Git treats these as broken patterns
-    if b"//" in pat:
-        # Pattern with // doesn't match anything in Git
-        return b"(?!.*)"  # Negative lookahead - matches nothing
+    Raises:
+      MalformedPattern: if wildmatch() would refuse the pattern outright;
+        see :func:`dulwich.wildmatch.translate`.
+    """
+    res = b"(?ms)"
 
     # Don't normalize consecutive ** patterns - Git treats them specially
     # c/**/**/ requires at least one intermediate directory
@@ -233,30 +198,8 @@ def translate(pat: bytes) -> bytes:
     if prefix_added:
         res += prefix_added
 
-    # Process the rest of the pattern
-    if pat == b"**":
-        res += b".*"
-    else:
-        segments = pat.split(b"/")
-        i = 0
-        while i < len(segments):
-            segment = segments[i]
-
-            # Add slash separator (except for first segment)
-            if i > 0 and segments[i - 1] != b"**":
-                res += re.escape(b"/")
-
-            if segment == b"**":
-                regex_part, skip_next = _handle_double_asterisk(segments, i)
-                res += regex_part
-                if regex_part == b".*":  # End of pattern
-                    break
-                if skip_next:
-                    i += 1
-            else:
-                res += _translate_segment(segment)
-
-            i += 1
+    # Everything left of the gitignore-specific decoration is plain wildmatch
+    res += translate_wildmatch(pat)
 
     # Add optional trailing slash for files
     if not pat.endswith(b"/"):
@@ -308,6 +251,18 @@ class Pattern:
     """A single ignore pattern."""
 
     def __init__(self, pattern: bytes, ignorecase: bool = False) -> None:
+        """Initialize a Pattern object.
+
+        Args:
+            pattern: The gitignore pattern as bytes.
+            ignorecase: Whether to perform case-insensitive matching.
+
+        Raises:
+            MalformedPattern: if wildmatch() would refuse the pattern
+              outright. Loading a whole file of patterns should go through
+              :meth:`IgnoreFilter.append_pattern` instead, which catches
+              this and warns.
+        """
         self.pattern = pattern
         self.ignorecase = ignorecase
 
@@ -334,12 +289,30 @@ class Pattern:
         self._re = re.compile(translate(pattern), flags)
 
     def __bytes__(self) -> bytes:
+        """Return the pattern as bytes.
+
+        Returns:
+            The original pattern as bytes.
+        """
         return self.pattern
 
     def __str__(self) -> str:
+        """Return the pattern as a string.
+
+        Returns:
+            The pattern decoded as a string.
+        """
         return os.fsdecode(self.pattern)
 
     def __eq__(self, other: object) -> bool:
+        """Check equality with another Pattern object.
+
+        Args:
+            other: The object to compare with.
+
+        Returns:
+            True if patterns and ignorecase flags are equal, False otherwise.
+        """
         return (
             isinstance(other, type(self))
             and self.pattern == other.pattern
@@ -347,6 +320,11 @@ class Pattern:
         )
 
     def __repr__(self) -> str:
+        """Return a string representation of the Pattern object.
+
+        Returns:
+            A string representation for debugging.
+        """
         return f"{type(self).__name__}({self.pattern!r}, {self.ignorecase!r})"
 
     def match(self, path: bytes) -> bool:
@@ -387,8 +365,15 @@ class IgnoreFilter:
         self,
         patterns: Iterable[bytes],
         ignorecase: bool = False,
-        path: Optional[str] = None,
+        path: str | None = None,
     ) -> None:
+        """Initialize an IgnoreFilter with a set of patterns.
+
+        Args:
+            patterns: An iterable of gitignore patterns as bytes.
+            ignorecase: Whether to perform case-insensitive matching.
+            path: Optional path to the ignore file for debugging purposes.
+        """
         self._patterns: list[Pattern] = []
         self._ignorecase = ignorecase
         self._path = path
@@ -396,10 +381,24 @@ class IgnoreFilter:
             self.append_pattern(pattern)
 
     def append_pattern(self, pattern: bytes) -> None:
-        """Add a pattern to the set."""
-        self._patterns.append(Pattern(pattern, self._ignorecase))
+        """Add a pattern to the set.
 
-    def find_matching(self, path: Union[bytes, str]) -> Iterable[Pattern]:
+        A malformed pattern is logged and skipped rather than raised, so one
+        bad line in a gitignore file doesn't stop the rest from loading. To
+        fail loudly instead, construct the ``Pattern`` directly.
+        """
+        try:
+            compiled = Pattern(pattern, self._ignorecase)
+        except MalformedPattern:
+            logger.warning(
+                "Ignoring malformed pattern %r in %s",
+                pattern,
+                self._path or "<patterns>",
+            )
+            return
+        self._patterns.append(compiled)
+
+    def find_matching(self, path: bytes | str) -> Iterable[Pattern]:
         """Yield all matching patterns for path.
 
         Args:
@@ -413,7 +412,7 @@ class IgnoreFilter:
             if pattern.match(path):
                 yield pattern
 
-    def is_ignored(self, path: Union[bytes, str]) -> Optional[bool]:
+    def is_ignored(self, path: bytes | str) -> bool | None:
         """Check whether a path is ignored using Git-compliant logic.
 
         For directories, include a trailing slash.
@@ -448,12 +447,22 @@ class IgnoreFilter:
 
     @classmethod
     def from_path(
-        cls, path: Union[str, os.PathLike], ignorecase: bool = False
+        cls, path: str | os.PathLike[str], ignorecase: bool = False
     ) -> "IgnoreFilter":
+        """Create an IgnoreFilter from a file path.
+
+        Args:
+            path: Path to the ignore file.
+            ignorecase: Whether to perform case-insensitive matching.
+
+        Returns:
+            An IgnoreFilter instance with patterns loaded from the file.
+        """
         with open(path, "rb") as f:
             return cls(read_ignore_patterns(f), ignorecase, path=str(path))
 
     def __repr__(self) -> str:
+        """Return string representation of IgnoreFilter."""
         path = getattr(self, "_path", None)
         if path is not None:
             return f"{type(self).__name__}.from_path({path!r})"
@@ -465,9 +474,14 @@ class IgnoreFilterStack:
     """Check for ignore status in multiple filters."""
 
     def __init__(self, filters: list[IgnoreFilter]) -> None:
+        """Initialize an IgnoreFilterStack with multiple filters.
+
+        Args:
+            filters: A list of IgnoreFilter objects to check in order.
+        """
         self._filters = filters
 
-    def is_ignored(self, path: str) -> Optional[bool]:
+    def is_ignored(self, path: str) -> bool | None:
         """Check whether a path is explicitly included or excluded in ignores.
 
         Args:
@@ -481,6 +495,14 @@ class IgnoreFilterStack:
             if status is not None:
                 return status
         return None
+
+    def __repr__(self) -> str:
+        """Return a string representation of the IgnoreFilterStack.
+
+        Returns:
+            A string representation for debugging.
+        """
+        return f"{type(self).__name__}({self._filters!r})"
 
 
 def default_user_ignore_filter_path(config: Config) -> str:
@@ -514,15 +536,23 @@ class IgnoreFilterManager:
         global_filters: list[IgnoreFilter],
         ignorecase: bool,
     ) -> None:
-        self._path_filters: dict[str, Optional[IgnoreFilter]] = {}
+        """Initialize an IgnoreFilterManager.
+
+        Args:
+            top_path: The top-level directory path to manage ignores for.
+            global_filters: List of global ignore filters to apply.
+            ignorecase: Whether to perform case-insensitive matching.
+        """
+        self._path_filters: dict[str, IgnoreFilter | None] = {}
         self._top_path = top_path
         self._global_filters = global_filters
         self._ignorecase = ignorecase
 
     def __repr__(self) -> str:
+        """Return string representation of IgnoreFilterManager."""
         return f"{type(self).__name__}({self._top_path}, {self._global_filters!r}, {self._ignorecase!r})"
 
-    def _load_path(self, path: str) -> Optional[IgnoreFilter]:
+    def _load_path(self, path: str) -> IgnoreFilter | None:
         try:
             return self._path_filters[path]
         except KeyError:
@@ -571,7 +601,7 @@ class IgnoreFilterManager:
                 filters.insert(0, (i, ignore_filter))
         return iter(matches)
 
-    def is_ignored(self, path: str) -> Optional[bool]:
+    def is_ignored(self, path: str) -> bool | None:
         """Check whether a path is explicitly included or excluded in ignores.
 
         Args:
@@ -598,7 +628,9 @@ class IgnoreFilterManager:
 
         return result
 
-    def _apply_directory_traversal_rule(self, path: str, matches: list) -> bool:
+    def _apply_directory_traversal_rule(
+        self, path: str, matches: list["Pattern"]
+    ) -> bool:
         """Apply directory traversal rule for issue #1203.
 
         If a directory would be ignored by a ** pattern, but there are negation
@@ -627,21 +659,29 @@ class IgnoreFilterManager:
         return True  # Keep original result
 
     @classmethod
-    def from_repo(cls, repo: "Repo") -> "IgnoreFilterManager":
+    def from_repo(
+        cls,
+        repo: "Repo",
+        config: "Config | None" = None,
+    ) -> "IgnoreFilterManager":
         """Create a IgnoreFilterManager from a repository.
 
         Args:
           repo: Repository object
+          config: Configuration to consult for ignorecase and the user-level
+            ignore path. If None, falls back to ``repo.get_config_stack()``.
+
         Returns:
           A `IgnoreFilterManager` object
         """
+        if config is None:
+            config = repo.get_config_stack()
         global_filters = []
         for p in [
             os.path.join(repo.controldir(), "info", "exclude"),
-            default_user_ignore_filter_path(repo.get_config_stack()),
+            default_user_ignore_filter_path(config),
         ]:
             with suppress(OSError):
                 global_filters.append(IgnoreFilter.from_path(os.path.expanduser(p)))
-        config = repo.get_config_stack()
         ignorecase = config.get_boolean((b"core"), (b"ignorecase"), False)
         return cls(repo.path, global_filters, ignorecase)

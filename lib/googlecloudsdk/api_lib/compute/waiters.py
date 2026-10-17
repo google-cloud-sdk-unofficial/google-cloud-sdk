@@ -315,8 +315,19 @@ class OperationData(object):
           )
           break
       setattr(request, parent_resource_field, parent_resource_name)
-    resource_name = self.followup_override or path_simplifier.Name(target_link)
-    setattr(request, name_field, resource_name)
+
+    get_method_config = self.resource_service.GetMethodConfig('Get')
+
+    is_singleton = (
+        get_method_config is not None
+        and not get_method_config.relative_path.endswith('}')
+    )
+    if not is_singleton:
+      resource_name = (
+          self.followup_override or path_simplifier.Name(target_link)
+      )
+      setattr(request, name_field, resource_name)
+
     return request
 
   def _OperationRequest(self, verb):

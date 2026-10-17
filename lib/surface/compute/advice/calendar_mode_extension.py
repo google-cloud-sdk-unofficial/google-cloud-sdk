@@ -42,7 +42,7 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.Hidden
 class CalendarModeExtension(base.Command):
   """Get advice on the optimal end time for extending a future reservation."""

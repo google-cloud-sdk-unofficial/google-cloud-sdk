@@ -244,7 +244,7 @@ class BucketNotFoundError(exceptions.Error):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AndroidExecutable(base.Command):
   """Submit a Device Run session with an Android executable job."""
 
@@ -364,6 +364,11 @@ A bucket named explicitly with this flag must already exist; only the default
 bucket is created automatically. This flag accepts a bucket name only, without
 a ```gs://``` scheme or a path.
 
+Logcat collection is enabled by default for every job, so each execution
+directory always contains a ```logcat.txt``` file with the device-wide Android
+system log. This is different from ```output.log```, which only captures the
+standard output and standard error written by your own executable.
+
 The Google Cloud Storage bucket layout will be structured as follows:
 
   * gs://{bucket-name}/automation/
@@ -375,6 +380,7 @@ The Google Cloud Storage bucket layout will be structured as follows:
       * my-session-id1/
         * job-000/
           * execution-000/
+            * logcat.txt
             * output.log
             * ...
 """,

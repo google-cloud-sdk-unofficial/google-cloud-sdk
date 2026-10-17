@@ -291,6 +291,11 @@ def _CreateInstanceFlexibilityPolicy(
           rank,
           min_cpu_platform=min_cpu_platform,
       )
+  elif args.IsKnownAndSpecified('instance_flexibility_policy'):
+    return encoding.DictToMessage(
+        args.instance_flexibility_policy,
+        messages.InstanceFlexibilityPolicy,
+    ).instanceSelections
   if not instance_selections:
     return None
   return messages.InstanceFlexibilityPolicy.InstanceSelectionsValue(

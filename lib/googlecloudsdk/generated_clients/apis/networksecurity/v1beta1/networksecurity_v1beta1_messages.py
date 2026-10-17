@@ -3134,6 +3134,21 @@ class ListOperationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListRateLimitPoliciesResponse(_messages.Message):
+  r"""Contains a response to listing `RateLimitPolicy` resources.
+
+  Fields:
+    nextPageToken: Identifies a token for a page of results the server should
+      return.
+    rateLimitPolicies: Contains a list of `RateLimitPolicy` resources.
+    unreachable: Unordered list. Lists locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  rateLimitPolicies = _messages.MessageField('RateLimitPolicy', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListSACAttachmentsResponse(_messages.Message):
   r"""Response for `ListSACAttachments` method.
 
@@ -3396,6 +3411,7 @@ class MTLSPolicy(_messages.Message):
       `client_validation_mode` specifies how the client connection is handled.
       Required if the policy is to be used with the Application Load
       Balancers. For Traffic Director it must be empty.
+    ClientValidationRelaxationsValueListEntryValuesEnum:
 
   Fields:
     clientValidationCa: Required if the policy is to be used with Traffic
@@ -3407,6 +3423,8 @@ class MTLSPolicy(_messages.Message):
       specifies how the client connection is handled. Required if the policy
       is to be used with the Application Load Balancers. For Traffic Director
       it must be empty.
+    clientValidationRelaxations: A list of validation relaxations to apply
+      when `client_validation_mode` is set to ALLOW_VALIDATION_RELAXATIONS.
     clientValidationTrustConfig: Reference to the TrustConfig from
       certificatemanager.googleapis.com namespace. If specified, the chain
       validation will be performed against certificates configured in the
@@ -3433,14 +3451,50 @@ class MTLSPolicy(_messages.Message):
         backend only if validation of the client certificate passed. If set,
         requires a reference to non-empty TrustConfig specified in
         `client_validation_trust_config`.
+      ALLOW_VALIDATION_RELAXATIONS: Require a client certificate, but apply
+        the specific validation relaxations requested in
+        `client_validation_relaxations`. All selected relaxations are applied
+        simultaneously.
     """
     CLIENT_VALIDATION_MODE_UNSPECIFIED = 0
     ALLOW_INVALID_OR_MISSING_CLIENT_CERT = 1
     REJECT_INVALID = 2
+    ALLOW_VALIDATION_RELAXATIONS = 3
+
+  class ClientValidationRelaxationsValueListEntryValuesEnum(_messages.Enum):
+    r"""ClientValidationRelaxationsValueListEntryValuesEnum enum type.
+
+    Values:
+      CLIENT_VALIDATION_RELAXATION_UNSPECIFIED: Not allowed.
+      ALLOW_MISSING_EKU: Allows the client certificate to completely omit the
+        Extended Key Usage (EKU) extension. If the EKU extension is present,
+        it must permit the `clientAuth` key purpose (OID 1.3.6.1.5.5.7.3.2).
+        Security Warning: Enabling this option is risky if the customer uses a
+        Root CA that issues certificates for multiple different purposes.
+        Without EKU enforcement, a certificate intended for a non-
+        authentication purpose (like S/MIME or server-only auth) might be
+        accepted for mTLS client authentication. Customers should only use
+        this relaxation if they are using a dedicated Private CA solely for
+        issuing client authentication certificates.
+      ALLOW_SHA1_HASHING: Allows validation of client certificate chains
+        signed using legacy SHA-1 message digests. Enabling this is insecure
+        and should only be used to support legacy clients during migration
+        periods.
+      ALLOW_EXPIRED_LEAF_CERTIFICATE: Allows validation of an expired client
+        leaf certificate. The certificate will be validated as if the current
+        time was one second before the end of its validity period (the
+        `notAfter` timestamp). This relaxation applies strictly to the leaf
+        certificate and not to the rest of the chain.
+    """
+    CLIENT_VALIDATION_RELAXATION_UNSPECIFIED = 0
+    ALLOW_MISSING_EKU = 1
+    ALLOW_SHA1_HASHING = 2
+    ALLOW_EXPIRED_LEAF_CERTIFICATE = 3
 
   clientValidationCa = _messages.MessageField('ValidationCA', 1, repeated=True)
   clientValidationMode = _messages.EnumField('ClientValidationModeValueValuesEnum', 2)
-  clientValidationTrustConfig = _messages.StringField(3)
+  clientValidationRelaxations = _messages.EnumField('ClientValidationRelaxationsValueListEntryValuesEnum', 3, repeated=True)
+  clientValidationTrustConfig = _messages.StringField(4)
 
 
 class MirroringDeployment(_messages.Message):
@@ -7316,6 +7370,123 @@ class NetworksecurityProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class NetworksecurityProjectsLocationsRateLimitPoliciesCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsRateLimitPoliciesCreateRequest object.
+
+  Fields:
+    parent: Required. Specifies the value for parent.
+    rateLimitPolicy: A RateLimitPolicy resource to be passed as the request
+      body.
+    rateLimitPolicyId: Required. Specifies the ID of the requesting object. If
+      auto-generating Id server-side, remove this field and
+      rate_limit_policy_id from the method_signature of Create RPC
+    requestId: Optional. Specifies an optional request ID to identify
+      requests. Specify a unique request ID so that if you must retry your
+      request, the server will know to ignore the request if it has already
+      been completed. The server will guarantee that for at least 60 minutes
+      since the first request. For example, consider a situation where you
+      make an initial request and the request times out. If you make the
+      request again with the same request ID, the server can check if original
+      operation with the same request ID was received, and if so, will ignore
+      the second request. This prevents clients from accidentally creating
+      duplicate commitments. The request ID must be a valid UUID with the
+      exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  parent = _messages.StringField(1, required=True)
+  rateLimitPolicy = _messages.MessageField('RateLimitPolicy', 2)
+  rateLimitPolicyId = _messages.StringField(3)
+  requestId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsRateLimitPoliciesDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsRateLimitPoliciesDeleteRequest object.
+
+  Fields:
+    name: Required. Specifies the name of the resource.
+    requestId: Optional. Specifies an optional request ID to identify
+      requests. Specify a unique request ID so that if you must retry your
+      request, the server will know to ignore the request if it has already
+      been completed. The server will guarantee that for at least 60 minutes
+      after the first request. For example, consider a situation where you
+      make an initial request and the request times out. If you make the
+      request again with the same request ID, the server can check if original
+      operation with the same request ID was received, and if so, will ignore
+      the second request. This prevents clients from accidentally creating
+      duplicate commitments. The request ID must be a valid UUID with the
+      exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworksecurityProjectsLocationsRateLimitPoliciesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsRateLimitPoliciesGetRequest object.
+
+  Fields:
+    name: Required. Specifies the name of the resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsRateLimitPoliciesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsRateLimitPoliciesListRequest object.
+
+  Fields:
+    filter: Optional. Filters results.
+    orderBy: Optional. Provides a hint for how to order the results.
+    pageSize: Optional. Specifies the requested page size. Server may return
+      fewer items than requested. If unspecified, server will pick an
+      appropriate default.
+    pageToken: Optional. Identifies a token for a page of results the server
+      should return.
+    parent: Required. Specifies the parent value for
+      `ListRateLimitPoliciesRequest`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsRateLimitPoliciesPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsRateLimitPoliciesPatchRequest object.
+
+  Fields:
+    name: Identifier. Specifies the name of the `RateLimitPolicy` resource.
+    rateLimitPolicy: A RateLimitPolicy resource to be passed as the request
+      body.
+    requestId: Optional. Specifies an optional request ID to identify
+      requests. Specify a unique request ID so that if you must retry your
+      request, the server will know to ignore the request if it has already
+      been completed. The server will guarantee that for at least 60 minutes
+      since the first request. For example, consider a situation where you
+      make an initial request and the request times out. If you make the
+      request again with the same request ID, the server can check if original
+      operation with the same request ID was received, and if so, will ignore
+      the second request. This prevents clients from accidentally creating
+      duplicate commitments. The request ID must be a valid UUID with the
+      exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Specifies the fields to be overwritten in the
+      `RateLimitPolicy` resource by the update. The fields specified in the
+      update_mask are relative to the resource, not the full request. A field
+      will be overwritten if it is in the mask. If the user does not provide a
+      mask then all fields present in the request will be overwritten.
+  """
+
+  name = _messages.StringField(1, required=True)
+  rateLimitPolicy = _messages.MessageField('RateLimitPolicy', 2)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class NetworksecurityProjectsLocationsSacAttachmentsCreateRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsSacAttachmentsCreateRequest object.
 
@@ -8491,6 +8662,559 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
+class RateLimitPolicy(_messages.Message):
+  r"""Describes a `RateLimitPolicy` object.
+
+  Messages:
+    LabelsValue: Optional. Stores labels as key value pairs.
+
+  Fields:
+    createTime: Output only. Represents the create timestamp.
+    description: Optional. Provides a human-readable description of the
+      resource.
+    httpRules: Optional. Specifies a list of rate limit HTTP rules to match
+      against the incoming request.
+    labels: Optional. Stores labels as key value pairs.
+    name: Identifier. Specifies the name of the `RateLimitPolicy` resource.
+    rateLimitBuckets: Optional. Specifies a list of rate limit buckets to be
+      used for rate limiting. Rate limit buckets will be referenced by the
+      rate limit actions by name.
+    targets: Required. Specifies a list of targets to which this policy
+      applies.
+    updateTime: Output only. Represents the update timestamp.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Stores labels as key value pairs.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  httpRules = _messages.MessageField('RateLimitPolicyRateLimitRule', 3, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  rateLimitBuckets = _messages.MessageField('RateLimitPolicyRateLimitBucket', 6, repeated=True)
+  targets = _messages.MessageField('RateLimitPolicyTarget', 7, repeated=True)
+  updateTime = _messages.StringField(8)
+
+
+class RateLimitPolicyRateLimitBucket(_messages.Message):
+  r"""Describes properties of a rate limit bucket.
+
+  Fields:
+    defaultLimit: Required. Specifies the default limit to apply for this rate
+      limit bucket.
+    dryRun: Optional. Specifies whether the rate limit bucket is in dry-run
+      mode.
+    keys: Required. Specifies the keys to use for rate limiting. At least one
+      key is required. If multiple keys are specified, the keys will be
+      combined and used as a single key.
+    name: Required. Specifies the name of the rate limit bucket. Name will be
+      used to reference the bucket in the RateLimitAction.
+    userOverrides: Optional. Specifies a list of user overrides to apply to
+      the rate limit bucket.
+  """
+
+  defaultLimit = _messages.MessageField('RateLimitPolicyRateLimitBucketLimit', 1)
+  dryRun = _messages.BooleanField(2)
+  keys = _messages.MessageField('RateLimitPolicyRateLimitBucketKey', 3, repeated=True)
+  name = _messages.StringField(4)
+  userOverrides = _messages.MessageField('RateLimitPolicyRateLimitBucketUserOverride', 5, repeated=True)
+
+
+class RateLimitPolicyRateLimitBucketCountLimit(_messages.Message):
+  r"""Describes the count limit for enforcement.
+
+  Enums:
+    IntervalUnitValueValuesEnum: Required. Specifies the unit of the interval.
+      Defaults to MINUTES.
+
+  Fields:
+    count: Required. Specifies the maximum number of costs allowed in the
+      specified interval. Must be non-negative.
+    interval: Required. Specifies the interval in units for which the count
+      limit is enforced. Must be positive.
+    intervalUnit: Required. Specifies the unit of the interval. Defaults to
+      MINUTES.
+  """
+
+  class IntervalUnitValueValuesEnum(_messages.Enum):
+    r"""Required. Specifies the unit of the interval. Defaults to MINUTES.
+
+    Values:
+      INTERVAL_UNIT_UNSPECIFIED: Represents an unspecified interval unit.
+        Defaults to MINUTES.
+      SECONDS: Indicates the interval is in seconds.
+      MINUTES: Indicates the interval is in minutes.
+      HOURS: Indicates the interval is in hours.
+      DAYS: Indicates the interval is in days.
+    """
+    INTERVAL_UNIT_UNSPECIFIED = 0
+    SECONDS = 1
+    MINUTES = 2
+    HOURS = 3
+    DAYS = 4
+
+  count = _messages.IntegerField(1)
+  interval = _messages.IntegerField(2)
+  intervalUnit = _messages.EnumField('IntervalUnitValueValuesEnum', 3)
+
+
+class RateLimitPolicyRateLimitBucketKey(_messages.Message):
+  r"""Describes properties of a key to use for rate limiting.
+
+  Enums:
+    KeyTypeValueValuesEnum: Required. Specifies the type of key to use for
+      rate limiting.
+    PrincipalTypeValueValuesEnum: Optional. Specifies the principal type if
+      key_type is PRINCIPAL.
+
+  Fields:
+    header: Optional. Specifies the header name if key_type is HTTP_HEADER.
+    keyType: Required. Specifies the type of key to use for rate limiting.
+    principalType: Optional. Specifies the principal type if key_type is
+      PRINCIPAL.
+  """
+
+  class KeyTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Specifies the type of key to use for rate limiting.
+
+    Values:
+      KEY_TYPE_UNSPECIFIED: Represents an unspecified key type. Defaults to
+        ALL.
+      ALL: Represents the default key type. Uses a single key for all
+        requests. Used for tracking all requests for a single service.
+      SOURCE_IP: Uses the client source IP address of the request as the key.
+      HTTP_HEADER: Uses an HTTP header as the key. The header name must be
+        specified below.
+      HTTP_PATH: Uses the HTTP path of the request as the key.
+      PRINCIPAL: Uses the principal of the request as the key. The principal
+        type must be specified below.
+      MCP_TOOL: Uses MCP tool as the key.
+    """
+    KEY_TYPE_UNSPECIFIED = 0
+    ALL = 1
+    SOURCE_IP = 2
+    HTTP_HEADER = 3
+    HTTP_PATH = 4
+    PRINCIPAL = 5
+    MCP_TOOL = 6
+
+  class PrincipalTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the principal type if key_type is PRINCIPAL.
+
+    Values:
+      PRINCIPAL_TYPE_UNSPECIFIED: Represents an unspecified principal type.
+        Defaults to CLIENT_CERT_COMMON_NAME.
+      CLIENT_CERT_COMMON_NAME: Uses the common name in the client's
+        certificate. Using common name as key while multiple common names are
+        present in the client certificate is not supported.
+    """
+    PRINCIPAL_TYPE_UNSPECIFIED = 0
+    CLIENT_CERT_COMMON_NAME = 1
+
+  header = _messages.StringField(1)
+  keyType = _messages.EnumField('KeyTypeValueValuesEnum', 2)
+  principalType = _messages.EnumField('PrincipalTypeValueValuesEnum', 3)
+
+
+class RateLimitPolicyRateLimitBucketLimit(_messages.Message):
+  r"""Describes a limit for enforcement.
+
+  Fields:
+    countLimit: Required. Defines the count limit to enforce.
+  """
+
+  countLimit = _messages.MessageField('RateLimitPolicyRateLimitBucketCountLimit', 1)
+
+
+class RateLimitPolicyRateLimitBucketUserOverride(_messages.Message):
+  r"""Describes properties of a user override for the rate limit bucket.
+
+  Fields:
+    limit: Required. Specifies the limit to apply for this specific key.
+    overrideKey: Required. Specifies the key to override.
+  """
+
+  limit = _messages.MessageField('RateLimitPolicyRateLimitBucketLimit', 1)
+  overrideKey = _messages.MessageField('RateLimitPolicyRateLimitBucketUserOverrideOverrideKey', 2)
+
+
+class RateLimitPolicyRateLimitBucketUserOverrideOverrideKey(_messages.Message):
+  r"""Specifies the key to override. Key fields must match the key types
+  specified in the rate limit bucket. Key type ALL does not support overrides.
+
+  Fields:
+    httpHeaders: Optional. Specifies the HTTP headers if the rate limit bucket
+      keys contain keys of type HTTP_HEADER. Number of headers and header
+      names must match the rate limit bucket key.
+    httpPath: Optional. Specifies the HTTP path if the rate limit bucket keys
+      contain a key of type HTTP_PATH.
+    mcpTool: Optional. Specifies the MCP tool if the rate limit bucket keys
+      contain a key of type MCP_TOOL.
+    principals: Optional. Specifies the principals if the rate limit bucket
+      keys contain keys of PRINCIPAL. Number of principals and principal types
+      must match the rate limit bucket key.
+    sourceIp: Optional. Specifies the source IP if the rate limit bucket keys
+      contain a key of type SOURCE_IP.
+  """
+
+  httpHeaders = _messages.MessageField('RateLimitPolicyRateLimitBucketUserOverrideOverrideKeyHttpHeader', 1, repeated=True)
+  httpPath = _messages.StringField(2)
+  mcpTool = _messages.StringField(3)
+  principals = _messages.MessageField('RateLimitPolicyRateLimitBucketUserOverrideOverrideKeyPrincipal', 4, repeated=True)
+  sourceIp = _messages.StringField(5)
+
+
+class RateLimitPolicyRateLimitBucketUserOverrideOverrideKeyHttpHeader(_messages.Message):
+  r"""Specifies the key in the type HTTP header to override.
+
+  Fields:
+    header: Required. Specifies the header name of the key.
+    value: Required. Specifies the header value of the key.
+  """
+
+  header = _messages.StringField(1)
+  value = _messages.StringField(2)
+
+
+class RateLimitPolicyRateLimitBucketUserOverrideOverrideKeyPrincipal(_messages.Message):
+  r"""Specifies the key in the type PRINCIPAL to override.
+
+  Enums:
+    PrincipalTypeValueValuesEnum: Required. Specifies the principal type of
+      the key.
+
+  Fields:
+    principal: Required. Specifies the principal value of the key.
+    principalType: Required. Specifies the principal type of the key.
+  """
+
+  class PrincipalTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Specifies the principal type of the key.
+
+    Values:
+      PRINCIPAL_TYPE_UNSPECIFIED: Represents an unspecified principal type.
+        Defaults to CLIENT_CERT_COMMON_NAME.
+      CLIENT_CERT_COMMON_NAME: Uses the common name in the client's
+        certificate. Using common name as key while multiple common names are
+        present in the client certificate is not supported.
+    """
+    PRINCIPAL_TYPE_UNSPECIFIED = 0
+    CLIENT_CERT_COMMON_NAME = 1
+
+  principal = _messages.StringField(1)
+  principalType = _messages.EnumField('PrincipalTypeValueValuesEnum', 2)
+
+
+class RateLimitPolicyRateLimitRule(_messages.Message):
+  r"""Specifies conditions to match against the incoming request.
+
+  Fields:
+    from_: Optional. Describes properties of a source of a request.
+    rateLimitActions: Optional. Specifies the actions to take when this rule
+      is matched.
+    to: Optional. Describes properties of a target of a request.
+  """
+
+  from_ = _messages.MessageField('RateLimitPolicyRateLimitRuleFrom', 1)
+  rateLimitActions = _messages.MessageField('RateLimitPolicyRateLimitRuleRateLimitAction', 2, repeated=True)
+  to = _messages.MessageField('RateLimitPolicyRateLimitRuleTo', 3)
+
+
+class RateLimitPolicyRateLimitRuleFrom(_messages.Message):
+  r"""Describes properties of the sources of a request.
+
+  Fields:
+    notSource: Optional. Describes the negated properties of request source.
+      Matches requests from source that does not match the criteria specified
+      in this field. At least one of source or not_source must be specified.
+    source: Optional. Describes the properties of a request's source. At least
+      one of source or not_source must be specified. A match occurs when ANY
+      fields in either source or not_source matches the request. Within a
+      single source, the match follows OR semantics across fields and AND
+      semantics within a single field.
+  """
+
+  notSource = _messages.MessageField('RateLimitPolicyRateLimitRuleFromSource', 1)
+  source = _messages.MessageField('RateLimitPolicyRateLimitRuleFromSource', 2)
+
+
+class RateLimitPolicyRateLimitRuleFromSource(_messages.Message):
+  r"""Describes the properties of a request source.
+
+  Fields:
+    principals: Required. Contains a list of identities derived from the
+      client's certificate. This field does not match on a request unless
+      frontend mutual TLS is enabled for the Gateway and the client
+      certificate is successfully validated by mTLS. Each identity is a string
+      whose value is matched against a list of URI SANs, DNS Name SANs, or the
+      common name in the client's certificate. A match happens when any
+      principal matches with the rule.
+  """
+
+  principals = _messages.MessageField('RateLimitPolicyRateLimitRulePrincipal', 1, repeated=True)
+
+
+class RateLimitPolicyRateLimitRuleHeaderMatch(_messages.Message):
+  r"""Determines how an HTTP header is matched.
+
+  Fields:
+    name: Optional. Specifies the name of the header in the request.
+    value: Optional. Specifies how the header match is performed.
+  """
+
+  name = _messages.StringField(1)
+  value = _messages.MessageField('RateLimitPolicyRateLimitRuleStringMatch', 2)
+
+
+class RateLimitPolicyRateLimitRulePrincipal(_messages.Message):
+  r"""Describes the properties of a principal for matching.
+
+  Enums:
+    PrincipalSelectorValueValuesEnum: Optional. Decides what principal value
+      the principal rule will match against. If not specified, defaults to
+      CLIENT_CERT_URI_SAN.
+
+  Fields:
+    principal: Required. Matches a non-empty string against the principal
+      value based on the principal_selector.
+    principalSelector: Optional. Decides what principal value the principal
+      rule will match against. If not specified, defaults to
+      CLIENT_CERT_URI_SAN.
+  """
+
+  class PrincipalSelectorValueValuesEnum(_messages.Enum):
+    r"""Optional. Decides what principal value the principal rule will match
+    against. If not specified, defaults to CLIENT_CERT_URI_SAN.
+
+    Values:
+      PRINCIPAL_SELECTOR_UNSPECIFIED: Represents an unspecified principal
+        selector. Defaults to CLIENT_CERT_URI_SAN by default.
+      CLIENT_CERT_URI_SAN: Matches the principal rule against a list of URI
+        SANs in the validated client's certificate. A match happens when there
+        is any exact URI SAN value match. This is the default principal
+        selector.
+      CLIENT_CERT_DNS_NAME_SAN: Matches the principal rule against a list of
+        DNS Name SANs in the validated client's certificate. A match happens
+        when there is any exact DNS Name SAN value match.
+      CLIENT_CERT_COMMON_NAME: Matches the principal rule against the common
+        name in the client's certificate. A match happens when there is an
+        exact common name value match.
+    """
+    PRINCIPAL_SELECTOR_UNSPECIFIED = 0
+    CLIENT_CERT_URI_SAN = 1
+    CLIENT_CERT_DNS_NAME_SAN = 2
+    CLIENT_CERT_COMMON_NAME = 3
+
+  principal = _messages.MessageField('RateLimitPolicyRateLimitRuleStringMatch', 1)
+  principalSelector = _messages.EnumField('PrincipalSelectorValueValuesEnum', 2)
+
+
+class RateLimitPolicyRateLimitRuleRateLimitAction(_messages.Message):
+  r"""Describes the action to take when the rate limit rule is matched.
+
+  Fields:
+    rateLimitBucket: Required. Specifies the name of the rate limit bucket to
+      apply when this rule is matched.
+  """
+
+  rateLimitBucket = _messages.StringField(1)
+
+
+class RateLimitPolicyRateLimitRuleStringMatch(_messages.Message):
+  r"""Determines how a string value is matched.
+
+  Fields:
+    contains: Checks if the input string contains the substring specified
+      here. Note: empty contains match is not allowed, please use regex
+      instead. Examples: * ``abc`` matches the value ``xyz.abc.def``
+    exact: Matches the input string exactly to the string specified here.
+      Examples: * ``abc`` only matches the value ``abc``.
+    ignoreCase: Optional. Indicates if the exact/prefix/suffix/contains
+      matching should be case insensitive. For example, when true, the matcher
+      ``data`` matches both input strings ``Data`` and ``data``.
+    prefix: Checks if the input string has the prefix specified here. Note:
+      empty prefix is not allowed, please use regex instead. Examples: *
+      ``abc`` matches the value ``abc.xyz``
+    suffix: Checks if the input string has the suffix specified here. Note:
+      empty suffix is not allowed, please use regex instead. Examples: *
+      ``abc`` matches the value ``xyz.abc``
+  """
+
+  contains = _messages.StringField(1)
+  exact = _messages.StringField(2)
+  ignoreCase = _messages.BooleanField(3)
+  prefix = _messages.StringField(4)
+  suffix = _messages.StringField(5)
+
+
+class RateLimitPolicyRateLimitRuleTo(_messages.Message):
+  r"""Describes properties of the targets of a request.
+
+  Fields:
+    destination: Optional. Describes properties of a request's destination. At
+      least one of destination or not_destination must be specified. A match
+      occurs when ANY fields in either destination or not_destination matches
+      the request. Within a destination, the match follows OR semantics across
+      fields and AND semantics within a single field.
+    notDestination: Optional. Describes the negated properties of a request's
+      destination. Matches requests for destination that does not match the
+      criteria specified in this field. At least one of destination or
+      not_destination must be specified.
+  """
+
+  destination = _messages.MessageField('RateLimitPolicyRateLimitRuleToDestination', 1)
+  notDestination = _messages.MessageField('RateLimitPolicyRateLimitRuleToDestination', 2)
+
+
+class RateLimitPolicyRateLimitRuleToDestination(_messages.Message):
+  r"""Describes properties of a request target.
+
+  Fields:
+    headerSet: Optional. Specifies a list of headers to match against in http
+      header.
+    hosts: Optional. Specifies a list of HTTP Hosts to match against. The
+      match can be one of exact, prefix, suffix, or contains (substring
+      match). Matches are always case sensitive unless the ignoreCase is set.
+      The match follows OR semantics which means that if any of the hosts
+      match, the operation is considered to be matched.
+    mcp: Optional. Specifies the MCP protocol attributes to match against.
+      This field is only valid if the targeted Gateway or Forwarding Rule has
+      an Agent Gateway attached to it.
+    methods: Optional. Specifies a list of HTTP methods to match against. Each
+      entry must be a valid HTTP method name (GET, PUT, POST, HEAD, PATCH,
+      DELETE, OPTIONS). It only allows exact match and is always case
+      sensitive. The match follows OR semantics which means that if any of the
+      methods match, the operation is considered to be matched.
+    paths: Optional. Specifies a list of paths to match against. The match can
+      be one of exact, prefix, suffix, or contains (substring match). Matches
+      are always case sensitive unless the ignoreCase is set. The match
+      follows OR semantics which means that if any of the paths match, the
+      operation is considered to be matched. Note that this path match
+      includes the query parameters. For gRPC services, this should be a
+      fully-qualified name of the form /package.service/method.
+  """
+
+  headerSet = _messages.MessageField('RateLimitPolicyRateLimitRuleToDestinationHeaderSet', 1)
+  hosts = _messages.MessageField('RateLimitPolicyRateLimitRuleStringMatch', 2, repeated=True)
+  mcp = _messages.MessageField('RateLimitPolicyRateLimitRuleToDestinationMCP', 3)
+  methods = _messages.StringField(4, repeated=True)
+  paths = _messages.MessageField('RateLimitPolicyRateLimitRuleStringMatch', 5, repeated=True)
+
+
+class RateLimitPolicyRateLimitRuleToDestinationHeaderSet(_messages.Message):
+  r"""Describes a set of HTTP headers to match against.
+
+  Fields:
+    headers: Required. Contains a list of headers to match against in http
+      header. The match can be one of exact, prefix, suffix, or contains
+      (substring match). The match follows AND semantics which means all the
+      headers must match. Matches are always case sensitive unless the
+      ignoreCase is set.
+  """
+
+  headers = _messages.MessageField('RateLimitPolicyRateLimitRuleHeaderMatch', 1, repeated=True)
+
+
+class RateLimitPolicyRateLimitRuleToDestinationMCP(_messages.Message):
+  r"""Describes a set of MCP protocol attributes to match against for a given
+  MCP request. This field is only valid if the targeted Gateway or Forwarding
+  Rule has an Agent Gateway attached to it.
+
+  Enums:
+    BaseProtocolMethodsOptionValueValuesEnum: Optional. If specified, matches
+      on the MCP protocol's non-access specific methods namely: * initialize *
+      completion/ * logging/ * notifications/ * ping Defaults to
+      SKIP_BASE_PROTOCOL_METHODS if not specified.
+
+  Fields:
+    baseProtocolMethodsOption: Optional. If specified, matches on the MCP
+      protocol's non-access specific methods namely: * initialize *
+      completion/ * logging/ * notifications/ * ping Defaults to
+      SKIP_BASE_PROTOCOL_METHODS if not specified.
+    methods: Optional. A list of MCP methods and associated parameter names to
+      match on. It is recommended to use this field to match on tools, prompts
+      and resource accesses while setting the baseProtocolMethodsOption to
+      MATCH_BASE_PROTOCOL_METHODS to match on all the other MCP protocol
+      methods. Limited to 10 MCP methods per Rate Limit Policy.
+  """
+
+  class BaseProtocolMethodsOptionValueValuesEnum(_messages.Enum):
+    r"""Optional. If specified, matches on the MCP protocol's non-access
+    specific methods namely: * initialize * completion/ * logging/ *
+    notifications/ * ping Defaults to SKIP_BASE_PROTOCOL_METHODS if not
+    specified.
+
+    Values:
+      BASE_PROTOCOL_METHODS_OPTION_UNSPECIFIED: Unspecified option. Defaults
+        to SKIP_BASE_PROTOCOL_METHODS.
+      SKIP_BASE_PROTOCOL_METHODS: Skip matching on the base MCP protocol
+        methods.
+      MATCH_BASE_PROTOCOL_METHODS: Match on the base MCP protocol methods.
+    """
+    BASE_PROTOCOL_METHODS_OPTION_UNSPECIFIED = 0
+    SKIP_BASE_PROTOCOL_METHODS = 1
+    MATCH_BASE_PROTOCOL_METHODS = 2
+
+  baseProtocolMethodsOption = _messages.EnumField('BaseProtocolMethodsOptionValueValuesEnum', 1)
+  methods = _messages.MessageField('RateLimitPolicyRateLimitRuleToDestinationMCPMethod', 2, repeated=True)
+
+
+class RateLimitPolicyRateLimitRuleToDestinationMCPMethod(_messages.Message):
+  r"""Describes a set of MCP methods to match against. This field is only
+  valid if the targeted Gateway or Forwarding Rule has an Agent Gateway
+  attached to it.
+
+  Fields:
+    name: Required. Specifies the MCP method to match against. Allowed values
+      are as follows: 1. `tools`, `prompts`, `resources` - these will match
+      against all sub methods under the respective methods. 2. `prompts/list`,
+      `tools/list`, `resources/list`, `resources/templates/list` 3.
+      `prompts/get`, `tools/call`, `resources/subscribe`,
+      `resources/unsubscribe`, `resources/read` Params cannot be specified for
+      categories 1 and 2.
+    params: Optional. Specifies a list of MCP method parameter names to match
+      against. The match can be one of exact, prefix, suffix, or contains
+      (substring match). Matches are always case sensitive unless the
+      ignoreCase is set.
+  """
+
+  name = _messages.StringField(1)
+  params = _messages.MessageField('RateLimitPolicyRateLimitRuleStringMatch', 2, repeated=True)
+
+
+class RateLimitPolicyTarget(_messages.Message):
+  r"""Specifies the target to which this policy applies.
+
+  Fields:
+    resource: Required. Reference to a Gateway or Forwarding Rule resource on
+      which this policy will be applied.
+  """
+
+  resource = _messages.StringField(1)
+
+
 class RemoveAddressGroupItemsRequest(_messages.Message):
   r"""Request used by the RemoveAddressGroupItems method.
 
@@ -9624,6 +10348,8 @@ class UllMirroringCollectorRuleMatch(_messages.Message):
     ipProtocols: Optional. IP protocols to match. When unset, matches any IP
       protocol. Examples: "tcp", "udp", "icmp". If unset, matches any IP
       protocol.
+    primaryIpRanges: Optional. Primary IP ranges to match (for the capture
+      point). When unset, matches any primary IP.
     srcIpRanges: Optional. Source IP ranges to match. When unset, matches any
       source IP range.
   """
@@ -9644,7 +10370,8 @@ class UllMirroringCollectorRuleMatch(_messages.Message):
   direction = _messages.EnumField('DirectionValueValuesEnum', 1)
   dstIpRanges = _messages.StringField(2, repeated=True)
   ipProtocols = _messages.StringField(3, repeated=True)
-  srcIpRanges = _messages.StringField(4, repeated=True)
+  primaryIpRanges = _messages.StringField(4, repeated=True)
+  srcIpRanges = _messages.StringField(5, repeated=True)
 
 
 class UllMirroringEngine(_messages.Message):
@@ -10420,6 +11147,8 @@ class WildfireVerdictChangeRequest(_messages.Message):
 
 encoding.AddCustomJsonFieldMapping(
     AuthzPolicyAuthzRule, 'from_', 'from')
+encoding.AddCustomJsonFieldMapping(
+    RateLimitPolicyRateLimitRule, 'from_', 'from')
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(

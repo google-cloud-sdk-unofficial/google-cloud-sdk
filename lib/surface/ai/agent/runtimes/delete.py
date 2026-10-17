@@ -24,9 +24,9 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import operations_util
 from googlecloudsdk.command_lib.ai import validation
+from googlecloudsdk.command_lib.ai.agent_runtimes import agent_runtimes_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 _AGENT_RUNTIME_DELETE_DISPLAY_MESSAGE = """\
@@ -36,23 +36,6 @@ You may view the status of your agent runtime with the command
 
   $ {command_prefix} ai agent runtimes describe {name}
 """
-
-
-def _ParseOperation(operation_name):
-  """Parse operation resource name to the operation reference object."""
-  if '/reasoningEngines/' in operation_name:
-    try:
-      return resources.REGISTRY.ParseRelativeName(
-          operation_name,
-          collection=(
-              'aiplatform.projects.locations.reasoningEngines.operations'
-          ),
-      )
-    except resources.WrongResourceCollectionException:
-      pass
-  return resources.REGISTRY.ParseRelativeName(
-      operation_name, collection='aiplatform.projects.locations.operations'
-  )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -82,12 +65,6 @@ class Delete(base.DeleteCommand):
         ),
     )
 
-  def _CommandPrefix(self):
-    cmd_prefix = 'gcloud'
-    if self.ReleaseTrack().prefix:
-      cmd_prefix += ' ' + self.ReleaseTrack().prefix
-    return cmd_prefix
-
   def Run(self, args):
     runtime_ref = args.CONCEPTS.runtime.Parse()
     region = runtime_ref.AsDict()['locationsId']
@@ -116,13 +93,16 @@ class Delete(base.DeleteCommand):
       response = operations_util.WaitForOpMaybe(
           operations_client=operations.OperationsClient(),
           op=operation,
-          op_ref=_ParseOperation(operation.name),
+          op_ref=agent_runtimes_util.ParseOperation(operation.name),
           asynchronous=args.async_,
       )
       if args.async_:
         log.status.Print(
             _AGENT_RUNTIME_DELETE_DISPLAY_MESSAGE.format(
-                name=resource_name, command_prefix=self._CommandPrefix()
+                name=resource_name,
+                command_prefix=agent_runtimes_util.CommandPrefix(
+                    self.ReleaseTrack()
+                ),
             )
         )
       else:

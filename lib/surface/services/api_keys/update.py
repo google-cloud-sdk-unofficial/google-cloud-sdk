@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Callable, Sequence
 import dataclasses
+import functools
 import itertools
 import types
 from typing import Any, TypeVar
@@ -127,7 +128,7 @@ class Update(base.UpdateCommand):
     """
 
     client = apikeys.GetClientInstance(self.ReleaseTrack())
-    messages = client.MESSAGES_MODULE
+    messages = apikeys.GetMessagesModule(self.ReleaseTrack())
 
     key_ref = args.CONCEPTS.key.Parse()
 
@@ -275,7 +276,12 @@ class Update(base.UpdateCommand):
             f'command to wait for its completion:\n {cmd}'
         )
         return op
-      op = services_util.WaitOperation(op.name, apikeys.GetOperation)
+      op = services_util.WaitOperation(
+          op.name,
+          functools.partial(
+              apikeys.GetOperation, release_track=self.ReleaseTrack()
+          ),
+      )
     services_util.PrintOperationWithResponse(op)
     return op
 

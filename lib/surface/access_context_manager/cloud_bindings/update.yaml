@@ -4,115 +4,77 @@
 
   help_text:
     brief: Update an existing cloud access binding under an organization.
-    GA:
-      description: |
-        Update an existing cloud access binding. You can update the level, dry run level, session
-        settings, and scoped access settings. They cannot all be empty.
-      examples: |
-        To update an existing cloud access binding, run:
+    description: |
+      Update an existing cloud access binding. You can update the level, dry run level, session
+      settings, and scoped access settings. They cannot all be empty.
 
-          $ {command} --binding=my-binding-id --level=accessPolicies/123/accessLevels/new-abc
+      For Google Group bindings (`--group-key`), you can update any combination of the access
+      level, dry run level, top-level session settings (1 hour to 24 hours, or 0 to disable), and
+      scoped access settings for specific applications (`restrictedClientApplication`).
 
-        To remove level and add dry run level, run:
+      For bindings tied to all workforce pools in an organization
+      (`principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`),
+      you can update or append scoped access settings with `restrictedProject` and active
+      `sessionSettings` using `--binding-file`. Top-level session settings, top-level access
+      levels, dry run levels, and application scopes (`restrictedClientApplication`) are not
+      supported for this principal type.
 
-          $ {command} --binding=my-binding-id --level=  \
-            --dry-run-level=accessPolicies/123/accessLevels/new-def
+      Session settings are supported only for Google Groups and bindings tied to all workforce
+      pools in an organization. No other bindings allow session settings, and requests containing
+      session settings for other principal types are rejected.
+    examples: |
+      To update an existing cloud access binding, run the following command:
 
-        To replace scoped access settings (e.g., for specific applications) with a new list, run:
+        $ {command} --binding=my-binding-id --level=accessPolicies/123/accessLevels/new-abc
 
-          $ {command} --binding=my-binding-id --binding-file='binding.yaml'
+      To remove level and add dry run level, run the following command:
 
-        To append scoped access settings to the existing list, run:
+        $ {command} --binding=my-binding-id --level=  \
+          --dry-run-level=accessPolicies/123/accessLevels/new-def
 
-          $ {command} --binding=my-binding-id --binding-file='binding.yaml' --append
+      To replace scoped access settings (such as for specific applications on a group binding or restricted projects on a workforce pool binding) with a new list, run the following command:
 
-        Note this is only possible for scoped access settings that exclusively hold session
-        settings (i.e. no access levels).
+        $ {command} --binding=my-binding-id --binding-file='binding.yaml'
 
-        To update session settings, run:
+      To append scoped access settings to the existing list, run the following command:
 
-          $ {command} --binding=my-binding-id --session-length=2h
+        $ {command} --binding=my-binding-id --binding-file='binding.yaml' --append
 
-        To update the session reauth method you must also specify --session-length (this can be the
-        existing value if you only want to modify the reauth method), run:
+      Note this is only possible for scoped access settings that exclusively hold session
+      settings (that is, no access levels).
 
-          $ {command} --binding=my-binding-id --session-length=2h --session-reauth-method=login
+      To update or append project-scoped session settings on a binding tied to all workforce pools
+      in an organization:
 
-        To disable session settings, set --session-length=0, for example:
+        Create a binding.yaml file containing the desired scopedAccessSettings with restrictedProject:
 
-          $ {command} --binding=my-binding-id --session-length=0
-    ALPHA:
-      description: |
-        Update an existing cloud access binding. You can update the level, dry run level, session
-        settings, and scoped access settings. They cannot all be empty.
+          scopedAccessSettings:
+          - scope:
+              clientScope:
+                restrictedProject:
+                  name: projects/1234567890
+            activeSettings:
+              sessionSettings:
+                sessionLength: 7776000s
+                sessionLengthEnabled: true
+                sessionReauthMethod: LOGIN
 
-        For Google Group bindings (`--group-key`), you can update the access level, dry run level,
-        top-level session settings (1 hour to 24 hours, or 0 to disable), and/or scoped access
-        settings for specific applications (`restrictedClientApplication`).
-
-        For bindings tied to all workforce pools in an organization
-        (`principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`),
-        you can update or append scoped access settings with `restrictedProject` and active
-        `sessionSettings` using `--binding-file`. Top-level session settings, top-level access
-        levels, dry run levels, and application scopes (`restrictedClientApplication`) are not
-        supported for this principal type.
-
-        Session settings are only supported for Google Groups and bindings tied to all workforce
-        pools in an organization. No other bindings allow session settings, and requests containing
-        session settings for other principal types will be rejected.
-      examples: |
-        To update an existing cloud access binding, run:
-
-          $ {command} --binding=my-binding-id --level=accessPolicies/123/accessLevels/new-abc
-
-        To remove level and add dry run level, run:
-
-          $ {command} --binding=my-binding-id --level=  \
-            --dry-run-level=accessPolicies/123/accessLevels/new-def
-
-        To replace scoped access settings (e.g., for specific applications on a group binding or restricted projects on a workforce pool binding) with a new list, run:
-
-          $ {command} --binding=my-binding-id --binding-file='binding.yaml'
-
-        To append scoped access settings to the existing list, run:
+        Then run the following command:
 
           $ {command} --binding=my-binding-id --binding-file='binding.yaml' --append
 
-        Note this is only possible for scoped access settings that exclusively hold session
-        settings (i.e. no access levels).
+      To update top-level session settings on a Google Group binding, run the following command:
 
-        To update or append project-scoped session settings on a binding tied to all workforce pools
-        in an organization:
+        $ {command} --binding=my-binding-id --session-length=2h
 
-          Create a `binding.yaml` file containing the desired `scopedAccessSettings` with `restrictedProject`:
+      To update the session reauth method on a Google Group binding, you must also specify `--session-length`
+      (this can be the existing value if you only want to modify the reauth method), run the following command:
 
-            scopedAccessSettings:
-            - scope:
-                clientScope:
-                  restrictedProject:
-                    name: projects/1234567890
-              activeSettings:
-                sessionSettings:
-                  sessionLength: 7776000s
-                  sessionLengthEnabled: true
-                  sessionReauthMethod: LOGIN
+        $ {command} --binding=my-binding-id --session-length=2h --session-reauth-method=login
 
-          Then run:
+      To disable session settings on a Google Group binding, set `--session-length=0` and run the following command:
 
-            $ {command} --binding=my-binding-id --binding-file='binding.yaml' --append
-
-        To update top-level session settings on a Google Group binding, run:
-
-          $ {command} --binding=my-binding-id --session-length=2h
-
-        To update the session reauth method on a Google Group binding, you must also specify `--session-length`
-        (this can be the existing value if you only want to modify the reauth method), run:
-
-          $ {command} --binding=my-binding-id --session-length=2h --session-reauth-method=login
-
-        To disable session settings on a Google Group binding, set `--session-length=0`, for example:
-
-          $ {command} --binding=my-binding-id --session-length=0
+        $ {command} --binding=my-binding-id --session-length=0
 
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings
@@ -137,43 +99,37 @@
       help_text: |
         Path to the file that contains a Google Cloud user access binding.
 
-        This file contains a YAML-compliant object representing
-        a GcpUserAccessBinding (as described in the API reference) containing `ScopedAccessSettings` only.
-        No other binding fields are allowed.
+        This file contains a YAML-compliant object representing a GcpUserAccessBinding that
+        contains `scopedAccessSettings` only. No other binding fields are allowed.
 
-        The file content replaces the corresponding fields in the existing binding. Unless --append
-        is specified. See --append help text for more details.
+        For details about the object, see the API reference:
+        https://docs.cloud.google.com/access-context-manager/docs/apply-policies-to-user-groups#define_configurations_for_specific_applications
+
+        For Google Group bindings, `scopedAccessSettings` can specify `restrictedClientApplication`
+        (using `clientId` or `name`) with `accessLevels`, `dryRunAccessLevels`,
+        and `sessionSettings` (session length up to 24 hours). The `restrictedProject`
+        scope is not supported for Google Group bindings.
+
+        For bindings tied to all workforce pools in an organization
+        (`principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`),
+        `scopedAccessSettings` must only contain `restrictedProject` (format: `name: projects/{project_number}`)
+        within `scope.clientScope` and `sessionSettings` within `activeSettings`.
+        For this configuration, the following requirements apply:
+        * `sessionLength` must be set and must be between 1 hour and 90 days (for example, `7776000s`).
+        * `sessionReauthMethod` must be `LOGIN` or omitted (defaults to `LOGIN`).
+        * `sessionLengthEnabled` must be set to `true`.
+        * `maxInactivity` must be set to 0 or omitted.
+        * `useOidcMaxAge` must be set to `false` or omitted.
+        * No application scopes (`restrictedClientApplication`), access levels, or dry run settings are allowed.
+
+        The `restrictedProject` scope is usable only with bindings tied to all workforce pools in
+        an organization.
+
+        The file content replaces the corresponding fields in the existing binding, unless `--append`
+        is specified. See `--append` help text for more details.
       repeated: false
       ALPHA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1alpha
-        help_text: |
-          Path to the file that contains a Google Cloud user access binding.
-
-          This file contains a YAML-compliant object representing a GcpUserAccessBinding
-          containing `scopedAccessSettings` only. No other binding fields are allowed.
-
-          For Google Group bindings, `scopedAccessSettings` can specify `restrictedClientApplication`
-          (using `clientId` or `name`) with `accessLevels`, `dryRunAccessLevels`,
-          and/or `sessionSettings` (session length up to 1 day / 24 hours). The `restrictedProject`
-          scope is not supported for Google Group bindings.
-
-          For bindings tied to all workforce pools in an organization
-          (`principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`),
-          `scopedAccessSettings` must only contain `restrictedProject` (format: `name: projects/{project_number}`)
-          within `scope.clientScope` and `sessionSettings` within `activeSettings`.
-          For this configuration:
-          * `sessionLength` must be set and must be between 1 hour and 90 days (e.g. `7776000s`).
-          * `sessionReauthMethod` must be `LOGIN` or omitted (defaults to `LOGIN`).
-          * `sessionLengthEnabled` must be set to `true`.
-          * `maxInactivity` must be set to 0 or omitted.
-          * `useOidcMaxAge` must be set to `false` or omitted.
-          * No application scopes (`restrictedClientApplication`), access levels, or dry run settings are allowed.
-
-          The `restrictedProject` scope is only usable with bindings tied to the all workforce pools
-          in an organization federated principal.
-
-          The file content replaces the corresponding fields in the existing binding, unless `--append`
-          is specified. See `--append` help text for more details.
       GA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1
     - api_field: gcpUserAccessBinding.accessLevels
@@ -182,88 +138,58 @@
       help_text: |
         The access level that replaces the existing level for the given binding. The input must
         be the full identifier of an access level, such as
-        `accessPolicies/123/accessLevels/new-abc`.
-      ALPHA:
-        help_text: |
-          The access level that replaces the existing level for the given binding. The input must
-          be the full identifier of an access level, such as
-          `accessPolicies/123/accessLevels/new-abc`. This parameter is not supported for
-          bindings tied to all workforce pools in an organization.
+        `accessPolicies/123/accessLevels/new-abc`. This parameter is not supported for
+        bindings tied to all workforce pools in an organization.
     - api_field: gcpUserAccessBinding.dryRunAccessLevels
       arg_name: dry-run-level
       type: str
       help_text: |
         The dry run access level that replaces the existing dry run level for the given binding.
         The input must be the full identifier of an access level, such as
-        `accessPolicies/123/accessLevels/new-def`.
-      ALPHA:
-        help_text: |
-          The dry run access level that replaces the existing dry run level for the given binding.
-          The input must be the full identifier of an access level, such as
-          `accessPolicies/123/accessLevels/new-def`. This parameter is not supported for
-          bindings tied to all workforce pools in an organization.
+        `accessPolicies/123/accessLevels/new-def`. This parameter is not supported for
+        bindings tied to all workforce pools in an organization.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionLength
       arg_name: session-length
       type: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionLength
-      GA:
-        help_text: |
-          The maximum lifetime of a user session provided as an ISO 8601 duration string. Must be at
-          least one hour or zero seconds, and no more than twenty-four hours. Granularity is limited
-          to seconds.
+      help_text: |
+        The maximum lifetime of a user session provided as an ISO 8601 duration string.
+        Must be at least one hour or zero seconds, and no more than twenty-four hours. Granularity
+        is limited to seconds.
 
-          When --session-length=0 then users in the group attached to this binding will have infinite
-          session length, effectively disabling the session settings.
+        When `--session-length=0`, users in the group attached to this binding have infinite
+        session length, which effectively disables session settings.
 
-          A session begins when a user signs in successfully. If a user signs out before the end of
-          the session lifetime, a new login creates a new session with a fresh lifetime. When a
-          session expires, the user is asked to re-authenticate in accordance with session-method.
+        A session begins after a user signs in successfully. If a user signs out before the end of
+        the session lifetime, a new login creates a new session with a fresh lifetime. When a
+        session expires, the user is asked to re-authenticate in accordance with
+        `--session-reauth-method`.
 
-          Setting --session-reauth-method when --session-length is empty raises an error.
-      ALPHA:
-        help_text: |
-          The maximum lifetime of a user session provided as an ISO 8601 duration string.
-          Must be at least one hour or zero seconds, and no more than twenty-four hours. Granularity
-          is limited to seconds.
+        Setting `--session-reauth-method` when `--session-length` is empty raises an error.
 
-          When `--session-length=0` users in the group attached to this binding will have infinite
-          session length, effectively disabling the session settings.
-
-          A session begins after a user signs in successfully. If a user signs out before the end of
-          the session lifetime, a new login creates a new session with a fresh lifetime. When a
-          session expires, the user is asked to re-authenticate in accordance with
-          `--session-reauth-method`.
-
-          Setting `--session-reauth-method` when `--session-length` is empty raises an error.
-
-          This parameter is only supported for Google Group bindings. It is not supported for
-          bindings tied to all workforce pools in an organization (for which session settings can
-          be updated or appended via `--binding-file`) or any other principal type.
+        The session length is supported only for Google Group bindings. It isn't supported for
+        bindings tied to all workforce pools in an organization, or for any other principal type.
+        For bindings tied to all workforce pools in an organization, update or append session
+        settings through `--binding-file`.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionReauthMethod
       arg_name: session-reauth-method
       default: login
       help_text: |
         Specifies the security check a user must undergo when their session expires. Defaults to
-        --session-reauth-method=LOGIN if unspecified and --session-length is set. Cannot be used when
-        --session-length is empty or 0.
-      ALPHA:
-        help_text: |
-          Specifies the security check a user must undergo when their session expires. Defaults to
-          `--session-reauth-method=LOGIN` if unspecified and `--session-length` is set. Cannot be used when
-          `--session-length` is empty or 0. This parameter is only supported for Google Group bindings
-          and is not supported for bindings tied to all workforce pools in an organization (for which
-          session settings are configured via `--binding-file`).
+        `--session-reauth-method=LOGIN` if unspecified and `--session-length` is set. Cannot be used when
+        `--session-length` is empty or 0. This parameter is supported only for Google Group bindings.
+        It isn't supported for bindings tied to all workforce pools in an organization; for those
+        bindings, configure session settings through `--binding-file`.
       choices:
       - arg_value: login
         enum_value: LOGIN
         help_text: |
-          The user will be prompted to perform regular login. Users who are enrolled in two-step
-          verification and haven't chosen to "Remember this computer" will be prompted for their
-          second factor.
+          The user will be prompted to perform regular login. Users who are enrolled for two-step
+          verification and haven't chosen to "Remember this computer" will be prompted for their second factor.
       - arg_value: security-key
         enum_value: SECURITY_KEY
         help_text: |
           The user will be prompted to authenticate using their security key. If no security key has
-          been configured, the LOGIN method is used. For help configuring
+          been configured, authentication will fall back to LOGIN. For help configuring
           your security key, see
           https://support.google.com/a/answer/2537800?hl=en#zippy=%2Cview-add-or-remove-security-keys
       - arg_value: password
@@ -280,6 +206,6 @@
         When true, append the `ScopedAccessSettings` in `--binding-file` to the existing
         `ScopedAccessSettings` on the binding. When false, the existing binding's `ScopedAccessSettings`
         will be overwritten. Defaults to false. You may only append `ScopedAccessSettings` that
-        exclusively hold session settings (i.e no access levels).
+        exclusively hold session settings (that is, no access levels).
       required: false
       default: false

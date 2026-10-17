@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
 
   help_text:
     brief: List spokes.
@@ -34,3 +36,8 @@
             firstof(linkedVpnTunnels, linkedInterconnectAttachments, linkedRouterApplianceInstances).len():label="RESOURCE COUNT",
             description
         )
+
+- release_tracks: [BETA, GA]
+  is_python_command: true
+  hints:
+    read_only: true

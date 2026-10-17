@@ -460,7 +460,8 @@ class FaulttestingProjectsLocationsExclusionWindowsPatchRequest(_messages.Messag
     name: Identifier. The resource name of the exclusion window. Format: `proj
       ects/{project}/locations/{location}/exclusionWindows/{exclusion_window}`
     updateMask: Optional. The mask to control which fields get updated. If the
-      mask is not present, all fields will be updated.
+      mask is not present, all fields that have a non-empty value in the
+      request message will be updated.
   """
 
   exclusionWindow = _messages.MessageField('ExclusionWindow', 1)
@@ -571,9 +572,9 @@ class FaulttestingProjectsLocationsExperimentTemplatesPatchRequest(_messages.Mes
     name: Identifier. The resource name of this experiment template. Format: `
       projects/{project}/locations/{location}/experimentTemplates/{experiment_
       template}`
-    updateMask: Optional. A comma-separated list of fields to update. If not
-      provided, all editable fields will be considered for updates. Fields
-      like `name` and `createTime` cannot be updated.
+    updateMask: Optional. The list of fields to update. If not provided, all
+      fields that have a non-empty value in the request message will be
+      updated. Fields like `name` and `createTime` cannot be updated.
   """
 
   experimentTemplate = _messages.MessageField('ExperimentTemplate', 1)

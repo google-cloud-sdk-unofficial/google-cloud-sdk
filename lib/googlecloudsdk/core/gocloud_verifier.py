@@ -15,14 +15,16 @@
 
 """Verification engine for Go gcloud migration.
 
-This module compares the parsed argument state from the Go wrapper (passed via
-GOCLOUD_ARGS env var) with the Python parser output, and reports mismatches.
+This module hydrates a Calliope Namespace from the Go payload (passed via
+GOCLOUD_PAYLOAD env var), compares it against the Python parser Namespace,
+and reports mismatches.
 """
 
 import datetime
 import functools
 import json
 
+from googlecloudsdk.calliope import namespace_hydrator
 from googlecloudsdk.core import log
 
 
@@ -118,10 +120,10 @@ def _NormalizePattern(obj):
   return obj.pattern
 
 
-def _NormalizePythonArgs(py_namespace):
-  """Extracts and normalizes arguments from Python Namespace."""
+def _NormalizePythonArgs(ns):
+  """Extracts and normalizes non-private attributes from a Calliope Namespace."""
   args_dict = {}
-  for k, v in vars(py_namespace).items():
+  for k, v in vars(ns).items():
     if not k.startswith('_'):
       norm_key = k.rstrip('_').replace('_', '-').lower()
       args_dict[norm_key] = _NormalizeValue(v)
@@ -133,64 +135,54 @@ def _NormalizePythonArgs(py_namespace):
 # ==============================================================================
 
 
-def Verify(py_namespace, go_args_json):
-  """Compares Python namespace with Go parsed args JSON and logs mismatches."""
-  go_data = _ParseGoJson(go_args_json)
-  if not go_data:
+def Verify(py_namespace, go_payload_json):
+  """Hydrates Go namespace from payload JSON and compares with Python namespace."""
+  payload = _ParseGoPayload(go_payload_json)
+  if not payload:
     return
 
-  py_data = _ExtractPythonData(py_namespace)
+  calliope_command = py_namespace._GetCommand()  # pylint: disable=protected-access
+  if getattr(calliope_command, '_parser', None) is None:
+    calliope_command._parser = py_namespace._GetParser()  # pylint: disable=protected-access
+
+  py_cmd_path = calliope_command.GetPath()
+  go_cmd_path = payload.get('command_path', [])
   mismatches = []
 
   # 1. Compare Command Path (Routing)
-  _VerifyCommandPath(py_data['cmd_path'], go_data['cmd_path'], mismatches)
+  _VerifyCommandPath(py_cmd_path, go_cmd_path, mismatches)
 
-  # 2. Compare Specified Args
-  _VerifySpecifiedArgs(py_data['specified'], go_data['specified'], mismatches)
+  # 2. Hydrate Go Namespace and Compare Namespace-to-Namespace
+  go_namespace = namespace_hydrator.HydrateNamespace(calliope_command, payload)
 
-  # 3. Compare Argument Values
-  _VerifyArgumentValues(
-      py_data['args'], go_data['resolved'], py_namespace, mismatches
+  _VerifySpecifiedArgs(
+      list(py_namespace.GetSpecifiedArgNames()),
+      list(go_namespace.GetSpecifiedArgNames()),
+      mismatches,
   )
 
+  _VerifyNamespaceValues(py_namespace, go_namespace, mismatches)
+
   if mismatches:
-    _ReportMismatches(py_data['cmd_path'], mismatches)
+    _ReportMismatches(py_cmd_path, mismatches)
 
 
-def _ParseGoJson(go_args_json):
-  """Parses GOCLOUD_ARGS JSON string into a structured dictionary."""
+def _ParseGoPayload(go_payload_json):
+  """Parses GOCLOUD_PAYLOAD JSON string into a payload dictionary."""
   try:
-    go_data = json.loads(go_args_json)
-    flags = go_data.get('flags', [])
-    args = go_data.get('args', [])
+    payload = json.loads(go_payload_json)
     # Backward compatibility if legacy 'resolved' field is provided
-    if 'resolved' in go_data and not flags and not args:
-      flags = go_data.get('resolved', [])
-
-    all_resolved = flags + args
-    go_specified = [
-        item.get('name') for item in all_resolved if item.get('is_set')
-    ]
-    return {
-        'cmd_path': go_data.get('command_path', []),
-        'flags': flags,
-        'args': args,
-        'resolved': all_resolved,
-        'specified': go_specified,
-    }
+    if (
+        'resolved' in payload
+        and not payload.get('flags')
+        and not payload.get('args')
+    ):
+      payload = dict(payload)
+      payload['flags'] = payload.get('resolved', [])
+    return payload
   except Exception as e:  # pylint: disable=broad-except
-    log.debug('Failed to parse GOCLOUD_ARGS JSON: %s', e)
+    log.debug('Failed to parse GOCLOUD_PAYLOAD JSON: %s', e)
     return None
-
-
-def _ExtractPythonData(py_namespace):
-  """Extracts parsed arguments and command path from Python namespace."""
-  calliope_command = py_namespace._GetCommand()  # pylint: disable=protected-access
-  return {
-      'cmd_path': calliope_command.GetPath(),
-      'args': _NormalizePythonArgs(py_namespace),
-      'specified': list(py_namespace.GetSpecifiedArgNames()),
-  }
 
 
 def _VerifyCommandPath(py_cmd_path, go_cmd_path, mismatches):
@@ -204,7 +196,7 @@ def _VerifyCommandPath(py_cmd_path, go_cmd_path, mismatches):
 
 
 def _VerifySpecifiedArgs(py_specified, go_specified, mismatches):
-  """Compares specified argument lists between Python and Go."""
+  """Compares specified argument lists between Python and Go namespaces."""
   go_spec_norm = set()
   for s in go_specified:
     norm = s.lstrip('-').replace('_', '-').lower()
@@ -230,15 +222,10 @@ def _VerifySpecifiedArgs(py_specified, go_specified, mismatches):
     })
 
 
-def _VerifyArgumentValues(py_args_norm, go_resolved, py_namespace, mismatches):
-  """Compares normalized argument values between Python and Go."""
-  go_args = {}
-  for item in go_resolved:
-    name = item.get('name')
-    if name:
-      go_args[name] = item.get('value')
-
-  go_args_norm = {k.replace('_', '-').lower(): v for k, v in go_args.items()}
+def _VerifyNamespaceValues(py_namespace, go_namespace, mismatches):
+  """Compares normalized attribute values between Python and Go namespaces."""
+  py_args_norm = _NormalizePythonArgs(py_namespace)
+  go_args_norm = _NormalizePythonArgs(go_namespace)
 
   # Get action mapping for property fallback checks
   parser = py_namespace._GetParser()  # pylint: disable=protected-access

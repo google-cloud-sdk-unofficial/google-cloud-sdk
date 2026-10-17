@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.iap import util as iap_util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class RemoveIamPolicyBindingCommand(base.Command):
   """Remove IAM policy binding from an IAP TCP IAM resource.
 
@@ -69,9 +68,7 @@ class RemoveIamPolicyBindingCommand(base.Command):
             $ {command} --member='user:test-user@gmail.com'
                --role='roles/iap.tunnelResourceAccessor'
                --resource-type=cloud-run --service=test-service --region=us-west1
-               --expression='request.time < timestamp("2025-01-01T00:00:00Z")'
-               --title='expires_end_of_2024'
-               --description='Expires at midnight on 2024-12-31'
+               --condition='expression=request.time < timestamp("2025-01-01T00:00:00Z"),title=expires_end_of_2024,description=Expires at midnight on 2024-12-31'
           """,
   }
 

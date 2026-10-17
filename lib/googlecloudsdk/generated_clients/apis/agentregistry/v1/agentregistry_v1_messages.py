@@ -158,8 +158,7 @@ class AgentSpec(_messages.Message):
   r"""The spec of the agent.
 
   Enums:
-    TypeValueValuesEnum: Required. Immutable. The type of the agent spec
-      content.
+    TypeValueValuesEnum: Required. The type of the agent spec content.
 
   Messages:
     ContentValue: Optional. The content of the Agent spec in the JSON format.
@@ -170,11 +169,11 @@ class AgentSpec(_messages.Message):
     content: Optional. The content of the Agent spec in the JSON format. This
       payload is validated against the schema for the specified type. The
       content size is limited to `10KB`.
-    type: Required. Immutable. The type of the agent spec content.
+    type: Required. The type of the agent spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. Immutable. The type of the agent spec content.
+    r"""Required. The type of the agent spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
@@ -1273,7 +1272,7 @@ class Binding(_messages.Message):
       a maximum length of `63` characters.
     name: Required. Identifier. The resource name of the Binding. Format:
       `projects/{project}/locations/{location}/bindings/{binding}`.
-    source: Required. The target Agent of the Binding.
+    source: Optional. The source Agent of the Binding.
     target: Required. The target Agent Registry Resource of the Binding.
     updateTime: Output only. Timestamp when this binding was last updated.
   """
@@ -1344,29 +1343,17 @@ class Card(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 2)
 
 
-class Channel(_messages.Message):
-  r"""Separate message to accommodate custom formats across IRC and Slack.
-
-  Fields:
-    uri: Required. URI of the channel.
-  """
-
-  uri = _messages.StringField(1)
-
-
 class ContactInfo(_messages.Message):
   r"""Contact information of stakeholders.
 
   Fields:
-    channel: Optional. Communication channel of the contacts.
     displayName: Optional. Contact's name. Can have a maximum length of 63
       characters.
     email: Required. Email address of the contacts.
   """
 
-  channel = _messages.MessageField('Channel', 1)
-  displayName = _messages.StringField(2)
-  email = _messages.StringField(3)
+  displayName = _messages.StringField(1)
+  email = _messages.StringField(2)
 
 
 class CreateAiApplicationAgentRequest(_messages.Message):
@@ -1441,11 +1428,6 @@ class Criticality(_messages.Message):
     TypeValueValuesEnum: Required. Criticality Type.
 
   Fields:
-    level: Optional. Criticality level. Can contain only lowercase letters,
-      numeric characters, underscores, and dashes. Can have a maximum length
-      of 63 characters. Deprecated: Please refer to type instead.
-    missionCritical: Optional. Indicates mission-critical Application,
-      Service, or Workload. Deprecated: Please refer to type instead.
     type: Required. Criticality Type.
   """
 
@@ -1465,9 +1447,7 @@ class Criticality(_messages.Message):
     MEDIUM = 3
     LOW = 4
 
-  level = _messages.StringField(1)
-  missionCritical = _messages.BooleanField(2)
-  type = _messages.EnumField('TypeValueValuesEnum', 3)
+  type = _messages.EnumField('TypeValueValuesEnum', 1)
 
 
 class Empty(_messages.Message):
@@ -1575,8 +1555,7 @@ class EndpointSpec(_messages.Message):
   r"""The spec of the endpoint.
 
   Enums:
-    TypeValueValuesEnum: Required. Immutable. The type of the endpoint spec
-      content.
+    TypeValueValuesEnum: Required. The type of the endpoint spec content.
 
   Messages:
     ContentValue: Optional. The content of the endpoint spec. Reserved for
@@ -1585,11 +1564,11 @@ class EndpointSpec(_messages.Message):
   Fields:
     content: Optional. The content of the endpoint spec. Reserved for future
       use.
-    type: Required. Immutable. The type of the endpoint spec content.
+    type: Required. The type of the endpoint spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. Immutable. The type of the endpoint spec content.
+    r"""Required. The type of the endpoint spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
@@ -1636,9 +1615,6 @@ class Environment(_messages.Message):
     TypeValueValuesEnum: Required. Environment Type.
 
   Fields:
-    environment: Optional. Environment name. Can contain only lowercase
-      letters, numeric characters, underscores, and dashes. Can have a maximum
-      length of 63 characters. Deprecated: Please refer to type instead.
     type: Required. Environment Type.
   """
 
@@ -1658,8 +1634,7 @@ class Environment(_messages.Message):
     TEST = 3
     DEVELOPMENT = 4
 
-  environment = _messages.StringField(1)
-  type = _messages.EnumField('TypeValueValuesEnum', 2)
+  type = _messages.EnumField('TypeValueValuesEnum', 1)
 
 
 class Expr(_messages.Message):
@@ -2350,8 +2325,7 @@ class McpServerSpec(_messages.Message):
   r"""The spec of the MCP Server.
 
   Enums:
-    TypeValueValuesEnum: Required. Immutable. The type of the MCP Server spec
-      content.
+    TypeValueValuesEnum: Required. The type of the MCP Server spec content.
 
   Messages:
     ContentValue: Optional. The content of the MCP Server spec. This payload
@@ -2362,11 +2336,11 @@ class McpServerSpec(_messages.Message):
     content: Optional. The content of the MCP Server spec. This payload is
       validated against the schema for the specified type. The content size is
       limited to `10KB`.
-    type: Required. Immutable. The type of the MCP Server spec content.
+    type: Required. The type of the MCP Server spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. Immutable. The type of the MCP Server spec content.
+    r"""Required. The type of the MCP Server spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
@@ -2618,10 +2592,10 @@ class SearchAgentsRequest(_messages.Message):
       skills.description | No | Yes | No | Included | | skills.tags | No | Yes
       | No | Included | | skills.examples | No | Yes | No | Included |
       Examples: * `agentId="urn:agent:projects-123:projects:123:locations:us-
-      central1:reasoningEngines:1234"` to find the agent with the specified
-      agent ID. * `name:important` to find agents whose name contains
-      `important` as a word. * `displayName:works*` to find agents whose
-      display name contains words that start with `works`. *
+      central1:aiplatform:reasoningEngines:1234"` to find the agent with the
+      specified agent ID. * `name:important` to find agents whose name
+      contains `important` as a word. * `displayName:works*` to find agents
+      whose display name contains words that start with `works`. *
       `skills.tags:test` to find agents whose skills tags contain `test`. *
       `planner OR booking` to find agents whose metadata contains the words
       `planner` or `booking`.

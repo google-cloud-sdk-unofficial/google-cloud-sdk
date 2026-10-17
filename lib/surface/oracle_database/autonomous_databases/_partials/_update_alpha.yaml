@@ -135,6 +135,17 @@
                 autonomousDatabase.properties.encryptionKey.kmsKey: '{__relative_name__}'
               required: false
               clearable: true
+        - arg_name: properties-disconnect-peer
+          api_field: autonomousDatabase.properties.disconnectPeer
+          action: store_true_false
+          required: false
+          type: bool
+          help_text: |-
+            Indicates if the Autonomous Database peer should be disconnected. This
+            field is only applicable for cross-region backup-based disaster recovery
+            (BBDR) standby databases. Used in update flow to permanently disconnect the
+            standby from its primary database, converting it into an independent
+            standalone database.
     - arg_name: labels
       api_field: autonomousDatabase.labels
       required: false

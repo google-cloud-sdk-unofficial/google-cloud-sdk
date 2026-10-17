@@ -14,7 +14,7 @@
 # limitations under the License.
 """Database Migration Service conversion workspaces CRUD API."""
 
-from typing import Any, Mapping, Optional
+from typing import Optional
 
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.api_lib.database_migration.conversion_workspaces import base_conversion_workspaces_client
@@ -107,44 +107,8 @@ class ConversionWorkspacesCRUDClient(
     )
 
   def Read(self, name: str):
-    return self.cw_service.Get(
-        self.messages.DatamigrationProjectsLocationsConversionWorkspacesGetRequest(
-            name=name,
-        )
-    )
-
-  def GetGlobalFilter(self, name: str) -> str:
-    """Get global filter for a conversion workspace.
-
-    If no global filter is set, '*' will be returned.
-
-    Args:
-      name: The name of the conversion workspace.
-
-    Returns:
-      The global filter for the conversion workspace.
-    """
-    return self._GetAdditionalProperties(name).get('filter', '*')
-
-  def _GetAdditionalProperties(self, name: str) -> Mapping[str, Any]:
-    """Get conversion workspace additional properties.
-
-    Args:
-      name: The name of the conversion workspace.
-
-    Returns:
-      The conversion workspace additional properties.
-    """
-    conversion_workspace = self.Read(name=name)
-    if not conversion_workspace.globalSettings:
-      return {}
-
-    return {
-        additional_property.key: additional_property.value
-        for additional_property in (
-            conversion_workspace.globalSettings.additionalProperties
-        )
-    }
+    """Reads a conversion workspace resource."""
+    return self.ReadWorkspace(name=name)
 
   def Update(
       self,
@@ -174,7 +138,7 @@ class ConversionWorkspacesCRUDClient(
       Operation: the operation for updating the conversion workspace.
     """
     conversion_workspace, update_fields = self._GetUpdatedConversionWorkspace(
-        conversion_workspace=self.Read(name),
+        conversion_workspace=self.ReadWorkspace(name),
         display_name=display_name,
         source_database_name_override=source_database_name_override,
         global_filter=global_filter,

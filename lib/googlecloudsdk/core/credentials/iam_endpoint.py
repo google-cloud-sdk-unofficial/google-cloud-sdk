@@ -14,6 +14,8 @@
 # limitations under the License.
 """Utilities for IAM endpoints."""
 
+from __future__ import annotations
+
 from googlecloudsdk.core import properties
 
 IAM_ENDPOINT_GDU = 'https://iamcredentials.googleapis.com/'
@@ -40,3 +42,58 @@ def GetEffectiveIamEndpoint() -> str:
         'googleapis.com', universe_domain_property.Get()
     )
   return IAM_ENDPOINT_GDU
+
+
+def OverrideIamIdTokenEndpoint(
+    effective_iam_endpoint: str | None = None,
+) -> None:
+  """Overrides the IAM generateIdToken endpoint on google.auth.iam if needed.
+
+  Args:
+    effective_iam_endpoint: Optional precomputed effective IAM endpoint URL. If
+      not provided, GetEffectiveIamEndpoint() is used.
+  """
+  # pylint: disable=g-import-not-at-top
+  from google.auth import iam as google_auth_iam
+  # pylint: enable=g-import-not-at-top
+
+  if effective_iam_endpoint is None:
+    effective_iam_endpoint = GetEffectiveIamEndpoint()
+  google_auth_iam._IAM_IDTOKEN_ENDPOINT = (  # pylint: disable=protected-access
+      google_auth_iam._IAM_IDTOKEN_ENDPOINT.replace(  # pylint: disable=protected-access
+          IAM_ENDPOINT_GDU,
+          effective_iam_endpoint,
+      )
+  )
+
+
+def PerformIamEndpointsOverride() -> None:
+  """Perform IAM endpoint override if needed.
+
+  We will override IAM generateAccessToken, signBlob, and generateIdToken
+  endpoint under the following conditions.
+  (1) If the [api_endpoint_overrides/iamcredentials] property is explicitly
+  set, we replace "https://iamcredentials.googleapis.com/" with the given
+  property value in these endpoints.
+  (2) If the property above is not set, and the [core/universe_domain] value
+  is not default, we replace "googleapis.com" with the [core/universe_domain]
+  property value in these endpoints.
+  """
+  # pylint: disable=g-import-not-at-top
+  from google.auth import iam as google_auth_iam
+  # pylint: enable=g-import-not-at-top
+
+  effective_iam_endpoint = GetEffectiveIamEndpoint()
+  google_auth_iam._IAM_ENDPOINT = (  # pylint: disable=protected-access
+      google_auth_iam._IAM_ENDPOINT.replace(  # pylint: disable=protected-access
+          IAM_ENDPOINT_GDU,
+          effective_iam_endpoint,
+      )
+  )
+  google_auth_iam._IAM_SIGN_ENDPOINT = (  # pylint: disable=protected-access
+      google_auth_iam._IAM_SIGN_ENDPOINT.replace(  # pylint: disable=protected-access
+          IAM_ENDPOINT_GDU,
+          effective_iam_endpoint,
+      )
+  )
+  OverrideIamIdTokenEndpoint(effective_iam_endpoint)

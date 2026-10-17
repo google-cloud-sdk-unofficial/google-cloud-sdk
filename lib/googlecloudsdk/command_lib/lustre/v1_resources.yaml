@@ -52,7 +52,33 @@ projects_locations_instances:
     parameter_name: instancesId
     attribute_name: instance
     help: The instance id of the {resource} resource.
-  disable_auto_completers: false
+  disable_auto_completers: true
+projects_locations_or_regions_resource_policies:
+  name: resourcePolicy
+  plural_name: resourcePolicies
+  resources:
+  - name: resourcePolicy
+    plural_name: resourcePolicies
+    collection: lustre.projects.locations.resourcePolicies
+    attributes:
+    - *project
+    - *location
+    - &resourcePolicy
+      parameter_name: resourcePoliciesId
+      attribute_name: resource_policy
+      help: The resourcePolicy id of the {resource} resource.
+    disable_auto_completers: true
+  - name: resourcePolicy
+    plural_name: resourcePolicies
+    collection: lustre.projects.regions.resourcePolicies
+    attributes:
+    - *project
+    - &region
+      parameter_name: regionsId
+      attribute_name: region
+      help: The region id of the {resource} resource.
+    - *resourcePolicy
+    disable_auto_completers: true
 projects_none_networks:
   name: network
   plural_name: networks
@@ -63,4 +89,46 @@ projects_none_networks:
     parameter_name: networksId
     attribute_name: network
     help: The network id of the {resource} resource.
+  disable_auto_completers: true
+projects_locations_instances_directory_policies:
+  name: directoryPolicy
+  plural_name: directoryPolicies
+  collection: lustre.projects.locations.instances.directoryPolicies
+  attributes:
+  - *project
+  - *location
+  - *instance
+  - &directoryPolicy
+    parameter_name: directoryPoliciesId
+    attribute_name: directory_policy
+    help: The directoryPolicy id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_instances_mirrors:
+  name: mirror
+  plural_name: mirrors
+  collection: lustre.projects.locations.instances.mirrors
+  attributes:
+  - *project
+  - *location
+  - *instance
+  - &mirror
+    parameter_name: mirrorsId
+    attribute_name: mirror
+    help: The mirror id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_key_rings_crypto_keys:
+  name: cryptoKey
+  plural_name: cryptoKeys
+  collection: lustre.projects.locations.keyRings.cryptoKeys
+  attributes:
+  - *project
+  - *location
+  - &keyRing
+    parameter_name: keyRingsId
+    attribute_name: key_ring
+    help: The keyRing id of the {resource} resource.
+  - &cryptoKey
+    parameter_name: cryptoKeysId
+    attribute_name: crypto_key
+    help: The cryptoKey id of the {resource} resource.
   disable_auto_completers: true

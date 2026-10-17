@@ -16,6 +16,8 @@
 
 # gcloud-disable-gdu-domain
 
+import functools
+
 from googlecloudsdk.api_lib.services import apikeys
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.calliope import base
@@ -116,8 +118,8 @@ class Create(base.CreateCommand):
 
     project_id = properties.VALUES.core.project.GetOrFail()
 
-    client = apikeys.GetClientInstance()
-    messages = client.MESSAGES_MODULE
+    client = apikeys.GetClientInstance(self.ReleaseTrack())
+    messages = apikeys.GetMessagesModule(self.ReleaseTrack())
 
     key_proto = messages.V2Key(restrictions=messages.V2Restrictions())
     if args.IsSpecified('display_name'):
@@ -169,7 +171,12 @@ class Create(base.CreateCommand):
             'completion:\n {0}'.format(cmd)
         )
         return op
-      op = services_util.WaitOperation(op.name, apikeys.GetOperation)
+      op = services_util.WaitOperation(
+          op.name,
+          functools.partial(
+              apikeys.GetOperation, release_track=self.ReleaseTrack()
+          ),
+      )
     services_util.PrintOperationWithResponse(op)
     return op
   detailed_help = _DETAILED_HELP

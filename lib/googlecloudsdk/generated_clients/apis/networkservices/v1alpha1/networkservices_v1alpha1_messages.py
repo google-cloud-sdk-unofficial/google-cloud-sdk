@@ -1818,7 +1818,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class EndpointMatcher(_messages.Message):
   r"""A definition of a matcher that selects endpoints to which the policies
   should be applied.
@@ -2802,7 +2801,10 @@ class ExtensionChainExtension(_messages.Message):
       `LbEdgeExtension` resource, this field is required and must only contain
       `REQUEST_HEADERS` event. For the `AuthzExtension` resource, this field
       is optional. `REQUEST_HEADERS` is the only supported event. If
-      unspecified, `REQUEST_HEADERS` event is assumed as supported.
+      unspecified, `REQUEST_HEADERS` event is assumed as supported. For the
+      `CdnEdgeExtension` resource, this field is optional. Eligible values are
+      `REQUEST_HEADERS` and `RESPONSE_HEADERS`. If unspecified, both are
+      assumed as supported.
     timeout: Optional. Specifies the timeout for each individual message on
       the stream. The timeout must be between `10`-`10000` milliseconds.
       Required for callout extensions. This field is not supported for plugin
@@ -3240,8 +3242,8 @@ class GoogleTagGatewayPolicy(_messages.Message):
       they only delete if the caller and the server agree on the current
       version. See go/ccfe-etag.
     name: Required. Identifier. Standard resource metadata
-    perDomainConfig: List of Google Tag Gateway settings, one element per
-      domain.
+    perDomainConfig: Optional. List of Google Tag Gateway settings, one
+      element per domain.
     updateTime: Output only. The timestamp when the resource was updated.
   """
 
@@ -3262,19 +3264,20 @@ class GoogleTagGatewayPolicyPerDomainConfig(_messages.Message):
       supported. Wildcard prefixes must be of the form: `*.`.
     enableGtg: Whether to enable Google Tag Gateway features (tag setup,
       measurement requests) for this domain. Default value: `true`.
-    logSampleRate: Cloud logging sample rate for measurement requests, in
-      range [0.0, 1.0], with 0.0 meaning log no measurement requests, and 1.0
-      meaning log all measurement requests. Default value: 0.0 (no logging).
-    measurementPath: The subpath under the domain to which measurement
-      requests are sent (e.g., `"/gtg_measure"`). Must start with `/`. The
-      routing rules that Google Tag Gateway adds take precedence over existing
-      `UrlMap` config.
-    performTagInitialization: If `true`, the script added to the web page will
-      include code that performs initial tag setup. Default value: `false`
-      (the script added to the to web page assumes tag setup is already
-      complete).
-    tagId: The Google Tag ID (e.g., `"GT-XXXXXX"`, `"G-XXXXXX"`, `"AW-
-      XXXXXX"`) associated with this domain's Google Tag Gateway
+    logSampleRate: Optional. Cloud logging sample rate for measurement
+      requests, in range [0.0, 1.0], with 0.0 meaning log no measurement
+      requests, and 1.0 meaning log all measurement requests. Default value:
+      0.0 (no logging).
+    measurementPath: Optional. The subpath under the domain to which
+      measurement requests are sent (e.g., `"/gtg_measure"`). Must start with
+      `/`. The routing rules that Google Tag Gateway adds take precedence over
+      existing `UrlMap` config.
+    performTagInitialization: Optional. If `true`, the script added to the web
+      page will include code that performs initial tag setup. Default value:
+      `false` (the script added to the to web page assumes tag setup is
+      already complete).
+    tagId: Optional. The Google Tag ID (e.g., `"GT-XXXXXX"`, `"G-XXXXXX"`,
+      `"AW-XXXXXX"`) associated with this domain's Google Tag Gateway
       configuration.
   """
 
@@ -7823,7 +7826,7 @@ class NetworkservicesProjectsLocationsAuthzExtensionsPatchRequest(_messages.Mess
       accidentally creating duplicate commitments. The request ID must be a
       valid UUID with the exception that zero UUID is not supported
       (00000000-0000-0000-0000-000000000000).
-    updateMask: Required. Used to specify the fields to be overwritten in the
+    updateMask: Optional. Used to specify the fields to be overwritten in the
       `AuthzExtension` resource by the update. The fields specified in the
       `update_mask` are relative to the resource, not the full request. A
       field is overwritten if it is in the mask. If the user does not specify

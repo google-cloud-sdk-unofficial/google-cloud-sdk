@@ -20,6 +20,7 @@ import textwrap
 from typing import Any, List
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.global_vm_extension_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.global_vm_extension_policies import extensions_flags as flags
 
@@ -38,12 +39,17 @@ class Describe(base.DescribeCommand):
    """),
   }
 
+  GLOBAL_VM_EXTENSION_POLICIES_ARG = None
+
   @classmethod
   def Args(cls, parser: argparse.ArgumentParser) -> None:
-    cls.GlobalVmExtensionPoliciesArg = flags.MakeGlobalVmExtensionPolicyArg()
-    cls.GlobalVmExtensionPoliciesArg.AddArgument(
+    cls.GLOBAL_VM_EXTENSION_POLICIES_ARG = (
+        flags.MakeGlobalVmExtensionPolicyArg()
+    )
+    cls.GLOBAL_VM_EXTENSION_POLICIES_ARG.AddArgument(
         parser, operation_type='describe'
     )
+    flags.AddScopeFlags(parser)
 
   def Run(
       self, args: argparse.Namespace
@@ -57,19 +63,12 @@ class Describe(base.DescribeCommand):
       Response calling the GlobalVmExtensionPoliciesService.GetVmExtension API.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-
-    resource_ref = Describe.GlobalVmExtensionPoliciesArg.ResolveAsResource(
+    resource_ref = flags.ResolveGlobalVmExtensionPolicyResource(
         args,
-        holder.resources
+        holder,
+        self.GLOBAL_VM_EXTENSION_POLICIES_ARG,
     )
-
-    return client.MakeRequests([(
-        client.apitools_client.globalVmExtensionPolicies,
-        'GetVmExtension',
-        messages.ComputeGlobalVmExtensionPoliciesGetVmExtensionRequest(
-            project=resource_ref.project,
-            extensionName=resource_ref.Name(),
-        ),
-    )])
+    policy_client = client.GlobalVmExtensionPolicy.FromRef(
+        resource_ref, holder.client
+    )
+    return policy_client.DescribeExtension()

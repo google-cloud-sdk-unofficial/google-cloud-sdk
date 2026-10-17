@@ -99,17 +99,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_DATAATTRIBUTEBINDINGS = (
-      'projects.locations.dataAttributeBindings',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'dataAttributeBindings/{dataAttributeBindingsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_DATADOMAINS = (
       'projects.locations.dataDomains',
       '{+name}',
@@ -172,28 +161,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/dataScans/'
               '{dataScansId}/jobs/{jobsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_DATATAXONOMIES = (
-      'projects.locations.dataTaxonomies',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/dataTaxonomies/'
-              '{dataTaxonomiesId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_DATATAXONOMIES_ATTRIBUTES = (
-      'projects.locations.dataTaxonomies.attributes',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/dataTaxonomies/'
-              '{dataTaxonomiesId}/attributes/{attributesId}',
       },
       ['name'],
       True

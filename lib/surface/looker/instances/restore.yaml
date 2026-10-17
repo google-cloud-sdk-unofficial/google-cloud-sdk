@@ -44,6 +44,7 @@
       - googlecloudsdk.command_lib.looker.backups_util:ModifyInstanceBackupName
     collection: looker.projects.locations.instances
     method: restore
+    regional_endpoint_compatibility: SUPPORTED
 
   async:
     collection: looker.projects.locations.operations

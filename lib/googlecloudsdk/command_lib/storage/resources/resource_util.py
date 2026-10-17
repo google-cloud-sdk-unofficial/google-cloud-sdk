@@ -17,12 +17,10 @@
 
 import calendar
 import datetime
-import enum
 import json
 import textwrap
+from typing import Any
 
-from googlecloudsdk.command_lib.storage import storage_url
-from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.core.resource import resource_projector
 
 
@@ -34,10 +32,6 @@ METADATA_LINE_INDENT_STRING = ' ' * METADATA_LINE_INDENT_LENGTH
 
 # For transporting symlink info through an object's custom metadata.
 SYMLINK_METADATA_KEY = 'goog-reserved-file-is-symlink'
-
-UNSUPPORTED_OBJECT_WARNING_FORMAT = (
-    'Skipping item {} with unsupported object type: {}'
-)
 
 _LEFT_TAB_FOR_GSUTIL_BUCKET_METADATA_KEYS = {
     'RPO': '\t\t\t\t',
@@ -70,33 +64,7 @@ _LEFT_TAB_FOR_GSUTIL_BUCKET_METADATA_KEYS = {
 }
 
 
-class UnsupportedObjectType(enum.Enum):
-  GLACIER = 'GLACIER'
-
-
-def get_unsupported_object_type(resource):
-  """Returns unsupported type or None if object is supported for copies.
-
-  Currently, S3 Glacier objects are the only unsupported object type.
-
-  Args:
-    resource (ObjectResource|FileObjectResource): Check if this resource is
-      supported for copies.
-
-  Returns:
-    (UnsupportedObjectType|None) If resource is unsupported, the unsupported
-      type, else None.
-  """
-  if (
-      isinstance(resource, resource_reference.ObjectResource)
-      and resource.storage_url.scheme == storage_url.ProviderPrefix.S3
-      and resource.storage_class == 'GLACIER'
-  ):
-    return UnsupportedObjectType.GLACIER
-  return None
-
-
-def configured_json_dumps(item):
+def configured_json_dumps(item: Any) -> str:
   """Return json.dumps with formatting options set."""
   return json.dumps(item, indent=METADATA_LINE_INDENT_LENGTH)
 

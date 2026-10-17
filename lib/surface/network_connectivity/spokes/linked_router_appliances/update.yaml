@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Update a Router appliance spoke.
@@ -78,6 +80,8 @@
     method: patch
 
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Update a Router appliance spoke.

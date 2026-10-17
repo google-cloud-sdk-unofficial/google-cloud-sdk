@@ -469,12 +469,12 @@ class GoogleCloudRecaptchaenterpriseV1Bot(_messages.Message):
       gpt - AI_AGENT * aws-bedrock - AI_AGENT * cybaa-bot - AI_AGENT *
       cloudflare - AI_AGENT * payhawk - AI_AGENT * duck-duck-go -
       SEARCH_INDEXER * mediaboard - CONTENT_SCRAPER * marker-io - AI_AGENT *
-      broadcom - AI_AGENT * anchor-browser - AI_AGENT * shopify - AI_AGENT *
-      stackscope - CONTENT_SCRAPER * manus - AI_AGENT * kernel-sh - AI_AGENT *
-      zvelo - SEARCH_INDEXER Ensure that your applications can handle
-      identifier values not explicitly listed here. Deprecated values might
-      take some time to stop showing up in responses. New values can be pushed
-      so this list should be taken as non exhaustive.
+      anchor-browser - AI_AGENT * shopify - AI_AGENT * stackscope -
+      CONTENT_SCRAPER * manus - AI_AGENT * kernel-sh - AI_AGENT * zvelo -
+      SEARCH_INDEXER Ensure that your applications can handle identifier
+      values not explicitly listed here. Deprecated values might take some
+      time to stop showing up in responses. New values can be pushed so this
+      list should be taken as non exhaustive.
   """
 
   class BotTypeValueValuesEnum(_messages.Enum):

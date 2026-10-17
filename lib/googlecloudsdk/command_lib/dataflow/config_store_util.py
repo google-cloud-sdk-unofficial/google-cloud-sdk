@@ -15,6 +15,7 @@
 """Utilities and flag helpers for Dataflow ConfigStore settings commands."""
 
 from googlecloudsdk.calliope.concepts import concepts
+from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.calliope.concepts import multitype
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -29,13 +30,18 @@ PROJECT_SETTING = 'project_setting'
 FOLDER_SETTING = 'folder_setting'
 ORG_SETTING = 'org_setting'
 
+# Placeholder setting ID used by commands `list`. It is never sent to the
+# API: those commands only use `GetParentRelativeName` on the parsed reference.
+_UNUSED_SETTING_ID = '-'
+
+
 _LOCATION_HELP_TEXT = (
     'The location of the ConfigStore setting (e.g. us-central1).'
 )
 _SETTING_ID_HELP_TEXT = 'The ConfigStore setting ID.'
 
 
-def _ProjectSettingResourceSpec():
+def _ProjectSettingResourceSpec(setting_id_config):
   return concepts.ResourceSpec(
       _PROJECT_SETTING_COLLECTION,
       resource_name=PROJECT_SETTING,
@@ -43,13 +49,11 @@ def _ProjectSettingResourceSpec():
       locationsId=concepts.ResourceParameterAttributeConfig(
           name='location', help_text=_LOCATION_HELP_TEXT,
       ),
-      configStoreSettingsId=concepts.ResourceParameterAttributeConfig(
-          name='setting_id', help_text=_SETTING_ID_HELP_TEXT,
-      ),
+      configStoreSettingsId=setting_id_config,
   )
 
 
-def _FolderSettingResourceSpec():
+def _FolderSettingResourceSpec(setting_id_config):
   return concepts.ResourceSpec(
       _FOLDER_SETTING_COLLECTION,
       resource_name=FOLDER_SETTING,
@@ -59,13 +63,11 @@ def _FolderSettingResourceSpec():
       locationsId=concepts.ResourceParameterAttributeConfig(
           name='location', help_text=_LOCATION_HELP_TEXT,
       ),
-      configStoreSettingsId=concepts.ResourceParameterAttributeConfig(
-          name='setting_id', help_text=_SETTING_ID_HELP_TEXT,
-      ),
+      configStoreSettingsId=setting_id_config,
   )
 
 
-def _OrgSettingResourceSpec():
+def _OrgSettingResourceSpec(setting_id_config):
   return concepts.ResourceSpec(
       _ORG_SETTING_COLLECTION,
       resource_name=ORG_SETTING,
@@ -75,29 +77,47 @@ def _OrgSettingResourceSpec():
       locationsId=concepts.ResourceParameterAttributeConfig(
           name='location', help_text=_LOCATION_HELP_TEXT,
       ),
-      configStoreSettingsId=concepts.ResourceParameterAttributeConfig(
-          name='setting_id', help_text=_SETTING_ID_HELP_TEXT,
-      ),
+      configStoreSettingsId=setting_id_config,
   )
 
 
-def GetSettingResourceSpec():
+def GetSettingResourceSpec(with_setting_id=True):
+  fallthroughs = None
+  if not with_setting_id:
+    fallthroughs = [
+        deps.ValueFallthrough(_UNUSED_SETTING_ID, hint='it is not required')
+    ]
+  setting_id_config = concepts.ResourceParameterAttributeConfig(
+      name='setting_id',
+      help_text=_SETTING_ID_HELP_TEXT,
+      fallthroughs=fallthroughs,
+  )
   return multitype.MultitypeResourceSpec(
       'setting',
-      _ProjectSettingResourceSpec(),
-      _FolderSettingResourceSpec(),
-      _OrgSettingResourceSpec(),
+      _ProjectSettingResourceSpec(setting_id_config),
+      _FolderSettingResourceSpec(setting_id_config),
+      _OrgSettingResourceSpec(setting_id_config),
   )
 
 
-def AddConfigStoreSettingResourceArg(parser, verb):
-  """Adds the multitype positional setting_id resource arg to the parser."""
+def AddConfigStoreSettingResourceArg(parser, verb, with_setting_id=True):
+  """Adds the multitype ConfigStore setting resource arg to the parser.
+
+  Args:
+    parser: the argparse parser to add the resource arg to.
+    verb: str, the verb phrase describing what happens to the setting(s), e.g.
+      'to delete'.
+    with_setting_id: bool, False for commands `list`. The SETTING positional is
+      then omitted and only the attributes `--location`, `--folder`,
+      `--organization`, `--project` are exposed.
+  """
   concept_parsers.ConceptParser([
       presentation_specs.MultitypeResourcePresentationSpec(
           'setting',
-          GetSettingResourceSpec(),
+          GetSettingResourceSpec(with_setting_id),
           f'The ConfigStore setting {verb}.',
           required=True,
+          flag_name_overrides=(None if with_setting_id else {'setting_id': ''}),
       )
   ]).AddToParser(parser)
 

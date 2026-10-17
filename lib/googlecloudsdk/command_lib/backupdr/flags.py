@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
 
-
 MONTH_OPTIONS = frozendict.frozendict({
     'JAN': 'JANUARY',
     'FEB': 'FEBRUARY',
@@ -194,6 +193,80 @@ def GetDataSourceResourceSpec():
   )
 
 
+def RestoreVerificationPlanAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='restore-verification-plan',
+      help_text='The ID of the Restore Verification Plan.',
+  )
+
+
+def RestoreVerificationPlanAssociationAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='restore-verification-plan-association',
+      help_text='The ID of the Restore Verification Plan Association.',
+  )
+
+
+def GetRestoreVerificationPlanResourceSpec(api_version='v1alpha'):
+  return concepts.ResourceSpec(
+      'backupdr.projects.locations.restoreVerificationPlans',
+      api_version=api_version,
+      resource_name='Restore Verification Plan',
+      locationsId=LocationAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      disable_auto_completers=False,
+  )
+
+
+def GetRestoreVerificationPlanAssociationResourceSpec(api_version='v1alpha'):
+  return concepts.ResourceSpec(
+      'backupdr.projects.locations.restoreVerificationPlans.associations',
+      api_version=api_version,
+      resource_name='Restore Verification Plan Association',
+      locationsId=LocationAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      restoreVerificationPlansId=RestoreVerificationPlanAttributeConfig(),
+      disable_auto_completers=False,
+  )
+
+
+def RestoreTemplateAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='restore-template',
+      help_text='The ID of the Restore Template.',
+  )
+
+
+def RestoreTemplateExecutionAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='restore-template-execution',
+      help_text='The ID of the Restore Template Execution.',
+  )
+
+
+def GetRestoreTemplateResourceSpec(api_version='v1alpha'):
+  return concepts.ResourceSpec(
+      'backupdr.projects.locations.restoreTemplates',
+      api_version=api_version,
+      resource_name='Restore Template',
+      locationsId=LocationAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      disable_auto_completers=False,
+  )
+
+
+def GetRestoreTemplateExecutionResourceSpec(api_version='v1alpha'):
+  return concepts.ResourceSpec(
+      'backupdr.projects.locations.restoreTemplates.executions',
+      api_version=api_version,
+      resource_name='Restore Template Execution',
+      locationsId=LocationAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      restoreTemplatesId=RestoreTemplateAttributeConfig(),
+      disable_auto_completers=False,
+  )
+
+
 def AddManagementServerResourceArg(parser, help_text):
   """Adds an argument for management server to parser."""
   name = 'management_server'
@@ -340,9 +413,7 @@ def AddTriggerBackupFlags(parser):
       '--custom-retention-days',
       required=False,
       type=int,
-      help=(
-          'Duration for which backup data will be retained.'
-      ),
+      help='Duration for which backup data will be retained.',
   )
 
   base.Argument(
@@ -350,7 +421,259 @@ def AddTriggerBackupFlags(parser):
       metavar='KEY=VALUE',
       type=arg_parsers.ArgDict(value_type=str),
       action=arg_parsers.UpdateAction,
-      help='Labels to be applied to the backup.').AddToParser(parser)
+      help='Labels to be applied to the backup.',
+  ).AddToParser(parser)
+
+
+def AddRestoreVerificationPlanResourceArg(parser, help_text):
+  """Adds an argument for restore verification plan to parser."""
+  name = 'restore_verification_plan'
+  concept_parsers.ConceptParser.ForResource(
+      name,
+      GetRestoreVerificationPlanResourceSpec(),
+      help_text,
+      required=True,
+  ).AddToParser(parser)
+
+
+def AddRestoreVerificationPlanAssociationResourceArg(parser, help_text):
+  """Adds an argument for restore verification plan association to parser."""
+  name = 'restore_verification_plan_association'
+  concept_parsers.ConceptParser.ForResource(
+      name,
+      GetRestoreVerificationPlanAssociationResourceSpec(),
+      help_text,
+      required=True,
+  ).AddToParser(parser)
+
+
+def AddCreateRestoreVerificationPlanAssociationFlags(parser):
+  """Adds flags required to create a restore verification plan association."""
+  concept_parsers.ConceptParser(
+      [
+          presentation_specs.ResourcePresentationSpec(
+              'RESTORE_VERIFICATION_PLAN_ASSOCIATION',
+              GetRestoreVerificationPlanAssociationResourceSpec(),
+              'Name of the restore verification plan association to be created.'
+              " Once created, this name can't be changed. The name must be"
+              ' unique for a restore verification plan.',
+              required=True,
+          ),
+          presentation_specs.ResourcePresentationSpec(
+              '--restore-template',
+              GetRestoreTemplateResourceSpec(),
+              'The Restore Template to associate with the workload.',
+              flag_name_overrides={'location': ''},
+              required=True,
+          ),
+      ],
+      command_level_fallthroughs={
+          '--restore-template.location': [
+              'RESTORE_VERIFICATION_PLAN_ASSOCIATION.location'
+          ],
+      },
+  ).AddToParser(parser)
+  # gcloud-disable-gdu-domain
+  AddResourceType(
+      parser,
+      textwrap.dedent("""\
+      Type of the Google Cloud resource to associate.
+
+      For example:
+      * `compute.<UNIVERSE_DOMAIN>/Instance` for Compute Engine instances.
+      """),
+  )
+  parser.add_argument(
+      '--description',
+      help='The description of the restore verification plan association.',
+  )
+  AddLabels(parser)
+
+
+def AddTriggerRestoreVerificationPlanAssociationFlags(parser):
+  """Adds flags required to trigger a restore verification."""
+  concept_parsers.ConceptParser([
+      presentation_specs.ResourcePresentationSpec(
+          'RESTORE_VERIFICATION_PLAN_ASSOCIATION',
+          GetRestoreVerificationPlanAssociationResourceSpec(),
+          'Name of the restore verification plan association to trigger.',
+          required=True,
+      ),
+  ]).AddToParser(parser)
+
+
+def AddRestoreTemplateResourceArg(parser, help_text):
+  """Adds an argument for restore template to parser."""
+  name = 'restore_template'
+  concept_parsers.ConceptParser.ForResource(
+      name,
+      GetRestoreTemplateResourceSpec(),
+      help_text,
+      required=True,
+  ).AddToParser(parser)
+
+
+def AddRestoreTemplateExecutionResourceArg(parser, help_text):
+  """Adds an argument for restore template execution to parser."""
+  name = 'restore_template_execution'
+  concept_parsers.ConceptParser.ForResource(
+      name,
+      GetRestoreTemplateExecutionResourceSpec(),
+      help_text,
+      required=True,
+  ).AddToParser(parser)
+
+
+def AddRestoreProperties(parser, required=False):
+  """Adds the --restore-properties flag to the given parser."""
+  parser.add_argument(
+      '--restore-properties',
+      required=required,
+      type=str,
+      help=textwrap.dedent("""\
+          Defines the target environment and configuration for restoring the
+          resource. Accepts either an inline JSON or YAML string or a path to a
+          JSON or YAML file containing the properties.
+          """),
+  )
+
+
+def AddDataSource(parser, required=False):
+  """Adds the --data-source flag to the given parser."""
+  parser.add_argument(
+      '--data-source',
+      required=required,
+      type=str,
+      help=textwrap.dedent("""\
+          The full resource name of the DataSource from which backups will be
+          selected. Format:
+          projects/{project}/locations/{location}/backupVaults/{vault}/dataSources/{dataSource}
+          """),
+  )
+
+
+def AddRestoreVerificationPlanCleanupRuleFlags(parser):
+  """Adds restore verification plan cleanup rule flags to parser."""
+  success_group = parser.add_mutually_exclusive_group()
+  success_group.add_argument(
+      '--success-cleanup-delay',
+      type=arg_parsers.Duration(),
+      help=(
+          'Delay before cleaning up restored resources upon successful'
+          ' verification (e.g., 1h, 0s).'
+      ),
+  )
+  success_group.add_argument(
+      '--skip-success-cleanup',
+      action='store_true',
+      default=None,
+      help=(
+          'If set, restored resources will not be cleaned up upon successful'
+          ' verification.'
+      ),
+  )
+  failure_group = parser.add_mutually_exclusive_group()
+  failure_group.add_argument(
+      '--failure-cleanup-delay',
+      type=arg_parsers.Duration(),
+      help=(
+          'Delay before cleaning up restored resources upon failed verification'
+          ' (e.g., 24h, 0s).'
+      ),
+  )
+  failure_group.add_argument(
+      '--skip-failure-cleanup',
+      action='store_true',
+      default=None,
+      help=(
+          'If set, restored resources will not be cleaned up upon failed'
+          ' verification.'
+      ),
+  )
+
+
+def AddRestoreTemplateHookFlags(parser):
+  """Adds pre-restore, post-restore, and verification hook flags to parser."""
+  pre_restore_group = parser.add_argument_group(
+      'Pre-restore hook configuration.'
+  )
+  pre_restore_group.add_argument(
+      '--pre-restore-cloud-run-job',
+      required=False,
+      type=str,
+      help=textwrap.dedent("""\
+          The Cloud Run job to execute before the restore operation. Format:
+          projects/{project}/locations/{location}/jobs/{job}
+          """),
+  )
+  pre_restore_group.add_argument(
+      '--pre-restore-timeout',
+      required=False,
+      type=arg_parsers.Duration(),
+      help=(
+          'Timeout for the pre-restore hook (e.g., 300s). Must be specified'
+          ' with --pre-restore-cloud-run-job.'
+      ),
+  )
+
+  post_restore_group = parser.add_argument_group(
+      'Post-restore hook configuration.'
+  )
+  post_restore_group.add_argument(
+      '--post-restore-cloud-run-job',
+      required=False,
+      type=str,
+      help=textwrap.dedent("""\
+          The Cloud Run job to execute after the restore operation. Format:
+          projects/{project}/locations/{location}/jobs/{job}
+          """),
+  )
+  post_restore_group.add_argument(
+      '--post-restore-timeout',
+      required=False,
+      type=arg_parsers.Duration(),
+      help=(
+          'Timeout for the post-restore hook (e.g., 600s). Must be specified'
+          ' with --post-restore-cloud-run-job.'
+      ),
+  )
+
+  verification_group = parser.add_argument_group(
+      'Verification hook configuration.'
+  )
+  verification_group.add_argument(
+      '--verification-cloud-run-job',
+      required=False,
+      type=str,
+      help=textwrap.dedent("""\
+          The Cloud Run job to execute to verify the restored workload. Format:
+          projects/{project}/locations/{location}/jobs/{job}
+          """),
+  )
+  verification_group.add_argument(
+      '--verification-timeout',
+      required=False,
+      type=arg_parsers.Duration(),
+      help=(
+          'Timeout for the verification hook (e.g., 300s). Must be specified'
+          ' with --verification-cloud-run-job.'
+      ),
+  )
+
+
+def AddRunRestoreTemplateBackupFlag(parser):
+  """Adds the --backup flag to the run command."""
+  parser.add_argument(
+      '--backup',
+      required=False,
+      type=str,
+      help=textwrap.dedent("""\
+          The resource name of a specific Backup to restore from. If omitted,
+          the latest backup matching the template's backup selection
+          configuration will be used. Format:
+          projects/{project}/locations/{location}/backupVaults/{vault}/dataSources/{dataSource}/backups/{backup}
+          """),
+  )
 
 
 def AddNetwork(parser, required=False):
@@ -616,7 +939,8 @@ def AddUpdateBackupFlags(parser):
       and must be between 0 and 63 characters long.
 
       For example: `--update-labels=env=prod,team=storage`
-      """))
+      """),
+  )
 
   label_update_group.add_argument(
       '--remove-labels',
@@ -626,7 +950,8 @@ def AddUpdateBackupFlags(parser):
       A list of label keys to remove from the backup.
 
       If a label does not exist, it is silently ignored.
-      """)
+      """,
+  )
 
   label_update_group.add_argument(
       '--clear-labels',
@@ -635,7 +960,8 @@ def AddUpdateBackupFlags(parser):
       Remove all labels from the backup.
 
       If the backup has no labels, this operation is a no-op.
-      """)
+      """,
+  )
 
 
 def AddOutputFormat(parser, output_format):
@@ -1143,7 +1469,6 @@ def AddComputeInstanceBackupPlanProperties(parser, release_track=None):
           value_type=str,
       ),
   }
-
   parser.add_argument(
       '--compute-instance-properties',
       metavar='PROPERTY=VALUE',

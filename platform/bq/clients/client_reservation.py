@@ -1008,9 +1008,10 @@ def UpdateReservationAssignment(
     reservation_assignment['precedence'] = precedence
     update_mask += 'precedence,'
   if condition is not None:
-    reservation_assignment['condition'] = bq_client_utils.ParseCondition(
-        condition
-    )
+    if condition:
+      reservation_assignment['condition'] = bq_client_utils.ParseCondition(
+          condition
+      )
     update_mask += 'condition,'
 
   return (

@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Describe a Dataplex Data Product resource.
+    description: |
+      Describe a Dataplex Data Product resource based on project, location and data product id.
+    examples: |
+      To describe a Dataplex data product `test-dp` in location `us-central1` in project `test-project`, run:
+
+          $ {command} test-dp --project=test-project --location=us-central1
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataProducts
+    method: get
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the Dataplex Data Product you want to describe.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_product

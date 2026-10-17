@@ -313,6 +313,20 @@
       release_tracks: [ALPHA, BETA, GA]
       help_text: |
         The ACL policy to use for the cluster.
+    - arg_name: tags
+      release_tracks: [ALPHA, BETA, GA]
+      api_field: cluster.tags.additionalProperties
+      # TODO(b/441662348): Remove hidden as part of GA launch.
+      hidden: true
+      metavar: KEY=VALUE
+      help_text: |
+        List of tag KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
     labels:
       api_field: cluster.labels
 

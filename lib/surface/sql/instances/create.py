@@ -179,6 +179,7 @@ def AddBaseArgs(parser):
   flags.AddPerformanceCaptureConfig(parser)
   flags.AddEnablePscAutoConnectionPolicy(parser)
   flags.AddDatabaseCenterIntegrationEnabled(parser)
+  flags.AddDatabaseCenterIntegration(parser)
   flags.AddEnablePscAutoDns(parser)
   flags.AddEnablePscWriteEndpointDns(parser)
   flags.AddEnableConfidentialStorage(parser)

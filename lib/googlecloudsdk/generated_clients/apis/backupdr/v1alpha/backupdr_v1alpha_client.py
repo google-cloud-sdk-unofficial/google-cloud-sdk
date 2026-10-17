@@ -2667,11 +2667,14 @@ class BackupdrV1alpha(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single RestoreVerificationPlan. If the `force` flag is set to `true`, any RestoreVerificationPlanAssociations linked to this RestoreVerificationPlan will also be deleted.
+      r"""Deletes a single RestoreVerificationPlan in a given project and location.
 
       Args:
-        request: (BackupdrProjectsLocationsRestoreVerificationPlansDeleteRequest) input message
+        request:
+          (BackupdrProjectsLocationsRestoreVerificationPlansDeleteRequest) input
+          message
         global_params: (StandardQueryParameters, default: None) global arguments
+
       Returns:
         (Operation) The response message.
       """
@@ -2694,11 +2697,13 @@ class BackupdrV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single RestoreVerificationPlan. Returns the requested RestoreVerificationPlan.
+      r"""Gets details of a single RestoreVerificationPlan.
 
       Args:
-        request: (BackupdrProjectsLocationsRestoreVerificationPlansGetRequest) input message
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansGetRequest)
+          input message
         global_params: (StandardQueryParameters, default: None) global arguments
+
       Returns:
         (RestoreVerificationPlan) The response message.
       """

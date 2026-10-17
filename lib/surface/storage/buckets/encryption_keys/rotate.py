@@ -14,11 +14,13 @@
 # limitations under the License.
 """Implementation of buckets encryption-keys rotate command."""
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
@@ -61,20 +63,30 @@ class Rotate(base.Command):
             ' rotated to the primary key version.'
         ),
     )
-    base.ASYNC_FLAG.AddToParser(parser)
+    flags.add_async_flag(parser)
 
-  # TODO(b/556305006): Call rotate_bucket_encryption_key API.
   def Run(self, args):
     url = storage_url.storage_url_from_string(args.url)
     errors_util.raise_error_if_not_gcs_bucket(args.command_path, url)
     encryption_util.validate_kms_key_version_resource_path(args.kms_key_version)
 
-    console_io.PromptContinue(
-        message=(
-            f'The KMS key version [{args.kms_key_version}] used in bucket'
-            f' [{args.url}] will be rotated to the latest primary key version.'
-            f' All objects in {args.url} protected by this specific key'
-            ' version will be updated to the new key version.'
-        ),
-        cancel_on_no=True,
+    client = api_factory.get_api(url.scheme)
+    operation = client.rotate_bucket_encryption_key(
+        url.bucket_name, args.kms_key_version
     )
+
+    is_async = args.async_ if args.async_ is not None else True
+    if is_async:
+      log.status.Print(
+          f'Rotation operation [{operation.name}] submitted for bucket'
+          f' [{args.url}].\n\nTo check operation status, run:\n  $ gcloud'
+          f' storage operations describe {operation.name}'
+      )
+      return operation
+
+    log.status.Print(f'Rotating CMEK key for bucket [{args.url}]...')
+    response = client.wait_for_operation(operation)
+    log.status.Print(
+        f'Successfully rotated encryption key for bucket [{args.url}].'
+    )
+    return response

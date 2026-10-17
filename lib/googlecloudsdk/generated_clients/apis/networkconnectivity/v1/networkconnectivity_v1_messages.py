@@ -1930,6 +1930,9 @@ class InternalRange(_messages.Message):
     OverlapsValueListEntryValuesEnum:
     PeeringValueValuesEnum: Optional. The type of peering set for this
       internal range.
+    PurposeValueValuesEnum: Optional. The purpose of this internal range.
+      Defines the intended use of the range and any restrictions associated
+      with it. If not specified, it defaults to VPC_SUBNET.
     RangeStatusValueValuesEnum: Output only. Status of the Internal Range.
     UsageValueValuesEnum: Optional. The type of usage set for this
       InternalRange.
@@ -1973,6 +1976,9 @@ class InternalRange(_messages.Message):
       during updates to change the range size. NOTE: For IPv6 this field only
       works if ip_cidr_range is set as well, and both fields must match. In
       other words, with IPv6 this field only works as a redundant parameter.
+    purpose: Optional. The purpose of this internal range. Defines the
+      intended use of the range and any restrictions associated with it. If
+      not specified, it defaults to VPC_SUBNET.
     rangeStatus: Output only. Status of the Internal Range.
     targetCidrRange: Optional. Can be set to narrow down or pick a different
       address space while searching for a free range. If not set, defaults to
@@ -2034,6 +2040,24 @@ class InternalRange(_messages.Message):
     FOR_SELF = 1
     FOR_PEER = 2
     NOT_SHARED = 3
+
+  class PurposeValueValuesEnum(_messages.Enum):
+    r"""Optional. The purpose of this internal range. Defines the intended use
+    of the range and any restrictions associated with it. If not specified, it
+    defaults to VPC_SUBNET.
+
+    Values:
+      PURPOSE_UNSPECIFIED: If purpose is left unspecified in
+        CreateInternalRange or UpdateInternalRange, it will be defaulted to
+        VPC_SUBNET.
+      VPC_SUBNET: The internal range is used for VPC subnetworks.
+      INTERNAL_ADDRESS: The internal range is used exclusively for allocating
+        individual IP addresses (e.g., for global PSC endpoints). Child ranges
+        or subnetworks cannot be created from a range with this purpose.
+    """
+    PURPOSE_UNSPECIFIED = 0
+    VPC_SUBNET = 1
+    INTERNAL_ADDRESS = 2
 
   class RangeStatusValueValuesEnum(_messages.Enum):
     r"""Output only. Status of the Internal Range.
@@ -2117,11 +2141,12 @@ class InternalRange(_messages.Message):
   overlaps = _messages.EnumField('OverlapsValueListEntryValuesEnum', 11, repeated=True)
   peering = _messages.EnumField('PeeringValueValuesEnum', 12)
   prefixLength = _messages.IntegerField(13, variant=_messages.Variant.INT32)
-  rangeStatus = _messages.EnumField('RangeStatusValueValuesEnum', 14)
-  targetCidrRange = _messages.StringField(15, repeated=True)
-  updateTime = _messages.StringField(16)
-  usage = _messages.EnumField('UsageValueValuesEnum', 17)
-  users = _messages.StringField(18, repeated=True)
+  purpose = _messages.EnumField('PurposeValueValuesEnum', 14)
+  rangeStatus = _messages.EnumField('RangeStatusValueValuesEnum', 15)
+  targetCidrRange = _messages.StringField(16, repeated=True)
+  updateTime = _messages.StringField(17)
+  usage = _messages.EnumField('UsageValueValuesEnum', 18)
+  users = _messages.StringField(19, repeated=True)
 
 
 class IpRangeReservation(_messages.Message):

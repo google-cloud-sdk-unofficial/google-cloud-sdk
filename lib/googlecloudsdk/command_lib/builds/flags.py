@@ -363,11 +363,11 @@ def AddWorkerReleaseFlag(parser):
   """
   parser.add_argument(
       '--worker-release',
-      hidden=True,
       help=(
           'Specifies the release channel or version to use for the build'
           ' worker image. Accepts release channel names (`rapid`, `regular`,'
           ' `stable`) or specific release versions (for example, `2026.09`,'
-          ' `legacy`).'
+          ' `legacy`). See'
+          ' https://docs.cloud.google.com/build/docs/release-channels.'
       ),
   )

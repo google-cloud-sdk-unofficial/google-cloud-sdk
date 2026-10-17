@@ -91,16 +91,23 @@ Create.detailed_help = {
     'DESCRIPTION': (
         """\
         *{command}* creates an Accelerator Network Profile in a Google
-        Kubernetes Engine cluster.
+        Kubernetes Engine cluster. The `--location` (`--zone` or `--region`)
+        must match the target cluster's location.
         """
     ),
     'EXAMPLES': (
         """\
-        To create a new Accelerator Network Profile "anp-1" in the
-        cluster "sample-cluster" in zone "us-central1-a" for machine type
-        "a3-ultragpu-8g", run:
+        To create a new Accelerator Network Profile "anp-1" in the zonal
+        cluster "sample-zonal-cluster" in zone "us-central1-a" for machine
+        type "a3-ultragpu-8g", run:
 
-          $ {command} anp-1 --cluster=sample-cluster --location=us-central1-a --auto-config-machine-type=a3-ultragpu-8g
+          $ {command} anp-1 --cluster=sample-zonal-cluster --location=us-central1-a --auto-config-machine-type=a3-ultragpu-8g --auto-create-local-mrdma-vpc
+
+        To create a new Accelerator Network Profile "anp-1" in the regional
+        cluster "sample-regional-cluster" in region "us-central1" with RDMA
+        fabric resources provisioned in zone "us-central1-a", run:
+
+          $ {command} anp-1 --cluster=sample-regional-cluster --location=us-central1 --rdma-locations=us-central1-a --auto-config-machine-type=a3-ultragpu-8g --auto-create-local-mrdma-vpc
         """
     ),
 }

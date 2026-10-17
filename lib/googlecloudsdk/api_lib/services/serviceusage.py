@@ -298,13 +298,58 @@ def TestEnabled(name: str, service: str):
   client = _GetClientInstance(_V2BETA_VERSION)
   messages = client.MESSAGES_MODULE
 
+  if service.startswith('catalogs/'):
+    test_req = messages.TestEnabledRequest(catalogName=service)
+  else:
+    test_req = messages.TestEnabledRequest(serviceName=service)
+
   request = messages.ServiceusageTestEnabledRequest(
       name=name,
-      testEnabledRequest=messages.TestEnabledRequest(serviceName=service),
+      testEnabledRequest=test_req,
   )
 
   try:
     return client.v2beta.TestEnabled(request)
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.TestEnabledException)
+
+
+def TestEnabledV2(name: str, service: str):
+  """Make API call to test enabled using V2.
+
+  Args:
+    name: Parent resource to test a value against the result of merging consumer
+      policies in the resource hierarchy. format-"projects/100", "folders/101"
+      or "organizations/102".
+    service: Service or catalog name to check if the targeted resource can use
+      it. Format: "services/{service}" or "catalogs/{catalog}".
+
+  Raises:
+    exceptions.TestEnabledPermissionDeniedException: when testing value for a
+      service and resource.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    Message.State: The state of the service.
+  """
+  client = _GetClientInstance(_V2_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  if service.startswith('catalogs/'):
+    test_req = messages.TestEnabledRequest(catalogName=service)
+  else:
+    test_req = messages.TestEnabledRequest(serviceName=service)
+
+  request = messages.ServiceusageTestEnabledRequest(
+      name=name,
+      testEnabledRequest=test_req,
+  )
+
+  try:
+    return client.v2.TestEnabled(request)
   except (
       apitools_exceptions.HttpForbiddenError,
       apitools_exceptions.HttpNotFoundError,
@@ -386,7 +431,7 @@ def GetEffectivePolicyV2(name: str, view: str = 'BASIC'):
   )
 
   try:
-    return client.effectivePolicies.Get(request)
+    return client.v2.GetEffectivePolicy(request)
   except (
       apitools_exceptions.HttpForbiddenError,
       apitools_exceptions.HttpNotFoundError,
@@ -659,10 +704,10 @@ def UpdateConsumerPolicyV2Alpha(
     exceptions.ReraiseError(e, exceptions.Error)
 
 
-def UpdateConsumerPolicyV2Beta(
+def _UpdateConsumerPolicyV2Beta(
     consumerpolicy, name, force=False, validateonly=False
 ):
-  """Make API call to update a consumer policy.
+  """Make API call to update a consumer policy in V2Beta.
 
   Args:
     consumerpolicy: The consumer policy to update.
@@ -706,10 +751,10 @@ def UpdateConsumerPolicyV2Beta(
     exceptions.ReraiseError(e, exceptions.Error)
 
 
-def UpdateConsumerPolicyV2(
+def _UpdateConsumerPolicyV2(
     consumerpolicy, name, force=False, validateonly=False
 ):
-  """Make API call to update a consumer policy.
+  """Make API call to update a consumer policy in V2.
 
   Args:
     consumerpolicy: The consumer policy to update.
@@ -779,7 +824,7 @@ def ListGroupMembers(
   messages = client.MESSAGES_MODULE
 
   request = messages.ServiceusageServicesGroupsMembersListRequest(
-      parent=resource + '/' + service_group
+      parent=resource + '/' + service_group,
   )
 
   try:
@@ -790,6 +835,60 @@ def ListGroupMembers(
         batch_size_attribute='pageSize',
         batch_size=page_size,
         field='memberStates',
+    )
+    member_states = []
+    for member_state in response:
+      member_states.append(member_state)
+    return member_states
+  except (
+      apitools_exceptions.HttpBadRequestError,
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    if 'SU_GROUP_NOT_FOUND' in str(e):
+      return []
+    else:
+      exceptions.ReraiseError(e, exceptions.ListGroupMembersException)
+
+
+def ListGroupMembersV2(
+    resource: str,
+    service_group: str,
+    page_size: int = 50,
+    limit: int = sys.maxsize,
+):
+  """Make API call to list group members of a specific service group.
+
+  Args:
+    resource: The target resource.
+    service_group: Service group which owns a collection of group members, for
+      example, 'services/compute.googleapis.com/groups/dependencies'.
+    page_size: The page size to list. The default page_size is 50.
+    limit: The max number of services to display.
+
+  Raises:
+    exceptions.ListGroupMembersPermissionDeniedException: when listing
+      group members fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    Message.ListGroupMembersResponse : Group members in the given service group.
+  """
+  client = _GetClientInstance(_V2_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageServicesGroupsMembersListRequest(
+      parent=resource + '/' + service_group,
+  )
+
+  try:
+    response = list_pager.YieldFromList(
+        _Lister(client.services_groups_members),
+        request,
+        limit=limit,
+        batch_size_attribute='pageSize',
+        batch_size=page_size,
+        field='members',
     )
     member_states = []
     for member_state in response:
@@ -946,7 +1045,12 @@ def ListExpandedMembersV2(
       exceptions.ReraiseError(e, exceptions.ListExpandedMembersException)
 
 
-def ListCatalogMembers(resource: str, catalog: str, page_size: int = 50):
+def ListCatalogMembers(
+    resource: str,
+    catalog: str,
+    page_size: int = 50,
+    limit: int = sys.maxsize,
+):
   """Make API call to list members of a specific catalog.
 
   Args:
@@ -954,6 +1058,7 @@ def ListCatalogMembers(resource: str, catalog: str, page_size: int = 50):
       '{resource_type}/{resource_name}'.
     catalog: Catalog name, for example, 'catalogs/default-cloud-services'.
     page_size: The page size to list. The default page_size is 50.
+    limit: The max number of services to display.
 
   Raises:
     exceptions.ListCatalogMembersException: when listing catalog members fails.
@@ -973,6 +1078,7 @@ def ListCatalogMembers(resource: str, catalog: str, page_size: int = 50):
     response = list_pager.YieldFromList(
         _Lister(client.catalogs_members),
         request,
+        limit=limit,
         batch_size_attribute='pageSize',
         batch_size=page_size,
         field='members',
@@ -981,14 +1087,18 @@ def ListCatalogMembers(resource: str, catalog: str, page_size: int = 50):
     for member in response:
       service_names.append(member.service)
     return service_names
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
+  except apitools_exceptions.HttpNotFoundError as e:
+    exceptions.ReraiseError(e, exceptions.CatalogNotFoundError)
+  except apitools_exceptions.HttpForbiddenError as e:
     exceptions.ReraiseError(e, exceptions.ListCatalogMembersException)
 
 
-def ListCatalogMembersV2(resource: str, catalog: str, page_size: int = 50):
+def ListCatalogMembersV2(
+    resource: str,
+    catalog: str,
+    page_size: int = 50,
+    limit: int = sys.maxsize,
+):
   """Make API call to list members of a specific catalog.
 
   Args:
@@ -996,6 +1106,7 @@ def ListCatalogMembersV2(resource: str, catalog: str, page_size: int = 50):
       '{resource_type}/{resource_name}'.
     catalog: Catalog name, for example, 'catalogs/default-cloud-services'.
     page_size: The page size to list. The default page_size is 50.
+    limit: The max number of services to display.
 
   Raises:
     exceptions.ListCatalogMembersException: when listing catalog members fails.
@@ -1015,6 +1126,7 @@ def ListCatalogMembersV2(resource: str, catalog: str, page_size: int = 50):
     response = list_pager.YieldFromList(
         _Lister(client.catalogs_members),
         request,
+        limit=limit,
         batch_size_attribute='pageSize',
         batch_size=page_size,
         field='members',
@@ -1023,11 +1135,61 @@ def ListCatalogMembersV2(resource: str, catalog: str, page_size: int = 50):
     for member in response:
       service_names.append(member.service)
     return service_names
+  except apitools_exceptions.HttpNotFoundError as e:
+    exceptions.ReraiseError(e, exceptions.CatalogNotFoundError)
+  except apitools_exceptions.HttpForbiddenError as e:
+    exceptions.ReraiseError(e, exceptions.ListCatalogMembersException)
+
+
+def ListDependentServicesV2(
+    resource: str,
+    service: str,
+    page_size: int = 50,
+    limit: int = sys.maxsize,
+):
+  """Make API call to list services that depend on a specific service.
+
+  Args:
+    resource: The target resource in the format:
+      '{resource_type}/{resource_name}'.
+    service: Service name, for example, 'services/my-service'.
+    page_size: The page size to list. The default page_size is 50.
+    limit: The max number of services to display.
+
+  Raises:
+    exceptions.ListDependentServicesException: when listing dependent services
+      fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    List of service names that depend on the given service.
+  """
+  client = _GetClientInstance(_V2_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageServicesDependentServicesListRequest(
+      parent=f'{resource}/{service}'
+  )
+
+  try:
+    response = list_pager.YieldFromList(
+        _Lister(client.services_dependentServices),
+        request,
+        limit=limit,
+        batch_size_attribute='pageSize',
+        batch_size=page_size,
+        field='services',
+    )
+    service_names = []
+    for dependent_service in response:
+      service_names.append(dependent_service.service)
+    return service_names
   except (
       apitools_exceptions.HttpForbiddenError,
       apitools_exceptions.HttpNotFoundError,
+      apitools_exceptions.HttpBadRequestError,
   ) as e:
-    exceptions.ReraiseError(e, exceptions.ListCatalogMembersException)
+    exceptions.ReraiseError(e, exceptions.ListDependentServicesException)
 
 
 def ListAncestorGroups(resource: str, service: str, page_size: int = 50):
@@ -1147,13 +1309,93 @@ def AnalyzeConsumerPolicyV2(
     exceptions.ReraiseError(e, exceptions.AnalyzeConsumerPolicyException)
 
 
-def UpdateConsumerPolicy(
+def _AnalyzePolicyDependencies(policy, analyze_func, wait_func):
+  """Runs consumer policy analysis and returns list of (service, missing_dep) pairs."""
+  op = analyze_func(policy)
+  op = services_util.WaitOperation(op.name, wait_func)
+  if not op or not getattr(op, 'response', None):
+    return []
+
+  analysis_response = encoding.MessageToDict(op.response)
+  dependency_pairs = []
+  for analysis in analysis_response.get('analysis', []):
+    for warning in (analysis.get('analysisResult') or {}).get('warnings', []):
+      missing_dep = warning.get('missingDependency')
+      if (
+          missing_dep
+          and (analysis['service'], missing_dep) not in dependency_pairs
+      ):
+        dependency_pairs.append((analysis['service'], missing_dep))
+
+  return dependency_pairs
+
+
+def _ValidatePolicyDependencies(
+    proposed_policy,
+    analyze_func,
+    wait_func,
+):
+  """Analyzes policy for missing dependencies and raises ConfigError if found."""
+  missing_deps_services = {}
+  for service, missing_dep in _AnalyzePolicyDependencies(
+      proposed_policy, analyze_func, wait_func
+  ):
+    if service not in missing_deps_services:
+      missing_deps_services[service] = []
+    missing_deps_services[service].append(missing_dep)
+
+  if missing_deps_services:
+    lines = ['Policy cannot be updated as ']
+    for service, deps in missing_deps_services.items():
+      for dependency in deps:
+        lines.append(f'{service} is missing service dependency {dependency}')
+    raise exceptions.ConfigError('\n'.join(lines) + '\n')
+
+
+def _ValidateRemoveDependencies(
+    proposed_policy,
+    analyze_func,
+    wait_func,
+    disable_dependency_services: bool,
+    services_to_remove,
+):
+  """Analyzes policy for dependent services before removing enable rules."""
+  missing_dependency = {}
+  to_remove = []
+
+  services_to_remove_set = set(services_to_remove)
+
+  for service, missing_dep in _AnalyzePolicyDependencies(
+      proposed_policy, analyze_func, wait_func
+  ):
+    if services_to_remove_set and missing_dep not in services_to_remove_set:
+      continue
+    if missing_dep not in missing_dependency:
+      missing_dependency[missing_dep] = []
+    missing_dependency[missing_dep].append(service)
+    to_remove.append(service)
+
+  if not disable_dependency_services and to_remove:
+    json_string = json.dumps(missing_dependency)
+    raise exceptions.ConfigError(
+        'Cannot disable service(s). The following service(s) have active'
+        ' dependents: '
+        + json_string
+        + '. Please remove the active dependent services or provide the'
+        ' --disable-dependency-services flag to disable them, or'
+        ' --bypass-dependency-service-check to ignore this check.'
+    )
+
+  return to_remove
+
+
+def UpdateConsumerPolicyBeta(
     consumerpolicy,
     validate_only: bool = False,
     bypass_dependency_check: bool = False,
     force: bool = False,
 ):
-  """Make API call to update a consumer policy.
+  """Make API call to update a consumer policy in V2Beta.
 
   Args:
     consumerpolicy: The consumer policy to update.
@@ -1180,50 +1422,82 @@ def UpdateConsumerPolicy(
         name=consumerpolicy['name']
     )
 
-    if (
-        'enableRules' in consumerpolicy.keys()
-        and consumerpolicy['enableRules'] is not None
-    ):
-      for enable_rule in consumerpolicy['enableRules']:
-        if 'services' in enable_rule:
-          policy.enableRules.append(
-              messages.GoogleApiServiceusageV2betaEnableRule(
-                  services=enable_rule['services']
-              )
-          )
+    enable_rules = consumerpolicy.get('enableRules')
+    if enable_rules:
+      for enable_rule in enable_rules:
+        services = enable_rule.get('services')
+        catalogs = enable_rule.get('catalogs')
+        rule = messages.GoogleApiServiceusageV2betaEnableRule()
+        if services:
+          rule.services = services
+        if catalogs:
+          rule.catalogs = catalogs
+        policy.enableRules.append(rule)
 
     if not bypass_dependency_check:
-      op = AnalyzeConsumerPolicy(policy)
+      _ValidatePolicyDependencies(
+          policy, AnalyzeConsumerPolicy, GetOperationV2Beta
+      )
 
-      op = services_util.WaitOperation(op.name, GetOperationV2Beta)
+    return _UpdateConsumerPolicyV2Beta(
+        policy,
+        policy.name,
+        validateonly=validate_only,
+        force=force,
+    )
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.UpdateConsumerPolicyException)
 
-      analysis_reponse = encoding.MessageToDict(op.response)
 
-      missing_dependencies = {}
+def UpdateConsumerPolicyV2(
+    consumerpolicy,
+    validate_only: bool = False,
+    bypass_dependency_check: bool = False,
+    force: bool = False,
+):
+  """Make API call to update a consumer policy using V2 API.
 
-      if 'analysis' in analysis_reponse:
-        for analysis in analysis_reponse['analysis']:
-          for warning in analysis['analysisResult']['warnings']:
-            if analysis['service'] not in missing_dependencies.keys():
-              missing_dependencies[analysis['service']] = [
-                  warning['missingDependency']
-              ]
-            else:
-              missing_dependencies[analysis['service']].append(
-                  warning['missingDependency']
-              )
+  Args:
+    consumerpolicy: The consumer policy to update.
+    validate_only: If True, the action will be validated and result will be
+      preview but not executed.
+    bypass_dependency_check: If True, dependencies check will be bypassed.
+    force: If True, skip breaking change detections.
 
-      if missing_dependencies:
-        error_message = 'Policy cannot be updated as \n'
-        for service in missing_dependencies:
-          for dependency in missing_dependencies[service]:
-            error_message += (
-                service + ' is missing service dependency ' + dependency + '\n'
-            )
+  Raises:
+    exceptions.UpdateConsumerPolicyException: when updating policy API fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
 
-        raise exceptions.ConfigError(error_message)
+  Returns:
+    The result of the operation
+  """
+  client = _GetClientInstance(version=_V2_VERSION)
+  messages = client.MESSAGES_MODULE
 
-    return UpdateConsumerPolicyV2Beta(
+  try:
+    policy = messages.ConsumerPolicy(name=consumerpolicy['name'])
+
+    enable_rules = consumerpolicy.get('enableRules')
+    if enable_rules:
+      for enable_rule in enable_rules:
+        services = enable_rule.get('services')
+        catalogs = enable_rule.get('catalogs')
+        rule = messages.EnableRule()
+        if services:
+          rule.services = services
+        if catalogs:
+          rule.catalogs = catalogs
+        policy.enableRules.append(rule)
+
+    if not bypass_dependency_check:
+      _ValidatePolicyDependencies(
+          policy, AnalyzeConsumerPolicyV2, GetOperationV2
+      )
+
+    return _UpdateConsumerPolicyV2(
         policy,
         policy.name,
         validateonly=validate_only,
@@ -1482,7 +1756,7 @@ def AddEnableRule(
           )
       )
 
-    return UpdateConsumerPolicyV2Beta(
+    return _UpdateConsumerPolicyV2Beta(
         policy, policy_name, validateonly=validate_only
     )
   except (
@@ -1616,7 +1890,7 @@ def AddEnableRuleV2(
           )
       )
 
-    return UpdateConsumerPolicyV2(
+    return _UpdateConsumerPolicyV2(
         policy, policy_name, validateonly=validate_only
     )
   except (
@@ -1719,35 +1993,14 @@ def RemoveEnableRule(
           enable_rule.catalogs.remove(catalog)
 
     to_remove = []
-
     if not skip_dependency_check:
-
-      op = AnalyzeConsumerPolicy(proposed_policy)
-
-      op = services_util.WaitOperation(op.name, GetOperationV2Beta)
-
-      analysis_response = encoding.MessageToDict(op.response)
-
-      missing_dependency = {}
-
-      if 'analysis' in analysis_response:
-        for analysis in analysis_response['analysis']:
-          for warning in analysis['analysisResult']['warnings']:
-            missing_dep = warning['missingDependency']
-            if missing_dep not in missing_dependency:
-              missing_dependency[missing_dep] = []
-            missing_dependency[missing_dep].append(analysis['service'])
-            to_remove.append(analysis['service'])
-
-      if not disable_dependency_services and to_remove:
-        json_string = json.dumps(missing_dependency)
-        raise exceptions.ConfigError(
-            'These services are dependent on the following active service(s) '
-            + json_string
-            + ' . Please remove the active dependent services or provide the'
-            ' --disable-dependency-services flag to disable them, or'
-            ' --bypass-dependency-service-check to ignore this check.'
-        )
+      to_remove = _ValidateRemoveDependencies(
+          proposed_policy,
+          AnalyzeConsumerPolicy,
+          GetOperationV2Beta,
+          disable_dependency_services,
+          services_to_remove=matching_services,
+      )
 
     to_remove = set(to_remove)
 
@@ -1762,7 +2015,7 @@ def RemoveEnableRule(
       if rule.services or rule.catalogs:
         updated_consumer_poicy.enableRules.append(rule)
 
-    return UpdateConsumerPolicyV2Beta(
+    return _UpdateConsumerPolicyV2Beta(
         updated_consumer_poicy,
         policy_name,
         force=force,
@@ -1873,35 +2126,14 @@ def RemoveEnableRuleV2(
           enable_rule.catalogs.remove(catalog)
 
     to_remove = []
-
     if not skip_dependency_check:
-
-      op = AnalyzeConsumerPolicyV2(proposed_policy)
-
-      op = services_util.WaitOperation(op.name, GetOperationV2)
-
-      analysis_response = encoding.MessageToDict(op.response)
-
-      missing_dependency = {}
-
-      if 'analysis' in analysis_response:
-        for analysis in analysis_response['analysis']:
-          for warning in analysis['analysisResult']['warnings']:
-            missing_dep = warning['missingDependency']
-            if missing_dep not in missing_dependency:
-              missing_dependency[missing_dep] = []
-            missing_dependency[missing_dep].append(analysis['service'])
-            to_remove.append(analysis['service'])
-
-      if not disable_dependency_services and to_remove:
-        json_string = json.dumps(missing_dependency)
-        raise exceptions.ConfigError(
-            'These services are dependent on the following active service(s) '
-            + json_string
-            + ' . Please remove the active dependent services or provide the'
-            ' --disable-dependency-services flag to disable them, or'
-            ' --bypass-dependency-service-check to ignore this check.'
-        )
+      to_remove = _ValidateRemoveDependencies(
+          proposed_policy,
+          AnalyzeConsumerPolicyV2,
+          GetOperationV2,
+          disable_dependency_services,
+          services_to_remove=matching_services,
+      )
 
     to_remove = set(to_remove)
 
@@ -1916,7 +2148,7 @@ def RemoveEnableRuleV2(
       if rule.services or rule.catalogs:
         updated_consumer_poicy.enableRules.append(rule)
 
-    return UpdateConsumerPolicyV2(
+    return _UpdateConsumerPolicyV2(
         updated_consumer_poicy,
         policy_name,
         force=force,

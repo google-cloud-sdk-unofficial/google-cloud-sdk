@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Show details of the restore verification plan association.
+    description: Show all configuration data associated with the specified restore verification plan association.
+    examples: |
+      To view details for restore verification plan association ``my-association'' under restore verification plan ``my-plan'' in location ``us-central1'', run:
+
+        $ {command} my-association --restore-verification-plan=my-plan --location=us-central1
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    collection: backupdr.projects.locations.restoreVerificationPlans.associations
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Name of the restore verification plan association to describe.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:restoreVerificationPlanAssociations
+      is_positional: true
+
+  output:
+    format: json

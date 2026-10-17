@@ -16,14 +16,14 @@
 """Command for creating GlobalVmExtensionPolicies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.global_vm_extension_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.global_vm_extension_policies import flags
+from googlecloudsdk.command_lib.compute.vm_extension_policies import flags as vm_extension_policies_flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine global VM extension policy."""
 
@@ -44,10 +44,14 @@ class Create(base.CreateCommand):
    """,
   }
 
-  @staticmethod
-  def Args(parser):
-    Create.GlobalVmExtensionPoliciesArg = flags.MakeGlobalVmExtensionPolicyArg()
-    Create.GlobalVmExtensionPoliciesArg.AddArgument(
+  GLOBAL_VM_EXTENSION_POLICIES_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.GLOBAL_VM_EXTENSION_POLICIES_ARG = (
+        flags.MakeGlobalVmExtensionPolicyArg()
+    )
+    cls.GLOBAL_VM_EXTENSION_POLICIES_ARG.AddArgument(
         parser, operation_type='create'
     )
     flags.AddExtensionPolicyArgs(parser)
@@ -63,21 +67,26 @@ class Create(base.CreateCommand):
       Response calling the GlobalVmExtensionPoliciesService.Insert API.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-    resource_ref = Create.GlobalVmExtensionPoliciesArg.ResolveAsResource(
+    resource_ref = flags.ResolveGlobalVmExtensionPolicyResource(
         args,
-        holder.resources,
+        holder,
+        self.GLOBAL_VM_EXTENSION_POLICIES_ARG,
     )
+    policy = flags.BuildGlobalVmExtensionPolicy(
+        resource_ref, args, holder.client.messages
+    )
+    policy_client = client.GlobalVmExtensionPolicy.FromRef(
+        resource_ref, holder.client
+    )
+    return policy_client.Insert(policy)
 
-    gve_policy = flags.BuildGlobalVmExtensionPolicy(
-        resource_ref, args, messages
-    )
-    return client.MakeRequests([(
-        client.apitools_client.globalVmExtensionPolicies,
-        'Insert',
-        messages.ComputeGlobalVmExtensionPoliciesInsertRequest(
-            project=resource_ref.project,
-            globalVmExtensionPolicy=gve_policy,
-        ),
-    )])
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Compute Engine global VM extension policy."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    vm_extension_policies_flags.AddScopeFlags(parser)

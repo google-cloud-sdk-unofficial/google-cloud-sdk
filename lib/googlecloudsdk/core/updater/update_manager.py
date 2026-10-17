@@ -28,7 +28,6 @@ from typing import Any, TypeVar
 
 from googlecloudsdk.core import argv_utils
 from googlecloudsdk.core import config
-from googlecloudsdk.core import context_aware
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
@@ -62,6 +61,11 @@ continue using these tools, they are available for download from the official
 App Engine download page here:
     https://cloud.google.com/appengine/downloads
 """)
+_MAN_PAGES_REMOVAL_MSG = """\
+Man pages are no longer distributed through the Google Cloud CLI. Use
+'gcloud <command> --help' for command help or see
+https://cloud.google.com/sdk/gcloud/reference/ for online documentation.
+"""
 _IGNORED_MISSING_COMPONENTS = {
     'app': None,
     'app-engine-go-linux-x86': None,
@@ -77,6 +81,7 @@ _IGNORED_MISSING_COMPONENTS = {
     'gae-go': _GAE_REDIRECT_MSG,
     'gae-python-launcher-mac': _GAE_REDIRECT_MSG,
     'gae-python-launcher-win': _GAE_REDIRECT_MSG,
+    'gcloud-man-pages': _MAN_PAGES_REMOVAL_MSG,
     'kpt': None,
     'kustomize': None,
     'pkg-core': None,
@@ -110,6 +115,13 @@ MINIKUBE_DEPRECATION_WARNING = (
     'project and continues to be actively maintained. To avoid disruptions, '
     'please migrate to standard OSS Minikube installations: '
     'https://minikube.sigs.k8s.io/docs/start/\n'
+)
+
+MAN_PAGES_DEPRECATION_WARNING = (
+    'The \'gcloud-man-pages\' component in Google Cloud CLI is deprecated and '
+    'will be removed in a future release. Use \'gcloud <command> --help\' for '
+    'interactive help or see https://cloud.google.com/sdk/gcloud/reference/ '
+    'for online documentation.\n'
 )
 
 _DONT_CANCEL_MESSAGE = (
@@ -239,9 +251,7 @@ class NoRegisteredRepositoriesError(Error):
 
 def FilterMetaComponents(components):
   """Filters out top level components with no installable ComponentData."""
-  return sorted(
-      [comp for comp in components if comp.data is not None],
-      key=lambda c: c.details.display_name)
+  return [comp for comp in components if comp.data is not None]
 
 
 _F = TypeVar('_F', bound=Callable[..., Any])
@@ -559,10 +569,10 @@ class UpdateManager(object):
       ]
 
     if command == update_all:
-      mapped_packages = [
+      mapped_packages = sorted(
           component for component in set(components_map.values())
           if component != unavailable
-      ]
+      )
     else:
       mapped_components = [
           component for component in components
@@ -835,6 +845,7 @@ version [{1}].  To clear your fixed version setting, run:
           platform_filter=self.DARWIN_X86_64)
       to_print_x86_64 = (c for c in darwin_x86_64_all if c.id not in native_ids)
       to_print.extend(to_print_x86_64)
+    to_print.sort(key=lambda i: (i.name, i.id))
     current_version = config.INSTALLATION_CONFIG.version
     self.__Write(
         log.status,
@@ -1081,6 +1092,8 @@ version [{1}].  To clear your fixed version setting, run:
 
     if 'minikube' in to_install:
       log.warning(MINIKUBE_DEPRECATION_WARNING)
+    if 'gcloud-man-pages' in to_install:
+      log.warning(MAN_PAGES_DEPRECATION_WARNING)
 
     # If explicitly listing components, you are probably installing and not
     # doing a full update, change the message to be more clear.
@@ -1190,7 +1203,7 @@ To revert your CLI to the previously installed version, you may run:
 
   {0}
 
-  """.format('\n'.join(bad_commands)))
+  """.format('\n'.join(sorted(bad_commands))))
       duplicate_commands = self.FindAllDuplicateToolsOnPath()
       if duplicate_commands:
         log.warning("""\
@@ -1199,7 +1212,7 @@ To revert your CLI to the previously installed version, you may run:
 
   {0}
 
-  """.format('\n  '.join(duplicate_commands)))
+  """.format('\n  '.join(sorted(duplicate_commands))))
 
     return True
 
@@ -1242,7 +1255,7 @@ To revert your CLI to the previously installed version, you may run:
 
     ignored = set(_IGNORED_MISSING_COMPONENTS)
     deprecated = invalid_seeds & ignored
-    for item in deprecated:
+    for item in sorted(deprecated):
       log.warning('Component [%s] no longer exists.', item)
       additional_msg = _IGNORED_MISSING_COMPONENTS.get(item)
       if additional_msg:
@@ -1264,12 +1277,12 @@ To revert your CLI to the previously installed version, you may run:
       msgs = []
       if completely_invalid_seeds:
         msgs.append('The following components are unknown [{}].'
-                    .format(', '.join(completely_invalid_seeds)))
+                    .format(', '.join(sorted(completely_invalid_seeds))))
       if update_required_seeds:
         msgs.append('The following components are not available for your '
                     'current CLI version [{}]. Please run `gcloud components '
                     'update` to update your Google Cloud CLI.'
-                    .format(', '.join(update_required_seeds)))
+                    .format(', '.join(sorted(update_required_seeds))))
       raise InvalidComponentError(' '.join(msgs))
 
     return set(update_seed) - deprecated
@@ -1353,7 +1366,7 @@ To revert your CLI to the previously installed version, you may run:
     if not_installed:
       raise InvalidComponentError(
           'The following components are not currently installed [{components}]'
-          .format(components=', '.join(not_installed)))
+          .format(components=', '.join(sorted(not_installed))))
 
     to_remove = snapshot.ConsumerClosureForComponents(
         ids, platform_filter=self.__platform_filter)
@@ -1368,15 +1381,16 @@ To revert your CLI to the previously installed version, you may run:
       raise InvalidComponentError(
           ('The following required components are included in or depend on the '
            'given components and cannot be removed [{components}]')
-          .format(components=', '.join(required_components_removed)))
+          .format(components=', '.join(sorted(required_components_removed))))
 
     if not to_remove:
       self.__Write(log.status, 'No components to remove.\n')
       return
 
     self._CheckCWD(in_place=True, has_components_to_remove=True)
-    components_to_remove = sorted(snapshot.ComponentsFromIds(to_remove),
-                                  key=lambda c: c.details.display_name)
+    components_to_remove = sorted(
+        snapshot.ComponentsFromIds(to_remove),
+        key=lambda c: (c.details.display_name, c.id))
     components_to_display = FilterMetaComponents(
         components_to_remove)
     self._PrintPendingAction(components_to_display, 'removed')
@@ -1575,8 +1589,8 @@ To revert your CLI to the previously installed version, you may run:
       the user chooses not to install them.
     """
     current_state = self._GetInstallState()
-    missing_components = (set(components) -
-                          set(current_state.InstalledComponents()))
+    missing_components = sorted(
+        set(components) - set(current_state.InstalledComponents()))
     if not missing_components:
       # Already installed, just move on.
       return True
@@ -1593,7 +1607,7 @@ To revert your CLI to the previously installed version, you may run:
       # (can happen with bundled Python), we only want to restart the
       # installation (NOT the command that the user typed; they'll have to do
       # that themselves).
-      restart_args = ['components', 'install'] + list(missing_components)
+      restart_args = ['components', 'install'] + missing_components
       if not self.Install(components, throw_if_unattended=True,
                           restart_args=restart_args):
         raise MissingRequiredComponentsError("""\
@@ -1847,17 +1861,3 @@ def RestartCommand(command=None, args=None, python=None, block=True):
           return '"' + encoding.Decode(s) + '"'
         args = 'cmd.exe /c "{0} & pause"'.format(' '.join(map(Quote, args)))
     subprocess.Popen(args, shell=True, **popen_args)
-
-
-def _DefaultUpdaterFactory(sdk_root, platform):
-  return UpdateManager(sdk_root=sdk_root, url=None, platform_filter=platform)
-
-
-def _DefaultRestartCommand():
-  RestartCommand()
-
-
-context_aware.SetECPRepairHandler(
-    updater_factory=_DefaultUpdaterFactory,
-    restart_command_fn=_DefaultRestartCommand,
-)

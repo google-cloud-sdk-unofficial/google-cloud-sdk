@@ -662,3 +662,13 @@ managed_ruleset:
   - parameter_name: managedRuleset
     attribute_name: managed_ruleset
     help: The name of the Cloud Armor Managed ruleset.
+
+accelerator_interconnect:
+  name: accelerator interconnect
+  collection: compute.acceleratorInterconnects
+  attributes:
+  - *compute_project
+  - *zone
+  - parameter_name: acceleratorInterconnect
+    attribute_name: accelerator_interconnect
+    help: The name of the Google Compute Engine accelerator interconnect.

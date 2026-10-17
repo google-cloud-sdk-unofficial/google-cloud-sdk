@@ -61,6 +61,18 @@ pull_request:
     help: Secure Source Manager pull request.
   disable_auto_completers: false
 
+issue:
+  name: issue
+  collection: securesourcemanager.projects.locations.repositories.issues
+  attributes:
+  - *location
+  - *repository
+  - &issue
+    parameter_name: issuesId
+    attribute_name: issue
+    help: Secure Source Manager issue.
+  disable_auto_completers: false
+
 pull_request_comment:
   name: pull_request_comment
   collection: securesourcemanager.projects.locations.repositories.pullRequests.pullRequestComments

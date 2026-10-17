@@ -17,6 +17,7 @@
 
 from googlecloudsdk.api_lib.storage import feature_config_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.core import properties
 
@@ -52,9 +53,19 @@ class Update(base.Command):
     flags.add_feature_config_description_flag(parser)
     flags.add_feature_config_filter_flags(parser)
     flags.add_feature_config_auto_annotate_models_flag(parser)
+    flags.add_feature_config_auto_annotate_processing_location_flag(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
+    auto_annotate_processing_location = None
+    if args.IsSpecified('auto_annotate_processing_location'):
+      if not args.auto_annotate_processing_location.strip():
+        raise exceptions.InvalidArgumentException(
+            '--auto-annotate-processing-location',
+            'Processing location cannot be empty.',
+        )
+      auto_annotate_processing_location = args.auto_annotate_processing_location
+
     client = feature_config_api.FeatureConfigApi()
     project = properties.VALUES.core.project.Get(required=True)
     name = (
@@ -92,6 +103,7 @@ class Update(base.Command):
         name=name,
         description=description,
         auto_annotate_models=auto_annotate_models,
+        auto_annotate_processing_location=auto_annotate_processing_location,
         include_locations=include_locations,
         exclude_locations=exclude_locations,
         include_bucket_id_regexes=include_bucket_id_regexes,

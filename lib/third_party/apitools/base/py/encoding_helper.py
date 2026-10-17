@@ -691,7 +691,7 @@ def _EncodeCustomFieldNames(message, encoded_value):
     if field_remappings:
         decoded_value = json.loads(encoded_value)
         for python_name, json_name in field_remappings:
-            if python_name in encoded_value:
+            if python_name in decoded_value:
                 decoded_value[json_name] = decoded_value.pop(python_name)
         encoded_value = json.dumps(decoded_value)
     return encoded_value

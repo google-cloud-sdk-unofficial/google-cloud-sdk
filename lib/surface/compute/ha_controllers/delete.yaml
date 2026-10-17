@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Permanently delete a specified HA Controller.
     description: Delete an High Availability (HA) Controller to permanently remove the high availability and failover capabilities from the associated virtual machine (VM) instance.

@@ -1675,6 +1675,8 @@ class ScaleValue:
 class ServiceUtilizationValue:
   """Type for service scaling utilization target values."""
 
+  _MAX_UTILIZATION = 0.95
+
   def __init__(self, value):
     self.restore_default = value == 'default'
     if value == 'disabled':
@@ -1693,10 +1695,21 @@ class ServiceUtilizationValue:
         raise serverless_exceptions.ArgumentError(
             'Utilization value %s is less than 0.1.' % value
         )
-      if self.utilization > 0.95:
+      if self.utilization > self._MAX_UTILIZATION:
         raise serverless_exceptions.ArgumentError(
-            'Utilization value %s is greater than 0.95.' % value
+            'Utilization value %s is greater than %.2f.'
+            % (value, self._MAX_UTILIZATION)
         )
+
+
+class ServiceCpuUtilizationValue(ServiceUtilizationValue):
+  """Type for service CPU scaling utilization target values.
+
+  The API caps the CPU utilization target at 0.90, which is lower than the cap
+  for the other service scaling utilization targets.
+  """
+
+  _MAX_UTILIZATION = 0.90
 
 
 class WorkerPoolUtilizationValue:
@@ -1884,13 +1897,9 @@ def AddMaxInstancesFlag(parser, resource_kind='service'):
   )
 
 
-def AddScalingFlag(
-    parser, resource_kind='service', release_track=base.ReleaseTrack.GA
-):
-  """Add scaling flag."""
-  allow_session = (
-      release_track == base.ReleaseTrack.ALPHA and resource_kind == 'service'
-  )
+def AddScalingFlag(parser, release_track=base.ReleaseTrack.GA):
+  """Add scaling flag for services."""
+  allow_session = release_track == base.ReleaseTrack.ALPHA
   if allow_session:
     help_text = (
         'The scaling mode to use for this service. Flag value could be'
@@ -1910,8 +1919,26 @@ def AddScalingFlag(
   parser.add_argument(
       '--scaling',
       type=scaling_type,
-      # --instances should be used instead for worker pools.
-      hidden=resource_kind == 'worker',
+      help=help_text,
+  )
+
+
+def AddWorkerPoolScalingFlag(
+    parser, release_track=base.ReleaseTrack.GA
+) -> None:
+  """Add scaling flag for worker pools."""
+  help_text = (
+      'The scaling mode to use for this WorkerPool. Flag value could be'
+      ' either "auto" for automatic scaling, or a positive integer to'
+      ' configure manual scaling with the given integer as a fixed instance'
+      ' count. If "auto" is specified without any other scaling factor (CPU'
+      ' utilization or a Pub/Sub subscription), it will default to CPU'
+      ' utilization scaling with the system default target.'
+  )
+  parser.add_argument(
+      '--scaling',
+      type=ScalingValue,
+      hidden=release_track != base.ReleaseTrack.ALPHA,
       help=help_text,
   )
 
@@ -2269,12 +2296,12 @@ def AddPortFlag(parser, help_text=_DEFAULT_PORT_HELP):
   )
 
 
-def Http2Flag():
+def Http2Flag(resource_kind: str = 'service') -> base.Argument:
   """Create http/2 flag to set the port name."""
   return base.Argument(
       '--use-http2',
       action=arg_parsers.StoreTrueFalseAction,
-      help='Whether to use HTTP/2 for connections to the service.',
+      help=f'Whether to use HTTP/2 for connections to the {resource_kind}.',
   )
 
 
@@ -2597,7 +2624,7 @@ def AddCpuUtilizationFlag(parser, *, hidden=False) -> None:
   """Add flag to modify cpu utilization scaling target for services."""
   help_text = (
       'This represents the CPU utilization target threshold for scaling up'
-      ' new instances. Set any value between 0.1 and 0.95 inclusive. To'
+      ' new instances. Set any value between 0.1 and 0.90 inclusive. To'
       ' unset this field, pass the special value "default". To disable this'
       ' scaling factor, pass the value "disabled". Please note that values'
       ' are rounded at the second decimal place. CPU and concurrency scaling'
@@ -2606,7 +2633,7 @@ def AddCpuUtilizationFlag(parser, *, hidden=False) -> None:
   parser.add_argument(
       '--scaling-cpu-target',
       hidden=hidden,
-      type=ServiceUtilizationValue,
+      type=ServiceCpuUtilizationValue,
       help=help_text,
   )
 
@@ -2616,10 +2643,8 @@ def AddWorkerPoolCpuUtilizationFlag(parser, *, hidden=False) -> None:
   help_text = (
       'This represents the CPU utilization target threshold for scaling up'
       ' new instances. Set a value between 0.1 and 0.90 inclusive, or "default"'
-      ' to use the system default target. To remove this scaling factor, use'
-      ' --clear-scaling-cpu-target. Values are rounded to the second decimal'
-      ' place. When no scaling factors are configured and --scaling=auto is'
-      ' used, the default CPU utilization target is applied automatically.'
+      ' to use the system default target. Values are rounded to the second'
+      ' decimal place.'
   )
   parser.add_argument(
       '--scaling-cpu-target',
@@ -4183,6 +4208,9 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
       changes.append(
           config_changes.ContainerDependenciesChange(dependency_changes)
       )
+    base_image_changes = _GetBaseImageChanges(args)
+    if base_image_changes:
+      changes.extend(base_image_changes)
 
   changes.extend(_GetIapChanges(args))
   return changes

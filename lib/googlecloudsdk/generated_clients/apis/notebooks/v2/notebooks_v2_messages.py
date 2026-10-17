@@ -32,7 +32,9 @@ class AcceleratorConfig(_messages.Message):
 
     Values:
       ACCELERATOR_TYPE_UNSPECIFIED: Accelerator type is not specified.
-      NVIDIA_TESLA_P100: Accelerator type is Nvidia Tesla P100.
+      NVIDIA_TESLA_P100: Deprecated: Use `NVIDIA_TESLA_T4` (N1) or `NVIDIA_L4`
+        (G2) instead. The NVIDIA Tesla P100 GPU is being decommissioned fleet-
+        wide by Compute Engine and is no longer available for new instances.
       NVIDIA_TESLA_V100: Accelerator type is Nvidia Tesla V100.
       NVIDIA_TESLA_P4: Accelerator type is Nvidia Tesla P4.
       NVIDIA_TESLA_T4: Accelerator type is Nvidia Tesla T4.
@@ -45,8 +47,10 @@ class AcceleratorConfig(_messages.Message):
       NVIDIA_H200_141GB: Accelerator type is Nvidia Tesla H200 - 141GB.
       NVIDIA_TESLA_T4_VWS: Accelerator type is NVIDIA Tesla T4 Virtual
         Workstations.
-      NVIDIA_TESLA_P100_VWS: Accelerator type is NVIDIA Tesla P100 Virtual
-        Workstations.
+      NVIDIA_TESLA_P100_VWS: Deprecated: Use `NVIDIA_TESLA_T4_VWS` instead.
+        The NVIDIA Tesla P100 GPU (Virtual Workstations) is being
+        decommissioned fleet-wide by Compute Engine and is no longer available
+        for new instances.
       NVIDIA_TESLA_P4_VWS: Accelerator type is NVIDIA Tesla P4 Virtual
         Workstations.
       NVIDIA_B200: Accelerator type is NVIDIA B200.

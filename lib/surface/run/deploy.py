@@ -23,7 +23,7 @@ import os
 import os.path
 import re
 import tempfile
-from typing import Any, Mapping, Tuple
+from typing import Any, Dict, Tuple
 
 from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import constants
@@ -157,7 +157,9 @@ class Deploy(base.Command):
     flags.AddCloudSQLFlags(parser)
     flags.AddCmekKeyFlag(parser)
     flags.AddCmekKeyRevocationActionTypeFlag(parser)
+    flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddCpuThrottlingFlag(parser)
+    flags.AddCpuUtilizationFlag(parser)
     flags.AddCustomAudiencesFlag(parser)
     flags.AddDefaultUrlFlag(parser)
     flags.AddDeployHealthCheckFlag(parser)
@@ -299,12 +301,17 @@ class Deploy(base.Command):
     return containers
 
   def _ValidateAndGetSourceContainer(
-      self, containers: Mapping[str, Any]
-  ) -> Tuple[Mapping[str, Any], Any, Any]:
+      self,
+      containers: Dict[str, Any],
+      enable_unified_build: bool = False,
+  ) -> Tuple[Dict[str, Any], Any, Any]:
     """Validates the source container flags and returns the source containers.
 
     Args:
       containers: A map of container name to container arguments.
+      enable_unified_build: Whether to use unified build. When unified build is
+        enabled, multiple source containers are allowed and no legacy build is
+        allowed.
 
     Returns:
       A tuple of (source_containers, legacy_build_container,
@@ -324,15 +331,12 @@ class Deploy(base.Command):
             or flags.FlagIsExplicitlySet(container, 'source')
         )
     }
-    validators.ValidateNumberOfSourceContainers(source_containers)
+    validators.ValidateImplicitSourceContainers(source_containers)
     validators.ValidateUnifiedBuildProperty(
         source_containers, containers, self.ReleaseTrack()
     )
     validators.ValidateNoAutomaticUpdatesForContainers(
         source_containers, containers, self.ReleaseTrack()
-    )
-    validators.ValidateUploadThroughRunApi(
-        source_containers, self.ReleaseTrack()
     )
     validators.ValidateNoBuildFromSource(source_containers, self.ReleaseTrack())
 
@@ -343,6 +347,9 @@ class Deploy(base.Command):
           source_container_context.SourceContainerContext(
               name=name,
               source=container_args.source,
+              upload_through_run_api=sources.ShouldUploadThroughRunApi(
+                  container_args, self.ReleaseTrack()
+              ),
           )
       )
 
@@ -350,7 +357,16 @@ class Deploy(base.Command):
         self.ReleaseTrack(), source_containers
     )
 
-    legacy_build_container = self._GetLegacyBuildContainer(source_containers)
+    legacy_build_container = self._GetLegacyBuildContainer(
+        source_containers, enable_unified_build
+    )
+
+    # If legacy build is used, only one source container is allowed.
+    if legacy_build_container and len(source_containers) > 1:
+      raise c_exceptions.InvalidArgumentException(
+          '--source',
+          'At most one source container is allowed when building from source.',
+      )
 
     return (
         source_containers,
@@ -358,9 +374,14 @@ class Deploy(base.Command):
         local_build_container,
     )
 
-  def _GetLegacyBuildContainer(self, source_containers: Any) -> Any:
+  def _GetLegacyBuildContainer(
+      self, source_containers: Dict[str, Any], enable_unified_build: bool
+  ):
     """Returns the legacy source container."""
-    # TODO(b/544729273): when unified enabled, this should return empty list.
+
+    if enable_unified_build:
+      return None
+
     legacy_build_source_container = []
     for _, container in source_containers.items():
       if not getattr(container, 'no_build', False) and not getattr(
@@ -378,6 +399,21 @@ class Deploy(base.Command):
         if legacy_build_source_container
         else None
     )
+
+  def _SetIngressContainerName(
+      self, service: Any, source_containers: Dict[str, Any]
+  ):
+    """Sets the ingress container name."""
+    if not service:
+      return
+
+    ingress_container_name = service.template.container.name
+    # When a container has empty name (--container not used), it is considered
+    # as the ingress container.
+    if '' in source_containers and ingress_container_name:
+      container_args = source_containers.pop('')
+      container_args.local_context.name = ingress_container_name
+      source_containers[ingress_container_name] = container_args
 
   def _GetBaseImageForSourceContainer(self, container_args, service):
     """Returns the base image for the container.
@@ -813,18 +849,9 @@ class Deploy(base.Command):
         suppress_output=args.async_ or dry_run,
     )
 
-  def _EnableBuildApiEnablementOptimization(self, require_build):
-    return require_build and (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        or self.ReleaseTrack() == base.ReleaseTrack.BETA
-    )
-
   def _GetRequiredApis(self, require_build):
     apis = []
-    if (
-        self.ReleaseTrack() == base.ReleaseTrack.GA
-        or self._EnableBuildApiEnablementOptimization(require_build)
-    ):
+    if self.ReleaseTrack() == base.ReleaseTrack.GA or require_build:
       apis.append(api_enabler.get_run_api())
     if require_build:
       apis.append('artifactregistry.googleapis.com')
@@ -839,6 +866,19 @@ class Deploy(base.Command):
       ):
         return True
     return False
+
+  def _GetSourceContainersContextList(
+      self, source_containers, legacy_build_container
+  ) -> None | list[source_container_context.SourceContainerContext]:
+    """Returns the source containers context list."""
+    if not source_containers:
+      return None
+    if legacy_build_container:
+      return None
+    return [
+        container_args.local_context
+        for _, container_args in source_containers.items()
+    ]
 
   def _DisplaySuccessMessage(
       self, service, args, allow_unauth, operations, service_ref, records=None
@@ -930,6 +970,9 @@ class Deploy(base.Command):
 
     return iap
 
+  def _VerifyDomain(self, domain_mapping_ref):
+    domain_mapping_util.VerifyDomain(domain_mapping_ref)
+
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     flags.ValidatePublicFlags(args)
@@ -939,7 +982,7 @@ class Deploy(base.Command):
     )
 
     containers = self._ValidateAndGetContainers(args)
-    source_container, legacy_build_container, local_build_container = (
+    source_containers, legacy_build_container, local_build_container = (
         self._ValidateAndGetSourceContainer(containers)
     )
 
@@ -962,27 +1005,27 @@ class Deploy(base.Command):
             ' enabled.'
         )
       domain_mapping_ref = args.CONCEPTS.domain.Parse()
-      domain_mapping_util.VerifyDomain(domain_mapping_ref)
+      self._VerifyDomain(domain_mapping_ref)
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    require_build = self._RequireBuild(source_container)
+    require_build = self._RequireBuild(source_containers)
     required_apis = self._GetRequiredApis(require_build)
-    enable_build_api_enablement_optimization = (
-        self._EnableBuildApiEnablementOptimization(require_build)
-    )
     custom_check_response = None
     skip_activation_prompt = False
-    if (
-        enable_build_api_enablement_optimization
-        and platform == platforms.PLATFORM_MANAGED
-    ):
+    # For source-based deployments, optimize deployment latency by avoiding
+    # upfront API enablement checks. Instead, attach a response check callback
+    # that dynamically intercepts 403 service-disabled errors to batch-prompt
+    # and enable required APIs (e.g. Cloud Run, Cloud Build, Artifact Registry)
+    # on demand and retry the request. For non-build deployments, check and
+    # enable required APIs upfront.
+    if require_build and platform == platforms.PLATFORM_MANAGED:
       custom_check_response = api_enabler.check_response_and_enable_apis(
           project_id, required_apis
       )
     elif (
         required_apis
         and platform == platforms.PLATFORM_MANAGED
-        and not enable_build_api_enablement_optimization
+        and not require_build
     ):
       skip_activation_prompt = api_enabler.check_and_enable_apis(
           project_id, required_apis
@@ -993,25 +1036,24 @@ class Deploy(base.Command):
     )
 
     operation_message = 'Deploying container to'
-    if local_build_container and len(source_container) == 1:
+    if local_build_container and len(source_containers) == 1:
       operation_message = 'Deploying locally-built source to'
-    elif len(source_container) == len(containers):
+    elif len(source_containers) == len(containers):
       operation_message = 'Deploying sources to'
 
     kms_key = getattr(args, 'key', None)
 
     legacy_build_changes = []
     legacy_build_context = (
-        source_container_context.LegacyBuildSourceContainerContext()
+        source_container_context.LegacyBuildSourceContainerContext(
+            upload_through_run_api=False
+            if not legacy_build_container
+            else legacy_build_container.local_context.upload_through_run_api,
+        )
     )
 
-    upload_through_run_api = False
     local_build_changes = []
 
-    if source_container:
-      upload_through_run_api = sources.ShouldUploadThroughRunApi(
-          source_container, self.ReleaseTrack()
-      )
     service = None
     with serverless_operations.Connect(
         conn_context,
@@ -1023,6 +1065,8 @@ class Deploy(base.Command):
         else contextlib.nullcontext()
     ) as local_build_dir:
       service = operations.GetService(service_ref)
+      # set the ingress container for easier READ-and-UPDATE later
+      self._SetIngressContainerName(service, source_containers)
       if local_build_container:
         maker_path = local_build.GetUniversalMakerPath()
         with progress_tracker.StagedProgressTracker(
@@ -1058,24 +1102,18 @@ class Deploy(base.Command):
               inferred_runtime, local_build_container.base_image
           )
 
-      # source container processing, for now there should be only one source
-      # container.
+      # source containers processing.
       # Legacy build is mutually exclusive with new ways of source deployment.
-      if source_container and not legacy_build_container:
-        _, container_args = next(iter(source_container.items()))
-        # re-use the existing main container name if it is not specified.
-        if not container_args.local_context.name and service:
-          container_args.local_context.name = (
-              service.template.container.name or ''
+      if source_containers and not legacy_build_container:
+        for _, container_args in source_containers.items():
+          container_args.local_context.source_bucket = (
+              self._GetSourceBucketFromZipDeploySourceLocation(service)
           )
-        container_args.local_context.source_bucket = (
-            self._GetSourceBucketFromZipDeploySourceLocation(service)
-        )
-        if not container_args.local_context.base_image:
-          container_args.local_context.base_image = container_args.base_image
-        container_args.image = 'scratch'
+          if not container_args.local_context.base_image:
+            container_args.local_context.base_image = container_args.base_image
+          container_args.image = 'scratch'
 
-      # legacy submit build contianer processing
+      # legacy submit build container processing
       elif legacy_build_container:
         (
             operation_message,
@@ -1094,7 +1132,7 @@ class Deploy(base.Command):
             project_id=properties.VALUES.core.project.Get(required=True),
             region=flags.GetRegion(args),
             build_service_account=legacy_build_context.build_service_account,
-            skip_build_sa_permission_check=enable_build_api_enablement_optimization,
+            skip_build_sa_permission_check=require_build,
             enable_by_default=True,
         )
 
@@ -1163,7 +1201,7 @@ class Deploy(base.Command):
             args,
             service,
             changes_,
-            source_container,
+            source_containers,
             legacy_build_context.repo_to_create,
             allow_unauth,
             has_latest,
@@ -1200,10 +1238,10 @@ class Deploy(base.Command):
               source_bucket=legacy_build_context.source_bucket,
               kms_key=kms_key,
               iap_enabled=iap,
-              upload_through_run_api=upload_through_run_api,
-              source_container_context=None
-              if legacy_build_container or not source_container
-              else next(iter(source_container.values())).local_context,
+              upload_through_run_api=legacy_build_context.upload_through_run_api,
+              source_containers_context=self._GetSourceContainersContextList(
+                  source_containers, legacy_build_container
+              ),
               **kwargs,
           )
           records = []
@@ -1252,11 +1290,13 @@ class BetaDeploy(Deploy):
 
   detailed_help = copy.deepcopy(Deploy.detailed_help)
 
+  def _VerifyDomain(self, domain_mapping_ref):
+    if not domain_mapping_util.IsCustomUrl(domain_mapping_ref.Name()):
+      domain_mapping_util.VerifyDomain(domain_mapping_ref)
+
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
-    flags.AddCpuUtilizationFlag(parser)
-    flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddSshFlag(parser)
 
     # Flags specific to managed CR
@@ -1304,8 +1344,6 @@ class AlphaDeploy(BetaDeploy):
         parser, container_args, cls.ReleaseTrack()
     )
     flags.AddOverflowScalingFlag(parser)
-    flags.AddCpuUtilizationFlag(parser)
-    flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddPresetFlags(parser)
     flags.AddSshFlag(parser)
     flags.AddGracePeriodFlag(parser)

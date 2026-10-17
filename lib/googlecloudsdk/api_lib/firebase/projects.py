@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.util import waiter
 
 _API_NAME = 'firebase'
 _API_VERSION = 'v1alpha'
+_DEFAULT_APP_NAMESPACE_PREFIX = 'com.example'
 _DEFAULT_LOCATION = 'us-west1'
 _MAX_WAIT_MS = 300000
 _WAIT_POLL_INTERVAL_MS = 2000
@@ -84,10 +85,10 @@ def EnsureFirebaseAdded(
     client: base_api.BaseApiClient | None = None,
     messages: types.ModuleType | None = None,
 ) -> Any:
-  """Ensures Firebase resources and services are enabled in the Google Cloud project.
+  """Ensures Firebase resources and services are enabled in the project.
 
   Checks whether the project is already an active Firebase project. If not,
-  calls AddFirebase and waits for the operation to complete.
+  calls ProvisionFirebaseApp and waits for the operation to complete.
 
   Args:
     project_id: Google Cloud project ID.
@@ -97,7 +98,7 @@ def EnsureFirebaseAdded(
       module for v1beta1 is used.
 
   Returns:
-    FirebaseProject or None if already present.
+    FirebaseProject: The Firebase project resource.
   """
   client = client or firebase_util.GetClientInstance(api_version='v1beta1')
   messages = messages or firebase_util.GetMessagesModule(api_version='v1beta1')
@@ -110,25 +111,35 @@ def EnsureFirebaseAdded(
   except apitools_exceptions.HttpNotFoundError:
     pass
 
-  # If not found, add Firebase to the project.
-  add_req = messages.FirebaseProjectsAddFirebaseRequest(
-      project=parent,
-      addFirebaseRequest=messages.AddFirebaseRequest(),
+  # If not found, provision Firebase in the project using ProvisionFirebaseApp
+  # (v1alpha) instead of AddFirebase (v1beta1). AddFirebase unconditionally
+  # triggers firebaseApiEnabler.enableFirebaseApi(), which requires
+  # serviceusage.services.enable and fails with HTTP 403 on Google-Hosted
+  # Projects (GHPs). ProvisionFirebaseApp uses ProvisionFirebaseAppWorkflow,
+  # which supports GHPs without requiring serviceusage.services.enable.
+  app_namespace = (
+      f'{_DEFAULT_APP_NAMESPACE_PREFIX}.{project_id.replace("-", "_")}'
   )
   try:
-    operation = client.projects.AddFirebase(add_req)
+    operation = ProvisionFirebaseApp(
+        app_namespace=app_namespace,
+        display_name=project_id,
+        parent=parent,
+    )
   except apitools_exceptions.HttpConflictError:
     # Another caller or concurrent request already initiated or completed
     # adding Firebase.
     return client.projects.Get(messages.FirebaseProjectsGetRequest(name=parent))
 
+  ops_client = GetClientInstance()
   poller = waiter.CloudOperationPollerNoResources(
-      client.operations, get_name_func=lambda x: x
+      ops_client.operations, get_name_func=lambda x: x
   )
-  return waiter.WaitFor(
+  waiter.WaitFor(
       poller,
       operation.name,
       f'Adding Firebase to project [{project_id}]...',
       max_wait_ms=_MAX_WAIT_MS,
       sleep_ms=_WAIT_POLL_INTERVAL_MS,
   )
+  return client.projects.Get(messages.FirebaseProjectsGetRequest(name=parent))

@@ -29,8 +29,9 @@ from googlecloudsdk.core import ecp_proxy_manager
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import transport_base
+from googlecloudsdk.core import transport
 from googlecloudsdk.core.ecp_proxy_manager import ECPProxyError
+from googlecloudsdk.core.updater import installers
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import http_proxy_types
 from googlecloudsdk.core.util import platforms
@@ -74,8 +75,7 @@ def GetSession(
   Args:
     timeout: double, The timeout in seconds. This is the socket level timeout.
       If timeout is None, timeout is infinite. If default argument 'unset' is
-      given, a sensible default is selected using
-      transport_base.GetDefaultTimeout().
+      given, a sensible default is selected using transport.GetDefaultTimeout().
     ca_certs: str, absolute filename of a ca_certs file that overrides the
       default. The gcloud config property for ca_certs, in turn, overrides this
       argument.
@@ -475,7 +475,7 @@ def _CreateRawSession(
   if timeout != 'unset':
     effective_timeout = timeout
   else:
-    effective_timeout = transport_base.GetDefaultTimeout()
+    effective_timeout = transport.GetDefaultTimeout()
 
   no_validate = properties.VALUES.auth.disable_ssl_validation.GetBool() or False
   ca_certs_property = properties.VALUES.core.custom_ca_certs_file.Get()
@@ -509,7 +509,7 @@ def _GetURIFromRequestArgs(url, params):
   return urllib.parse.urlunsplit(url_parts)
 
 
-class Request(transport_base.Request):
+class Request(transport.Request):
   """Encapsulates parameters for making a general HTTP request.
 
   This implementation does additional manipulation to ensure that the request
@@ -542,7 +542,7 @@ class Request(transport_base.Request):
     return args, kwargs
 
 
-class Response(transport_base.Response):
+class Response(transport.Response):
   """Encapsulates responses from making a general HTTP request."""
 
   @classmethod
@@ -550,7 +550,7 @@ class Response(transport_base.Response):
     return cls(response.status_code, response.headers, response.content)
 
 
-class RequestWrapper(transport_base.RequestWrapper):
+class RequestWrapper(transport.RequestWrapper):
   """Class for wrapping request.Session requests."""
 
   request_class = Request
@@ -811,3 +811,10 @@ def _AdjustProxiesKwargForBpo42627(
     return None
 
   return {'https': https_proxy.replace('https://', 'http://', 1)}
+
+
+def _CreateInstallerSession() -> requests.Session:
+  return GetSession()
+
+
+installers.SetSessionFactory(_CreateInstallerSession)

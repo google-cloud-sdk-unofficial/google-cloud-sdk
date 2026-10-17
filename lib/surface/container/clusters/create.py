@@ -582,6 +582,8 @@ def ParseCreateOptionsBase(
       disable_l4_lb_firewall_reconciliation=get_default(
           'disable_l4_lb_firewall_reconciliation'
       ),
+      enable_granular_nat=get_default('enable_granular_nat'),
+      network_suite=get_default('network_suite'),
       tier=get_default('tier'),
       enable_ip_access=get_default('enable_ip_access'),
       enable_authorized_networks_on_private_endpoint=get_default(
@@ -876,6 +878,8 @@ flags_to_add = {
         'disableL4LbFirewallReconciliation': (
             flags.AddDisableL4LbFirewallReconciliationFlag
         ),
+        'granularNat': flags.AddGranularNatFlag,
+        'networkSuite': flags.AddNetworkSuiteFlag,
         'tier': flags.AddClusterTierFlag,
         'enableIpAccess': flags.AddEnableIPAccessFlag,
         'enableAuthorizedNetworksOnPrivateEndpoint': (
@@ -1123,6 +1127,8 @@ flags_to_add = {
         'disableL4LbFirewallReconciliation': (
             flags.AddDisableL4LbFirewallReconciliationFlag
         ),
+        'granularNat': flags.AddGranularNatFlag,
+        'networkSuite': flags.AddNetworkSuiteFlag,
         'tier': flags.AddClusterTierFlag,
         'enableIpAccess': flags.AddEnableIPAccessFlag,
         'enableAuthorizedNetworksOnPrivateEndpoint': (
@@ -1383,6 +1389,8 @@ flags_to_add = {
         'disableL4LbFirewallReconciliation': (
             flags.AddDisableL4LbFirewallReconciliationFlag
         ),
+        'granularNat': flags.AddGranularNatFlag,
+        'networkSuite': flags.AddNetworkSuiteFlag,
         'tier': flags.AddClusterTierFlag,
         'enableIpAccess': flags.AddEnableIPAccessFlag,
         'enableAuthorizedNetworksOnPrivateEndpoint': (
@@ -1821,6 +1829,8 @@ class CreateBeta(Create):
     ops.disable_l4_lb_firewall_reconciliation = get_default(
         'disable_l4_lb_firewall_reconciliation'
     )
+    ops.enable_granular_nat = get_default('enable_granular_nat')
+    ops.network_suite = get_default('network_suite')
     ops.tier = get_default('tier')
     ops.anonymous_authentication_config = get_default(
         'anonymous_authentication_config'
@@ -2008,6 +2018,8 @@ class CreateAlpha(Create):
     ops.disable_l4_lb_firewall_reconciliation = get_default(
         'disable_l4_lb_firewall_reconciliation'
     )
+    ops.enable_granular_nat = get_default('enable_granular_nat')
+    ops.network_suite = get_default('network_suite')
     ops.tier = get_default('tier')
     ops.anonymous_authentication_config = get_default(
         'anonymous_authentication_config'

@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Get the IAM policy for a hub resource.
@@ -27,6 +29,8 @@
 
 
 - release_tracks: [GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Get the IAM policy for a hub resource.

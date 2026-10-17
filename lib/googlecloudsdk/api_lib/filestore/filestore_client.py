@@ -276,6 +276,39 @@ class FilestoreClient(object):
         batch_size_attribute='pageSize',
     )
 
+  def MakeNetworkConfig(self, network=None):
+    """Creates a NetworkConfig message list.
+
+    Args:
+      network: The network dict for the instance.
+
+    Returns:
+      A list of NetworkConfig messages.
+    """
+    if not network:
+      return []
+    network_config = self.messages.NetworkConfig()
+    network_config.network = network.get('name')
+    if 'reserved-ip-range' in network:
+      network_config.reservedIpRange = network['reserved-ip-range']
+    if 'address-mode' in network:
+      network_config.modes = [
+          self.messages.NetworkConfig.ModesValueListEntryValuesEnum.lookup_by_name(
+              network['address-mode']
+          )
+      ]
+    connect_mode = network.get('connect-mode', 'DIRECT_PEERING')
+    self._adapter.ParseConnectMode(network_config, connect_mode)
+    # 'instance.PscConfig' is a member of 'instance' structure only in
+    # Beta, V1 APIs.
+    psc_endpoint_project = network.get('psc-endpoint-project')
+    psc_requested_ip = network.get('psc-requested-ip-address')
+    if psc_endpoint_project or psc_requested_ip:
+      self._adapter.ParsePscConfig(
+          psc_endpoint_project, psc_requested_ip, network_config
+      )
+    return [network_config]
+
   def ParseFilestoreConfig(
       self,
       tier=None,
@@ -358,29 +391,7 @@ class FilestoreClient(object):
 
     self._adapter.ParseFileShareIntoInstance(instance, file_share, zone)
 
-    if network:
-      instance.networks = []
-      network_config = self.messages.NetworkConfig()
-      network_config.network = network.get('name')
-      if 'reserved-ip-range' in network:
-        network_config.reservedIpRange = network['reserved-ip-range']
-      if 'address-mode' in network:
-        network_config.modes = [
-            self.messages.NetworkConfig.ModesValueListEntryValuesEnum.lookup_by_name(
-                network['address-mode']
-            )
-        ]
-      connect_mode = network.get('connect-mode', 'DIRECT_PEERING')
-      self._adapter.ParseConnectMode(network_config, connect_mode)
-      # 'instance.PscConfig' is a member of 'instance' structure only in
-      # Beta, V1 APIs.
-      psc_endpoint_project = network.get('psc-endpoint-project')
-      psc_requested_ip = network.get('psc-requested-ip-address')
-      if psc_endpoint_project or psc_requested_ip:
-        self._adapter.ParsePscConfig(
-            psc_endpoint_project, psc_requested_ip, network_config
-        )
-      instance.networks.append(network_config)
+    instance.networks = self.MakeNetworkConfig(network)
 
     if deletion_protection_enabled is not None:
       instance.deletionProtectionEnabled = deletion_protection_enabled

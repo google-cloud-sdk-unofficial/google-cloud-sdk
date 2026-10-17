@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
@@ -69,12 +70,11 @@ class Start(base.Command):
     # Format arguments for StartTcpTunnel
     args.workstation_port = args.port
 
-    client = workstations.Workstations(self.ReleaseTrack())
-
     # Validate args in the main thread to reduce the chances of raising an
     # exception within the tunnel thread. Otherwise, the exception won't bubble
     # up correctly and can hang the process or generate unexpected output.
-    args.CONCEPTS.workstation.Parse()
+    location = args.CONCEPTS.workstation.Parse().locationsId
+    client = workstations.Workstations(self.ReleaseTrack(), location=location)
 
     client.threading_event.clear()
     client.tcp_tunnel_open = False

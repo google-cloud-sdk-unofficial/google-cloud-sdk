@@ -43,9 +43,9 @@ import websocket._exceptions as websocket_exceptions
 class Workstations:
   """The Workstations set of Cloud Workstations API functions."""
 
-  def __init__(self, release_track=base.ReleaseTrack.BETA):
+  def __init__(self, release_track=base.ReleaseTrack.BETA, location=None):
     self.api_version = VERSION_MAP.get(release_track)
-    self.client = GetClientInstance(release_track)
+    self.client = GetClientInstance(release_track, location=location)
     self.messages = GetMessagesModule(release_track)
     self._service = (
         self.client.projects_locations_workstationClusters_workstationConfigs_workstations

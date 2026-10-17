@@ -319,6 +319,11 @@ NETWORK_TIER_NOT_SUPPORTED = """\
 Provided network tier '{network_tier}' is not supported.
 """
 
+NETWORK_SUITE_NOT_SUPPORTED = """\
+Provided network suite '{network_suite}' is not supported.
+"""
+
+
 TPU_TOPOLOGY_INCORRECT_FORMAT_ERROR_MSG = """\
 Invalid format '{topology}' for argument --tpu-topology. Must provide 2-3 integers separated by 'x' (e.g. 2x4 or 2x2x4)
 """
@@ -1027,6 +1032,8 @@ class CreateClusterOptions(object):
       wiz_sensor_api_key_secret_uri=None,
       wiz_sensor_proxy_secret_uri=None,
       target_node_version=None,
+      enable_granular_nat=None,
+      network_suite=None,
   ):
     self.node_machine_type = node_machine_type
     self.node_source_image = node_source_image
@@ -1363,6 +1370,8 @@ class CreateClusterOptions(object):
     self.wiz_sensor_api_key_secret_uri = wiz_sensor_api_key_secret_uri
     self.wiz_sensor_proxy_secret_uri = wiz_sensor_proxy_secret_uri
     self.target_node_version = target_node_version
+    self.enable_granular_nat = enable_granular_nat
+    self.network_suite = network_suite
 
 
 class UpdateClusterOptions(object):
@@ -1579,6 +1588,8 @@ class UpdateClusterOptions(object):
       wiz_sensor_proxy_secret_uri=None,
       target_node_version=None,
       clear_target_node_version=None,
+      enable_granular_nat=None,
+      network_suite=None,
   ):
     self.version = version
     self.update_master = bool(update_master)
@@ -1840,6 +1851,8 @@ class UpdateClusterOptions(object):
     self.wiz_sensor_proxy_secret_uri = wiz_sensor_proxy_secret_uri
     self.target_node_version = target_node_version
     self.clear_target_node_version = clear_target_node_version
+    self.enable_granular_nat = enable_granular_nat
+    self.network_suite = network_suite
 
 
 class SetMasterAuthOptions(object):
@@ -3919,6 +3932,21 @@ class APIAdapter(object):
         cluster.networkConfig = self.messages.NetworkConfig()
       cluster.networkConfig.defaultEnablePrivateNodes = (
           options.enable_private_nodes
+      )
+
+    if options.enable_granular_nat is not None:
+      if cluster.networkConfig is None:
+        cluster.networkConfig = self.messages.NetworkConfig()
+      cluster.networkConfig.granularNatConfig = self.messages.GranularNATConfig(
+          enabled=options.enable_granular_nat
+      )
+
+    if options.network_suite is not None:
+      if cluster.networkConfig is None:
+        cluster.networkConfig = self.messages.NetworkConfig()
+      cluster.networkConfig.networkSuite = _GetNetworkSuite(
+          options.network_suite,
+          self.messages.NetworkConfig.NetworkSuiteValueValuesEnum,
       )
 
     if options.anonymous_authentication_config is not None:
@@ -6291,6 +6319,19 @@ class APIAdapter(object):
       update = self.messages.ClusterUpdate(
           desiredNetworkTierConfig=_GetNetworkTierConfig(options, self.messages)
       )
+    if options.enable_granular_nat is not None:
+      update = self.messages.ClusterUpdate(
+          desiredGranularNatConfig=self.messages.GranularNATConfig(
+              enabled=options.enable_granular_nat
+          )
+      )
+    if options.network_suite is not None:
+      update = self.messages.ClusterUpdate(
+          desiredNetworkSuite=_GetNetworkSuite(
+              options.network_suite,
+              self.messages.ClusterUpdate.DesiredNetworkSuiteValueValuesEnum,
+          )
+      )
 
     if options.control_plane_egress_mode is not None:
       modes = {
@@ -7421,6 +7462,7 @@ class APIAdapter(object):
         description=args.description,
         maxNodeCount=args.max_node_count,
         cluster=args.cluster,
+        rdmaLocations=args.rdma_locations or [],
         labels=labels_util.ParseCreateArgs(
             args, self.messages.AcceleratorNetworkProfile.LabelsValue
         ),
@@ -10654,6 +10696,19 @@ class V1Beta1Adapter(V1Adapter):
       update = self.messages.ClusterUpdate(
           desiredNetworkTierConfig=_GetNetworkTierConfig(options, self.messages)
       )
+    if options.enable_granular_nat is not None:
+      update = self.messages.ClusterUpdate(
+          desiredGranularNatConfig=self.messages.GranularNATConfig(
+              enabled=options.enable_granular_nat
+          )
+      )
+    if options.network_suite is not None:
+      update = self.messages.ClusterUpdate(
+          desiredNetworkSuite=_GetNetworkSuite(
+              options.network_suite,
+              self.messages.ClusterUpdate.DesiredNetworkSuiteValueValuesEnum,
+          )
+      )
     if options.linked_runners_mode is not None:
       update = self.messages.ClusterUpdate(
           desiredLinkedRunnersConfig=_GetLinkedRunnersConfig(
@@ -13137,6 +13192,22 @@ def _GetNetworkTierConfig(options, messages):
       )
     network_tier_config.networkTier = network_tiers[options.network_tier]
   return network_tier_config
+
+
+def _GetNetworkSuite(network_suite, enum_class):
+  """Gets the NetworkSuite enum from options."""
+  if network_suite is None:
+    return None
+  network_suites = {
+      'essentials': enum_class.NETWORK_SUITE_ESSENTIALS,
+      'standard': enum_class.NETWORK_SUITE_STANDARD,
+      'enterprise': enum_class.NETWORK_SUITE_ENTERPRISE,
+  }
+  if network_suite.lower() not in network_suites:
+    raise util.Error(
+        NETWORK_SUITE_NOT_SUPPORTED.format(network_suite=network_suite)
+    )
+  return network_suites[network_suite.lower()]
 
 
 def _GetControlPlaneEgress(options, messages):

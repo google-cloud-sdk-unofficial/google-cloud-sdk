@@ -27,6 +27,7 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Security Command Center BigQuery export."""
 
@@ -91,6 +92,7 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     bqexport_flags.DATASET_FLAG_OPTIONAL.AddToParser(parser)
+    bqexport_flags.DELETION_NOTIFICATIONS_ENABLED_FLAG.AddToParser(parser)
     bqexport_flags.DESCRIPTION_FLAG.AddToParser(parser)
     bqexport_flags.FILTER_FLAG.AddToParser(parser)
     bqexport_flags.UPDATE_MASK_FLAG.AddToParser(parser)
@@ -134,6 +136,9 @@ class Update(base.UpdateCommand):
     if args.IsKnownAndSpecified('dataset'):
       computed_update_mask.append('dataset')
       export.dataset = args.dataset
+    if args.IsKnownAndSpecified('deletion_notifications_enabled'):
+      computed_update_mask.append('deletion_notifications_enabled')
+      export.deletionNotificationsEnabled = args.deletion_notifications_enabled
     if args.IsKnownAndSpecified('description'):
       computed_update_mask.append('description')
       export.description = args.description

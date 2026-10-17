@@ -65,7 +65,7 @@ class AutoAnnotateConfig(_messages.Message):
   Fields:
     models: Required. The list of unique models selected. Each model is
       uniquely identified by its `name` string.
-    processingLocation: Optional. Specifies the geographic location (case-
+    processingLocation: Required. Specifies the geographic location (case-
       sensitive) where data is processed. Must be a supported location.
       Currently, only multi-regional locations such as `us`, `eu`, or `asia`
       are supported. To avoid duplicate billing, it is highly recommended to
@@ -789,6 +789,16 @@ class CustomerSuppliedEncryptionEnforcementConfig(_messages.Message):
   restrictionMode = _messages.StringField(2)
 
 
+class DataScanningConfig(_messages.Message):
+  r"""Parent configuration for Data Scanning features.
+
+  Fields:
+    malwareScanConfig: Optional. Configuration for Malware Detection scanning.
+  """
+
+  malwareScanConfig = _messages.MessageField('MalwareScanConfig', 1)
+
+
 class Date(_messages.Message):
   r"""Represents a whole or partial calendar date, such as a birthday. The
   time of day and time zone are either specified elsewhere or are
@@ -1046,6 +1056,7 @@ class FeatureConfig(_messages.Message):
     autoAnnotateConfig: Optional. Placeholder FeatureConfig for auto_annotate
     createTime: Output only. The time at which the feature configuration was
       created.
+    dataScanningConfig: Optional. Placeholder FeatureConfig for data_scanning.
     description: Optional. A description of the feature configuration.
     filter: Optional. Filter over location and bucket.
     name: Identifier. The name of the `FeatureConfig` resource associated with
@@ -1064,17 +1075,20 @@ class FeatureConfig(_messages.Message):
       FEATURE_TYPE_UNSPECIFIED: Represents the default value. This value is
         used if the feature type is omitted.
       AUTO_ANNOTATE: Indicates that the feature type is auto_annotate.
+      DATA_SCANNING: Indicates that the feature type is data_scanning.
     """
     FEATURE_TYPE_UNSPECIFIED = 0
     AUTO_ANNOTATE = 1
+    DATA_SCANNING = 2
 
   autoAnnotateConfig = _messages.MessageField('AutoAnnotateConfig', 1)
   createTime = _messages.StringField(2)
-  description = _messages.StringField(3)
-  filter = _messages.MessageField('FeatureConfigFilter', 4)
-  name = _messages.StringField(5)
-  type = _messages.EnumField('TypeValueValuesEnum', 6)
-  updateTime = _messages.StringField(7)
+  dataScanningConfig = _messages.MessageField('DataScanningConfig', 3)
+  description = _messages.StringField(4)
+  filter = _messages.MessageField('FeatureConfigFilter', 5)
+  name = _messages.StringField(6)
+  type = _messages.EnumField('TypeValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
 
 
 class FeatureConfigFilter(_messages.Message):
@@ -2474,6 +2488,52 @@ class Logging(_messages.Message):
 
   logBucket = _messages.StringField(1)
   logObjectPrefix = _messages.StringField(2)
+
+
+class MalwareScanConfig(_messages.Message):
+  r"""Configuration for Malware Scanning.
+
+  Enums:
+    ActionValueValuesEnum: Optional. Action to perform when a scan completes.
+      Defaults to `ATTACH_CONTEXT`.
+    ModeValueValuesEnum: Optional. Specifies the workload mode of the
+      FeatureConfig. Defaults to `ON_UPLOAD`.
+
+  Fields:
+    action: Optional. Action to perform when a scan completes. Defaults to
+      `ATTACH_CONTEXT`.
+    mode: Optional. Specifies the workload mode of the FeatureConfig. Defaults
+      to `ON_UPLOAD`.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""Optional. Action to perform when a scan completes. Defaults to
+    `ATTACH_CONTEXT`.
+
+    Values:
+      ACTION_UNSPECIFIED: Action is unspecified.
+      ATTACH_CONTEXT: Attaches scan verdict (`CLEAN` / `MALICIOUS`) directly
+        to Cloud Storage object context metadata.
+      LOG_ONLY: Logs finding to Cloud Audit Logs only without modifying object
+        context.
+    """
+    ACTION_UNSPECIFIED = 0
+    ATTACH_CONTEXT = 1
+    LOG_ONLY = 2
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the workload mode of the FeatureConfig. Defaults
+    to `ON_UPLOAD`.
+
+    Values:
+      MODE_UNSPECIFIED: Mode is unspecified.
+      ON_UPLOAD: Mode for the object upload event.
+    """
+    MODE_UNSPECIFIED = 0
+    ON_UPLOAD = 1
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+  mode = _messages.EnumField('ModeValueValuesEnum', 2)
 
 
 class ManagementHub(_messages.Message):

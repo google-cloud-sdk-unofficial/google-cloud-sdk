@@ -29,3 +29,20 @@ build:
     attribute_name: build
     help: Build ID
   disable_auto_completers: false
+
+pipeline:
+  name: pipeline
+  collection: cloudbuild.projects.locations.pipelines
+  attributes:
+  - parameter_name: projectsId
+    attribute_name: project
+    help: Cloud Project ID
+    property: core/project
+  - parameter_name: locationsId
+    attribute_name: region
+    help: The Cloud location for the {resource}.
+    property: builds/region
+  - parameter_name: pipelinesId
+    attribute_name: pipeline
+    help: Pipeline ID
+  disable_auto_completers: false

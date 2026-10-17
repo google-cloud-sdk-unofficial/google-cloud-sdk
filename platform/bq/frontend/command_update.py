@@ -266,6 +266,7 @@ class Update(bigquery_command.BigqueryCmd):
         '\n--condition=\'{"expression": "job.label[\\"env\\"]==\\"prod\\"",'
         ' "title": "Prod Jobs", "description": "Matches prod jobs"}\''
         '\nUsed in conjunction with --reservation_assignment.'
+        '\nPass an empty string to unset condition.'
         '\nSee https://cel.dev/ for more details.',
         flag_values=fv,
     )
@@ -1157,15 +1158,15 @@ class Update(bigquery_command.BigqueryCmd):
           )
         # TODO(b/541415543): Remove deprecated field:
         # s3_service_directory_service
-        if self.s3_service_directory_service:
+        if self.s3_service_directory_service is not None:
           print(
               'Warning: --s3_service_directory_service is deprecated and will'
               ' be removed in future versions. Use --service_directory_service'
               ' instead.'
           )
-          if not self.service_directory_service:
+          if self.service_directory_service is None:
             self.service_directory_service = self.s3_service_directory_service
-        if self.service_directory_service:
+        if self.service_directory_service is not None:
           aws_props['serviceDirectoryService'] = self.service_directory_service
         if aws_props:
           self.properties = json.dumps(aws_props)
@@ -1187,7 +1188,7 @@ class Update(bigquery_command.BigqueryCmd):
           azure_props.update(
               bq_processor_utils.MakeTenantIdProperties(self.tenant_id)
           )
-        if self.service_directory_service:
+        if self.service_directory_service is not None:
           azure_props['serviceDirectoryService'] = (
               self.service_directory_service
           )

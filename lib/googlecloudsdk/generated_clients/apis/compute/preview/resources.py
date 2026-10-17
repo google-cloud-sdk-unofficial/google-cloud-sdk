@@ -24,6 +24,26 @@ DOCS_URL = 'https://cloud.google.com/compute/'
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
+  ACCELERATORINTERCONNECTMEMBERINSTANCES = (
+      'acceleratorInterconnectMemberInstances',
+      'projects/{project}/zones/{zone}/acceleratorInterconnects/'
+      '{acceleratorInterconnect}/memberInstances',
+      {},
+      ['project', 'zone', 'acceleratorInterconnect'],
+      True
+  )
+  ACCELERATORINTERCONNECTS = (
+      'acceleratorInterconnects',
+      'projects/{project}/zones/{zone}/acceleratorInterconnects/'
+      '{acceleratorInterconnect}',
+      {
+          '':
+              'projects/{project}/zones/{zone}/acceleratorInterconnects/'
+              '{acceleratorInterconnect}',
+      },
+      ['project', 'zone', 'acceleratorInterconnect'],
+      True
+  )
   ACCELERATORTYPES = (
       'acceleratorTypes',
       'projects/{project}/zones/{zone}/acceleratorTypes/{acceleratorType}',
@@ -129,6 +149,13 @@ class Collections(enum.Enum):
       ['project', 'forwardingRule'],
       True
   )
+  GLOBALFRONTENDSETTINGS = (
+      'globalFrontendSettings',
+      'projects/{project}/global/globalFrontendSettings',
+      {},
+      ['project'],
+      True
+  )
   GLOBALNETWORKENDPOINTGROUPS = (
       'globalNetworkEndpointGroups',
       'projects/{project}/global/networkEndpointGroups/{networkEndpointGroup}',
@@ -158,11 +185,33 @@ class Collections(enum.Enum):
       ['project', 'publicDelegatedPrefix'],
       True
   )
+  GLOBALVMEXTENSIONPOLICIES = (
+      'globalVmExtensionPolicies',
+      'projects/{project}/global/vmExtensionPolicies/'
+      '{globalVmExtensionPolicy}',
+      {},
+      ['project', 'globalVmExtensionPolicy'],
+      True
+  )
+  HACONTROLLERS = (
+      'haControllers',
+      'projects/{project}/regions/{region}/haControllers/{haController}',
+      {},
+      ['project', 'region', 'haController'],
+      True
+  )
   HEALTHCHECKS = (
       'healthChecks',
       'projects/{project}/global/healthChecks/{healthCheck}',
       {},
       ['project', 'healthCheck'],
+      True
+  )
+  HOSTS = (
+      'hosts',
+      'projects/{project}/zones/{zone}/{association}/hosts/{host}',
+      {},
+      ['project', 'zone', 'association', 'host'],
       True
   )
   HTTPHEALTHCHECKS = (
@@ -184,6 +233,13 @@ class Collections(enum.Enum):
       'projects/{project}/zones/{zone}/imageFamilyViews/{family}',
       {},
       ['project', 'zone', 'family'],
+      True
+  )
+  IMAGEVIEWS = (
+      'imageViews',
+      'projects/{project}/regions/{region}/imageViews/{resourceId}',
+      {},
+      ['project', 'region', 'resourceId'],
       True
   )
   IMAGES = (
@@ -325,6 +381,13 @@ class Collections(enum.Enum):
       ['project', 'zone', 'machineType'],
       True
   )
+  MANAGEDRULESETS = (
+      'managedRulesets',
+      'projects/{project}/global/managedRulesets/{managedRuleset}',
+      {},
+      ['project', 'managedRuleset'],
+      True
+  )
   NETWORKATTACHMENTS = (
       'networkAttachments',
       'projects/{project}/regions/{region}/networkAttachments/'
@@ -417,6 +480,13 @@ class Collections(enum.Enum):
       'projects/{project}/global/previewFeatures/{previewFeature}',
       {},
       ['project', 'previewFeature'],
+      True
+  )
+  PROJECTVIEWS = (
+      'projectViews',
+      'projects/{project}/regions/{region}/projectViews',
+      {},
+      ['project', 'region'],
       True
   )
   PROJECTS = (
@@ -676,6 +746,13 @@ class Collections(enum.Enum):
       'projects/{project}/regions/{region}',
       {},
       ['project', 'region'],
+      True
+  )
+  RELIABILITYRISKS = (
+      'reliabilityRisks',
+      'projects/{project}/global/reliabilityRisks/{reliabilityRisk}',
+      {},
+      ['project', 'reliabilityRisk'],
       True
   )
   RESERVATIONBLOCKS = (

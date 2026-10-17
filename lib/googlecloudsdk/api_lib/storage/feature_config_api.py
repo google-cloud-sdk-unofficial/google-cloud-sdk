@@ -116,6 +116,7 @@ class FeatureConfigApi:
       feature_config_id: str,
       description: str | None = None,
       auto_annotate_models: list[str] | None = None,
+      auto_annotate_processing_location: str | None = None,
       include_locations: list[str] | None = None,
       exclude_locations: list[str] | None = None,
       include_bucket_id_regexes: list[str] | None = None,
@@ -132,6 +133,8 @@ class FeatureConfigApi:
       feature_config_id: The user-specified ID of the feature config.
       description: The description of the feature configuration.
       auto_annotate_models: List of models to configure.
+      auto_annotate_processing_location: The geographic location where data is
+        processed.
       include_locations: List of locations to include.
       exclude_locations: List of locations to exclude.
       include_bucket_id_regexes: List of bucket ID regexes to include.
@@ -145,10 +148,17 @@ class FeatureConfigApi:
     if description is not None:
       feature_config.description = description
 
-    if auto_annotate_models:
-      models = [self.messages.Model(name=m) for m in auto_annotate_models if m]
+    if auto_annotate_models or auto_annotate_processing_location is not None:
+      models = []
+      if auto_annotate_models:
+        models = [
+            self.messages.Model(name=model)
+            for model in auto_annotate_models
+            if model
+        ]
       feature_config.autoAnnotateConfig = self.messages.AutoAnnotateConfig(
-          models=models
+          models=models,
+          processingLocation=auto_annotate_processing_location,
       )
 
     # Build Filter
@@ -274,6 +284,7 @@ class FeatureConfigApi:
       self,
       description: str | None = None,
       auto_annotate_models: list[str] | None = None,
+      auto_annotate_processing_location: str | None = None,
       include_locations: list[str] | None = None,
       exclude_locations: list[str] | None = None,
       include_bucket_id_regexes: list[str] | None = None,
@@ -284,7 +295,9 @@ class FeatureConfigApi:
     if description is not None:
       update_mask.append('description')
     if auto_annotate_models is not None:
-      update_mask.append('autoAnnotateConfig')
+      update_mask.append('autoAnnotateConfig.models')
+    if auto_annotate_processing_location is not None:
+      update_mask.append('autoAnnotateConfig.processingLocation')
 
     if include_locations is not None or exclude_locations is not None:
       update_mask.append('filter.includedCloudStorageLocations')
@@ -303,6 +316,7 @@ class FeatureConfigApi:
       name: str,
       description: str | None = None,
       auto_annotate_models: list[str] | None = None,
+      auto_annotate_processing_location: str | None = None,
       include_locations: list[str] | None = None,
       exclude_locations: list[str] | None = None,
       include_bucket_id_regexes: list[str] | None = None,
@@ -318,6 +332,8 @@ class FeatureConfigApi:
         projects/{project}/locations/{location}/featureConfigs/{config}
       description: The description of the feature configuration.
       auto_annotate_models: List of models to configure.
+      auto_annotate_processing_location: The geographic location where data is
+        processed.
       include_locations: List of locations to include.
       exclude_locations: List of locations to exclude.
       include_bucket_id_regexes: List of bucket ID regexes to include.
@@ -330,6 +346,7 @@ class FeatureConfigApi:
     update_mask = self._get_feature_config_update_mask(
         description=description,
         auto_annotate_models=auto_annotate_models,
+        auto_annotate_processing_location=auto_annotate_processing_location,
         include_locations=include_locations,
         exclude_locations=exclude_locations,
         include_bucket_id_regexes=include_bucket_id_regexes,
@@ -342,14 +359,22 @@ class FeatureConfigApi:
       )
 
     # Construct FeatureConfig proto
-    models = []
-    if auto_annotate_models:
-      models = [self.messages.Model(name=m) for m in auto_annotate_models if m]
-    auto_annotate_config = (
-        self.messages.AutoAnnotateConfig(models=models)
-        if auto_annotate_models is not None
-        else None
-    )
+    auto_annotate_config = None
+    if (
+        auto_annotate_models is not None
+        or auto_annotate_processing_location is not None
+    ):
+      models = []
+      if auto_annotate_models:
+        models = [
+            self.messages.Model(name=model)
+            for model in auto_annotate_models
+            if model
+        ]
+      auto_annotate_config = self.messages.AutoAnnotateConfig(
+          models=models,
+          processingLocation=auto_annotate_processing_location,
+      )
 
     included_locations = None
     if include_locations:

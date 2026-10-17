@@ -23,8 +23,10 @@ from googlecloudsdk.command_lib.compute.interconnects import flags
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.BETA,
     base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 class InterconnectSetName(base.SilentCommand):
   """Set name for a Compute Engine interconnect."""

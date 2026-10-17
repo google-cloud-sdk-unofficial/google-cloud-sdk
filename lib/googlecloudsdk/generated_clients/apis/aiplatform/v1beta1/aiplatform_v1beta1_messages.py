@@ -23859,11 +23859,15 @@ class CloudAiLargeModelsVisionGenerateVideoExperimentsOutpaintConfig(_messages.M
       OUTPUT_SPEC_1280X720x192: Medium spec: 1280x720 resolution, 192 total
         frames.
       OUTPUT_SPEC_960X544x432: Low spec: 960x544 resolution, 432 total frames.
+      OUTPUT_SPEC_1280X720x144: Medium spec at 1280x720, 144 total frames.
+        Shorter than OUTPUT_SPEC_1280X720x192 and higher quality at the same
+        resolution.
     """
     OUTPUT_SPEC_UNSPECIFIED = 0
     OUTPUT_SPEC_1920X1072x72 = 1
     OUTPUT_SPEC_1280X720x192 = 2
     OUTPUT_SPEC_960X544x432 = 3
+    OUTPUT_SPEC_1280X720x144 = 4
 
   inputFrames = _messages.MessageField('CloudAiLargeModelsVisionGenerateVideoExperimentsOutpaintConfigFrameSource', 1, repeated=True)
   outputSpec = _messages.EnumField('OutputSpecValueValuesEnum', 2)
@@ -23876,12 +23880,12 @@ class CloudAiLargeModelsVisionGenerateVideoExperimentsOutpaintConfigFrameSource(
 
   Fields:
     globPattern: A string attribute.
-    horizontalOffset: Horizontal offset in pixels to shift the input frame
-      from center. Positive values shift right, negative values shift left.
-      Optional. Default is 0 (centered).
-    verticalOffset: Vertical offset in pixels to shift the input frame from
-      center. Positive values shift down, negative values shift up. Optional.
-      Default is 0 (centered).
+    horizontalOffset: Horizontal offset in pixels of the frame's left edge
+      from the canvas's left edge. Values outside the canvas crop the frame.
+      Optional. Default is 0 (frame flush with the canvas's left edge).
+    verticalOffset: Vertical offset in pixels of the frame's top edge from the
+      canvas's top edge. Values outside the canvas crop the frame. Optional.
+      Default is 0 (frame flush with the canvas's top edge).
   """
 
   globPattern = _messages.StringField(1)
@@ -25051,10 +25055,7 @@ class GenaiVertexV1beta1EnvironmentConfig(_messages.Message):
 
 
 class GenaiVertexV1beta1EnvironmentConfigEgressRule(_messages.Message):
-  r"""A network egress rule that controls which external domains the
-  environment is allowed to reach. Each rule identifies a target domain and,
-  optionally, a set of HTTP headers to inject into every matching outbound
-  request.
+  r"""A single domain allowlist rule with optional header injection.
 
   Messages:
     TransformValue: Headers to inject into requests matching this rule. Key:
@@ -25062,9 +25063,8 @@ class GenaiVertexV1beta1EnvironmentConfigEgressRule(_messages.Message):
       your-token").
 
   Fields:
-    domain: The domain pattern to match for this rule. Use an exact hostname
-      (e.g., `github.com`), a wildcard prefix (e.g., `*.googleapis.com`), or
-      `*` to match all domains.
+    domain: Domain to allow outbound requests to. Supports wildcards (e.g.
+      '*.googleapis.com'). Use '*' to allow all domains.
     transform: Headers to inject into requests matching this rule. Key: header
       name (e.g., "Authorization"). Value: header value (e.g., "Bearer your-
       token").
@@ -25932,12 +25932,11 @@ class GenaiVertexV1beta1Interaction(_messages.Message):
       interaction.
 
   Messages:
-    LabelsValue: The labels with user-defined metadata for the request. It is
-      used for billing and reporting only. Label keys and values can be no
-      longer than 63 characters (Unicode codepoints) and can only contain
-      lowercase letters, numeric characters, underscores, and dashes.
-      International characters are allowed. Label values are optional. Label
-      keys must start with a letter.
+    LabelsValue: The labels with user-defined metadata for the request. Label
+      keys and values can be no longer than 63 characters (Unicode codepoints)
+      and can only contain lowercase letters, numeric characters, underscores,
+      and dashes. International characters are allowed. Label values are
+      optional. Label keys must start with a letter.
 
   Fields:
     agentInteraction: Interaction for generating the completion using agents.
@@ -25952,12 +25951,11 @@ class GenaiVertexV1beta1Interaction(_messages.Message):
       interaction.
     id: Required. Output only. A unique identifier for the interaction
       completion.
-    labels: The labels with user-defined metadata for the request. It is used
-      for billing and reporting only. Label keys and values can be no longer
-      than 63 characters (Unicode codepoints) and can only contain lowercase
-      letters, numeric characters, underscores, and dashes. International
-      characters are allowed. Label values are optional. Label keys must start
-      with a letter.
+    labels: The labels with user-defined metadata for the request. Label keys
+      and values can be no longer than 63 characters (Unicode codepoints) and
+      can only contain lowercase letters, numeric characters, underscores, and
+      dashes. International characters are allowed. Label values are optional.
+      Label keys must start with a letter.
     localEnvironment: The agent's environment lives on the client connection:
       its built-in environment operations (filesystem ops and running
       commands) are yielded to the client to execute, instead of running in a
@@ -25977,7 +25975,8 @@ class GenaiVertexV1beta1Interaction(_messages.Message):
     serviceTier: The service tier for the interaction.
     status: Required. Output only. The status of the interaction.
     stepList: Input only. The steps for the interaction.
-    steps: Required. Output only. The steps that make up the interaction.
+    steps: Required. Output only. The steps that make up the interaction, when
+      included in the response.
     stringContent: A string input for the interaction, it will be processed as
       a single text input.
     systemInstruction: System instruction for the interaction.
@@ -26033,8 +26032,8 @@ class GenaiVertexV1beta1Interaction(_messages.Message):
       CANCELLED: The interaction was cancelled.
       INCOMPLETE: The interaction is completed, but contains incomplete
         results (e.g. hitting max_tokens).
-      BUDGET_EXCEEDED: The interaction was halted because the token budget was
-        exceeded.
+      BUDGET_EXCEEDED: Deprecated: Token and execution budget exhaustion
+        returns INCOMPLETE (11).
       QUEUED: The interaction is queued, waiting for processing (e.g. waiting
         for off-peak capacity).
     """
@@ -26050,11 +26049,11 @@ class GenaiVertexV1beta1Interaction(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""The labels with user-defined metadata for the request. It is used for
-    billing and reporting only. Label keys and values can be no longer than 63
-    characters (Unicode codepoints) and can only contain lowercase letters,
-    numeric characters, underscores, and dashes. International characters are
-    allowed. Label values are optional. Label keys must start with a letter.
+    r"""The labels with user-defined metadata for the request. Label keys and
+    values can be no longer than 63 characters (Unicode codepoints) and can
+    only contain lowercase letters, numeric characters, underscores, and
+    dashes. International characters are allowed. Label values are optional.
+    Label keys must start with a letter.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -26105,22 +26104,24 @@ class GenaiVertexV1beta1Interaction(_messages.Message):
 
 
 class GenaiVertexV1beta1InteractionCompletedSseEvent(_messages.Message):
-  r"""A GenaiVertexV1beta1InteractionCompletedSseEvent object.
+  r"""Signals that the Interaction completed. Sent when the Interaction
+  receives Complete/Cancel or naturally terminates. No more input can be sent
+  to the Interaction after this.
 
   Fields:
-    interaction: Required. The completed interaction with empty outputs to
-      reduce the payload size. Use the preceding ContentDelta events for the
-      actual output.
+    interaction: Required. Partial completed interaction resource emitted at
+      the end of the stream.
   """
 
   interaction = _messages.MessageField('GenaiVertexV1beta1Interaction', 1)
 
 
 class GenaiVertexV1beta1InteractionCreatedSseEvent(_messages.Message):
-  r"""A GenaiVertexV1beta1InteractionCreatedSseEvent object.
+  r"""Server response confirming that a new interaction was created.
 
   Fields:
-    interaction: A GenaiVertexV1beta1Interaction attribute.
+    interaction: Required. Partial interaction resource emitted when the
+      stream is created.
   """
 
   interaction = _messages.MessageField('GenaiVertexV1beta1Interaction', 1)
@@ -26149,8 +26150,8 @@ class GenaiVertexV1beta1InteractionStatusUpdate(_messages.Message):
       CANCELLED: The interaction was cancelled.
       INCOMPLETE: The interaction is completed, but contains incomplete
         results (e.g. hitting max_tokens).
-      BUDGET_EXCEEDED: The interaction was halted because the token budget was
-        exceeded.
+      BUDGET_EXCEEDED: Deprecated: Token and execution budget exhaustion
+        returns INCOMPLETE (11).
       QUEUED: The interaction is queued, waiting for processing (e.g. waiting
         for off-peak capacity).
     """
@@ -27875,7 +27876,6 @@ class GoogleCloudAiplatformV1beta1A2APart(_messages.Message):
   of content.
 
   Messages:
-    DataValue: Optional. Arbitrary data content.
     MetadataValue: Optional. Additional context or parameters related to the
       part. Extensions can be used to strongly type metadata values for
       specific use cases.
@@ -27892,30 +27892,6 @@ class GoogleCloudAiplatformV1beta1A2APart(_messages.Message):
     text: Optional. Textual content.
     url: Optional. A URL pointing to the content.
   """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class DataValue(_messages.Message):
-    r"""Optional. Arbitrary data content.
-
-    Messages:
-      AdditionalProperty: An additional property for a DataValue object.
-
-    Fields:
-      additionalProperties: Properties of the object.
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a DataValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A extra_types.JsonValue attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.MessageField('extra_types.JsonValue', 2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class MetadataValue(_messages.Message):
@@ -27943,7 +27919,7 @@ class GoogleCloudAiplatformV1beta1A2APart(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  data = _messages.MessageField('DataValue', 1)
+  data = _messages.MessageField('extra_types.JsonValue', 1)
   filename = _messages.StringField(2)
   mediaType = _messages.StringField(3)
   metadata = _messages.MessageField('MetadataValue', 4)
@@ -29120,6 +29096,8 @@ class GoogleCloudAiplatformV1beta1Agent(_messages.Message):
       `projects/{project}/locations/{location}/agents/{agent}`.
     object: Output only. The object type of the resource. For agents, the
       value is `agent`.
+    observabilityConfig: Optional. Observability settings for this agent's
+      sessions.
     system_instruction: Optional. The instructions for the agent to follow.
       These instructions are passed to the LLM as a system instruction.
     tools: Optional. The tools available to the agent.
@@ -29158,9 +29136,10 @@ class GoogleCloudAiplatformV1beta1Agent(_messages.Message):
   metadata = _messages.MessageField('MetadataValue', 6)
   name = _messages.StringField(7)
   object = _messages.StringField(8)
-  system_instruction = _messages.StringField(9)
-  tools = _messages.MessageField('GoogleCloudAiplatformV1beta1AgentTool', 10, repeated=True)
-  updated = _messages.StringField(11)
+  observabilityConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1ObservabilityConfig', 9)
+  system_instruction = _messages.StringField(10)
+  tools = _messages.MessageField('GoogleCloudAiplatformV1beta1AgentTool', 11, repeated=True)
+  updated = _messages.StringField(12)
 
 
 class GoogleCloudAiplatformV1beta1AgentAnomalyDetectionScope(_messages.Message):
@@ -30665,6 +30644,15 @@ class GoogleCloudAiplatformV1beta1AudioTranscription(_messages.Message):
 class GoogleCloudAiplatformV1beta1AudioTranscriptionConfig(_messages.Message):
   r"""Configuration for speech recognition (transcription).
 
+  Enums:
+    ModeValueValuesEnum: Optional. Configures transcription mode. Supported
+      values: `VERBATIM`, `SMART`. If unspecified, defaults to `VERBATIM`
+      transcription. In `SMART` mode, the model performs disfluency removal
+      (eliminating filler words, repetitions, and false starts), light
+      grammatical cleanup, automatic formatting (paragraphs, bullet points,
+      numbered lists), and minor user edits (inline self-corrections).
+      Timestamps and diarization are incompatible with mode `SMART`.
+
   Fields:
     adaptationPhrases: Optional. Deprecated: Use `custom_vocabulary` instead.
       A list of phrases to bias the speech recognition model towards.
@@ -30678,8 +30666,33 @@ class GoogleCloudAiplatformV1beta1AudioTranscriptionConfig(_messages.Message):
       automatic language detection.
     languageHints: Optional. Deprecated: Use top-level `language_codes`
       instead. Specifies one or more languages in the audio.
+    mode: Optional. Configures transcription mode. Supported values:
+      `VERBATIM`, `SMART`. If unspecified, defaults to `VERBATIM`
+      transcription. In `SMART` mode, the model performs disfluency removal
+      (eliminating filler words, repetitions, and false starts), light
+      grammatical cleanup, automatic formatting (paragraphs, bullet points,
+      numbered lists), and minor user edits (inline self-corrections).
+      Timestamps and diarization are incompatible with mode `SMART`.
     wordTimestamp: Optional. Configures word-level timestamp generation.
   """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Configures transcription mode. Supported values: `VERBATIM`,
+    `SMART`. If unspecified, defaults to `VERBATIM` transcription. In `SMART`
+    mode, the model performs disfluency removal (eliminating filler words,
+    repetitions, and false starts), light grammatical cleanup, automatic
+    formatting (paragraphs, bullet points, numbered lists), and minor user
+    edits (inline self-corrections). Timestamps and diarization are
+    incompatible with mode `SMART`.
+
+    Values:
+      MODE_UNSPECIFIED: Unspecified transcription mode.
+      VERBATIM: Verbatim transcription mode.
+      SMART: Smart transcription mode.
+    """
+    MODE_UNSPECIFIED = 0
+    VERBATIM = 1
+    SMART = 2
 
   adaptationPhrases = _messages.StringField(1, repeated=True)
   customVocabulary = _messages.StringField(2, repeated=True)
@@ -30687,7 +30700,8 @@ class GoogleCloudAiplatformV1beta1AudioTranscriptionConfig(_messages.Message):
   languageAuto = _messages.MessageField('GoogleCloudAiplatformV1beta1AudioTranscriptionConfigLanguageAuto', 4)
   languageCodes = _messages.StringField(5, repeated=True)
   languageHints = _messages.MessageField('GoogleCloudAiplatformV1beta1AudioTranscriptionConfigLanguageHints', 6)
-  wordTimestamp = _messages.BooleanField(7)
+  mode = _messages.EnumField('ModeValueValuesEnum', 7)
+  wordTimestamp = _messages.BooleanField(8)
 
 
 class GoogleCloudAiplatformV1beta1AudioTranscriptionConfigLanguageAuto(_messages.Message):
@@ -33961,13 +33975,9 @@ class GoogleCloudAiplatformV1beta1CustomCodeExecutionSpec(_messages.Message):
     codeExecutionRegion: Optional. The region to use for code execution. If
       set, the Code Execution Sandbox will be invoked in the specified region
       regardless of the request's originating region. Must be a region where
-      the Code Execution Sandbox is available. Supported regions:
-      northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-
-      east4, us-west1, us-west4, europe-central2, europe-north1, europe-
-      southwest1, europe-west1, europe-west2, europe-west3, europe-west4,
-      europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-
-      east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-
-      southeast1, australia-southeast2. If unset, the request's originating
+      the Code Execution Sandbox is available. For the current list of
+      [supported regions](https://cloud.google.com/vertex-ai/generative-
+      ai/docs/agent-engine/locations). If unset, the request's originating
       region is used; requests from regions where the sandbox is unavailable
       will fail with UNIMPLEMENTED.
     evaluationFunction: Required. Python function. Expected user to define the
@@ -37821,13 +37831,9 @@ class GoogleCloudAiplatformV1beta1EvaluationParserConfigCustomCodeParserConfig(_
     codeExecutionRegion: Optional. The region to use for code execution. If
       set, the Code Execution Sandbox will be invoked in the specified region
       regardless of the request's originating region. Must be a region where
-      the Code Execution Sandbox is available. Supported regions:
-      northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-
-      east4, us-west1, us-west4, europe-central2, europe-north1, europe-
-      southwest1, europe-west1, europe-west2, europe-west3, europe-west4,
-      europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-
-      east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-
-      southeast1, australia-southeast2. If unset, the request's originating
+      the Code Execution Sandbox is available. For the current list of
+      [supported regions](https://cloud.google.com/vertex-ai/generative-
+      ai/docs/agent-engine/locations). If unset, the request's originating
       region is used.
     parsingFunction: Required. Python function for parsing results. The
       function should be defined within this string. The function takes a list
@@ -46048,15 +46054,31 @@ class GoogleCloudAiplatformV1beta1ImportEvaluationSetRequestCloudTraceSource(_me
   r"""Source for loading traces directly from Cloud Trace.
 
   Fields:
+    agentResource: Optional. Restricts the imported spans to a single agent.
+      Accepts either of two forms, matching `OnlineEvaluator.agent_resource`:
+      * a project-scoped resource name, matched against the
+      `cloud.resource_id` resource attribute that Vertex AI Agent Engine
+      agents are stamped with; * an Agent Registry agent URN, matched against
+      the `gen_ai.main_agent.id` resource attribute that agents on GKE, and
+      any other runtime that stamps it, are identified by. Scopes
+      `session_ids` selection only. Traces named explicitly in `trace_ids` are
+      imported as given and are NOT filtered by this field, because the caller
+      has already identified them. Setting this field with only `trace_ids`
+      therefore has no effect. When unset, spans are selected by session or
+      trace ID alone. That is the pre-existing behavior and it remains the
+      correct one for a session whose agents run in several deployments,
+      because each deployment stamps its own `gen_ai.main_agent.id` and
+      filtering on one of them would silently truncate the trajectory.
     projectId: Required. Project ID for the Cloud Trace.
     sessionIds: Optional. Session IDs to import traces for. If both trace_ids
       and session_ids are specified, the union of the two will be imported.
     traceIds: Optional. Trace IDs to import.
   """
 
-  projectId = _messages.StringField(1)
-  sessionIds = _messages.StringField(2, repeated=True)
-  traceIds = _messages.StringField(3, repeated=True)
+  agentResource = _messages.StringField(1)
+  projectId = _messages.StringField(2)
+  sessionIds = _messages.StringField(3, repeated=True)
+  traceIds = _messages.StringField(4, repeated=True)
 
 
 class GoogleCloudAiplatformV1beta1ImportEvaluationSetRequestGcsSource(_messages.Message):
@@ -54253,6 +54275,29 @@ class GoogleCloudAiplatformV1beta1NotebookSoftwareConfig(_messages.Message):
   postStartupScriptConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1PostStartupScriptConfig', 3)
 
 
+class GoogleCloudAiplatformV1beta1ObservabilityConfig(_messages.Message):
+  r"""Observability settings for one agent's sessions.
+
+  Fields:
+    observabilityEnabled: Optional. Enables observability for this agent's
+      sessions: OpenTelemetry span emission covering tool names, model names,
+      token counts, latencies and status. If `false`, the other fields here
+      are ignored.
+    sensitiveLoggingEnabled: Optional. Enables sensitive logging. Sensitive
+      logging includes customer core content (prompts, model completions, tool
+      argument payloads and tool responses). If `false`, those are sanitized
+      and only structural attributes are recorded. No effect unless
+      `observability_enabled` is true. Settable and returned, but NOT YET
+      ENFORCED. Nothing reads it at runtime, so `true` does not currently
+      cause content to be captured, and `false` is not what keeps content from
+      being captured. Treat it as a recorded intention that takes effect when
+      enforcement lands.
+  """
+
+  observabilityEnabled = _messages.BooleanField(1)
+  sensitiveLoggingEnabled = _messages.BooleanField(2)
+
+
 class GoogleCloudAiplatformV1beta1OnlineEvaluator(_messages.Message):
   r"""An OnlineEvaluator contains the configuration for an Online Evaluation.
 
@@ -59200,6 +59245,8 @@ class GoogleCloudAiplatformV1beta1ReasoningEngine(_messages.Message):
     labels: Labels for the ReasoningEngine.
     name: Identifier. The resource name of the ReasoningEngine. Format: `proje
       cts/{project}/locations/{location}/reasoningEngines/{reasoning_engine}`
+    revisionGarbageCollectionStrategy: Optional. Configures garbage collection
+      of Runtime Revisions.
     spec: Optional. Configurations of the ReasoningEngine
     trafficConfig: Optional. Traffic distribution configuration for the
       Reasoning Engine.
@@ -59239,9 +59286,10 @@ class GoogleCloudAiplatformV1beta1ReasoningEngine(_messages.Message):
   etag = _messages.StringField(6)
   labels = _messages.MessageField('LabelsValue', 7)
   name = _messages.StringField(8)
-  spec = _messages.MessageField('GoogleCloudAiplatformV1beta1ReasoningEngineSpec', 9)
-  trafficConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1ReasoningEngineTrafficConfig', 10)
-  updateTime = _messages.StringField(11)
+  revisionGarbageCollectionStrategy = _messages.MessageField('GoogleCloudAiplatformV1beta1ReasoningEngineRevisionGarbageCollectionStrategy', 9)
+  spec = _messages.MessageField('GoogleCloudAiplatformV1beta1ReasoningEngineSpec', 10)
+  trafficConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1ReasoningEngineTrafficConfig', 11)
+  updateTime = _messages.StringField(12)
 
 
 class GoogleCloudAiplatformV1beta1ReasoningEngineContextSpec(_messages.Message):
@@ -59350,6 +59398,34 @@ class GoogleCloudAiplatformV1beta1ReasoningEngineContextSpecMemoryBankConfigTtlC
   createTtl = _messages.StringField(1)
   generateCreatedTtl = _messages.StringField(2)
   generateUpdatedTtl = _messages.StringField(3)
+
+
+class GoogleCloudAiplatformV1beta1ReasoningEngineRevisionGarbageCollectionStrategy(_messages.Message):
+  r"""Configures garbage collection of Runtime Revisions.
+
+  Fields:
+    keepNLatest: Optional. Keeps only the latest N Runtime Revisions active.
+  """
+
+  keepNLatest = _messages.MessageField('GoogleCloudAiplatformV1beta1ReasoningEngineRevisionGarbageCollectionStrategyKeepNLatest', 1)
+
+
+class GoogleCloudAiplatformV1beta1ReasoningEngineRevisionGarbageCollectionStrategyKeepNLatest(_messages.Message):
+  r"""Keeps only the latest N Runtime Revisions active.
+
+  Fields:
+    maxRevisions: Required. Specifies the maximum number of Runtime Revisions
+      to keep active. If an update to Reasoning Engine would result in
+      exceeding this number of active Runtime Revisions, a new Runtime
+      Revision will be created, while the oldest Runtime Revision will be
+      automatically deleted, providing it's not configured to serve traffic
+      via `traffic_config`. If the oldest Runtime Revision is configured to
+      serve traffic, the update will fail validation. No changes will be made
+      to the Reasoning Engine, existing Runtime Revisions, and no new Runtime
+      Revision will be created.
+  """
+
+  maxRevisions = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudAiplatformV1beta1ReasoningEngineRuntimeRevision(_messages.Message):
@@ -62493,6 +62569,11 @@ class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplate(_messages.Message):
     name: Identifier. The resource name of the SandboxEnvironmentTemplate.
       Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
       ning_engine}/sandboxEnvironmentTemplates/{sandbox_environment_template}`
+    persistentDiskConfig: Optional. Configuration for attaching a persistent
+      disk (PD) to each SandboxEnvironment created from this template. When
+      unset (or when `enabled` is `false`), sandboxes created from this
+      template are not backed by a persistent disk and rely on ephemeral
+      storage only. See PersistentDiskConfig for details.
     state: Output only. The state of the sandbox environment template.
     updateTime: Output only. The timestamp when this
       SandboxEnvironmentTemplate was most recently updated.
@@ -62526,9 +62607,10 @@ class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplate(_messages.Message):
   egressControlConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateEgressControlConfig', 5)
   ingressControlConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1PrivateServiceConnectConfig', 6)
   name = _messages.StringField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  updateTime = _messages.StringField(9)
-  useGkeTd = _messages.BooleanField(10)
+  persistentDiskConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplatePersistentDiskConfig', 8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  updateTime = _messages.StringField(10)
+  useGkeTd = _messages.BooleanField(11)
 
 
 class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateCustomContainerEnvironment(_messages.Message):
@@ -62654,6 +62736,41 @@ class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateNetworkPort(_message
 
   port = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   protocol = _messages.EnumField('ProtocolValueValuesEnum', 2)
+
+
+class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplatePersistentDiskConfig(_messages.Message):
+  r"""Configuration for attaching a persistent disk (PD) to each
+  SandboxEnvironment created from this template. A persistent disk provides
+  durable, per-sandbox block storage whose contents survive across the sandbox
+  lifecycle events that this service supports (e.g. pause/resume), unlike
+  ephemeral local storage which is lost when the underlying runtime is torn
+  down.
+
+  Fields:
+    enabled: Optional. Whether a persistent disk is attached to sandboxes
+      created from this template. Defaults to `false`. This flag lets a
+      template carry (and preserve) disk configuration while keeping the disk
+      detached, so it can be toggled on later without re-specifying the rest
+      of the config. When `false`, the remaining fields in this message are
+      ignored.
+    mountPath: Optional. The absolute path inside the sandbox container at
+      which the persistent disk is mounted. Defaults to `/workspace` when
+      unset. Ignored when `enabled` is `false`. Only writes beneath this path
+      land on the disk. Writes elsewhere go to the container's writable layer,
+      which counts against the container's ephemeral storage and is lost when
+      the sandbox's runtime is torn down, so this should be the directory the
+      workload actually writes to. Paths that would shadow the container's
+      system directories (for example `/etc`, `/proc`, or `/usr` itself) are
+      rejected.
+    sizeGb: Optional. The size of the persistent disk in GB. Must be non-
+      negative. When `enabled` is `true`, a positive value is required; when
+      unset or zero while enabled, the service applies a default size. Ignored
+      when `enabled` is `false`.
+  """
+
+  enabled = _messages.BooleanField(1)
+  mountPath = _messages.StringField(2)
+  sizeGb = _messages.IntegerField(3)
 
 
 class GoogleCloudAiplatformV1beta1SandboxEnvironmentTemplateResourceRequirements(_messages.Message):

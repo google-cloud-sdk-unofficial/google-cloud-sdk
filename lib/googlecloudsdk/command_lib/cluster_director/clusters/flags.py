@@ -1361,3 +1361,86 @@ def AddControllerVersion(parser, api_version=None, hidden=False):
       type=str,
       hidden=hidden,
   )
+
+
+def AddManagedInstanceGroups(
+    parser,
+    name="managed-instance-groups",
+    api_version=None,
+    required=False,
+    hidden=False,
+    include_update_flags=False,
+):
+  """Adds a managed instance groups flag for the given API version."""
+  if api_version not in ["v1alpha"]:
+    raise ValueError(
+        f"Unsupported API version for managed-instance-groups: {api_version!r}"
+    )
+  update_flag_name = f"update-{name}"
+  remove_flag_name = f"remove-{name}"
+  if include_update_flags:
+    name = f"add-{name}"
+  help_text = textwrap.dedent(f"""
+        Parameters to define Compute Engine orchestrator managed instance group
+        config.
+
+        Required fields:
+        - id
+        - computeId
+
+        For example --{name} id=mig1,computeId=c1,targetSize=2,\\
+        acceleratorTopology=2x4,enablePublicIps=true,\\
+        startupScript="echo hello",bootDisk="{{type=pd-balanced,sizeGb=100}}"
+
+        Note:
+        - startupScript:
+          - Either str or file_path
+          - For file_path, only bash file format (.sh or .bash) is supported.
+          - For file_path, only absolute path is supported.
+        - bootDisk.storagePools:
+          - At most 1 storage pool is supported.
+          - storagePools: The name of the storage pool to use, in the format
+            zones/us-central1-a/storagePools/pool1.
+      """)
+  parser.add_argument(
+      f"--{name}",
+      help=help_text,
+      type=flag_types.FlagTypes(api_version).GetManagedInstanceGroupsObject(),
+      action=arg_parsers.FlattenAction(),
+      required=required,
+      hidden=hidden,
+  )
+  if include_update_flags:
+    update_help = textwrap.dedent(f"""
+          Parameters to update Compute Engine orchestrator managed instance
+          group config.
+
+          Required fields:
+          - id
+
+          For example --{update_flag_name} id=mig1,targetSize=4,\\
+          startupScript="echo updated"
+        """)
+    parser.add_argument(
+        f"--{update_flag_name}",
+        help=update_help,
+        type=flag_types.FlagTypes(
+            api_version
+        ).GetManagedInstanceGroupsUpdateObject(),
+        action=arg_parsers.FlattenAction(),
+        required=required,
+        hidden=hidden,
+    )
+    parser.add_argument(
+        f"--{remove_flag_name}",
+        help=textwrap.dedent(f"""
+          Parameters to remove managed instance group config by id.
+
+          For example --{remove_flag_name} mig1,mig2,...
+        """),
+        type=arg_parsers.ArgList(element_type=str),
+        action=arg_parsers.FlattenAction(),
+        required=required,
+        hidden=hidden,
+    )
+

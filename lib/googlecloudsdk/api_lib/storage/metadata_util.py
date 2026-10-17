@@ -51,6 +51,12 @@ def read_yaml_json_from_string(string, source_path=None):
 
 
 @function_result_cache.lru(maxsize=None)
+def _read_yaml_json_file(expanded_file_path, source_path):
+  """Reads and parses a JSON or YAML file keyed by its resolved realpath."""
+  contents = files.ReadFileContents(expanded_file_path)
+  return read_yaml_json_from_string(contents, source_path=source_path)
+
+
 def cached_read_yaml_json_file(file_path):
   """Converts JSON or YAML file to an in-memory dict.
 
@@ -65,8 +71,7 @@ def cached_read_yaml_json_file(file_path):
       as a dict.
   """
   expanded_file_path = os.path.realpath(os.path.expanduser(file_path))
-  contents = files.ReadFileContents(expanded_file_path)
-  return read_yaml_json_from_string(contents, source_path=file_path)
+  return _read_yaml_json_file(expanded_file_path, file_path)
 
 
 def has_updated_custom_fields(

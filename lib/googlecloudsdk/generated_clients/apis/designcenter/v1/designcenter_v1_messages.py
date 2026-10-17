@@ -89,9 +89,9 @@ class ApiInfo(_messages.Message):
 
   Fields:
     api: Required. API name, such as `compute.googleapis.com`.
-    systemProvided: Output only. When true, indicates that this API was
-      automatically added by Application Design Center. APIs provided by users
-      will have this field set to false.
+    systemProvided: Output only. When `true`, indicates that this API is
+      automatically added by Application Design Center. When you provide an
+      API, this field is set to `false`.
   """
 
   api = _messages.StringField(1)
@@ -5492,9 +5492,9 @@ class RoleInfo(_messages.Message):
       recommended for. This includes only the permissions of this role that
       are part of the recommendation.
     role: Required. IAM role name, such as `roles/editor`.
-    systemProvided: Output only. When true, indicates that this role was
-      automatically added by Application Design Center. Roles provided by
-      users will have this field set to false.
+    systemProvided: Output only. When `true`, indicates that this role is
+      automatically added by Application Design Center. When you provide a
+      role, this field is set to `false`.
   """
 
   permissions = _messages.StringField(1, repeated=True)
@@ -5507,14 +5507,14 @@ class RolesAndApisConfig(_messages.Message):
   the application.
 
   Fields:
-    apis: Optional. APIs required to be enabled in this project for deploying
-      the application, in the form of "*.googleapis.com". The maximum number
-      of APIs allowed is 500.
+    apis: Optional. APIs that you must enable in this project before you
+      deploy the application, in the form of "*.googleapis.com". The maximum
+      number of APIs allowed is 500.
     projectId: Required. The project ID to which these configurations apply.
-      Format: {project_id}
-    roles: Optional. IAM roles required to deploy the application within this
-      project. Each role must be a valid IAM role name, such as
-      `roles/editor`. The maximum number of roles allowed is 500.
+    roles: Optional. IAM roles that the deployment service account needs to
+      deploy the application within this project. Each role must be a valid
+      IAM role name, such as `roles/editor`. The maximum number of roles
+      allowed is 500.
   """
 
   apis = _messages.MessageField('ApiInfo', 1, repeated=True)

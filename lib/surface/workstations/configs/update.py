@@ -21,6 +21,7 @@ from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 
 
 @base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
@@ -99,6 +100,7 @@ class Update(base.UpdateCommand):
     )
 
   def Run(self, args):
-    client = configs.Configs(self.ReleaseTrack())
+    location = args.CONCEPTS.config.Parse().locationsId
+    client = configs.Configs(self.ReleaseTrack(), location=location)
     response = client.Update(args)
     return response

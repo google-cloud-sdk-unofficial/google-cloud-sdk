@@ -25,18 +25,19 @@ VERSION_MAP = {
 }
 
 
-def GetClientInstance(release_track=base.ReleaseTrack.GA):
-  """Returns the messages module for Cloud Workstations.
+def GetClientInstance(release_track=base.ReleaseTrack.GA, location=None):
+  """Returns the API client instance for Cloud Workstations.
 
   Args:
     release_track: The desired value of the enum
       googlecloudsdk.calliope.base.ReleaseTrack.
+    location: Optional location for regional endpoint resolution.
 
   Returns:
-    Module containing the definitions of messages for Cloud Workstations.
+    base_api.BaseApiClient: An instance of the Cloud Workstations client.
   """
   api_version = VERSION_MAP.get(release_track)
-  return apis.GetClientInstance('workstations', api_version)
+  return apis.GetClientInstance('workstations', api_version, location=location)
 
 
 def GetMessagesModule(release_track=base.ReleaseTrack.GA):
@@ -47,7 +48,7 @@ def GetMessagesModule(release_track=base.ReleaseTrack.GA):
       googlecloudsdk.calliope.base.ReleaseTrack.
 
   Returns:
-    base_api.BaseApiClient, An instance of the Cloud Workstations client.
+    base_api.BaseApiClient: An instance of the Cloud Workstations client.
   """
   api_version = VERSION_MAP.get(release_track)
   return apis.GetMessagesModule('workstations', api_version)

@@ -2203,7 +2203,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class EnvironmentVariable(_messages.Message):
   r"""A name-value pair representing an environment variable used in an
   operating system process.
@@ -2378,7 +2377,6 @@ class ExportFindingsMetadata(_messages.Message):
 class ExportFindingsResponse(_messages.Message):
   r"""The response to a ExportFindings request. Contains the LRO information.
   """
-
 
 
 class Expr(_messages.Message):
@@ -3211,6 +3209,8 @@ class GoogleCloudSecuritycenterV1BigQueryExport(_messages.Message):
       "projects/[project_id]/datasets/[bigquery_dataset_id]". BigQuery Dataset
       unique ID must contain only letters (a-z, A-Z), numbers (0-9), or
       underscores (_).
+    deletionNotificationsEnabled: Indicates whether the notifications will be
+      sent for deleted findings.
     description: The description of the export (max of 1024 characters).
     filter: Expression that defines the filter to apply across create/update
       events of findings. The expression is a list of zero or more
@@ -3242,12 +3242,13 @@ class GoogleCloudSecuritycenterV1BigQueryExport(_messages.Message):
 
   createTime = _messages.StringField(1)
   dataset = _messages.StringField(2)
-  description = _messages.StringField(3)
-  filter = _messages.StringField(4)
-  mostRecentEditor = _messages.StringField(5)
-  name = _messages.StringField(6)
-  principal = _messages.StringField(7)
-  updateTime = _messages.StringField(8)
+  deletionNotificationsEnabled = _messages.BooleanField(3)
+  description = _messages.StringField(4)
+  filter = _messages.StringField(5)
+  mostRecentEditor = _messages.StringField(6)
+  name = _messages.StringField(7)
+  principal = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class GoogleCloudSecuritycenterV1Binding(_messages.Message):
@@ -11300,6 +11301,8 @@ class NotificationConfig(_messages.Message):
   to send notifications for create/update events of findings, assets and etc.
 
   Fields:
+    deletionNotificationsEnabled: Indicates whether the notifications will be
+      sent for deleted findings.
     description: The description of the notification config (max of 1024
       characters).
     name: The relative resource name of this notification config. See:
@@ -11315,11 +11318,12 @@ class NotificationConfig(_messages.Message):
     streamingConfig: The config for triggering streaming-based notifications.
   """
 
-  description = _messages.StringField(1)
-  name = _messages.StringField(2)
-  pubsubTopic = _messages.StringField(3)
-  serviceAccount = _messages.StringField(4)
-  streamingConfig = _messages.MessageField('StreamingConfig', 5)
+  deletionNotificationsEnabled = _messages.BooleanField(1)
+  description = _messages.StringField(2)
+  name = _messages.StringField(3)
+  pubsubTopic = _messages.StringField(4)
+  serviceAccount = _messages.StringField(5)
+  streamingConfig = _messages.MessageField('StreamingConfig', 6)
 
 
 class Object(_messages.Message):

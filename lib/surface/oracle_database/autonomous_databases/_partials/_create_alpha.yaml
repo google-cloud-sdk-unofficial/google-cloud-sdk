@@ -381,6 +381,18 @@
               resource_method_params:
                 autonomousDatabase.properties.encryptionKey.kmsKey: '{__relative_name__}'
               required: false
+        - arg_name: properties-disconnect-peer
+          api_field: autonomousDatabase.properties.disconnectPeer
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            Indicates if the Autonomous Database peer should be disconnected. This
+            field is only applicable for cross-region backup-based disaster recovery
+            (BBDR) standby databases. Used in update flow to permanently disconnect the
+            standby from its primary database, converting it into an independent
+            standalone database.
+          default: null
     - arg_name: labels
       api_field: autonomousDatabase.labels
       required: false
@@ -586,6 +598,23 @@
             Clone from latest available backup timestamp. This field is only
             applicable in case of BACKUP_FROM_TIMESTAMP source type.
           default: null
+        - arg_name: source-config-disaster-recovery-type
+          api_field: autonomousDatabase.sourceConfig.disasterRecoveryType
+          required: false
+          help_text: |-
+            The disaster recovery type of the Autonomous Database. This field
+            is only applicable in case of CROSS_REGION_DISASTER_RECOVERY source type.
+          choices:
+          - arg_value: adg
+            enum_value: ADG
+            help_text: |-
+              Autonomous Data Guard (ADG).
+            hidden: true
+          - arg_value: backup-based
+            enum_value: BACKUP_BASED
+            help_text: |-
+              Backup-based disaster recovery.
+            hidden: true
     - arg_name: request-id
       api_field: requestId
       required: false

@@ -432,6 +432,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateReleaseChannel
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateAcceleratedSecurityPatch
     collection: looker.projects.locations.instances
+    regional_endpoint_compatibility: SUPPORTED
 
   update:
     disable_auto_field_mask: true

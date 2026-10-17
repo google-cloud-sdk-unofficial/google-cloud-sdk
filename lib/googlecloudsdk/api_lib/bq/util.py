@@ -27,14 +27,19 @@ TOOL_TAG_HEADER = 'tool-tag'
 GCLOUD_TOOL_TAG = 'gcloud_cli'
 
 
+def GetApiMessages(api=_BQ_API, api_version=_BQ_API_VERSION):
+  """Returns apitools messages module for given API."""
+  return apis.GetMessagesModule(api, api_version)
+
+
 def GetApiMessage(message_name, api=_BQ_API, api_version=_BQ_API_VERSION):
   """Return apitools message object for give message name."""
-  messages = apis.GetMessagesModule(api, api_version)
+  messages = GetApiMessages(api, api_version)
   return getattr(messages, message_name)
 
 
-def GetApiClient(api=_BQ_API, api_version=_BQ_API_VERSION):
-  return apis.GetClientInstance(api, api_version)
+def GetApiClient(api=_BQ_API, api_version=_BQ_API_VERSION, location=None):
+  return apis.GetClientInstance(api, api_version, location=location)
 
 
 def GetMigrationApiMessage(

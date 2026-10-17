@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: true
   help_text:
     brief: List Beyondcorp AppConnector Gateway resources.
     description: List Beyondcorp AppConnector Gateway resources based on project and location.

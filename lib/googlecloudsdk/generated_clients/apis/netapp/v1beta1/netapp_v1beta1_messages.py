@@ -1434,6 +1434,138 @@ class HybridReplicationParameters(_messages.Message):
   replicationSchedule = _messages.EnumField('ReplicationScheduleValueValuesEnum', 11)
 
 
+class Inventory(_messages.Message):
+  r"""Inventory provides hierarchical storage resources across a project.
+
+  Fields:
+    clusters: Output only. The list of active ONTAP clusters associated with
+      this project in a specific location.
+    name: Identifier. Unique resource name of the inventory. Format:
+      `projects/{project}/locations/{location}/inventory`
+  """
+
+  clusters = _messages.MessageField('InventoryCluster', 1, repeated=True)
+  name = _messages.StringField(2)
+
+
+class InventoryAggregate(_messages.Message):
+  r"""Represents an Aggregate on a cluster.
+
+  Enums:
+    StateValueValuesEnum: Output only. Aggregate state (e.g., "online").
+
+  Fields:
+    availableSizeBytes: Output only. Available space in the aggregate in
+      bytes.
+    displayName: Output only. Aggregate name. Example: "aggr1"
+    sizeBytes: Output only. Total usable size of the aggregate in bytes.
+    state: Output only. Aggregate state (e.g., "online").
+    usedSizeBytes: Output only. Used space in the aggregate in bytes.
+    uuid: Output only. Aggregate UUID (v4).
+    volumeCount: Output only. Number of volumes in the aggregate.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Aggregate state (e.g., "online").
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified aggregate state.
+      ONLINE: The aggregate is available and operational.
+      OFFLINE: The aggregate is not available for use.
+      CREATING: The aggregate is in the process of being created.
+      DESTROYING: The aggregate is in the process of being destroyed.
+      FAILED: The aggregate has encountered an error and is not operational.
+      RESYNCING: The aggregate is in the process of resynchronizing data.
+      INITIALIZING: The aggregate is being initialized.
+      QUIESCING: The aggregate is in the process of being quiesced (paused or
+        stopped).
+      QUIESCED: The aggregate is in a quiesced state.
+    """
+    STATE_UNSPECIFIED = 0
+    ONLINE = 1
+    OFFLINE = 2
+    CREATING = 3
+    DESTROYING = 4
+    FAILED = 5
+    RESYNCING = 6
+    INITIALIZING = 7
+    QUIESCING = 8
+    QUIESCED = 9
+
+  availableSizeBytes = _messages.IntegerField(1)
+  displayName = _messages.StringField(2)
+  sizeBytes = _messages.IntegerField(3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  usedSizeBytes = _messages.IntegerField(5)
+  uuid = _messages.StringField(6)
+  volumeCount = _messages.IntegerField(7)
+
+
+class InventoryCluster(_messages.Message):
+  r"""Represents an ONTAP cluster.
+
+  Enums:
+    ProvisioningModelValueValuesEnum: Output only. The provisioning model of
+      the cluster.
+
+  Fields:
+    aggregates: Output only. Aggregates (storage pools) on this cluster.
+    displayName: Output only. The unique name of the cluster.
+    provisionedCapacityBytes: Output only. Total provisioned capacity in
+      bytes, computed as the sum of `size_in_bytes` for all VCP pools on this
+      cluster.
+    provisioningModel: Output only. The provisioning model of the cluster.
+    svms: Output only. SVMs hosted on this cluster. Only populated when
+      view=FULL.
+    usableCapacityBytes: Output only. Total usable capacity of the cluster in
+      bytes, computed as the sum of all aggregate sizes.
+  """
+
+  class ProvisioningModelValueValuesEnum(_messages.Enum):
+    r"""Output only. The provisioning model of the cluster.
+
+    Values:
+      PROVISIONING_MODEL_UNSPECIFIED: Unspecified provisioning model.
+      THICK: Thick provisioning.
+      THIN: Thin provisioning.
+    """
+    PROVISIONING_MODEL_UNSPECIFIED = 0
+    THICK = 1
+    THIN = 2
+
+  aggregates = _messages.MessageField('InventoryAggregate', 1, repeated=True)
+  displayName = _messages.StringField(2)
+  provisionedCapacityBytes = _messages.IntegerField(3)
+  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 4)
+  svms = _messages.MessageField('InventorySvm', 5, repeated=True)
+  usableCapacityBytes = _messages.IntegerField(6)
+
+
+class InventorySvm(_messages.Message):
+  r"""Represents a Storage Virtual Machine (SVM).
+
+  Fields:
+    displayName: Output only. The name of the SVM.
+    volumes: Output only. Volumes hosted on this SVM. Only populated when
+      `view=FULL`.
+  """
+
+  displayName = _messages.StringField(1)
+  volumes = _messages.MessageField('InventoryVolume', 2, repeated=True)
+
+
+class InventoryVolume(_messages.Message):
+  r"""Represents a Volume.
+
+  Fields:
+    displayName: Output only. The name of the volume.
+    uuid: Output only. The UUID of the volume.
+  """
+
+  displayName = _messages.StringField(1)
+  uuid = _messages.StringField(2)
+
+
 class KmsConfig(_messages.Message):
   r"""KmsConfig is the customer-managed encryption key(CMEK) configuration.
 
@@ -2308,6 +2440,35 @@ class NetappProjectsLocationsBackupVaultsPatchRequest(_messages.Message):
   backupVault = _messages.MessageField('BackupVault', 1)
   name = _messages.StringField(2, required=True)
   updateMask = _messages.StringField(3)
+
+
+class NetappProjectsLocationsGetInventoryRequest(_messages.Message):
+  r"""A NetappProjectsLocationsGetInventoryRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. The view of the inventory to return.
+
+  Fields:
+    name: Required. The resource name of the project inventory. Format:
+      `projects/{project}/locations/{location}/inventory`
+    view: Optional. The view of the inventory to return.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view of the inventory to return.
+
+    Values:
+      INVENTORY_VIEW_UNSPECIFIED: Unspecified inventory view. Default value is
+        BASIC.
+      INVENTORY_VIEW_BASIC: Basic inventory view.
+      INVENTORY_VIEW_FULL: Full inventory view.
+    """
+    INVENTORY_VIEW_UNSPECIFIED = 0
+    INVENTORY_VIEW_BASIC = 1
+    INVENTORY_VIEW_FULL = 2
+
+  name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
 
 
 class NetappProjectsLocationsGetRequest(_messages.Message):
@@ -4440,10 +4601,13 @@ class StoragePool(_messages.Message):
         type. Suitable for general purpose workloads.
       SCALE_TYPE_SCALEOUT: Represents higher capacity and performance scale-
         type. Suitable for more demanding workloads.
+      SCALE_TYPE_SCALEOUT_24: Represents higher capacity and performance
+        scale-type with 24 nodes. Suitable for extremely demanding workloads.
     """
     SCALE_TYPE_UNSPECIFIED = 0
     SCALE_TYPE_DEFAULT = 1
     SCALE_TYPE_SCALEOUT = 2
+    SCALE_TYPE_SCALEOUT_24 = 3
 
   class ServiceLevelValueValuesEnum(_messages.Enum):
     r"""Required. Service level of the storage pool

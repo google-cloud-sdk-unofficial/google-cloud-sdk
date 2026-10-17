@@ -16,14 +16,14 @@
 """Command for getting GlobalVmExtensionPolicies."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.global_vm_extension_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.global_vm_extension_policies import flags
+from googlecloudsdk.command_lib.compute.vm_extension_policies import flags as vm_extension_policies_flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine global VM extension policy."""
 
@@ -38,12 +38,14 @@ class Describe(base.DescribeCommand):
       ),
   }
 
-  @staticmethod
-  def Args(parser):
-    Describe.GlobalVmExtensionPoliciesArg = (
+  GLOBAL_VM_EXTENSION_POLICIES_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.GLOBAL_VM_EXTENSION_POLICIES_ARG = (
         flags.MakeGlobalVmExtensionPolicyArg()
     )
-    Describe.GlobalVmExtensionPoliciesArg.AddArgument(
+    cls.GLOBAL_VM_EXTENSION_POLICIES_ARG.AddArgument(
         parser, operation_type='describe'
     )
 
@@ -57,20 +59,23 @@ class Describe(base.DescribeCommand):
       Response calling the GlobalVmExtensionPoliciesService.Describe API.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = holder.client.messages
-
-    resource_ref = Describe.GlobalVmExtensionPoliciesArg.ResolveAsResource(
+    resource_ref = flags.ResolveGlobalVmExtensionPolicyResource(
         args,
-        holder.resources
+        holder,
+        self.GLOBAL_VM_EXTENSION_POLICIES_ARG,
     )
+    policy_client = client.GlobalVmExtensionPolicy.FromRef(
+        resource_ref, holder.client
+    )
+    return policy_client.Describe()
 
-    return client.MakeRequests([(
-        client.apitools_client.globalVmExtensionPolicies,
-        'Get',
-        messages.ComputeGlobalVmExtensionPoliciesGetRequest(
-            project=resource_ref.project,
-            globalVmExtensionPolicy=resource_ref.Name(),
-        ),
-    )])
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describe a Compute Engine global VM extension policy."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(DescribeAlpha, cls).Args(parser)
+    vm_extension_policies_flags.AddScopeFlags(parser)

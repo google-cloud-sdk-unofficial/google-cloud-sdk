@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Update a VPN spoke.
@@ -57,6 +59,8 @@
 
 
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Update a VPN spoke.

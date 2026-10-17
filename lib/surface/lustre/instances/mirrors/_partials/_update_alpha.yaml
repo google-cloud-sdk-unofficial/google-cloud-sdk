@@ -31,62 +31,19 @@
     - help_text: |-
         Identifier. Name of the mirror.
         Format:
-        projects/{project}/locations/{location}/instances/{instance}/mirrors/{mirror}
+        `projects/{project}/locations/{location}/instances/{instance}/mirrors/{mirror}`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_instances_mirrors
       required: true
-    - group:
-        api_field: mirror.gcsPath
-        arg_name: gcs-path
-        clearable: true
-        required: false
-        help_text: |-
-          Specifies a Cloud Storage bucket and, optionally, a path inside the bucket.
-        params:
-        - arg_name: gcs-path-uri
-          api_field: mirror.gcsPath.uri
-          required: false
-          repeated: false
-          help_text: |-
-            The URI to a Cloud Storage bucket, or a path within a bucket, using the
-            format `gs://<bucket_name>/<optional_path_inside_bucket>/`. If a path
-            inside the bucket is specified, it must end with a forward slash (`/`).
-    - group:
-        api_field: mirror.lustrePath
-        arg_name: lustre-path
-        clearable: true
-        required: false
-        help_text: |-
-          The root directory path to the Lustre file system.
-        params:
-        - arg_name: lustre-path
-          api_field: mirror.lustrePath.path
-          required: false
-          repeated: false
-          help_text: |-
-            The root directory path to the Managed Lustre file system. Must start with
-            `/`. Default is `/`. If you're importing data into Managed Lustre, any
-            path other than the default must already exist on the file system.
-    - arg_name: direction
-      api_field: mirror.direction
-      required: false
-      help_text: |-
-        Represents the direction of the mirror.
-      choices:
-      - arg_value: from-cloud-storage
-        enum_value: FROM_CLOUD_STORAGE
-        help_text: |-
-          Mirror from Cloud Storage to Lustre.
     - arg_name: deleted-files-retained
       api_field: mirror.deletedFilesRetained
       action: store_true_false
       required: false
       type: bool
       help_text: |-
-        If true, files will be retained in lustre after the corresponding files are
-        deleted from cloud storage.
-        Default is false.
+        If `true`, files are not deleted from Managed Lustre when the source
+        files are deleted from Cloud Storage. Default is `false`.
     - arg_name: description
       api_field: mirror.description
       required: false

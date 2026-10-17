@@ -20,55 +20,74 @@
 # License, Version 2.0.
 #
 
-
 """Python implementation of the Git file formats and protocols."""
 
-import sys
-from typing import Callable, Optional, TypeVar
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar
 
-if sys.version_info >= (3, 10):
-    from typing import ParamSpec
-else:
-    from typing_extensions import ParamSpec
-
-__version__ = (0, 24, 1)
+__version__ = (1, 2, 13)
 
 __all__ = ["__version__", "replace_me"]
 
 P = ParamSpec("P")
 R = TypeVar("R")
+F = TypeVar("F", bound=Callable[..., Any])
 
-try:
-    from dissolve import replace_me
-except ImportError:
-    # if dissolve is not installed, then just provide a basic implementation
-    # of its replace_me decorator
+if TYPE_CHECKING:
+    # For type checking, always use our typed signature
     def replace_me(
-        since: Optional[str] = None, remove_in: Optional[str] = None
+        since: tuple[int, ...] | str | None = None,
+        remove_in: tuple[int, ...] | str | None = None,
     ) -> Callable[[Callable[P, R]], Callable[P, R]]:
-        def decorator(func: Callable[P, R]) -> Callable[P, R]:
-            import functools
-            import warnings
+        """Decorator to mark functions as deprecated."""
+        ...
 
-            m = f"{func.__name__} is deprecated"
-            if since is not None and remove_in is not None:
-                m += f" since {since} and will be removed in {remove_in}"
-            elif since is not None:
-                m += f" since {since}"
-            elif remove_in is not None:
-                m += f" and will be removed in {remove_in}"
-            else:
-                m += " and will be removed in a future version"
+else:
+    try:
+        from dissolve import replace_me as replace_me
+    except ImportError:
+        # if dissolve is not installed, then just provide a basic implementation
+        # of its replace_me decorator
+        def replace_me(
+            since: tuple[int, ...] | str | None = None,
+            remove_in: tuple[int, ...] | str | None = None,
+        ) -> Callable[[Callable[P, R]], Callable[P, R]]:
+            """Decorator to mark functions as deprecated.
 
-            @functools.wraps(func)
-            def _wrapped_func(*args: P.args, **kwargs: P.kwargs) -> R:
-                warnings.warn(
-                    m,
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-                return func(*args, **kwargs)
+            Args:
+                since: Version when the function was deprecated
+                remove_in: Version when the function will be removed
 
-            return _wrapped_func
+            Returns:
+                Decorator function
+            """
 
-        return decorator
+            def decorator(func: Callable[P, R]) -> Callable[P, R]:
+                import functools
+                import warnings
+
+                m = f"{func.__name__} is deprecated"
+                since_str = str(since) if since is not None else None
+                remove_in_str = str(remove_in) if remove_in is not None else None
+
+                if since_str is not None and remove_in_str is not None:
+                    m += f" since {since_str} and will be removed in {remove_in_str}"
+                elif since_str is not None:
+                    m += f" since {since_str}"
+                elif remove_in_str is not None:
+                    m += f" and will be removed in {remove_in_str}"
+                else:
+                    m += " and will be removed in a future version"
+
+                @functools.wraps(func)
+                def _wrapped_func(*args: P.args, **kwargs: P.kwargs) -> R:
+                    warnings.warn(
+                        m,
+                        DeprecationWarning,
+                        stacklevel=2,
+                    )
+                    return func(*args, **kwargs)
+
+                return _wrapped_func
+
+            return decorator

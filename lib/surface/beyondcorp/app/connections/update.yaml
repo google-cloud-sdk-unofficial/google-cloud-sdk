@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Update an existing Beyondcorp application connection.
     description: Update an existing Beyondcorp application connection.

@@ -19,12 +19,20 @@
   - GA
   auto_generated: true
   help_text:
-    brief: reschedule instances
-    description: reschedule instances
+    brief: Reschedule a planned maintenance window for a Managed Lustre instance.
+    description: Reschedule a planned maintenance window for a Managed Lustre instance.
     examples: |-
-      To reschedule all instances, run:
+      To reschedule maintenance immediately for an instance `my-instance` in location `us-central1-a`, run:
 
-          $ {command}
+      $ {command} my-instance --location=us-central1-a --reschedule-type=immediate
+
+      To reschedule maintenance to the next available window for an instance `my-instance` in location `us-central1-a`, run:
+
+      $ {command} my-instance --location=us-central1-a --reschedule-type=next-available-window
+
+      To reschedule maintenance to a specific time for an instance `my-instance` in location `us-central1-a`, run:
+
+      $ {command} my-instance --location=us-central1-a --reschedule-type=by-time --reschedule-schedule-time="2026-09-01T10:00:00Z"
   arguments:
     params:
     - help_text: |-

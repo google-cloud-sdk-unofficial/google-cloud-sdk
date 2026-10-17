@@ -240,67 +240,21 @@ def _GetPlatform() -> platforms.Platform:
   return platform
 
 
-class ComponentInstaller(typing.Protocol):
-  """Protocol representing an updater capable of installing components."""
-
-  def GetCurrentVersionsInformation(
-      self, include_hidden: bool = False
-  ) -> typing.Dict[str, typing.Any]:
-    ...
-
-  def Install(
-      self,
-      components: typing.List[str],
-      throw_if_unattended: bool = False,
-      restart_args: typing.Optional[typing.List[str]] = None,
-  ) -> bool:
-    ...
-
-
-_updater_factory: typing.Optional[
-    typing.Callable[[str, typing.Any], ComponentInstaller]
-] = None
-_restart_command_fn: typing.Optional[typing.Callable[[], None]] = None
-
-
-def SetECPRepairHandler(
-    updater_factory: typing.Optional[
-        typing.Callable[[str, typing.Any], ComponentInstaller]
-    ] = None,
-    restart_command_fn: typing.Optional[typing.Callable[[], None]] = None,
-) -> None:
-  """Sets the factory and restart function for repairing ECP components.
-
-  Args:
-    updater_factory: Factory that accepts (sdk_root, platform) and returns a
-      ComponentInstaller.
-    restart_command_fn: Function to restart the CLI command.
-  """
-  global _updater_factory, _restart_command_fn
-  _updater_factory = updater_factory
-  _restart_command_fn = restart_command_fn
-
-
-def _GetUpdater(
-    sdk_root: str, platform: typing.Any
-) -> typing.Optional[ComponentInstaller]:
-  """Gets a ComponentInstaller instance from the registered factory if available."""
-  if _updater_factory is not None:
-    return _updater_factory(sdk_root, platform)
-  return None
-
-
-def _InstallECP(updater: ComponentInstaller, sdk_root: str) -> None:
+def _InstallECP(updater: typing.Any, sdk_root: str) -> None:
   """Installs enterprise-certificate-proxy component.
 
   Args:
-    updater: The update manager instance.
+    updater: The update_manager.UpdateManager instance.
     sdk_root: The root directory of the Google Cloud SDK installation.
 
   Raises:
-    exceptions.Error: If the user lacks admin/write permissions or install
-    fails.
+    update_manager.MissingRequiredComponentsError: If the component could not be
+      installed.
+    exceptions.Error: If the user lacks admin/write permissions.
   """
+  # pylint: disable=g-import-not-at-top
+  from googlecloudsdk.core.updater import update_manager
+  # pylint: enable=g-import-not-at-top
   log.status.Print(
       'Device appears to be enrolled in Certificate Based Access but is'
       ' missing critical components. Installing'
@@ -313,7 +267,7 @@ def _InstallECP(updater: ComponentInstaller, sdk_root: str) -> None:
         throw_if_unattended=True,
         restart_args=restart_args,
     ):
-      raise exceptions.Error(
+      raise update_manager.MissingRequiredComponentsError(
           'Enterprise Certificate Proxy could not be installed.'
       )
   except exceptions.RequiresAdminRightsError as e:
@@ -326,18 +280,11 @@ def _InstallECP(updater: ComponentInstaller, sdk_root: str) -> None:
     ) from e
 
 
-def _RepairECP(
-    cert_config_file_path: str,
-    updater: typing.Optional[ComponentInstaller] = None,
-    restart_func: typing.Optional[typing.Callable[[], None]] = None,
-) -> None:
+def _RepairECP(cert_config_file_path: str) -> None:
   """Install ECP and update the ecp config to include the new binaries.
 
   Args:
     cert_config_file_path: The filepath of the active certificate config.
-    updater: Updater instance to use. If None, uses the registered factory.
-    restart_func: Function to restart the CLI command. If None, uses the
-      registered restart command function.
 
   See go/gcloud-ecp-repair.
   """
@@ -349,28 +296,25 @@ def _RepairECP(
     log.debug('Skipping ECP repair because the SDK bin path is not set.')
     return
 
+  # pylint: disable=g-import-not-at-top
+  from googlecloudsdk.core.updater import update_manager
+  # pylint: enable=g-import-not-at-top
+
   # Temporarily disable client certificate to avoid deadlock.
   # TODO(b/544752521): See if this disabling can be removed.
   properties.VALUES.context_aware.use_client_certificate.Set(False)
 
   platform = _GetPlatform()
-  if updater is None:
-    updater = _GetUpdater(sdk_root, platform)
+  updater = update_manager.UpdateManager(
+      sdk_root=sdk_root, url=None, platform_filter=platform
+  )
+  installed_components = updater.GetCurrentVersionsInformation(
+      include_hidden=True
+  )
+  needs_install = 'enterprise-certificate-proxy' not in installed_components
 
-  if restart_func is None:
-    restart_func = _restart_command_fn
-
-  if updater is None:
-    log.debug('Skipping ECP repair because no updater is registered.')
-    needs_install = False
-  else:
-    installed_components = updater.GetCurrentVersionsInformation(
-        include_hidden=True
-    )
-    needs_install = 'enterprise-certificate-proxy' not in installed_components
-
-    if needs_install:
-      _InstallECP(updater, sdk_root)
+  if needs_install:
+    _InstallECP(updater, sdk_root)
 
   enterprise_certificate_config.update_config(
       enterprise_certificate_config.platform_to_config(platform),
@@ -378,8 +322,8 @@ def _RepairECP(
   )
   properties.VALUES.context_aware.use_client_certificate.Set(True)
 
-  if needs_install and restart_func:
-    restart_func()
+  if needs_install:
+    update_manager.RestartCommand()
 
 
 def GetCertificateConfig(

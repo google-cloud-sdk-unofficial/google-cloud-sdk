@@ -462,6 +462,8 @@ class Service(proto.Message):
         build_config (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.BuildConfig):
             Optional. Configuration for building a Cloud
             Run function.
+        functional_type (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.FunctionalType):
+            Optional. The functional type of the Service.
         reconciling (bool):
             Output only. Returns true if the Service is currently being
             acted upon by the system to bring it into the desired state.
@@ -682,6 +684,11 @@ class Service(proto.Message):
         proto.MESSAGE,
         number=41,
         message=vendor_settings.BuildConfig,
+    )
+    functional_type: vendor_settings.FunctionalType = proto.Field(
+        proto.ENUM,
+        number=42,
+        enum=vendor_settings.FunctionalType,
     )
     reconciling: bool = proto.Field(
         proto.BOOL,

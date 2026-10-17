@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: List all Privileged Access Manager (PAM) grants associated with an entitlement.

@@ -24,6 +24,10 @@ def _warn_instance_dict(msg, stacklevel):
     )
 
 
+def _none(_):
+    return None
+
+
 class _WrapperBase:
     """Wrapper base class providing default implementations for properties."""
 
@@ -33,9 +37,9 @@ class _WrapperBase:
         functools.update_wrapper(self, method)
         self._obj = obj  # protected
         self.__cache = cache
-        self.__key = key
-        self.__lock = lock
-        self.__cond = cond
+        self.__key = functools.partial(key, obj)
+        self.__lock = lock if lock is not None else _none
+        self.__cond = cond if cond is not None else _none
 
     def __call__(self, *args, **kwargs):
         raise NotImplementedError()  # pragma: no cover
@@ -49,15 +53,15 @@ class _WrapperBase:
 
     @property
     def cache_key(self):
-        return self.__key
+        return self.__key  # self._obj passed via functools.partial
 
     @property
     def cache_lock(self):
-        return None if self.__lock is None else self.__lock(self._obj)
+        return self.__lock(self._obj)
 
     @property
     def cache_condition(self):
-        return None if self.__cond is None else self.__cond(self._obj)
+        return self.__cond(self._obj)
 
 
 class _DescriptorBase:
@@ -77,8 +81,13 @@ class _DescriptorBase:
             )
 
     def __get__(self, obj, objtype=None):
-        wrapper = self.Wrapper(obj)
-        if self.__attrname is not None:
+        wrapper = self.Wrapper(obj)  # type: ignore
+        if obj is None:
+            # Return the wrapper itself without modification when accessed
+            # through the class to support class-level introspection, such
+            # as for mocking with autospec=True in unittest.mock.
+            pass
+        elif self.__attrname is not None:
             # replace descriptor instance with wrapper in instance dict
             try:
                 # In case of a race condition where another thread already replaced
@@ -149,7 +158,7 @@ def _condition_info(method, cache, key, lock, cond, info):
                 cache = self.cache
                 lock = self.cache_lock
                 cond = self.cache_condition
-                key = self.cache_key(self._obj, *args, **kwargs)
+                key = self.cache_key(*args, **kwargs)
 
                 with lock:
                     cond.wait_for(lambda: key not in self.__pending)
@@ -195,7 +204,7 @@ def _locked_info(method, cache, key, lock, info):
             def __call__(self, *args, **kwargs):
                 cache = self.cache
                 lock = self.cache_lock
-                key = self.cache_key(self._obj, *args, **kwargs)
+                key = self.cache_key(*args, **kwargs)
                 with lock:
                     try:
                         result = cache[key]
@@ -234,7 +243,7 @@ def _unlocked_info(method, cache, key, info):
 
             def __call__(self, *args, **kwargs):
                 cache = self.cache
-                key = self.cache_key(self._obj, *args, **kwargs)
+                key = self.cache_key(*args, **kwargs)
                 try:
                     result = cache[key]
                     self.__hits += 1
@@ -403,9 +412,11 @@ def _wrapper(method, cache, key, lock=None, cond=None, info=None):
             wrapper = _unlocked(method, cache, key)
 
     # backward-compatible properties for deprecated @classmethod use
-    wrapper.cache = cache
-    wrapper.cache_key = key
-    wrapper.cache_lock = lock if lock is not None else cond
-    wrapper.cache_condition = cond
+    wrapper.cache = cache  # type: ignore
+    wrapper.cache_key = key  # type: ignore
+    wrapper.cache_lock = lock if lock is not None else cond  # type: ignore
+    wrapper.cache_condition = cond  # type: ignore
 
-    return functools.update_wrapper(wrapper, method)
+    # functools.update_wrapper() will not accept descriptor (decorator) as wrapper
+    # https://github.com/python/typeshed/issues/9846
+    return functools.update_wrapper(wrapper, method)  # type: ignore

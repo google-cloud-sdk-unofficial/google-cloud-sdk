@@ -1060,9 +1060,6 @@ class Make(bigquery_command.BigqueryCmd):
       bq mk --migration_workflow --location=us --config_file=file.json
     """
 
-    client = bq_cached_client.Client.Get()
-    reference = None
-
     if self.d and self.t:
       raise app.UsageError('Cannot specify both -d and -t.')
     if frontend_utils.ValidateAtMostOneSelected(
@@ -1072,6 +1069,35 @@ class Make(bigquery_command.BigqueryCmd):
           'Cannot specify more than one of'
           ' --schema or --view or --materialized_view.'
       )
+
+    # Early delegation to gcloud (before bq_cached_client.Client.Get()).
+    # This prevents premature and redundant evaluation of BQ CLI credentials,
+    # .bigqueryrc, and discovery document construction when delegating to
+    # gcloud.
+    if self.migration_workflow:
+      # TODO: b/563038048 - Remove flag validation and delegate that to gcloud.
+      if not bq_flags.LOCATION.value:
+        raise app.UsageError(
+            'Need to specify location for creating migration workflows.'
+        )
+      if not self.config_file:
+        raise app.UsageError(
+            'Need to specify config file for creating migration workflows.'
+        )
+      self.DelegateToGcloudAndExit(
+          'migration_workflows',
+          'mk',
+          identifier,
+          command_flags_for_this_resource={  # pyrefly: ignore[bad-argument-type]
+              'location': bq_flags.LOCATION.value,
+              'config_file': self.config_file,
+              'sync': bq_flags.SYNCHRONOUS_MODE.value,  # pyrefly: ignore[bad-assignment]
+              'synchronous_mode': bq_flags.SYNCHRONOUS_MODE.value,  # pyrefly: ignore[bad-assignment]
+          },
+      )
+
+    client = bq_cached_client.Client.Get()
+    reference = None
     if self.t:
       reference = bq_client_utils.GetTableReference(
           id_fallbacks=client, identifier=identifier
@@ -1416,27 +1442,6 @@ class Make(bigquery_command.BigqueryCmd):
         utils_formatting.maybe_print_manual_instructions_for_connection(
             created_connection, flag_format=bq_flags.FORMAT.value  # pyrefly: ignore[bad-argument-type]
         )
-    elif self.migration_workflow:
-      if not bq_flags.LOCATION.value:
-        raise app.UsageError(
-            'Need to specify location for creating migration workflows.'
-        )
-      if not self.config_file:
-        raise app.UsageError(
-            'Need to specify config file for creating migration workflows.'
-        )
-      reference = None
-      self.DelegateToGcloudAndExit(
-          'migration_workflows',
-          'mk',
-          identifier,
-          command_flags_for_this_resource={  # pyrefly: ignore[bad-argument-type]
-              'location': bq_flags.LOCATION.value,
-              'config_file': self.config_file,
-              'sync': bq_flags.SYNCHRONOUS_MODE.value,
-              'synchronous_mode': bq_flags.SYNCHRONOUS_MODE.value,
-          },
-      )
     elif self.d or not identifier:
       reference = bq_client_utils.GetDatasetReference(
           id_fallbacks=client, identifier=identifier

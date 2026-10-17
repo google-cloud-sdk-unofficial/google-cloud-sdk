@@ -61,6 +61,8 @@ auto_flags = [
     'enableCiliumClusterwideNetworkPolicy',
     'cpDiskEncryptionKey',
     'disableL4LbFirewallReconciliation',
+    'granularNat',
+    'networkSuite',
     'hpaprofile',
     'enableIpAccess',
     'enableAuthorizedNetworksOnPrivateEndpoint',

@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.services import apikeys
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -49,8 +50,8 @@ class Lookup(base.Command):
       Resource name and its parent name.
     """
 
-    client = apikeys.GetClientInstance()
-    messages = client.MESSAGES_MODULE
+    client = apikeys.GetClientInstance(self.ReleaseTrack())
+    messages = apikeys.GetMessagesModule(self.ReleaseTrack())
 
     request = messages.ApikeysKeysLookupKeyRequest(keyString=args.key_string)
     return client.keys.LookupKey(request)

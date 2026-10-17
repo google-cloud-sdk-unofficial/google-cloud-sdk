@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: List Cloud Backup and DR restore template executions.
+    description: List restore template executions under a specified restore template.
+    examples: |
+      To list restore template executions for restore template `my-template` in location `us-central1`, run:
+
+        $ {command} --restore-template=my-template --location=us-central1
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    collection: backupdr.projects.locations.restoreTemplates.executions
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Restore template to list executions from.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:restoreTemplateDefault
+      is_positional: false
+
+  output:
+    format: |
+      table(
+        name.basename():label=EXEC_ID:sort=1,
+        type,
+        phase,
+        state,
+        restorePhaseInfo.restoreResource:label=RESTORED_RESOURCE,
+        createTime
+      )

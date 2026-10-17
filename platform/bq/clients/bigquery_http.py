@@ -9,11 +9,14 @@ from __future__ import print_function
 
 import json
 import logging
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Tuple
+import urllib.parse
 
 # To configure apiclient logging.
 from absl import flags
 import googleapiclient
+from googleapiclient import _helpers as googleapiclient_helpers
+from googleapiclient import discovery as googleapiclient_discovery
 from googleapiclient import http as http_request
 from googleapiclient import model
 import httplib2
@@ -23,8 +26,7 @@ import bq_utils
 from clients import utils as bq_client_utils
 from utils import bq_gcloud_utils
 
-
-_NUM_RETRIES_FOR_SERVER_SIDE_ERRORS = 3
+_NUM_RETRIES_FOR_SERVER_SIDE_ERRORS: int = 3
 
 
 # pylint: disable=protected-access

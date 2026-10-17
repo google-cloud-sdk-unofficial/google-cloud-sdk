@@ -134,6 +134,7 @@ from .types.vendor_settings import WorkerPoolScaling
 from .types.vendor_settings import WorkloadIdentityConfig
 from .types.vendor_settings import EncryptionKeyRevocationAction
 from .types.vendor_settings import ExecutionEnvironment
+from .types.vendor_settings import FunctionalType
 from .types.vendor_settings import IdentityType
 from .types.vendor_settings import IngressTraffic
 from .types.worker_pool import CreateWorkerPoolRequest
@@ -187,6 +188,7 @@ __all__ = (
 'ExecutionReference',
 'ExecutionTemplate',
 'ExecutionsClient',
+'FunctionalType',
 'GCSVolumeSource',
 'GRPCAction',
 'GetExecutionRequest',

@@ -72,15 +72,15 @@ class AndroidInstallPackagesDeviceAction(_messages.Message):
       the target package for subsequent actions and as the installation
       ordering anchor. Whether this package is treated as the application
       under test depends on the job action: - Actions that require an explicit
-      target package (such as Android Robo tests, performance metrics
-      collection, or accessibility scans) use this package to identify the
-      application to inspect or drive. - Actions that discover or manage
-      targets independently (such as Android instrumentation tests, where
-      target packages are defined in the test runner manifest) treat this
-      field primarily as an installation order anchor between pre- and post-
-      installables. Optional. If omitted, all packages in
-      `pre_target_app_installables` and `post_target_app_installables` are
-      installed without a designated target package.
+      target package (such as performance metrics collection, or accessibility
+      scans) use this package to identify the application to inspect or drive.
+      - Actions that discover or manage targets independently (such as Android
+      instrumentation tests, where target packages are defined in the test
+      runner manifest) treat this field primarily as an installation order
+      anchor between pre- and post-installables. Optional. If omitted, all
+      packages in `pre_target_app_installables` and
+      `post_target_app_installables` are installed without a designated target
+      package.
   """
 
   installables = _messages.MessageField('AndroidInstallable', 1, repeated=True)
@@ -131,8 +131,9 @@ class AndroidInstrumentationTest(_messages.Message):
     instrumentationTimeout: Optional. The timeout of the instrumentation test.
       Default value: 5 min. Range: [1 min, 3 hours].
     orchestratorVersion: Optional. The version of the Android Test
-      Orchestrator to use for the test. If not set, no orchestrator is used.
-      If set to "auto", a system-default orchestrator is used.
+      Orchestrator to use for the test. The available orchestrator versions
+      can be retrieved from the catalog service. If set to "auto", the default
+      orchestrator is used. If not set, no orchestrator is used.
     smartSharding: Optional. Smart sharding strategy to split the job into
       multiple shards based on the test methods and their execution time.
     testInstallable: Required. The test package to install and run the test.

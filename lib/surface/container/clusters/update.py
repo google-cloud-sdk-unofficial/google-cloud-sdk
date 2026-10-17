@@ -464,6 +464,8 @@ class Update(base.UpdateCommand):
     flags.AddUndrainAdditionalIpRangesFlag(group_add_drain_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
+    flags.AddGranularNatFlag(group, hidden=True, is_update=True)
+    flags.AddNetworkSuiteFlag(group, hidden=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
@@ -648,6 +650,8 @@ class Update(base.UpdateCommand):
     opts.enable_l4_lb_firewall_reconciliation = (
         args.enable_l4_lb_firewall_reconciliation
     )
+    opts.enable_granular_nat = args.enable_granular_nat
+    opts.network_suite = args.network_suite
     opts.tier = args.tier
     opts.enable_ip_access = args.enable_ip_access
     opts.enable_authorized_networks_on_private_endpoint = (
@@ -1391,6 +1395,8 @@ class UpdateBeta(Update):
     flags.AddUndrainAdditionalIpRangesFlag(group_add_drain_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
+    flags.AddGranularNatFlag(group, hidden=True, is_update=True)
+    flags.AddNetworkSuiteFlag(group, hidden=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
@@ -1637,6 +1643,8 @@ class UpdateBeta(Update):
     opts.enable_l4_lb_firewall_reconciliation = (
         args.enable_l4_lb_firewall_reconciliation
     )
+    opts.enable_granular_nat = args.enable_granular_nat
+    opts.network_suite = args.network_suite
     opts.tier = args.tier
     opts.enable_ip_access = args.enable_ip_access
     opts.enable_authorized_networks_on_private_endpoint = (
@@ -1825,6 +1833,8 @@ class UpdateAlpha(Update):
     flags.AddUndrainAdditionalIpRangesFlag(group_add_drain_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
+    flags.AddGranularNatFlag(group, hidden=True, is_update=True)
+    flags.AddNetworkSuiteFlag(group, hidden=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
@@ -2067,6 +2077,8 @@ class UpdateAlpha(Update):
     opts.enable_l4_lb_firewall_reconciliation = (
         args.enable_l4_lb_firewall_reconciliation
     )
+    opts.enable_granular_nat = args.enable_granular_nat
+    opts.network_suite = args.network_suite
     opts.tier = args.tier
     opts.enable_ip_access = args.enable_ip_access
     opts.enable_authorized_networks_on_private_endpoint = (

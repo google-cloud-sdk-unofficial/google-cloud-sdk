@@ -458,10 +458,10 @@ def _should_skip_unsupported_object_type(
     False otherwise.
   """
   if skip_unsupported:
-    unsupported_type = resource_util.get_unsupported_object_type(resource)
+    unsupported_type = resource_reference.get_unsupported_object_type(resource)
     if unsupported_type:
       log.status.Print(
-          resource_util.UNSUPPORTED_OBJECT_WARNING_FORMAT.format(
+          resource_reference.UNSUPPORTED_OBJECT_WARNING_FORMAT.format(
               resource, unsupported_type.value
           )
       )

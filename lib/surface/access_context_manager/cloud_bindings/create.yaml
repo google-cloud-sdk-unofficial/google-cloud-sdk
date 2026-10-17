@@ -4,178 +4,116 @@
 
   help_text:
     brief: Create cloud access bindings for a specific group.
-    GA:
-      description: |
-        Create a new cloud access binding. The access level and/or session settings will be globally
-        bound to the group.
+    description: |
+      Create a new cloud access binding.
 
-        To apply an access level and/or session settings to a specific application, specify the
-        restricted application in the `--binding-file`. In this case, the access level and/or
-        session settings specified in the binding file will be bound to the group and the restricted
-        applications.
+      For Google Group bindings (`--group-key`), the access level, the session settings, or both
+      can apply globally across the group or be scoped to specific applications using
+      `--binding-file`. To apply an access level or session settings to a specific application,
+      specify `restrictedClientApplication` in the `--binding-file`. In this case, the settings
+      specified in the binding file apply to the group for those restricted applications.
 
-        The access level can also be bound to a specific service account or all service accounts
-        in a specified project.
-      examples: |
-        To create a new cloud access binding, run:
+      The access level can also be bound to a specific service account or all service accounts
+      in a specified project.
 
-          $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc
+      To apply session settings to all workforce pools in an organization, specify the
+      `restrictedProject` scope in the `--binding-file` with `--federated-principal` set to
+      `principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`.
+      Bindings created for all workforce pools in an organization support only `scopedAccessSettings`
+      with the `restrictedProject` client scope and active `sessionSettings`. Application scopes
+      (`restrictedClientApplication`), top-level session settings, access levels, and dry run
+      levels are not allowed for this principal type.
 
-        To create a new cloud access binding for particular applications (with access levels and/or session settings) using a YAML file, run:
+      Binding session settings to other principal types isn't supported, and those requests are
+      rejected. You can bind session settings only to the following principal types:
 
-          $ {command} --group-key=my-group-key --organization='1234567890' \
-            --binding-file='binding.yaml'
+      * Google Groups: specify the group by using the `--group-key` flag.
+      * All workforce pools in an organization: specify the organization's workforce pools by
+        using the `--federated-principal` flag. Binding session settings to other federated
+        principals isn't supported.
+    examples: |
+      To create a new cloud access binding, run the following command:
 
-        To create a new global cloud access binding, and for particular applications
-        using a yaml file, run:
+        $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc
 
-          $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
-            --organization='1234567890' \
-            --binding-file='binding.yaml'
+      To create a new cloud access binding for particular applications (with access levels, session settings, or both) using a YAML file, run the following command:
 
-        To create a new cloud access binding for the dry run access level, run:
+        $ {command} --group-key=my-group-key --organization='1234567890' \
+          --binding-file='binding.yaml'
 
-          $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
-            --dry-run-level=accessPolicies/123/accessLevels/def
+      To create a new cloud access binding with a global access level, and settings for particular applications
+      using a YAML file, run the following command:
 
-        To create a new cloud access binding with global session settings, specify your session
-        length using an ISO duration string and the `session-length` flag. For example:
+        $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
+          --organization='1234567890' \
+          --binding-file='binding.yaml'
 
-          $ {command} --group-key=my-group-key --organization='1234567890' \
-            --session-length=2h
+      To create a new cloud access binding for the dry run access level, run the following command:
 
-        To set a particular session reauth method for these session settings, run:
+        $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
+          --dry-run-level=accessPolicies/123/accessLevels/def
 
-          $ {command} --group-key=my-group-key --organization='1234567890' \
-            --session-length=2h --session-reauth-method=LOGIN
+      To create a new cloud access binding with global session settings, specify your session
+      length using an ISO duration string and the `session-length` flag. For example, run the following command:
 
-        Global and per-app session settings can be set on the same group, along with access levels.
-        For example:
+        $ {command} --group-key=my-group-key --organization='1234567890' \
+          --session-length=2h
 
-          $ {command} --group-key=my-group-key --organization='1234567890' \
-            --session-length=2h --session-reauth-method=LOGIN \
-            --level=accessPolicies/123/accessLevels/abc \
-            --dry-run-level=accessPolicies/123/accessLevels/def \
-            --binding-file='binding.yaml'
+      To set a particular session reauth method for these session settings, run the following command:
 
-        To create a new cloud access binding for a particular service account, run:
+        $ {command} --group-key=my-group-key --organization='1234567890' \
+          --session-length=2h --session-reauth-method=LOGIN
 
-          $ {command} --service-account=service-account@project.iam.gserviceaccount.com \
-            --level=accessPolicies/123/accessLevels/abc \
-            --organization='1234567890'
+      Global and per-app session settings can be set on the same group, along with access levels.
+      For example, run the following command:
 
-        To create a new cloud access binding for all service accounts in a particular project, run:
+        $ {command} --group-key=my-group-key --organization='1234567890' \
+          --session-length=2h --session-reauth-method=LOGIN \
+          --level=accessPolicies/123/accessLevels/abc \
+          --dry-run-level=accessPolicies/123/accessLevels/def \
+          --binding-file='binding.yaml'
 
-          $ {command} --service-account-project-number='987654321' \
-            --level=accessPolicies/123/accessLevels/abc \
-            --organization='1234567890'
-    ALPHA:
-      description: |
-        Create a new cloud access binding. The access level and/or session settings can be globally
-        bound to a Google Group or scoped using `--binding-file`.
+      To create a new cloud access binding for a particular service account, run the following command:
 
-        To apply an access level and/or session settings to a specific application, specify the
-        `restrictedClientApplication` in the `--binding-file` for a Google Group binding. In this
-        case, the access level and/or session settings specified in the binding file will be bound
-        to the group and the restricted applications.
+        $ {command} --service-account=service-account@project.iam.gserviceaccount.com \
+          --level=accessPolicies/123/accessLevels/abc \
+          --organization='1234567890'
 
-        The access level can also be bound to a specific service account or all service accounts
-        in a specified project.
+      To create a new cloud access binding for all service accounts in a particular project, run the following command:
 
-        To apply session settings to all workforce pools in an organization, specify the
-        `restrictedProject` scope in the `--binding-file` with `--federated-principal` set to
-        `principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`.
-        Bindings created for all workforce pools in an organization support only `scopedAccessSettings`
-        with the `restrictedProject` client scope and active `sessionSettings`. Application scopes
-        (`restrictedClientApplication`), top-level session settings, access levels, and dry run
-        levels are not allowed for this principal type.
+        $ {command} --service-account-project-number='987654321' \
+          --level=accessPolicies/123/accessLevels/abc \
+          --organization='1234567890'
 
-        Session settings are only supported for Google Groups (`--group-key`) and bindings tied to
-        all workforce pools in an organization. No other bindings allow session settings, and
-        requests containing session settings for other principal types will be rejected.
-      examples: |
-        To create a new cloud access binding, run:
+      To create a new cloud access binding for a specific federated principal, run the following command:
 
-          $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc
+        $ {command} --federated-principal='principal://iam.googleapis.com/projects/1234567890/locations/global/workloadIdentityPools/my-pool/subject/my-subject' \
+          --level=accessPolicies/123/accessLevels/abc \
+          --organization='1234567890'
 
-        To create a new cloud access binding for particular applications (with access levels and/or session settings) using a YAML file, run:
+      To create a new cloud access binding for all workforce pools in a given organization with
+      project-scoped session settings:
 
-          $ {command} --group-key=my-group-key --organization='1234567890' \
-            --binding-file='binding.yaml'
+        Create a binding.yaml file containing scopedAccessSettings with restrictedProject and
+        activeSettings (session length between 1 hour and 90 days, sessionReauthMethod: LOGIN,
+        and sessionLengthEnabled: true):
 
-        To create a new global cloud access binding, and for particular applications
-        using a yaml file, run:
+          scopedAccessSettings:
+          - scope:
+              clientScope:
+                restrictedProject:
+                  name: projects/1234567890
+            activeSettings:
+              sessionSettings:
+                sessionLength: 7776000s
+                sessionLengthEnabled: true
+                sessionReauthMethod: LOGIN
 
-          $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
-            --organization='1234567890' \
-            --binding-file='binding.yaml'
+        Then run the following command:
 
-        To create a new cloud access binding for the dry run access level, run:
-
-          $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
-            --dry-run-level=accessPolicies/123/accessLevels/def
-
-        To create a new cloud access binding with global session settings, specify your session
-        length using an ISO duration string and the `session-length` flag. For example:
-
-          $ {command} --group-key=my-group-key --organization='1234567890' \
-            --session-length=2h
-
-        To set a particular session reauth method for these session settings, run:
-
-          $ {command} --group-key=my-group-key --organization='1234567890' \
-            --session-length=2h --session-reauth-method=LOGIN
-
-        Global and per-app session settings can be set on the same group, along with access levels.
-        For example:
-
-          $ {command} --group-key=my-group-key --organization='1234567890' \
-            --session-length=2h --session-reauth-method=LOGIN \
-            --level=accessPolicies/123/accessLevels/abc \
-            --dry-run-level=accessPolicies/123/accessLevels/def \
-            --binding-file='binding.yaml'
-
-        To create a new cloud access binding for a particular service account, run:
-
-          $ {command} --service-account=service-account@project.iam.gserviceaccount.com \
-            --level=accessPolicies/123/accessLevels/abc \
-            --organization='1234567890'
-
-        To create a new cloud access binding for all service accounts in a particular project, run:
-
-          $ {command} --service-account-project-number='987654321' \
-            --level=accessPolicies/123/accessLevels/abc \
-            --organization='1234567890'
-
-        To create a new cloud access binding for a specific federated principal, run:
-
-          $ {command} --federated-principal='principal://iam.googleapis.com/projects/1234567890/locations/global/workloadIdentityPools/my-pool/subject/my-subject' \
-            --level=accessPolicies/123/accessLevels/abc \
-            --organization='1234567890'
-
-        To create a new cloud access binding for all workforce pools in a given organization with
-        project-scoped session settings:
-
-          Create a `binding.yaml` file containing `scopedAccessSettings` with `restrictedProject` and
-          `activeSettings` (session length between 1 hour and 90 days, `sessionReauthMethod: LOGIN`,
-          and `sessionLengthEnabled: true`):
-
-            scopedAccessSettings:
-            - scope:
-                clientScope:
-                  restrictedProject:
-                    name: projects/1234567890
-              activeSettings:
-                sessionSettings:
-                  sessionLength: 7776000s
-                  sessionLengthEnabled: true
-                  sessionReauthMethod: LOGIN
-
-          Then run:
-
-            $ {command} \
-              --federated-principal='principalSet://cloudresourcemanager.googleapis.com/organizations/1234567890/type/WorkforcePool' \
-              --organization='1234567890' --binding-file='binding.yaml'
+          $ {command} \
+            --federated-principal='principalSet://cloudresourcemanager.googleapis.com/organizations/1234567890/type/WorkforcePool' \
+            --organization='1234567890' --binding-file='binding.yaml'
 
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings
@@ -195,58 +133,46 @@
       metavar: YAML_FILE
       arg_name: binding-file
       help_text: |
-        Path to the file that contains a Google Cloud Platform user access binding.
+        Path to the file that contains a Google Cloud user access binding.
 
-        This file contains a YAML-compliant object representing
-        a GcpUserAccessBinding (as described in the API reference:
-        https://docs.cloud.google.com/access-context-manager/docs/apply-policies-to-user-groups#define_configurations_for_specific_applications)
-        containing ScopedAccessSettings only.
-        No other binding fields are allowed.
+        This file contains a YAML-compliant object representing a GcpUserAccessBinding that
+        contains `scopedAccessSettings` only. No other binding fields are allowed.
+
+        For details about the object, see the API reference:
+        https://docs.cloud.google.com/access-context-manager/docs/apply-policies-to-user-groups#define_configurations_for_specific_applications
+
+        For Google Group bindings (`--group-key`), `scopedAccessSettings` can specify
+        `restrictedClientApplication` (using `clientId` or `name`) with `accessLevels`,
+        `dryRunAccessLevels`, and `sessionSettings` (session length up to 24 hours).
+        The `restrictedProject` scope is not supported for Google Group bindings.
+
+        For bindings tied to all workforce pools in an organization
+        (`principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`),
+        `scopedAccessSettings` must only contain `restrictedProject` (format: `name: projects/{project_number}`)
+        within the `scope.clientScope` and `sessionSettings` within `activeSettings`.
+        For this configuration, the following requirements apply:
+        * `sessionLength` must be set and must be between 1 hour and 90 days (for example, `7776000s`).
+        * `sessionReauthMethod` must be `LOGIN` or omitted (defaults to `LOGIN`).
+        * `sessionLengthEnabled` must be set to `true`.
+        * `maxInactivity` must be set to 0 or omitted.
+        * `useOidcMaxAge` must be set to `false` or omitted.
+        * No application scopes (`restrictedClientApplication`), access levels, or dry run settings are allowed.
+
+        The `restrictedProject` scope is usable only with bindings tied to all workforce pools in
+        an organization.
       repeated: false
       ALPHA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1alpha
-        help_text: |
-          Path to the file that contains a Google Cloud user access binding.
-
-          This file contains a YAML-compliant object representing a GcpUserAccessBinding
-          containing `scopedAccessSettings` only. No other binding fields are allowed.
-
-          For Google Group bindings (`--group-key`), `scopedAccessSettings` can specify
-          `restrictedClientApplication` (using `clientId` or `name`) with `accessLevels`,
-          `dryRunAccessLevels`, and/or `sessionSettings` (session length up to 1 day / 24 hours).
-          The `restrictedProject` scope is not supported for Google Group bindings.
-
-          For bindings tied to all workforce pools in an organization
-          (`principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`),
-          `scopedAccessSettings` must only contain `restrictedProject` (format: `name: projects/{project_number}`)
-          within the `scope.clientScope` and `sessionSettings` within `activeSettings`.
-          For this configuration:
-          * `sessionLength` must be set and must be between 1 hour and 90 days (e.g. `7776000s`).
-          * `sessionReauthMethod` must be `LOGIN` or omitted (defaults to `LOGIN`).
-          * `sessionLengthEnabled` must be set to `true`.
-          * `maxInactivity` must be set to 0 or omitted.
-          * `useOidcMaxAge` must be set to `false` or omitted.
-          * No application scopes (`restrictedClientApplication`), access levels, or dry run settings are allowed.
-
-          The `restrictedProject` scope is only usable with bindings tied to the all workforce pools
-          in an organization federated principal.
       GA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1
     - api_field: gcpUserAccessBinding.groupKey
       arg_name: group-key
       type: str
-      help_text: Google Group ID whose members are subject to the restrictions of this binding.
-      GA:
-        help_text: |
-          Google Group ID whose members are subject to the restrictions of this
-          binding. At most one of `--group-key` or `--federated-principal` can be
-          specified.
-      ALPHA:
-        help_text: |
-          Google Group ID whose members are subject to the restrictions of this
-          binding. At most one of `--group-key`, `--federated-principal`,
-          `--service-account`, or `--service-account-project-number` can be
-          specified.
+      help_text: |
+        Google Group ID whose members are subject to the restrictions of this
+        binding. At most one of `--group-key`, `--federated-principal`,
+        `--service-account`, or `--service-account-project-number` can be
+        specified.
     - api_field: gcpUserAccessBinding.accessLevels
       arg_name: level
       type: str
@@ -264,53 +190,34 @@
     - api_field: gcpUserAccessBinding.sessionSettings.sessionLength
       arg_name: session-length
       type: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionLength
-      GA:
-        help_text: |
-          The maximum lifetime of a user session provided as an  ISO 8601 duration string. Must be at
-          least one hour or zero seconds, and no more than twenty-four hours. Granularity is limited
-          to seconds.
+      help_text: |
+        The maximum lifetime of a user session provided as an ISO 8601 duration string.
+        Must be at least one hour or zero seconds, and no more than twenty-four hours. Granularity
+        is limited to seconds.
 
-          When --session-length=0 then users in the group attached to this binding will have infinite
-          session length, effectively disabling the session settings.
+        When `--session-length=0`, users in the group attached to this binding have infinite
+        session length, which effectively disables session settings.
 
-          A session begins when a user signs in successfully. If a user signs out before the end of
-          the session lifetime, a new login creates a new session with a fresh lifetime. When a
-          session expires, the user is asked to re-authenticate in accordance with session-method.
+        A session begins when a user signs in successfully. If a user signs out before the end of
+        the session lifetime, a new login creates a new session with a fresh lifetime. When a
+        session expires, the user is asked to re-authenticate in accordance with `--session-reauth-method`.
 
-          Setting --session-reauth-method when --session-length is empty raises an error.
-      ALPHA:
-        help_text: |
-          The maximum lifetime of a user session provided as an ISO 8601 duration string.
-          Must be at least one hour or zero seconds, and no more than twenty-four hours. Granularity
-          is limited to seconds.
+        Setting `--session-reauth-method` when `--session-length` is empty raises an error.
 
-          When `--session-length=0` then users in the group attached to this binding will have infinite
-          session length, effectively disabling session settings.
-
-          A session begins when a user signs in successfully. If a user signs out before the end of
-          the session lifetime, a new login creates a new session with a fresh lifetime. When a
-          session expires, the user is asked to re-authenticate in accordance with `--session-reauth-method`.
-
-          Setting `--session-reauth-method` when `--session-length` is empty raises an error.
-
-          This flag only applies to Google Group bindings (`--group-key`). It is not supported for
-          bindings tied to all workforce pools in an organization (for which session settings must be
-          configured via `--binding-file` under `scopedAccessSettings` on `restrictedProject` scope)
-          or any other principal type.
+        The session length applies only to Google Group bindings (`--group-key`). It isn't
+        supported for bindings tied to all workforce pools in an organization, or for any other
+        principal type. For bindings tied to all workforce pools in an organization, configure
+        session settings through `--binding-file`, under `scopedAccessSettings` on the
+        `restrictedProject` scope.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionReauthMethod
       arg_name: session-reauth-method
       default: login
       help_text: |
         Specifies the type of re-authentication challenge given to the user when their session
-         expires. Defaults to --session-reauth-method=login if unspecified and --session-length is
-         set. Cannot be used when --session-length is empty or 0.
-      ALPHA:
-        help_text: |
-          Specifies the type of re-authentication challenge given to the user when their session
-          expires. Defaults to `--session-reauth-method=login` if unspecified and `--session-length` is
-          set. Cannot be used when `--session-length` is empty or 0. This parameter is only supported
-          for Google Group bindings and is not supported for bindings tied to all workforce pools in
-          an organization (for which session settings are configured via `--binding-file`).
+        expires. Defaults to `--session-reauth-method=login` if unspecified and `--session-length` is
+        set. Cannot be used when `--session-length` is empty or 0. This parameter is supported only
+        for Google Group bindings. It isn't supported for bindings tied to all workforce pools in an
+        organization; for those bindings, configure session settings through `--binding-file`.
       choices:
       - arg_value: login
         enum_value: LOGIN
@@ -359,33 +266,25 @@
     - api_field: gcpUserAccessBinding.principal.federatedPrincipal
       arg_name: federated-principal
       required: false
-      release_tracks: [GA, ALPHA]
       type: str
-      GA:
-        help_text: |
-          IAM federated principal that this binding applies to. Can be a single
-          principal or a principal set. Used to assign policies to third-party
-          workforce or workload identities. At most one of `--group-key` or
-          `--federated-principal` can be specified.
-      ALPHA:
-        help_text: |
-          The IAM principal identifier of the federated workforce or workload to assign the policy to.
-          Examples include:
+      help_text: |
+        The IAM principal identifier of the federated workforce or workload to assign the policy to.
+        Examples include the following:
 
-          * Single principal:
-            `principal://iam.googleapis.com/projects/{project_number}/locations/global/workloadIdentityPools/{pool_id}/subject/{subject_attribute_value}`
-          * All workloads in a workload identity pool:
-            `principalSet://iam.googleapis.com/projects/{project_number}/locations/global/workloadIdentityPools/{pool_id}/*`
-          * All Workforce Pools in a Google Cloud organization:
-            `principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`
+        * Single principal:
+          `principal://iam.googleapis.com/projects/{project_number}/locations/global/workloadIdentityPools/{pool_id}/subject/{subject_attribute_value}`
+        * All workloads in a workload identity pool:
+          `principalSet://iam.googleapis.com/projects/{project_number}/locations/global/workloadIdentityPools/{pool_id}/*`
+        * All Workforce Pools in a Google Cloud organization:
+          `principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`
 
-          Bindings created for all Workforce Pools in an organization support only `scopedAccessSettings`
-          with the `restrictedProject` client scope and active `sessionSettings`. No other configurations
-          (such as application scopes, access levels, or dry run settings) are allowed.
+        Bindings created for all Workforce Pools in an organization support only `scopedAccessSettings`
+        with the `restrictedProject` client scope and active `sessionSettings`. No other configurations
+        (such as application scopes, access levels, or dry run settings) are allowed.
 
-          Session settings cannot be configured for individual federated principals or workload identity pools.
-          At most one of `--group-key`, `--federated-principal`, `--service-account`, or
-          `--service-account-project-number` can be specified.
+        Session settings cannot be configured for individual federated principals or workload identity pools.
+        At most one of `--group-key`, `--federated-principal`, `--service-account`, or
+        `--service-account-project-number` can be specified.
 
   output:
     format: yaml

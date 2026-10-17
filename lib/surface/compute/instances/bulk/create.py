@@ -165,6 +165,7 @@ class Create(base.Command):
   _support_workload_identity_config = True
   _support_identity_type = False
   _support_instance_selection_min_cpu_platform = False
+  _support_flex_policy_flag_with_mincpu_and_disks = False
   _support_vsock_mode = False
   _support_expose_host_topology = True
 
@@ -193,6 +194,7 @@ class Create(base.Command):
         support_workload_identity_config=cls._support_workload_identity_config,
         support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
+        support_flex_policy_flag_with_mincpu_and_disks=cls._support_flex_policy_flag_with_mincpu_and_disks,
         support_vsock_mode=cls._support_vsock_mode,
         support_expose_host_topology=cls._support_expose_host_topology,
     )
@@ -392,7 +394,8 @@ class CreateBeta(Create):
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
   _support_identity_type = False
-  _support_instance_selection_min_cpu_platform = False
+  _support_instance_selection_min_cpu_platform = True
+  _support_flex_policy_flag_with_mincpu_and_disks = True
 
   @classmethod
   def Args(cls, parser):
@@ -417,6 +420,7 @@ class CreateBeta(Create):
         support_workload_identity_config=cls._support_workload_identity_config,
         support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
+        support_flex_policy_flag_with_mincpu_and_disks=cls._support_flex_policy_flag_with_mincpu_and_disks,
         support_vsock_mode=cls._support_vsock_mode,
         support_expose_host_topology=cls._support_expose_host_topology,
         include_kms_key_service_account=True,
@@ -450,6 +454,7 @@ class CreateAlpha(Create):
   _support_workload_identity_config = True
   _support_identity_type = True
   _support_instance_selection_min_cpu_platform = True
+  _support_flex_policy_flag_with_mincpu_and_disks = True
   _support_vsock_mode = True
   _support_expose_host_topology = True
 
@@ -476,6 +481,7 @@ class CreateAlpha(Create):
         support_workload_identity_config=cls._support_workload_identity_config,
         support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
+        support_flex_policy_flag_with_mincpu_and_disks=cls._support_flex_policy_flag_with_mincpu_and_disks,
         support_vsock_mode=cls._support_vsock_mode,
         support_expose_host_topology=cls._support_expose_host_topology,
         include_kms_key_service_account=True,

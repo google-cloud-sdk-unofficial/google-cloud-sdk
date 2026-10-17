@@ -62,17 +62,6 @@
           resource_method_params:
             databaseConnection.odbNetwork: '{__relative_name__}'
           required: false
-        - arg_name: network
-          help_text: |-
-            The resource name of the customer's VPC network to peer with.
-            Format: projects/{project}/global/networks/{network}
-            For Oracle Database on Compute Engine VM.
-          is_positional: false
-          is_primary_resource: false
-          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_none_networks
-          resource_method_params:
-            databaseConnection.network: '{__relative_name__}'
-          required: false
     - help_text: |-
         Identifier. The resource name of the DatabaseConnection.
         Format:

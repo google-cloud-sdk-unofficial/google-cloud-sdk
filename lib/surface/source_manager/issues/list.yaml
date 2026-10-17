@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA]
+  hidden: true
+
+  help_text:
+    brief: List Secure Source Manager issues under a repository.
+    description: List Secure Source Manager issues under a repository.
+    examples: |
+      To list issues in repository `my-repo` and location `us-central1`, run the following command:
+
+      $ {command} --repository=my-repo --region=us-central1
+
+  request:
+    api_version: v1
+    collection: securesourcemanager.projects.locations.repositories.issues
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The repository you want to list the issues for.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:repository
+      arg_name: repository
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=ISSUE_ID:sort=1,
+        name.segment(3):label=LOCATION,
+        title:label=TITLE,
+        state:label=STATE,
+        createTime.date()
+      )
