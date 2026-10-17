@@ -1428,13 +1428,15 @@ def AddServiceAccountNameArg(parser, action='to act on'):
             'my-iam-account@somedomain.com.'.format(action)))
 
 
-def AddServiceAccountRecommendArg(parser, action):
-  """Adds optional recommend argument to the parser.
+def AddServiceAccountRecommendArg(parser):
+  """Adds the --recommend argument, which has no effect, to the parser.
+
+  The flag used to add an Active Assist change-risk warning to the prompt.
+  Those recommendations have been retired; the flag is kept so that existing
+  invocations keep working.
 
   Args:
     parser: An argparse.ArgumentParser-like object to which we add the args.
-    action: Action to display in the help message. Should be something like
-      'deletion' or a noun that describes the action being performed.
 
   Raises:
     ArgumentError if the argument is already defined in the parser.
@@ -1446,12 +1448,9 @@ def AddServiceAccountRecommendArg(parser, action):
       default=False,
       required=False,
       help=(
-          'If true, checks Active Assist recommendation for the risk level of '
-          'service account {}, and issues a warning in the prompt. Optional '
-          'flag is set to false by default. For details see '
-          'https://cloud.google.com/recommender/'
-          'docs/change-risk-recommendations'
-      ).format(action),
+          'This flag has no effect. It previously added a change-risk warning '
+          'from Active Assist, which has been retired.'
+      ),
   )
 
 

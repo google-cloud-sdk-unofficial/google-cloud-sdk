@@ -340,6 +340,7 @@ def AddDisabled(parser, required=False):
       '--disabled',
       required=required,
       action=arg_parsers.StoreTrueFalseAction,
+      inverted_help_text=True,
       help=(
           'Use this flag to disable the rule. Disabled rules will not affect '
           'traffic.'

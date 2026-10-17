@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
 )
 @base.DefaultUniverseOnly
 class Tables(base.Group):

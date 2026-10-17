@@ -363,7 +363,7 @@ class Flag(FlagOrPositional):
         unwrapped_flag, 'store_property', (None, None, None)
     )
     if prop:
-      # This allows actions.Store*Property() to be reconstituted.
+      # This allows property_actions.Store*Property() to be reconstituted.
       attr = {LOOKUP_NAME: six.text_type(prop)}
       if kind == 'bool':
         flag.type = 'bool'

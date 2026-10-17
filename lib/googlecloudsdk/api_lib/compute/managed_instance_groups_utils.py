@@ -14,7 +14,6 @@
 # limitations under the License.
 """Common functions and classes for dealing with managed instances groups."""
 
-
 import json
 import random
 import re
@@ -44,7 +43,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 import six
 from six.moves import range  # pylint: disable=redefined-builtin
-
 
 _ALLOWED_UTILIZATION_TARGET_TYPES = [
     'DELTA_PER_MINUTE',
@@ -76,6 +74,8 @@ ARGS_CONFLICTING_WITH_AUTOSCALING_FILE_ALPHA = (
     + [
         'cpu_time_aggregation',
         'cpu_signal_aggregation',
+        'min_cpu_utilization',
+        'max_cpu_utilization',
     ]
 )
 
@@ -324,12 +324,14 @@ def GetModeFlag():
               'new autoscalers).'
           ),
           'only-scale-out': 'Permits autoscaling to scale only out and not in.',
-          'only-up': """
+          'only-up': (
+              """
               (DEPRECATED) Permits autoscaling to scale only out and not in.
 
               Value `only-up` is deprecated. Use `--mode only-scale-out`
               instead.
-          """,
+          """
+          ),
           'off': 'Turns off autoscaling, while keeping the new configuration.',
       },
       help_str="""\
@@ -407,18 +409,52 @@ def AddClearScaleDownControlFlag(parser):
   )
 
 
+def AddCpuUtilizationRangeFlags(parser, required=False, include_clear=False):
+  """Adds CPU utilization range arguments to the parser."""
+  arg_group = parser
+  if include_clear:
+    arg_group = parser.add_group(mutex=True)
+    arg_group.add_argument(
+        '--clear-cpu-range-boundaries',
+        action='store_true',
+        help=(
+            'If specified, the CPU utilization range boundaries'
+            ' (`--min-cpu-utilization` and `--max-cpu-utilization`) will be'
+            ' cleared.'
+        ),
+    )
+    arg_group = arg_group.add_group()
+
+  arg_group.add_argument(
+      '--min-cpu-utilization',
+      type=arg_parsers.BoundedFloat(0.0, 1.0),
+      required=required,
+      help='Minimum CPU utilization for range-based scaling.',
+  )
+  arg_group.add_argument(
+      '--max-cpu-utilization',
+      type=arg_parsers.BoundedFloat(0.0, 1.0),
+      required=required,
+      help='Maximum CPU utilization for range-based scaling.',
+  )
+
+
 def AddPredictiveAutoscaling(parser, standard=True):
   """Add Predictive autoscaling arguments to the parser."""
   choices = {
-      'none': """\
+      'none': (
+          """\
 (Default) No predictions are made when calculating the number of VM
 instances.
-""",
-      'optimize-availability': """\
+"""
+      ),
+      'optimize-availability': (
+          """\
 Predictive autoscaling predicts the future values of the
 scaling metric and scales the group in advance to ensure that new
 VM instances are ready in time to cover the predicted peak.
-""",
+"""
+      ),
   }
   if standard:
     choices['standard'] = """
@@ -833,9 +869,10 @@ def ValidateCpuAggregationArgs(args):
         )
 
 
-def ValidateAutoscalerArgs(args):
+def ValidateAutoscalerArgs(args, is_set_command=False):
   """Validates args."""
   ValidateCpuAggregationArgs(args)
+  ValidateCpuUtilizationRangeArgs(args, is_set_command=is_set_command)
   if args.min_num_replicas and args.max_num_replicas:
     if args.min_num_replicas > args.max_num_replicas:
       raise calliope_exceptions.InvalidArgumentException(
@@ -853,6 +890,57 @@ def ValidateAutoscalerArgs(args):
         raise calliope_exceptions.InvalidArgumentException(
             '--custom-metric-utilization utilization-target', 'less than 0.'
         )
+
+
+def ValidateCpuUtilizationRangeArgs(args, is_set_command=False):
+  """Validates CPU utilization range arguments."""
+  min_util = getattr(args, 'min_cpu_utilization', None)
+  max_util = getattr(args, 'max_cpu_utilization', None)
+  target_util = getattr(args, 'target_cpu_utilization', None)
+
+  if is_set_command:
+    if min_util is not None or max_util is not None:
+      if target_util is None:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--target-cpu-utilization',
+            '--target-cpu-utilization is required when specifying a CPU'
+            ' utilization range.',
+        )
+
+  if min_util is not None and min_util <= 0.0:
+    raise calliope_exceptions.InvalidArgumentException(
+        '--min-cpu-utilization',
+        'min-cpu-utilization must be in range (0.0, 1.0].',
+    )
+  if max_util is not None and max_util <= 0.0:
+    raise calliope_exceptions.InvalidArgumentException(
+        '--max-cpu-utilization',
+        'max-cpu-utilization must be in range (0.0, 1.0].',
+    )
+
+  if min_util is not None and max_util is not None:
+    if min_util > max_util:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--min-cpu-utilization',
+          'min-cpu-utilization must be less than or equal to'
+          ' max-cpu-utilization.',
+      )
+
+  if min_util is not None and target_util is not None:
+    if target_util < min_util:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--target-cpu-utilization',
+          'target-cpu-utilization must be greater than or equal to'
+          ' min-cpu-utilization.',
+      )
+
+  if max_util is not None and target_util is not None:
+    if target_util > max_util:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--target-cpu-utilization',
+          'target-cpu-utilization must be less than or equal to'
+          ' max-cpu-utilization.',
+      )
 
 
 def GetInstanceGroupManagerOrThrow(igm_ref, client):
@@ -1179,12 +1267,18 @@ def _BuildCpuUtilization(args, messages):
       'cpu_utilization_predictive_method',
       'cpu_time_aggregation',
       'cpu_signal_aggregation',
+      'min_cpu_utilization',
+      'max_cpu_utilization',
   ]
 
   if any(args.IsKnownAndSpecified(dest) for dest in flags_to_check):
     cpu_message = messages.AutoscalingPolicyCpuUtilization()
     if args.IsKnownAndSpecified('target_cpu_utilization'):
       cpu_message.utilizationTarget = args.target_cpu_utilization
+    if args.IsKnownAndSpecified('min_cpu_utilization'):
+      cpu_message.utilizationMin = args.min_cpu_utilization
+    if args.IsKnownAndSpecified('max_cpu_utilization'):
+      cpu_message.utilizationMax = args.max_cpu_utilization
     if args.IsKnownAndSpecified('cpu_utilization_predictive_method'):
       cpu_predictive_enum = (
           messages.AutoscalingPolicyCpuUtilization.PredictiveMethodValueValuesEnum
@@ -1912,7 +2006,9 @@ def _GetExistingInstanceSelectionNames(igm_resource):
     return []
   return [
       instance_selection.key
-      for instance_selection in igm_resource.instanceFlexibilityPolicy.instanceSelections.additionalProperties
+      for instance_selection in (
+          igm_resource.instanceFlexibilityPolicy.instanceSelections.additionalProperties
+      )
   ]
 
 
@@ -2639,9 +2735,7 @@ def RegisterInstanceSelectionsPatchEncoders(messages):
         return None
       disks = None
       if prop.value.disks:
-        disks = [
-            encoding.MessageToPyValue(disk) for disk in prop.value.disks
-        ]
+        disks = [encoding.MessageToPyValue(disk) for disk in prop.value.disks]
       return {
           'rank': prop.value.rank,
           'machineTypes': prop.value.machineTypes,

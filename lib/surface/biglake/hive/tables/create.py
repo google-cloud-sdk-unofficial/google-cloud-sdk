@@ -60,7 +60,7 @@ help_text = textwrap.dedent("""\
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):

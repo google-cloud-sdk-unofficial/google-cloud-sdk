@@ -216,10 +216,6 @@ def _ParseInstanceType(sql_messages, instance_type):
 
 def _ParseDatabaseCenterIntegration(sql_messages, integration_state):
   if integration_state:
-    if integration_state.lower() == 'unspecified':
-      return (
-          sql_messages.DatabaseInstance.DatabaseCenterIntegrationValueValuesEnum.DATABASE_CENTER_INTEGRATION_UNSPECIFIED
-      )
     return sql_messages.DatabaseInstance.DatabaseCenterIntegrationValueValuesEnum.lookup_by_name(
         integration_state.upper()
     )
@@ -795,7 +791,9 @@ class _BaseInstances(object):
             args, 'sql_server_password_policy_maximum_age', None
         ),
         sql_server_enable_password_policy=getattr(
-            args, 'sql_server_enable_password_policy', None
+            args,
+            'enable_sql_server_password_policy',
+            getattr(args, 'sql_server_enable_password_policy', None),
         ),
     )
     if sql_server_password_policy is not None:
@@ -1046,13 +1044,30 @@ class _BaseInstances(object):
                 args, 'sql_server_password_policy_maximum_age', None
             ),
             sql_server_enable_password_policy=getattr(
-                args, 'sql_server_enable_password_policy', None
+                args,
+                'enable_sql_server_password_policy',
+                getattr(args, 'sql_server_enable_password_policy', None),
             ),
             clear_sql_server_password_policy=args.IsKnownAndSpecified(
                 'clear_sql_server_password_policy'
             ),
         )
     )
+
+    has_sql_server_subfield_cleared = any([
+        getattr(args, 'clear_sql_server_password_policy_history_length', False),
+        getattr(args, 'clear_sql_server_password_policy_minimum_age', False),
+        getattr(args, 'clear_sql_server_password_policy_maximum_age', False),
+        getattr(args, 'clear_sql_server_password_policy_min_length', False),
+    ])
+    if (
+        has_sql_server_subfield_cleared
+        and not getattr(args, 'clear_sql_server_password_policy', False)
+        and not settings.sqlServerPasswordValidationPolicy
+    ):
+      settings.sqlServerPasswordValidationPolicy = (
+          sql_messages.SqlServerPasswordValidationPolicy()
+      )
 
     settings.sqlServerAuditConfig = reducers.SqlServerAuditConfig(
         sql_messages,

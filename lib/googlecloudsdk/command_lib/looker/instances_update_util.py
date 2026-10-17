@@ -490,6 +490,19 @@ def UpdateAcceleratedSecurityPatch(unused_instance_ref, args, patch_request):
   return patch_request
 
 
+def UpdateAuthType(unused_instance_ref, args, patch_request):
+  """Hook to update auth type to the update mask of the request."""
+  if args.IsSpecified('workforce_auth_enabled'):
+    patch_request = AddFieldToUpdateMask(
+        'auth_type.workforce_auth_enabled', patch_request
+    )
+  if args.IsSpecified('google_auth_enabled'):
+    patch_request = AddFieldToUpdateMask(
+        'auth_type.google_auth_enabled', patch_request
+    )
+  return patch_request
+
+
 def _WarnForMarketplaceEnabledUpdate():
   """Adds prompt that warns about marketplace enabled update."""
   message = 'Change to instance marketplace enabled requested. '

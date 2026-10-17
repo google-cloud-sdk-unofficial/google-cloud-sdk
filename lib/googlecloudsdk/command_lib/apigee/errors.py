@@ -299,3 +299,19 @@ class LocationResolutionError(exceptions.Error):
   def __init__(self):
     msg = "Failed to resolve the location of the Apigee organization."
     super(LocationResolutionError, self).__init__(msg)
+
+
+class InvalidTemplateFormatError(exceptions.Error):
+  """Raised when the template file is not in a valid format."""
+
+  def __init__(self, template_path):
+    msg = "Failed to parse template file: {}".format(template_path)
+    super(InvalidTemplateFormatError, self).__init__(msg)
+
+
+class InvalidFeatureFormatError(exceptions.Error):
+  """Raised when the feature file is not in a valid format."""
+
+  def __init__(self, feature_path):
+    msg = "Failed to parse feature file: {}".format(feature_path)
+    super(InvalidFeatureFormatError, self).__init__(msg)

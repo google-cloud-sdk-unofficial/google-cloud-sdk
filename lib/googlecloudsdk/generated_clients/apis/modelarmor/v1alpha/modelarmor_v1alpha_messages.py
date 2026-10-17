@@ -527,10 +527,15 @@ class FloorSettingMetadata(_messages.Message):
   r"""message describing FloorSetting Metadata
 
   Fields:
+    dataResidencyCompliant: Optional. If false, enable cross-jurisdiction
+      fallback to an available Model Armor location to apply Model Armor
+      policies when Model Armor isn't available in the requested jurisdiction.
+      If true (default), strict data residency is enforced.
     multiLanguageDetection: Optional. Metadata for multi language detection.
   """
 
-  multiLanguageDetection = _messages.MessageField('FloorSettingFloorSettingMetadataMultiLanguageDetection', 1)
+  dataResidencyCompliant = _messages.BooleanField(1)
+  multiLanguageDetection = _messages.MessageField('FloorSettingFloorSettingMetadataMultiLanguageDetection', 2)
 
 
 class ListLocationsResponse(_messages.Message):
@@ -1282,9 +1287,10 @@ class RaiFilterResult(_messages.Message):
       equal to or higher than the confidence level defined in configuration.
 
   Messages:
-    RaiFilterTypeResultsValue: The map of RAI filter results where key is RAI
-      filter type - either of "sexually_explicit", "hate_speech",
-      "harassment", "dangerous", "violence", "sexually_suggestive".
+    RaiFilterTypeResultsValue: The map of RAI filter results where the key is
+      the RAI filter type and the value is the RAI filter's result. Allowed
+      keys are "sexually_explicit", "hate_speech", "harassment", and
+      "dangerous".
 
   Fields:
     executionState: Output only. Reports whether the RAI filter was
@@ -1295,9 +1301,9 @@ class RaiFilterResult(_messages.Message):
     messageItems: Optional messages corresponding to the result. A message can
       provide warnings or error details. For example, if execution state is
       skipped then this field provides related reason/explanation.
-    raiFilterTypeResults: The map of RAI filter results where key is RAI
-      filter type - either of "sexually_explicit", "hate_speech",
-      "harassment", "dangerous", "violence", "sexually_suggestive".
+    raiFilterTypeResults: The map of RAI filter results where the key is the
+      RAI filter type and the value is the RAI filter's result. Allowed keys
+      are "sexually_explicit", "hate_speech", "harassment", and "dangerous".
   """
 
   class ExecutionStateValueValuesEnum(_messages.Enum):
@@ -1330,9 +1336,9 @@ class RaiFilterResult(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class RaiFilterTypeResultsValue(_messages.Message):
-    r"""The map of RAI filter results where key is RAI filter type - either of
-    "sexually_explicit", "hate_speech", "harassment", "dangerous", "violence",
-    "sexually_suggestive".
+    r"""The map of RAI filter results where the key is the RAI filter type and
+    the value is the RAI filter's result. Allowed keys are
+    "sexually_explicit", "hate_speech", "harassment", and "dangerous".
 
     Messages:
       AdditionalProperty: An additional property for a

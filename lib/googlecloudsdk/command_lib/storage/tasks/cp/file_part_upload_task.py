@@ -133,6 +133,51 @@ class FilePartUploadTask(file_part_task.FilePartTask):
     except command_errors.HashMismatchError:
       return False
 
+  def _populate_post_upload_digesters(
+      self, api, destination_resource, digesters
+  ):
+    """Populates digesters after upload for client-side hash validation."""
+    if (
+        cloud_api.Capability.CLIENT_SIDE_HASH_VALIDATION not in api.capabilities
+        or self._source_resource.storage_url.is_stream
+        or properties.VALUES.storage.check_hashes.Get()
+        == properties.CheckHashes.NEVER.value
+    ):
+      return
+    stop_offset = (
+        self._offset + self._length
+        if self._offset is not None and self._length is not None
+        else None
+    )
+    if destination_resource.md5_hash not in (
+        None,
+        resource_reference.NOT_SUPPORTED_DO_NOT_DISPLAY,
+    ):
+      digesters[hash_util.HashAlgorithm.MD5] = hash_util.get_hash_from_file(
+          self._source_path,
+          hash_util.HashAlgorithm.MD5,
+          start=self._offset,
+          stop=stop_offset,
+      )
+    elif destination_resource.crc32c_hash not in (
+        None,
+        resource_reference.NOT_SUPPORTED_DO_NOT_DISPLAY,
+    ):
+      fast_crc32c_util.log_or_raise_crc32c_issues()
+      if (
+          properties.VALUES.storage.check_hashes.Get()
+          == properties.CheckHashes.ALWAYS.value
+          or fast_crc32c_util.check_if_will_use_fast_crc32c()
+      ):
+        digesters[hash_util.HashAlgorithm.CRC32C] = (
+            hash_util.get_hash_from_file(
+                self._source_path,
+                hash_util.HashAlgorithm.CRC32C,
+                start=self._offset,
+                stop=stop_offset,
+            )
+        )
+
   def execute(self, task_status_queue=None):
     """Performs upload."""
     digesters = upload_util.get_digesters(
@@ -393,6 +438,7 @@ class FilePartUploadTask(file_part_task.FilePartTask):
             upload_strategy=upload_strategy,
         )
 
+      self._populate_post_upload_digesters(api, destination_resource, digesters)
       upload_util.validate_uploaded_object(digesters, destination_resource,
                                            task_status_queue)
 

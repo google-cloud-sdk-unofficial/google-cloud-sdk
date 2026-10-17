@@ -362,9 +362,10 @@ def get_object_resource_from_xml_response(scheme,
       storage_class=object_dict.get('StorageClass'),
       update_time=object_dict.get('LastModified'),
   )
-  # The CRC32C is added if available only for GCS.
-  if scheme == storage_url.ProviderPrefix.GCS:
-    object_resource.crc32c_hash = _get_crc32c_hash_from_object_dict(object_dict)
+  # The CRC32C is added if available from GCS XML headers.
+  crc32c_hash = _get_crc32c_hash_from_object_dict(object_dict)
+  if crc32c_hash or scheme == storage_url.ProviderPrefix.GCS:
+    object_resource.crc32c_hash = crc32c_hash
   # The tags are added if available only for S3.
   if scheme == storage_url.ProviderPrefix.S3:
     object_resource.tags = _parse_object_tags_if_any(object_dict)

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       Create a Dataplex data asset resource.
@@ -10,8 +10,7 @@
           $ {command} test-da --data-product=test-dp --location=us-central1 --resource=//SERVICE_NAME/projects/MY_PROJECT/datasets/MY_DATASET/tables/MY_TABLE
 
   request:
-    ALPHA:
-      api_version: v1
+    api_version: v1
     collection: dataplex.projects.locations.dataProducts.dataAssets
   arguments:
     resource:

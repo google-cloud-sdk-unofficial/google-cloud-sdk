@@ -158,7 +158,8 @@ class AgentSpec(_messages.Message):
   r"""The spec of the agent.
 
   Enums:
-    TypeValueValuesEnum: Required. The type of the agent spec content.
+    TypeValueValuesEnum: Required. Immutable. The type of the agent spec
+      content.
 
   Messages:
     ContentValue: Optional. The content of the Agent spec in the JSON format.
@@ -169,11 +170,11 @@ class AgentSpec(_messages.Message):
     content: Optional. The content of the Agent spec in the JSON format. This
       payload is validated against the schema for the specified type. The
       content size is limited to `10KB`.
-    type: Required. The type of the agent spec content.
+    type: Required. Immutable. The type of the agent spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. The type of the agent spec content.
+    r"""Required. Immutable. The type of the agent spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
@@ -1156,6 +1157,8 @@ class AiApplication(_messages.Message):
       Application.
 
   Fields:
+    applicationProperties: Output only. Properties of an underlying cloud
+      resource that can comprise an AI Application.
     attributes: Optional. Consumer provided attributes.
     createTime: Output only. Creation time.
     description: Optional. User-defined description of the AI Application.
@@ -1183,14 +1186,15 @@ class AiApplication(_messages.Message):
     ACTIVE = 2
     DELETING = 3
 
-  attributes = _messages.MessageField('Attributes', 1)
-  createTime = _messages.StringField(2)
-  description = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  name = _messages.StringField(5)
-  state = _messages.EnumField('StateValueValuesEnum', 6)
-  uid = _messages.StringField(7)
-  updateTime = _messages.StringField(8)
+  applicationProperties = _messages.MessageField('ApplicationProperties', 1)
+  attributes = _messages.MessageField('Attributes', 2)
+  createTime = _messages.StringField(3)
+  description = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  name = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  uid = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class Annotations(_messages.Message):
@@ -1220,6 +1224,54 @@ class Annotations(_messages.Message):
   openWorldHint = _messages.BooleanField(3)
   readOnlyHint = _messages.BooleanField(4)
   title = _messages.StringField(5)
+
+
+class ApplicationProperties(_messages.Message):
+  r"""Additional system properties of an Application.
+
+  Messages:
+    ExtendedMetadataValue: Output only. Additional metadata specific to the
+      App Hub application. The key is a string that identifies the type of
+      metadata and the value is the metadata contents specific to that type.
+      Key format: `apphub.googleapis.com/{metadataType}`
+
+  Fields:
+    extendedMetadata: Output only. Additional metadata specific to the App Hub
+      application. The key is a string that identifies the type of metadata
+      and the value is the metadata contents specific to that type. Key
+      format: `apphub.googleapis.com/{metadataType}`
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExtendedMetadataValue(_messages.Message):
+    r"""Output only. Additional metadata specific to the App Hub application.
+    The key is a string that identifies the type of metadata and the value is
+    the metadata contents specific to that type. Key format:
+    `apphub.googleapis.com/{metadataType}`
+
+    Messages:
+      AdditionalProperty: An additional property for a ExtendedMetadataValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ExtendedMetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExtendedMetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ExtendedMetadata attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ExtendedMetadata', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  extendedMetadata = _messages.MessageField('ExtendedMetadataValue', 1)
 
 
 class Attributes(_messages.Message):
@@ -1555,7 +1607,8 @@ class EndpointSpec(_messages.Message):
   r"""The spec of the endpoint.
 
   Enums:
-    TypeValueValuesEnum: Required. The type of the endpoint spec content.
+    TypeValueValuesEnum: Required. Immutable. The type of the endpoint spec
+      content.
 
   Messages:
     ContentValue: Optional. The content of the endpoint spec. Reserved for
@@ -1564,11 +1617,11 @@ class EndpointSpec(_messages.Message):
   Fields:
     content: Optional. The content of the endpoint spec. Reserved for future
       use.
-    type: Required. The type of the endpoint spec content.
+    type: Required. Immutable. The type of the endpoint spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. The type of the endpoint spec content.
+    r"""Required. Immutable. The type of the endpoint spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
@@ -1671,6 +1724,48 @@ class Expr(_messages.Message):
   expression = _messages.StringField(2)
   location = _messages.StringField(3)
   title = _messages.StringField(4)
+
+
+class ExtendedMetadata(_messages.Message):
+  r"""Additional metadata for a Service or Workload.
+
+  Messages:
+    MetadataStructValue: Output only. The metadata contents.
+
+  Fields:
+    extendedMetadataSchema: Output only. The resource name for the Extended
+      Metadata Schema that describes the contents of `metadata_struct`.
+      Format: projects//locations//extendedMetadataSchemas/
+    metadataStruct: Output only. The metadata contents.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataStructValue(_messages.Message):
+    r"""Output only. The metadata contents.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataStructValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataStructValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  extendedMetadataSchema = _messages.StringField(1)
+  metadataStruct = _messages.MessageField('MetadataStructValue', 2)
 
 
 class FetchAvailableBindingsResponse(_messages.Message):
@@ -2325,7 +2420,8 @@ class McpServerSpec(_messages.Message):
   r"""The spec of the MCP Server.
 
   Enums:
-    TypeValueValuesEnum: Required. The type of the MCP Server spec content.
+    TypeValueValuesEnum: Required. Immutable. The type of the MCP Server spec
+      content.
 
   Messages:
     ContentValue: Optional. The content of the MCP Server spec. This payload
@@ -2336,11 +2432,11 @@ class McpServerSpec(_messages.Message):
     content: Optional. The content of the MCP Server spec. This payload is
       validated against the schema for the specified type. The content size is
       limited to `10KB`.
-    type: Required. The type of the MCP Server spec content.
+    type: Required. Immutable. The type of the MCP Server spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. The type of the MCP Server spec content.
+    r"""Required. Immutable. The type of the MCP Server spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.

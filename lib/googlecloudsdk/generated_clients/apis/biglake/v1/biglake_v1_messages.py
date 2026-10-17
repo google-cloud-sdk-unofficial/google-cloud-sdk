@@ -1294,6 +1294,8 @@ class FederatedCatalogOptions(_messages.Message):
       Horizon Catalog.
     unity_catalog_info: Optional. Information specific to Databricks Unity
       Catalog.
+    user_identity_federation_oidc_claims: Output only. The OIDC claims emitted
+      in the ID token for User Identity Federation.
     workday_catalog_info: Optional. Information specific to Workday Data Lake.
   """
 
@@ -1326,7 +1328,8 @@ class FederatedCatalogOptions(_messages.Message):
   service_directory_name = _messages.StringField(10)
   snowflake_catalog_info = _messages.MessageField('SnowflakeCatalogInfo', 11)
   unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 12)
-  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 13)
+  user_identity_federation_oidc_claims = _messages.MessageField('UserIdentityFederationOidcClaims', 13)
+  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 14)
 
 
 class FieldSchema(_messages.Message):
@@ -2861,6 +2864,23 @@ class UpdatePartitionRequest(_messages.Message):
   updateMask = _messages.StringField(2)
 
 
+class UserIdentityFederationOidcClaims(_messages.Message):
+  r"""OIDC claims emitted in the ID token when
+  IDENTITY_MODE_USER_IDENTITY_FEDERATION is enabled. These values identify the
+  identity provider (issuer) and the intended recipient (audience) of the
+  token. To enable user identity federation, users must configure their remote
+  catalog to trust this issuer and expect this audience.
+
+  Fields:
+    audience: Output only. The audience that this catalog expects in the
+      token.
+    issuer_url: Output only. The issuer URL of the identity provider.
+  """
+
+  audience = _messages.StringField(1)
+  issuer_url = _messages.StringField(2)
+
+
 class WorkdayCatalogInfo(_messages.Message):
   r"""Information specific to Workday Data Lake. The Iceberg REST Catalog
   endpoint is of the form:
@@ -2902,6 +2922,8 @@ encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'snowflake_catalog_info', 'snowflake-catalog-info')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'unity_catalog_info', 'unity-catalog-info')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'user_identity_federation_oidc_claims', 'user-identity-federation-oidc-claims')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'workday_catalog_info', 'workday-catalog-info')
 encoding.AddCustomJsonFieldMapping(
@@ -2980,6 +3002,8 @@ encoding.AddCustomJsonFieldMapping(
     UnityCatalogInfo, 'instance_name', 'instance-name')
 encoding.AddCustomJsonFieldMapping(
     UnityCatalogInfo, 'service_principal_application_id', 'service-principal-application-id')
+encoding.AddCustomJsonFieldMapping(
+    UserIdentityFederationOidcClaims, 'issuer_url', 'issuer-url')
 encoding.AddCustomJsonFieldMapping(
     WorkdayCatalogInfo, 'base_url', 'base-url')
 encoding.AddCustomJsonFieldMapping(

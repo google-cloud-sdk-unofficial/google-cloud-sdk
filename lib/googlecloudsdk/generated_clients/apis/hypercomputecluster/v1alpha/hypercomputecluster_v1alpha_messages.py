@@ -791,6 +791,44 @@ class ComputeResourceConfig(_messages.Message):
   newSpotInstances = _messages.MessageField('NewSpotInstancesConfig', 4)
 
 
+class ConfidentialInstanceConfig(_messages.Message):
+  r"""[Confidential Computing](https://cloud.google.com/confidential-
+  computing/confidential-vm/docs/confidential-vm-overview) options for VM
+  instances. Only a subset of machine types supports Confidential VMs, and
+  each supported machine type supports exactly one Trusted Execution
+  Environment technology; see https://cloud.google.com/confidential-
+  computing/confidential-vm/docs/supported-configurations.
+
+  Enums:
+    ConfidentialInstanceTypeValueValuesEnum: Required. Immutable. The Trusted
+      Execution Environment technology to use. Must be supported by the
+      machine type of the compute resource.
+
+  Fields:
+    confidentialInstanceType: Required. Immutable. The Trusted Execution
+      Environment technology to use. Must be supported by the machine type of
+      the compute resource.
+  """
+
+  class ConfidentialInstanceTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Immutable. The Trusted Execution Environment technology to
+    use. Must be supported by the machine type of the compute resource.
+
+    Values:
+      CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED: No type specified. The instances
+        are not Confidential VMs.
+      SEV: AMD Secure Encrypted Virtualization.
+      SEV_SNP: AMD Secure Encrypted Virtualization - Secure Nested Paging.
+      TDX: Intel Trust Domain Extensions.
+    """
+    CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED = 0
+    SEV = 1
+    SEV_SNP = 2
+    TDX = 3
+
+  confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
+
+
 class Configs(_messages.Message):
   r"""Configuration for a Machine Learning run.
 
@@ -2776,6 +2814,12 @@ class MaintenanceWindow(_messages.Message):
 class ManagedInstanceGroup(_messages.Message):
   r"""A managed instance group based on a compute resource.
 
+  Messages:
+    MetadataValue: Optional. Custom
+      [metadata](https://cloud.google.com/compute/docs/metadata/overview) key-
+      value pairs to be applied to each VM instance in the managed instance
+      group.
+
   Fields:
     bootDisk: Optional. Boot disk for the managed instance group.
     computeId: Required. ID of the compute resource used to create this
@@ -2791,15 +2835,51 @@ class ManagedInstanceGroup(_messages.Message):
       upManagers/{instance_group_manager}`
     instanceTemplate: Output only. Instance template used to create instances
       in this group.
+    metadata: Optional. Custom
+      [metadata](https://cloud.google.com/compute/docs/metadata/overview) key-
+      value pairs to be applied to each VM instance in the managed instance
+      group.
     resourcePolicyConfig: Optional. Resource policy configuration for this
       managed instance group.
     startupScript: Optional. Startup script to be run on each VM instance in
       the nodeset.
+    startupScriptTimeout: Optional. The maximum time to wait for the startup
+      script to complete. If the script exceeds this duration, the instance
+      setup will be considered failed. This value must be positive. If this
+      value is unset, a default timeout of 5 minutes (300 seconds) will be
+      used by the system.
     storageConfigs: Optional. How storage resources should be mounted on each
       instance in this managed instance group.
     targetSize: Optional. Target number of running instances for this managed
       instance group.
   """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Optional. Custom
+    [metadata](https://cloud.google.com/compute/docs/metadata/overview) key-
+    value pairs to be applied to each VM instance in the managed instance
+    group.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   bootDisk = _messages.MessageField('BootDisk', 1)
   computeId = _messages.StringField(2)
@@ -2807,10 +2887,12 @@ class ManagedInstanceGroup(_messages.Message):
   enablePublicIps = _messages.BooleanField(4)
   instanceGroupManager = _messages.StringField(5)
   instanceTemplate = _messages.StringField(6)
-  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 7)
-  startupScript = _messages.StringField(8)
-  storageConfigs = _messages.MessageField('StorageConfig', 9, repeated=True)
-  targetSize = _messages.IntegerField(10)
+  metadata = _messages.MessageField('MetadataValue', 7)
+  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 8)
+  startupScript = _messages.StringField(9)
+  startupScriptTimeout = _messages.StringField(10)
+  storageConfigs = _messages.MessageField('StorageConfig', 11, repeated=True)
+  targetSize = _messages.IntegerField(12)
 
 
 class Metrics(_messages.Message):
@@ -2869,12 +2951,14 @@ class MonitoredEvent(_messages.Message):
       SLICE_DEGRADATION: Slice degradation event.
       HANG: Hang event.
       ORCHESTRATOR_INTERRUPTION: Orchestrator interruption event.
+      TERMINATION: Termination event.
     """
     EVENT_TYPE_UNSPECIFIED = 0
     PERFORMANCE_DEGRADATION = 1
     SLICE_DEGRADATION = 2
     HANG = 3
     ORCHESTRATOR_INTERRUPTION = 4
+    TERMINATION = 5
 
   analyzerInsightFound = _messages.BooleanField(1)
   analyzerReports = _messages.MessageField('AnalyzerReport', 2, repeated=True)
@@ -3049,6 +3133,9 @@ class NewFlexStartInstancesConfig(_messages.Message):
   Fields:
     atmTags: Optional. Immutable. Unstable: Contact hypercompute-service-eng@
       before using.
+    confidentialInstanceConfig: Optional. Immutable. Confidential Computing
+      options for the VM instances. If unset, the instances are not
+      Confidential VMs.
     machineType: Required. Immutable. Name of the Compute Engine [machine
       type](https://cloud.google.com/compute/docs/machine-resource) to use,
       e.g. `n2-standard-2`.
@@ -3087,10 +3174,11 @@ class NewFlexStartInstancesConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
-  machineType = _messages.StringField(2)
-  maxDuration = _messages.StringField(3)
-  networkTags = _messages.StringField(4, repeated=True)
-  zone = _messages.StringField(5)
+  confidentialInstanceConfig = _messages.MessageField('ConfidentialInstanceConfig', 2)
+  machineType = _messages.StringField(3)
+  maxDuration = _messages.StringField(4)
+  networkTags = _messages.StringField(5, repeated=True)
+  zone = _messages.StringField(6)
 
 
 class NewLustreConfig(_messages.Message):
@@ -3151,6 +3239,9 @@ class NewOnDemandInstancesConfig(_messages.Message):
   Fields:
     atmTags: Optional. Immutable. Unstable: Contact hypercompute-service-eng@
       before using.
+    confidentialInstanceConfig: Optional. Immutable. Confidential Computing
+      options for the VM instances. If unset, the instances are not
+      Confidential VMs.
     machineType: Required. Immutable. Name of the Compute Engine [machine
       type](https://cloud.google.com/compute/docs/machine-resource) to use,
       e.g. `n2-standard-2`.
@@ -3187,9 +3278,10 @@ class NewOnDemandInstancesConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
-  machineType = _messages.StringField(2)
-  networkTags = _messages.StringField(3, repeated=True)
-  zone = _messages.StringField(4)
+  confidentialInstanceConfig = _messages.MessageField('ConfidentialInstanceConfig', 2)
+  machineType = _messages.StringField(3)
+  networkTags = _messages.StringField(4, repeated=True)
+  zone = _messages.StringField(5)
 
 
 class NewReservedInstancesConfig(_messages.Message):
@@ -3205,6 +3297,9 @@ class NewReservedInstancesConfig(_messages.Message):
   Fields:
     atmTags: Optional. Immutable. Unstable: Contact hypercompute-service-eng@
       before using.
+    confidentialInstanceConfig: Optional. Immutable. Confidential Computing
+      options for the VM instances. If unset, the instances are not
+      Confidential VMs.
     networkTags: Optional. Immutable. A list of network tags to attach to the
       VM instances. A maximum of 64 network tags are allowed.
     reservation: Optional. Immutable. Name of the reservation from which VM
@@ -3246,10 +3341,11 @@ class NewReservedInstancesConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
-  networkTags = _messages.StringField(2, repeated=True)
-  reservation = _messages.StringField(3)
-  reservationBlock = _messages.StringField(4)
-  reservationSubBlock = _messages.StringField(5)
+  confidentialInstanceConfig = _messages.MessageField('ConfidentialInstanceConfig', 2)
+  networkTags = _messages.StringField(3, repeated=True)
+  reservation = _messages.StringField(4)
+  reservationBlock = _messages.StringField(5)
+  reservationSubBlock = _messages.StringField(6)
 
 
 class NewSpotInstancesConfig(_messages.Message):
@@ -3269,6 +3365,9 @@ class NewSpotInstancesConfig(_messages.Message):
   Fields:
     atmTags: Optional. Immutable. Unstable: Contact hypercompute-service-eng@
       before using.
+    confidentialInstanceConfig: Optional. Immutable. Confidential Computing
+      options for the VM instances. If unset, the instances are not
+      Confidential VMs.
     machineType: Required. Immutable. Name of the Compute Engine [machine
       type](https://cloud.google.com/compute/docs/machine-resource) to use,
       e.g. `n2-standard-2`.
@@ -3320,10 +3419,11 @@ class NewSpotInstancesConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
-  machineType = _messages.StringField(2)
-  networkTags = _messages.StringField(3, repeated=True)
-  terminationAction = _messages.EnumField('TerminationActionValueValuesEnum', 4)
-  zone = _messages.StringField(5)
+  confidentialInstanceConfig = _messages.MessageField('ConfidentialInstanceConfig', 2)
+  machineType = _messages.StringField(3)
+  networkTags = _messages.StringField(4, repeated=True)
+  terminationAction = _messages.EnumField('TerminationActionValueValuesEnum', 5)
+  zone = _messages.StringField(6)
 
 
 class Node(_messages.Message):

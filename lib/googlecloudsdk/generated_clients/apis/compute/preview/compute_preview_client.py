@@ -42,6 +42,7 @@ class ComputePreview(base_api.BaseApiClient):
     self.acceleratorTypes = self.AcceleratorTypesService(self)
     self.addresses = self.AddressesService(self)
     self.advice = self.AdviceService(self)
+    self.aliasNetworkEndpoints = self.AliasNetworkEndpointsService(self)
     self.autoscalers = self.AutoscalersService(self)
     self.backendBuckets = self.BackendBucketsService(self)
     self.backendServices = self.BackendServicesService(self)
@@ -776,6 +777,126 @@ capacity.
         request_field='capacityHistoryRequest',
         request_type_name='ComputeAdviceCapacityHistoryRequest',
         response_type_name='CapacityHistoryResponse',
+        supports_download=False,
+    )
+
+  class AliasNetworkEndpointsService(base_api.BaseApiService):
+    """Service class for the aliasNetworkEndpoints resource."""
+
+    _NAME = 'aliasNetworkEndpoints'
+
+    def __init__(self, client):
+      super(ComputePreview.AliasNetworkEndpointsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified AliasNetworkEndpoint.
+
+      Args:
+        request: (ComputeAliasNetworkEndpointsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        http_method='DELETE',
+        method_id='compute.aliasNetworkEndpoints.delete',
+        ordered_params=['project', 'zone', 'aliasNetworkEndpoint'],
+        path_params=['aliasNetworkEndpoint', 'project', 'zone'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/zones/{zone}/aliasNetworkEndpoints/{aliasNetworkEndpoint}',
+        request_field='',
+        request_type_name='ComputeAliasNetworkEndpointsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified AliasNetworkEndpoint resource.
+
+      Args:
+        request: (ComputeAliasNetworkEndpointsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AliasNetworkEndpoint) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        http_method='GET',
+        method_id='compute.aliasNetworkEndpoints.get',
+        ordered_params=['project', 'zone', 'aliasNetworkEndpoint'],
+        path_params=['aliasNetworkEndpoint', 'project', 'zone'],
+        query_params=[],
+        relative_path='projects/{project}/zones/{zone}/aliasNetworkEndpoints/{aliasNetworkEndpoint}',
+        request_field='',
+        request_type_name='ComputeAliasNetworkEndpointsGetRequest',
+        response_type_name='AliasNetworkEndpoint',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates an AliasNetworkEndpoint in the specified project and zone.
+using the data included in the request.
+
+      Args:
+        request: (ComputeAliasNetworkEndpointsInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        http_method='POST',
+        method_id='compute.aliasNetworkEndpoints.insert',
+        ordered_params=['project', 'zone'],
+        path_params=['project', 'zone'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/zones/{zone}/aliasNetworkEndpoints',
+        request_field='aliasNetworkEndpoint',
+        request_type_name='ComputeAliasNetworkEndpointsInsertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves a list of AliasNetworkEndpoints available to the specified.
+project.
+
+      Args:
+        request: (ComputeAliasNetworkEndpointsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AliasNetworkEndpointList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        http_method='GET',
+        method_id='compute.aliasNetworkEndpoints.list',
+        ordered_params=['project', 'zone'],
+        path_params=['project', 'zone'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken'],
+        relative_path='projects/{project}/zones/{zone}/aliasNetworkEndpoints',
+        request_field='',
+        request_type_name='ComputeAliasNetworkEndpointsListRequest',
+        response_type_name='AliasNetworkEndpointList',
         supports_download=False,
     )
 

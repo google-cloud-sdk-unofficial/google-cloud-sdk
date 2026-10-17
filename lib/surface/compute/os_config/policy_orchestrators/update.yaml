@@ -99,6 +99,8 @@
         - arg_name: clear-locations
           help_text: Clears included locations from policy orchestrator selectors.
           type: bool
+    - arg_name: description
+      help_text: Description of the policy orchestrator.
 
   update:
     read_modify_update: true

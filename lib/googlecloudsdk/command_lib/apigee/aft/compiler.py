@@ -15,8 +15,9 @@
 """Compiles an Apigee template into a Proxy."""
 
 import copy
-from typing import Any, Dict, List, TypeVar, Callable, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 from googlecloudsdk.command_lib.apigee.aft import models
+from googlecloudsdk.core import log
 
 
 _TypeToRewrite = TypeVar("_TypeToRewrite")
@@ -82,6 +83,173 @@ def _make_replacer(
   return lambda fp, x: x.replace(needle, replacement)
 
 
+# ---- default-fragment merge helpers ----
+#
+# A feature's `defaultEndpoint` / `defaultTarget` is a fragment merged into
+# every endpoint / target the proxy already has, not one of its own. Both
+# merge the same way, so these helpers are shared.
+#
+# Each mutates `container` in place and deep-copies what it takes from the
+# feature, so two endpoints merged from one feature do not share step dicts.
+
+
+def _merge_steps(
+    steps: List[Dict[str, Any]], feature_steps: Optional[List[Dict[str, Any]]]
+) -> None:
+  """Merges `feature_steps` into `steps`, keyed on step name.
+
+  A step whose name is already present replaces it instead of being appended.
+  Apigee would run a repeated step twice.
+
+  A step without a name is always appended. Such a step refers to no policy, so
+  there is nothing to match it on, and matching two of them would silently drop
+  one.
+
+  Args:
+    steps: The destination step list, mutated in place.
+    feature_steps: Steps from the feature fragment. None is treated as empty.
+  """
+  for step in feature_steps or []:
+    name = step.get("name")
+    for idx, existing in enumerate(steps):
+      if name and existing.get("name") == name:
+        steps[idx] = copy.deepcopy(step)
+        break
+    else:
+      steps.append(copy.deepcopy(step))
+
+
+def _merge_flows(
+    container: Dict[str, Any], feature_flows: Optional[List[Dict[str, Any]]]
+) -> None:
+  """Merges fragment flows into `container`'s flows.
+
+  A flow matches an existing one only when name, mode and condition all agree,
+  because those three together determine when Apigee runs it. A flow that
+  matches has its steps merged; one that does not is appended whole.
+
+  Args:
+    container: An endpoint or target dict, mutated in place.
+    feature_flows: Flows from the feature fragment. None is treated as empty.
+  """
+  for feature_flow in feature_flows or []:
+    flows = container.setdefault("flows", [])
+    for flow in flows:
+      if (
+          flow.get("name") == feature_flow.get("name")
+          and flow.get("mode") == feature_flow.get("mode")
+          and flow.get("condition") == feature_flow.get("condition")
+      ):
+        _merge_steps(flow.setdefault("steps", []), feature_flow.get("steps"))
+        break
+    else:
+      flows.append(copy.deepcopy(feature_flow))
+
+
+def _merge_routes(
+    endpoint: Dict[str, Any], feature_routes: Optional[List[Dict[str, Any]]]
+) -> None:
+  """Adds fragment routes that `endpoint` does not already declare.
+
+  A fragment can only add routes. A route the endpoint already declares under
+  that name is left alone: the endpoint's declaration is the specific one,
+  while the fragment applies to every endpoint in the proxy.
+
+  This differs from apigee-templater, which replaces a same-named route
+  outright (converter.ts:1516-1535). Rewriting an existing route breaks real
+  templates either way: replacing it drops a target another feature already
+  bound, and merging field by field carries over a target that only resolves
+  when the feature is rendered on its own.
+
+  Args:
+    endpoint: An endpoint dict, mutated in place.
+    feature_routes: Routes from the feature fragment. None is treated as empty.
+  """
+  for feature_route in feature_routes or []:
+    routes = endpoint.setdefault("routes", [])
+    if any(r.get("name") == feature_route.get("name") for r in routes):
+      continue
+    # Apigee takes the first matching RouteRule, so a route with no condition
+    # is a catch-all that shadows everything below it. Put a new conditional
+    # route above the first catch-all so it can still match.
+    catch_all = next(
+        (i for i, r in enumerate(routes) if not r.get("condition")), None
+    )
+    if feature_route.get("condition") and catch_all is not None:
+      routes.insert(catch_all, copy.deepcopy(feature_route))
+    else:
+      routes.append(copy.deepcopy(feature_route))
+
+
+def _merge_fault_rules(
+    container: Dict[str, Any], feature_rules: Optional[List[Dict[str, Any]]]
+) -> None:
+  """Merges fragment fault rules into `container`, keyed on rule name.
+
+  Args:
+    container: An endpoint or target dict, mutated in place.
+    feature_rules: Fault rules from the fragment. None is treated as empty.
+  """
+  for feature_rule in feature_rules or []:
+    rules = container.setdefault("faultRules", [])
+    for rule in rules:
+      if rule.get("name") == feature_rule.get("name"):
+        _merge_steps(rule.setdefault("steps", []), feature_rule.get("steps"))
+        break
+    else:
+      rules.append(copy.deepcopy(feature_rule))
+
+
+def _merge_named(
+    existing: List[Dict[str, Any]], incoming: Optional[List[Dict[str, Any]]]
+) -> None:
+  """Merges `incoming` into `existing`, keyed on the "name" field.
+
+  An entry whose name is already present replaces it instead of being appended
+  a second time, matching apigee-templater (converter.ts:1968-1992). Used for
+  the flat policy and resource lists, where a duplicate name would appear twice
+  in the bundle's root descriptor.
+
+  An entry without a name is always appended. There is nothing to match it on,
+  and matching two of them would silently drop one. This differs from
+  apigee-templater, which lets such an entry replace another unnamed entry.
+
+  Args:
+    existing: The destination list, mutated in place.
+    incoming: Entries contributed by a feature. None is treated as empty.
+  """
+  for entry in incoming or []:
+    name = entry.get("name")
+    for idx, current in enumerate(existing):
+      if name and current.get("name") == name:
+        existing[idx] = entry
+        break
+    else:
+      existing.append(entry)
+
+
+def _merge_default_fault_rule(
+    container: Dict[str, Any], feature_rule: Optional[Dict[str, Any]]
+) -> None:
+  """Merges a fragment's default fault rule into `container`.
+
+  An endpoint or target has only one default fault rule, so contributions from
+  several features combine into it instead of overwriting each other. The
+  existing rule keeps its name; only its steps grow.
+
+  Args:
+    container: An endpoint or target dict, mutated in place.
+    feature_rule: The fragment's default fault rule, or None.
+  """
+  if not feature_rule:
+    return
+  rule = container.get("defaultFaultRule")
+  if rule:
+    _merge_steps(rule.setdefault("steps", []), feature_rule.get("steps"))
+  else:
+    container["defaultFaultRule"] = copy.deepcopy(feature_rule)
+
+
 class ApigeeCompiler:
   """Compiles an Apigee template into a Proxy."""
 
@@ -116,6 +284,26 @@ class ApigeeCompiler:
     models.validate_gateway(template_dict.get("gateway", ""))
     models.validate_schema_version(template_dict.get("schemaVersion", ""))
 
+    # A template's own `endpoints` / `targets` describe a complete, standalone
+    # proxy. When features are supplied, the features define the topology
+    # instead. Seeding from the template as well can leave targets unreachable:
+    # a feature endpoint replaces the template's endpoint of the same name,
+    # which removes the RouteRules that referenced those targets.
+    # apigee-templater reads these fields only when no features are supplied
+    # (converter.ts:1207-1250).
+    template_endpoints = template_dict.get("endpoints") or []
+    template_targets = template_dict.get("targets") or []
+    if features and (template_endpoints or template_targets):
+      log.warning(
+          "Ignoring the `endpoints` and `targets` declared by template %r: "
+          "they are only used when the template supplies no features, and "
+          "this one supplies %d. The features define the proxy topology.",
+          template_dict.get("name", ""),
+          len(features),
+      )
+      template_endpoints = []
+      template_targets = []
+
     proxy_dict = {
         # gateway/schemaVersion are authoring metadata carried onto the
         # compiled Proxy. compile() rebuilds the Proxy from proxy_dict via
@@ -125,12 +313,13 @@ class ApigeeCompiler:
         "schemaVersion": template_dict.get("schemaVersion", ""),
         "name": template_dict["name"],
         "description": template_dict["description"],
+        "displayName": template_dict.get("displayName"),
         "parameters": template_dict["parameters"],
         "priority": template_dict.get("priority"),
         "tests": template_dict.get("tests"),
-        "endpoints": copy.deepcopy(template_dict.get("endpoints", [])),
+        "endpoints": copy.deepcopy(template_endpoints),
         "policies": copy.deepcopy(template_dict.get("policies", [])),
-        "targets": copy.deepcopy(template_dict.get("targets", [])),
+        "targets": copy.deepcopy(template_targets),
         "resources": copy.deepcopy(template_dict.get("resources", [])),
     }
 
@@ -183,80 +372,80 @@ class ApigeeCompiler:
         feature_dict, proxy_dict["parameters"], parameters
     )
 
-    # Namespace policies and resources. Use UID if available, otherwise just
-    # the feature name.
-    prefix = feature_dict.get("uid") or feature_dict["name"]
+    # Namespace policies and resources only when the feature carries a `uid`.
+    # A uid is the author's declaration that the feature may appear in one
+    # proxy more than once and its copies must stay apart. Without one, names
+    # are used verbatim.
+    #
+    # This used to fall back to the feature `name`, which namespaced every
+    # feature whether it needed it or not. `name` is optional in the schema and
+    # is not unique, so that fallback produced empty and colliding prefixes.
+    prefix = feature_dict.get("uid")
+    if prefix:
+      namespaced_policy_names = {}
+      for policy in feature_dict.get("policies", []):
+        original_name = policy["name"]
+        new_name = f"{prefix}-{original_name}"
+        namespaced_policy_names[original_name] = new_name
 
-    namespaced_policy_names = {}
-    for policy in feature_dict.get("policies", []):
-      original_name = policy["name"]
-      new_name = f"{prefix}-{original_name}"
-      namespaced_policy_names[original_name] = new_name
+      def policy_namespacer(fp: _FieldPath, x: str) -> str:
+        if fp and fp[-1] == "name" and x in namespaced_policy_names:
+          return namespaced_policy_names[x]
+        if x.endswith(".") and x[:-1] in namespaced_policy_names:
+          return namespaced_policy_names[x[:-1]] + "."
+        return x
 
-    def policy_namespacer(fp: _FieldPath, x: str) -> str:
-      if fp and fp[-1] == "name" and x in namespaced_policy_names:
-        return namespaced_policy_names[x]
-      if x.endswith(".") and x[:-1] in namespaced_policy_names:
-        return namespaced_policy_names[x[:-1]] + "."
-      return x
+      feature_dict = _rewritten(feature_dict, str, policy_namespacer)
 
-    feature_dict = _rewritten(feature_dict, str, policy_namespacer)
+      namespaced_resource_names = {}
+      namespaced_resource_references = {}
+      for resource in feature_dict.get("resources", []):
+        original_name = resource["name"]
+        new_name = f"{prefix}-{original_name}"
+        namespaced_resource_names[original_name] = new_name
+        if original_name.endswith(".properties"):
+          prop_name = original_name.replace(".properties", "")
+          new_prop_name = new_name.replace(".properties", "")
+          namespaced_resource_references[f"propertyset.{prop_name}."] = (
+              f"propertyset.{new_prop_name}."
+          )
+        else:
+          namespaced_resource_references[f"://{original_name}"] = (
+              f"://{new_name}"
+          )
 
-    namespaced_resource_names = {}
-    namespaced_resource_references = {}
-    for resource in feature_dict.get("resources", []):
-      original_name = resource["name"]
-      new_name = f"{prefix}-{original_name}"
-      namespaced_resource_names[original_name] = new_name
-      if original_name.endswith(".properties"):
-        prop_name = original_name.replace(".properties", "")
-        new_prop_name = new_name.replace(".properties", "")
-        namespaced_resource_references[f"propertyset.{prop_name}."] = (
-            f"propertyset.{new_prop_name}."
-        )
-      else:
-        namespaced_resource_references[f"://{original_name}"] = (
-            f"://{new_name}"
-        )
+      def resource_namespacer(fp: _FieldPath, x: str) -> str:
+        if fp and fp[-1] == "name" and x in namespaced_resource_names:
+          return namespaced_resource_names[x]
+        for old_ref, new_ref in namespaced_resource_references.items():
+          x = x.replace(old_ref, new_ref)
+        return x
 
-    def resource_namespacer(fp: _FieldPath, x: str) -> str:
-      if fp and fp[-1] == "name" and x in namespaced_resource_names:
-        return namespaced_resource_names[x]
-      for old_ref, new_ref in namespaced_resource_references.items():
-        x = x.replace(old_ref, new_ref)
-      return x
+      feature_dict = _rewritten(feature_dict, str, resource_namespacer)
 
-    feature_dict = _rewritten(feature_dict, str, resource_namespacer)
-
-    # Merge flows
-    # In TS, it merged defaultEndpoint flows into all proxy endpoints.
-    if feature_dict.get("defaultEndpoint"):
+    # defaultEndpoint is a fragment, merged into every endpoint the proxy has.
+    default_endpoint = feature_dict.get("defaultEndpoint")
+    if default_endpoint:
       for endpoint in proxy_dict["endpoints"]:
-        for feature_flow in feature_dict["defaultEndpoint"].get("flows", []):
-          for proxy_flow in endpoint.get("flows", []):
-            if (
-                proxy_flow.get("name") == feature_flow.get("name")
-                and proxy_flow.get("mode") == feature_flow.get("mode")
-                and proxy_flow.get("condition") == feature_flow.get("condition")
-            ):
-              proxy_flow["steps"].extend(feature_flow.get("steps", []))
-              break
-          else:  # no matching flow was found
-            if "flows" not in endpoint:
-              endpoint["flows"] = []
-            endpoint["flows"].append(copy.deepcopy(feature_flow))
+        _merge_flows(endpoint, default_endpoint.get("flows"))
+        _merge_routes(endpoint, default_endpoint.get("routes"))
+        _merge_fault_rules(endpoint, default_endpoint.get("faultRules"))
+        _merge_default_fault_rule(
+            endpoint, default_endpoint.get("defaultFaultRule")
+        )
 
-        if feature_dict["defaultEndpoint"].get("defaultFaultRule"):
-          if endpoint.get("defaultFaultRule"):
-            endpoint["defaultFaultRule"]["steps"].extend(
-                feature_dict["defaultEndpoint"]["defaultFaultRule"].get(
-                    "steps", []
-                )
-            )
-          else:
-            endpoint["defaultFaultRule"] = copy.deepcopy(
-                feature_dict["defaultEndpoint"]["defaultFaultRule"]
-            )
+    # defaultTarget is the same idea on the outbound side, minus routes, which
+    # targets do not have. It runs before the feature's own `targets` are added
+    # below, matching apigee-templater (converter.ts:1932): it applies to the
+    # targets the proxy already has, not the ones the feature contributes.
+    default_target = feature_dict.get("defaultTarget")
+    if default_target:
+      for target in proxy_dict["targets"]:
+        _merge_flows(target, default_target.get("flows"))
+        _merge_fault_rules(target, default_target.get("faultRules"))
+        _merge_default_fault_rule(
+            target, default_target.get("defaultFaultRule")
+        )
 
     # Non-default endpoints and targets
     if "endpoints" in feature_dict and feature_dict["endpoints"]:
@@ -291,11 +480,12 @@ class ApigeeCompiler:
             existing_targets[target["name"]] = len(proxy_dict["targets"])
           proxy_dict["targets"].append(target)
 
-    # Append policies and resources
-    if feature_dict.get("policies"):
-      proxy_dict["policies"].extend(feature_dict["policies"])
-    if feature_dict.get("resources"):
-      proxy_dict["resources"].extend(feature_dict["resources"])
+    # Merge policies and resources by name. Appending was safe only while every
+    # feature was namespaced. A feature with no uid keeps its names, and two
+    # features can legitimately ship the same resource, so appending both would
+    # list it twice in <Resources>.
+    _merge_named(proxy_dict["policies"], feature_dict.get("policies"))
+    _merge_named(proxy_dict["resources"], feature_dict.get("resources"))
 
     return proxy_dict
 

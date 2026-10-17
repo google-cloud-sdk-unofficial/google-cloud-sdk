@@ -9,7 +9,7 @@
       modifying the description and destination IP address.
 
         $ {command} my-test \
-            --description='update dst addr' --destination-ip-address='10.142.0.3'
+            --description='update dst addr' --destination-ip-address='10.142.0.3' --round-trip
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.network_management.resources:connectivityTest

@@ -1637,35 +1637,62 @@ def AddEndpointResourceArg(
 
 
 def GetAgentRuntimeResourceSpec(
-    resource_name='runtime', prompt_func=region_util.PromptForOpRegion
+    resource_name='runtime',
+    prompt_func=region_util.PromptForOpRegion,
+    required=True,
 ):
+  """Gets a concepts.ResourceSpec for an agent runtime."""
+  kwargs = {}
+  if not required:
+    kwargs['reasoningEnginesId'] = concepts.ResourceParameterAttributeConfig(
+        name='name',
+        help_text='The agent runtime {resource}.',
+        fallthroughs=[
+            deps.Fallthrough(
+                lambda: None, hint='defaults to creating a new runtime'
+            )
+        ],
+    )
   return concepts.ResourceSpec(
       constants.AGENT_RUNTIMES_COLLECTION,
       resource_name=resource_name,
       projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
       locationsId=RegionAttributeConfig(prompt_func=prompt_func),
       disable_auto_completers=False,
+      **kwargs,
   )
 
 
 def AddAgentRuntimeResourceArg(
-    parser, verb, prompt_func=region_util.PromptForOpRegion
+    parser,
+    verb,
+    prompt_func=region_util.PromptForOpRegion,
+    required=True,
+    flag_name_overrides=None,
+    command_level_fallthroughs=None,
 ):
   """Add a resource argument for a Vertex AI agent runtime.
-
-  NOTE: Must be used only if it's the only resource arg in the command.
 
   Args:
     parser: the parser for the command.
     verb: str, the verb to describe the resource, such as 'to update'.
     prompt_func: function, the function to prompt for region from list of
       available regions.
+    required: bool, whether the resource argument is required.
+    flag_name_overrides: {str: str}, dict of attribute names to the desired flag
+      name. To remove a flag altogether, use '' as its rename value.
+    command_level_fallthroughs: a map of attribute names to lists of command-
+      specific fallthroughs.
   """
   concept_parsers.ConceptParser.ForResource(
       'runtime',
-      GetAgentRuntimeResourceSpec(prompt_func=prompt_func),
+      GetAgentRuntimeResourceSpec(
+          prompt_func=prompt_func, required=required
+      ),
       'The agent runtime {}.'.format(verb),
-      required=True,
+      required=required,
+      flag_name_overrides=flag_name_overrides,
+      command_level_fallthroughs=command_level_fallthroughs,
   ).AddToParser(parser)
 
 

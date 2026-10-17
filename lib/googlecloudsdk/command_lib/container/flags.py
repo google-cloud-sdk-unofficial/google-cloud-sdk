@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.container import constants
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -1214,7 +1215,7 @@ def AddLocationFlags(parser):
           'Compute zone (e.g. us-central1-a) for a zonal cluster. Overrides '
           'the default compute/zone property value for this command invocation.'
       ),
-      action=actions.StoreProperty(properties.VALUES.compute.zone),
+      action=property_actions.StoreProperty(properties.VALUES.compute.zone),
   )
   group.add_argument(
       '--region',
@@ -2402,7 +2403,9 @@ def AddNodePoolClusterFlag(parser, help_text):
   parser.add_argument(
       '--cluster',
       help=help_text,
-      action=actions.StoreProperty(properties.VALUES.container.cluster),
+      action=property_actions.StoreProperty(
+          properties.VALUES.container.cluster
+      ),
   )
 
 
@@ -5253,7 +5256,8 @@ def AddMetadataFlags(parser):
 
   metadata_from_file_help = """\
       Same as ``--metadata'' except that the value for the entry will
-      be read from a local file.
+      be read from a local file. A value can be read from standard input
+      by specifying ``-'' as the file path.
       """
 
   parser.add_argument(
@@ -6915,7 +6919,9 @@ def AddGetCredentialsArgs(parser):
   parser.add_argument(
       'name',
       help='Name of the cluster to get credentials for.',
-      action=actions.StoreProperty(properties.VALUES.container.cluster),
+      action=property_actions.StoreProperty(
+          properties.VALUES.container.cluster
+      ),
   )
   parser.add_argument(
       '--internal-ip',
@@ -9008,6 +9014,36 @@ def AddNetworkTierFlag(parser):
   )
 
 
+def AddAdaptivePodAllocationModeFlag(parser, hidden=True):
+  """Adds the --adaptive-pod-allocation-mode flag to parser.
+
+  Args:
+    parser: A given parser.
+    hidden: Indicates that the flag is hidden.
+  """
+  help_text = """\
+  Set the Pod IP allocation mode of the cluster (GKE Adaptive Cluster IPAM).
+
+  `disabled`: Pod IPs are statically allocated per node. For rapid Pod IP
+  distribution, over-provisioning is used, which allocates twice the nearest
+  power of 2 of the maximum number of Pods allowed per node.
+
+  `adaptive-allocation`: Pod IPs are allocated dynamically from the cluster's
+  default and additional Pod secondary ranges. The allocation size is
+  automatically determined based on cluster utilization and scalability,
+  which optimizes for IP efficiency and Pod start-up time.
+
+  Cannot be specified unless the `--enable-ip-alias` option is also specified.
+  """
+  parser.add_argument(
+      '--adaptive-pod-allocation-mode',
+      default=None,
+      hidden=hidden,
+      choices=['adaptive-allocation', 'disabled'],
+      help=help_text,
+  )
+
+
 def AddAcceleratorNetworkProfileFlag(parser, hidden=True):
   parser.add_argument(
       '--accelerator-network-profile',
@@ -9032,7 +9068,9 @@ def AddAcceleratorNetworkProfileCreateFlags(parser, hidden=True):
           ' `--location` (`--zone` or `--region`) flag must match the location'
           ' of this cluster.'
       ),
-      action=actions.StoreProperty(properties.VALUES.container.cluster),
+      action=property_actions.StoreProperty(
+          properties.VALUES.container.cluster
+      ),
       hidden=hidden,
   )
   parser.add_argument(

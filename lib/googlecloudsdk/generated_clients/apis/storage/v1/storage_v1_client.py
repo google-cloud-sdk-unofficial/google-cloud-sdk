@@ -2040,6 +2040,32 @@ class StorageV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def ViewFullContext(self, request, global_params=None):
+      r"""Retrieves a specific object context with its extended data for a given object.
+
+      Args:
+        request: (StorageObjectsViewFullContextRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ObjectFullContext) The response message.
+      """
+      config = self.GetMethodConfig('ViewFullContext')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ViewFullContext.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='storage.objects.viewFullContext',
+        ordered_params=['bucket', 'object'],
+        path_params=['bucket', 'object'],
+        query_params=['contextKey', 'generation', 'userProject'],
+        relative_path='b/{bucket}/o/{object}/viewFullContext',
+        request_field='',
+        request_type_name='StorageObjectsViewFullContextRequest',
+        response_type_name='ObjectFullContext',
+        supports_download=False,
+    )
+
   class OperationsService(base_api.BaseApiService):
     """Service class for the operations resource."""
 

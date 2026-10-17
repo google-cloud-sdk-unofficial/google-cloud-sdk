@@ -18,6 +18,7 @@
 
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -107,9 +108,11 @@ def CommonArgs(parser):
 
   parser.add_argument(
       '--disable-public-ips',
-      action=actions.StoreBooleanProperty(
-          properties.VALUES.dataflow.disable_public_ips),
-      help='The Cloud Dataflow workers must not use public IP addresses.')
+      action=property_actions.StoreBooleanProperty(
+          properties.VALUES.dataflow.disable_public_ips
+      ),
+      help='The Cloud Dataflow workers must not use public IP addresses.',
+  )
 
   parser.add_argument(
       '--max-workers', type=int, help='The maximum number of workers to run.')

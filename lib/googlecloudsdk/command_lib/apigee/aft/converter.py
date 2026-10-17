@@ -43,6 +43,7 @@ with Apigee UI emissions.
 """
 
 import io
+import json
 import posixpath
 import re
 from typing import Any, Optional
@@ -78,9 +79,9 @@ def proxy_to_bundle(proxy: models.Proxy) -> bytes:
     proxy: A `models.Proxy` instance.
 
   Returns:
-    The bundle ZIP as bytes. The returned bytes are deterministic for a given
-    input proxy (entries written in sorted order; dict keys serialized in
-    sorted order within each XML element).
+    The bundle ZIP as bytes. Deterministic for a given input proxy: entries are
+    written in sorted order, and children within each XML element follow the
+    source's declaration order.
   """
   try:
     files = _proxy_to_files(proxy)
@@ -115,8 +116,12 @@ def _proxy_to_files(proxy: models.Proxy) -> dict[str, bytes]:
   """Returns a dict mapping bundle ZIP paths to file bytes for `proxy`."""
   files = {}
 
+  resources = _resources_with_metadata(proxy)
+
   # Root descriptor: apiproxy/{name}.xml
-  files[_BUNDLE_PREFIX + proxy.name + '.xml'] = _root_xml_bytes(proxy)
+  files[_BUNDLE_PREFIX + proxy.name + '.xml'] = _root_xml_bytes(
+      proxy, resources
+  )
 
   # apiproxy/proxies/{endpoint}.xml
   for endpoint in proxy.endpoints:
@@ -137,7 +142,7 @@ def _proxy_to_files(proxy: models.Proxy) -> dict[str, bytes]:
     )
 
   # apiproxy/resources/{type}/{name}
-  for resource in proxy.resources:
+  for resource in resources:
     path = _BUNDLE_PREFIX + 'resources/' + resource.type + '/' + resource.name
     content = resource.content or ''
     files[path] = content.encode('utf-8')
@@ -145,7 +150,74 @@ def _proxy_to_files(proxy: models.Proxy) -> dict[str, bytes]:
   return files
 
 
-def _root_xml_bytes(proxy: models.Proxy) -> bytes:
+# Generated per bundle, not authored: rebuilt on every forward conversion, and
+# any copy read back off a bundle is discarded.
+_METADATA_RESOURCE_NAME = 'metadata.js'
+_METADATA_RESOURCE_TYPE = 'jsc'
+
+
+def _resources_with_metadata(proxy: models.Proxy) -> list[models.Resource]:
+  """Returns `proxy.resources` with a freshly generated metadata.js appended."""
+  resources = [
+      r
+      for r in proxy.resources
+      if not (
+          r.type == _METADATA_RESOURCE_TYPE
+          and r.name == _METADATA_RESOURCE_NAME
+      )
+  ]
+  resources.append(
+      models.Resource(
+          name=_METADATA_RESOURCE_NAME,
+          type=_METADATA_RESOURCE_TYPE,
+          content=_metadata_js(proxy),
+      )
+  )
+  return resources
+
+
+def _metadata_js(proxy: models.Proxy) -> str:
+  """Renders the proxy's authoring metadata as a loadable JS resource.
+
+  Feature JavaScript reads the proxy's name, description and parameter
+  defaults from this at runtime, so the bundle needs it even though nothing in
+  the proxy model refers to it.
+
+  Mirrors apigee-templater (converter.ts:898-917), including its JSON.stringify
+  semantics: a key with no value is left out rather than written as null.
+
+  Args:
+    proxy: The compiled proxy.
+
+  Returns:
+    The contents of `apiproxy/resources/jsc/metadata.js`.
+  """
+  metadata = {
+      'name': proxy.name,
+      'description': proxy.description,
+      'documentation': proxy.documentation or '',
+      'uid': proxy.uid or '',
+      'parameters': [
+          {
+              k: v
+              for k, v in models.to_dict(p).items()
+              if v not in (None, '', [], {})
+          }
+          for p in proxy.parameters
+      ],
+      'priority': proxy.priority,
+      'displayName': proxy.display_name or '',
+      'categories': proxy.categories or [],
+  }
+  body = json.dumps(
+      {k: v for k, v in metadata.items() if v is not None}, indent=2
+  )
+  return f'var metadata={body};'
+
+
+def _root_xml_bytes(
+    proxy: models.Proxy, resources: list[models.Resource]
+) -> bytes:
   """Builds the <APIProxy> root descriptor as bytes."""
   root = ET.Element('APIProxy', attrib={'name': proxy.name})
   _sub_text(root, 'ConfigurationVersion', _CONFIGURATION_VERSION)
@@ -171,7 +243,7 @@ def _root_xml_bytes(proxy: models.Proxy) -> bytes:
 
   # Resources list (URIs of the form `{type}://{name}`).
   resources_el = ET.SubElement(root, 'Resources')
-  for resource in proxy.resources:
+  for resource in resources:
     _sub_text(resources_el, 'Resource', resource.type + '://' + resource.name)
 
   return _serialize(root)
@@ -205,7 +277,18 @@ def _proxy_endpoint_xml_bytes(endpoint: models.ProxyEndpoint) -> bytes:
 
 
 def _target_endpoint_xml_bytes(target: models.Target) -> bytes:
-  """Builds <TargetEndpoint> as bytes."""
+  """Builds <TargetEndpoint> as bytes.
+
+  The connection element always comes first, ahead of the flows. It used to be
+  appended last when built from the simplified `url` field, so the same target
+  took two shapes depending on how it was written.
+
+  Args:
+    target: A `models.Target` instance to render.
+
+  Returns:
+    The serialized `<TargetEndpoint>` XML document as bytes.
+  """
   root = ET.Element('TargetEndpoint', attrib={'name': target.name})
 
   built_target = False
@@ -223,13 +306,6 @@ def _target_endpoint_xml_bytes(target: models.Target) -> bytes:
       root.append(http_el)
       built_target = True
 
-    _add_flows(root, target.flows or [])
-    _add_fault_rules(
-        root,
-        target.fault_rules or [],
-        target.default_fault_rule,
-    )
-
   if not built_target:
     # Build <HTTPTargetConnection> from simplified Target fields.
     conn_el = ET.SubElement(root, 'HTTPTargetConnection')
@@ -245,6 +321,14 @@ def _target_endpoint_xml_bytes(target: models.Target) -> bytes:
       if target.aud:
         aud_el = ET.SubElement(typed_el, 'Audience')
         aud_el.text = target.aud
+
+  if isinstance(target, models.ProxyTarget):
+    _add_flows(root, target.flows or [])
+    _add_fault_rules(
+        root,
+        target.fault_rules or [],
+        target.default_fault_rule,
+    )
 
   return _serialize(root)
 
@@ -280,21 +364,32 @@ def _policy_xml_bytes(policy: models.Policy) -> bytes:
 # ---- Flow / FaultRule helpers ----
 
 # Maps a Flow.name to its enclosing XML element name in a ProxyEndpoint /
-# TargetEndpoint. Flows with names other than PreFlow / PostFlow live inside
-# the generic <Flows> container.
+# TargetEndpoint. Flows with names other than these live inside the generic
+# <Flows> container.
+#
+# EventFlow is listed here because Apigee treats it as a top-level sibling of
+# PreFlow/PostFlow. Inside <Flows> it would read as a conditional flow that
+# never matches.
+_EVENT_FLOW = 'EventFlow'
 _NAMED_FLOW_TAGS = {
     'PreFlow': 'PreFlow',
     'PostFlow': 'PostFlow',
+    _EVENT_FLOW: _EVENT_FLOW,
 }
+
+# Media type Apigee assumes when an EventFlow does not set one.
+_EVENT_FLOW_CONTENT_TYPE = 'text/event-stream'
+
+# Hyphenated, so it cannot be derived from the field name.
+_CONTENT_TYPE_ATTR = 'content-type'
 
 
 def _add_flows(parent: ET.Element, flows: list[models.Flow]):
-  """Appends <PreFlow> / <Flows> / <PostFlow> elements to `parent`.
+  """Appends <PreFlow> / <Flows> / <PostFlow> / <EventFlow> to `parent`.
 
   Original flow order is preserved by emitting any run of consecutive
-  generic (non-PreFlow / non-PostFlow) flows into a single in-position
-  `<Flows>` container. PreFlow / PostFlow flows are emitted as top-level
-  siblings at their original positions.
+  generic (non-named) flows into a single in-position `<Flows>` container.
+  Named flows are emitted as top-level siblings at their original positions.
 
   Args:
     parent: The parent XML element.
@@ -305,7 +400,14 @@ def _add_flows(parent: ET.Element, flows: list[models.Flow]):
     flow = flows[i]
     tag = _NAMED_FLOW_TAGS.get(flow.name)
     if tag:
-      flow_el = ET.SubElement(parent, tag, attrib={'name': flow.name})
+      attrib = {'name': flow.name}
+      if tag == _EVENT_FLOW:
+        # An empty string is not a valid media type, so it gets the default,
+        # just as an unset value does.
+        attrib[_CONTENT_TYPE_ATTR] = (
+            flow.content_type or _EVENT_FLOW_CONTENT_TYPE
+        )
+      flow_el = ET.SubElement(parent, tag, attrib=attrib)
       _populate_flow(flow_el, flow)
       i += 1
       continue
@@ -506,6 +608,12 @@ def _files_to_proxy(files: dict[str, bytes]) -> models.Proxy:
     if len(parts) != 3:
       continue
     _, res_type, res_name = parts
+    # Skip the generated metadata.js. Reading it back would turn a derived
+    # artifact into user content and write it twice on the next forward pass.
+    if res_type == _METADATA_RESOURCE_TYPE and res_name == (
+        _METADATA_RESOURCE_NAME
+    ):
+      continue
     proxy.resources.append(
         models.Resource(
             name=res_name,
@@ -623,6 +731,11 @@ def _parse_named_flow(flow_el: ET.Element) -> models.Flow:
   cond_el = flow_el.find('Condition')
   if cond_el is not None and cond_el.text is not None:
     flow.condition = cond_el.text
+  # Keep a non-default media type so bundle -> proxy -> bundle does not
+  # rewrite it. Read from any element, but only EventFlow writes it back out.
+  content_type = flow_el.get(_CONTENT_TYPE_ATTR)
+  if content_type is not None:
+    flow.content_type = content_type
   return flow
 
 
@@ -676,8 +789,8 @@ def _parse_fault_rule(rule_el: ET.Element) -> models.Flow:
 def _parse_flows(root: ET.Element) -> list[models.Flow]:
   """Returns the flow list in original (document) order.
 
-  Walks `root`'s direct children: <PreFlow> / <PostFlow> become standalone
-  Flow entries; each <Flows> container contributes its inner <Flow>
+  Walks `root`'s direct children: <PreFlow> / <PostFlow> / <EventFlow> become
+  standalone Flow entries; each <Flows> container contributes its inner <Flow>
   entries in document order.
 
   Args:
@@ -688,7 +801,7 @@ def _parse_flows(root: ET.Element) -> list[models.Flow]:
   """
   flows = []
   for child in root:
-    if child.tag in ('PreFlow', 'PostFlow'):
+    if child.tag in _NAMED_FLOW_TAGS:
       flows.append(_parse_named_flow(child))
     elif child.tag == 'Flows':
       for flow_el in child.findall('Flow'):
@@ -787,7 +900,20 @@ def _element_to_dict(elem: ET.Element) -> dict[str, Any]:
 
 
 def _dict_to_element(tag: str, value: Any) -> ET.Element:
-  """Inverse of `_element_to_dict`. Returns an Element tagged `tag`."""
+  """Inverse of `_element_to_dict`. Returns an Element tagged `tag`.
+
+  Children are emitted in the order the source declared them. Several Apigee
+  policy schemas are sequence-typed, so alphabetical order is not reliably
+  valid. Order is still deterministic: dicts keep insertion order, and the YAML
+  loader builds them in document order.
+
+  Args:
+    tag: The tag name to give the returned element.
+    value: A dict of children to convert, or a scalar to use as element text.
+
+  Returns:
+    An `ET.Element` tagged `tag`.
+  """
   elem = ET.Element(tag)
   if value is None:
     return elem
@@ -796,7 +922,7 @@ def _dict_to_element(tag: str, value: Any) -> ET.Element:
     elem.text = _as_text(value)
     return elem
 
-  for key in sorted(value):
+  for key in value:
     val = value[key]
     if key == 'metadata':
       if not isinstance(val, dict):

@@ -1,0 +1,143 @@
+release_tracks: [ALPHA, BETA]
+
+help_text:
+  brief: |
+    Create a ServerTlsPolicy.
+  description: |
+    Create a new ServerTlsPolicy.
+  examples: |
+    To create a ServerTlsPolicy configured for frontend mTLS on Application Load Balancers, run:
+
+      $ {command} my-server-tls-policy --location=global \
+          --client-validation-mode=reject-invalid \
+          --client-validation-trust-config=projects/my-project/locations/global/trustConfigs/my-trust-config
+
+    To create a ServerTlsPolicy configured for frontend mTLS on Application Load Balancers with validation relaxations, run:
+
+      $ {command} my-server-tls-policy --location=global \
+          --client-validation-mode=allow-validation-relaxations \
+          --client-validation-trust-config=projects/my-project/locations/global/trustConfigs/my-trust-config \
+          --client-validation-relaxations=allow-missing-eku,allow-expired-leaf-certificate
+
+    To create a ServerTlsPolicy configured for Traffic Director, run:
+
+      $ {command} my-td-policy --location=global \
+          --allow-open \
+          --client-validation-ca-plugin-instance=google_cloud_private_spiffe
+
+request:
+  # Note: networksecurity regional_endpoints is empty in apis_map.py (regional_endpoint_compatibility: SUPPORTED not enabled).
+  collection: networksecurity.projects.locations.serverTlsPolicies
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  method: create
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.network_security.util:SetServerTlsPolicyFields
+
+arguments:
+  additional_arguments_hook: googlecloudsdk.command_lib.network_security.util:OrderServerTlsPolicyMutexGroupHook
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:serverTlsPolicy
+    help_text: |
+      Name of the ServerTlsPolicy to create.
+  params:
+  - arg_name: description
+    api_field: serverTlsPolicy.description
+    help_text: |
+      Free-text description of the resource.
+  - group:
+      mutex: true
+      required: true
+      help_text: |
+        Configuration for a ServerTlsPolicy configured for frontend mTLS on Application Load Balancers or for Traffic Director.
+      params:
+      - group:
+          help_text: |
+            ServerTlsPolicy configured for frontend mTLS on Application Load Balancers.
+          params:
+          - arg_name: client-validation-mode
+            api_field: serverTlsPolicy.mtlsPolicy.clientValidationMode
+            required: true
+            help_text: |
+              Specifies how the client connection is handled when the client presents an invalid certificate or no certificate to the load balancer.
+            choices:
+            - arg_value: allow-invalid-or-missing-client-cert
+              enum_value: ALLOW_INVALID_OR_MISSING_CLIENT_CERT
+              help_text: |
+                Allow connection even if certificate chain validation of the client certificate failed or no client certificate was presented.
+            - arg_value: reject-invalid
+              enum_value: REJECT_INVALID
+              help_text: |
+                Require a client certificate and allow connection to the backend only if validation of the client certificate passed.
+            - arg_value: allow-validation-relaxations
+              enum_value: ALLOW_VALIDATION_RELAXATIONS
+              help_text: |
+                Require a client certificate, but apply the specific validation relaxations requested in `--client-validation-relaxations`.
+          - arg_name: client-validation-trust-config
+            api_field: serverTlsPolicy.mtlsPolicy.clientValidationTrustConfig
+            help_text: |
+              Reference to the Certificate Manager TrustConfig resource (`projects/*/locations/*/trustConfigs/*` or TrustConfig ID in the same project and location) used to validate client certificates.
+          - arg_name: client-validation-relaxations
+            api_field: serverTlsPolicy.mtlsPolicy.clientValidationRelaxations
+            help_text: |
+              List of validation relaxations to apply when `--client-validation-mode` is set to `allow-validation-relaxations`.
+            choices:
+            - arg_value: allow-missing-eku
+              enum_value: ALLOW_MISSING_EKU
+              help_text: |
+                Allows the client certificate to completely omit the Extended Key Usage (EKU) extension. If the EKU extension is present, it must permit the `clientAuth` key purpose (OID 1.3.6.1.5.5.7.3.2).
+            - arg_value: allow-sha1-hashing
+              enum_value: ALLOW_SHA1_HASHING
+              help_text: |
+                Allows validation of client certificate chains signed using legacy SHA-1 message digests.
+            - arg_value: allow-expired-leaf-certificate
+              enum_value: ALLOW_EXPIRED_LEAF_CERTIFICATE
+              help_text: |
+                Allows validation of an expired client leaf certificate. The certificate will be validated as if the current time was one second before the end of its validity period (the `notAfter` timestamp).
+      - group:
+          help_text: |
+            ServerTlsPolicy configured for Traffic Director.
+          params:
+          - arg_name: allow-open
+            api_field: serverTlsPolicy.allowOpen
+            type: bool
+            help_text: |
+              Determines if the server allows plaintext connections when configured for Traffic Director.
+          - group:
+              mutex: true
+              help_text: |
+                Server certificate configuration for Traffic Director.
+              params:
+              - arg_name: server-certificate-plugin-instance
+                api_field: serverTlsPolicy.serverCertificate.certificateProviderInstance.pluginInstance
+                help_text: |
+                  Plugin instance name that will be passed to the data plane to load server identity credentials.
+              - arg_name: server-certificate-grpc-endpoint
+                api_field: serverTlsPolicy.serverCertificate.grpcEndpoint.targetUri
+                help_text: |
+                  Target URI of the gRPC endpoint that provides the server certificate and private key (must start with `unix:`).
+          - group:
+              mutex: true
+              help_text: |
+                Client validation CA configuration for Traffic Director.
+              params:
+              - arg_name: client-validation-ca-plugin-instance
+                type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+                metavar: PLUGIN_INSTANCE
+                help_text: |
+                  List of certificate provider plugin instance names used to obtain the Certificate Authority certificates to validate peer certificates for Traffic Director.
+              - arg_name: client-validation-ca-grpc-endpoint
+                type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+                metavar: TARGET_URI
+                help_text: |
+                  List of gRPC endpoint target URIs used to obtain the Certificate Authority certificates to validate peer certificates for Traffic Director.
+  labels:
+    api_field: serverTlsPolicy.labels
+
+async:
+  collection: networksecurity.projects.locations.operations
+
+output:
+  format: yaml

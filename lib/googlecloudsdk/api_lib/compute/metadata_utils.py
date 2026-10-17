@@ -22,7 +22,7 @@ from googlecloudsdk.api_lib.compute import exceptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.core.util import files
+from googlecloudsdk.core.console import console_io
 
 import six
 
@@ -117,12 +117,15 @@ def ConstructMetadataDict(metadata=None, metadata_from_file=None):
 
   Args:
     metadata: A dict mapping metadata keys to metadata values or None.
-    metadata_from_file: A dict mapping metadata keys to file names containing
-      the keys' values or None.
+    metadata_from_file: A dict mapping metadata keys to file names (or '-' for
+      standard input) containing the keys' values or None.
 
   Raises:
-    ToolException: If metadata and metadata_from_file contain duplicate
-      keys or if there is a problem reading the contents of a file in
+    DuplicateError: If metadata and metadata_from_file contain duplicate
+      keys.
+    ArgumentError: If '-' is specified for more than one key in
+      metadata_from_file.
+    files.Error: If there is a problem reading the contents of a file in
       metadata_from_file.
 
   Returns:
@@ -131,12 +134,18 @@ def ConstructMetadataDict(metadata=None, metadata_from_file=None):
   metadata = metadata or {}
   metadata_from_file = metadata_from_file or {}
 
+  if sum(1 for file_path in six.itervalues(metadata_from_file)
+         if file_path == '-') > 1:
+    raise compute_exceptions.ArgumentError(
+        'Cannot specify [-] for multiple keys in [--metadata-from-file].')
+
   new_metadata_dict = copy.deepcopy(metadata)
   for key, file_path in six.iteritems(metadata_from_file):
     if key in new_metadata_dict:
       raise compute_exceptions.DuplicateError(
           'Encountered duplicate metadata key [{0}].'.format(key))
-    new_metadata_dict[key] = files.ReadFileContents(file_path)
+    new_metadata_dict[key] = console_io.ReadFromFileOrStdin(
+        file_path, binary=False)
   return new_metadata_dict
 
 
@@ -149,14 +158,17 @@ def ConstructMetadataMessage(message_classes,
   Args:
     message_classes: An object containing API message classes.
     metadata: A dict mapping metadata keys to metadata values or None.
-    metadata_from_file: A dict mapping metadata keys to file names containing
-      the keys' values or None.
+    metadata_from_file: A dict mapping metadata keys to file names (or '-' for
+      standard input) containing the keys' values or None.
     existing_metadata: If not None, the given metadata values are combined with
       this Metadata message.
 
   Raises:
-    ToolException: If metadata and metadata_from_file contain duplicate
-      keys or if there is a problem reading the contents of a file in
+    DuplicateError: If metadata and metadata_from_file contain duplicate
+      keys.
+    ArgumentError: If '-' is specified for more than one key in
+      metadata_from_file.
+    files.Error: If there is a problem reading the contents of a file in
       metadata_from_file.
 
   Returns:
@@ -265,7 +277,8 @@ def AddMetadataArgs(parser, required=False):
 
   metadata_from_file_help = """\
       Same as ``--metadata'' except that the value for the entry will
-      be read from a local file. This is useful for values that are
+      be read from a local file. A value can be read from standard input
+      by specifying ``-'' as the file path. This is useful for values that are
       too large such as ``startup-script'' contents.
       """
   if required:

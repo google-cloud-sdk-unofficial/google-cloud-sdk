@@ -113,6 +113,23 @@ def ConstructCreateMachineConfigFromArgs(alloydb_messages, args):
     )
 
 
+def _IsAgentPool(alloydb_messages, instance_type):
+  """Returns whether instance_type is AGENT_POOL.
+
+  AGENT_POOL only exists in the alpha and beta API messages, so this is always
+  False on the GA track.
+
+  Args:
+    alloydb_messages: Messages module for the API client.
+    instance_type: The instance's InstanceTypeValueValuesEnum value.
+  """
+  instance_types = alloydb_messages.Instance.InstanceTypeValueValuesEnum
+  return (
+      hasattr(instance_types, 'AGENT_POOL')
+      and instance_type == instance_types.AGENT_POOL
+  )
+
+
 def _ConstructInstanceFromArgs(client, alloydb_messages, args):
   """Validates command line input arguments and passes parent's resources to create an AlloyDB instance.
 
@@ -126,13 +143,28 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
   """
   instance_resource = alloydb_messages.Instance()
 
+  instance_resource.instanceType = _ParseInstanceType(
+      alloydb_messages, args.instance_type
+  )
+  is_agent_pool = _IsAgentPool(
+      alloydb_messages, instance_resource.instanceType
+  )
+
   # set availability-type if provided
   instance_resource.availabilityType = ParseAvailabilityType(
       alloydb_messages, args.availability_type
   )
-  instance_resource.machineConfig = ConstructCreateMachineConfigFromArgs(
-      alloydb_messages, args
-  )
+  if is_agent_pool:
+    # Agent pools are sized by the service, not by a machine config.
+    if args.cpu_count or args.machine_type:
+      raise DetailedArgumentError(
+          '--cpu-count and --machine-type cannot be specified when'
+          ' --instance-type=AGENT_POOL.'
+      )
+  else:
+    instance_resource.machineConfig = ConstructCreateMachineConfigFromArgs(
+        alloydb_messages, args
+    )
   instance_ref = client.resource_parser.Create(
       'alloydb.projects.locations.clusters.instances',
       projectsId=properties.VALUES.core.project.GetOrFail,
@@ -160,9 +192,6 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
       observability_config_record_application_tags=args.observability_config_record_application_tags,
       observability_config_query_plans_per_minute=args.observability_config_query_plans_per_minute,
       observability_config_track_active_queries=args.observability_config_track_active_queries,
-  )
-  instance_resource.instanceType = _ParseInstanceType(
-      alloydb_messages, args.instance_type
   )
 
   if (
@@ -195,10 +224,15 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
       allocated_ip_range_override=args.allocated_ip_range_override,
   )
 
+  # AGENT_POOL instances carry their PSC auto connections in agentPoolConfig
+  # rather than pscInstanceConfig; _ConstructInstanceFromArgsBeta sets them.
+  psc_auto_connections_for_psc_config = (
+      None if is_agent_pool else args.psc_auto_connections
+  )
   if (
       args.allowed_psc_projects
       or args.psc_network_attachment_uri is not None
-      or args.psc_auto_connections is not None
+      or psc_auto_connections_for_psc_config is not None
       or getattr(args, 'enable_psc_auto_dns', None) is not None
       or getattr(args, 'enable_psc_auto_connection_policy', None) is not None
   ):
@@ -206,7 +240,7 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
         alloydb_messages=alloydb_messages,
         allowed_psc_projects=args.allowed_psc_projects,
         psc_network_attachment_uri=args.psc_network_attachment_uri,
-        psc_auto_connections=args.psc_auto_connections,
+        psc_auto_connections=psc_auto_connections_for_psc_config,
         enable_psc_auto_dns=getattr(args, 'enable_psc_auto_dns', None),
         enable_psc_auto_connection_policy=getattr(
             args, 'enable_psc_auto_connection_policy', None
@@ -291,6 +325,33 @@ def _ConstructInstanceFromArgsBeta(client, alloydb_messages, args):
     if not instance_resource.readPoolConfig:
       instance_resource.readPoolConfig = alloydb_messages.ReadPoolConfig()
     instance_resource.readPoolConfig.autoScalingConfig = auto_scaling_config
+
+  is_agent_pool = _IsAgentPool(
+      alloydb_messages, instance_resource.instanceType
+  )
+  agent_pool_min_size = getattr(args, 'agent_pool_min_size', None)
+  agent_pool_max_size = getattr(args, 'agent_pool_max_size', None)
+  if not is_agent_pool and (
+      agent_pool_min_size is not None or agent_pool_max_size is not None
+  ):
+    raise DetailedArgumentError(
+        '--agent-pool-min-size and --agent-pool-max-size can only be'
+        ' specified when --instance-type=AGENT_POOL.'
+    )
+  if is_agent_pool:
+    if not args.psc_auto_connections:
+      raise DetailedArgumentError(
+          '--psc-auto-connections must be specified when'
+          ' --instance-type=AGENT_POOL.'
+      )
+    instance_resource.agentPoolConfig = alloydb_messages.AgentPoolConfig(
+        minPoolSize=agent_pool_min_size,
+        maxPoolSize=agent_pool_max_size,
+        pscAutoConnections=_PscAutoConnections(
+            alloydb_messages=alloydb_messages,
+            psc_auto_connections=args.psc_auto_connections,
+        ),
+    )
 
   return instance_resource
 

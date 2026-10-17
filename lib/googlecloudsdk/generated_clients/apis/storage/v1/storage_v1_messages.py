@@ -758,17 +758,41 @@ class Bucket(_messages.Message):
     r"""The bucket's soft delete policy, which defines the period of time that
     soft-deleted objects will be retained, and cannot be permanently deleted.
 
+    Messages:
+      HardDeletePauseValue: The bucket's hard delete pause configuration. If
+        set, soft-deleted objects in the bucket will not be permanently
+        deleted until the hard delete pause is disabled.
+
     Fields:
       effectiveTime: Server-determined value that indicates the time from
         which the policy, or one with a greater retention, was effective. This
         value is in RFC 3339 format.
+      hardDeletePause: The bucket's hard delete pause configuration. If set,
+        soft-deleted objects in the bucket will not be permanently deleted
+        until the hard delete pause is disabled.
       retentionDurationSeconds: The duration in seconds that soft-deleted
         objects in the bucket will be retained and cannot be permanently
         deleted.
     """
 
+    class HardDeletePauseValue(_messages.Message):
+      r"""The bucket's hard delete pause configuration. If set, soft-deleted
+      objects in the bucket will not be permanently deleted until the hard
+      delete pause is disabled.
+
+      Fields:
+        effectiveTime: Server-determined value that indicates the time from
+          which the hard delete pause became effective. This value is in RFC
+          3339 format.
+        enabled: Whether hard deletions are paused.
+      """
+
+      effectiveTime = _message_types.DateTimeField(1)
+      enabled = _messages.BooleanField(2)
+
     effectiveTime = _message_types.DateTimeField(1)
-    retentionDurationSeconds = _messages.IntegerField(2)
+    hardDeletePause = _messages.MessageField('HardDeletePauseValue', 2)
+    retentionDurationSeconds = _messages.IntegerField(3)
 
   class VersioningValue(_messages.Message):
     r"""The bucket's versioning configuration.
@@ -1910,6 +1934,71 @@ class ObjectCustomContextPayload(_messages.Message):
   extendedDataTypeUrl = _messages.StringField(2)
   updateTime = _message_types.DateTimeField(3)
   value = _messages.StringField(4)
+
+
+class ObjectFullContext(_messages.Message):
+  r"""A full representation of an object context.
+
+  Enums:
+    TypeValueValuesEnum: The type of the object context.
+
+  Messages:
+    ExtendedDataValue: The extended data of the object context.
+
+  Fields:
+    createTime: The time at which the object context was created. This value
+      is in RFC 3339 format.
+    extendedData: The extended data of the object context.
+    key: The key of the object context.
+    kind: The kind of item this is. For ObjectFullContext, this is always
+      storage#objectFullContext.
+    type: The type of the object context.
+    updateTime: The time at which the object context was last updated. This
+      value is in RFC 3339 format.
+    value: The value of the object context.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""The type of the object context.
+
+    Values:
+      CUSTOM: Custom object context.
+    """
+    CUSTOM = 0
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExtendedDataValue(_messages.Message):
+    r"""The extended data of the object context.
+
+    Messages:
+      AdditionalProperty: An additional property for a ExtendedDataValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExtendedDataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _message_types.DateTimeField(1)
+  extendedData = _messages.MessageField('ExtendedDataValue', 2)
+  key = _messages.StringField(3)
+  kind = _messages.StringField(4, default='storage#objectFullContext')
+  type = _messages.EnumField('TypeValueValuesEnum', 5)
+  updateTime = _message_types.DateTimeField(6)
+  value = _messages.StringField(7)
 
 
 class Objects(_messages.Message):
@@ -4598,6 +4687,29 @@ class StorageObjectsUpdateRequest(_messages.Message):
   predefinedAcl = _messages.EnumField('PredefinedAclValueValuesEnum', 10)
   projection = _messages.EnumField('ProjectionValueValuesEnum', 11)
   userProject = _messages.StringField(12)
+
+
+class StorageObjectsViewFullContextRequest(_messages.Message):
+  r"""A StorageObjectsViewFullContextRequest object.
+
+  Fields:
+    bucket: Name of the bucket in which the object resides.
+    contextKey: Key identifying the object context to retrieve.
+    generation: If present, selects a specific revision of this object (as
+      opposed to the latest version, the default).
+    object: Name of the object. For information about how to URL encode object
+      names to be path safe, see [Encoding URI Path
+      Parts](https://cloud.google.com/storage/docs/request-
+      endpoints#encoding).
+    userProject: The project to be billed for this request. Required for
+      Requester Pays buckets.
+  """
+
+  bucket = _messages.StringField(1, required=True)
+  contextKey = _messages.StringField(2, required=True)
+  generation = _messages.IntegerField(3)
+  object = _messages.StringField(4, required=True)
+  userProject = _messages.StringField(5)
 
 
 class StorageProjectsHmacKeysCreateRequest(_messages.Message):

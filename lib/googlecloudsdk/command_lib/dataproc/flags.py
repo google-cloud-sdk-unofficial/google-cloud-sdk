@@ -18,8 +18,8 @@
 import argparse
 import json
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -63,7 +63,7 @@ def AddRegionFlag(parser):
       '--region',
       help=region_prop.help_text,
       # Don't set default, because it would override users' property setting.
-      action=actions.StoreProperty(region_prop),
+      action=property_actions.StoreProperty(region_prop),
   )
 
 
@@ -73,7 +73,7 @@ def AddLocationFlag(parser):
       '--location',
       help=location_prop.help_text,
       # Don't set default, because it would override user's property setting.
-      action=actions.StoreProperty(location_prop),
+      action=property_actions.StoreProperty(location_prop),
   )
 
 
@@ -267,7 +267,7 @@ def AddZoneAndExcludedZonesFlags(parser, short_flags=True):
             will pick a zone in the region.
             Overrides the default compute/zone property value for this command invocation.
             """,
-      action=actions.StoreProperty(properties.VALUES.compute.zone),
+      action=property_actions.StoreProperty(properties.VALUES.compute.zone),
   )
   auto_zone_group = zone_and_excluded_zones_group.add_argument_group()
   auto_zone_group.add_argument(

@@ -192,7 +192,9 @@ class Column(_messages.Message):
 
   Fields:
     columns: If the `type` of this column is `RECORD`, this sub-field
-      describes the nested structure.
+      describes the nested structure (for example, a cost column of type
+      `RECORD` contains nested columns `currency_code` of type `STRING`,
+      `units` of type `INT64`, and `nanos` of type `INT64`).
     mode: The mode of the column, indicating if it is nullable, required, or
       repeated. Possible values: * `NULLABLE`: The column allows NULL values.
       * `REQUIRED`: The column does not allow NULL values. * `REPEATED`: The
@@ -482,12 +484,16 @@ class ReadReportResponse(_messages.Message):
   r"""Response message for the `ReadReport` method.
 
   Fields:
-    columns: The columns describing the structure of the data in the `rows`
-      field.
+    columns: The columns describing the structure and data types of the values
+      in the `rows` field, ordered positionally to match each row's elements.
+      Always populated, even when the report contains zero `rows`.
     nextPageToken: A token that can be sent as `page_token` in a subsequent
       `ReadReport` request to retrieve the next page of results. If this field
       is empty, there are no further pages.
     rows: A list of rows, where each row represents a record from the report.
+      Each `ListValue` element in a row corresponds positionally (1-to-1) to
+      the entry at the same index in `columns`. When a report has zero
+      matching records, `rows` is omitted and only `columns` is returned.
   """
 
   columns = _messages.MessageField('Column', 1, repeated=True)
@@ -508,12 +514,24 @@ class Report(_messages.Message):
       dimensions use Pacific Time, respect Daylight Saving Time (DST), and
       follow these ISO 8601 formats: * `month`: `YYYY-MM` (e.g., `2024-01`) *
       `day`: `YYYY-MM-DD` (e.g., `2024-01-10`) * `hour`: `YYYY-MM-DDTHH`
-      (e.g., `2024-01-10T00`) If the time range filter does not align with the
-      selected time dimension, the range is expanded to encompass the full
-      period of the finest-grained time dimension. For example, if the filter
-      is `2026-01-10` through `2026-01-12` and the `month` dimension is
-      selected, the effective time range expands to include all of January
-      (`2026-01-01` to `2026-02-01`).
+      (e.g., `2024-01-10T00`) Supported dimension combinations: * `{project}`
+      * `{product_display_name}` * `{product_display_name, project}` *
+      `{product_display_name, resource}` * `{product_display_name,
+      resource_type}` * `{application}` * `{application,
+      product_display_name}` * `{location, product_display_name, project,
+      sku}` * `{location, product_display_name, project, service_or_workload}`
+      * `{location, product_display_name, project, resource, resource_type}` *
+      `{location, product_display_name, project, resource, resource_type,
+      sku}` Any of the above combinations can optionally include one or more
+      time dimensions (`month`, `day`, or `hour`). Metric constraints: * If
+      `sku` is present in dimensions, only cost metrics are supported (CPU and
+      memory utilization metrics are rejected). * `cpu_p95_utilization` and
+      `memory_p95_utilization` require the `resource` dimension. If the time
+      range filter does not align with the selected time dimension, the range
+      is expanded to encompass the full period of the finest-grained time
+      dimension. For example, if the filter is `2026-01-10` through
+      `2026-01-12` and the `month` dimension is selected, the effective time
+      range expands to include all of January (`2026-01-01` to `2026-02-01`).
     expireTime: Output only. Timestamp in UTC of when this report expires.
       Once the report expires, it will no longer be accessible and the
       report's underlying data will be deleted.
@@ -523,7 +541,10 @@ class Report(_messages.Message):
       predicates must use exact string matches. * Multiple predicates
       referring to the same string field must be joined using the logical OR
       operator ('||'). * All other predicates must be joined using the logical
-      AND operator (`&&`). * A predicate on a time dimension (e.g., `day`)
+      AND operator (`&&`). * Time dimensions (`month`, `day`, `hour`) are
+      typed as `google.protobuf.Timestamp`, NOT strings. Equality comparisons
+      (`==`, `!=`, or `:`) and string literals (e.g., `month == '2024-01'`)
+      are NOT supported. * A predicate on a time dimension (e.g., `day`)
       specifying the start time must use a greater-than-or-equal-to comparison
       (`>=`). * A predicate on a time dimension specifying the end time must
       use a less-than comparison (`<`). Examples: 1. Filter by a specific
@@ -534,12 +555,14 @@ class Report(_messages.Message):
       within the past 72 hours: `"hour >= now - duration('72h')"` 4. Combine
       string predicate with time interval predicate: `"(location == 'us-east1'
       || location == 'us-west1') && hour >= timestamp('2023-12-01T00:00:00Z')
-      && hour < timestamp('2024-02-01T00:00:00Z')"` If the filter omits time
-      dimensions (`month`, `day`, `hour`), the report defaults to a 7-day
-      range ending at the previous Pacific Time midnight, with Daylight Saving
-      Time (DST) applied. For example, if the current Pacific Time is
-      `2026-01-05T12:00:00`, the default range is `2025-12-29T00:00:00` to
-      `2026-01-05T00:00:00` Pacific time.
+      && hour < timestamp('2024-02-01T00:00:00Z')"` 5. Filter for a specific
+      calendar month (e.g., August 2026): `"month >= month('2026-08') && month
+      < month('2026-09')"` If the filter omits time dimensions (`month`,
+      `day`, `hour`), the report defaults to a 7-day range ending at the
+      previous Pacific Time midnight, with Daylight Saving Time (DST) applied.
+      For example, if the current Pacific Time is `2026-01-05T12:00:00`, the
+      default range is `2025-12-29T00:00:00` to `2026-01-05T00:00:00` Pacific
+      time.
     metrics: Required. A list of metrics to include in the report. Supported
       values: * `cost` * `resource_cost` * `network_cost` *
       `network_cost_standard_internet` * `network_cost_premium_internet` *
@@ -567,13 +590,17 @@ class Report(_messages.Message):
 
 
 class Scope(_messages.Message):
-  r"""Specifies the report scope.
+  r"""Specifies the report scope. When specifying a scope, exactly one of
+  `project` or `application` is required.
 
   Fields:
-    application: Required. An App Hub Application to fetch data from. Format:
+    application: Required (oneof). An App Hub Application to fetch data from.
+      Format:
       `"projects/{project}/locations/{location}/applications/{application}"`.
-    project: Required. A Google Cloud Platform project to fetch data from.
-      Format: `"projects/{project}"`.
+      Exactly one of `project` or `application` must be specified.
+    project: Required (oneof). A Google Cloud Platform project to fetch data
+      from. Format: `"projects/{project}"`. Exactly one of `project` or
+      `application` must be specified.
   """
 
   application = _messages.StringField(1)

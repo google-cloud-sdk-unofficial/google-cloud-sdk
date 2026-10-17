@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+  hidden: true
+
+  help_text:
+    brief: Describe a Secure Source Manager issue comment.
+    description: Describe a Secure Source Manager issue comment.
+    examples: |
+      To describe a comment ``456'' in issue ``123'' of repository ``my-repo'' and location ``us-central1'', run the following command:
+
+      $ {command} 456 --issue=123 --repository=my-repo --region=us-central1
+
+  request:
+    api_version: v1
+    collection: securesourcemanager.projects.locations.repositories.issues.issueComments
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The Secure Source Manager issue comment to describe.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:issue_comment

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for configuring autoscaling of a managed instance group."""
 
-
 import json
 import re
 
@@ -28,76 +27,95 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
-
 _DELETE_AUTOSCALER_PROMPT = (
     'Configuration specifies no autoscaling configuration. '
     'Continuing will delete the existing autoscaler '
-    'configuration.')
+    'configuration.'
+)
 _REPLACE_AUTOSCALER_PROMPT = (
     'Configuration specifies autoscaling configuration with a '
     'different name than existing. Continuing will delete '
-    'existing autoscaler and create new one with a different name.')
+    'existing autoscaler and create new one with a different name.'
+)
 _DELETION_CANCEL_STRING = 'Deletion aborted by user.'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class SetAutoscaling(base.Command):
   """Set autoscaling parameters of a managed instance group."""
 
-  @staticmethod
-  def Args(parser):
+  _support_cpu_range = False
+
+  @classmethod
+  def Args(cls, parser):
     managed_instance_groups_utils.AddAutoscalerArgs(parser=parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-    managed_instance_groups_utils.AddPredictiveAutoscaling(parser,
-                                                           standard=False)
+        parser
+    )
+    mutex_group = parser.add_group(mutex=True)
+    if cls._support_cpu_range:
+      range_group = mutex_group.add_group()
+      managed_instance_groups_utils.AddCpuUtilizationRangeFlags(
+          range_group, required=True
+      )
+    managed_instance_groups_utils.AddPredictiveAutoscaling(
+        mutex_group, standard=False
+    )
 
-  def CreateAutoscalerResource(self,
-                               client,
-                               resources,
-                               igm_ref,
-                               args):
+  def CreateAutoscalerResource(self, client, resources, igm_ref, args):
     autoscaler = managed_instance_groups_utils.AutoscalerForMigByRef(
-        client, resources, igm_ref)
+        client, resources, igm_ref
+    )
     autoscaler_name = getattr(autoscaler, 'name', None)
     new_one = managed_instance_groups_utils.IsAutoscalerNew(autoscaler)
     autoscaler_name = autoscaler_name or args.name
     autoscaler_resource = managed_instance_groups_utils.BuildAutoscaler(
-        args,
-        client.messages,
-        igm_ref,
-        autoscaler_name,
-        autoscaler)
+        args, client.messages, igm_ref, autoscaler_name, autoscaler
+    )
     return autoscaler_resource, new_one
 
   def _SetAutoscalerFromFile(
-      self, autoscaling_file, autoscalers_client, igm_ref,
-      existing_autoscaler_name):
+      self,
+      autoscaling_file,
+      autoscalers_client,
+      igm_ref,
+      existing_autoscaler_name,
+  ):
     new_autoscaler = json.loads(files.ReadFileContents(autoscaling_file))
     if new_autoscaler is None:
       if existing_autoscaler_name is None:
-        log.info('Configuration specifies no autoscaling and there is no '
-                 'autoscaling configured. Nothing to do.')
+        log.info(
+            'Configuration specifies no autoscaling and there is no '
+            'autoscaling configured. Nothing to do.'
+        )
         return
       else:
         console_io.PromptContinue(
-            message=_DELETE_AUTOSCALER_PROMPT, cancel_on_no=True,
-            cancel_string=_DELETION_CANCEL_STRING)
+            message=_DELETE_AUTOSCALER_PROMPT,
+            cancel_on_no=True,
+            cancel_string=_DELETION_CANCEL_STRING,
+        )
         return autoscalers_client.Delete(igm_ref, existing_autoscaler_name)
 
-    new_autoscaler = encoding.DictToMessage(new_autoscaler,
-                                            autoscalers_client.message_type)
+    new_autoscaler = encoding.DictToMessage(
+        new_autoscaler, autoscalers_client.message_type
+    )
     if existing_autoscaler_name is None:
       managed_instance_groups_utils.AdjustAutoscalerNameForCreation(
-          new_autoscaler, igm_ref)
+          new_autoscaler, igm_ref
+      )
       return autoscalers_client.Insert(igm_ref, new_autoscaler)
 
-    if (getattr(new_autoscaler, 'name', None) and
-        getattr(new_autoscaler, 'name') != existing_autoscaler_name):
+    if (
+        getattr(new_autoscaler, 'name', None)
+        and getattr(new_autoscaler, 'name') != existing_autoscaler_name
+    ):
       console_io.PromptContinue(
-          message=_REPLACE_AUTOSCALER_PROMPT, cancel_on_no=True,
-          cancel_string=_DELETION_CANCEL_STRING)
+          message=_REPLACE_AUTOSCALER_PROMPT,
+          cancel_on_no=True,
+          cancel_string=_DELETION_CANCEL_STRING,
+      )
       autoscalers_client.Delete(igm_ref, existing_autoscaler_name)
       return autoscalers_client.Insert(igm_ref, new_autoscaler)
 
@@ -106,42 +124,61 @@ class SetAutoscaling(base.Command):
 
   def _PromptToAutoscaleGKENodeGroup(self, args):
     prompt_message = (
-        'You should not use Compute Engine\'s autoscaling feature '
-        'on instance groups created by Kubernetes Engine.')
+        "You should not use Compute Engine's autoscaling feature "
+        'on instance groups created by Kubernetes Engine.'
+    )
     if re.match(r'^gke-.*-[0-9a-f]{1,8}-grp$', args.name):
       console_io.PromptContinue(
-          message=prompt_message, default=False, cancel_on_no=True,
-          cancel_string='Setting autoscaling aborted by user.')
+          message=prompt_message,
+          default=False,
+          cancel_on_no=True,
+          cancel_string='Setting autoscaling aborted by user.',
+      )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    managed_instance_groups_utils.ValidateAutoscalerArgs(args)
+    managed_instance_groups_utils.ValidateAutoscalerArgs(
+        args, is_set_command=True
+    )
     managed_instance_groups_utils.ValidateStackdriverMetricsFlags(args)
 
     igm_ref = instance_groups_flags.CreateGroupReference(
-        client, holder.resources, args)
+        client, holder.resources, args
+    )
 
     # Assert that Instance Group Manager exists.
     managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
-        igm_ref, client)
+        igm_ref, client
+    )
 
     # Require confirmation if autoscaling a GKE node group.
     self._PromptToAutoscaleGKENodeGroup(args)
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
-        client, holder.resources, igm_ref, args)
+        client, holder.resources, igm_ref, args
+    )
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
-        args, autoscaler_resource)
+        args, autoscaler_resource
+    )
 
     autoscalers_client = autoscalers_api.GetClient(client, igm_ref)
     if is_new:
       managed_instance_groups_utils.AdjustAutoscalerNameForCreation(
-          autoscaler_resource, igm_ref)
+          autoscaler_resource, igm_ref
+      )
       return autoscalers_client.Insert(igm_ref, autoscaler_resource)
     return autoscalers_client.Update(igm_ref, autoscaler_resource)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
+@base.UniverseCompatible
+class SetAutoscalingPreview(SetAutoscaling):
+  """Set autoscaling parameters of a managed instance group."""
+
+  _support_cpu_range = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -151,35 +188,45 @@ class SetAutoscalingBeta(SetAutoscaling):
   @staticmethod
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
-        parser=parser,
-        autoscaling_file_enabled=True,
-        patch_args=False)
+        parser=parser, autoscaling_file_enabled=True, patch_args=False
+    )
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-    managed_instance_groups_utils.AddPredictiveAutoscaling(parser,
-                                                           standard=False)
+        parser
+    )
+    mutex_group = parser.add_group(mutex=True)
+    managed_instance_groups_utils.AddPredictiveAutoscaling(
+        mutex_group, standard=False
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
-    managed_instance_groups_utils.ValidateAutoscalerArgs(args)
+    managed_instance_groups_utils.ValidateAutoscalerArgs(
+        args, is_set_command=True
+    )
     managed_instance_groups_utils.ValidateStackdriverMetricsFlags(args)
     managed_instance_groups_utils.ValidateConflictsWithAutoscalingFile(
         args,
-        (managed_instance_groups_utils.
-         ARGS_CONFLICTING_WITH_AUTOSCALING_FILE_BETA))
+        (
+            managed_instance_groups_utils.ARGS_CONFLICTING_WITH_AUTOSCALING_FILE_BETA
+        ),
+    )
     igm_ref = instance_groups_flags.CreateGroupReference(
-        client, holder.resources, args)
+        client, holder.resources, args
+    )
 
     # Assert that Instance Group Manager exists.
     managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
-        igm_ref, client)
+        igm_ref, client
+    )
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
-        client, holder.resources, igm_ref, args)
+        client, holder.resources, igm_ref, args
+    )
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
-        args, autoscaler_resource)
+        args, autoscaler_resource
+    )
 
     autoscalers_client = autoscalers_api.GetClient(client, igm_ref)
     if args.IsSpecified('autoscaling_file'):
@@ -188,12 +235,16 @@ class SetAutoscalingBeta(SetAutoscaling):
       else:
         existing_autoscaler_name = autoscaler_resource.name
       return self._SetAutoscalerFromFile(
-          args.autoscaling_file, autoscalers_client, igm_ref,
-          existing_autoscaler_name)
+          args.autoscaling_file,
+          autoscalers_client,
+          igm_ref,
+          existing_autoscaler_name,
+      )
 
     if is_new:
       managed_instance_groups_utils.AdjustAutoscalerNameForCreation(
-          autoscaler_resource, igm_ref)
+          autoscaler_resource, igm_ref
+      )
       return autoscalers_client.Insert(igm_ref, autoscaler_resource)
     return autoscalers_client.Update(igm_ref, autoscaler_resource)
 
@@ -205,39 +256,50 @@ class SetAutoscalingAlpha(SetAutoscaling):
   @staticmethod
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
-        parser=parser,
-        autoscaling_file_enabled=True,
-        patch_args=False)
+        parser=parser, autoscaling_file_enabled=True, patch_args=False
+    )
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-    managed_instance_groups_utils.AddPredictiveAutoscaling(parser,
-                                                           standard=True)
+        parser
+    )
+    mutex_group = parser.add_group(mutex=True)
+    range_group = mutex_group.add_group()
+    managed_instance_groups_utils.AddCpuUtilizationRangeFlags(
+        range_group, required=True
+    )
+    managed_instance_groups_utils.AddPredictiveAutoscaling(
+        mutex_group, standard=True
+    )
     managed_instance_groups_utils.AddCpuAggregationArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
-    managed_instance_groups_utils.ValidateAutoscalerArgs(args)
+    managed_instance_groups_utils.ValidateAutoscalerArgs(
+        args, is_set_command=True
+    )
     managed_instance_groups_utils.ValidateStackdriverMetricsFlags(args)
     managed_instance_groups_utils.ValidateConflictsWithAutoscalingFile(
         args,
-        (managed_instance_groups_utils.
-         ARGS_CONFLICTING_WITH_AUTOSCALING_FILE_ALPHA))
+        (
+            managed_instance_groups_utils.ARGS_CONFLICTING_WITH_AUTOSCALING_FILE_ALPHA
+        ),
+    )
     igm_ref = instance_groups_flags.CreateGroupReference(
-        client, holder.resources, args)
+        client, holder.resources, args
+    )
 
     # Assert that Instance Group Manager exists.
     managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
-        igm_ref, client)
+        igm_ref, client
+    )
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
-        client,
-        holder.resources,
-        igm_ref,
-        args)
+        client, holder.resources, igm_ref, args
+    )
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
-        args, autoscaler_resource)
+        args, autoscaler_resource
+    )
 
     autoscalers_client = autoscalers_api.GetClient(client, igm_ref)
     if args.IsSpecified('autoscaling_file'):
@@ -246,24 +308,31 @@ class SetAutoscalingAlpha(SetAutoscaling):
       else:
         existing_autoscaler_name = autoscaler_resource.name
       return self._SetAutoscalerFromFile(
-          args.autoscaling_file, autoscalers_client, igm_ref,
-          existing_autoscaler_name)
+          args.autoscaling_file,
+          autoscalers_client,
+          igm_ref,
+          existing_autoscaler_name,
+      )
 
     if is_new:
       managed_instance_groups_utils.AdjustAutoscalerNameForCreation(
-          autoscaler_resource, igm_ref)
+          autoscaler_resource, igm_ref
+      )
       return autoscalers_client.Insert(igm_ref, autoscaler_resource)
     return autoscalers_client.Update(igm_ref, autoscaler_resource)
 
+
 SetAutoscaling.detailed_help = {
     'brief': 'Set autoscaling parameters of a managed instance group',
-    'DESCRIPTION': """
+    'DESCRIPTION': (
+        """
         *{command}* sets autoscaling parameters of specified managed instance
 group.
 
 Autoscalers can use one or more autoscaling signals. Information on using
 multiple autoscaling signals can be found here: [](https://cloud.google.com/compute/docs/autoscaler/multiple-signals)
-        """,
+        """
+    ),
 }
 SetAutoscalingAlpha.detailed_help = SetAutoscaling.detailed_help
 SetAutoscalingBeta.detailed_help = SetAutoscaling.detailed_help

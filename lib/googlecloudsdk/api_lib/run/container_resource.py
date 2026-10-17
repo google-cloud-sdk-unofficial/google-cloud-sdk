@@ -14,12 +14,12 @@
 # limitations under the License.
 """Wraps a resource message with a container with convenience methods."""
 
-
 import collections
 import json
 from typing import Mapping, Sequence
 
 from googlecloudsdk.api_lib.run import k8s_object
+from googlecloudsdk.generated_clients.apis.run.v2 import run_v2_messages
 
 try:
   # Python 3.3 and above.
@@ -232,6 +232,43 @@ class Container(object):
         value_field='value',
     )
 
+  @property
+  def build_config(self):
+    """The GoogleCloudRunV2BuildConfiguration for this container, if set.
+
+    Note that the underlying state is stored as `_build_config` on `self._m`
+    (the apitools message) rather than on `self`. Because `Container` is an
+    ephemeral wrapper instantiated on-the-fly when accessing `containers[name]`
+    or `container`, storing on `self._m` ensures that all wrapper instances
+    for the same container share the in-memory build config. Apitools ignores
+    attributes with leading underscores, so proto serialization of `self._m` is
+    unaffected.
+    """
+    return getattr(self._m, '_build_config', None)
+
+  @build_config.setter
+  def build_config(self, value):
+    if value is not None:
+      if not isinstance(
+          value, run_v2_messages.GoogleCloudRunV2BuildConfiguration
+      ):
+        raise TypeError(
+            'Expected GoogleCloudRunV2BuildConfiguration or None, '
+            'got {}'.format(type(value))
+        )
+    # Stored on self._m rather than self because Container is an ephemeral
+    # wrapper created on-the-fly by ContainersAsDictionaryWrapper whenever
+    # `resource.containers` or `resource.container` is accessed. Attaching
+    # `_build_config` to the underlying apitools container message (`self._m`)
+    # ensures all wrapper instances share the same state. apitools ignores
+    # private attributes (leading underscore), so proto serialization of
+    # `self._m` is unaffected.
+    object.__setattr__(self._m, '_build_config', value)
+
+  def HasBuildConfigState(self):
+    """Returns True if build_config has already been deserialized or set."""
+    return hasattr(self._m, '_build_config')
+
   def MakeSerializable(self):
     return self._m
 
@@ -239,7 +276,13 @@ class Container(object):
     return getattr(self._m, name)
 
   def __setattr__(self, name, value):
-    setattr(self._m, name, value)
+    # If the attribute is defined on the class (such as the `build_config`
+    # property setter), delegate to super to invoke descriptor setters.
+    # Otherwise, forward attribute writes to the underlying container message.
+    if hasattr(type(self), name):
+      super(Container, self).__setattr__(name, value)
+    else:
+      setattr(self._m, name, value)
 
   def MountedVolumeJoin(self, subgroup=None):
     vols = self._volumes

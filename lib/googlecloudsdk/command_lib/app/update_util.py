@@ -20,6 +20,12 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
 
+SSL_POLICY_WARNING = (
+    'This operation might not have any effect on appspot.com domains'
+    ' due to permanent blocking of insecure TLS. Please read:'
+    ' https://docs.cloud.google.com/appengine/docs/standard/secure-minimum-tls'
+)
+
 
 def AddAppUpdateFlags(parser):
   """Add the common flags to a app update command."""
@@ -70,6 +76,9 @@ def PatchApplication(
           api_client.messages.Application.SslPolicyValueValuesEnum.MODERN
       ),
   }.get(ssl_policy)
+
+  if ssl_policy is not None:
+    log.warning(SSL_POLICY_WARNING)
 
   if (
       split_health_checks is not None

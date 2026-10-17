@@ -220,6 +220,18 @@ class OperatingSystem(object):
     """Returns True if the current operating system is Windows."""
     return OperatingSystem.Current() is OperatingSystem.WINDOWS
 
+  @staticmethod
+  def IsAlpineLinux():
+    """Returns True if running on Alpine Linux.
+
+    Only `/etc/alpine-release` is checked. The presence of a musl dynamic
+    loader (`/lib/ld-musl-*`) is not a reliable signal because Debian and
+    Ubuntu's `musl` package installs it on glibc hosts.
+    """
+    if OperatingSystem.Current() is not OperatingSystem.LINUX:
+      return False
+    return os.path.exists('/etc/alpine-release')
+
 
 class Architecture(object):
   """An enum representing the system architecture you are running on."""

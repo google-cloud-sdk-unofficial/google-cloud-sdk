@@ -319,6 +319,10 @@ NETWORK_TIER_NOT_SUPPORTED = """\
 Provided network tier '{network_tier}' is not supported.
 """
 
+ADAPTIVE_POD_ALLOCATION_MODE_NOT_SUPPORTED = """\
+Provided adaptive pod allocation mode '{mode}' is not supported.
+"""
+
 NETWORK_SUITE_NOT_SUPPORTED = """\
 Provided network suite '{network_suite}' is not supported.
 """
@@ -1013,6 +1017,7 @@ class CreateClusterOptions(object):
       boot_disk_provisioned_iops=None,
       boot_disk_provisioned_throughput=None,
       network_tier=None,
+      adaptive_pod_allocation_mode=None,
       control_plane_egress_mode=None,
       enable_pod_snapshots=None,
       enable_agent_sandbox=None,
@@ -1347,6 +1352,7 @@ class CreateClusterOptions(object):
     self.boot_disk_provisioned_iops = boot_disk_provisioned_iops
     self.boot_disk_provisioned_throughput = boot_disk_provisioned_throughput
     self.network_tier = network_tier
+    self.adaptive_pod_allocation_mode = adaptive_pod_allocation_mode
     self.control_plane_egress_mode = control_plane_egress_mode
     self.enable_pod_snapshots = enable_pod_snapshots
     self.enable_agent_sandbox = enable_agent_sandbox
@@ -1569,6 +1575,7 @@ class UpdateClusterOptions(object):
       boot_disk_provisioned_iops=None,
       boot_disk_provisioned_throughput=None,
       network_tier=None,
+      adaptive_pod_allocation_mode=None,
       control_plane_egress_mode=None,
       control_plane_soak_duration=None,
       enable_pod_snapshots=None,
@@ -1829,6 +1836,7 @@ class UpdateClusterOptions(object):
     self.boot_disk_provisioned_iops = boot_disk_provisioned_iops
     self.boot_disk_provisioned_throughput = boot_disk_provisioned_throughput
     self.network_tier = network_tier
+    self.adaptive_pod_allocation_mode = adaptive_pod_allocation_mode
     self.control_plane_egress_mode = control_plane_egress_mode
     self.control_plane_soak_duration = control_plane_soak_duration
     self.enable_pod_snapshots = enable_pod_snapshots
@@ -3966,6 +3974,13 @@ class APIAdapter(object):
         cluster.ipAllocationPolicy = self.messages.IPAllocationPolicy()
       cluster.ipAllocationPolicy.networkTierConfig = _GetNetworkTierConfig(
           options, self.messages
+      )
+
+    if options.adaptive_pod_allocation_mode is not None:
+      if cluster.ipAllocationPolicy is None:
+        cluster.ipAllocationPolicy = self.messages.IPAllocationPolicy()
+      cluster.ipAllocationPolicy.adaptivePodAllocation = (
+          _GetAdaptivePodAllocation(options, self.messages)
       )
 
     if options.control_plane_egress_mode is not None:
@@ -6330,6 +6345,12 @@ class APIAdapter(object):
           desiredNetworkSuite=_GetNetworkSuite(
               options.network_suite,
               self.messages.ClusterUpdate.DesiredNetworkSuiteValueValuesEnum,
+          )
+      )
+    if options.adaptive_pod_allocation_mode is not None:
+      update = self.messages.ClusterUpdate(
+          desiredAdaptivePodAllocation=_GetAdaptivePodAllocation(
+              options, self.messages
           )
       )
 
@@ -10709,6 +10730,12 @@ class V1Beta1Adapter(V1Adapter):
               self.messages.ClusterUpdate.DesiredNetworkSuiteValueValuesEnum,
           )
       )
+    if options.adaptive_pod_allocation_mode is not None:
+      update = self.messages.ClusterUpdate(
+          desiredAdaptivePodAllocation=_GetAdaptivePodAllocation(
+              options, self.messages
+          )
+      )
     if options.linked_runners_mode is not None:
       update = self.messages.ClusterUpdate(
           desiredLinkedRunnersConfig=_GetLinkedRunnersConfig(
@@ -13208,6 +13235,27 @@ def _GetNetworkSuite(network_suite, enum_class):
         NETWORK_SUITE_NOT_SUPPORTED.format(network_suite=network_suite)
     )
   return network_suites[network_suite.lower()]
+
+
+def _GetAdaptivePodAllocation(options, messages):
+  """Gets the AdaptivePodAllocation from options."""
+  modes = {
+      'adaptive-allocation': (
+          messages.AdaptivePodAllocation.ModeValueValuesEnum.ADAPTIVE_ALLOCATION
+      ),
+      'disabled': (
+          messages.AdaptivePodAllocation.ModeValueValuesEnum.DISABLED
+      ),
+  }
+  if options.adaptive_pod_allocation_mode not in modes:
+    raise util.Error(
+        ADAPTIVE_POD_ALLOCATION_MODE_NOT_SUPPORTED.format(
+            mode=options.adaptive_pod_allocation_mode
+        )
+    )
+  return messages.AdaptivePodAllocation(
+      mode=modes[options.adaptive_pod_allocation_mode]
+  )
 
 
 def _GetControlPlaneEgress(options, messages):

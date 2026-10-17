@@ -1057,7 +1057,6 @@ class _SectionApiEndpointOverrides(_Section):
     self.geminicloudassist = self._Add(
         'geminicloudassist', command='gcloud geminicloudassist', hidden=True
     )
-    self.genomics = self._Add('genomics', command='gcloud genomics')
     self.gkebackup = self._Add('gkebackup', hidden=True)
     self.gkehub = self._Add('gkehub', hidden=True)
     self.gkerecommender = self._Add('gkerecommender', hidden=True)
@@ -1110,9 +1109,6 @@ class _SectionApiEndpointOverrides(_Section):
     self.logging = self._Add('logging', command='gcloud logging')
     self.looker = self._Add('looker', command='gcloud looker')
     self.lustre = self._Add('lustre', command='gcloud lustre', hidden=True)
-    self.managedflink = self._Add(
-        'managedflink', command='gcloud managedflink', hidden=True
-    )
     self.managedidentities = self._Add(
         'managedidentities', command='gcloud active-directory'
     )
@@ -1238,7 +1234,6 @@ class _SectionApiEndpointOverrides(_Section):
         'storageinsights', command='gcloud storage insights', hidden=True
     )
     self.stream = self._Add('stream', hidden=True)
-    self.telcoautomation = self._Add('telcoautomation', hidden=True)
     self.testing = self._Add('testing', command='gcloud firebase test')
     self.toolresults = self._Add('toolresults', hidden=True)
     self.tpu = self._Add('tpu', hidden=True)

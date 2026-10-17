@@ -1458,12 +1458,15 @@ class Behavior(_messages.Message):
       up regular repository copies. For example, after an initial full copy
       operation, this field can be set in recurring calls (e.g., from a cron
       job) to copy only recent artifacts, rather than the entire repository.
+    versionFilter: Optional. Limits which versions are copied by age. Cannot
+      be combined with max_version_age_days.
   """
 
   allAttachmentsIncluded = _messages.BooleanField(1)
   allTagsExcluded = _messages.BooleanField(2)
   continueOnSkippedVersion = _messages.BooleanField(3)
   maxVersionAgeDays = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  versionFilter = _messages.MessageField('VersionFilter', 5)
 
 
 class Binding(_messages.Message):
@@ -2108,8 +2111,8 @@ class GoogleDevtoolsArtifactregistryV1RemoteRepositoryConfigAptRepositoryCustomR
   r"""Customer-specified publicly available remote repository.
 
   Fields:
-    uri: An http/https uri reference to the upstream remote repository, for
-      ex: "https://my.apt.registry/".
+    uri: An https uri reference to the upstream remote repository, for ex:
+      "https://my.apt.registry/".
   """
 
   uri = _messages.StringField(1)
@@ -2161,7 +2164,7 @@ class GoogleDevtoolsArtifactregistryV1RemoteRepositoryConfigDockerRepositoryCust
   r"""Customer-specified publicly available remote repository.
 
   Fields:
-    uri: An http/https uri reference to the custom remote repository, for ex:
+    uri: An https uri reference to the custom remote repository, for ex:
       "https://registry-1.docker.io".
   """
 
@@ -2172,8 +2175,8 @@ class GoogleDevtoolsArtifactregistryV1RemoteRepositoryConfigGoRepositoryCustomRe
   r"""Custom Go remote repository.
 
   Fields:
-    uri: An http/https uri reference to the upstream remote repository, Must
-      be the URI of a version control system. For example: https://github.com.
+    uri: An https uri reference to the upstream remote repository, must be the
+      URI of a version control system. For example: https://github.com.
   """
 
   uri = _messages.StringField(1)
@@ -2194,8 +2197,8 @@ class GoogleDevtoolsArtifactregistryV1RemoteRepositoryConfigMavenRepositoryCusto
   r"""Customer-specified publicly available remote repository.
 
   Fields:
-    uri: An http/https uri reference to the upstream remote repository, for
-      ex: "https://my.maven.registry/".
+    uri: An https uri reference to the upstream remote repository, for ex:
+      "https://my.maven.registry/".
   """
 
   uri = _messages.StringField(1)
@@ -2216,8 +2219,8 @@ class GoogleDevtoolsArtifactregistryV1RemoteRepositoryConfigNpmRepositoryCustomR
   r"""Customer-specified publicly available remote repository.
 
   Fields:
-    uri: An http/https uri reference to the upstream remote repository, for
-      ex: "https://my.npm.registry/".
+    uri: An https uri reference to the upstream remote repository, for ex:
+      "https://my.npm.registry/".
   """
 
   uri = _messages.StringField(1)
@@ -2238,8 +2241,8 @@ class GoogleDevtoolsArtifactregistryV1RemoteRepositoryConfigPythonRepositoryCust
   r"""Customer-specified publicly available remote repository.
 
   Fields:
-    uri: An http/https uri reference to the upstream remote repository, for
-      ex: "https://my.python.registry/".
+    uri: An https uri reference to the upstream remote repository, for ex:
+      "https://my.python.registry/".
   """
 
   uri = _messages.StringField(1)
@@ -2260,8 +2263,8 @@ class GoogleDevtoolsArtifactregistryV1RemoteRepositoryConfigYumRepositoryCustomR
   r"""Customer-specified publicly available remote repository.
 
   Fields:
-    uri: An http/https uri reference to the upstream remote repository, for
-      ex: "https://my.yum.registry/".
+    uri: An https uri reference to the upstream remote repository, for ex:
+      "https://my.yum.registry/".
   """
 
   uri = _messages.StringField(1)
@@ -4528,6 +4531,23 @@ class Version(_messages.Message):
   updateTime = _messages.StringField(10)
 
 
+class VersionFilter(_messages.Message):
+  r"""Age-based criteria limiting which versions are copied.
+
+  Fields:
+    createdWithin: Optional. Only copy versions created within this duration
+      of the operation's start time. Must be at least 1 day (24 hours). For
+      repositories migrated from GCR, creation time is the original GCR upload
+      time.
+    updatedWithin: Optional. Only copy versions created or updated within this
+      duration of the operation's start time. Must be at least 1 day (24
+      hours).
+  """
+
+  createdWithin = _messages.StringField(1)
+  updatedWithin = _messages.StringField(2)
+
+
 class VirtualRepositoryConfig(_messages.Message):
   r"""Virtual repository configuration.
 
@@ -4563,8 +4583,6 @@ class VulnerabilityScanningConfig(_messages.Message):
   this repository, as well as output fields describing current state.
 
   Enums:
-    AttestationGenerationValueValuesEnum: Optional. Configures vulnerability
-      attestation generation in addition to occurrences.
     EnablementConfigValueValuesEnum: Optional. Config for whether this
       repository has vulnerability scanning disabled. When unset
       (ENABLEMENT_CONFIG_UNSPECIFIED), this is treated as INHERITED for Docker
@@ -4573,8 +4591,6 @@ class VulnerabilityScanningConfig(_messages.Message):
       combining repository enablement config and API enablement state.
 
   Fields:
-    attestationGeneration: Optional. Configures vulnerability attestation
-      generation in addition to occurrences.
     enablementConfig: Optional. Config for whether this repository has
       vulnerability scanning disabled. When unset
       (ENABLEMENT_CONFIG_UNSPECIFIED), this is treated as INHERITED for Docker
@@ -4585,20 +4601,6 @@ class VulnerabilityScanningConfig(_messages.Message):
     lastEnableTime: Output only. The last time this repository config was
       enabled.
   """
-
-  class AttestationGenerationValueValuesEnum(_messages.Enum):
-    r"""Optional. Configures vulnerability attestation generation in addition
-    to occurrences.
-
-    Values:
-      ENABLEMENT_CONFIG_UNSPECIFIED: Unspecified enablement configuration.
-      INHERITED: Enables the feature, but is dependent on parent API
-        enablement.
-      DISABLED: Disables the feature for this repository.
-    """
-    ENABLEMENT_CONFIG_UNSPECIFIED = 0
-    INHERITED = 1
-    DISABLED = 2
 
   class EnablementConfigValueValuesEnum(_messages.Enum):
     r"""Optional. Config for whether this repository has vulnerability
@@ -4636,11 +4638,10 @@ class VulnerabilityScanningConfig(_messages.Message):
     SCANNING_ACTIVE = 3
     ACTIVE_VIA_SCC = 4
 
-  attestationGeneration = _messages.EnumField('AttestationGenerationValueValuesEnum', 1)
-  enablementConfig = _messages.EnumField('EnablementConfigValueValuesEnum', 2)
-  enablementState = _messages.EnumField('EnablementStateValueValuesEnum', 3)
-  enablementStateReason = _messages.StringField(4)
-  lastEnableTime = _messages.StringField(5)
+  enablementConfig = _messages.EnumField('EnablementConfigValueValuesEnum', 1)
+  enablementState = _messages.EnumField('EnablementStateValueValuesEnum', 2)
+  enablementStateReason = _messages.StringField(3)
+  lastEnableTime = _messages.StringField(4)
 
 
 class YumArtifact(_messages.Message):

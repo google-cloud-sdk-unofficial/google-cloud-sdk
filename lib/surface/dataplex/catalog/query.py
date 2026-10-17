@@ -80,8 +80,8 @@ class Query(base.Command):
     )
     parser.add_argument(
         '--timeout',
-        type=arg_parsers.Duration(lower_bound='10s', upper_bound='200s'),
-        help='The timeout for query execution. Default 10s, min 10s, max 200s.',
+        type=arg_parsers.Duration(upper_bound='200s'),
+        help='The timeout for query execution. Default 10s, max 200s.',
     )
     parser.add_argument(
         '--max-results',

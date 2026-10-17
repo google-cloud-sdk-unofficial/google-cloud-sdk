@@ -39,6 +39,9 @@ class SyncRule:
   src: str
   dest: str
 
+  def __repr__(self) -> str:
+    return f'{{src: "{self.src}", dest: "{self.dest}"}}'
+
 
 def _CheckAndUpdateWorkdir(line: str, current_workdir: str) -> str:
   """Checks if the line is a WORKDIR instruction and returns the workdir."""
@@ -209,7 +212,9 @@ def GenerateRules(abs_source_dir: str, dockerfile_name=_DOCKERFILE_NAME):
   dockerfile_path = os.path.join(abs_source_dir, dockerfile_name)
 
   if not os.path.exists(dockerfile_path):
-    return _GetBuildpackSyncRules()
+    rules = _GetBuildpackSyncRules()
+    log.debug('Sync Rules: %s', rules)
+    return rules
 
   lines = dockerfile_parser.ReadDockerfile(dockerfile_path)
 
@@ -244,6 +249,7 @@ def GenerateRules(abs_source_dir: str, dockerfile_name=_DOCKERFILE_NAME):
     sync_rules = _CreateSyncRules(srcs, dest, dest_workdir, abs_source_dir)
     rules.extend(sync_rules)
 
+  log.debug('Sync Rules: %s', rules)
   return rules
 
 

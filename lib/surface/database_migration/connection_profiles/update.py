@@ -143,6 +143,7 @@ class UpdateGA(_Update, base.Command):
     cp_flags.AddSslTypeFlag(
         parser, hidden=False, choices=None
     )  # Add all choices in update command
+    cp_flags.AddSslFlags(parser)
     sqlserver_flags.AddSourceUpdateFlag(parser)
     sqlserver_flags.AddCloudSqlProjectIdFlag(parser)
     cp_flags.AddDatabaseFlag(parser)

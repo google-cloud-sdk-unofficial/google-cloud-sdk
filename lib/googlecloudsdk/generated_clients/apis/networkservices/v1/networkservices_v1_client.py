@@ -3615,7 +3615,7 @@ class NetworkservicesV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists multicast group range activationsin a given project and location.
+      r"""Lists multicast group range activations in a given project and location.
 
       Args:
         request: (NetworkservicesProjectsLocationsMulticastGroupRangeActivationsListRequest) input message

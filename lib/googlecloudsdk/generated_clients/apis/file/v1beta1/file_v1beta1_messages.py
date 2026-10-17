@@ -3467,6 +3467,7 @@ class VolumePool(_messages.Message):
       metadata.
 
   Fields:
+    activeVolumeCount: Optional. The number of active volumes. Default: 100.
     activeVolumeIops: Optional. The number of IOPs provisioned per active
       volume.
     createTime: Output only. The time when the volume pool was created.
@@ -3521,15 +3522,16 @@ class VolumePool(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  activeVolumeIops = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  createTime = _messages.StringField(2)
-  defaultVolumeQuotaMib = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  description = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  network = _messages.StringField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  uid = _messages.StringField(9)
+  activeVolumeCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  activeVolumeIops = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  createTime = _messages.StringField(3)
+  defaultVolumeQuotaMib = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  description = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  network = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  uid = _messages.StringField(10)
 
 
 class WeeklyCycle(_messages.Message):

@@ -1765,6 +1765,8 @@ class GoogleCloudRecaptchaenterpriseV1TokenProperties(_messages.Message):
     action: Output only. Action name provided at token generation.
     androidPackageName: Output only. The name of the Android package with
       which the token was generated (Android keys only).
+    clientProperties: Output only. Information collected by the reCAPTCHA
+      Enterprise client-side integration when the token is generated.
     clientSignalsFailed: Output only. Indicates a failure collecting reCAPTCHA
       signals at token generation. This might be a transient condition, or
       persistent for a user's environment.
@@ -1817,12 +1819,32 @@ class GoogleCloudRecaptchaenterpriseV1TokenProperties(_messages.Message):
 
   action = _messages.StringField(1)
   androidPackageName = _messages.StringField(2)
-  clientSignalsFailed = _messages.BooleanField(3)
-  createTime = _messages.StringField(4)
-  hostname = _messages.StringField(5)
-  invalidReason = _messages.EnumField('InvalidReasonValueValuesEnum', 6)
-  iosBundleId = _messages.StringField(7)
-  valid = _messages.BooleanField(8)
+  clientProperties = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1TokenPropertiesClientProperties', 3)
+  clientSignalsFailed = _messages.BooleanField(4)
+  createTime = _messages.StringField(5)
+  hostname = _messages.StringField(6)
+  invalidReason = _messages.EnumField('InvalidReasonValueValuesEnum', 7)
+  iosBundleId = _messages.StringField(8)
+  valid = _messages.BooleanField(9)
+
+
+class GoogleCloudRecaptchaenterpriseV1TokenPropertiesClientProperties(_messages.Message):
+  r"""Information collected by the reCAPTCHA Enterprise client-side
+  integration when the token is generated.
+
+  Fields:
+    userAgent: Output only. The `User-Agent` header string observed by
+      reCAPTCHA during token generation. This string is truncated to a maximum
+      length of 1000 characters.
+    userIpAddress: Output only. The user's IP address at token generation.
+      This can be either an IPv4 address (e.g., `192.0.2.1`) or an IPv6
+      address in canonical format per RFC 5952 section 4 (e.g.,
+      `2001:db8::1`). IPv4-mapped IPv6 addresses are canonicalized to standard
+      IPv4.
+  """
+
+  userAgent = _messages.StringField(1)
+  userIpAddress = _messages.StringField(2)
 
 
 class GoogleCloudRecaptchaenterpriseV1TransactionData(_messages.Message):

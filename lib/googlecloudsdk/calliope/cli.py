@@ -33,6 +33,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope import namespace_serializer
 from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.core import argv_utils
 from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions as core_exceptions
@@ -607,13 +608,13 @@ class CLILoader(object):
         default=log.DEFAULT_VERBOSITY_STRING,
         category=calliope_base.COMMONLY_USED_FLAGS,
         help='Override the default verbosity for this command.',
-        action=actions.StoreProperty(properties.VALUES.core.verbosity),
+        action=property_actions.StoreProperty(properties.VALUES.core.verbosity),
     )
 
     top_element.ai.add_argument(
         '--user-output-enabled',
         default=None,  # Tri-valued, None => don't override the property.
-        action=actions.StoreBooleanProperty(
+        action=property_actions.StoreBooleanProperty(
             properties.VALUES.core.user_output_enabled
         ),
         help='Print user intended output to the console.',
@@ -622,14 +623,18 @@ class CLILoader(object):
     top_element.ai.add_argument(
         '--log-http',
         default=None,  # Tri-valued, None => don't override the property.
-        action=actions.StoreBooleanProperty(properties.VALUES.core.log_http),
+        action=property_actions.StoreBooleanProperty(
+            properties.VALUES.core.log_http
+        ),
         help='Log all HTTP server requests and responses to stderr.',
     )
 
     top_element.ai.add_argument(
         '--authority-selector',
         default=None,
-        action=actions.StoreProperty(properties.VALUES.auth.authority_selector),
+        action=property_actions.StoreProperty(
+            properties.VALUES.auth.authority_selector
+        ),
         hidden=True,
         help='THIS ARGUMENT NEEDS HELP TEXT.',
     )
@@ -637,7 +642,7 @@ class CLILoader(object):
     top_element.ai.add_argument(
         '--authorization-token-file',
         default=None,
-        action=actions.StoreProperty(
+        action=property_actions.StoreProperty(
             properties.VALUES.auth.authorization_token_file
         ),
         hidden=True,
@@ -646,7 +651,7 @@ class CLILoader(object):
 
     top_element.ai.add_argument(
         '--credential-file-override',
-        action=actions.StoreProperty(
+        action=property_actions.StoreProperty(
             properties.VALUES.auth.credential_file_override
         ),
         hidden=True,
@@ -657,7 +662,9 @@ class CLILoader(object):
     top_element.ai.add_argument(
         '--http-timeout',
         default=None,
-        action=actions.StoreProperty(properties.VALUES.core.http_timeout),
+        action=property_actions.StoreProperty(
+            properties.VALUES.core.http_timeout
+        ),
         hidden=True,
         help='THIS ARGUMENT NEEDS HELP TEXT.',
     )
@@ -949,6 +956,13 @@ class CLI(object):
     if argparse.__version__ == '1.1':
       argparse._SubParsersAction.__call__ = _SubParsersActionCall  # pylint: disable=protected-access
 
+    # Consume and clear GOCLOUD_PAYLOAD immediately so tab completers, nested
+    # in-process invocations, or child subprocesses cannot inherit the parent
+    # command's verification payload even if Execute exits or raises early.
+    go_payload_json = encoding.GetEncodedValue(os.environ, 'GOCLOUD_PAYLOAD')
+    if go_payload_json is not None:
+      encoding.SetEncodedValue(os.environ, 'GOCLOUD_PAYLOAD', None)
+
     if call_arg_complete:
       _ArgComplete(self.__top_element.ai)
 
@@ -980,7 +994,6 @@ class CLI(object):
         args.CONCEPTS.Reset()
 
       # Go verification hook
-      go_payload_json = encoding.GetEncodedValue(os.environ, 'GOCLOUD_PAYLOAD')
       if go_payload_json:
         try:
           # pylint: disable=g-import-not-at-top

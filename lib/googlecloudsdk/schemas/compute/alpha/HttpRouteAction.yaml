@@ -37,6 +37,11 @@ properties:
       sharing (CORS), see Fetch API Living Standard. Not supported when the URL
       map is bound to a target gRPC proxy.
     $ref: CorsPolicy.yaml
+  dynamicCompressionPolicy:
+    description: |-
+      Dynamic compression policy for this URL Map's route. Available only for
+      Global EXTERNAL_MANAGED load balancer schemes.
+    $ref: DynamicCompressionPolicy.yaml
   faultInjectionPolicy:
     description: |-
       The specification for fault injection introduced into traffic to test the

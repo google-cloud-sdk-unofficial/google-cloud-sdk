@@ -273,22 +273,20 @@ class AndroidNativeBinary(_messages.Message):
   Messages:
     EnvVarsValue: Optional. A map of environment variables to set for the
       binary process. The keys are the variable names and the values are the
-      variable values. The maximum number of entries is 100. Each key is
-      limited to 128 characters and must conform to POSIX standards. Each
-      value is limited to 2048 characters. The total size of all environment
-      variables must not exceed 16 KiB.
+      variable values. Limits: - Maximum number of entries: 32 - Maximum key
+      size: 64 bytes (UTF-8) - Key regex: `a-zA-Z_*` - Maximum value size:
+      1024 bytes (UTF-8)
 
   Fields:
     androidNativeBinary: Required. The file path of the Android native binary.
     args: Optional. Arguments for running the binary file. The flags will be
-      appended to the command line that invokes the binary. The number of
-      options is limited to 100.
+      appended to the command line that invokes the binary. Limits: - Maximum
+      number of entries: 64 - Maximum entry size: 1024 bytes (UTF-8)
     envVars: Optional. A map of environment variables to set for the binary
       process. The keys are the variable names and the values are the variable
-      values. The maximum number of entries is 100. Each key is limited to 128
-      characters and must conform to POSIX standards. Each value is limited to
-      2048 characters. The total size of all environment variables must not
-      exceed 16 KiB.
+      values. Limits: - Maximum number of entries: 32 - Maximum key size: 64
+      bytes (UTF-8) - Key regex: `a-zA-Z_*` - Maximum value size: 1024 bytes
+      (UTF-8)
     executionTimeout: Optional. The timeout of the execution. Default value: 5
       min. Range: [1 min, 3 hours].
   """
@@ -297,10 +295,9 @@ class AndroidNativeBinary(_messages.Message):
   class EnvVarsValue(_messages.Message):
     r"""Optional. A map of environment variables to set for the binary
     process. The keys are the variable names and the values are the variable
-    values. The maximum number of entries is 100. Each key is limited to 128
-    characters and must conform to POSIX standards. Each value is limited to
-    2048 characters. The total size of all environment variables must not
-    exceed 16 KiB.
+    values. Limits: - Maximum number of entries: 32 - Maximum key size: 64
+    bytes (UTF-8) - Key regex: `a-zA-Z_*` - Maximum value size: 1024 bytes
+    (UTF-8)
 
     Messages:
       AdditionalProperty: An additional property for a EnvVarsValue object.
@@ -337,25 +334,6 @@ class AndroidOrientationDeviceAction(_messages.Message):
   """
 
   orientation = _messages.StringField(1)
-
-
-class AndroidPhysicalDeviceRequirement(_messages.Message):
-  r"""The requirement of an Android physical device.
-
-  Fields:
-    buildType: Optional. The build type of the device, e.g. "user",
-      "userdebug", "eng", etc.
-      https://developer.android.com/reference/android/os/Build#TYPE
-    model: Optional. The model of the device, e.g. "pixel 6", "pixel 7", etc.
-      https://developer.android.com/reference/android/os/Build#MODEL
-    sdkVersion: Optional. The API level/SDK version of the device, e.g. "26",
-      "27", etc.
-      https://developer.android.com/reference/android/os/Build#VERSION.SDK_INT
-  """
-
-  buildType = _messages.MessageField('StringRequirement', 1)
-  model = _messages.MessageField('StringRequirement', 2)
-  sdkVersion = _messages.MessageField('IntRequirement', 3)
 
 
 class AndroidPullFilesDeviceAction(_messages.Message):
@@ -1009,14 +987,11 @@ class DeviceRequirement(_messages.Message):
   r"""The requirement of a device.
 
   Fields:
-    androidPhysicalDeviceRequirement: The requirement of a physical Android
-      device.
     deviceId: The device ID of a device in the catalog. The device ID is the
       last part of a device's resource name.
   """
 
-  androidPhysicalDeviceRequirement = _messages.MessageField('AndroidPhysicalDeviceRequirement', 1)
-  deviceId = _messages.StringField(2)
+  deviceId = _messages.StringField(1)
 
 
 class DevicerunProjectsLocationsDevicesGetRequest(_messages.Message):
@@ -1253,11 +1228,16 @@ class DevicerunProjectsLocationsSessionsListRequest(_messages.Message):
 
   Fields:
     filter: Optional. The raw filter text to constrain the results.
-    orderBy: Optional. The order to sort results by.
+    orderBy: Optional. The order to sort results by. Supported values: `name`,
+      `name desc`, `create_time`, `create_time desc`. Values must use the
+      snake_case field name; `createTime` is not accepted. Ordering by
+      `create_time` is not supported when listing across all locations
+      (`locations/-`). If unspecified, results are returned in an unspecified
+      order.
     pageSize: Optional. The maximum number of sessions to return. The server
-      may return fewer items than this value. If unspecified, at most 20
-      sessions will be returned. The maximum value is 100, values above will
-      be coerced to 100.
+      may return fewer items than this value. If unspecified, at most 500
+      sessions will be returned. The maximum value is 1000, values above will
+      be coerced to 1000.
     pageToken: Optional. A page token, received from a previous `ListSessions`
       call. Provide this to receive the subsequent page. When paginating, all
       other parameters provided to `ListSessions` must match the call that
@@ -1569,33 +1549,6 @@ class InputFile(_messages.Message):
   """
 
   gcsInputFile = _messages.MessageField('GcsPath', 1)
-
-
-class IntRangeRequirement(_messages.Message):
-  r"""Device dimension value that accepts a range of integer values. If
-  `minimum` is not set, the range is open-ended on the lower side. If
-  `maximum` is not set, the range is open-ended on the upper side. If both are
-  set, the range is inclusive [minimum, maximum].
-
-  Fields:
-    maximum: Optional. The maximum value of the range (inclusive).
-    minimum: Optional. The minimum value of the range (inclusive).
-  """
-
-  maximum = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  minimum = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-
-
-class IntRequirement(_messages.Message):
-  r"""Device dimension value that accepts an integer typed parameter as value.
-
-  Fields:
-    exact: The exact integer value.
-    range: The range of integer values.
-  """
-
-  exact = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  range = _messages.MessageField('IntRangeRequirement', 2)
 
 
 class IosAppPrivacyReportDeviceAction(_messages.Message):
@@ -2220,6 +2173,16 @@ class SessionConfigSessionOutputFileDirectoryConfig(_messages.Message):
   r"""Config to control session output file directory.
 
   Fields:
+    flatDirectoryStructure: Optional. Whether to write output files directly
+      under the output directory instead of nesting them under service-
+      generated subdirectories. By default (`false`), output files are stored
+      under `////`. When `true`, the session ID subdirectory is never
+      appended, and the job display name subdirectory is appended only when
+      the session has more than one job. Output files are therefore stored
+      under: - `//` for a single-job session. - `///` for a multi-job session.
+      Set this to `true` when the output directory is already unique per
+      session (for example, when a CI system generates it), to avoid redundant
+      nesting.
     gcsOutputDirectory: The Google Cloud Storage path of the output directory
       (e.g. `gs://my-bucket/output`). The bucket must exist. If the bucket is
       located in another project or uses fine-grained access controls, ensure
@@ -2228,7 +2191,8 @@ class SessionConfigSessionOutputFileDirectoryConfig(_messages.Message):
       (such as `roles/storage.objectUser`).
   """
 
-  gcsOutputDirectory = _messages.MessageField('GcsPath', 1)
+  flatDirectoryStructure = _messages.BooleanField(1)
+  gcsOutputDirectory = _messages.MessageField('GcsPath', 2)
 
 
 class SessionReport(_messages.Message):
@@ -2348,29 +2312,6 @@ class Status(_messages.Message):
 
   progressMessages = _messages.StringField(1, repeated=True)
   statusType = _messages.EnumField('StatusTypeValueValuesEnum', 2)
-
-
-class StringRequirement(_messages.Message):
-  r"""Device dimension value that accepts a string typed parameter as value.
-
-  Fields:
-    exact: The exact string value.
-    set: The set of string values.
-  """
-
-  exact = _messages.StringField(1)
-  set = _messages.MessageField('StringSetRequirement', 2)
-
-
-class StringSetRequirement(_messages.Message):
-  r"""Device dimension value that accepts a set of string values.
-
-  Fields:
-    values: Required. A set of strings, where any of the values is considered
-      a match.
-  """
-
-  values = _messages.StringField(1, repeated=True)
 
 
 class Warning(_messages.Message):

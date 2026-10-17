@@ -4630,7 +4630,8 @@ def AddManagementInterfaceArgs(
               'type': str,
               'network': str,
               'subnetwork': str,
-              'network-ip': str,
+              'ipv4-address': str,
+              'ipv6-address': str,
               'trust-config': str,
           },
           required_keys=['key'],
@@ -4642,7 +4643,43 @@ def AddManagementInterfaceArgs(
       *type*::: The type of management interface (e.g. `HOST_MANAGEMENT`).
       *network*::: The network for the management interface.
       *subnetwork*::: The subnetwork for the management interface.
-      *network-ip*::: The IPv4 address for the management interface.
+      *ipv4-address*::: The IPv4 address for the management interface.
+      *ipv6-address*::: The IPv6 address for the management interface.
       *trust-config*::: The resource URL of the trust config for authentication.
+      """,
+  )
+
+
+def AddProtectionTierArgs(parser):
+  """Adds the --protection-tier argument for instance scheduling.
+
+  Args:
+    parser: ArgumentParser, parser to which protection tier flags are added.
+  """
+  choices = {
+      'STANDARD': (
+          'The default option. Protected by redundancies (such as power and'
+          ' cooling) at the data center level. In the event of infrastructure'
+          ' failures at the data center, the workload is expected to continue'
+          ' as normal using the redundancies.'
+      ),
+      'CAPACITY_OPTIMIZED': (
+          'Leverages redundancies (such as power and cooling) at the data'
+          ' center during normal operating conditions. In the event of'
+          ' infrastructure failures at the data center, the workload may be'
+          ' disrupted and has a weaker availability SLO than `STANDARD`.'
+      ),
+  }
+  parser.add_argument(
+      '--protection-tier',
+      choices=choices,
+      type=arg_utils.ChoiceToEnumName,
+      help="""\
+      Specifies the protection tier for the workload, which defines workload
+      expectations in the event of infrastructure failures at the data center
+      (such as power or cooling failures). The default protection tier is
+      `STANDARD`. Can only be specified when `--preemptible` is not set and
+      `--provisioning-model` is `STANDARD`, `FLEX_START`, or `RESERVATION_BOUND`
+      (or unspecified).
       """,
   )

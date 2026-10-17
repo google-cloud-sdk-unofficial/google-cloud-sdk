@@ -100,13 +100,17 @@ class CELExpression(_messages.Message):
       the condition is 1000 characters. For more information, see [CEL
       expression](https://cloud.google.com/security-command-
       center/docs/compliance-manager-write-cel-expressions).
+    expressionDescription: Optional. A human-readable description or plain-
+      language explanation of what this expression evaluates. The maximum
+      length of this field is 1000 characters.
     resourceTypesValues: The resource instance types on which this expression
       is defined. The format is `/`. For example:
       `compute.googleapis.com/Instance`
   """
 
   expression = _messages.StringField(1)
-  resourceTypesValues = _messages.MessageField('StringList', 2)
+  expressionDescription = _messages.StringField(2)
+  resourceTypesValues = _messages.MessageField('StringList', 3)
 
 
 class CalculateEffectiveCmEnrollmentResponse(_messages.Message):
@@ -2612,8 +2616,10 @@ class FindingSummary(_messages.Message):
     findingClass: The class of the finding.
     findingCount: The count of the finding.
     name: Identifier. The name of the finding summary.
-    relatedFrameworks: Optional. The list of compliance frameworks that the
-      finding belongs to.
+    relatedFrameworkNames: Optional. The list of compliance framework resource
+      names that the finding belongs to.
+    relatedFrameworks: Optional. The list of display names of compliance
+      frameworks that the finding belongs to.
     severity: The severity of the finding.
     updateTime: Output only. The last updated time of the finding.
   """
@@ -2701,9 +2707,10 @@ class FindingSummary(_messages.Message):
   findingClass = _messages.EnumField('FindingClassValueValuesEnum', 2)
   findingCount = _messages.IntegerField(3)
   name = _messages.StringField(4)
-  relatedFrameworks = _messages.StringField(5, repeated=True)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 6)
-  updateTime = _messages.StringField(7)
+  relatedFrameworkNames = _messages.StringField(5, repeated=True)
+  relatedFrameworks = _messages.StringField(6, repeated=True)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
 
 
 class FolderCreationConfig(_messages.Message):

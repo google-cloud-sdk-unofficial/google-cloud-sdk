@@ -1012,6 +1012,19 @@ class AuthorizedNetwork(_messages.Message):
   cidrRange = _messages.StringField(1)
 
 
+class AutoScalingConfig(_messages.Message):
+  r"""Configuration for autoscaling.
+
+  Fields:
+    policy: Policy for the MIG autoscaler.
+    schedules: Optional list of schedules for the MIG autoscaler. If not set,
+      no schedules are created.
+  """
+
+  policy = _messages.MessageField('Policy', 1)
+  schedules = _messages.MessageField('Schedule', 2, repeated=True)
+
+
 class AutomatedBackupPolicy(_messages.Message):
   r"""Message describing the user-specified automated backup policy. All
   fields in the automated backup policy are optional. Defaults for each field
@@ -2105,6 +2118,16 @@ class ContinuousBackupSource(_messages.Message):
   pointInTime = _messages.StringField(2)
 
 
+class CpuUtilization(_messages.Message):
+  r"""CPU utilization policy for the autoscaler.
+
+  Fields:
+    utilizationTarget: Target CPU utilization as a float between 0 and 1.
+  """
+
+  utilizationTarget = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+
+
 class CsvExportOptions(_messages.Message):
   r"""Options for exporting data in CSV format.
 
@@ -2683,16 +2706,27 @@ class Instance(_messages.Message):
     nodes: Output only. List of available read-only VMs in this instance,
       including the standby for a PRIMARY instance.
     observabilityConfig: Configuration for observability.
+    observabilityInstanceInfo: Output only. Instance level observability
+      information, contains the effective values of observability settings for
+      this instance, by merging customer's provided
+      `ObservabilityInstanceConfig` with the Observability defaults.
     outboundPublicIpAddresses: Output only. All outbound public IP addresses
       configured for the instance.
     pscInstanceConfig: Optional. The configuration for Private Service Connect
       (PSC) for the instance.
     pscInstanceInfo: Output only. Information about the Private Service
       Connect (PSC) for the instance.
-    publicIpAddress: Output only. The public IP addresses for the Instance.
-      This is available ONLY when enable_public_ip is set. This is the
-      connection endpoint for an end-user application.
+    publicIpAddress: Output only. The public IP address for the Instance. This
+      is available ONLY when `enable_public_ip` is set or when you have
+      upgraded from an Express Instance that has public DNS enabled. This
+      field is not available for Express Instances. This is the connection
+      endpoint for an end-user application.
     queryInsightsConfig: Configuration for query insights.
+    queryInsightsInfo: Output only. Instance level Query Insights information,
+      which is read-only and available in the output only. Contains the
+      effective query insights settings for this instance, by merging
+      customer's provided `QueryInsightsInstanceConfig` with the Query
+      Insights defaults.
     readPoolConfig: Read pool instance configuration. This is required if the
       value of instanceType is READ_POOL.
     reconciling: Output only. Reconciling
@@ -2929,18 +2963,20 @@ class Instance(_messages.Message):
   networkConfig = _messages.MessageField('InstanceNetworkConfig', 19)
   nodes = _messages.MessageField('Node', 20, repeated=True)
   observabilityConfig = _messages.MessageField('ObservabilityInstanceConfig', 21)
-  outboundPublicIpAddresses = _messages.StringField(22, repeated=True)
-  pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 23)
-  pscInstanceInfo = _messages.MessageField('PscInstanceInfo', 24)
-  publicIpAddress = _messages.StringField(25)
-  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 26)
-  readPoolConfig = _messages.MessageField('ReadPoolConfig', 27)
-  reconciling = _messages.BooleanField(28)
-  satisfiesPzs = _messages.BooleanField(29)
-  state = _messages.EnumField('StateValueValuesEnum', 30)
-  uid = _messages.StringField(31)
-  updateTime = _messages.StringField(32)
-  writableNode = _messages.MessageField('Node', 33)
+  observabilityInstanceInfo = _messages.MessageField('ObservabilityInstanceInfo', 22)
+  outboundPublicIpAddresses = _messages.StringField(23, repeated=True)
+  pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 24)
+  pscInstanceInfo = _messages.MessageField('PscInstanceInfo', 25)
+  publicIpAddress = _messages.StringField(26)
+  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 27)
+  queryInsightsInfo = _messages.MessageField('QueryInsightsInstanceInfo', 28)
+  readPoolConfig = _messages.MessageField('ReadPoolConfig', 29)
+  reconciling = _messages.BooleanField(30)
+  satisfiesPzs = _messages.BooleanField(31)
+  state = _messages.EnumField('StateValueValuesEnum', 32)
+  uid = _messages.StringField(33)
+  updateTime = _messages.StringField(34)
+  writableNode = _messages.MessageField('Node', 35)
 
 
 class InstanceNetworkConfig(_messages.Message):
@@ -3331,6 +3367,37 @@ class ObservabilityInstanceConfig(_messages.Message):
   trackWaitEvents = _messages.BooleanField(8)
 
 
+class ObservabilityInstanceInfo(_messages.Message):
+  r"""A ObservabilityInstanceInfo object.
+
+  Fields:
+    enabled: Output only. Observability feature status for an instance.
+    maxQueryStringLength: Output only. Query string length. The default value
+      is 10k.
+    preserveComments: Output only. Preserve comments in query string for an
+      instance.
+    queryPlansPerMinute: Output only. Number of query execution plans captured
+      by Insights per minute for all queries combined.
+    recordApplicationTags: Output only. Record application tags for an
+      instance.
+    trackActiveQueries: Output only. Track actively running queries on the
+      instance.
+    trackWaitEventTypes: Output only. Track wait event types during query
+      execution for an instance.
+    trackWaitEvents: Output only. Track wait events during query execution for
+      an instance.
+  """
+
+  enabled = _messages.BooleanField(1)
+  maxQueryStringLength = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  preserveComments = _messages.BooleanField(3)
+  queryPlansPerMinute = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  recordApplicationTags = _messages.BooleanField(5)
+  trackActiveQueries = _messages.BooleanField(6)
+  trackWaitEventTypes = _messages.BooleanField(7)
+  trackWaitEvents = _messages.BooleanField(8)
+
+
 class Operation(_messages.Message):
   r"""This resource represents a long-running operation that is the result of
   a network API call.
@@ -3467,6 +3534,25 @@ class OperationMetadata(_messages.Message):
   target = _messages.StringField(6)
   upgradeClusterStatus = _messages.MessageField('UpgradeClusterStatus', 7)
   verb = _messages.StringField(8)
+
+
+class Policy(_messages.Message):
+  r"""Policy for the autoscaler.
+
+  Fields:
+    coolDownPeriodSec: The period of time in seconds after a new node is
+      created before the autoscaler will incorporate its resource usage (e.g.
+      CPU utilization) into the autoscaling recommendation algorithm.
+    cpuUtilization: CPU utilization policy for the autoscaler.
+    enabled: If true, autoscaling is enabled for the instance. If not set, the
+      default value is false.
+    maxNodeCount: Maximum number of nodes for the autoscaler.
+  """
+
+  coolDownPeriodSec = _messages.IntegerField(1)
+  cpuUtilization = _messages.MessageField('CpuUtilization', 2)
+  enabled = _messages.BooleanField(3)
+  maxNodeCount = _messages.IntegerField(4)
 
 
 class PrimaryConfig(_messages.Message):
@@ -3743,14 +3829,37 @@ class QueryInsightsInstanceConfig(_messages.Message):
   recordClientAddress = _messages.BooleanField(4)
 
 
+class QueryInsightsInstanceInfo(_messages.Message):
+  r"""Instance level Query Insights information, which is read-only and
+  available in the output only.
+
+  Fields:
+    enabled: Output only. Whether Query Insights is enabled.
+    queryPlansPerMinute: Output only. Number of query execution plans captured
+      per minute.
+    queryStringLength: Output only. Maximum query string length.
+    recordApplicationTags: Output only. Whether to record application tags.
+    recordClientAddress: Output only. Whether to record client address.
+  """
+
+  enabled = _messages.BooleanField(1)
+  queryPlansPerMinute = _messages.IntegerField(2, variant=_messages.Variant.UINT32)
+  queryStringLength = _messages.IntegerField(3, variant=_messages.Variant.UINT32)
+  recordApplicationTags = _messages.BooleanField(4)
+  recordClientAddress = _messages.BooleanField(5)
+
+
 class ReadPoolConfig(_messages.Message):
   r"""Configuration for a read pool instance.
 
   Fields:
+    autoScalingConfig: Optional. Autoscaling configuration for the read pool
+      instance. If not set, the read pool instance will not be autoscaled.
     nodeCount: Read capacity, i.e. number of nodes in a read pool instance.
   """
 
-  nodeCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  autoScalingConfig = _messages.MessageField('AutoScalingConfig', 1)
+  nodeCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class ReadPoolInstancesUpgradeStageStatus(_messages.Message):
@@ -3840,6 +3949,32 @@ class RestoreFromCloudSQLRequest(_messages.Message):
   cloudsqlBackupRunSource = _messages.MessageField('CloudSQLBackupRunSource', 1)
   cluster = _messages.MessageField('Cluster', 2)
   clusterId = _messages.StringField(3)
+
+
+class Schedule(_messages.Message):
+  r"""A schedule for the autoscaler.
+
+  Fields:
+    cronExpression: Cron expression for the triggering the schedule. See
+      https://cloud.google.com/compute/docs/autoscaler/scaling-
+      schedules#cron_expressions for the syntax.
+    description: Description of the schedule.
+    disabled: If true, the schedule is disabled.
+    durationSec: Duration of the schedule.
+    minNodeCount: Minimum number of nodes in while the schedule is active.
+    name: Name of the schedule.
+    timeZone: The location-based IANA time zone for interpreting the
+      schedule's start time. If no time zone is provided, UTC is used by
+      default.
+  """
+
+  cronExpression = _messages.StringField(1)
+  description = _messages.StringField(2)
+  disabled = _messages.BooleanField(3)
+  durationSec = _messages.IntegerField(4)
+  minNodeCount = _messages.IntegerField(5)
+  name = _messages.StringField(6)
+  timeZone = _messages.StringField(7)
 
 
 class SecondaryConfig(_messages.Message):

@@ -1044,6 +1044,33 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def LinkDataset(self, request, global_params=None):
+      r"""Links the BigQuery dataset containing backup metadata insights to the Backup Vault's consumer project.
+
+      Args:
+        request: (BackupdrProjectsLocationsBackupVaultsBackupInsightPlansLinkDatasetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('LinkDataset')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    LinkDataset.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/backupVaults/{backupVaultsId}/backupInsightPlans/{backupInsightPlansId}:linkDataset',
+        http_method='POST',
+        method_id='backupdr.projects.locations.backupVaults.backupInsightPlans.linkDataset',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:linkDataset',
+        request_field='linkDatasetRequest',
+        request_type_name='BackupdrProjectsLocationsBackupVaultsBackupInsightPlansLinkDatasetRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists BackupInsightPlans in a given project and location.
 
@@ -1068,6 +1095,33 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='BackupdrProjectsLocationsBackupVaultsBackupInsightPlansListRequest',
         response_type_name='ListBackupInsightPlansResponse',
+        supports_download=False,
+    )
+
+    def UnlinkDataset(self, request, global_params=None):
+      r"""Unlinks and deletes the linked BigQuery dataset associated with a BackupInsightPlan.
+
+      Args:
+        request: (BackupdrProjectsLocationsBackupVaultsBackupInsightPlansUnlinkDatasetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('UnlinkDataset')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UnlinkDataset.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/backupVaults/{backupVaultsId}/backupInsightPlans/{backupInsightPlansId}:unlinkDataset',
+        http_method='POST',
+        method_id='backupdr.projects.locations.backupVaults.backupInsightPlans.unlinkDataset',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:unlinkDataset',
+        request_field='unlinkDatasetRequest',
+        request_type_name='BackupdrProjectsLocationsBackupVaultsBackupInsightPlansUnlinkDatasetRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -1212,6 +1266,33 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         relative_path='v1alpha/{+name}',
         request_field='backup',
         request_type_name='BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def PurgeBackupInsights(self, request, global_params=None):
+      r"""Purges insights for a Backup.
+
+      Args:
+        request: (BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsPurgeBackupInsightsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('PurgeBackupInsights')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PurgeBackupInsights.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/backupVaults/{backupVaultsId}/dataSources/{dataSourcesId}/backups/{backupsId}:purgeBackupInsights',
+        http_method='POST',
+        method_id='backupdr.projects.locations.backupVaults.dataSources.backups.purgeBackupInsights',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:purgeBackupInsights',
+        request_field='purgeBackupInsightsRequest',
+        request_type_name='BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsPurgeBackupInsightsRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -2667,14 +2748,11 @@ class BackupdrV1alpha(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single RestoreVerificationPlan in a given project and location.
+      r"""Deletes a single RestoreVerificationPlan. If the `force` flag is set to `true`, any RestoreVerificationPlanAssociations linked to this RestoreVerificationPlan will also be deleted.
 
       Args:
-        request:
-          (BackupdrProjectsLocationsRestoreVerificationPlansDeleteRequest) input
-          message
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansDeleteRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
-
       Returns:
         (Operation) The response message.
       """
@@ -2697,13 +2775,11 @@ class BackupdrV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single RestoreVerificationPlan.
+      r"""Gets details of a single RestoreVerificationPlan. Returns the requested RestoreVerificationPlan.
 
       Args:
-        request: (BackupdrProjectsLocationsRestoreVerificationPlansGetRequest)
-          input message
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansGetRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
-
       Returns:
         (RestoreVerificationPlan) The response message.
       """

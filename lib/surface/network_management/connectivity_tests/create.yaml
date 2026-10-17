@@ -12,6 +12,7 @@
         $ {command} my-test \
             --source-instance=projects/my-project/zones/us-west-1/instances/my-instance
             --destination-ip-address=10.142.0.2 --destination-network=projects/my-project/global/networks/peering-network
+            --round-trip
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.network_management.resources:connectivityTest

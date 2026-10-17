@@ -600,7 +600,7 @@ MAP = _ApiDefMap({
             True,
             True,
             '',
-            {'us-central1': 'https://auditmanager.us-central1.rep.googleapis.com/', 'europe-west1': 'https://auditmanager.europe-west1.rep.googleapis.com/', 'asia-south1': 'https://auditmanager.asia-south1.rep.googleapis.com/'},
+            {'us-central1': 'https://auditmanager.us-central1.rep.googleapis.com/', 'europe-west1': 'https://auditmanager.europe-west1.rep.googleapis.com/', 'asia-south1': 'https://auditmanager.asia-south1.rep.googleapis.com/', 'me-central2': 'https://auditmanager.me-central2.rep.googleapis.com/'},
         ),
         'v1alpha': (
             ('googlecloudsdk.generated_clients.apis.auditmanager.v1alpha', 'auditmanager_v1alpha_client.AuditmanagerV1alpha', 'auditmanager_v1alpha_messages', 'https://auditmanager.googleapis.com/'),
@@ -608,7 +608,7 @@ MAP = _ApiDefMap({
             False,
             True,
             '',
-            {'us-central1': 'https://auditmanager.us-central1.rep.googleapis.com/', 'europe-west1': 'https://auditmanager.europe-west1.rep.googleapis.com/', 'asia-south1': 'https://auditmanager.asia-south1.rep.googleapis.com/'},
+            {'us-central1': 'https://auditmanager.us-central1.rep.googleapis.com/', 'europe-west1': 'https://auditmanager.europe-west1.rep.googleapis.com/', 'asia-south1': 'https://auditmanager.asia-south1.rep.googleapis.com/', 'me-central2': 'https://auditmanager.me-central2.rep.googleapis.com/'},
         ),
     },
     'authztoolkit': {
@@ -1246,7 +1246,7 @@ MAP = _ApiDefMap({
             False,
             True,
             '',
-            {'us-east7': 'https://cloudscheduler.us-east7.rep.googleapis.com/', 'us-west1': 'https://cloudscheduler.us-west1.rep.googleapis.com/', 'us-west2': 'https://cloudscheduler.us-west2.rep.googleapis.com/', 'us-west3': 'https://cloudscheduler.us-west3.rep.googleapis.com/'},
+            {'us-central1': 'https://cloudscheduler.us-central1.rep.googleapis.com/', 'us-central2': 'https://cloudscheduler.us-central2.rep.googleapis.com/', 'us-east1': 'https://cloudscheduler.us-east1.rep.googleapis.com/', 'us-east4': 'https://cloudscheduler.us-east4.rep.googleapis.com/', 'us-east7': 'https://cloudscheduler.us-east7.rep.googleapis.com/', 'us-south1': 'https://cloudscheduler.us-south1.rep.googleapis.com/', 'us-west1': 'https://cloudscheduler.us-west1.rep.googleapis.com/', 'us-west2': 'https://cloudscheduler.us-west2.rep.googleapis.com/', 'us-west3': 'https://cloudscheduler.us-west3.rep.googleapis.com/', 'us-west4': 'https://cloudscheduler.us-west4.rep.googleapis.com/'},
         ),
         'v1beta1': (
             ('googlecloudsdk.generated_clients.apis.cloudscheduler.v1beta1', 'cloudscheduler_v1beta1_client.CloudschedulerV1beta1', 'cloudscheduler_v1beta1_messages', 'https://cloudscheduler.googleapis.com/'),
@@ -1254,7 +1254,7 @@ MAP = _ApiDefMap({
             False,
             True,
             '',
-            {'us-east7': 'https://cloudscheduler.us-east7.rep.googleapis.com/', 'us-west1': 'https://cloudscheduler.us-west1.rep.googleapis.com/', 'us-west2': 'https://cloudscheduler.us-west2.rep.googleapis.com/', 'us-west3': 'https://cloudscheduler.us-west3.rep.googleapis.com/'},
+            {'us-central1': 'https://cloudscheduler.us-central1.rep.googleapis.com/', 'us-central2': 'https://cloudscheduler.us-central2.rep.googleapis.com/', 'us-east1': 'https://cloudscheduler.us-east1.rep.googleapis.com/', 'us-east4': 'https://cloudscheduler.us-east4.rep.googleapis.com/', 'us-east7': 'https://cloudscheduler.us-east7.rep.googleapis.com/', 'us-south1': 'https://cloudscheduler.us-south1.rep.googleapis.com/', 'us-west1': 'https://cloudscheduler.us-west1.rep.googleapis.com/', 'us-west2': 'https://cloudscheduler.us-west2.rep.googleapis.com/', 'us-west3': 'https://cloudscheduler.us-west3.rep.googleapis.com/', 'us-west4': 'https://cloudscheduler.us-west4.rep.googleapis.com/'},
         ),
     },
     'cloudsecuritycompliance': {
@@ -1406,7 +1406,7 @@ MAP = _ApiDefMap({
             True,
             True,
             '',
-            {'us-central1': 'https://config.us-central1.rep.googleapis.com/', 'us-south1': 'https://config.us-south1.rep.googleapis.com/', 'us-west1': 'https://config.us-west1.rep.googleapis.com/', 'us-west2': 'https://config.us-west2.rep.googleapis.com/', 'us-west3': 'https://config.us-west3.rep.googleapis.com/', 'us-east1': 'https://config.us-east1.rep.googleapis.com/', 'us-east4': 'https://config.us-east4.rep.googleapis.com/', 'us-west4': 'https://config.us-west4.rep.googleapis.com/', 'us-east5': 'https://config.us-east5.rep.googleapis.com/', 'us-east7': 'https://config.us-east7.rep.googleapis.com/'},
+            {'us-central1': 'https://config.us-central1.rep.googleapis.com/', 'us-south1': 'https://config.us-south1.rep.googleapis.com/', 'us-west1': 'https://config.us-west1.rep.googleapis.com/', 'us-west2': 'https://config.us-west2.rep.googleapis.com/', 'us-west3': 'https://config.us-west3.rep.googleapis.com/', 'us-east1': 'https://config.us-east1.rep.googleapis.com/', 'us-east4': 'https://config.us-east4.rep.googleapis.com/', 'us-west4': 'https://config.us-west4.rep.googleapis.com/', 'us-east5': 'https://config.us-east5.rep.googleapis.com/', 'us-east7': 'https://config.us-east7.rep.googleapis.com/', 'us': 'https://config.us.rep.googleapis.com/'},
         ),
         'v1alpha2': (
             ('googlecloudsdk.generated_clients.apis.config.v1alpha2', 'config_v1alpha2_client.ConfigV1alpha2', 'config_v1alpha2_messages', 'https://config.googleapis.com/'),
@@ -1414,7 +1414,7 @@ MAP = _ApiDefMap({
             False,
             True,
             '',
-            {'us-central1': 'https://config.us-central1.rep.googleapis.com/', 'us-south1': 'https://config.us-south1.rep.googleapis.com/', 'us-west1': 'https://config.us-west1.rep.googleapis.com/', 'us-west2': 'https://config.us-west2.rep.googleapis.com/', 'us-west3': 'https://config.us-west3.rep.googleapis.com/', 'us-east1': 'https://config.us-east1.rep.googleapis.com/', 'us-east4': 'https://config.us-east4.rep.googleapis.com/', 'us-west4': 'https://config.us-west4.rep.googleapis.com/', 'us-east5': 'https://config.us-east5.rep.googleapis.com/', 'us-east7': 'https://config.us-east7.rep.googleapis.com/'},
+            {'us-central1': 'https://config.us-central1.rep.googleapis.com/', 'us-south1': 'https://config.us-south1.rep.googleapis.com/', 'us-west1': 'https://config.us-west1.rep.googleapis.com/', 'us-west2': 'https://config.us-west2.rep.googleapis.com/', 'us-west3': 'https://config.us-west3.rep.googleapis.com/', 'us-east1': 'https://config.us-east1.rep.googleapis.com/', 'us-east4': 'https://config.us-east4.rep.googleapis.com/', 'us-west4': 'https://config.us-west4.rep.googleapis.com/', 'us-east5': 'https://config.us-east5.rep.googleapis.com/', 'us-east7': 'https://config.us-east7.rep.googleapis.com/', 'us': 'https://config.us.rep.googleapis.com/'},
         ),
     },
     'configdelivery': {
@@ -1640,6 +1640,14 @@ MAP = _ApiDefMap({
             ('googlecloudsdk.generated_clients.apis.dataproc.v1', 'dataproc_v1_client.DataprocV1', 'dataproc_v1_messages', 'https://dataproc.googleapis.com/'),
             None,
             True,
+            True,
+            '',
+            {'europe-west3': 'https://dataproc.europe-west3.rep.googleapis.com/', 'europe-west6': 'https://dataproc.europe-west6.rep.googleapis.com/', 'europe-west9': 'https://dataproc.europe-west9.rep.googleapis.com/', 'us-central1': 'https://dataproc.us-central1.rep.googleapis.com/', 'us-central2': 'https://dataproc.us-central2.rep.googleapis.com/', 'us-east1': 'https://dataproc.us-east1.rep.googleapis.com/', 'us-east4': 'https://dataproc.us-east4.rep.googleapis.com/', 'us-east5': 'https://dataproc.us-east5.rep.googleapis.com/', 'us-east7': 'https://dataproc.us-east7.rep.googleapis.com/', 'us-south1': 'https://dataproc.us-south1.rep.googleapis.com/', 'us-west1': 'https://dataproc.us-west1.rep.googleapis.com/', 'us-west2': 'https://dataproc.us-west2.rep.googleapis.com/', 'us-west3': 'https://dataproc.us-west3.rep.googleapis.com/', 'us-west4': 'https://dataproc.us-west4.rep.googleapis.com/', 'us-west8': 'https://dataproc.us-west8.rep.googleapis.com/', 'europe-west8': 'https://dataproc.europe-west8.rep.googleapis.com/', 'asia-south1': 'https://dataproc.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://dataproc.asia-south2.rep.googleapis.com/', 'me-central2': 'https://dataproc.me-central2.rep.googleapis.com/'},
+        ),
+        'v2': (
+            ('googlecloudsdk.generated_clients.apis.dataproc.v2', 'dataproc_v2_client.DataprocV2', 'dataproc_v2_messages', 'https://dataproc.googleapis.com/'),
+            None,
+            False,
             True,
             '',
             {'europe-west3': 'https://dataproc.europe-west3.rep.googleapis.com/', 'europe-west6': 'https://dataproc.europe-west6.rep.googleapis.com/', 'europe-west9': 'https://dataproc.europe-west9.rep.googleapis.com/', 'us-central1': 'https://dataproc.us-central1.rep.googleapis.com/', 'us-central2': 'https://dataproc.us-central2.rep.googleapis.com/', 'us-east1': 'https://dataproc.us-east1.rep.googleapis.com/', 'us-east4': 'https://dataproc.us-east4.rep.googleapis.com/', 'us-east5': 'https://dataproc.us-east5.rep.googleapis.com/', 'us-east7': 'https://dataproc.us-east7.rep.googleapis.com/', 'us-south1': 'https://dataproc.us-south1.rep.googleapis.com/', 'us-west1': 'https://dataproc.us-west1.rep.googleapis.com/', 'us-west2': 'https://dataproc.us-west2.rep.googleapis.com/', 'us-west3': 'https://dataproc.us-west3.rep.googleapis.com/', 'us-west4': 'https://dataproc.us-west4.rep.googleapis.com/', 'us-west8': 'https://dataproc.us-west8.rep.googleapis.com/', 'europe-west8': 'https://dataproc.europe-west8.rep.googleapis.com/', 'asia-south1': 'https://dataproc.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://dataproc.asia-south2.rep.googleapis.com/', 'me-central2': 'https://dataproc.me-central2.rep.googleapis.com/'},
@@ -2107,32 +2115,6 @@ MAP = _ApiDefMap({
             {},
         ),
     },
-    'genomics': {
-        'v1': (
-            ('googlecloudsdk.generated_clients.apis.genomics.v1', 'genomics_v1_client.GenomicsV1', 'genomics_v1_messages', 'https://genomics.googleapis.com/'),
-            None,
-            True,
-            True,
-            '',
-            {},
-        ),
-        'v1alpha2': (
-            ('googlecloudsdk.generated_clients.apis.genomics.v1alpha2', 'genomics_v1alpha2_client.GenomicsV1alpha2', 'genomics_v1alpha2_messages', 'https://genomics.googleapis.com/'),
-            None,
-            False,
-            True,
-            '',
-            {},
-        ),
-        'v2alpha1': (
-            ('googlecloudsdk.generated_clients.apis.genomics.v2alpha1', 'genomics_v2alpha1_client.GenomicsV2alpha1', 'genomics_v2alpha1_messages', 'https://genomics.googleapis.com/'),
-            None,
-            False,
-            True,
-            '',
-            {},
-        ),
-    },
     'gkebackup': {
         'v1': (
             ('googlecloudsdk.generated_clients.apis.gkebackup.v1', 'gkebackup_v1_client.GkebackupV1', 'gkebackup_v1_messages', 'https://gkebackup.googleapis.com/'),
@@ -2316,7 +2298,7 @@ MAP = _ApiDefMap({
             True,
             True,
             '',
-            {'us-east1': 'https://hypercomputecluster.us-east1.rep.googleapis.com/', 'us-east4': 'https://hypercomputecluster.us-east4.rep.googleapis.com/', 'us-east5': 'https://hypercomputecluster.us-east5.rep.googleapis.com/', 'us-east7': 'https://hypercomputecluster.us-east7.rep.googleapis.com/', 'us-south1': 'https://hypercomputecluster.us-south1.rep.googleapis.com/', 'us-west1': 'https://hypercomputecluster.us-west1.rep.googleapis.com/', 'us-west2': 'https://hypercomputecluster.us-west2.rep.googleapis.com/', 'us-west3': 'https://hypercomputecluster.us-west3.rep.googleapis.com/', 'us-west4': 'https://hypercomputecluster.us-west4.rep.googleapis.com/'},
+            {'us-east1': 'https://hypercomputecluster.us-east1.rep.googleapis.com/', 'us-east4': 'https://hypercomputecluster.us-east4.rep.googleapis.com/', 'us-east5': 'https://hypercomputecluster.us-east5.rep.googleapis.com/', 'us-south1': 'https://hypercomputecluster.us-south1.rep.googleapis.com/', 'us-west1': 'https://hypercomputecluster.us-west1.rep.googleapis.com/', 'us-west2': 'https://hypercomputecluster.us-west2.rep.googleapis.com/', 'us-west3': 'https://hypercomputecluster.us-west3.rep.googleapis.com/', 'us-west4': 'https://hypercomputecluster.us-west4.rep.googleapis.com/'},
         ),
         'v1beta': (
             ('googlecloudsdk.generated_clients.apis.hypercomputecluster.v1beta', 'hypercomputecluster_v1beta_client.HypercomputeclusterV1beta', 'hypercomputecluster_v1beta_messages', 'https://hypercomputecluster.googleapis.com/'),
@@ -2526,16 +2508,6 @@ MAP = _ApiDefMap({
         ),
         'v1alpha': (
             ('googlecloudsdk.generated_clients.apis.lustre.v1alpha', 'lustre_v1alpha_client.LustreV1alpha', 'lustre_v1alpha_messages', 'https://lustre.googleapis.com/'),
-            None,
-            True,
-            True,
-            '',
-            {},
-        ),
-    },
-    'managedflink': {
-        'v1alpha': (
-            ('googlecloudsdk.generated_clients.apis.managedflink.v1alpha', 'managedflink_v1alpha_client.ManagedflinkV1alpha', 'managedflink_v1alpha_messages', 'https://managedflink.googleapis.com/'),
             None,
             True,
             True,
@@ -3765,24 +3737,6 @@ MAP = _ApiDefMap({
             {},
         ),
     },
-    'telcoautomation': {
-        'v1': (
-            ('googlecloudsdk.generated_clients.apis.telcoautomation.v1', 'telcoautomation_v1_client.TelcoautomationV1', 'telcoautomation_v1_messages', 'https://telcoautomation.googleapis.com/'),
-            None,
-            True,
-            True,
-            '',
-            {},
-        ),
-        'v1alpha1': (
-            ('googlecloudsdk.generated_clients.apis.telcoautomation.v1alpha1', 'telcoautomation_v1alpha1_client.TelcoautomationV1alpha1', 'telcoautomation_v1alpha1_messages', 'https://telcoautomation.googleapis.com/'),
-            None,
-            False,
-            True,
-            '',
-            {},
-        ),
-    },
     'testing': {
         'v1': (
             ('googlecloudsdk.generated_clients.apis.testing.v1', 'testing_v1_client.TestingV1', 'testing_v1_messages', 'https://testing.googleapis.com/'),
@@ -4072,7 +4026,7 @@ MAP = _ApiDefMap({
             True,
             True,
             '',
-            {'us-central1': 'https://workloadmanager.us-central1.rep.googleapis.com/', 'us-east1': 'https://workloadmanager.us-east1.rep.googleapis.com/', 'us-east4': 'https://workloadmanager.us-east4.rep.googleapis.com/', 'us-west1': 'https://workloadmanager.us-west1.rep.googleapis.com/', 'us-west4': 'https://workloadmanager.us-west4.rep.googleapis.com/', 'australia-southeast1': 'https://workloadmanager.australia-southeast1.rep.googleapis.com/', 'europe-west3': 'https://workloadmanager.europe-west3.rep.googleapis.com/', 'europe-west1': 'https://workloadmanager.europe-west1.rep.googleapis.com/', 'europe-west2': 'https://workloadmanager.europe-west2.rep.googleapis.com/', 'us-east5': 'https://workloadmanager.us-east5.rep.googleapis.com/', 'us-south1': 'https://workloadmanager.us-south1.rep.googleapis.com/', 'us-west2': 'https://workloadmanager.us-west2.rep.googleapis.com/', 'us-west3': 'https://workloadmanager.us-west3.rep.googleapis.com/', 'europe-west9': 'https://workloadmanager.europe-west9.rep.googleapis.com/', 'asia-south1': 'https://workloadmanager.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://workloadmanager.asia-south2.rep.googleapis.com/', 'europe-west4': 'https://workloadmanager.europe-west4.rep.googleapis.com/', 'europe-west8': 'https://workloadmanager.europe-west8.rep.googleapis.com/', 'northamerica-northeast1': 'https://workloadmanager.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://workloadmanager.northamerica-northeast2.rep.googleapis.com/', 'australia-southeast2': 'https://workloadmanager.australia-southeast2.rep.googleapis.com/', 'europe-central2': 'https://workloadmanager.europe-central2.rep.googleapis.com/', 'europe-west6': 'https://workloadmanager.europe-west6.rep.googleapis.com/', 'europe-west10': 'https://workloadmanager.europe-west10.rep.googleapis.com/', 'europe-west12': 'https://workloadmanager.europe-west12.rep.googleapis.com/', 'asia-east1': 'https://workloadmanager.asia-east1.rep.googleapis.com/', 'asia-east2': 'https://workloadmanager.asia-east2.rep.googleapis.com/', 'asia-northeast1': 'https://workloadmanager.asia-northeast1.rep.googleapis.com/', 'asia-northeast2': 'https://workloadmanager.asia-northeast2.rep.googleapis.com/', 'asia-northeast3': 'https://workloadmanager.asia-northeast3.rep.googleapis.com/', 'asia-southeast1': 'https://workloadmanager.asia-southeast1.rep.googleapis.com/', 'asia-southeast2': 'https://workloadmanager.asia-southeast2.rep.googleapis.com/', 'europe-north1': 'https://workloadmanager.europe-north1.rep.googleapis.com/', 'europe-southwest1': 'https://workloadmanager.europe-southwest1.rep.googleapis.com/', 'me-central1': 'https://workloadmanager.me-central1.rep.googleapis.com/', 'me-central2': 'https://workloadmanager.me-central2.rep.googleapis.com/', 'southamerica-east1': 'https://workloadmanager.southamerica-east1.rep.googleapis.com/', 'southamerica-west1': 'https://workloadmanager.southamerica-west1.rep.googleapis.com/', 'me-west1': 'https://workloadmanager.me-west1.rep.googleapis.com/', 'africa-south1': 'https://workloadmanager.africa-south1.rep.googleapis.com/', 'northamerica-south1': 'https://workloadmanager.northamerica-south1.rep.googleapis.com/', 'us-central2': 'https://workloadmanager.us-central2.rep.googleapis.com/', 'europe-north2': 'https://workloadmanager.europe-north2.rep.googleapis.com/', 'asia-southeast3': 'https://workloadmanager.asia-southeast3.rep.googleapis.com/', 'au': 'https://workloadmanager.au.rep.googleapis.com/', 'ca': 'https://workloadmanager.ca.rep.googleapis.com/', 'ch': 'https://workloadmanager.ch.rep.googleapis.com/', 'eu': 'https://workloadmanager.eu.rep.googleapis.com/', 'gb': 'https://workloadmanager.gb.rep.googleapis.com/', 'in': 'https://workloadmanager.in.rep.googleapis.com/', 'jp': 'https://workloadmanager.jp.rep.googleapis.com/', 'sa': 'https://workloadmanager.sa.rep.googleapis.com/', 'us': 'https://workloadmanager.us.rep.googleapis.com/'},
+            {},
         ),
     },
     'workstations': {

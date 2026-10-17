@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: false
 
   help_text:
     brief:  Import HL7v2 messages from Google Cloud Storage into a Cloud Healthcare API HL7v2 store.

@@ -39,6 +39,8 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
         response_encoding=response_encoding)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_services_connectors = self.ProjectsLocationsServicesConnectorsService(self)
+    self.projects_locations_services_postgrest_rpc = self.ProjectsLocationsServicesPostgrestRpcService(self)
+    self.projects_locations_services_postgrest = self.ProjectsLocationsServicesPostgrestService(self)
     self.projects_locations_services_schemas = self.ProjectsLocationsServicesSchemasService(self)
     self.projects_locations_services = self.ProjectsLocationsServicesService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -415,6 +417,215 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsServicesPostgrestRpcService(base_api.BaseApiService):
+    """Service class for the projects_locations_services_postgrest_rpc resource."""
+
+    _NAME = 'projects_locations_services_postgrest_rpc'
+
+    def __init__(self, client):
+      super(FirebasedataconnectV1alpha.ProjectsLocationsServicesPostgrestRpcService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def PostgrestCallFunction(self, request, global_params=None):
+      r"""Executes a PostgreSQL database function.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesPostgrestRpcPostgrestCallFunctionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('PostgrestCallFunction')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PostgrestCallFunction.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}/postgrest/rpc/{rpcId}',
+        http_method='POST',
+        method_id='firebasedataconnect.projects.locations.services.postgrest.rpc.postgrestCallFunction',
+        ordered_params=['firebasedataconnectService', 'firebasedataconnectFunction'],
+        path_params=['firebasedataconnectFunction', 'firebasedataconnectService'],
+        query_params=[],
+        relative_path='v1alpha/{+firebasedataconnectService}/postgrest/rpc/{+firebasedataconnectFunction}',
+        request_field='httpBody',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesPostgrestRpcPostgrestCallFunctionRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
+    def PostgrestQueryFunction(self, request, global_params=None):
+      r"""Executes a read-only PostgreSQL database function.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesPostgrestRpcPostgrestQueryFunctionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('PostgrestQueryFunction')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PostgrestQueryFunction.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}/postgrest/rpc/{rpcId}',
+        http_method='GET',
+        method_id='firebasedataconnect.projects.locations.services.postgrest.rpc.postgrestQueryFunction',
+        ordered_params=['firebasedataconnectService', 'firebasedataconnectFunction'],
+        path_params=['firebasedataconnectFunction', 'firebasedataconnectService'],
+        query_params=[],
+        relative_path='v1alpha/{+firebasedataconnectService}/postgrest/rpc/{+firebasedataconnectFunction}',
+        request_field='',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesPostgrestRpcPostgrestQueryFunctionRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsServicesPostgrestService(base_api.BaseApiService):
+    """Service class for the projects_locations_services_postgrest resource."""
+
+    _NAME = 'projects_locations_services_postgrest'
+
+    def __init__(self, client):
+      super(FirebasedataconnectV1alpha.ProjectsLocationsServicesPostgrestService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def PostgrestDelete(self, request, global_params=None):
+      r"""Executes a dynamic DELETE mutation on rows matching the URL filters.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('PostgrestDelete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PostgrestDelete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}/postgrest/{postgrestId}',
+        http_method='DELETE',
+        method_id='firebasedataconnect.projects.locations.services.postgrest.postgrestDelete',
+        ordered_params=['firebasedataconnectService', 'firebasedataconnectTable'],
+        path_params=['firebasedataconnectService', 'firebasedataconnectTable'],
+        query_params=[],
+        relative_path='v1alpha/{+firebasedataconnectService}/postgrest/{+firebasedataconnectTable}',
+        request_field='',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestDeleteRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
+    def PostgrestInsert(self, request, global_params=None):
+      r"""Executes a dynamic INSERT (create) or UPSERT mutation on a target table.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('PostgrestInsert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PostgrestInsert.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}/postgrest/{postgrestId}',
+        http_method='POST',
+        method_id='firebasedataconnect.projects.locations.services.postgrest.postgrestInsert',
+        ordered_params=['firebasedataconnectService', 'firebasedataconnectTable'],
+        path_params=['firebasedataconnectService', 'firebasedataconnectTable'],
+        query_params=[],
+        relative_path='v1alpha/{+firebasedataconnectService}/postgrest/{+firebasedataconnectTable}',
+        request_field='httpBody',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestInsertRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
+    def PostgrestSelect(self, request, global_params=None):
+      r"""Executes a dynamic SELECT (read) query on a target PostgreSQL table. Projections, filters, sorting, and embeddings are mapped from the HTTP URL query parameters.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestSelectRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('PostgrestSelect')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PostgrestSelect.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}/postgrest/{postgrestId}',
+        http_method='GET',
+        method_id='firebasedataconnect.projects.locations.services.postgrest.postgrestSelect',
+        ordered_params=['firebasedataconnectService', 'firebasedataconnectTable'],
+        path_params=['firebasedataconnectService', 'firebasedataconnectTable'],
+        query_params=[],
+        relative_path='v1alpha/{+firebasedataconnectService}/postgrest/{+firebasedataconnectTable}',
+        request_field='',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestSelectRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
+    def PostgrestUpdate(self, request, global_params=None):
+      r"""Executes a dynamic UPDATE (modify) mutation on rows matching the URL filters.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestUpdateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('PostgrestUpdate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PostgrestUpdate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}/postgrest/{postgrestId}',
+        http_method='PATCH',
+        method_id='firebasedataconnect.projects.locations.services.postgrest.postgrestUpdate',
+        ordered_params=['firebasedataconnectService', 'firebasedataconnectTable'],
+        path_params=['firebasedataconnectService', 'firebasedataconnectTable'],
+        query_params=[],
+        relative_path='v1alpha/{+firebasedataconnectService}/postgrest/{+firebasedataconnectTable}',
+        request_field='httpBody',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestUpdateRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
+    def PostgrestUpsert(self, request, global_params=None):
+      r"""Executes a dynamic UPSERT (replace or create) mutation on a target table identified by primary key filters.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestUpsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('PostgrestUpsert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PostgrestUpsert.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}/postgrest/{postgrestId}',
+        http_method='PUT',
+        method_id='firebasedataconnect.projects.locations.services.postgrest.postgrestUpsert',
+        ordered_params=['firebasedataconnectService', 'firebasedataconnectTable'],
+        path_params=['firebasedataconnectService', 'firebasedataconnectTable'],
+        query_params=[],
+        relative_path='v1alpha/{+firebasedataconnectService}/postgrest/{+firebasedataconnectTable}',
+        request_field='httpBody',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestUpsertRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
   class ProjectsLocationsServicesSchemasService(base_api.BaseApiService):
     """Service class for the projects_locations_services_schemas resource."""
 
@@ -530,6 +741,33 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='FirebasedataconnectProjectsLocationsServicesSchemasListRequest',
         response_type_name='ListSchemasResponse',
+        supports_download=False,
+    )
+
+    def Migrate(self, request, global_params=None):
+      r"""Executes SQL migration steps against the active database schema. This operation compares submitted migration steps against the schema migration ledger (`firebasesql.schema_migrations`), executes unapplied DDL, and records applied steps. It does NOT persist the GraphQL schema to the control plane.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesSchemasMigrateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Migrate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Migrate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}/schemas/{schemasId}:migrate',
+        http_method='POST',
+        method_id='firebasedataconnect.projects.locations.services.schemas.migrate',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:migrate',
+        request_field='migrateSchemaRequest',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesSchemasMigrateRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -837,6 +1075,33 @@ class FirebasedataconnectV1alpha(base_api.BaseApiClient):
         request_field='service',
         request_type_name='FirebasedataconnectProjectsLocationsServicesPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Postgrest(self, request, global_params=None):
+      r"""Retrieves the Open API spec of the PostgREST API.
+
+      Args:
+        request: (FirebasedataconnectProjectsLocationsServicesPostgrestRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('Postgrest')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Postgrest.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/services/{servicesId}/postgrest',
+        http_method='GET',
+        method_id='firebasedataconnect.projects.locations.services.postgrest',
+        ordered_params=['firebasedataconnectService'],
+        path_params=['firebasedataconnectService'],
+        query_params=[],
+        relative_path='v1alpha/{+firebasedataconnectService}/postgrest',
+        request_field='',
+        request_type_name='FirebasedataconnectProjectsLocationsServicesPostgrestRequest',
+        response_type_name='HttpBody',
         supports_download=False,
     )
 

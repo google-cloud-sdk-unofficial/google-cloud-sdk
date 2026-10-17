@@ -24,12 +24,12 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.composer import parsers
 from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import properties
-
 import six
 
 MIN_TRIGGERER_AIRFLOW_VERSION = '2.2.5'
@@ -140,7 +140,7 @@ LOCATION_FLAG = base.Argument(
         default_universe=False, non_default_universe=True
     ),
     help='The Cloud Composer location (e.g., us-central1).',
-    action=actions.StoreProperty(properties.VALUES.composer.location),
+    action=property_actions.StoreProperty(properties.VALUES.composer.location),
 )
 
 _ENV_VAR_NAME_ERROR = (
@@ -998,6 +998,22 @@ CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA = arg_utils.ChoiceEnumMapper(
         release_track=base.ReleaseTrack.ALPHA
     ).TrafficRoutingConfig.CloudRunFunctionsRoutingValueValuesEnum,
     hidden_choices=['routing-mode-unspecified'],
+)
+
+USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG = base.Argument(
+    '--user-workloads-service-accounts',
+    metavar='KEY=VALUE',
+    type=arg_parsers.ArgDict(key_type=str, value_type=str),
+    action=arg_parsers.UpdateAction,
+    hidden=True,
+    help="""\
+    A comma-delimited list of `KEY=VALUE` pairs to provide user workloads
+    service accounts, where `KEY` is a Kubernetes Service Account name and
+    `VALUE` is a Google Cloud Service Account email. `KEY` may contain lowercase
+    letters, digits, dots, and hyphens, must start and end with a lowercase
+    letter or digit, and must be 1 to 253 characters long. At most 100 service
+    accounts can be specified. Supported in Composer {} environments or greater.
+    """.format(MIN_COMPOSER3_VERSION),
 )
 
 AIRFLOW_DATABASE_RETENTION_DAYS = base.Argument(

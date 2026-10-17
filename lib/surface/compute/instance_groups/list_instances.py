@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
+@base.UniverseCompatible
 class ListInstances(base.ListCommand):
   """List Compute Engine instances present in instance group."""
 
@@ -76,16 +77,21 @@ class ListInstances(base.ListCommand):
           filter=filter_expr,
           project=group_ref.project)
 
-    errors = []
-    results = request_helper.MakeRequests(
-        requests=[(service, 'ListInstances', request)],
-        http=client.apitools_client.http,
-        batch_url=client.batch_url,
-        errors=errors)
+    def _YieldAndCheckErrors():
+      errors = []
+      results = request_helper.MakeRequests(
+          requests=[(service, 'ListInstances', request)],
+          http=client.apitools_client.http,
+          batch_url=client.batch_url,
+          errors=errors)
 
-    if errors:
-      utils.RaiseToolException(errors)
-    return results
+      for item in results:
+        yield item
+
+      if errors:
+        utils.RaiseToolException(errors)
+
+    return _YieldAndCheckErrors()
 
 
 ListInstances.detailed_help = {

@@ -4039,6 +4039,12 @@ class AutoscalingPolicyCpuUtilization(_messages.Message):
       Operates on all CPU utilization samples produced by each instance over
       the `time_aggregation.time_window_sec`, reducing them to exactly one
       value per instance if samples are available.
+    utilizationMax: The upper bound of the utilization range. Must be a float
+      value in the range ('utilization_min', 1]. A value of 0.0 is equivalent
+      to leaving the field unset.
+    utilizationMin: The lower bound of the utilization range. Must be a float
+      value in the range (0, 'utilization_max']. A value of 0.0 is equivalent
+      to leaving the field unset.
     utilizationRange: Defines a target range for CPU utilization. The values
       of `min_utilization` and `max_utilization` must be in the range (0.0,
       1.0].  If the average CPU is between `min_utilization` and
@@ -4091,8 +4097,10 @@ class AutoscalingPolicyCpuUtilization(_messages.Message):
   predictiveMethod = _messages.EnumField('PredictiveMethodValueValuesEnum', 1)
   signalAggregation = _messages.MessageField('AutoscalingPolicySignalAggregation', 2)
   timeAggregation = _messages.MessageField('AutoscalingPolicyTimeAggregation', 3)
-  utilizationRange = _messages.MessageField('UtilizationRange', 4)
-  utilizationTarget = _messages.FloatField(5)
+  utilizationMax = _messages.FloatField(4)
+  utilizationMin = _messages.FloatField(5)
+  utilizationRange = _messages.MessageField('UtilizationRange', 6)
+  utilizationTarget = _messages.FloatField(7)
 
 
 class AutoscalingPolicyCustomMetricUtilization(_messages.Message):
@@ -7382,9 +7390,10 @@ class BackendServiceHAPolicyLeaderNetworkEndpoint(_messages.Message):
   Fields:
     instance: The name of the VM instance of the leader network endpoint. The
       instance must already be attached to the NEG specified in the
-      haPolicy.leader.backendGroup.  The name must be 1-63 characters long,
-      and comply with RFC1035. Authorization requires the following IAM
-      permission on the specified resource instance: compute.instances.use
+      haPolicy.leader.backendGroup.  The value must be a valid RFC1035 name
+      (1-63 characters) or a valid instance URL. Authorization requires the
+      following IAM permission on the specified resource instance:
+      compute.instances.use
   """
 
   instance = _messages.StringField(1)
@@ -9605,7 +9614,7 @@ class CapacityAdviceRequestDistributionPolicy(_messages.Message):
         where resources are available while distributing VMs as evenly as
         possible across selected zones to minimize the impact of zonal
         failure.
-      TARGET_SHAPE_UNSPECIFIED: <no description>
+      TARGET_SHAPE_UNSPECIFIED: Default value, unused.
     """
     ANY = 0
     ANY_SINGLE_ZONE = 1
@@ -9682,11 +9691,15 @@ class CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection(_messages.
     disks: Local SSDs.
     guestAccelerators: Accelerators configuration.
     machineTypes: Full machine-type names, e.g. "n1-standard-16".
+    rank: Optional. Rank when prioritizing the shape flexibilities. The
+      instance selections are considered in the ascending order of the rank.
+      If not set, defaults to 0.
   """
 
   disks = _messages.MessageField('CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelectionAttachedDisk', 1, repeated=True)
   guestAccelerators = _messages.MessageField('AcceleratorConfig', 2, repeated=True)
   machineTypes = _messages.StringField(3, repeated=True)
+  rank = _messages.IntegerField(4)
 
 
 class CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelectionAttachedDisk(_messages.Message):
@@ -9864,7 +9877,7 @@ class CapacityHistoryRequest(_messages.Message):
     r"""TypesValueListEntryValuesEnum enum type.
 
     Values:
-      HISTORY_TYPE_UNSPECIFIED: <no description>
+      HISTORY_TYPE_UNSPECIFIED: Default value, unused.
       PREEMPTION: Preemption history.
       PRICE: Price history.
     """
@@ -9881,12 +9894,39 @@ class CapacityHistoryRequestInstanceProperties(_messages.Message):
   r"""Instance properties for this request.
 
   Fields:
+    disks: Local SSDs.
+    guestAccelerators: Accelerators configuration.
     machineType: The machine type for the VM, such as `n2-standard-4`.
     scheduling: Specifies the scheduling options.
   """
 
-  machineType = _messages.StringField(1)
-  scheduling = _messages.MessageField('CapacityHistoryRequestInstancePropertiesScheduling', 2)
+  disks = _messages.MessageField('CapacityHistoryRequestInstancePropertiesAttachedDisk', 1, repeated=True)
+  guestAccelerators = _messages.MessageField('AcceleratorConfig', 2, repeated=True)
+  machineType = _messages.StringField(3)
+  scheduling = _messages.MessageField('CapacityHistoryRequestInstancePropertiesScheduling', 4)
+
+
+class CapacityHistoryRequestInstancePropertiesAttachedDisk(_messages.Message):
+  r"""AttachedDisk modeled after Instance's AttachedDisk.
+
+  Enums:
+    TypeValueValuesEnum: Specifies the type of the disk.
+
+  Fields:
+    type: Specifies the type of the disk.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Specifies the type of the disk.
+
+    Values:
+      DISK_TYPE_UNSPECIFIED: Default value, unused.
+      SCRATCH: Scratch disk (Local SSD).
+    """
+    DISK_TYPE_UNSPECIFIED = 0
+    SCRATCH = 1
+
+  type = _messages.EnumField('TypeValueValuesEnum', 1)
 
 
 class CapacityHistoryRequestInstancePropertiesScheduling(_messages.Message):
@@ -10155,11 +10195,13 @@ class Commitment(_messages.Message):
       GENERAL_PURPOSE_N2D,GENERAL_PURPOSE_N4,
       GENERAL_PURPOSE_T2D,GRAPHICS_OPTIMIZED,
       GRAPHICS_OPTIMIZED_G4,GRAPHICS_OPTIMIZED_G4_VGPU,MEMORY_OPTIMIZED,
-      MEMORY_OPTIMIZED_M3,MEMORY_OPTIMIZED_X4, STORAGE_OPTIMIZED_Z3. For
-      example, type MEMORY_OPTIMIZED specifies a commitment that applies only
-      to eligible resources of memory optimized M1 and M2 machine series. Type
-      GENERAL_PURPOSE specifies a commitment that applies only to eligible
-      resources of general purpose N1 machine series.
+      MEMORY_OPTIMIZED_M3,MEMORY_OPTIMIZED_X4,
+      STORAGE_OPTIMIZED_Z3,STORAGE_OPTIMIZED_Z4DS,
+      STORAGE_OPTIMIZED_Z4DH,STORAGE_OPTIMIZED_Z4D4T,STORAGE_OPTIMIZED_Z4M.
+      For example, type MEMORY_OPTIMIZED specifies a commitment that applies
+      only to eligible resources of memory optimized M1 and M2 machine series.
+      Type GENERAL_PURPOSE specifies a commitment that applies only to
+      eligible resources of general purpose N1 machine series.
 
   Fields:
     autoRenew: Specifies whether to automatically renew the commitment at the
@@ -10255,11 +10297,13 @@ class Commitment(_messages.Message):
       GENERAL_PURPOSE_N2D,GENERAL_PURPOSE_N4,
       GENERAL_PURPOSE_T2D,GRAPHICS_OPTIMIZED,
       GRAPHICS_OPTIMIZED_G4,GRAPHICS_OPTIMIZED_G4_VGPU,MEMORY_OPTIMIZED,
-      MEMORY_OPTIMIZED_M3,MEMORY_OPTIMIZED_X4, STORAGE_OPTIMIZED_Z3. For
-      example, type MEMORY_OPTIMIZED specifies a commitment that applies only
-      to eligible resources of memory optimized M1 and M2 machine series. Type
-      GENERAL_PURPOSE specifies a commitment that applies only to eligible
-      resources of general purpose N1 machine series.
+      MEMORY_OPTIMIZED_M3,MEMORY_OPTIMIZED_X4,
+      STORAGE_OPTIMIZED_Z3,STORAGE_OPTIMIZED_Z4DS,
+      STORAGE_OPTIMIZED_Z4DH,STORAGE_OPTIMIZED_Z4D4T,STORAGE_OPTIMIZED_Z4M.
+      For example, type MEMORY_OPTIMIZED specifies a commitment that applies
+      only to eligible resources of memory optimized M1 and M2 machine series.
+      Type GENERAL_PURPOSE specifies a commitment that applies only to
+      eligible resources of general purpose N1 machine series.
   """
 
   class CategoryValueValuesEnum(_messages.Enum):
@@ -10338,7 +10382,9 @@ class Commitment(_messages.Message):
     GENERAL_PURPOSE_N2D,GENERAL_PURPOSE_N4,
     GENERAL_PURPOSE_T2D,GRAPHICS_OPTIMIZED,
     GRAPHICS_OPTIMIZED_G4,GRAPHICS_OPTIMIZED_G4_VGPU,MEMORY_OPTIMIZED,
-    MEMORY_OPTIMIZED_M3,MEMORY_OPTIMIZED_X4, STORAGE_OPTIMIZED_Z3. For
+    MEMORY_OPTIMIZED_M3,MEMORY_OPTIMIZED_X4,
+    STORAGE_OPTIMIZED_Z3,STORAGE_OPTIMIZED_Z4DS,
+    STORAGE_OPTIMIZED_Z4DH,STORAGE_OPTIMIZED_Z4D4T,STORAGE_OPTIMIZED_Z4M. For
     example, type MEMORY_OPTIMIZED specifies a commitment that applies only to
     eligible resources of memory optimized M1 and M2 machine series. Type
     GENERAL_PURPOSE specifies a commitment that applies only to eligible
@@ -10401,6 +10447,9 @@ class Commitment(_messages.Message):
       NETWORK_OPTIMIZED_U4S: CUD bucket for NETWORK_OPTIMIZED_U4S machines.
       STORAGE_OPTIMIZED_Z3: <no description>
       STORAGE_OPTIMIZED_Z4D: CUD bucket for Z4D machines.
+      STORAGE_OPTIMIZED_Z4D4T: CUD bucket for Z4D-4T machines.
+      STORAGE_OPTIMIZED_Z4DH: CUD bucket for Z4DH machines.
+      STORAGE_OPTIMIZED_Z4DS: CUD bucket for Z4DS machines.
       STORAGE_OPTIMIZED_Z4M: CUD bucket for Z4M (bare metal) machines.
       TYPE_UNSPECIFIED: Note for internal users: When adding a new enum Type
         for v1, make sure to also add it in the comment for the `optional Type
@@ -10457,8 +10506,11 @@ class Commitment(_messages.Message):
     NETWORK_OPTIMIZED_U4S = 47
     STORAGE_OPTIMIZED_Z3 = 48
     STORAGE_OPTIMIZED_Z4D = 49
-    STORAGE_OPTIMIZED_Z4M = 50
-    TYPE_UNSPECIFIED = 51
+    STORAGE_OPTIMIZED_Z4D4T = 50
+    STORAGE_OPTIMIZED_Z4DH = 51
+    STORAGE_OPTIMIZED_Z4DS = 52
+    STORAGE_OPTIMIZED_Z4M = 53
+    TYPE_UNSPECIFIED = 54
 
   autoRenew = _messages.BooleanField(1)
   category = _messages.EnumField('CategoryValueValuesEnum', 2)
@@ -15887,7 +15939,7 @@ class ComputeFolderGlobalVmExtensionPoliciesGetVmExtensionRequest(_messages.Mess
   r"""A ComputeFolderGlobalVmExtensionPoliciesGetVmExtensionRequest object.
 
   Fields:
-    extensionName: A string attribute.
+    extensionName: Required. Name of the VM extension for this request.
     folder: Folder ID for this request.
   """
 
@@ -16126,7 +16178,7 @@ class ComputeFolderZoneVmExtensionPoliciesGetVmExtensionRequest(_messages.Messag
   r"""A ComputeFolderZoneVmExtensionPoliciesGetVmExtensionRequest object.
 
   Fields:
-    extensionName: A string attribute.
+    extensionName: Required. Name of the VM extension for this request.
     folder: Folder ID for this request.
     zone: Name of the zone for this request.
   """
@@ -17461,7 +17513,7 @@ class ComputeGlobalFrontendSettingsGetRequest(_messages.Message):
   r"""A ComputeGlobalFrontendSettingsGetRequest object.
 
   Fields:
-    project: A string attribute.
+    project: Required. Project ID for this request.
   """
 
   project = _messages.StringField(1, required=True)
@@ -17473,9 +17525,9 @@ class ComputeGlobalFrontendSettingsPatchRequest(_messages.Message):
   Fields:
     globalFrontendSettings: A GlobalFrontendSettings resource to be passed as
       the request body.
-    project: A string attribute.
-    requestId: A string attribute.
-    updateMask: e.g., "type"
+    project: Required. Project ID for this request.
+    requestId: An optional request ID to identify requests.
+    updateMask: Field mask to support patch. E.g., "type".
   """
 
   globalFrontendSettings = _messages.MessageField('GlobalFrontendSettings', 1)
@@ -18321,7 +18373,7 @@ class ComputeGlobalVmExtensionPoliciesGetVmExtensionRequest(_messages.Message):
   r"""A ComputeGlobalVmExtensionPoliciesGetVmExtensionRequest object.
 
   Fields:
-    extensionName: A string attribute.
+    extensionName: Required. Name of the VM extension for this request.
     project: Project ID for this request.
   """
 
@@ -29142,31 +29194,6 @@ class ComputeNodeTypesListRequest(_messages.Message):
   zone = _messages.StringField(7, required=True)
 
 
-class ComputeOrgVmExtensionPoliciesDeleteRequest(_messages.Message):
-  r"""A ComputeOrgVmExtensionPoliciesDeleteRequest object.
-
-  Fields:
-    organization: Organization ID for this request.
-    requestId: An optional request ID to identify requests. Specify a unique
-      request ID so that if you must retry your request, the server will know
-      to ignore the request if it has already been completed.  For example,
-      consider a situation where you make an initial request and the request
-      times out. If you make the request again with the same request ID, the
-      server can check if original operation with the same request ID was
-      received, and if so, will ignore the second request. This prevents
-      clients from accidentally creating duplicate commitments.  The request
-      ID must be a valid UUID with the exception that zero UUID is not
-      supported (00000000-0000-0000-0000-000000000000).
-    vmExtensionPolicy: Name of the zone VM extension policy to delete.
-    zone: Name of the zone for this request.
-  """
-
-  organization = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-  vmExtensionPolicy = _messages.StringField(3, required=True)
-  zone = _messages.StringField(4, required=True)
-
-
 class ComputeOrganizationGlobalVmExtensionPoliciesAggregatedListRequest(_messages.Message):
   r"""A ComputeOrganizationGlobalVmExtensionPoliciesAggregatedListRequest
   object.
@@ -29295,7 +29322,7 @@ class ComputeOrganizationGlobalVmExtensionPoliciesGetVmExtensionRequest(_message
   object.
 
   Fields:
-    extensionName: A string attribute.
+    extensionName: Required. Name of the VM extension for this request.
     organization: Organization ID for this request.
   """
 
@@ -30339,7 +30366,7 @@ class ComputeOrganizationZoneVmExtensionPoliciesGetVmExtensionRequest(_messages.
   object.
 
   Fields:
-    extensionName: A string attribute.
+    extensionName: Required. Name of the VM extension for this request.
     organization: Organization ID for this request.
     zone: Name of the zone for this request.
   """
@@ -50702,7 +50729,7 @@ class ComputeZoneVmExtensionPoliciesGetVmExtensionRequest(_messages.Message):
   r"""A ComputeZoneVmExtensionPoliciesGetVmExtensionRequest object.
 
   Fields:
-    extensionName: A string attribute.
+    extensionName: Required. Name of the VM extension for this request.
     project: Project ID for this request.
     zone: Name of the zone for this request.
   """
@@ -54259,11 +54286,16 @@ class DistributionPolicyZoneConfiguration(_messages.Message):
   r"""A DistributionPolicyZoneConfiguration object.
 
   Fields:
+    maxSize: Optional. The maximum size of the group in this zone. This value
+      can be either a fixed number or, a percentage. If you set a percentage,
+      the number of instances is rounded up if necessary. If unset, it is
+      interpreted as unbounded.
     zone: The URL of thezone. The zone must exist in the region where the
       managed instance group is located.
   """
 
-  zone = _messages.StringField(1)
+  maxSize = _messages.MessageField('FixedOrPercent', 1)
+  zone = _messages.StringField(2)
 
 
 class Duration(_messages.Message):
@@ -54284,6 +54316,34 @@ class Duration(_messages.Message):
 
   nanos = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   seconds = _messages.IntegerField(2)
+
+
+class DynamicCompressionPolicy(_messages.Message):
+  r"""Dynamic compression policy for this URL Map's route.
+
+  Enums:
+    CompressionModeValueValuesEnum: Compress text responses using Brotli or
+      gzip compression, based on the client's Accept-Encoding header.
+
+  Fields:
+    compressionMode: Compress text responses using Brotli or gzip compression,
+      based on the client's Accept-Encoding header.
+  """
+
+  class CompressionModeValueValuesEnum(_messages.Enum):
+    r"""Compress text responses using Brotli or gzip compression, based on the
+    client's Accept-Encoding header.
+
+    Values:
+      AUTOMATIC: Automatically uses the best compression based on the Accept-
+        Encoding header sent by the client.
+      DISABLED: Disables compression. Existing compressed responses cached by
+        Cloud CDN will not be served to clients.
+    """
+    AUTOMATIC = 0
+    DISABLED = 1
+
+  compressionMode = _messages.EnumField('CompressionModeValueValuesEnum', 1)
 
 
 class ErrorInfo(_messages.Message):
@@ -55766,8 +55826,11 @@ class FirewallPolicy(_messages.Message):
     users.
 
     Values:
-      SYSTEM: <no description>
-      USER_DEFINED: <no description>
+      SYSTEM: A system-level policy managed by an internal service like GKE.
+        This value is reserved for internal services and cannot be set by
+        users during policy creation. Policies with a SYSTEM source cannot be
+        modified or deleted by users.
+      USER_DEFINED: A regular firewall policy.
     """
     SYSTEM = 0
     USER_DEFINED = 1
@@ -59921,7 +59984,7 @@ class GlobalFrontendSettings(_messages.Message):
       RFC3339 text format.
     description: Output only. [Output Only] An optional description of this
       resource.
-    etag: Output only. For optimistic locking
+    etag: Output only. For optimistic locking.
     id: Output only. [Output Only] The unique identifier for the resource.
       This identifier is defined by the server.
     name: Output only. OUTPUT_ONLY fields [Output Only] Name of the resource.
@@ -59936,9 +59999,9 @@ class GlobalFrontendSettings(_messages.Message):
     r"""Customer-settable bundle type.
 
     Values:
-      BUNDLE_TYPE_UNSPECIFIED: Bundling is not active
-      GLOBAL_FRONT_END: Standard Global Frontend bundle
-      INDIVIDUAL: Ala Carte mode
+      BUNDLE_TYPE_UNSPECIFIED: Bundling is not active.
+      GLOBAL_FRONT_END: Standard Global Frontend bundle.
+      INDIVIDUAL: Ala Carte mode.
     """
     BUNDLE_TYPE_UNSPECIFIED = 0
     GLOBAL_FRONT_END = 1
@@ -59957,7 +60020,7 @@ class GlobalFrontendSettingsPatchResponse(_messages.Message):
   r"""Response to an UpdateGlobalFrontendSettingsRequest.
 
   Fields:
-    operation: A Operation attribute.
+    operation: The Operation resource for this long-running operation.
   """
 
   operation = _messages.MessageField('Operation', 1)
@@ -66323,6 +66386,8 @@ class HttpRouteAction(_messages.Message):
       requests. For more information about the W3C recommendation for cross-
       origin resource sharing (CORS), see Fetch API Living Standard.  Not
       supported when the URL map is bound to a target gRPC proxy.
+    dynamicCompressionPolicy: Dynamic compression policy for this URL Map's
+      route. Available only for Global EXTERNAL_MANAGED load balancer schemes.
     faultInjectionPolicy: The specification for fault injection introduced
       into traffic to test the resiliency of clients to backend service
       failure. As part of fault injection, when clients send requests to a
@@ -66384,14 +66449,15 @@ class HttpRouteAction(_messages.Message):
 
   cachePolicy = _messages.MessageField('CachePolicy', 1)
   corsPolicy = _messages.MessageField('CorsPolicy', 2)
-  faultInjectionPolicy = _messages.MessageField('HttpFaultInjection', 3)
-  imageOptimizationPolicy = _messages.MessageField('ImageOptimizationPolicy', 4)
-  maxStreamDuration = _messages.MessageField('Duration', 5)
-  requestMirrorPolicy = _messages.MessageField('RequestMirrorPolicy', 6)
-  retryPolicy = _messages.MessageField('HttpRetryPolicy', 7)
-  timeout = _messages.MessageField('Duration', 8)
-  urlRewrite = _messages.MessageField('UrlRewrite', 9)
-  weightedBackendServices = _messages.MessageField('WeightedBackendService', 10, repeated=True)
+  dynamicCompressionPolicy = _messages.MessageField('DynamicCompressionPolicy', 3)
+  faultInjectionPolicy = _messages.MessageField('HttpFaultInjection', 4)
+  imageOptimizationPolicy = _messages.MessageField('ImageOptimizationPolicy', 5)
+  maxStreamDuration = _messages.MessageField('Duration', 6)
+  requestMirrorPolicy = _messages.MessageField('RequestMirrorPolicy', 7)
+  retryPolicy = _messages.MessageField('HttpRetryPolicy', 8)
+  timeout = _messages.MessageField('Duration', 9)
+  urlRewrite = _messages.MessageField('UrlRewrite', 10)
+  weightedBackendServices = _messages.MessageField('WeightedBackendService', 11, repeated=True)
 
 
 class HttpRouteRule(_messages.Message):
@@ -67381,7 +67447,7 @@ class ImageView(_messages.Message):
   r"""Represents a read-only view of a global Image resource.
 
   Fields:
-    image: A Image attribute.
+    image: The Image resource.
   """
 
   image = _messages.MessageField('Image', 1)
@@ -67394,7 +67460,7 @@ class ImageViewsListResponse(_messages.Message):
     WarningValue: [Output Only] Informational warning message.
 
   Fields:
-    etag: A string attribute.
+    etag: Etag of the resource.
     id: [Output Only] Unique identifier for the resource; defined by the
       server.
     items: A list of Image resources.
@@ -67785,6 +67851,8 @@ class Instance(_messages.Message):
     attached to the VM.
 
     Values:
+      CMEK_ENCRYPTION: The given VM will use customer-managed encryption keys
+        for encryption of Local SSDs.
       EPHEMERAL_KEY_ENCRYPTION: The given VM will opt-in for using ephemeral
         key for encryption of Local SSDs. The Local SSDs will not be able to
         recover data in case of VM crash.
@@ -67795,9 +67863,10 @@ class Instance(_messages.Message):
         by the cloud infrastructure and the keys will be deleted when the VM
         is deleted.
     """
-    EPHEMERAL_KEY_ENCRYPTION = 0
-    LOCAL_SSD_ENCRYPTION_MODE_UNSPECIFIED = 1
-    STANDARD_ENCRYPTION = 2
+    CMEK_ENCRYPTION = 0
+    EPHEMERAL_KEY_ENCRYPTION = 1
+    LOCAL_SSD_ENCRYPTION_MODE_UNSPECIFIED = 2
+    STANDARD_ENCRYPTION = 3
 
   class PostKeyRevocationActionTypeValueValuesEnum(_messages.Enum):
     r"""PostKeyRevocationActionType of the instance.
@@ -69357,6 +69426,8 @@ class InstanceGroupManagerInstanceFlexibilityPolicy(_messages.Message):
       that the group will use when creating new VMs.
 
   Fields:
+    constraints: Constraints applied to instance flexibility spreading and
+      selection.
     instanceSelectionLists: Named instance selections configuring properties
       that the group will use when creating new VMs.
     instanceSelections: Named instance selections configuring properties that
@@ -69423,9 +69494,22 @@ class InstanceGroupManagerInstanceFlexibilityPolicy(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  instanceSelectionLists = _messages.MessageField('InstanceSelectionListsValue', 1)
-  instanceSelections = _messages.MessageField('InstanceSelectionsValue', 2)
-  provisioningModelMix = _messages.MessageField('InstanceGroupManagerInstanceFlexibilityPolicyProvisioningModelMix', 3)
+  constraints = _messages.MessageField('InstanceGroupManagerInstanceFlexibilityPolicyConstraints', 1)
+  instanceSelectionLists = _messages.MessageField('InstanceSelectionListsValue', 2)
+  instanceSelections = _messages.MessageField('InstanceSelectionsValue', 3)
+  provisioningModelMix = _messages.MessageField('InstanceGroupManagerInstanceFlexibilityPolicyProvisioningModelMix', 4)
+
+
+class InstanceGroupManagerInstanceFlexibilityPolicyConstraints(_messages.Message):
+  r"""Constraints applied to instance flexibility spreading and selection.
+
+  Fields:
+    singleMachineType: When set to true, all instances in the group will be
+      provisioned with the exact same machine type, ensuring cluster
+      homogeneity across zones. Defaults to false.
+  """
+
+  singleMachineType = _messages.BooleanField(1)
 
 
 class InstanceGroupManagerInstanceFlexibilityPolicyInstanceSelection(_messages.Message):
@@ -73200,6 +73284,8 @@ class InstanceProperties(_messages.Message):
     attached to the VM.
 
     Values:
+      CMEK_ENCRYPTION: The given VM will use customer-managed encryption keys
+        for encryption of Local SSDs.
       EPHEMERAL_KEY_ENCRYPTION: The given VM will opt-in for using ephemeral
         key for encryption of Local SSDs. The Local SSDs will not be able to
         recover data in case of VM crash.
@@ -73210,9 +73296,10 @@ class InstanceProperties(_messages.Message):
         by the cloud infrastructure and the keys will be deleted when the VM
         is deleted.
     """
-    EPHEMERAL_KEY_ENCRYPTION = 0
-    LOCAL_SSD_ENCRYPTION_MODE_UNSPECIFIED = 1
-    STANDARD_ENCRYPTION = 2
+    CMEK_ENCRYPTION = 0
+    EPHEMERAL_KEY_ENCRYPTION = 1
+    LOCAL_SSD_ENCRYPTION_MODE_UNSPECIFIED = 2
+    STANDARD_ENCRYPTION = 3
 
   class PostKeyRevocationActionTypeValueValuesEnum(_messages.Enum):
     r"""PostKeyRevocationActionType of the instance.
@@ -84111,7 +84198,7 @@ class ManagedRulesetList(_messages.Message):
 
   Fields:
     id: A string attribute.
-    items: A ManagedRuleset attribute.
+    items: The list of managed rulesets.
     nextPageToken: A string attribute.
     warning: A WarningValue attribute.
   """
@@ -85208,6 +85295,8 @@ class Network(_messages.Message):
       internal addresses that are legal on this network. This range is aCIDR
       specification, for example:192.168.0.0/16. Provided by the client when
       the network is created.
+    additionalTags: Output only. [Output Only] Additional tags for this
+      resource.
     autoCreateSubnetworks: Must be set to create a VPC network. If not set, a
       legacy network is created.  When set to true, the VPC network is created
       in auto mode. When set to false, the VPC network is created in custom
@@ -85289,26 +85378,27 @@ class Network(_messages.Message):
     BEFORE_CLASSIC_FIREWALL = 1
 
   IPv4Range = _messages.StringField(1)
-  autoCreateSubnetworks = _messages.BooleanField(2)
-  creationTimestamp = _messages.StringField(3)
-  description = _messages.StringField(4)
-  enableUlaInternalIpv6 = _messages.BooleanField(5)
-  firewallPolicy = _messages.StringField(6)
-  gatewayIPv4 = _messages.StringField(7)
-  id = _messages.IntegerField(8, variant=_messages.Variant.UINT64)
-  internalIpv6Range = _messages.StringField(9)
-  kind = _messages.StringField(10, default='compute#network')
-  mtu = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-  name = _messages.StringField(12)
-  networkFirewallPolicyEnforcementOrder = _messages.EnumField('NetworkFirewallPolicyEnforcementOrderValueValuesEnum', 13)
-  networkProfile = _messages.StringField(14)
-  params = _messages.MessageField('NetworkParams', 15)
-  peerings = _messages.MessageField('NetworkPeering', 16, repeated=True)
-  region = _messages.StringField(17)
-  routingConfig = _messages.MessageField('NetworkRoutingConfig', 18)
-  selfLink = _messages.StringField(19)
-  selfLinkWithId = _messages.StringField(20)
-  subnetworks = _messages.StringField(21, repeated=True)
+  additionalTags = _messages.StringField(2, repeated=True)
+  autoCreateSubnetworks = _messages.BooleanField(3)
+  creationTimestamp = _messages.StringField(4)
+  description = _messages.StringField(5)
+  enableUlaInternalIpv6 = _messages.BooleanField(6)
+  firewallPolicy = _messages.StringField(7)
+  gatewayIPv4 = _messages.StringField(8)
+  id = _messages.IntegerField(9, variant=_messages.Variant.UINT64)
+  internalIpv6Range = _messages.StringField(10)
+  kind = _messages.StringField(11, default='compute#network')
+  mtu = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  name = _messages.StringField(13)
+  networkFirewallPolicyEnforcementOrder = _messages.EnumField('NetworkFirewallPolicyEnforcementOrderValueValuesEnum', 14)
+  networkProfile = _messages.StringField(15)
+  params = _messages.MessageField('NetworkParams', 16)
+  peerings = _messages.MessageField('NetworkPeering', 17, repeated=True)
+  region = _messages.StringField(18)
+  routingConfig = _messages.MessageField('NetworkRoutingConfig', 19)
+  selfLink = _messages.StringField(20)
+  selfLinkWithId = _messages.StringField(21)
+  subnetworks = _messages.StringField(22, repeated=True)
 
 
 class NetworkAttachment(_messages.Message):
@@ -109644,9 +109734,10 @@ class RouterNatRule(_messages.Message):
       match expressions for public NAT:  `inIpRange(destination.ip,
       '1.1.0.0/16') || inIpRange(destination.ip,      '2.2.0.0/16')`
       `destination.ip == '1.1.0.1' || destination.ip == '8.8.8.8'`  The
-      following example is a valid match expression for private NAT:
-      `nexthop.hub == '//networkconnectivity.googleapis.com/projects/my-
-      project/locations/global/hubs/hub-1'`
+      following examples are valid match expressions for private NAT:  (NAT
+      44) `nexthop.hub == '//networkconnectivity.googleapis.com/projects/my-
+      project/locations/global/hubs/hub-1'`  `nexthop.is_hybrid`  (NAT 64)
+      `isIPv6(source.ip)`
     ruleNumber: An integer uniquely identifying a rule in the list. The rule
       number must be a positive value between 0 and 65000, and must be unique
       among rules within a NAT.

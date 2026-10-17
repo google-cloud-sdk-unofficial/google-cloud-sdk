@@ -929,6 +929,10 @@ class Instance(_messages.Message):
       INITIALIZING: The instance is being created.
       SUSPENDING: The instance is suspending.
       SUSPENDED: The instance is suspended.
+      ORPHANED: The instance has no VM. An upgrade removed the original and
+        could not create its replacement; the data disk and any snapshots are
+        intact. Retry the upgrade to finish it, or roll the instance back to
+        the snapshot taken before it started.
     """
     STATE_UNSPECIFIED = 0
     STARTING = 1
@@ -941,6 +945,7 @@ class Instance(_messages.Message):
     INITIALIZING = 8
     SUSPENDING = 9
     SUSPENDED = 10
+    ORPHANED = 11
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class HealthInfoValue(_messages.Message):
@@ -1158,6 +1163,10 @@ class NetworkInterface(_messages.Message):
       Currently, only one access config, ONE_TO_ONE_NAT, is supported. If no
       accessConfigs specified, the instance will have an external internet
       access through an ephemeral external IP address.
+    internalIp: Optional. An internal IP address associated with this
+      instance. Specify an unused static internal IP address available to the
+      subnet this instance is in, or leave this field undefined to use an IP
+      from the subnet's ephemeral range.
     network: Optional. The name of the VPC that this VM instance is in.
       Format: `projects/{project_id}/global/networks/{network_id}`
     nicType: Optional. The type of vNIC to be used on this interface. This may
@@ -1181,9 +1190,10 @@ class NetworkInterface(_messages.Message):
     GVNIC = 2
 
   accessConfigs = _messages.MessageField('AccessConfig', 1, repeated=True)
-  network = _messages.StringField(2)
-  nicType = _messages.EnumField('NicTypeValueValuesEnum', 3)
-  subnet = _messages.StringField(4)
+  internalIp = _messages.StringField(2)
+  network = _messages.StringField(3)
+  nicType = _messages.EnumField('NicTypeValueValuesEnum', 4)
+  subnet = _messages.StringField(5)
 
 
 class NotebooksProjectsLocationsGetRequest(_messages.Message):

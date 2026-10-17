@@ -21,9 +21,9 @@ import textwrap
 from googlecloudsdk.api_lib.auth import external_account as auth_external_account
 from googlecloudsdk.api_lib.auth import service_account as auth_service_account
 from googlecloudsdk.api_lib.auth import util as auth_util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.auth import auth_util as command_auth_util
 from googlecloudsdk.command_lib.auth import flags as auth_flags
 from googlecloudsdk.command_lib.auth import workforce_login_config as workforce_login_config_util
@@ -249,7 +249,9 @@ class Login(base.Command):
             ' file which can be generated using the `gcloud iam'
             ' workforce-pools create-login-config` command.'
         ),
-        action=actions.StoreProperty(properties.VALUES.auth.login_config_file),
+        action=property_actions.StoreProperty(
+            properties.VALUES.auth.login_config_file
+        ),
     )
 
     auth_flags.AddRemoteLoginFlags(parser)

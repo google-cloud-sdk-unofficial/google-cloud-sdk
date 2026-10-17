@@ -35,6 +35,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.functions.v2.deploy import env_vars_util
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
@@ -1404,7 +1405,9 @@ def AddGracePeriodFlag(parser, object_to_shutdown='instances'):
           'specify a unit, seconds is assumed. For example, "10" is 10 '
           'seconds. Specify 0s to skip SIGTERM and force kill immediately. '
           'Leave unspecified or specify "default" to revert back to the '
-          'default value.'
+          'default value. This feature is in private preview and is only '
+          'available to allowlisted projects. Contact your account team or '
+          'support to get your project allowlisted.'
       ),
   )
 
@@ -1430,7 +1433,7 @@ def AddPlatformArg(parser, managed_only=False, anthos_only=False):
   parser.add_argument(
       '--platform',
       choices=choices,
-      action=actions.StoreProperty(properties.VALUES.run.platform),
+      action=property_actions.StoreProperty(properties.VALUES.run.platform),
       default=platforms.PLATFORM_MANAGED,
       hidden=True,
       help=(
@@ -2067,29 +2070,6 @@ without restating the rest of the sandbox configuration.
           help_str=(
               'Configure the identity given to the sandboxed container.'
               ' Defaults to `none`.'
-          ),
-      )
-  )
-  group.AddArgument(
-      base.Argument(
-          '--sandbox-allow-egress',
-          action=arg_parsers.StoreTrueFalseAction,
-          hidden=True,
-          help=(
-              'Allow outbound network traffic from the sandboxed container.'
-              ' Egress is disabled by default. Specify'
-              ' `--no-sandbox-allow-egress` to disable egress.'
-          ),
-      )
-  )
-  group.AddArgument(
-      base.Argument(
-          '--sandbox-tls-interception',
-          action=arg_parsers.StoreTrueFalseAction,
-          hidden=True,
-          help=(
-              'Enable TLS interception for outbound traffic from the sandboxed'
-              ' container. Egress must be enabled.'
           ),
       )
   )
@@ -3296,17 +3276,15 @@ def _PrependClientNameAndVersionChange(args, changes):
 _SANDBOX_FLAG_DESTS = (
     'sandbox',
     'sandbox_identity',
-    'sandbox_allow_egress',
-    'sandbox_tls_interception',
 )
 
 
 def _GetSandboxChanges(args, container_name=None):
   """Returns sandbox config changes for args, if any sandbox flag is set.
 
-  All four sandbox flags are folded into a single change so that the changer
-  can resolve them against each other and against the container's existing
-  sandbox configuration.
+  All sandbox flags are folded into a single change so that the changer can
+  resolve them against each other and against the container's existing sandbox
+  configuration.
 
   Args:
     args: The parsed args to read the sandbox flags from.
@@ -3319,8 +3297,6 @@ def _GetSandboxChanges(args, container_name=None):
       config_changes.ContainerSandboxChange(
           sandbox=getattr(args, 'sandbox', None),
           identity=getattr(args, 'sandbox_identity', None),
-          allow_egress=getattr(args, 'sandbox_allow_egress', None),
-          tls_interception=getattr(args, 'sandbox_tls_interception', None),
           container_name=container_name,
       )
   ]
@@ -5942,5 +5918,32 @@ def DevSyncTailLogsFlag(parser):
       help=(
           'Log tailing is enabled by default for developers. Setting this'
           ' flag to false disables automated log streaming.'
+      ),
+  )
+
+
+def DevSyncProxyFlag(parser):
+  return parser.add_argument(
+      '--proxy',
+      action='store_true',
+      default=True,
+      help=(
+          'Starts the Cloud Run proxy to connect locally to the private'
+          ' resource.'
+      ),
+  )
+
+
+def DevSyncProxyPortFlag(parser):
+  return parser.add_argument(
+      '--proxy-port',
+      type=arg_parsers.CustomFunctionValidator(
+          _PortValue,
+          'must be an integer between 1 and 65535, inclusive.',
+      ),
+      default=None,
+      help=(
+          'Local port number to expose the proxied instance or service.'
+          ' If not specified, it will be set to 8080.'
       ),
   )

@@ -2463,6 +2463,11 @@ class GoogleCloudApihubV1Api(_messages.Message):
       can be used when special handling is needed on client side for
       particular version of the API. Format is
       `projects/{project}/locations/{location}/apis/{api}/versions/{version}`
+    serviceType: Optional. The type of the service. This maps to the following
+      system defined attribute:
+      `projects/{project}/locations/{location}/attributes/system-service-type`
+      attribute. The cardinality of this attribute is 1. All values should be
+      from the list of allowed values defined for the attribute.
     sourceMetadata: Output only. The list of sources and metadata from the
       sources of the API resource.
     targetUser: Optional. The target users for the API. This maps to the
@@ -2529,11 +2534,12 @@ class GoogleCloudApihubV1Api(_messages.Message):
   name = _messages.StringField(13)
   owner = _messages.MessageField('GoogleCloudApihubV1Owner', 14)
   selectedVersion = _messages.StringField(15)
-  sourceMetadata = _messages.MessageField('GoogleCloudApihubV1SourceMetadata', 16, repeated=True)
-  targetUser = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 17)
-  team = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 18)
-  updateTime = _messages.StringField(19)
-  versions = _messages.StringField(20, repeated=True)
+  serviceType = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 16)
+  sourceMetadata = _messages.MessageField('GoogleCloudApihubV1SourceMetadata', 17, repeated=True)
+  targetUser = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 18)
+  team = _messages.MessageField('GoogleCloudApihubV1AttributeValues', 19)
+  updateTime = _messages.StringField(20)
+  versions = _messages.StringField(21, repeated=True)
 
 
 class GoogleCloudApihubV1ApiData(_messages.Message):

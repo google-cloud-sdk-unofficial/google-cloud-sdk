@@ -17,8 +17,8 @@
 
 
 import argparse
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers as calliope_arg_parsers
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
@@ -259,15 +259,17 @@ def AddStopGroupAsyncReplicationArgs(parser):
   scope_parser.add_argument(
       '--zone',
       completer=compute_completers.ZonesCompleter,
-      action=actions.StoreProperty(properties.VALUES.compute.zone),
-      help=help_text.format('Zone', compute_flags.ZONE_PROPERTY_EXPLANATION))
+      action=property_actions.StoreProperty(properties.VALUES.compute.zone),
+      help=help_text.format('Zone', compute_flags.ZONE_PROPERTY_EXPLANATION),
+  )
   scope_parser.add_argument(
       '--region',
       completer=compute_completers.RegionsCompleter,
-      action=actions.StoreProperty(properties.VALUES.compute.region),
+      action=property_actions.StoreProperty(properties.VALUES.compute.region),
       help=help_text.format(
-          'Region',
-          compute_flags.REGION_PROPERTY_EXPLANATION))
+          'Region', compute_flags.REGION_PROPERTY_EXPLANATION
+      ),
+  )
 
 
 def AddBulkCreateArgs(parser):
@@ -287,14 +289,17 @@ def AddBulkCreateArgs(parser):
   scope_parser.add_argument(
       '--zone',
       completer=compute_completers.ZonesCompleter,
-      action=actions.StoreProperty(properties.VALUES.compute.zone),
-      help=help_text.format('zone', compute_flags.ZONE_PROPERTY_EXPLANATION))
+      action=property_actions.StoreProperty(properties.VALUES.compute.zone),
+      help=help_text.format('zone', compute_flags.ZONE_PROPERTY_EXPLANATION),
+  )
   scope_parser.add_argument(
       '--region',
       completer=compute_completers.RegionsCompleter,
-      action=actions.StoreProperty(properties.VALUES.compute.region),
-      help=help_text.format('region',
-                            compute_flags.REGION_PROPERTY_EXPLANATION))
+      action=property_actions.StoreProperty(properties.VALUES.compute.region),
+      help=help_text.format(
+          'region', compute_flags.REGION_PROPERTY_EXPLANATION
+      ),
+  )
 
 
 def _ParseSnapshotGroupReplicaZones(value):
@@ -366,14 +371,17 @@ def AddBulkCreateArgsAlpha(parser):
   scope_parser.add_argument(
       '--zone',
       completer=compute_completers.ZonesCompleter,
-      action=actions.StoreProperty(properties.VALUES.compute.zone),
-      help=help_text.format('zone', compute_flags.ZONE_PROPERTY_EXPLANATION))
+      action=property_actions.StoreProperty(properties.VALUES.compute.zone),
+      help=help_text.format('zone', compute_flags.ZONE_PROPERTY_EXPLANATION),
+  )
   scope_parser.add_argument(
       '--region',
       completer=compute_completers.RegionsCompleter,
-      action=actions.StoreProperty(properties.VALUES.compute.region),
-      help=help_text.format('region',
-                            compute_flags.REGION_PROPERTY_EXPLANATION))
+      action=property_actions.StoreProperty(properties.VALUES.compute.region),
+      help=help_text.format(
+          'region', compute_flags.REGION_PROPERTY_EXPLANATION
+      ),
+  )
 
 
 def AddBulkCreateArgsBeta(parser: argparse.ArgumentParser) -> None:
@@ -393,7 +401,7 @@ def AddBulkCreateArgsBeta(parser: argparse.ArgumentParser) -> None:
   scope_parser.add_argument(
       '--zone',
       completer=compute_completers.ZonesCompleter,
-      action=actions.StoreProperty(properties.VALUES.compute.zone),
+      action=property_actions.StoreProperty(properties.VALUES.compute.zone),
       help=help_text.format(
           scope='zone', explanation=compute_flags.ZONE_PROPERTY_EXPLANATION
       ),
@@ -401,7 +409,7 @@ def AddBulkCreateArgsBeta(parser: argparse.ArgumentParser) -> None:
   scope_parser.add_argument(
       '--region',
       completer=compute_completers.RegionsCompleter,
-      action=actions.StoreProperty(properties.VALUES.compute.region),
+      action=property_actions.StoreProperty(properties.VALUES.compute.region),
       help=help_text.format(
           scope='region', explanation=compute_flags.REGION_PROPERTY_EXPLANATION
       ),

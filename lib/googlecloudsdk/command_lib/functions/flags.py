@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.eventarc import flags as eventarc_flags
@@ -332,7 +333,9 @@ def AddGen2Flag(
   parser.add_argument(
       '--gen2',
       default=False,
-      action=actions.StoreBooleanProperty(properties.VALUES.functions.gen2),
+      action=property_actions.StoreBooleanProperty(
+          properties.VALUES.functions.gen2
+      ),
       help=help_text,
       hidden=hidden,
   )
@@ -898,7 +901,7 @@ def AddRegionFlag(parser, help_text):
       '--region',
       help=help_text,
       completer=LocationsCompleter,
-      action=actions.StoreProperty(properties.VALUES.functions.region),
+      action=property_actions.StoreProperty(properties.VALUES.functions.region),
   )
 
 

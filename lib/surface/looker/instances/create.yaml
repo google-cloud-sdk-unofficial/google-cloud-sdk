@@ -390,6 +390,25 @@
           required: false
           help_text: |
             If specified, accelerated security patch will be enabled, otherwise it will be disabled by default.
+    # Group for Auth Type
+    - group:
+        required: false
+        release_tracks: [ALPHA]
+        help_text: |
+          Auth Type - Authentication configuration for the Looker instance.
+        params:
+        - api_field: instance.authType.workforceAuthEnabled
+          arg_name: workforce-auth-enabled
+          type: bool
+          required: false
+          help_text: |
+            This specifies whether Workforce auth is enabled on the Looker instance.
+        - api_field: instance.authType.googleAuthEnabled
+          arg_name: google-auth-enabled
+          type: bool
+          required: false
+          help_text: |
+            This specifies whether Google auth is enabled on the Looker instance.
 
   async:
     collection: looker.projects.locations.operations

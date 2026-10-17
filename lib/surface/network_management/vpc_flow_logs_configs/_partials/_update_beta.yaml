@@ -177,6 +177,35 @@
     - group:
         mutex: true
         help_text: |-
+          Arguments for connection logging.
+        params:
+        - arg_name: connection-logging
+          api_field: vpcFlowLogsConfig.connectionLogging
+          required: false
+          help_text: |-
+            Whether to enable connection logging. Default value is
+            CONNECTION_LOGGING_DISABLED when unspecified. Not valid for VPN Tunnel
+            or Interconnect Attachment targets.
+          choices:
+          - arg_value: enabled
+            enum_value: CONNECTION_LOGGING_ENABLED
+            help_text: |-
+              When enabled, connection logs are generated for connection attempts.
+          - arg_value: disabled
+            enum_value: CONNECTION_LOGGING_DISABLED
+            help_text: |-
+              When disabled, connection logging is disabled.
+          - arg_value: connection-logging-enabled
+            enum_value: CONNECTION_LOGGING_ENABLED
+            help_text: |-
+              When CONNECTION_LOGGING_ENABLED, connection logs are generated for connection attempts.
+          - arg_value: connection-logging-disabled
+            enum_value: CONNECTION_LOGGING_DISABLED
+            help_text: |-
+              When CONNECTION_LOGGING_DISABLED, connection logging is disabled.
+    - group:
+        mutex: true
+        help_text: |-
           Arguments for the target resource.
         params:
         - arg_name: network

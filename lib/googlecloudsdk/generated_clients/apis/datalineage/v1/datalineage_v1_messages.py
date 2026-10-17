@@ -1136,6 +1136,10 @@ class GoogleCloudDatacatalogLineageV1SearchLineageStreamingRequestSearchFilters(
       retrieve. If unspecified, all dependency types are returned.
     entitySet: Optional. Entity set restriction. If unspecified, the method
       returns all entities.
+    projects: Optional. Projects to restrict lineage links to. Callers can
+      provide project IDs (for example, `projects/my-project`) or project
+      numbers (for example, `projects/123456789`). If unspecified, lineage is
+      returned from all projects.
     timeRange: Optional. Time interval to search for lineage. If unspecified,
       all lineage is returned. Currently, at most one of `start_time` and
       `end_time` can be set.
@@ -1168,7 +1172,8 @@ class GoogleCloudDatacatalogLineageV1SearchLineageStreamingRequestSearchFilters(
 
   dependencyTypes = _messages.EnumField('DependencyTypesValueListEntryValuesEnum', 1, repeated=True)
   entitySet = _messages.EnumField('EntitySetValueValuesEnum', 2)
-  timeRange = _messages.MessageField('GoogleTypeInterval', 3)
+  projects = _messages.StringField(3, repeated=True)
+  timeRange = _messages.MessageField('GoogleTypeInterval', 4)
 
 
 class GoogleCloudDatacatalogLineageV1SearchLineageStreamingRequestSearchLimits(_messages.Message):

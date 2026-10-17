@@ -22,14 +22,18 @@ from googlecloudsdk.core import log
 API_VERSION_DEFAULT = 'v1'
 
 
-def GetClient(release_track):
+def GetClient(release_track, location=None):
   """Returns the Looker client for backups."""
-  return apis.GetClientInstance('looker', utils.VERSION_MAP[release_track])
+  return apis.GetClientInstance(
+      'looker', utils.VERSION_MAP[release_track], location=location
+  )
 
 
-def GetService(release_track):
+def GetService(release_track, location=None):
   """Returns the service for interacting with the Backups service."""
-  return GetClient(release_track).projects_locations_instances_backups
+  return GetClient(
+      release_track, location=location
+  ).projects_locations_instances_backups
 
 
 def GetMessages(release_track):
@@ -37,12 +41,13 @@ def GetMessages(release_track):
   return apis.GetMessagesModule('looker', utils.VERSION_MAP[release_track])
 
 
-def CreateBackup(parent, release_track):
+def CreateBackup(parent, release_track, location=None):
   """Creates the Backup with the given parent.
 
   Args:
     parent: the instance where the backup will be created, a string.
     release_track: the release track to use for the API call.
+    location: the region of the instance, a string.
 
   Returns:
     a long running Operation
@@ -50,7 +55,7 @@ def CreateBackup(parent, release_track):
   log.status.Print(
       'Creating backup for instance {parent}'.format(parent=parent)
   )
-  return GetService(release_track).Create(
+  return GetService(release_track, location=location).Create(
       GetMessages(
           release_track
       ).LookerProjectsLocationsInstancesBackupsCreateRequest(parent=parent)

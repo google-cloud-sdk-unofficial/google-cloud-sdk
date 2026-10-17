@@ -16,10 +16,10 @@
 
 
 from googlecloudsdk.api_lib.dataflow import apis
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.command_lib.dataflow import flags
 from googlecloudsdk.command_lib.dataflow import job_utils
@@ -63,9 +63,11 @@ def _CommonArgs(parser):
 
   parser.add_argument(
       '--enable-streaming-engine',
-      action=actions.StoreBooleanProperty(
-          properties.VALUES.dataflow.enable_streaming_engine),
-      help='Enabling Streaming Engine for the streaming job.')
+      action=property_actions.StoreBooleanProperty(
+          properties.VALUES.dataflow.enable_streaming_engine
+      ),
+      help='Enabling Streaming Engine for the streaming job.',
+  )
 
   parser.add_argument(
       '--additional-experiments',

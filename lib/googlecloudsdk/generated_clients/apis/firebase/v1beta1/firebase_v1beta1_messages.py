@@ -187,7 +187,7 @@ class AndroidApp(_messages.Message):
       PROJECT_IDENTIFIER in any response body will be the `ProjectId`. *
       APP_ID: the globally unique, Firebase-assigned identifier for the App
       (see [`appId`](../projects.androidApps#AndroidApp.FIELDS.app_id)).
-    oauthLinks: List of Oauth Clients linked with the Firebase App.
+    oauthLinks: Optional. List of Oauth Clients linked with the Firebase App.
     packageName: Immutable. The canonical package name of the Android app as
       would appear in the Google Play Developer Console.
     projectId: Output only. Immutable. A user-assigned unique identifier of
@@ -387,7 +387,7 @@ class FirebaseAppInfo(_messages.Message):
       Its contents should be treated as opaque, as the native identifier
       format may change as platforms evolve. This string is only unique within
       a `FirebaseProject` and its associated Apps.
-    oauthLinks: List of Oauth Clients linked with the Firebase App.
+    oauthLinks: Optional. List of Oauth Clients linked with the Firebase App.
     platform: The platform of the Firebase App.
     state: Output only. The lifecycle state of the App.
   """
@@ -1479,7 +1479,7 @@ class IosApp(_messages.Message):
       PROJECT_IDENTIFIER in any response body will be the `ProjectId`. *
       APP_ID: the globally unique, Firebase-assigned identifier for the App
       (see [`appId`](../projects.iosApps#IosApp.FIELDS.app_id)).
-    oauthLinks: List of Oauth Clients linked with the Firebase App.
+    oauthLinks: Optional. List of Oauth Clients linked with the Firebase App.
     projectId: Output only. Immutable. A user-assigned unique identifier of
       the parent FirebaseProject for the `IosApp`.
     state: Output only. The lifecycle state of the App.
@@ -2390,7 +2390,7 @@ class WebApp(_messages.Message):
       PROJECT_IDENTIFIER in any response body will be the `ProjectId`. *
       APP_ID: the globally unique, Firebase-assigned identifier for the App
       (see [`appId`](../projects.webApps#WebApp.FIELDS.app_id)).
-    oauthLinks: List of Oauth Clients linked with the Firebase App.
+    oauthLinks: Optional. List of Oauth Clients linked with the Firebase App.
     projectId: Output only. Immutable. A user-assigned unique identifier of
       the parent FirebaseProject for the `WebApp`.
     state: Output only. The lifecycle state of the App.

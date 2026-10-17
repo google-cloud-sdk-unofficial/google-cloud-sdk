@@ -225,6 +225,62 @@ class DataplexOrganizationsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class DataplexProjectsLocationsAgentTasksGetIamPolicyRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsAgentTasksGetIamPolicyRequest object.
+
+  Fields:
+    options_requestedPolicyVersion: Optional. The maximum policy version that
+      will be used to format the policy.Valid values are 0, 1, and 3. Requests
+      specifying an invalid value will be rejected.Requests for policies with
+      any conditional role bindings must specify version 3. Policies with no
+      conditional role bindings may specify any valid value or leave the field
+      unset.The policy in the response might use the policy version that you
+      specified, or it might use a lower policy version. For example, if you
+      specify version 3, but the policy has no conditional role bindings, the
+      response uses version 1.To learn which resources support conditions in
+      their IAM policies, see the IAM documentation
+      (https://cloud.google.com/iam/help/conditions/resource-policies).
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See Resource names (https://cloud.google.com/apis/design/resource_names)
+      for the appropriate value for this field.
+  """
+
+  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  resource = _messages.StringField(2, required=True)
+
+
+class DataplexProjectsLocationsAgentTasksSetIamPolicyRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsAgentTasksSetIamPolicyRequest object.
+
+  Fields:
+    googleIamV1SetIamPolicyRequest: A GoogleIamV1SetIamPolicyRequest resource
+      to be passed as the request body.
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See Resource names (https://cloud.google.com/apis/design/resource_names)
+      for the appropriate value for this field.
+  """
+
+  googleIamV1SetIamPolicyRequest = _messages.MessageField('GoogleIamV1SetIamPolicyRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
+class DataplexProjectsLocationsAgentTasksTestIamPermissionsRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsAgentTasksTestIamPermissionsRequest object.
+
+  Fields:
+    googleIamV1TestIamPermissionsRequest: A
+      GoogleIamV1TestIamPermissionsRequest resource to be passed as the
+      request body.
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See Resource names
+      (https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
 class DataplexProjectsLocationsAspectTypesCreateRequest(_messages.Message):
   r"""A DataplexProjectsLocationsAspectTypesCreateRequest object.
 
@@ -5527,15 +5583,12 @@ class GoogleCloudDataplexV1DataDiscoverySpecStorageConfig(_messages.Message):
       object names. For BigQuery dataset assets, these patterns are
       interpreted as patterns to match table names.
     jsonOptions: Optional. Configuration for JSON data.
-    unstructuredDataOptions: Optional. Specifies configuration for
-      unstructured data discovery.
   """
 
   csvOptions = _messages.MessageField('GoogleCloudDataplexV1DataDiscoverySpecStorageConfigCsvOptions', 1)
   excludePatterns = _messages.StringField(2, repeated=True)
   includePatterns = _messages.StringField(3, repeated=True)
   jsonOptions = _messages.MessageField('GoogleCloudDataplexV1DataDiscoverySpecStorageConfigJsonOptions', 4)
-  unstructuredDataOptions = _messages.MessageField('GoogleCloudDataplexV1DataDiscoverySpecStorageConfigUnstructuredDataOptions', 5)
 
 
 class GoogleCloudDataplexV1DataDiscoverySpecStorageConfigCsvOptions(_messages.Message):
@@ -5575,19 +5628,6 @@ class GoogleCloudDataplexV1DataDiscoverySpecStorageConfigJsonOptions(_messages.M
 
   encoding = _messages.StringField(1)
   typeInferenceDisabled = _messages.BooleanField(2)
-
-
-class GoogleCloudDataplexV1DataDiscoverySpecStorageConfigUnstructuredDataOptions(_messages.Message):
-  r"""Describes options for unstructured data discovery.
-
-  Fields:
-    globalEndpointEnabled: Optional. Whether to use the global model endpoint.
-    semanticInferenceEnabled: Optional. Specifies whether deeper semantic
-      inference over the objects' contents using GenAI is enabled.
-  """
-
-  globalEndpointEnabled = _messages.BooleanField(1)
-  semanticInferenceEnabled = _messages.BooleanField(2)
 
 
 class GoogleCloudDataplexV1DataDocumentationResult(_messages.Message):
@@ -7444,10 +7484,6 @@ class GoogleCloudDataplexV1DataScan(_messages.Message):
     uid: Output only. System generated globally unique ID for the scan. This
       ID will be different if the scan is deleted and re-created with the same
       name.
-    unstructuredDataProfileResult: Output only. The result of an unstructured
-      data profile scan.
-    unstructuredDataProfileSpec: Optional. Settings for an unstructured data
-      profile scan.
     updateTime: Output only. The time when the scan was last updated.
   """
 
@@ -7476,14 +7512,12 @@ class GoogleCloudDataplexV1DataScan(_messages.Message):
       DATA_PROFILE: Data profile scan.
       DATA_DISCOVERY: Data discovery scan.
       DATA_DOCUMENTATION: Data documentation scan.
-      UNSTRUCTURED_DATA_PROFILE: Unstructured data profile scan.
     """
     DATA_SCAN_TYPE_UNSPECIFIED = 0
     DATA_QUALITY = 1
     DATA_PROFILE = 2
     DATA_DISCOVERY = 3
     DATA_DOCUMENTATION = 4
-    UNSTRUCTURED_DATA_PROFILE = 5
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -7529,9 +7563,7 @@ class GoogleCloudDataplexV1DataScan(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 18)
   type = _messages.EnumField('TypeValueValuesEnum', 19)
   uid = _messages.StringField(20)
-  unstructuredDataProfileResult = _messages.MessageField('GoogleCloudDataplexV1UnstructuredDataProfileResult', 21)
-  unstructuredDataProfileSpec = _messages.MessageField('GoogleCloudDataplexV1UnstructuredDataProfileSpec', 22)
-  updateTime = _messages.StringField(23)
+  updateTime = _messages.StringField(21)
 
 
 class GoogleCloudDataplexV1DataScanCatalogPublishingStatus(_messages.Message):
@@ -7985,10 +8017,6 @@ class GoogleCloudDataplexV1DataScanJob(_messages.Message):
     state: Output only. Execution state for the DataScanJob.
     type: Output only. The type of the parent DataScan.
     uid: Output only. System generated globally unique ID for the DataScanJob.
-    unstructuredDataProfileResult: Output only. The result of an unstructured
-      data profile scan.
-    unstructuredDataProfileSpec: Output only. Settings for an unstructured
-      data profile scan.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -8022,14 +8050,12 @@ class GoogleCloudDataplexV1DataScanJob(_messages.Message):
       DATA_PROFILE: Data profile scan.
       DATA_DISCOVERY: Data discovery scan.
       DATA_DOCUMENTATION: Data documentation scan.
-      UNSTRUCTURED_DATA_PROFILE: Unstructured data profile scan.
     """
     DATA_SCAN_TYPE_UNSPECIFIED = 0
     DATA_QUALITY = 1
     DATA_PROFILE = 2
     DATA_DISCOVERY = 3
     DATA_DOCUMENTATION = 4
-    UNSTRUCTURED_DATA_PROFILE = 5
 
   createTime = _messages.StringField(1)
   dataDiscoveryResult = _messages.MessageField('GoogleCloudDataplexV1DataDiscoveryResult', 2)
@@ -8048,8 +8074,6 @@ class GoogleCloudDataplexV1DataScanJob(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 15)
   type = _messages.EnumField('TypeValueValuesEnum', 16)
   uid = _messages.StringField(17)
-  unstructuredDataProfileResult = _messages.MessageField('GoogleCloudDataplexV1UnstructuredDataProfileResult', 18)
-  unstructuredDataProfileSpec = _messages.MessageField('GoogleCloudDataplexV1UnstructuredDataProfileSpec', 19)
 
 
 class GoogleCloudDataplexV1DataSource(_messages.Message):
@@ -9397,195 +9421,6 @@ class GoogleCloudDataplexV1GovernanceEventEntity(_messages.Message):
 
   entity = _messages.StringField(1)
   entityType = _messages.EnumField('EntityTypeValueValuesEnum', 2)
-
-
-class GoogleCloudDataplexV1GraphProfile(_messages.Message):
-  r"""Contains the strict structure for graph-profile for semantic inference
-  scan result.
-
-  Fields:
-    edgeTypes: Output only. Edge types.
-    nodeTypes: Output only. Node types.
-  """
-
-  edgeTypes = _messages.MessageField('GoogleCloudDataplexV1GraphProfileEdgeType', 1, repeated=True)
-  nodeTypes = _messages.MessageField('GoogleCloudDataplexV1GraphProfileNodeType', 2, repeated=True)
-
-
-class GoogleCloudDataplexV1GraphProfileEdgeType(_messages.Message):
-  r"""Represents a type of edge (relationship) in the graph.
-
-  Fields:
-    description: Output only. Description of the edge type.
-    extractionHints: Output only. Extraction hints for the edge.
-    fields: Output only. Fields of the edge type.
-    foreignKeys: Output only. Defines the Foreign Key constraints for the
-      edge.
-    name: Output only. Name of the edge type.
-    sourceNodeType: Output only. Source node type.
-    targetNodeType: Output only. Target node type.
-  """
-
-  description = _messages.StringField(1)
-  extractionHints = _messages.MessageField('GoogleCloudDataplexV1GraphProfileEdgeTypeExtractionHints', 2)
-  fields = _messages.MessageField('GoogleCloudDataplexV1GraphProfileField', 3, repeated=True)
-  foreignKeys = _messages.MessageField('GoogleCloudDataplexV1GraphProfileEdgeTypeForeignKey', 4, repeated=True)
-  name = _messages.StringField(5)
-  sourceNodeType = _messages.StringField(6)
-  targetNodeType = _messages.StringField(7)
-
-
-class GoogleCloudDataplexV1GraphProfileEdgeTypeExtractionHints(_messages.Message):
-  r"""Extraction hints (edge-level).
-
-  Fields:
-    cardinality: Output only. Expected connectivity topology and bounds of
-      this relationship. Format: "Topology - Description" Example: "1:N - One
-      company can have multiple financial reports."
-  """
-
-  cardinality = _messages.StringField(1)
-
-
-class GoogleCloudDataplexV1GraphProfileEdgeTypeForeignKey(_messages.Message):
-  r"""Represents a foreign key constraint.
-
-  Fields:
-    description: Output only. Description of the foreign key.
-    fieldMappings: Output only. Field Mappings. Mappings between local fields
-      and the fields they reference in the referenced node type.
-    name: Output only. Name of the foreign key constraint.
-    referencedNodeType: Output only. The node type this constraint references.
-  """
-
-  description = _messages.StringField(1)
-  fieldMappings = _messages.MessageField('GoogleCloudDataplexV1GraphProfileEdgeTypeForeignKeyFieldMapping', 2, repeated=True)
-  name = _messages.StringField(3)
-  referencedNodeType = _messages.StringField(4)
-
-
-class GoogleCloudDataplexV1GraphProfileEdgeTypeForeignKeyFieldMapping(_messages.Message):
-  r"""Maps a local field to a referenced field.
-
-  Fields:
-    field: Output only. Local field name forming part of the foreign key.
-    referencedField: Output only. Field name in the referenced node type.
-  """
-
-  field = _messages.StringField(1)
-  referencedField = _messages.StringField(2)
-
-
-class GoogleCloudDataplexV1GraphProfileField(_messages.Message):
-  r"""Represents a field in a node or edge type.
-
-  Enums:
-    MetadataTypeValueValuesEnum: Output only. The mapped metadata type.
-    ModeValueValuesEnum: Output only. The mode of the field.
-
-  Fields:
-    dataType: Output only. The data type of the field, e.g., STRING, INTEGER,
-      DATE.
-    description: Output only. Description of the field.
-    extractionHints: Output only. Extraction hints for the field.
-    fields: Output only. Sub-fields of this field (for STRUCT types).
-    metadataType: Output only. The mapped metadata type.
-    mode: Output only. The mode of the field.
-    name: Output only. Name of the field.
-  """
-
-  class MetadataTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The mapped metadata type.
-
-    Values:
-      METADATA_TYPE_UNSPECIFIED: Unspecified metadata type.
-      BOOLEAN: Boolean type.
-      NUMBER: Numeric type.
-      STRING: String type.
-      BYTES: Bytes type.
-      DATETIME: Date and time type.
-      TIMESTAMP: Timestamp type.
-      GEOSPATIAL: Geospatial type.
-      STRUCT: Struct (record) type.
-      OTHER: Other types not covered above.
-    """
-    METADATA_TYPE_UNSPECIFIED = 0
-    BOOLEAN = 1
-    NUMBER = 2
-    STRING = 3
-    BYTES = 4
-    DATETIME = 5
-    TIMESTAMP = 6
-    GEOSPATIAL = 7
-    STRUCT = 8
-    OTHER = 9
-
-  class ModeValueValuesEnum(_messages.Enum):
-    r"""Output only. The mode of the field.
-
-    Values:
-      MODE_UNSPECIFIED: Unspecified mode.
-      NULLABLE: Field can be null.
-      REPEATED: Field can be repeated.
-      REQUIRED: Field is required.
-    """
-    MODE_UNSPECIFIED = 0
-    NULLABLE = 1
-    REPEATED = 2
-    REQUIRED = 3
-
-  dataType = _messages.StringField(1)
-  description = _messages.StringField(2)
-  extractionHints = _messages.MessageField('GoogleCloudDataplexV1GraphProfileFieldExtractionHints', 3)
-  fields = _messages.MessageField('GoogleCloudDataplexV1GraphProfileField', 4, repeated=True)
-  metadataType = _messages.EnumField('MetadataTypeValueValuesEnum', 5)
-  mode = _messages.EnumField('ModeValueValuesEnum', 6)
-  name = _messages.StringField(7)
-
-
-class GoogleCloudDataplexV1GraphProfileFieldExtractionHints(_messages.Message):
-  r"""Extraction hints (field-level).
-
-  Fields:
-    normalization: Output only. Standardizes extracted data (e.g., to ISO
-      3166-1 alpha-2).
-    synthesis: Output only. Generates value from other data instead of direct
-      extraction (e.g., hashing).
-  """
-
-  normalization = _messages.StringField(1)
-  synthesis = _messages.StringField(2)
-
-
-class GoogleCloudDataplexV1GraphProfileNodeType(_messages.Message):
-  r"""Represents a type of node in the graph.
-
-  Fields:
-    description: Output only. Description of the node type.
-    extractionHints: Output only. Extraction hints for the node.
-    fields: Output only. Fields of the node type.
-    name: Output only. Name of the node type.
-    primaryKeys: Output only. Field names forming the primary keys. The order
-      in this array defines the key's ordinal positions for composite keys.
-  """
-
-  description = _messages.StringField(1)
-  extractionHints = _messages.MessageField('GoogleCloudDataplexV1GraphProfileNodeTypeExtractionHints', 2)
-  fields = _messages.MessageField('GoogleCloudDataplexV1GraphProfileField', 3, repeated=True)
-  name = _messages.StringField(4)
-  primaryKeys = _messages.StringField(5, repeated=True)
-
-
-class GoogleCloudDataplexV1GraphProfileNodeTypeExtractionHints(_messages.Message):
-  r"""Extraction hints (node-level).
-
-  Fields:
-    cardinality: Output only. Expected occurrence frequency of this node type
-      within a document. Format: "Bounds - Description" Example: "0:N - A
-      document may contain multiple people names."
-  """
-
-  cardinality = _messages.StringField(1)
 
 
 class GoogleCloudDataplexV1ImportItem(_messages.Message):
@@ -11059,11 +10894,13 @@ class GoogleCloudDataplexV1QueryCatalogRequest(_messages.Message):
       are also limited to 10 MB.
     query: GoogleSQL query to execute.
     scopes: Optional. One "organizations/" or multiple "projects/". Providing
-      a mixture, or more than one org is an error.Defaults to the org of the
-      project in the "name" if empty.
+      a mixture, or more than one org is an error.Defaults to the project in
+      the "name" if empty.
     timeout: Optional. The amount of time, to wait for the query before
       returning. If the query takes longer, results can be fetched by another
-      call with the referenceId provided.Default 10s, max 30s.
+      call with the referenceId provided.Defaults to 10s. Must be between 0s
+      and 200s; a value outside that range is rejected with an
+      INVALID_ARGUMENT error.
   """
 
   maxResults = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -12214,38 +12051,6 @@ class GoogleCloudDataplexV1TriggerSchedule(_messages.Message):
   cron = _messages.StringField(1)
 
 
-class GoogleCloudDataplexV1UnstructuredDataProfileResult(_messages.Message):
-  r"""Contains the result of an unstructured data profile scan.
-
-  Fields:
-    description: Output only. The inferred description.
-    graphProfile: Output only. The inferred graph profile.
-    partialFailureMessage: Output only. Optional message for partial failures
-      (e.g. node type extraction failed).
-  """
-
-  description = _messages.StringField(1)
-  graphProfile = _messages.MessageField('GoogleCloudDataplexV1GraphProfile', 2)
-  partialFailureMessage = _messages.StringField(3)
-
-
-class GoogleCloudDataplexV1UnstructuredDataProfileSpec(_messages.Message):
-  r"""Contains the specification for an unstructured data profile scan.
-
-  Fields:
-    customizedPrompt: Optional. Customized prompt for unstructured data
-      profile. The field will be used as part of the prompt, could be some
-      instruction, specifying skill, or specific area to focus.
-    globalEndpointEnabled: Optional. Whether to use the global model.
-    graphProfilePublishingEnabled: Optional. Whether to publish graph-profile
-      as aspect on the catalog entry.
-  """
-
-  customizedPrompt = _messages.StringField(1)
-  globalEndpointEnabled = _messages.BooleanField(2)
-  graphProfilePublishingEnabled = _messages.BooleanField(3)
-
-
 class GoogleCloudDataplexV1UpdateEntryRequest(_messages.Message):
   r"""Update Entry request.
 
@@ -13197,6 +13002,8 @@ encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
 encoding.AddCustomJsonFieldMapping(
     DataplexOrganizationsLocationsEncryptionConfigsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
+encoding.AddCustomJsonFieldMapping(
+    DataplexProjectsLocationsAgentTasksGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(
     DataplexProjectsLocationsAspectTypesGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(

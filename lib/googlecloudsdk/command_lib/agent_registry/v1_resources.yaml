@@ -90,3 +90,45 @@ projects_locations_services:
     attribute_name: service
     help: The service id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_ai_applications:
+  name: aiApplication
+  plural_name: aiApplications
+  collection: agentregistry.projects.locations.aiApplications
+  attributes:
+  - *project
+  - *location
+  - &aiApplication
+    parameter_name: aiApplicationsId
+    attribute_name: ai_application
+    help: The aiApplication id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_ai_applications_agents:
+  name: agent
+  plural_name: agents
+  collection: agentregistry.projects.locations.aiApplications.agents
+  attributes:
+  - *project
+  - *location
+  - *aiApplication
+  - *agent
+  disable_auto_completers: false
+projects_locations_ai_applications_endpoints:
+  name: endpoint
+  plural_name: endpoints
+  collection: agentregistry.projects.locations.aiApplications.endpoints
+  attributes:
+  - *project
+  - *location
+  - *aiApplication
+  - *endpoint
+  disable_auto_completers: false
+projects_locations_ai_applications_mcp_servers:
+  name: mcpServer
+  plural_name: mcpServers
+  collection: agentregistry.projects.locations.aiApplications.mcpServers
+  attributes:
+  - *project
+  - *location
+  - *aiApplication
+  - *mcpServer
+  disable_auto_completers: false

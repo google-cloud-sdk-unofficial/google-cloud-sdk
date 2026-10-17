@@ -16,9 +16,9 @@
 """
 
 from googlecloudsdk.api_lib.dataflow import apis
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.command_lib.dataflow import flags
 from googlecloudsdk.core import properties
@@ -92,9 +92,11 @@ class Run(base.Command):
 
     parser.add_argument(
         '--disable-public-ips',
-        action=actions.StoreBooleanProperty(
-            properties.VALUES.dataflow.disable_public_ips),
-        help='Cloud Dataflow workers must not use public IP addresses.')
+        action=property_actions.StoreBooleanProperty(
+            properties.VALUES.dataflow.disable_public_ips
+        ),
+        help='Cloud Dataflow workers must not use public IP addresses.',
+    )
 
     parser.add_argument(
         '--num-workers', type=int, help='Initial number of workers to use.')
@@ -146,9 +148,11 @@ class Run(base.Command):
 
     parser.add_argument(
         '--enable-streaming-engine',
-        action=actions.StoreBooleanProperty(
-            properties.VALUES.dataflow.enable_streaming_engine),
-        help='Enabling Streaming Engine for the streaming job.')
+        action=property_actions.StoreBooleanProperty(
+            properties.VALUES.dataflow.enable_streaming_engine
+        ),
+        help='Enabling Streaming Engine for the streaming job.',
+    )
 
     parser.add_argument(
         '--additional-experiments',

@@ -1611,6 +1611,7 @@ class Rollout(_messages.Message):
       ROLLOUT_STATE_CANCELLING: Rollout is being canceled.
       ROLLOUT_STATE_RESUMING: Rollout is being resumed.
       ROLLOUT_STATE_PAUSING: Rollout is being paused.
+      ROLLOUT_STATE_AWAITING_APPROVAL: Rollout is awaiting manual approval.
     """
     ROLLOUT_STATE_UNSPECIFIED = 0
     ROLLOUT_STATE_RUNNING = 1
@@ -1622,6 +1623,7 @@ class Rollout(_messages.Message):
     ROLLOUT_STATE_CANCELLING = 7
     ROLLOUT_STATE_RESUMING = 8
     ROLLOUT_STATE_PAUSING = 9
+    ROLLOUT_STATE_AWAITING_APPROVAL = 10
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):

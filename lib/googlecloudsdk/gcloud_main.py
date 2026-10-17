@@ -227,6 +227,9 @@ def main(gcloud_cli=None, credential_providers=None):
   with creds_context_managers.CredentialProvidersManager(credential_providers):
     try:
       if payload_str and exec_mode not in ('bootstrap', 'bootstrap-fallback'):
+        # Remove GOCLOUD_PAYLOAD after consuming it so child gcloud invocations
+        # do not inherit and re-execute the parent command's payload.
+        encoding.SetEncodedValue(os.environ, 'GOCLOUD_PAYLOAD', None)
         gcloud_cli.ExecutePayload(payload_str)
       else:
         gcloud_cli.Execute()

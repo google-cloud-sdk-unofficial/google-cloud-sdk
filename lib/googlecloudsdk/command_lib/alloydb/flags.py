@@ -179,29 +179,39 @@ def AddInstance(parser):
   parser.add_argument('instance', type=str, help='AlloyDB instance ID')
 
 
-def AddInstanceType(parser, required=True):
+def AddInstanceType(parser, required=True, release_track=base.ReleaseTrack.GA):
   """Adds an --instance-type flag to parser.
 
   Args:
     parser: argparse.Parser: Parser object for command line inputs.
     required: Whether or not --instance-type is required.
+    release_track: ReleaseTrack, Release track of the command being called.
   """
+  choices = {
+      'PRIMARY': 'PRIMARY instances support read and write operations.',
+      'READ_POOL': (
+          'READ_POOL instances support read operations only. Each '
+          'read pool instance consists of one or more homogeneous '
+          'nodes. '
+          '  * Read pool of size 1 can only have zonal availability. '
+          '  * Read pools with node count of 2 or more can have  '
+          '    regional availability (nodes are present in 2 or  '
+          '    more zones in a region).'
+      ),
+  }
+  hidden_choices = []
+  if release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+    choices['AGENT_POOL'] = (
+        'AGENT_POOL instances are serverless, auto-scaling read-only nodes. '
+        'Only available if agent mode is enabled in the cluster.'
+    )
+    hidden_choices.append('AGENT_POOL')
   parser.add_argument(
       '--instance-type',
       type=str,
       required=required,
-      choices={
-          'PRIMARY': 'PRIMARY instances support read and write operations.',
-          'READ_POOL': (
-              'READ_POOL instances support read operations only. Each '
-              'read pool instance consists of one or more homogeneous '
-              'nodes. '
-              '  * Read pool of size 1 can only have zonal availability. '
-              '  * Read pools with node count of 2 or more can have  '
-              '    regional availability (nodes are present in 2 or  '
-              '    more zones in a region).'
-          ),
-      },
+      choices=choices,
+      hidden_choices=hidden_choices,
       help='Specifies instance type.',
   )
 
@@ -2750,5 +2760,29 @@ def AddTargetInstances(parser, required=True):
           'For example,'
           ' `--target-instances=projects/my-project/locations/us-central1/clusters/my-cluster/instances/my-instance`.'
           'For WRITE endpoint, only one target instance is allowed.'
+      ),
+  )
+
+
+def AddAgentPoolFlags(parser):
+  """Adds agent pool configuration flags to parser."""
+  parser.add_argument(
+      '--agent-pool-min-size',
+      type=int,
+      required=False,
+      hidden=True,
+      help=(
+          'Minimum number of warm nodes to keep provisioned in the agent'
+          ' pool.'
+      ),
+  )
+  parser.add_argument(
+      '--agent-pool-max-size',
+      type=int,
+      required=False,
+      hidden=True,
+      help=(
+          'Maximum autoscaling ceiling for concurrent nodes in the agent'
+          ' pool.'
       ),
   )

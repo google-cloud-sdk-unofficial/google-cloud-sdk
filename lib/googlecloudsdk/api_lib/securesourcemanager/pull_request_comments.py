@@ -14,18 +14,35 @@
 # limitations under the License.
 """The Secure Source Manager pull request comments client module."""
 
+from collections.abc import Sequence
+from typing import Any
+
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.securesourcemanager import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import resources
+from googlecloudsdk.generated_clients.apis.securesourcemanager.v1 import securesourcemanager_v1_messages
 
 VERSION_MAP = util.VERSION_MAP
 GetClientInstance = util.GetClientInstance
+
+# A comment accepted by BatchCreate: either a fully formed request message, a
+# comment message, or a dict shaped like one of those two.
+_CommentInput = (
+    securesourcemanager_v1_messages.CreatePullRequestCommentRequest
+    | securesourcemanager_v1_messages.PullRequestComment
+    | dict[str, Any]
+)
+
+# A comment accepted by Resolve/Unresolve: either a comment resource reference
+# or a comment ID to be parsed relative to the parent pull request.
+_CommentRefOrId = resources.Resource | str
 
 
 class PullRequestCommentsClient(util.SecureSourceManagerClientBase):
   """Client for Secure Source Manager pull request comments."""
 
-  def __init__(self, location=None):
+  def __init__(self, location: str | None = None):
     super(PullRequestCommentsClient, self).__init__(
         base.ReleaseTrack.ALPHA, location=location
     )
@@ -33,7 +50,11 @@ class PullRequestCommentsClient(util.SecureSourceManagerClientBase):
         self.client.projects_locations_repositories_pullRequests_pullRequestComments
     )
 
-  def Create(self, pull_request_comment_ref, body):
+  def Create(
+      self,
+      pull_request_comment_ref: resources.Resource,
+      body: str,
+  ) -> securesourcemanager_v1_messages.Operation:
     """Create a pull request comment."""
     pull_request_comment = self.messages.PullRequestComment(
         comment=self.messages.Comment(body=body),
@@ -44,7 +65,11 @@ class PullRequestCommentsClient(util.SecureSourceManagerClientBase):
     )
     return self._service.Create(create_req)
 
-  def _MakeCreateCommentRequest(self, pull_request_ref, comment):
+  def _MakeCreateCommentRequest(
+      self,
+      pull_request_ref: resources.Resource,
+      comment: _CommentInput,
+  ) -> securesourcemanager_v1_messages.CreatePullRequestCommentRequest:
     """Normalizes one comment input into a CreatePullRequestCommentRequest.
 
     Args:
@@ -85,7 +110,11 @@ class PullRequestCommentsClient(util.SecureSourceManagerClientBase):
         ),
     )
 
-  def BatchCreate(self, pull_request_ref, comments):
+  def BatchCreate(
+      self,
+      pull_request_ref: resources.Resource,
+      comments: Sequence[_CommentInput],
+  ) -> securesourcemanager_v1_messages.Operation:
     """Batch create pull request comments."""
     requests = [
         self._MakeCreateCommentRequest(pull_request_ref, comment)
@@ -101,7 +130,12 @@ class PullRequestCommentsClient(util.SecureSourceManagerClientBase):
     )
     return self._service.BatchCreate(batch_create_req)
 
-  def Update(self, pull_request_comment_ref, body=None, update_mask=None):
+  def Update(
+      self,
+      pull_request_comment_ref: resources.Resource,
+      body: str | None = None,
+      update_mask: str | list[str] | None = None,
+  ) -> securesourcemanager_v1_messages.Operation:
     """Update a pull request comment."""
     pull_request_comment = self.messages.PullRequestComment(
         name=pull_request_comment_ref.RelativeName(),
@@ -117,18 +151,25 @@ class PullRequestCommentsClient(util.SecureSourceManagerClientBase):
     )
     return self._service.Patch(update_req)
 
-  def Delete(self, pull_request_comment_ref):
+  def Delete(
+      self, pull_request_comment_ref: resources.Resource
+  ) -> securesourcemanager_v1_messages.Operation:
     """Delete a pull request comment."""
     delete_req = self.messages.SecuresourcemanagerProjectsLocationsRepositoriesPullRequestsPullRequestCommentsDeleteRequest(
         name=pull_request_comment_ref.RelativeName(),
     )
     return self._service.Delete(delete_req)
 
-  def Resolve(self, pull_request_ref, comments, auto_fill=None):
+  def Resolve(
+      self,
+      pull_request_ref: resources.Resource,
+      comments: Sequence[_CommentRefOrId],
+      auto_fill: bool | None = None,
+  ) -> securesourcemanager_v1_messages.Operation:
     """Resolve pull request comments."""
     comment_names = []
     for comment in comments:
-      if hasattr(comment, 'RelativeName'):
+      if isinstance(comment, resources.Resource):
         comment_names.append(comment.RelativeName())
       else:
         comment_ref = self._resource_parser.Parse(
@@ -152,3 +193,38 @@ class PullRequestCommentsClient(util.SecureSourceManagerClientBase):
         resolvePullRequestCommentsRequest=resolve_req_body,
     )
     return self._service.Resolve(resolve_req)
+
+  def Unresolve(
+      self,
+      pull_request_ref: resources.Resource,
+      comments: Sequence[_CommentRefOrId],
+      auto_fill: bool | None = None,
+  ) -> securesourcemanager_v1_messages.Operation:
+    """Unresolve pull request comments."""
+    comment_names = []
+    for comment in comments:
+      if isinstance(comment, resources.Resource):
+        comment_names.append(comment.RelativeName())
+      else:
+        comment_ref = self._resource_parser.Parse(
+            comment,
+            params={
+                'projectsId': pull_request_ref.projectsId,
+                'locationsId': pull_request_ref.locationsId,
+                'repositoriesId': pull_request_ref.repositoriesId,
+                'pullRequestsId': pull_request_ref.pullRequestsId,
+            },
+            collection='securesourcemanager.projects.locations.repositories.pullRequests.pullRequestComments',
+        )
+        comment_names.append(comment_ref.RelativeName())
+
+    unresolve_req_body = self.messages.UnresolvePullRequestCommentsRequest(
+        names=comment_names,
+        autoFill=auto_fill,
+    )
+    unresolve_req = self.messages.SecuresourcemanagerProjectsLocationsRepositoriesPullRequestsPullRequestCommentsUnresolveRequest(
+        parent=pull_request_ref.RelativeName(),
+        unresolvePullRequestCommentsRequest=unresolve_req_body,
+    )
+    return self._service.Unresolve(unresolve_req)
+

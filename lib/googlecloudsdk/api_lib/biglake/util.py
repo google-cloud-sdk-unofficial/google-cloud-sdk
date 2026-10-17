@@ -568,6 +568,7 @@ def CheckValidFederatedArgCombinations(args):
   """
   federated_flags = [
       'federated_catalog_identity_mode',
+      'metadata_service_directory_name',
       'secret_name',
       'unity_catalog_name',
       'unity_instance_name',
@@ -778,6 +779,13 @@ def _BuildFederatedCatalogOptions(options):
   ):
     federated_catalog_options['service-directory-name'] = (
         options.service_directory_name
+    )
+  if (
+      hasattr(options, 'metadata_service_directory_name')
+      and options.metadata_service_directory_name
+  ):
+    federated_catalog_options['metadata-service-directory-name'] = (
+        options.metadata_service_directory_name
     )
   if hasattr(options, 'unity_catalog_info') and options.unity_catalog_info:
     unity_catalog_info = _BuildUnityCatalogInfo(options.unity_catalog_info)

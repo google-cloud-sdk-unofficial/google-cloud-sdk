@@ -1193,6 +1193,10 @@ def AddBackupRule(parser, required=False):
               'backup-window-start': arg_parsers.BoundedInt(0, 23),
               'backup-window-end': arg_parsers.BoundedInt(1, 24),
               'time-zone': str,
+              'backup-vault': arg_parsers.ArgObject(
+                  value_type=str,
+                  hidden=True,
+              ),
               'hourly-frequency': int,
               'days-of-week': ArgListParser(
                   util.OptionsMapValidator(DAY_OPTIONS).Parse

@@ -49,8 +49,8 @@ class Create(base.CreateCommand):
         """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
@@ -61,7 +61,7 @@ class Create(base.CreateCommand):
     flags.AddCluster(parser, False)
     flags.AddDatabaseFlags(parser)
     flags.AddInstance(parser)
-    flags.AddInstanceType(parser)
+    flags.AddInstanceType(parser, release_track=cls.ReleaseTrack())
     flags.AddCPUCount(parser, required=False)
     flags.AddMachineType(parser)
     flags.AddReadPoolNodeCount(parser)
@@ -165,7 +165,7 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    super(CreateBeta, CreateBeta).Args(parser)
+    super(CreateBeta, cls).Args(parser)
     flags.AddObservabilityConfigTrackClientAddress(
         parser, show_negated_in_help=True
     )
@@ -179,6 +179,7 @@ class CreateBeta(Create):
     flags.AddAutoscalerCreateFlags(parser)
     flags.AddEnablePscAutoDns(parser)
     flags.AddEnablePscAutoConnectionPolicy(parser)
+    flags.AddAgentPoolFlags(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args
@@ -194,7 +195,7 @@ class CreateAlpha(CreateBeta):
 
   @classmethod
   def Args(cls, parser):
-    super(CreateAlpha, CreateAlpha).Args(parser)
+    super(CreateAlpha, cls).Args(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

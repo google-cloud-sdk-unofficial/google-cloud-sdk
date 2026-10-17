@@ -38,9 +38,9 @@ from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -1002,7 +1002,7 @@ class BaseSSHHelper(object):
 def AddVerifyInternalIpArg(parser):
   parser.add_argument(
       '--verify-internal-ip',
-      action=actions.StoreBooleanProperty(
+      action=property_actions.StoreBooleanProperty(
           properties.VALUES.ssh.verify_internal_ip
       ),
       hidden=True,

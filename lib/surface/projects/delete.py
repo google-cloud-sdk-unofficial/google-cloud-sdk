@@ -17,7 +17,6 @@
 
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.smart_guardrails import smart_guardrails
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
@@ -59,24 +58,14 @@ class Delete(base.DeleteCommand):
     flags.GetProjectIDNumberFlag('delete').AddToParser(parser)
 
     if cls.ReleaseTrack() != base.ReleaseTrack.GA:
-      flags.GetRecommendFlag('project deletion').AddToParser(parser)
+      # No-op, kept so existing invocations keep working.
+      flags.GetRecommendFlag().AddToParser(parser)
 
     parser.display_info.AddCacheUpdater(completers.ProjectCompleter)
 
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
-    if self.ReleaseTrack() != base.ReleaseTrack.GA and args.recommend:
-      # Projects command group explicitly disables user project quota.
-      # Call with user project quota enabled, so that
-      # default project can be used as quota project.
-      base.EnableUserProjectQuota()
-      prompt_message = smart_guardrails.GetProjectDeletionRisk(
-          base.ReleaseTrack.GA,
-          project_ref.Name(),
-      )
-      base.DisableUserProjectQuota()
-    else:
-      prompt_message = 'Your project will be deleted: [{0}]'.format(args.id)
+    prompt_message = 'Your project will be deleted: [{0}]'.format(args.id)
     if not console_io.PromptContinue(prompt_message):
       return None
     result = projects_api.Delete(project_ref)

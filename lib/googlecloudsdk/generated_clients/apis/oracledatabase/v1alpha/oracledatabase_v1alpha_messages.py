@@ -245,6 +245,8 @@ class AutonomousDatabaseBackupProperties(_messages.Message):
       terabytes.
     dbVersion: Output only. A valid Oracle Database version for Autonomous
       Database.
+    encryptionKey: Output only. The encryption key used to encrypt the
+      Autonomous Database Backup.
     endTime: Output only. The date and time the backup completed.
     isAutomaticBackup: Output only. Indicates if the backup is automatic or
       user initiated.
@@ -314,22 +316,23 @@ class AutonomousDatabaseBackupProperties(_messages.Message):
   compartmentId = _messages.StringField(2)
   databaseSizeTb = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
   dbVersion = _messages.StringField(4)
-  endTime = _messages.StringField(5)
-  isAutomaticBackup = _messages.BooleanField(6)
-  isLongTermBackup = _messages.BooleanField(7)
-  isRestorable = _messages.BooleanField(8)
-  keyStoreId = _messages.StringField(9)
-  keyStoreWallet = _messages.StringField(10)
-  kmsKeyId = _messages.StringField(11)
-  kmsKeyVersionId = _messages.StringField(12)
-  lifecycleDetails = _messages.StringField(13)
-  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 14)
-  ocid = _messages.StringField(15)
-  retentionPeriodDays = _messages.IntegerField(16, variant=_messages.Variant.INT32)
-  sizeTb = _messages.FloatField(17, variant=_messages.Variant.FLOAT)
-  startTime = _messages.StringField(18)
-  type = _messages.EnumField('TypeValueValuesEnum', 19)
-  vaultId = _messages.StringField(20)
+  encryptionKey = _messages.MessageField('EncryptionKey', 5)
+  endTime = _messages.StringField(6)
+  isAutomaticBackup = _messages.BooleanField(7)
+  isLongTermBackup = _messages.BooleanField(8)
+  isRestorable = _messages.BooleanField(9)
+  keyStoreId = _messages.StringField(10)
+  keyStoreWallet = _messages.StringField(11)
+  kmsKeyId = _messages.StringField(12)
+  kmsKeyVersionId = _messages.StringField(13)
+  lifecycleDetails = _messages.StringField(14)
+  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 15)
+  ocid = _messages.StringField(16)
+  retentionPeriodDays = _messages.IntegerField(17, variant=_messages.Variant.INT32)
+  sizeTb = _messages.FloatField(18, variant=_messages.Variant.FLOAT)
+  startTime = _messages.StringField(19)
+  type = _messages.EnumField('TypeValueValuesEnum', 20)
+  vaultId = _messages.StringField(21)
 
 
 class AutonomousDatabaseCharacterSet(_messages.Message):
@@ -1965,16 +1968,19 @@ class DatabaseConnection(_messages.Message):
       resource.
 
   Fields:
-    connectionString: Required. Oracle Easy Connect or TNS connection string.
-      Example: "your-db-host.example.com:1521/YOUR_SERVICE_NAME"
+    connectionString: Required. Immutable. Oracle Easy Connect or TNS
+      connection string. Example: "your-db-
+      host.example.com:1521/YOUR_SERVICE_NAME"
     createTime: Output only. The create time of the resource.
-    displayName: Optional. User-friendly display name for the connection.
+    displayName: Optional. Immutable. User-friendly display name for the
+      connection.
     labels: Optional. Optional: Labels as key-value pairs to organize the
       resource.
     name: Identifier. The resource name of the DatabaseConnection. Format: pro
       jects/{project}/locations/{location}/databaseConnections/{database_conne
       ction}
-    odbNetwork: Optional. For Oracle Database@Google cloud resources. Format:
+    odbNetwork: Optional. Immutable. For Oracle Database@Google cloud
+      resources. Format:
       projects/{project}/locations/{location}/odbNetworks/{odbNetwork}
     passwordSecretVersion: Optional. The resource name of the GCP Secret
       Manager secret version containing the password for the specified
@@ -1984,7 +1990,8 @@ class DatabaseConnection(_messages.Message):
       'secretmanager.secretAccessor' permission on this secret.
     state: Output only. The current state of the connection.
     updateTime: Output only. The update time of the resource.
-    username: Optional. The default database username to use for connections.
+    username: Optional. Immutable. The default database username to use for
+      connections.
     walletSecretVersion: Optional. Optional: The resource name of the GCP
       Secret Manager secret version containing base64 encoded content of the
       Oracle Wallet ZIP file required for mTLS/TLS connections. Format:
@@ -6568,6 +6575,8 @@ class IdentityConnector(_messages.Message):
       Google Cloud and OCI. This corresponds directly to the ID of the
       OracleDbGcpIdentityConnector resource in Oracle Cloud Infrastructure
       (OCI).
+    lifecycleStateDetails: Output only. Additional information about the
+      current lifecycle state.
     serviceAgentEmail: Output only. A google managed service account on which
       customers can grant roles to access resources in the customer project.
       Example: `p176944527254-55-75119d87fd8f@gcp-sa-
@@ -6598,8 +6607,9 @@ class IdentityConnector(_messages.Message):
 
   connectionState = _messages.EnumField('ConnectionStateValueValuesEnum', 1)
   identityConnectorId = _messages.StringField(2)
-  serviceAgentEmail = _messages.StringField(3)
-  workloadIdentityPool = _messages.StringField(4)
+  lifecycleStateDetails = _messages.StringField(3)
+  serviceAgentEmail = _messages.StringField(4)
+  workloadIdentityPool = _messages.StringField(5)
 
 
 class IngressIp(_messages.Message):

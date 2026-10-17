@@ -84,6 +84,7 @@ _IGNORED_MISSING_COMPONENTS = {
     'gcloud-man-pages': _MAN_PAGES_REMOVAL_MSG,
     'kpt': None,
     'kustomize': None,
+    'managed-flink-client': None,
     'pkg-core': None,
     'pkg-java': None,
     'pkg-python': None,
@@ -102,7 +103,11 @@ _SHELL_RCFILES = [
     'gcfilesys.zsh.inc'
 ]
 
-BUNDLED_PYTHON_COMPONENTS = ['bundled-python3', 'bundled-python3-unix']
+BUNDLED_PYTHON_COMPONENTS = [
+    'bundled-python3',
+    'bundled-python3-unix',
+    'bundled-python3-alpine',
+]
 BUNDLED_PYTHON_REMOVAL_WARNING = (
     'This command is running using a bundled installation of Python. '
     'If you remove it, you may have no way to run this command.\n'

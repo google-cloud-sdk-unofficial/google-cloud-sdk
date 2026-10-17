@@ -280,6 +280,7 @@ def CreateSchedulingMessage(
     windows_license_optimization_mode=None,
     latency_tolerant=None,
     current_memory_mb=None,
+    protection_tier=None,
 ):
   """Creates scheduling message for VM.
 
@@ -310,6 +311,7 @@ def CreateSchedulingMessage(
     windows_license_optimization_mode: Windows license optimization mode.
     latency_tolerant: Whether the VM is latency tolerant.
     current_memory_mb: Current memory in MB.
+    protection_tier: Protection tier for the workload.
 
   Returns:
     Scheduling message object for the VM.
@@ -433,6 +435,9 @@ def CreateSchedulingMessage(
 
   if latency_tolerant is not None:
     scheduling.latencyTolerant = latency_tolerant
+
+  if protection_tier is not None:
+    scheduling.protectionTier = ParseProtectionTier(messages, protection_tier)
 
   return scheduling
 
@@ -844,6 +849,7 @@ def GetScheduling(
     support_windows_license_optimization_mode=False,
     support_latency_tolerant=False,
     support_current_memory=False,
+    support_protection_tier=False,
 ):
   """Generates a Scheduling Message or None based on specified args.
 
@@ -872,6 +878,7 @@ def GetScheduling(
       optimization mode is supported.
     support_latency_tolerant: bool, whether latency tolerant is supported.
     support_current_memory: bool, whether current memory is supported.
+    support_protection_tier: bool, whether protection tier is supported.
 
   Returns:
     A Scheduling message object, or None if no scheduling flags are specified.
@@ -1007,6 +1014,8 @@ def GetScheduling(
   ):
     current_memory_mb = args.current_memory // (1024 * 1024)
 
+  protection_tier = ExtractProtectionTierFromArgs(args, support_protection_tier)
+
   if (
       skip_defaults
       and not IsAnySpecified(args, *dests)
@@ -1025,6 +1034,7 @@ def GetScheduling(
       and windows_license_optimization_mode is None
       and latency_tolerant is None
       and current_memory_mb is None
+      and protection_tier is None
   ):
     return None
 
@@ -1055,6 +1065,7 @@ def GetScheduling(
       windows_license_optimization_mode=windows_license_optimization_mode,
       latency_tolerant=latency_tolerant,
       current_memory_mb=current_memory_mb,
+      protection_tier=protection_tier,
   )
 
 
@@ -1359,6 +1370,44 @@ def ExtractGracefulShutdownFromArgs(args, support_graceful_shutdown=False):
         graceful_shutdown['maxDuration'] = args.graceful_shutdown_max_duration
 
   return graceful_shutdown
+
+
+def ParseProtectionTier(messages, protection_tier):
+  """Converts a protection tier choice string to a Scheduling enum value.
+
+  Args:
+    messages: The compute messages module.
+    protection_tier: str or ProtectionTierValueValuesEnum, The protection tier
+      name (e.g. 'STANDARD' or 'CAPACITY_OPTIMIZED') or enum value.
+
+  Returns:
+    messages.Scheduling.ProtectionTierValueValuesEnum.
+  """
+  enum_cls = messages.Scheduling.ProtectionTierValueValuesEnum
+  if isinstance(protection_tier, enum_cls):
+    return protection_tier
+  protection_tier_enum_name = (
+      protection_tier
+      if protection_tier.startswith('PROTECTION_TIER_')
+      else f'PROTECTION_TIER_{protection_tier}'
+  )
+  return enum_cls(protection_tier_enum_name)
+
+
+def ExtractProtectionTierFromArgs(args, support_protection_tier=False):
+  """Extracts the protection_tier flag value from parsed CLI arguments.
+
+  Args:
+    args: argparse.Namespace, The parsed arguments.
+    support_protection_tier: bool, Whether the protection_tier flag is
+      supported.
+
+  Returns:
+    str or None, The specified protection_tier value.
+  """
+  if support_protection_tier and args.IsKnownAndSpecified('protection_tier'):
+    return args.protection_tier
+  return None
 
 
 def CreateParams(args, client):

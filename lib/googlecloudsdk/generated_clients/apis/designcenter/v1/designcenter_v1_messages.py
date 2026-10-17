@@ -1189,6 +1189,11 @@ class CloudControl(_messages.Message):
     enforcementMode: Optional. The enforcement mode of the cloud control.
     majorRevisionId: Required. The major revision id of the cloud control.
     name: Required. The name of the cloud control.
+    parameterSpecs: Optional. The specifications of the parameters supported
+      by the cloud control.
+    parameters: Optional. The parameter values that are already configured for
+      the cloud control, if any. Used to pre-populate the parameter values
+      presented to the user.
   """
 
   class EnforcementModeValueValuesEnum(_messages.Enum):
@@ -1209,6 +1214,8 @@ class CloudControl(_messages.Message):
   enforcementMode = _messages.EnumField('EnforcementModeValueValuesEnum', 2)
   majorRevisionId = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   name = _messages.StringField(4)
+  parameterSpecs = _messages.MessageField('ParameterSpec', 5, repeated=True)
+  parameters = _messages.MessageField('Parameter', 6, repeated=True)
 
 
 class CodePosition(_messages.Message):
@@ -5189,6 +5196,55 @@ class Parameter(_messages.Message):
   key = _messages.StringField(1)
   readOnly = _messages.BooleanField(2)
   value = _messages.MessageField('extra_types.JsonValue', 3)
+
+
+class ParameterSpec(_messages.Message):
+  r"""The specification of a parameter that can be configured on a cloud
+  control or a framework.
+
+  Enums:
+    ValueTypeValueValuesEnum: Optional. The type of value that the parameter
+      accepts.
+
+  Fields:
+    defaultValue: Optional. The default value of the parameter, used when the
+      user does not provide one.
+    description: Optional. The parameter description.
+    displayName: Optional. The parameter display name, which is a user
+      friendly name used for UI.
+    key: Required. The key of the parameter, matching Parameter.key of the
+      value supplied for it.
+    required: Optional. Whether a value must be provided for the parameter.
+    subParameterSpecs: Optional. The specifications of the sub-parameters.
+      Only set when `value_type` is `ONEOF`.
+    valueType: Optional. The type of value that the parameter accepts.
+  """
+
+  class ValueTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The type of value that the parameter accepts.
+
+    Values:
+      VALUE_TYPE_UNSPECIFIED: Default. This value is unused.
+      STRING: A string value.
+      BOOLEAN: A boolean value.
+      STRINGLIST: A list of string values.
+      NUMBER: A numeric value.
+      ONEOF: Exactly one of the sub-parameters must be provided.
+    """
+    VALUE_TYPE_UNSPECIFIED = 0
+    STRING = 1
+    BOOLEAN = 2
+    STRINGLIST = 3
+    NUMBER = 4
+    ONEOF = 5
+
+  defaultValue = _messages.MessageField('extra_types.JsonValue', 1)
+  description = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  key = _messages.StringField(4)
+  required = _messages.BooleanField(5)
+  subParameterSpecs = _messages.MessageField('ParameterSpec', 6, repeated=True)
+  valueType = _messages.EnumField('ValueTypeValueValuesEnum', 7)
 
 
 class Policy(_messages.Message):

@@ -189,11 +189,10 @@ class Boundary(_messages.Message):
     etag: This checksum is computed by the server based on the value of other
       fields, and may be sent on update and delete requests to ensure the
       client has an up-to-date value before proceeding.
-    managementProject: Output only. The Management Project associated with
-      this boundary. If not provided during Boundary creation, a management
-      project will be automatically created. Cannot be modified after Boundary
-      creation. Format: `projects/{project_number}` Example:
-      `projects/123456789012`
+    managementProject: Output only. The Management Project of the
+      CapabilityConfig this Boundary is associated with. Will be empty if the
+      Boundary is not associated with any CapabilityConfig. Format:
+      `projects/{project_number}` Example: `projects/123456789012`
     name: Identifier. The unique resource name of the Boundary. Format: -
       `organizations/{organization_id}/boundaries/{boundary_id}` -
       `folders/{folder_id}/boundaries/{boundary_id}` Example:

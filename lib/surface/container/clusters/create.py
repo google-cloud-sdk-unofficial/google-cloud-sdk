@@ -609,6 +609,7 @@ def ParseCreateOptionsBase(
           'boot_disk_provisioned_throughput'
       ),
       network_tier=get_default('network_tier'),
+      adaptive_pod_allocation_mode=get_default('adaptive_pod_allocation_mode'),
       control_plane_egress_mode=get_default('control_plane_egress'),
       enable_slice_controller=get_default('enable_slice_controller'),
       autopilot_general_profile=get_default('autopilot_general_profile'),
@@ -901,6 +902,9 @@ flags_to_add = {
         'defaultComputeClass': flags.AddDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
+        'adaptivePodAllocationMode': (
+            flags.AddAdaptivePodAllocationModeFlag
+        ),
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
         'managedOTelScope': lambda p: flags.AddManagedOTelScopeFlags(
             p, hidden=False
@@ -1147,6 +1151,9 @@ flags_to_add = {
         'defaultComputeClass': flags.AddDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
+        'adaptivePodAllocationMode': (
+            flags.AddAdaptivePodAllocationModeFlag
+        ),
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
         'managedOTelScope': lambda p: flags.AddManagedOTelScopeFlags(
             p, hidden=False
@@ -1409,6 +1416,9 @@ flags_to_add = {
         'defaultComputeClass': flags.AddDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
+        'adaptivePodAllocationMode': (
+            flags.AddAdaptivePodAllocationModeFlag
+        ),
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
         'managedOTelScope': lambda p: flags.AddManagedOTelScopeFlags(
             p, hidden=False

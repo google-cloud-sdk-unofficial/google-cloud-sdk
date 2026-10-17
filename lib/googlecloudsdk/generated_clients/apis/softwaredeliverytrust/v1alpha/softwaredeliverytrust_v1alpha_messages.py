@@ -17,12 +17,15 @@ class Attestation(_messages.Message):
   Fields:
     attestationPayload: Required. The raw attestation payload wrapped in a
       standard DSSE envelope where payload is an in-toto attestation. Hard-
-      capped at 4 MiB for MVP.
+      capped at 4 MiB for MVP. Note: To avoid duplicating large payloads in
+      Long Running Operation (LRO) metadata storage, this field is omitted
+      from the `Attestation` returned in the `CreateAttestation` LRO response
+      and is populated by `GetAttestation` and `ListAttestations`.
     createTime: Output only. Ingestion timestamp of the attestation.
     envelopePredicateType: Output only. Format of the envelope. Example:
       "application/vnd.in-toto+json".
     name: Identifier. Unique resource name of the attestation. Example:
-      "projects/123456789/locations/global/attestations/att-9876543210".
+      "projects/123456789/locations/us-central1/attestations/att-9876543210".
     predicateType: Output only. Type of claim asserted. Example:
       "https://slsa.dev/provenance/v1".
     signerConfig: Output only. Configuration identifying the signer used for
@@ -397,12 +400,15 @@ class PolicyBinding(_messages.Message):
 
     Values:
       ENFORCEMENT_MODE_UNSPECIFIED: Enforcement mode is not specified.
-      ENFORCEMENT_MODE_DRY_RUN: Log violations but do not block operations.
+      ENFORCEMENT_MODE_DRY_RUN: Deprecated: Use ENFORCEMENT_MODE_LOG_ONLY
+        instead. Log violations but do not block operations.
       ENFORCEMENT_MODE_DENY: Actively block non-compliant operations.
+      ENFORCEMENT_MODE_LOG_ONLY: Log violations but do not block operations.
     """
     ENFORCEMENT_MODE_UNSPECIFIED = 0
     ENFORCEMENT_MODE_DRY_RUN = 1
     ENFORCEMENT_MODE_DENY = 2
+    ENFORCEMENT_MODE_LOG_ONLY = 3
 
   createTime = _messages.StringField(1)
   enforcementMode = _messages.EnumField('EnforcementModeValueValuesEnum', 2)
@@ -469,11 +475,29 @@ class SignerConfig(_messages.Message):
 
   Fields:
     kmsKeyId: Identifier of the KMS cryptographic key used for verification.
-      Example: "projects/my-kms-project/locations/global/keyRings/my-
+      Example: "projects/my-kms-project/locations/us-central1/keyRings/my-
       ring/cryptoKeys/my-key/cryptoKeyVersions/1".
   """
 
   kmsKeyId = _messages.StringField(1)
+
+
+class SoftwaredeliverytrustProjectsLocationsAttestationsCreateRequest(_messages.Message):
+  r"""A SoftwaredeliverytrustProjectsLocationsAttestationsCreateRequest
+  object.
+
+  Fields:
+    attestation: A Attestation resource to be passed as the request body.
+    attestationId: Optional. The ID to use for the attestation, which will
+      become the final component of the attestation's resource name. If
+      omitted, a system-generated UUID is assigned.
+    parent: Required. Parent location where the attestation will be created.
+      Example: "projects/123456789/locations/us-central1".
+  """
+
+  attestation = _messages.MessageField('Attestation', 1)
+  attestationId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
 
 
 class SoftwaredeliverytrustProjectsLocationsAttestationsGetRequest(_messages.Message):
@@ -481,7 +505,7 @@ class SoftwaredeliverytrustProjectsLocationsAttestationsGetRequest(_messages.Mes
 
   Fields:
     name: Required. Resource name of the attestation to retrieve. Example:
-      "projects/123456789/locations/global/attestations/att-9876543210".
+      "projects/123456789/locations/us-central1/attestations/att-9876543210".
   """
 
   name = _messages.StringField(1, required=True)
@@ -496,7 +520,7 @@ class SoftwaredeliverytrustProjectsLocationsAttestationsListRequest(_messages.Me
     pageSize: Optional. Maximum number of attestations to return per page.
     pageToken: Optional. Page token retrieved from a previous list request.
     parent: Required. Parent location to list attestations from. Example:
-      "projects/123456789/locations/global".
+      "projects/123456789/locations/us-central1".
   """
 
   filter = _messages.StringField(1)
@@ -603,7 +627,7 @@ class SoftwaredeliverytrustProjectsLocationsPoliciesCreateRequest(_messages.Mess
 
   Fields:
     parent: Required. Parent location where the policy will be created.
-      Example: "projects/123456789/locations/global".
+      Example: "projects/123456789/locations/us-central1".
     policy: A Policy resource to be passed as the request body.
     policyId: Required. ID to assign to the newly created policy. This value
       must consist of lower-case letters, numbers, and hyphens, start with a
@@ -624,7 +648,7 @@ class SoftwaredeliverytrustProjectsLocationsPoliciesDeleteRequest(_messages.Mess
     force: Optional. If set to true, any child revisions or bindings will also
       be deleted.
     name: Required. Resource name of the policy to delete. Example:
-      "projects/123456789/locations/global/policies/require-slsa-build".
+      "projects/123456789/locations/us-central1/policies/require-slsa-build".
   """
 
   force = _messages.BooleanField(1)
@@ -636,7 +660,7 @@ class SoftwaredeliverytrustProjectsLocationsPoliciesGetRequest(_messages.Message
 
   Fields:
     name: Required. Resource name of the policy to retrieve. Example:
-      "projects/123456789/locations/global/policies/require-slsa-build".
+      "projects/123456789/locations/us-central1/policies/require-slsa-build".
   """
 
   name = _messages.StringField(1, required=True)
@@ -649,7 +673,7 @@ class SoftwaredeliverytrustProjectsLocationsPoliciesListRequest(_messages.Messag
     pageSize: Optional. Maximum number of policies to return per page.
     pageToken: Optional. Page token retrieved from a previous list request.
     parent: Required. Parent location to list policies from. Example:
-      "projects/123456789/locations/global".
+      "projects/123456789/locations/us-central1".
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -679,7 +703,7 @@ class SoftwaredeliverytrustProjectsLocationsPoliciesRevisionsGetRequest(_message
 
   Fields:
     name: Required. Resource name of the policy revision to retrieve. Example:
-      "projects/123456789/locations/global/policies/require-slsa-
+      "projects/123456789/locations/us-central1/policies/require-slsa-
       build/revisions/a1b2c3d4".
   """
 
@@ -694,7 +718,7 @@ class SoftwaredeliverytrustProjectsLocationsPoliciesRevisionsListRequest(_messag
     pageSize: Optional. Maximum number of revisions to return per page.
     pageToken: Optional. Page token retrieved from a previous list request.
     parent: Required. Parent policy to list revisions for. Example:
-      "projects/123456789/locations/global/policies/require-slsa-build".
+      "projects/123456789/locations/us-central1/policies/require-slsa-build".
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -708,7 +732,7 @@ class SoftwaredeliverytrustProjectsLocationsPolicyBindingsCreateRequest(_message
 
   Fields:
     parent: Required. Parent location where the policy binding will be
-      created. Example: "projects/123456789/locations/global".
+      created. Example: "projects/123456789/locations/us-central1".
     policyBinding: A PolicyBinding resource to be passed as the request body.
     policyBindingId: Required. ID to assign to the newly created policy
       binding. Example: "prod-cluster-binding".
@@ -725,7 +749,7 @@ class SoftwaredeliverytrustProjectsLocationsPolicyBindingsDeleteRequest(_message
 
   Fields:
     name: Required. Resource name of the policy binding to delete. Example:
-      "projects/123456789/locations/global/policyBindings/prod-cluster-
+      "projects/123456789/locations/us-central1/policyBindings/prod-cluster-
       binding".
   """
 
@@ -737,7 +761,7 @@ class SoftwaredeliverytrustProjectsLocationsPolicyBindingsGetRequest(_messages.M
 
   Fields:
     name: Required. Resource name of the policy binding to retrieve. Example:
-      "projects/123456789/locations/global/policyBindings/prod-cluster-
+      "projects/123456789/locations/us-central1/policyBindings/prod-cluster-
       binding".
   """
 
@@ -752,7 +776,7 @@ class SoftwaredeliverytrustProjectsLocationsPolicyBindingsListRequest(_messages.
     pageSize: Optional. Maximum number of policy bindings to return per page.
     pageToken: Optional. Page token retrieved from a previous list request.
     parent: Required. Parent location to list policy bindings from. Example:
-      "projects/123456789/locations/global".
+      "projects/123456789/locations/us-central1".
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)

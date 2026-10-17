@@ -277,7 +277,7 @@ class Jobs:
             f'Schedule [{unset_schedule}] not found on job [{job_id}].',
         )
       return [
-          s for s in existing_schedules if s.name != unset_schedule
+          GetMessagesModule().AutoscalingSchedule(name=unset_schedule)
       ], True
 
     if set_schedule is not None:

@@ -1529,6 +1529,7 @@ class Environment(_messages.Message):
       "projects/{projectId}/locations/{locationId}/environments/{environmentId
       }" EnvironmentId must start with a lowercase letter followed by up to 63
       lowercase letters, numbers, or hyphens, and cannot end with a hyphen.
+    operationSettings: Optional. Settings for operations.
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
     state: The current state of the environment.
@@ -1613,12 +1614,13 @@ class Environment(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 3)
   mode = _messages.EnumField('ModeValueValuesEnum', 4)
   name = _messages.StringField(5)
-  satisfiesPzi = _messages.BooleanField(6)
-  satisfiesPzs = _messages.BooleanField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  storageConfig = _messages.MessageField('StorageConfig', 9)
-  updateTime = _messages.StringField(10)
-  uuid = _messages.StringField(11)
+  operationSettings = _messages.MessageField('OperationSettings', 6)
+  satisfiesPzi = _messages.BooleanField(7)
+  satisfiesPzs = _messages.BooleanField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  storageConfig = _messages.MessageField('StorageConfig', 10)
+  updateTime = _messages.StringField(11)
+  uuid = _messages.StringField(12)
 
 
 class EnvironmentConfig(_messages.Message):
@@ -1957,6 +1959,20 @@ class ImageVersion(_messages.Message):
   releaseDate = _messages.MessageField('Date', 4)
   supportedPythonVersions = _messages.StringField(5, repeated=True)
   upgradeDisabled = _messages.BooleanField(6)
+
+
+class ImageVersionRollbackTarget(_messages.Message):
+  r"""The image version an environment can be rolled back to.
+
+  Fields:
+    imageVersion: Output only. The image version the environment can be rolled
+      back to.
+    lastActiveTime: Output only. The last time when the environment was
+      running this image version.
+  """
+
+  imageVersion = _messages.StringField(1)
+  lastActiveTime = _messages.StringField(2)
 
 
 class ImportError(_messages.Message):
@@ -2654,6 +2670,36 @@ class OperationMetadata(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 6)
 
 
+class OperationSettings(_messages.Message):
+  r"""Settings for operations.
+
+  Enums:
+    StrategyValueValuesEnum: Optional. Strategy for operations.
+
+  Fields:
+    strategy: Optional. Strategy for operations.
+  """
+
+  class StrategyValueValuesEnum(_messages.Enum):
+    r"""Optional. Strategy for operations.
+
+    Values:
+      STRATEGY_UNSPECIFIED: Default strategy. Has the same behavior as
+        STANDARD.
+      STANDARD: Non graceful update operations.
+      GRACEFUL: Graceful for supported operations. Validation will fail for
+        unsupported operations.
+      GRACEFUL_WHEN_SUPPORTED: Graceful for supported operations. Will fall
+        back to non graceful for unsupported operations.
+    """
+    STRATEGY_UNSPECIFIED = 0
+    STANDARD = 1
+    GRACEFUL = 2
+    GRACEFUL_WHEN_SUPPORTED = 3
+
+  strategy = _messages.EnumField('StrategyValueValuesEnum', 1)
+
+
 class PauseDagRequest(_messages.Message):
   r"""Request to pause a DAG."""
 
@@ -3025,6 +3071,11 @@ class SoftwareConfig(_messages.Message):
       list](/composer/docs/concepts/versioning/composer-versions) and
       [versioning overview](/composer/docs/concepts/versioning/composer-
       versioning-overview).
+    imageVersionRollbackTargets: Output only. The list of image versions the
+      environment can be rolled back to, sorted by last_active_time in
+      descending order (most recent first). This field is supported for Cloud
+      Composer environments in versions composer-3-airflow-*.*.*-build.* and
+      newer.
     pypiPackages: Optional. Custom Python Package Index (PyPI) packages to be
       installed in the environment. Keys refer to the lowercase package name
       such as "numpy" and values are the lowercase extras and version
@@ -3202,10 +3253,11 @@ class SoftwareConfig(_messages.Message):
   cloudDataLineageIntegration = _messages.MessageField('CloudDataLineageIntegration', 5)
   envVariables = _messages.MessageField('EnvVariablesValue', 6)
   imageVersion = _messages.StringField(7)
-  pypiPackages = _messages.MessageField('PypiPackagesValue', 8)
-  pythonVersion = _messages.StringField(9)
-  schedulerCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 11)
+  imageVersionRollbackTargets = _messages.MessageField('ImageVersionRollbackTarget', 8, repeated=True)
+  pypiPackages = _messages.MessageField('PypiPackagesValue', 9)
+  pythonVersion = _messages.StringField(10)
+  schedulerCount = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 12)
 
 
 class SourceCode(_messages.Message):

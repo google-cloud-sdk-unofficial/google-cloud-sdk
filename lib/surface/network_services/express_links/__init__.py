@@ -17,6 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class ExpressLinks(base.Group):

@@ -100,9 +100,9 @@ def GetSandbox(
   """Returns a print mapping for a container's sandbox configuration.
 
   Nothing is printed for a container that is not sandboxed; the absence of the
-  block implies the container is not sandboxed. For a sandboxed container both
-  egress and TLS interception are always printed, so that a user never has to
-  infer a security-relevant setting from an omitted field.
+  block implies the container is not sandboxed. For a sandboxed container the
+  identity is always printed, so that a user never has to infer a
+  security-relevant setting from an omitted field.
 
   Args:
     container: The container whose sandbox configuration to print.
@@ -110,16 +110,7 @@ def GetSandbox(
   sandbox = getattr(container, 'sandbox', None)
   if sandbox is None:
     return None
-  allow_egress = sandbox.allowEgress
-  if allow_egress is None:
-    egress = 'disabled'
-  else:
-    egress = cp.Labeled([(
-        'TLS interception',
-        'enabled' if allow_egress.tlsInterception else 'disabled',
-    )])
   return cp.Labeled([
-      ('Egress', egress),
       ('Identity', sandbox.identity or 'none'),
   ])
 

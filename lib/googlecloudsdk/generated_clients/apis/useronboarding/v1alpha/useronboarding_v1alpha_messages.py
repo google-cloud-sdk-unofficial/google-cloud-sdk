@@ -254,14 +254,17 @@ class PendingUserInputChargingStrategy(_messages.Message):
 class PendingUserInputCloudRegion(_messages.Message):
   r"""Indicates that the onboarding system is waiting for the user to select a
   Google Cloud region (e.g. `us-central1`), differentiating it from geographic
-  region codes (like `US`, `CA`) as defined in AIP-143. If the user does not
-  select a region, the `default_region` will be used.
+  region codes (like `US`, `CA`) as defined in AIP-143. The user must
+  explicitly select one of the regions listed in `supported_regions` to
+  proceed.
 
   Fields:
-    defaultRegion: Output only. Default Google Cloud region precomputed based
-      on the user's location.
+    defaultRegion: Output only. Suggested Google Cloud region precomputed
+      based on the user's location. This is always one of `supported_regions`
+      and is intended only to pre-select an option in the UI; it is not
+      applied automatically.
     supportedRegions: Output only. List of Google Cloud regions that the user
-      can select from.
+      can select from. The selected region must be one of these values.
   """
 
   defaultRegion = _messages.MessageField('CloudRegion', 1)

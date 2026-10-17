@@ -2420,12 +2420,8 @@ class PackageData(_messages.Message):
       example.
     layerDetails: Deprecated: Layer details are captured per file location in
       FileLocation.layer_details. Top-level layer details is not persisted.
-    licenses: The list of licenses found that are related to a given package.
-      Note that licenses may also be stored on the BinarySourceInfo. If there
-      is no BinarySourceInfo (because there's no concept of source vs binary),
-      then it will be stored here, while if there are BinarySourceInfos, it
-      will be stored there, as one source can have multiple binaries with
-      different licenses.
+    licenses: Deprecated: Top-level licenses is not persisted in the legacy
+      Packages table. Licenses are captured in BinarySourceInfo or PackagesV2.
     maintainer: The maintainer of the package.
     os: The OS affected by a vulnerability Used to generate the cpe_uri for OS
       packages

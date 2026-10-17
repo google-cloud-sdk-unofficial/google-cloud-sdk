@@ -1,0 +1,46 @@
+- release_tracks: [ALPHA]
+
+  # Keeps the command out of help text, tab-completion and the public
+  # reference documentation while Cloud Build Pipelines is in preview.
+  hidden: true
+  universe_compatible: true
+
+  hints:
+    read_only: true
+
+  help_text:
+    brief: List Cloud Build pipelines.
+    description: List Cloud Build pipelines in a given project and location.
+    examples: |
+      To list pipelines in region `us-central1`:
+
+        $ {command} --region=us-central1
+
+      To list pipelines across all regions:
+
+        $ {command} --region=-
+
+  request:
+    collection: cloudbuild.projects.locations.pipelines
+    api_version: v1
+    regional_endpoint_compatibility: SUPPORTED
+
+  # Enables --uri. The generator builds each URI from the `name` returned by
+  # the server, so an aggregated listing still yields per-region URIs.
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The location to list pipelines in.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:pipeline_location
+
+  output:
+    format: |
+      table(
+        name.segment(-1):label=PIPELINE_ID,
+        name.segment(-3):label=REGION,
+        serviceAccount.segment(-1):label=SERVICE_ACCOUNT,
+        createTime.date():label=CREATE_TIME,
+        updateTime.date():label=UPDATE_TIME
+      )

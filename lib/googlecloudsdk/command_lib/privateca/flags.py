@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.privateca import exceptions as privateca_exceptions
+from googlecloudsdk.command_lib.privateca import key_generation
 from googlecloudsdk.command_lib.privateca import preset_profiles
 from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.command_lib.util.apis import arg_utils
@@ -1281,6 +1282,7 @@ _KEY_ALGORITHM_MAPPING = {
     'EC_P384_SHA384': 'ec-p384-sha384',
 }
 
+
 _KEY_ALGORITHM_MAPPER = arg_utils.ChoiceEnumMapper(
     arg_name='--key-algorithm',
     help_str=(
@@ -1331,6 +1333,20 @@ def ParseTierFlag(args):
 def AddKeyAlgorithmFlag(parser_group, default='rsa-pkcs1-4096-sha256'):
   _KEY_ALGORITHM_MAPPER.choice_arg.AddToParser(parser_group)
   _KEY_ALGORITHM_MAPPER.choice_arg.SetDefault(parser_group, default)
+
+
+def AddCertKeyAlgorithmFlag(
+    parser_group, default=key_generation.KeyAlgorithm.RSA_2048.value
+):
+  base.ChoiceArgument(
+      '--key-algorithm',
+      choices=[algo.value for algo in key_generation.KeyAlgorithm],
+      default=default,
+      help_str=(
+          'The crypto algorithm to use for generating the client-side '
+          'private key.'
+      ),
+  ).AddToParser(parser_group)
 
 
 def ParseKeySpec(args):

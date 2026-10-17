@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       Create a Dataplex data product resource.
@@ -14,8 +14,7 @@
           $ {command} test-dp --location=us-central1 --display-name="test dp" --owner-emails="test@google.com"
 
   request:
-    ALPHA:
-      api_version: v1
+    api_version: v1
     collection: dataplex.projects.locations.dataProducts
   arguments:
     resource:

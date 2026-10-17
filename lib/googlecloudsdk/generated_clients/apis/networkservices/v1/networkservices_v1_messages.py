@@ -108,11 +108,13 @@ class AgentConnectivityTemplate(_messages.Message):
       GKE: Google Kubernetes Engine.
       CLOUD_RUN: Google Cloud Run.
       BORG: Google Borg (for 1P producers).
+      GCE_VM: Google Compute Engine VM.
     """
     AGENT_COMPUTE_UNSPECIFIED = 0
     GKE = 1
     CLOUD_RUN = 2
     BORG = 3
+    GCE_VM = 4
 
   class DeploymentModelValueValuesEnum(_messages.Enum):
     r"""Required. The deployment model for the gateway.
@@ -12503,12 +12505,12 @@ class UrlRewrite(_messages.Message):
       `path_prefix_rewrite` and path_template_rewrite can be specified.
     pathTemplateRewrite: Optional. Before forwarding the request to the
       selected origin, if the request matched a path_template_match, the
-      matching portion of the request's path is replaced re-written using the
-      pattern specified by `path_template_rewrite`. `path_template_rewrite`
-      must be between 1 and 255 characters (inclusive), must start with a `/`,
-      and must only use variables captured by the route's
-      `path_template_match`. `path_template_rewrite` can only be used when all
-      of a route's match_rules specify `path_template_match`. Only one of
+      matching portion of the request's path is rewritten using the pattern
+      specified by `path_template_rewrite`. `path_template_rewrite` must be
+      between 1 and 255 characters (inclusive), must start with a `/`, and
+      must only use variables captured by the route's `path_template_match`.
+      `path_template_rewrite` can only be used when all of a route's
+      match_rules specify `path_template_match`. Only one of
       path_prefix_rewrite and `path_template_rewrite` can be specified.
   """
 

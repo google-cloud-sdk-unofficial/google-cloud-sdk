@@ -109,7 +109,7 @@ def AddBaseArgs(parser):
   flags.AddPasswordPolicyDisallowUsernameSubstring(parser)
   flags.AddPasswordPolicyPasswordChangeInterval(parser)
   flags.AddPasswordPolicyEnablePasswordPolicy(parser)
-  flags.AddSqlServerEnablePasswordPolicy(parser)
+  flags.AddEnableSqlServerPasswordPolicy(parser)
   flags.AddSqlServerPasswordPolicyMinLength(parser)
   flags.AddSqlServerPasswordPolicyHistoryLength(parser)
   flags.AddSqlServerPasswordPolicyMinimumAge(parser)
@@ -210,6 +210,16 @@ def AddAlphaArgs(parser):
   flags.AddBackendType(parser, hidden=True)
   flags.AddSemiManagedSqlServer(parser, hidden=True)
   flags.AddEnforceCmekLogEncryptionAtSource(parser, hidden=True)
+
+
+def _BuildRoutingParams(region=None, edition=None):
+  """Builds x-goog-request-params header value for RLS routing."""
+  params = []
+  if edition:
+    params.append('edition={}'.format(edition))
+  if region:
+    params.append('region={}'.format(region))
+  return '&'.join(params)
 
 
 def RunBaseCreateCommand(args, release_track):
@@ -467,14 +477,33 @@ def RunBaseCreateCommand(args, release_track):
           release_track=release_track,
       )
   )
+  edition_str = None
+  if args.IsSpecified('edition'):
+    edition_str = args.edition
+  elif instance_resource.settings and instance_resource.settings.edition:
+    edition_str = str(instance_resource.settings.edition)
+
+  routing_params = _BuildRoutingParams(
+      region=instance_resource.region,
+      edition=edition_str,
+  )
 
   operation_ref = None
+  original_headers = dict(sql_client.additional_http_headers or {})
   try:
+    if routing_params:
+      if sql_client.additional_http_headers is None:
+        sql_client.additional_http_headers = {}
+      sql_client.additional_http_headers['x-goog-request-params'] = (
+          routing_params
+      )
+
     result_operation = sql_client.instances.Insert(
         sql_messages.SqlInstancesInsertRequest(
             databaseInstance=instance_resource, project=instance_ref.project
         )
     )
+    sql_client.additional_http_headers = original_headers
 
     operation_ref = client.resource_parser.Create(
         'sql.operations',
@@ -522,6 +551,8 @@ def RunBaseCreateCommand(args, release_track):
       )
       raise exceptions.HttpException(msg)
     raise
+  finally:
+    sql_client.additional_http_headers = original_headers
 
 
 @base.DefaultUniverseOnly

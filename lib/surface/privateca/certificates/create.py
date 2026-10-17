@@ -151,8 +151,8 @@ class Create(base.CreateCommand):
     base.Argument(
         '--generate-key',
         help=(
-            'Use this flag to have a new RSA-2048 private key securely'
-            ' generated on your machine.'
+            'Use this flag to have a new private key securely generated on'
+            ' your machine.'
         ),
         action='store_const',
         const=True,
@@ -162,6 +162,7 @@ class Create(base.CreateCommand):
     base.Argument(
         '--key-output-file', help=_KEY_OUTPUT_HELP, required=True
     ).AddToParser(key_generation_group)
+    flags.AddCertKeyAlgorithmFlag(key_generation_group)
     base.Argument(
         '--ca',
         help=(
@@ -279,7 +280,12 @@ class Create(base.CreateCommand):
     """Fetches the public key associated with a non-CSR certificate request, as UTF-8 encoded bytes."""
     kms_key_version = args.CONCEPTS.kms_key_version.Parse()
     if args.generate_key:
-      private_key, public_key = key_generation.RSAKeyGen(2048)
+      try:
+        private_key, public_key = key_generation.KeyGenForAlgorithm(
+            args.key_algorithm
+        )
+      except ValueError as e:
+        raise exceptions.InvalidArgumentException('--key-algorithm', str(e))
       key_generation.ExportPrivateKey(args.key_output_file, private_key)
       return public_key
     elif kms_key_version:

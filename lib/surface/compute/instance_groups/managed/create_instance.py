@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class CreateInstanceGA(base.CreateCommand):
   """Create a new virtual machine instance in a managed instance group."""
@@ -32,8 +33,13 @@ class CreateInstanceGA(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
-        region_flag=True).AddArgument(
-            parser, operation_type='create instance in')
+        region_flag=True,
+        zone_help_text=(
+            'Zone of the managed instance group. This flag is only applicable '
+            'for zonal managed instance groups. '
+        ) + compute_flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT
+    ).AddArgument(
+        parser, operation_type='create instance in')
     instance_groups_flags.AddCreateInstancesFlags(parser)
 
   @staticmethod
@@ -125,6 +131,11 @@ CreateInstanceGA.detailed_help = {
       specified disks, specified metadata key-values, and specified internal
       and external IPs during instance recreation, auto-healing, updates,
       and any other lifecycle transitions of the instance.
+
+      For regional managed instance groups, if only the name is provided, the
+      instance will be created in the default zone (REGION-a) of the region.
+      To specify a different zone, use the partial URI in the `--instance` flag
+      (e.g., 'zones/ZONE/instances/INSTANCE_NAME').
       """,
     'EXAMPLES': """\
       To create an instance `instance-1` in `my-group`
@@ -141,6 +152,13 @@ CreateInstanceGA.detailed_help = {
                 --stateful-metadata='my-key=my-value' \\
                 --stateful-internal-ip=address=192.168.0.10,auto-delete=on-permanent-instance-deletion \\
                 --stateful-external-ip=address=/projects/example-project/regions/europe-west4/addresses/my-address,interface-name=nic1
+
+      To create an instance `instance-1` in `my-group`
+      (in region europe-west4) in a specific zone `europe-west4-b`, run:
+
+          $ {command} \\
+                my-group --region=europe-west4 \\
+                --instance=zones/europe-west4-b/instances/instance-1
       """,
 }
 

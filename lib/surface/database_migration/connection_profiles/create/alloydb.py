@@ -64,6 +64,7 @@ class AlloyDB(base.Command):
     ad_flags.AddClusterLabelsFlag(parser)
     ad_flags.AddPrimaryIdFlag(parser)
     ad_flags.AddCpuCountFlag(parser)
+    ad_flags.AddMachineTypeFlag(parser)
     ad_flags.AddDatabaseFlagsFlag(parser)
     ad_flags.AddPrimaryLabelsFlag(parser)
     ad_flags.AddDatabaseVersionFlag(parser)

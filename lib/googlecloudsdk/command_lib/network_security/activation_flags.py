@@ -20,11 +20,11 @@ import argparse
 from collections.abc import Sequence
 
 from googlecloudsdk.api_lib.network_security.firewall_endpoints import activation_api
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps as deps_lib
 from googlecloudsdk.calliope.concepts import multitype
@@ -208,7 +208,9 @@ def AddBillingProjectArg(
       "--billing-project",
       required=required,
       help=help_text,
-      action=actions.StoreProperty(properties.VALUES.billing.quota_project),
+      action=property_actions.StoreProperty(
+          properties.VALUES.billing.quota_project
+      ),
   )
 
 
@@ -238,7 +240,9 @@ def AddUpdateBillingProjectArg(
       required=required,
       help=help_text,
       metavar="BILLING_PROJECT",
-      action=actions.StoreProperty(properties.VALUES.billing.quota_project),
+      action=property_actions.StoreProperty(
+          properties.VALUES.billing.quota_project
+      ),
   )
 
 

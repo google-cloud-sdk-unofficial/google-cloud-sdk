@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       Update a Dataplex data product resource.
@@ -10,8 +10,7 @@
           $ {command} test-dp --location=us-central1 --display-name="new dp name"
 
   request:
-    ALPHA:
-      api_version: v1
+    api_version: v1
     collection: dataplex.projects.locations.dataProducts
     method: patch
   arguments:

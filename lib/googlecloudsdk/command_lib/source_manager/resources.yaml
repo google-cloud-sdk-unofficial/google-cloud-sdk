@@ -49,6 +49,30 @@ repository:
     help: Secure Source Manager repository.
   disable_auto_completers: false
 
+hook:
+  name: hook
+  collection: securesourcemanager.projects.locations.repositories.hooks
+  attributes:
+  - *location
+  - *repository
+  - &hook
+    parameter_name: hooksId
+    attribute_name: hook
+    help: Secure Source Manager hook.
+  disable_auto_completers: false
+
+branch_rule:
+  name: branch_rule
+  collection: securesourcemanager.projects.locations.repositories.branchRules
+  attributes:
+  - *location
+  - *repository
+  - &branch_rule
+    parameter_name: branchRulesId
+    attribute_name: branch_rule
+    help: Secure Source Manager branch rule.
+  disable_auto_completers: false
+
 pull_request:
   name: pull_request
   collection: securesourcemanager.projects.locations.repositories.pullRequests
@@ -71,6 +95,19 @@ issue:
     parameter_name: issuesId
     attribute_name: issue
     help: Secure Source Manager issue.
+  disable_auto_completers: false
+
+issue_comment:
+  name: issue_comment
+  collection: securesourcemanager.projects.locations.repositories.issues.issueComments
+  attributes:
+  - *location
+  - *repository
+  - *issue
+  - &issue_comment
+    parameter_name: issueCommentsId
+    attribute_name: issue_comment
+    help: Secure Source Manager issue comment.
   disable_auto_completers: false
 
 pull_request_comment:

@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Add a product to the specified product set.

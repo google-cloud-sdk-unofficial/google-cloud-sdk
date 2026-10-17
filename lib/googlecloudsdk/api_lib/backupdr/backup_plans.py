@@ -82,6 +82,8 @@ class BackupPlansClient(util.BackupDrClientBase):
           backupRetentionDays=backup_rule['retention-days'],
           standardSchedule=standard_schedule,
       )
+      if 'backup-vault' in backup_rule:
+        backup_rule_message.backupVault = backup_rule['backup-vault']
       backup_rules_message.append(backup_rule_message)
     return backup_rules_message
 

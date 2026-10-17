@@ -305,6 +305,11 @@ def RefreshUpdateMask(unused_ref, args, req):
       args, 'clear_automated_backup_locations', False
   ):
     req = AddFieldToUpdateMask('automatedBackupPolicy.locations', req)
+  if (
+      args.automated_backup_keep_hot_duration
+      or args.clear_automated_backup_keep_hot_duration
+  ):
+    req = AddFieldToUpdateMask('automatedBackupPolicy.keepHotDuration', req)
   # TODO: b/418228423 - Remove this check once the flag is released in GA.
   #
   # We need this to verify that the flag exists in this release track.
@@ -461,6 +466,21 @@ def AddAutomatedBackupPolicyCreateTableArgs():
           ),
       )
   )
+  params_group.AddArgument(
+      base.Argument(
+          '--automated-backup-keep-hot-duration',
+          hidden=True,  # TODO(b/527477650): Unhide for GA.
+          help=(
+              'The amount of time that automated backups remain hot, in the'
+              ' format of `24h` for 24 hours. If specified, the backups created'
+              ' by this policy are `HOT` backups. If not specified, the backups'
+              ' are `STANDARD` backups. The value must be at least `24h` and at'
+              " most `10d`, and can't exceed the policy's retention period."
+              ' Only SSD instances support `HOT` automated backups. Setting'
+              ' this flag enables automated backup for the table.'
+          ),
+      )
+  )
   return [mutex_group]
 
 
@@ -529,6 +549,38 @@ def AddAutomatedBackupPolicyUpdateTableArgs():
           const=True,
       )
   )
+  keep_hot_duration_group = base.ArgumentGroup(
+      mutex=True,
+      hidden=True,  # TODO(b/527477650): Unhide for GA.
+  )
+  params_group.AddArgument(keep_hot_duration_group)
+  keep_hot_duration_group.AddArgument(
+      base.Argument(
+          '--automated-backup-keep-hot-duration',
+          hidden=True,  # TODO(b/527477650): Unhide for GA.
+          help=(
+              'The amount of time that automated backups remain hot, in the'
+              ' format of `24h` for 24 hours. If specified, the backups created'
+              ' by this policy are `HOT` backups. If not specified, the backups'
+              ' are `STANDARD` backups. The value must be at least `24h` and at'
+              " most `10d`, and can't exceed the policy's retention period."
+              ' Only SSD instances support `HOT` automated backups. Setting'
+              ' this flag enables automated backup for the table.'
+          ),
+      )
+  )
+  keep_hot_duration_group.AddArgument(
+      base.Argument(
+          '--clear-automated-backup-keep-hot-duration',
+          hidden=True,  # TODO(b/527477650): Unhide for GA.
+          help=(
+              'Stops keeping automated backups hot. Subsequent backups created'
+              ' by the policy are `STANDARD` backups.'
+          ),
+          action='store_const',
+          const=True,
+      )
+  )
   return [top_mutex_group]
 
 
@@ -556,8 +608,12 @@ def HandleAutomatedBackupPolicyUpdateTableArgs(unused_ref, args, req):
   If `enable_automated_backup` flag is set, add default policy to table. If
   `disable_automated_backup` flag is set, keep table.automatedBackupPolicy as
   empty, together with the update_mask, it will clear automated backup policy.
-  If `automated_backup_retention_period` flag is set, add policy with given
-  retention period to table.
+  If the `automated_backup_retention_period` or
+  `automated_backup_keep_hot_duration` flag is set, adds an automated backup
+  policy with the specified values to the table. If the
+  `clear_automated_backup_keep_hot_duration` flag is set, leaves
+  `keep_hot_duration` unset on the policy. Together with the `update_mask`,
+  this clears the field and reverts the policy to `STANDARD` backups.
 
   Args:
     unused_ref: the gcloud resource (unused).
@@ -616,13 +672,17 @@ def CreateChangeStreamConfig(duration):
   )
 
 
-def CreateAutomatedBackupPolicy(retention_period, frequency, locations=None):
+def CreateAutomatedBackupPolicy(
+    retention_period, frequency, locations=None, keep_hot_duration=None
+):
   """Constructs AutomatedBackupPolicy message with given values.
 
   Args:
     retention_period: The retention period of the automated backup policy.
     frequency: The frequency of the automated backup policy.
     locations: The locations of the automated backup policy.
+    keep_hot_duration: The duration that backups created by the automated backup
+      policy remain hot. If `None`, the policy creates `STANDARD` backups.
 
   Returns:
     AutomatedBackupPolicy with the specified policy config.
@@ -638,6 +698,10 @@ def CreateAutomatedBackupPolicy(retention_period, frequency, locations=None):
     )
   if locations is not None:
     policy.locations = locations
+  if keep_hot_duration:
+    policy.keepHotDuration = ConvertDurationToSeconds(
+        keep_hot_duration, '--automated-backup-keep-hot-duration'
+    )
   return policy
 
 
@@ -753,8 +817,17 @@ def BuildAutomatedBackupPolicyFromArgs(args, locations=None):
   if getattr(args, 'enable_automated_backup', False):
     return CreateDefaultAutomatedBackupPolicy()
   retention = getattr(args, 'automated_backup_retention_period', None)
-  if retention or locations is not None:
+  keep_hot_duration = getattr(args, 'automated_backup_keep_hot_duration', None)
+  if (
+      retention
+      or locations is not None
+      or keep_hot_duration
+      or getattr(args, 'clear_automated_backup_keep_hot_duration', False)
+  ):
     return CreateAutomatedBackupPolicy(
-        retention or '7d', None, locations=locations
+        retention or '7d',
+        None,
+        locations=locations,
+        keep_hot_duration=keep_hot_duration,
     )
   return None

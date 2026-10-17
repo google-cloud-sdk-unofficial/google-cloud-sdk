@@ -168,10 +168,19 @@ class Step:
 
 @dataclasses.dataclass
 class Flow:
+  """A named stage in a proxy or target endpoint pipeline.
+
+  A flow named `EventFlow` is special: Apigee runs it once per chunk of a
+  streamed response instead of once per message, and matches it on the
+  response media type in `content_type`.
+  """
+
   name: str
   mode: Optional[str] = None
   condition: Optional[str] = None
   steps: List[Step] = dataclasses.field(default_factory=list)
+  # Only used on an `EventFlow`. Unset, the converter emits its default.
+  content_type: Optional[str] = None
 
 
 @dataclasses.dataclass
@@ -252,6 +261,7 @@ class Template:
   name: str = ""
   type: str = "template"
   priority: Optional[int] = None
+  display_name: Optional[str] = None
   description: str = ""
   features: List[str] = dataclasses.field(default_factory=list)
   parameters: List[Parameter] = dataclasses.field(default_factory=list)

@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
+  help_text:
+    brief: Set the IAM policy for an Agent Identity authorization.
+    description: |
+      This command replaces the existing IAM policy for an authorization, given an authorization
+      and a file encoded in JSON or YAML that contains the IAM policy.
+    examples: |
+      The following command will read an IAM policy defined in a JSON file
+      'policy.json' and set it for an authorization with identifier
+      'my-auth' in auth provider 'my-auth-provider' and location 'us-central1':
+
+        $ {command} my-auth policy.json --auth-provider=my-auth-provider --location=us-central1
+
+  request:
+    api_version: v1alpha
+    collection: agentidentity.projects.locations.authProviders.authorizations
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The authorization for which to set the IAM policy.
+      is_positional: true
+      spec: !REF googlecloudsdk.command_lib.agent_identity.authprovider_v1alpha_resources:projects_locations_auth_providers_authorizations

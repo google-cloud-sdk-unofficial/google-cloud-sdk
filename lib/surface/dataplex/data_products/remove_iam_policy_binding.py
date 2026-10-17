@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class RemoveIamPolicyBinding(base.Command):
   """Remove IAM policy binding from a Dataplex data product resource."""

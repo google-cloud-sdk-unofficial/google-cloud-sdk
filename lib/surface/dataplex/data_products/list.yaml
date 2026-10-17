@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       List Dataplex Data Product resources.
@@ -9,8 +9,7 @@
 
           $ {command} --project=test-project --location=us-central1
   request:
-    ALPHA:
-      api_version: v1
+    api_version: v1
     collection: dataplex.projects.locations.dataProducts
     method: list
   arguments:

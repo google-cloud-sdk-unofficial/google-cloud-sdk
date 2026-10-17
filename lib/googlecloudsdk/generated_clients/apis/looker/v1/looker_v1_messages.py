@@ -21,6 +21,20 @@ class AdminSettings(_messages.Message):
   allowedEmailDomains = _messages.StringField(1, repeated=True)
 
 
+class AuthType(_messages.Message):
+  r"""Auth type for the Looker instance.
+
+  Fields:
+    googleAuthEnabled: Optional. Whether google auth is enabled on the Looker
+      instance.
+    workforceAuthEnabled: Optional. Whether Workforce auth is enabled on the
+      Looker instance.
+  """
+
+  googleAuthEnabled = _messages.BooleanField(1)
+  workforceAuthEnabled = _messages.BooleanField(2)
+
+
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
@@ -353,6 +367,7 @@ class Instance(_messages.Message):
     acceleratedSecurityPatchEnabled: Optional. Accelerated security patch
       enabled for the instance.
     adminSettings: Looker Instance Admin settings.
+    authType: Optional. Auth type for the Looker instance.
     catalogIntegrationOptOut: Optional. Indicates whether catalog integration
       is disabled for the Looker instance.
     classType: Optional. Storage class of the instance.
@@ -554,44 +569,45 @@ class Instance(_messages.Message):
 
   acceleratedSecurityPatchEnabled = _messages.BooleanField(1)
   adminSettings = _messages.MessageField('AdminSettings', 2)
-  catalogIntegrationOptOut = _messages.BooleanField(3)
-  classType = _messages.EnumField('ClassTypeValueValuesEnum', 4)
-  consumerNetwork = _messages.StringField(5)
-  controlledEgressConfig = _messages.MessageField('ControlledEgressConfig', 6)
-  controlledEgressEnabled = _messages.BooleanField(7)
-  createTime = _messages.StringField(8)
-  customDomain = _messages.MessageField('CustomDomain', 9)
-  denyMaintenancePeriod = _messages.MessageField('DenyMaintenancePeriod', 10)
-  egressPublicIp = _messages.StringField(11)
-  encryptionConfig = _messages.MessageField('EncryptionConfig', 12)
-  fipsEnabled = _messages.BooleanField(13)
-  geminiEnabled = _messages.BooleanField(14)
-  ingressIpAllowlistConfig = _messages.MessageField('IngressIpAllowlistConfig', 15)
-  ingressPrivateIp = _messages.StringField(16)
-  ingressPublicIp = _messages.StringField(17)
-  lastDenyMaintenancePeriod = _messages.MessageField('DenyMaintenancePeriod', 18)
-  linkedLspProjectNumber = _messages.IntegerField(19)
-  lookerUri = _messages.StringField(20)
-  lookerVersion = _messages.StringField(21)
-  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 22)
-  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 23)
-  name = _messages.StringField(24)
-  oauthConfig = _messages.MessageField('OAuthConfig', 25)
-  periodicExportConfig = _messages.MessageField('PeriodicExportConfig', 26)
-  platformEdition = _messages.EnumField('PlatformEditionValueValuesEnum', 27)
-  privateIpEnabled = _messages.BooleanField(28)
-  pscConfig = _messages.MessageField('PscConfig', 29)
-  pscEnabled = _messages.BooleanField(30)
-  publicIpEnabled = _messages.BooleanField(31)
-  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 32)
-  reservedRange = _messages.StringField(33)
-  satisfiesPzi = _messages.BooleanField(34)
-  satisfiesPzs = _messages.BooleanField(35)
-  softDeleteReason = _messages.EnumField('SoftDeleteReasonValueValuesEnum', 36)
-  state = _messages.EnumField('StateValueValuesEnum', 37)
-  suspendedTime = _messages.StringField(38)
-  updateTime = _messages.StringField(39)
-  userMetadata = _messages.MessageField('UserMetadata', 40)
+  authType = _messages.MessageField('AuthType', 3)
+  catalogIntegrationOptOut = _messages.BooleanField(4)
+  classType = _messages.EnumField('ClassTypeValueValuesEnum', 5)
+  consumerNetwork = _messages.StringField(6)
+  controlledEgressConfig = _messages.MessageField('ControlledEgressConfig', 7)
+  controlledEgressEnabled = _messages.BooleanField(8)
+  createTime = _messages.StringField(9)
+  customDomain = _messages.MessageField('CustomDomain', 10)
+  denyMaintenancePeriod = _messages.MessageField('DenyMaintenancePeriod', 11)
+  egressPublicIp = _messages.StringField(12)
+  encryptionConfig = _messages.MessageField('EncryptionConfig', 13)
+  fipsEnabled = _messages.BooleanField(14)
+  geminiEnabled = _messages.BooleanField(15)
+  ingressIpAllowlistConfig = _messages.MessageField('IngressIpAllowlistConfig', 16)
+  ingressPrivateIp = _messages.StringField(17)
+  ingressPublicIp = _messages.StringField(18)
+  lastDenyMaintenancePeriod = _messages.MessageField('DenyMaintenancePeriod', 19)
+  linkedLspProjectNumber = _messages.IntegerField(20)
+  lookerUri = _messages.StringField(21)
+  lookerVersion = _messages.StringField(22)
+  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 23)
+  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 24)
+  name = _messages.StringField(25)
+  oauthConfig = _messages.MessageField('OAuthConfig', 26)
+  periodicExportConfig = _messages.MessageField('PeriodicExportConfig', 27)
+  platformEdition = _messages.EnumField('PlatformEditionValueValuesEnum', 28)
+  privateIpEnabled = _messages.BooleanField(29)
+  pscConfig = _messages.MessageField('PscConfig', 30)
+  pscEnabled = _messages.BooleanField(31)
+  publicIpEnabled = _messages.BooleanField(32)
+  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 33)
+  reservedRange = _messages.StringField(34)
+  satisfiesPzi = _messages.BooleanField(35)
+  satisfiesPzs = _messages.BooleanField(36)
+  softDeleteReason = _messages.EnumField('SoftDeleteReasonValueValuesEnum', 37)
+  state = _messages.EnumField('StateValueValuesEnum', 38)
+  suspendedTime = _messages.StringField(39)
+  updateTime = _messages.StringField(40)
+  userMetadata = _messages.MessageField('UserMetadata', 41)
 
 
 class InstanceBackup(_messages.Message):

@@ -513,3 +513,20 @@ oauth_client_credential:
       resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-].
       The prefix `gcp-` is reserved for use by Google, and may not be specified.
   disable_auto_completers: false
+
+workforce_pool_installed_app:
+  hidden: true
+  name: workforce pool installed app
+  collection: iam.locations.workforcePools.installedApps
+  request_id_field: workforcePoolInstalledAppId
+  attributes:
+  - *wf_location
+  - *positional_workforce_pool
+  - &workforce_pool_installed_app
+    parameter_name: installedAppsId
+    attribute_name: installed_app
+    help: |
+      The ID to use for the workforce pool installed app, which becomes the final component of the
+      resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-].
+      The prefix `gcp-` is reserved for use by Google, and may not be specified.
+  disable_auto_completers: false

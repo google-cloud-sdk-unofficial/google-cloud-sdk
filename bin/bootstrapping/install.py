@@ -16,8 +16,8 @@ import argparse
 import os
 import sys
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.core import config
 from googlecloudsdk.core import platforms_install
 from googlecloudsdk.core import properties
@@ -134,7 +134,7 @@ def ParseArgs():
       '--quiet',
       '-q',
       default=None,
-      action=actions.StoreConstProperty(
+      action=property_actions.StoreConstProperty(
           properties.VALUES.core.disable_prompts, True
       ),
       help=(

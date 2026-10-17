@@ -3934,6 +3934,32 @@ class DataprocV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Delete(self, request, global_params=None):
+      r"""Delete method for the projects_regions_emptyOps service.
+
+      Args:
+        request: (DataprocProjectsRegionsEmptyOpsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='dataproc.projects.regions.emptyOps.delete',
+        ordered_params=['projectId', 'region', 'emptyOpRequestId'],
+        path_params=['emptyOpRequestId', 'projectId', 'region'],
+        query_params=[],
+        relative_path='v1/projects/{projectId}/regions/{region}/emptyOps/{emptyOpRequestId}',
+        request_field='',
+        request_type_name='DataprocProjectsRegionsEmptyOpsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsRegionsJobsService(base_api.BaseApiService):
     """Service class for the projects_regions_jobs resource."""
 

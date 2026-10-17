@@ -24,7 +24,9 @@ from googlecloudsdk.api_lib.run import revision
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.command_lib.run import threat_detection_util as crtd_util
 
-DEFAULT_BASE_IMAGE = 'us-docker.pkg.dev/serverless-runtimes/google-22/run/universal'
+DEFAULT_BASE_IMAGE = (
+    'us-docker.pkg.dev/serverless-runtimes/google-22/run/universal'
+)
 ENDPOINT_VISIBILITY = 'networking.knative.dev/visibility'
 CLUSTER_LOCAL = 'cluster-local'
 
@@ -82,6 +84,8 @@ SOURCE_DEPLOY_NO_BUILD_SOURCE_LOCATION_ANNOTATION = 'run.googleapis.com/sources'
 # Functional type annotation.
 FUNCTIONAL_TYPE_ANNOTATION = 'apphub.cloud.google.com/functional-type'
 
+BUILD_CONFIG_ANNOTATION = revision.BUILD_CONFIG_ANNOTATION
+
 
 class Service(k8s_object.KubernetesObject):
   """Wraps a Serverless Service message, making fields more convenient.
@@ -96,6 +100,7 @@ class Service(k8s_object.KubernetesObject):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.threat_detection_state = crtd_util.ThreatDetectionState.DISABLED
+    self.DeserializeBuildConfig()
 
   @property
   def run_functions_annotations(self):
@@ -276,3 +281,37 @@ class Service(k8s_object.KubernetesObject):
     return self.template_annotations.get(
         SOURCE_DEPLOY_NO_BUILD_SOURCE_LOCATION_ANNOTATION, None
     )
+
+  def DeserializeBuildConfig(self):
+    """Deserializes container build configurations from template annotations."""
+    if not getattr(self.spec, 'template', None):
+      return
+    if not getattr(self.spec.template, 'spec', None):
+      return
+    if not getattr(self.spec.template, 'metadata', None) or not getattr(
+        self.spec.template.metadata, 'annotations', None
+    ):
+      return
+    self.template.DeserializeBuildConfig()
+
+  def SerializeBuildConfig(self):
+    """Serializes container build configurations to template annotations."""
+    if not getattr(self.spec, 'template', None):
+      return
+    if not getattr(self.spec.template, 'spec', None):
+      return
+    has_container_build_config = any(
+        getattr(c, '_build_config', None) is not None
+        for c in (self.spec.template.spec.containers or [])
+    )
+    has_template_annotations = bool(
+        getattr(self.spec.template, 'metadata', None)
+        and getattr(self.spec.template.metadata, 'annotations', None)
+    )
+    if not has_container_build_config and not has_template_annotations:
+      return
+    self.template.SerializeBuildConfig()
+
+  def Message(self):
+    self.SerializeBuildConfig()
+    return super(Service, self).Message()

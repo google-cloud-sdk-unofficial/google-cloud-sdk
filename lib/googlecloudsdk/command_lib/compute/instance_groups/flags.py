@@ -15,7 +15,6 @@
 """Flags and helpers for the compute instance groups commands."""
 
 import enum
-import os
 import textwrap
 
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
@@ -26,12 +25,9 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute.instance_groups import color_utils
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as mig_flags
 from googlecloudsdk.command_lib.util import completers
-from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import console_attr
-from googlecloudsdk.core.console import console_io
-from googlecloudsdk.core.util import encoding
 import six
 
 
@@ -291,7 +287,7 @@ def ValidateManagedInstanceGroupStatefulIPsProperties(args):
   ValidateStatefulIPDicts(args.stateful_external_ip, '--stateful-external-ip')
 
 
-def GetInstanceGroupManagerArg(zones_flag=False, region_flag=True):
+def GetInstanceGroupManagerArg(zones_flag=False, region_flag=True, **kwargs):
   """Returns ResourceArgument for working with instance group managers."""
   if zones_flag:
     extra_region_info_about_zones_flag = (
@@ -312,7 +308,8 @@ def GetInstanceGroupManagerArg(zones_flag=False, region_flag=True):
       zonal_collection='compute.instanceGroupManagers',
       regional_collection=regional_collection,
       zone_explanation=flags.ZONE_PROPERTY_EXPLANATION_NO_DEFAULT,
-      region_explanation=region_explanation)
+      region_explanation=region_explanation,
+      **kwargs)
 
 
 def CreateGroupReference(client, resources, args):
@@ -367,35 +364,22 @@ _HEALTH_STATE_COLOR_MAP = {
 }
 
 
-def _Colorize(text, color):
-  """Returns Colorizer object if colorization is enabled, otherwise plain text."""
-  if not text or not color:
-    return text
-  if properties.VALUES.core.disable_color.GetBool():
-    return text
-  if encoding.GetEncodedValue(os.environ, 'NO_COLOR'):
-    return text
-  if not console_io.IsInteractive(output=True):
-    return text
-  return console_attr.Colorizer(text, color)
-
-
 def _TransformAction(action):
   """Transforms the currentAction field with colorization."""
   color = _ACTION_COLOR_MAP.get(action)
-  return _Colorize(action, color)
+  return color_utils.Colorize(action, color)
 
 
 def _TransformStatus(status):
   """Transforms the instanceStatus field with colorization."""
   color = _STATUS_COLOR_MAP.get(status)
-  return _Colorize(status, color)
+  return color_utils.Colorize(status, color)
 
 
 def _TransformHealthState(health_state):
   """Transforms the detailedHealthState field with colorization."""
   color = _HEALTH_STATE_COLOR_MAP.get(health_state)
-  return _Colorize(health_state, color)
+  return color_utils.Colorize(health_state, color)
 
 
 def _TransformPreservedState(instance):
@@ -606,6 +590,7 @@ def GetListInstancesOutputWithDynamicFields(
 
 
 def AddListInstancesOutputFormat(parser, release_track=base.ReleaseTrack.GA):
+  """Adds output format and transforms for list-instances command."""
   parser.display_info.AddTransforms({
       'preservedState': _TransformPreservedState,
       'colorizedStatus': _TransformStatus,
@@ -1086,7 +1071,14 @@ def AddCreateInstancesFlags(parser):
   parser.add_argument(
       '--instance',
       required=True,
-      help="""Name of the new instance to create.""")
+      help="""\
+      Name of the new instance to create.
+
+      For regional managed instance groups, if only the name is provided, the
+      instance will be created in the default zone (REGION-a) of the region.
+      To specify a different zone, use the partial URI (e.g.
+      'zones/ZONE/instances/INSTANCE_NAME').
+      """)
   parser.add_argument(
       '--stateful-disk',
       type=arg_parsers.ArgDict(

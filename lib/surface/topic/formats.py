@@ -97,11 +97,6 @@ class Formats(base.TopicCommand):
 
             $ gcloud info --format="value(config.account)"
 
-          List resources filtered on repeated fields by projecting subfields on
-          a repeated message:
-
-            $ gcloud alpha genomics readgroupsets list --format="default(readGroups[].name)"
-
           Return the scope of the current instance:
 
             $ gcloud compute zones list --format="value(selfLink.scope())"

@@ -2360,13 +2360,15 @@ def AddPasswordPolicyPasswordExpirationDuration(parser):
   )
 
 
-def AddSqlServerEnablePasswordPolicy(
+def AddEnableSqlServerPasswordPolicy(
     parser: Any, show_negated_in_help: bool = False, hidden: bool = True
 ) -> None:
   """Add the flag to enable SQL Server password policy."""
   kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
   parser.add_argument(
+      '--enable-sql-server-password-policy',
       '--sql-server-enable-password-policy',
+      dest='enable_sql_server_password_policy',
       required=False,
       help=(
           'Enables password policy on SQL Server local logins. Must be set to'
@@ -2460,6 +2462,75 @@ def AddSqlServerClearPasswordPolicy(
       help=(
           'Clears existing SQL Server password policy configurations from the'
           ' instance.'
+      ),
+      hidden=hidden,
+      **kwargs
+  )
+
+
+def AddSqlServerClearPasswordPolicyHistoryLength(
+    parser: Any, show_negated_in_help: bool = False, hidden: bool = True
+) -> None:
+  """Add the flag to clear SQL Server password policy history length."""
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--clear-sql-server-password-policy-history-length',
+      required=False,
+      help=(
+          'Clears existing SQL Server password policy history length'
+          ' configuration from the instance.'
+      ),
+      hidden=hidden,
+      **kwargs
+  )
+
+
+def AddSqlServerClearPasswordPolicyMinimumAge(
+    parser: Any, show_negated_in_help: bool = False, hidden: bool = True
+) -> None:
+  """Add the flag to clear SQL Server password policy minimum age."""
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--clear-sql-server-password-policy-minimum-age',
+      required=False,
+      help=(
+          'Clears existing SQL Server password policy minimum age'
+          ' configuration from the instance.'
+      ),
+      hidden=hidden,
+      **kwargs
+  )
+
+
+def AddSqlServerClearPasswordPolicyMaximumAge(
+    parser: Any, show_negated_in_help: bool = False, hidden: bool = True
+) -> None:
+  """Add the flag to clear SQL Server password policy maximum age."""
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--clear-sql-server-password-policy-maximum-age',
+      required=False,
+      help=(
+          'Clears existing SQL Server password policy maximum age'
+          ' configuration from the instance and resets to the default (90'
+          ' days).'
+      ),
+      hidden=hidden,
+      **kwargs
+  )
+
+
+def AddSqlServerClearPasswordPolicyMinLength(
+    parser: Any, show_negated_in_help: bool = False, hidden: bool = True
+) -> None:
+  """Add the flag to clear SQL Server password policy min length."""
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--clear-sql-server-password-policy-min-length',
+      required=False,
+      help=(
+          'Clears existing SQL Server password policy min length'
+          ' configuration from the instance and resets to the default (8).'
       ),
       hidden=hidden,
       **kwargs
@@ -4419,13 +4490,28 @@ def AddDatabaseCenterIntegration(parser, hidden=True):
       choices={
           'enabled': 'Enable Database Center integration.',
           'disabled': 'Disable Database Center integration.',
-          'unspecified': 'Unspecified Database Center integration.',
       },
       default=None,
       help_str='State of the Database Center integration for this instance.',
       hidden=hidden,
   )
   flag.AddToParser(parser)
+
+
+# TODO(b/531563818): Mark the flag hidden=False once it is ready to be public.
+def AddClearDatabaseCenterIntegration(parser, hidden=True):
+  """Adds '--clear-database-center-integration' flag to the parser."""
+  parser.add_argument(
+      '--clear-database-center-integration',
+      required=False,
+      action='store_true',
+      hidden=hidden,
+      help=(
+          'Clear the Database Center integration setting of the instance, so'
+          ' that the instance uses the default Database Center integration'
+          ' behavior.'
+      ),
+  )
 
 
 def GetInstanceClearOverrides(args: parser_extensions.Namespace) -> list[str]:

@@ -13,21 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""gRPC interceptor that reports unknown regional endpoints clearly.
+"""gRPC client interceptor that surfaces actionable errors for unavailable regions.
 
-Split out of core.gapic_util_internal so that api_lib.util.apis_internal can
-reach it without importing gapic_util_internal, which would otherwise close the
-import cycle:
-
-  api_lib.util.apis_internal
-    -> core.gapic_util_internal
-    -> api_lib.util.api_enablement
-    -> api_lib.services.enable_api
-    -> api_lib.services.{services_util, serviceusage}
-    -> api_lib.util.apis_internal
-
-This module is a pure leaf: it depends only on grpc and core.util.regional,
-neither of which reaches back into the API machinery.
+Wraps unary-unary and stream-unary gRPC calls targeting regional endpoints and
+translates `grpc.StatusCode.UNAVAILABLE` responses into
+`regional.UnavailableRegionError` listing the service's known available regions.
 """
 
 from googlecloudsdk.core.util import regional

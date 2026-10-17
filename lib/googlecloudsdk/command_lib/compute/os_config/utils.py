@@ -526,6 +526,9 @@ def ModifyOrchestrorPolicyCreateRequest(ref, args, req):
   if args.policy_id:
     req_orchestrator.orchestratedResource.id = args.policy_id
 
+  if args.description:
+    req_orchestrator.description = args.description
+
   req_orchestrator.action = args.action.upper()
   req_orchestrator.state = args.state.upper()
   req, _ = ModifyOrchestratorPolicySetSelectors(
@@ -581,6 +584,10 @@ def ModifyOrchestrorPolicyUpdateRequest(unused_ref, args, req):
   if args.state:
     req_orchestrator.state = args.state.upper()
     update_mask.append('state')
+
+  if args.description is not None:
+    req_orchestrator.description = args.description
+    update_mask.append('description')
 
   req, modified = ModifyOrchestratorPolicySetSelectors(
       args, req, messages, api_version, req_orchestrator, use_clear=True

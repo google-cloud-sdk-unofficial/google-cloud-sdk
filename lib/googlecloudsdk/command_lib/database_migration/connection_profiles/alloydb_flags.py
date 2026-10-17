@@ -132,6 +132,16 @@ def AddCpuCountFlag(parser):
       required=True)
 
 
+def AddMachineTypeFlag(parser):
+  """Adds a --machine-type flag to the given parser."""
+  help_text = """\
+    Machine type of the VM instance. E.g. "n2-highmem-4", "n2-highmem-8",
+    "c4a-highmem-4-lssd". cpu_count must match the number of vCPUs in the
+    machine type.
+  """
+  parser.add_argument('--machine-type', help=help_text)
+
+
 def AddDatabaseFlagsFlag(parser):
   """Adds a --database-flags flag to the given parser."""
   help_text = """\

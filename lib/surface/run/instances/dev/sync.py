@@ -17,6 +17,8 @@
 import uuid
 
 from googlecloudsdk.api_lib.run import constants
+from googlecloudsdk.api_lib.run import container_resource
+from googlecloudsdk.api_lib.run import instance as instance_lib
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
@@ -25,6 +27,7 @@ from googlecloudsdk.command_lib.run import deletion
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
+from googlecloudsdk.command_lib.run import proxy
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run.sourcedeploys import deploy_util
@@ -36,6 +39,9 @@ from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
+
+_DEFAULT_PROXY_PORT = '8080'
+_NO_PROXY_HINT = 'Use --no-proxy to sync without starting a local proxy.'
 
 
 def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
@@ -93,7 +99,6 @@ def NecessaryChangesForInstancesDevSync(args):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 @base.RegionalEndpointsSupported
-@base.Hidden
 class Sync(base.Command):
   """Sync into a Cloud Run Instance."""
 
@@ -121,6 +126,8 @@ class Sync(base.Command):
   def CommonArgs(cls, parser):
     flags.DevSyncCleanupFlag(parser)
     flags.DevSyncTailLogsFlag(parser)
+    flags.DevSyncProxyFlag(parser)
+    flags.DevSyncProxyPortFlag(parser)
     parser.add_argument(
         '--iap-tunnel-url-override',
         hidden=True,
@@ -207,6 +214,35 @@ class Sync(base.Command):
       )
       raise exceptions.ConfigurationError(err_msg)
 
+  def _GetUrl(
+      self, instance_obj: instance_lib.Instance, instance_id: str
+  ) -> str:
+    if (
+        instance_obj.annotations.get(container_resource.DISABLE_URL_ANNOTATION)
+        == 'true'
+    ):
+      raise exceptions.ArgumentError(
+          'Instance [{}] has default URL disabled. {}'.format(
+              instance_id, _NO_PROXY_HINT
+          )
+      )
+    if not instance_obj.urls:
+      raise exceptions.ArgumentError(
+          'URL for instance [{}] is not ready. {}'.format(
+              instance_id, _NO_PROXY_HINT
+          )
+      )
+    return instance_obj.urls[0]
+
+  def _StartProxy(self, args, instance_url: str) -> proxy.BackgroundProxy:
+    """Starts a local proxy to the instance and prints its localhost URL."""
+
+    bind = '127.0.0.1:' + (args.proxy_port or _DEFAULT_PROXY_PORT)
+    local_proxy = proxy.BackgroundProxy(host=instance_url, bind=bind)
+    local_proxy.Start()
+    pretty_print.Info('http://{} proxies to {}'.format(bind, instance_url))
+    return local_proxy
+
   def Run(self, args):
     flags.ValidatePublicFlags(args)
 
@@ -256,6 +292,15 @@ class Sync(base.Command):
             ' Instance.'
         )
     else:
+      if (
+          args.proxy
+          and flags.FlagIsExplicitlySet(args, 'default_url')
+          and not args.default_url
+      ):
+        raise exceptions.ArgumentError(
+            'The local proxy requires the default URL, which --no-default-url'
+            ' disables. ' + _NO_PROXY_HINT
+        )
       changes = NecessaryChangesForInstancesDevSync(args)
       deploy_util.DeployInstanceFromSource(
           instance_ref=instance_ref,
@@ -274,7 +319,12 @@ class Sync(base.Command):
       if instance.urls:
         pretty_print.Info(f'Instance URL: {{bold}}{instance.urls[0]}{{reset}}')
 
+    local_proxy = None
     try:
+      if args.proxy:
+        instance_url = self._GetUrl(instance, instance_ref.instancesId)
+        local_proxy = self._StartProxy(args, instance_url)
+
       with execution_utils.RaisesKeyboardInterrupt():
         sync_util.Sync(
             args=args,
@@ -286,5 +336,7 @@ class Sync(base.Command):
           'Received Keyboard Interrupt... Dev Sync Session terminated'
       )
     finally:
+      if local_proxy:
+        local_proxy.Stop()
       if args.cleanup and not existing_instance:
         self._Cleanup(args, instance_ref)

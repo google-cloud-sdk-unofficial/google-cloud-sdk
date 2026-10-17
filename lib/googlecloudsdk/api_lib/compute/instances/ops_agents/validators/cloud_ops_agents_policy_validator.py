@@ -21,6 +21,7 @@ from typing import Set
 
 from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_exceptions as exceptions
 from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_policy as agents_policy
+from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import os_policy_assignment_to_cloud_ops_agents_policy_converter as to_ops_agents_policy
 from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.osconfig.v1 import osconfig_v1_messages as osconfig
 
@@ -73,10 +74,9 @@ _SUPPORTED_OS_SHORT_NAMES_AND_VERSIONS = {
     },
 }
 
-_SUPPORTED_PACKAGE_STATE = frozenset({
-    'installed',
-    'removed',
-})
+_SUPPORTED_PACKAGE_STATE = frozenset(
+    agents_policy.OpsAgentsPolicy.AgentsRule.PackageState
+)
 
 _StrEnum = (
     (enum.StrEnum,) if sys.version_info[:2] >= (3, 11) else (str, enum.Enum)
@@ -326,8 +326,10 @@ def _ValidateInventories(
 def IsCloudOpsAgentsPolicy(policy: osconfig.OSPolicyAssignment) -> bool:
   """Returns if the policy was created with the Ops Agent command.
   """
-  return len(
-      policy.osPolicies
-  ) == 1 and agents_policy.GetAgentsRuleFromDescription(
-      policy.osPolicies[0].description
+  return (
+      len(policy.osPolicies) == 1
+      and to_ops_agents_policy.GetAgentsRuleFromDescription(
+          policy.osPolicies[0].description
+      )
+      is not None
   )

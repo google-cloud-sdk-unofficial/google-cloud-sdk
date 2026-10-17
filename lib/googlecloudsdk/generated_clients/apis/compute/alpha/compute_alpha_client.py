@@ -101,7 +101,6 @@ class ComputeAlpha(base_api.BaseApiClient):
     self.nodeGroups = self.NodeGroupsService(self)
     self.nodeTemplates = self.NodeTemplatesService(self)
     self.nodeTypes = self.NodeTypesService(self)
-    self.orgVmExtensionPolicies = self.OrgVmExtensionPoliciesService(self)
     self.organizationGlobalVmExtensionPolicies = self.OrganizationGlobalVmExtensionPoliciesService(self)
     self.organizationRolloutPlans = self.OrganizationRolloutPlansService(self)
     self.organizationRollouts = self.OrganizationRolloutsService(self)
@@ -15956,43 +15955,6 @@ project.
         request_field='',
         request_type_name='ComputeNodeTypesListRequest',
         response_type_name='NodeTypeList',
-        supports_download=False,
-    )
-
-  class OrgVmExtensionPoliciesService(base_api.BaseApiService):
-    """Service class for the orgVmExtensionPolicies resource."""
-
-    _NAME = 'orgVmExtensionPolicies'
-
-    def __init__(self, client):
-      super(ComputeAlpha.OrgVmExtensionPoliciesService, self).__init__(client)
-      self._upload_configs = {
-          }
-
-    def Delete(self, request, global_params=None):
-      r"""Deletes a specified zone VM extension policy within an organization.
-
-      Args:
-        request: (ComputeOrgVmExtensionPoliciesDeleteRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('Delete')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Delete.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='organizations/{organizationsId}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
-        http_method='DELETE',
-        method_id='compute.orgVmExtensionPolicies.delete',
-        ordered_params=['organization', 'zone', 'vmExtensionPolicy'],
-        path_params=['organization', 'vmExtensionPolicy', 'zone'],
-        query_params=['requestId'],
-        relative_path='{+organization}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
-        request_field='',
-        request_type_name='ComputeOrgVmExtensionPoliciesDeleteRequest',
-        response_type_name='Operation',
         supports_download=False,
     )
 

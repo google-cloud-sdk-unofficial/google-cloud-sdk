@@ -3507,6 +3507,8 @@ class GoogleIamV3PolicyBinding(_messages.Message):
       `iam.googleapis.com/ServiceAccount` -
       `iam.googleapis.com/AgentPoolIdentity` (available in Preview)
     createTime: Output only. The time when the policy binding was created.
+    disabled: Output only. Whether evaluation of the policy binding is
+      disabled.
     displayName: Optional. The description of the policy binding. Must be less
       than or equal to 63 characters.
     etag: Optional. The etag for the policy binding. If this is provided on
@@ -3580,15 +3582,16 @@ class GoogleIamV3PolicyBinding(_messages.Message):
   annotations = _messages.MessageField('AnnotationsValue', 1)
   condition = _messages.MessageField('GoogleTypeExpr', 2)
   createTime = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  etag = _messages.StringField(5)
-  name = _messages.StringField(6)
-  policy = _messages.StringField(7)
-  policyKind = _messages.EnumField('PolicyKindValueValuesEnum', 8)
-  policyUid = _messages.StringField(9)
-  target = _messages.MessageField('GoogleIamV3PolicyBindingTarget', 10)
-  uid = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
+  disabled = _messages.BooleanField(4)
+  displayName = _messages.StringField(5)
+  etag = _messages.StringField(6)
+  name = _messages.StringField(7)
+  policy = _messages.StringField(8)
+  policyKind = _messages.EnumField('PolicyKindValueValuesEnum', 9)
+  policyUid = _messages.StringField(10)
+  target = _messages.MessageField('GoogleIamV3PolicyBindingTarget', 11)
+  uid = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
 
 
 class GoogleIamV3PolicyBindingTarget(_messages.Message):

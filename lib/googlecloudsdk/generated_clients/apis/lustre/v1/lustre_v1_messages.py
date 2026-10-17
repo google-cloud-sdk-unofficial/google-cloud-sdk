@@ -458,8 +458,9 @@ class Instance(_messages.Message):
 
   Fields:
     accessRulesOptions: Optional. The access rules options for the instance.
-    availableVersion: Output only. The available version that this instance
-      can be upgraded to. Format: `Lustre_YYYYMMDD.NN_pXX`
+    availableVersion: Output only. The version that this instance can be
+      upgraded to. If this field is empty, the instance is already running the
+      latest available release.
     capacityGib: Required. The storage capacity of the instance in gibibytes
       (GiB). Allowed values depend on the `perUnitStorageThroughput`. See
       [Performance tiers](https://docs.cloud.google.com/managed-
@@ -471,8 +472,8 @@ class Instance(_messages.Message):
       on the Dynamic tier. See [Performance
       tiers](https://docs.cloud.google.com/managed-lustre/docs/performance-
       tiers) for more information.
-    effectiveVersion: Output only. The effective version of the instance.
-      Format: `Lustre_YYYYMMDD.NN_pXX`
+    effectiveVersion: Output only. The software release version currently
+      running on the instance.
     filesystem: Required. Immutable. The filesystem name for this instance.
       This name is used by client-side tools, including when mounting the
       instance. Must be eight characters or less and can only contain letters
@@ -507,9 +508,9 @@ class Instance(_messages.Message):
     state: Output only. The state of the instance.
     stateReason: Output only. The reason why the instance is in a certain
       state (e.g. SUSPENDED).
-    targetVersion: Optional. The target version of the instance. Setting this
-      field triggers a self-service update to the specified version. Format:
-      `Lustre_YYYYMMDD.NN_pXX` or `latest`
+    targetVersion: Optional. The target version for the instance. To trigger
+      an upgrade, specify a version listed in `available_version`, or `latest`
+      for the newest version.
     uid: Output only. Unique ID of the resource. This is unrelated to the
       access rules which allow specifying the root squash uid.
     upcomingMaintenanceSchedule: Output only. Date and time of upcoming

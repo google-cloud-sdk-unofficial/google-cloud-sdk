@@ -29,6 +29,7 @@ from googlecloudsdk.api_lib.compute.regions import service as regions_service
 from googlecloudsdk.api_lib.compute.zones import service as zones_service
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import scope_prompter
@@ -155,8 +156,9 @@ def AddZoneFlag(parser, resource_type, operation_type, flag_prefix=None,
       '--' + flag_name,
       hidden=hidden,
       completer=completers.ZonesCompleter,
-      action=actions.StoreProperty(properties.VALUES.compute.zone),
-      help=help_text or '{0} {1}'.format(short_help, explanation))
+      action=property_actions.StoreProperty(properties.VALUES.compute.zone),
+      help=help_text or '{0} {1}'.format(short_help, explanation),
+  )
 
 
 def AddRegionFlag(parser, resource_type, operation_type,
@@ -189,9 +191,10 @@ def AddRegionFlag(parser, resource_type, operation_type,
   parser.add_argument(
       '--' + flag_name,
       completer=completers.RegionsCompleter,
-      action=actions.StoreProperty(properties.VALUES.compute.region),
+      action=property_actions.StoreProperty(properties.VALUES.compute.region),
       hidden=hidden,
-      help=help_text or '{0} {1}'.format(short_help, explanation))
+      help=help_text or '{0} {1}'.format(short_help, explanation),
+  )
 
 
 class UnderSpecifiedResourceError(exceptions.Error):

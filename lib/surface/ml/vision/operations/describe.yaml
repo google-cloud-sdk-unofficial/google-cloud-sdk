@@ -1,4 +1,6 @@
 - release_tracks: [BETA, ALPHA]
+  hints:
+    read_only: true
 
   help_text:
     brief: describe a long-running operation

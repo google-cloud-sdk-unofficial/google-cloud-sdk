@@ -274,6 +274,7 @@ class Create(base.Command):
   detailed_help = DETAILED_HELP
   _support_max_pods_per_node = False
   _support_traffic_routing_config = False
+  _support_user_workloads_service_accounts = False
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.GA):
@@ -573,6 +574,10 @@ class Create(base.Command):
       possible_args['cloud-run-functions-routing'] = (
           args.cloud_run_functions_routing
       )
+    if self._support_user_workloads_service_accounts:
+      possible_args['user-workloads-service-accounts'] = (
+          args.user_workloads_service_accounts
+      )
 
     for k, v in possible_args.items():
       if v is not None and not is_composer3:
@@ -806,6 +811,7 @@ class CreateBeta(Create):
 
   _support_max_pods_per_node = True
   _support_traffic_routing_config = True
+  _support_user_workloads_service_accounts = False
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
@@ -997,6 +1003,7 @@ def AddComposer3Flags(parser, release_track):
     flags.CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA.choice_arg.AddToParser(
         traffic_routing_group
     )
+    flags.USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG.AddToParser(parser)
 
 
 @base.UniverseCompatible
@@ -1011,6 +1018,7 @@ class CreateAlpha(CreateBeta):
   """
 
   _support_traffic_routing_config = True
+  _support_user_workloads_service_accounts = True
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.ALPHA):
@@ -1132,6 +1140,7 @@ class CreateAlpha(CreateBeta):
         release_track=self.ReleaseTrack(),
         storage_bucket=args.storage_bucket,
         enable_development_mode=args.enable_development_mode,
+        user_workloads_service_accounts=args.user_workloads_service_accounts,
     )
 
     return environments_api_util.Create(self.env_ref, create_flags,

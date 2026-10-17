@@ -14,13 +14,18 @@
 # limitations under the License.
 """Allows you to write surfaces in terms of logical Cloud Run V2 WorkerPools API operations."""
 
+from __future__ import annotations
+
 import functools
+from typing import Any
 
 from googlecloudsdk.api_lib.run import metric_names
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.sourcedeploys import deployer
 from googlecloudsdk.command_lib.run.sourcedeploys import source_container_context
+from googlecloudsdk.command_lib.run.sourcedeploys import sources
 from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import metrics
@@ -56,6 +61,86 @@ def WaitForOperation(response):
     # startup time.
     if 'google.api_core.exceptions' in type(e).__module__:
       core_exceptions.reraise(core_exceptions.Error(str(e)))
+    raise
+
+
+def _UploadSourcesAndGetSourceLocationChanges(
+    source_container_contexts: (
+        list[source_container_context.SourceContainerContext] | None
+    ) = None,
+    worker_pool_ref: Any = None,
+    tracker: progress_tracker.StagedProgressTracker | None = None,
+    dry_run: bool = False,
+    kms_key: str | None = None,
+) -> list[config_changes_mod.SourceCodeChange]:
+  """Uploads sources if necessary and creates source location changes.
+
+  Args:
+    source_container_contexts: Contexts for containers deployed from source.
+    worker_pool_ref: The worker pool resource being deployed.
+    tracker: Progress tracker for the deployment stages.
+    dry_run: Whether this is a dry run deployment.
+    kms_key: Customer managed encryption key.
+
+  Returns:
+    SourceCodeChange config changes for the uploaded sources.
+  """
+  if not source_container_contexts:
+    return []
+
+  needs_upload = not dry_run and any(
+      not sources.IsGcsObject(source_container_ctx.source)
+      for source_container_ctx in source_container_contexts
+  )
+  if tracker and needs_upload:
+    tracker.StartStage(stages.UPLOAD_SOURCE)
+  try:
+    config_changes = []
+    for source_container_ctx in source_container_contexts:
+      if dry_run:
+        bucket = 'placeholder-bucket'
+        object_ = 'placeholder-source.tar.gz'
+        generation = 0
+      elif sources.IsGcsObject(source_container_ctx.source):
+        bucket, object_, generation = sources.ParseGcsSource(
+            source_container_ctx.source
+        )
+      elif kms_key:
+        raise exceptions.ArgumentError(
+            f'Invalid source location: {source_container_ctx.source}.'
+            ' Deployments encrypted with a customer-managed encryption key'
+            ' (CMEK) expect the source to be passed in a pre-configured Cloud'
+            ' Storage bucket. See'
+            ' https://cloud.google.com/run/docs/securing/using-cmek#source-deploy'
+            ' for more details.'
+        )
+      else:
+        source_obj = sources.Upload(
+            source_container_ctx.source,
+            worker_pool_ref.locationsId,
+            worker_pool_ref,
+            source_bucket=source_container_ctx.source_bucket,
+            archive_type=sources.ArchiveType.TAR,
+            respect_gitignore=False,
+        )
+        bucket = source_obj.bucket
+        object_ = source_obj.name
+        generation = int(source_obj.generation) if source_obj.generation else 0
+      config_changes.append(
+          config_changes_mod.SourceCodeChange(
+              container_name=source_container_ctx.name,
+              non_ingress_type=True,
+              bucket=bucket,
+              object_=object_,
+              generation=generation,
+          )
+      )
+    if tracker and needs_upload:
+      tracker.CompleteStage(stages.UPLOAD_SOURCE)
+    return config_changes
+  except Exception as e:
+    if tracker and needs_upload:
+      tracker.FailStage(stages.UPLOAD_SOURCE, e)
     raise
 
 
@@ -147,12 +232,16 @@ class WorkerPoolsOperations(object):
       release_track=base.ReleaseTrack.ALPHA,
       tracker=None,
       prefetch=False,
+      source_container_contexts: (
+          list[source_container_context.SourceContainerContext] | None
+      ) = None,
       legacy_build_context: (
           source_container_context.LegacyBuildSourceContainerContext | None
       ) = None,
       skip_activation_prompt=False,
       force_new_revision=False,
       dry_run=False,
+      kms_key: str | None = None,
   ):
     """Stubbed method for worker pool deploy surface.
 
@@ -167,12 +256,15 @@ class WorkerPoolsOperations(object):
       prefetch: the worker pool, pre-fetched for ReleaseWorkerPool. `False`
         indicates the caller did not perform a prefetch; `None` indicates a
         nonexistent worker pool.
+      source_container_contexts: Contexts for containers deployed from source
+        (e.g. no-build Zip Deploy).
       legacy_build_context: Context for building source using the SubmitBuild
         API and local orchestration.
       skip_activation_prompt: bool. If true, skip activation prompts for
         services
       force_new_revision: bool to force a new revision to be created.
       dry_run: bool to indicate if this is a dry run.
+      kms_key: Customer managed encryption key.
 
     Returns:
       A WorkerPool object.
@@ -181,19 +273,24 @@ class WorkerPoolsOperations(object):
     has_create_repo = bool(
         legacy_build_context and legacy_build_context.repo_to_create
     )
-
+    has_source_containers = bool(source_container_contexts)
+    if has_legacy_build and has_source_containers:
+      raise exceptions.ConfigurationError(
+          'A Cloud Build source deployment and a no-build source deployment'
+          ' cannot be combined in the same worker pool release.'
+      )
     if tracker is None:
       tracker = progress_tracker.NoOpStagedProgressTracker(
           stages.WorkerPoolStages(
               include_build=has_legacy_build,
               include_create_repo=has_create_repo,
-              include_upload_source=has_legacy_build,
+              include_upload_source=has_legacy_build or has_source_containers,
           ),
           interruptable=True,
           aborted_message='aborted',
       )
 
-    # Deploying from a source.
+    # Deploying from a source (legacy SubmitBuild).
     if has_legacy_build and not dry_run:
       (
           image_digest,
@@ -211,6 +308,7 @@ class WorkerPoolsOperations(object):
           skip_activation_prompt,
           worker_pool_ref.locationsId,  # region
           worker_pool_ref,
+          kms_key=kms_key,
       )
       if image_digest is None:
         return
@@ -219,6 +317,18 @@ class WorkerPoolsOperations(object):
               container_name=legacy_build_context.deploy_from_source_container_name,
               non_ingress_type=True,
               image_digest=image_digest,
+          )
+      )
+
+    elif has_source_containers:
+      # Deploying from source containers (e.g., no-build / Zip Deploy).
+      config_changes.extend(
+          _UploadSourcesAndGetSourceLocationChanges(
+              source_container_contexts,
+              worker_pool_ref,
+              tracker,
+              dry_run=dry_run,
+              kms_key=kms_key,
           )
       )
 

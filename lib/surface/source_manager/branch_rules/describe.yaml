@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Describe a Secure Source Manager branch rule.
+    description: |
+      Describe a Secure Source Manager branch rule.
+    examples: |
+      To describe a branch rule called ``my-rule'' in repository ``my-repo'' and location ``us-central1'', run the following command:
+
+        $ {command} my-rule --repository=my-repo --region=us-central1
+
+  request:
+    collection: securesourcemanager.projects.locations.repositories.branchRules
+    api_version: v1
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The Secure Source Manager branch rule to describe.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:branch_rule

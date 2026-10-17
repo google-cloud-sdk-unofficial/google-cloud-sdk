@@ -4896,6 +4896,11 @@ class JobConfigurationExtract(_messages.Message):
       Geography type instead of the default GeoParquet type.
     printHeader: Optional. Whether to print out a header row in the results.
       Default is true. Not applicable when extracting models.
+    secureContext: Optional. A set of key-value pairs representing the secure
+      context. This can be used to pass sensitive or context-specific
+      information. They can be retrieved via the SECURE_CONTEXT() function and
+      used to modify the run-time behavior of an extract job on tables with
+      row access policies.
     sourceModel: A reference to the model being exported.
     sourceTable: A reference to the table being exported.
     useAvroLogicalTypes: Whether to use logical types when extracting to AVRO
@@ -4910,9 +4915,10 @@ class JobConfigurationExtract(_messages.Message):
   modelExtractOptions = _messages.MessageField('ModelExtractOptions', 6)
   nativeGeographyExportEnabled = _messages.BooleanField(7)
   printHeader = _messages.BooleanField(8, default=True)
-  sourceModel = _messages.MessageField('ModelReference', 9)
-  sourceTable = _messages.MessageField('TableReference', 10)
-  useAvroLogicalTypes = _messages.BooleanField(11)
+  secureContext = _messages.MessageField('SecureContext', 9)
+  sourceModel = _messages.MessageField('ModelReference', 10)
+  sourceTable = _messages.MessageField('TableReference', 11)
+  useAvroLogicalTypes = _messages.BooleanField(12)
 
 
 class JobConfigurationLoad(_messages.Message):

@@ -17,14 +17,12 @@ class Action(_messages.Message):
   Fields:
     cloudSqlFailover: Specifies a CloudSQLFailover action.
     gceFailCompute: Specifies a GCEFailCompute action.
-    gkeFailCompute: Specifies a GKEFailCompute action.
     l7LbHttpFault: Specifies an L7LBHTTPFault action.
   """
 
   cloudSqlFailover = _messages.MessageField('CloudSQLFailover', 1)
   gceFailCompute = _messages.MessageField('GCEFailCompute', 2)
-  gkeFailCompute = _messages.MessageField('GKEFailCompute', 3)
-  l7LbHttpFault = _messages.MessageField('L7LBHTTPFault', 4)
+  l7LbHttpFault = _messages.MessageField('L7LBHTTPFault', 3)
 
 
 class AffectedResource(_messages.Message):
@@ -953,22 +951,6 @@ class GCEFailCompute(_messages.Message):
   location = _messages.StringField(2)
   mig = _messages.MessageField('MigElement', 3)
   secureTagValue = _messages.StringField(4)
-
-
-class GKEFailCompute(_messages.Message):
-  r"""GKEFailCompute specifies infrastructure or workload to fail.
-
-  Fields:
-    cluster: Required. Options for selecting which GKE resources to fail. The
-      GKE cluster resource name. Format:
-      `projects/{project}/locations/{location}/clusters/{cluster}`
-    k8sNamespace: Optional. Specifies one or more Kubernetes namespaces.
-    location: Optional. Specifies a zone or region location.
-  """
-
-  cluster = _messages.StringField(1)
-  k8sNamespace = _messages.StringField(2, repeated=True)
-  location = _messages.StringField(3)
 
 
 class HTTPAbort(_messages.Message):

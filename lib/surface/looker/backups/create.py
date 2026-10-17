@@ -32,6 +32,7 @@ _DETAILED_HELP = {
 }
 
 
+@base.RegionalEndpointsSupported
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class CreateInstanceBackup(base.CreateCommand):
@@ -53,7 +54,7 @@ class CreateInstanceBackup(base.CreateCommand):
     )
 
   def Run(self, args):
-    parent = resources.REGISTRY.Parse(
+    parent_ref = resources.REGISTRY.Parse(
         args.instance,
         params={
             'projectsId': properties.VALUES.core.project.GetOrFail,
@@ -61,6 +62,10 @@ class CreateInstanceBackup(base.CreateCommand):
         },
         api_version=utils.VERSION_MAP[self.ReleaseTrack()],
         collection='looker.projects.locations.instances',
-    ).RelativeName()
+    )
 
-    return backups.CreateBackup(parent, self.ReleaseTrack())
+    return backups.CreateBackup(
+        parent_ref.RelativeName(),
+        self.ReleaseTrack(),
+        location=parent_ref.locationsId,
+    )

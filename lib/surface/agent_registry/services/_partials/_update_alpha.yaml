@@ -34,27 +34,10 @@
         params:
         - group:
             api_field: service.agentSpec
-            arg_name: agent-spec
-            clearable: true
             required: false
             help_text: |-
               The spec of the agent.
             params:
-            - arg_name: agent-spec-type
-              api_field: service.agentSpec.type
-              required: false
-              help_text: |-
-                The type of the agent spec content.
-              choices:
-              - arg_value: no-spec
-                enum_value: NO_SPEC
-                help_text: |-
-                  There is no spec for the Agent. The `content` field must be empty.
-              - arg_value: a2a-agent-card
-                enum_value: A2A_AGENT_CARD
-                help_text: |-
-                  The content is an A2A Agent Card following the A2A specification.
-                  The `interfaces` field must be empty.
             - arg_name: agent-spec-content
               api_field: service.agentSpec.content
               required: false
@@ -66,27 +49,10 @@
                 The content size is limited to `10KB`.
         - group:
             api_field: service.mcpServerSpec
-            arg_name: mcp-server-spec
-            clearable: true
             required: false
             help_text: |-
               The spec of the MCP Server.
             params:
-            - arg_name: mcp-server-spec-type
-              api_field: service.mcpServerSpec.type
-              required: false
-              help_text: |-
-                The type of the MCP Server spec content.
-              choices:
-              - arg_value: no-spec
-                enum_value: NO_SPEC
-                help_text: |-
-                  There is no spec for the MCP Server. The `content` field must be empty.
-              - arg_value: tool-spec
-                enum_value: TOOL_SPEC
-                help_text: |-
-                  The content is a MCP Tool Spec following the One MCP specification.
-                  The payload is the same as the `tools/list` response.
             - arg_name: mcp-server-spec-content
               api_field: service.mcpServerSpec.content
               required: false
@@ -98,27 +64,10 @@
                 The content size is limited to `10KB`.
         - group:
             api_field: service.endpointSpec
-            arg_name: endpoint-spec
-            clearable: true
             required: false
             help_text: |-
               The spec of the endpoint.
             params:
-            - arg_name: endpoint-spec-type
-              api_field: service.endpointSpec.type
-              required: false
-              help_text: |-
-                The type of the endpoint spec content.
-              choices:
-              - arg_value: no-spec
-                enum_value: NO_SPEC
-                help_text: |-
-                  There is no spec for the Endpoint. The `content` field must be empty.
-              - arg_value: openapi-spec
-                enum_value: OPENAPI_SPEC
-                help_text: |-
-                  OpenAPI Specification.
-                hidden: true
             - arg_name: endpoint-spec-content
               api_field: service.endpointSpec.content
               required: false

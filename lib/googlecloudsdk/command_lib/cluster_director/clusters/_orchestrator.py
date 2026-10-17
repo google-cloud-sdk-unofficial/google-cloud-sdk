@@ -595,6 +595,9 @@ def MakeClusterSlurmOrchestrator(
               _GetStoragePoolName(cluster_ref, p) for p in storage_pools
           ]
       slurm.loginNodes.bootDisk = boot_disk
+    tags = login_node.get("networkTags")
+    if tags:
+      slurm.loginNodes.networkTags = tags
   if args.IsSpecified("slurm_prolog_scripts"):
     slurm.prologBashScripts = args.slurm_prolog_scripts
   if args.IsSpecified("slurm_epilog_scripts"):

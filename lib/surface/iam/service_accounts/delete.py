@@ -19,13 +19,13 @@
 import textwrap
 
 from googlecloudsdk.api_lib.iam import util
-from googlecloudsdk.api_lib.smart_guardrails import smart_guardrails
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete a service account from a project.
 
@@ -46,7 +46,8 @@ class Delete(base.DeleteCommand):
     iam_util.AddServiceAccountNameArg(
         parser, action='to delete')
     if cls.ReleaseTrack() != base.ReleaseTrack.GA:
-      iam_util.AddServiceAccountRecommendArg(parser, action='deletion')
+      # No-op, kept so existing invocations keep working.
+      iam_util.AddServiceAccountRecommendArg(parser)
 
   def Run(self, args):
     prompt_message = 'You are about to delete service account [{0}]'.format(
@@ -54,23 +55,6 @@ class Delete(base.DeleteCommand):
     )
     client, messages = util.GetClientAndMessages()
     sa_resource_name = iam_util.EmailToAccountResourceName(args.service_account)
-    if self.ReleaseTrack() != base.ReleaseTrack.GA and args.recommend:
-      # Add deletion risk message to the prompt.
-      service_account = client.projects_serviceAccounts.Get(
-          messages.IamProjectsServiceAccountsGetRequest(name=sa_resource_name)
-      )
-      # Parent command group explicitly disables user project quota.
-      # Call with user project quota enabled, so that
-      # default project can be used as quota project.
-      base.EnableUserProjectQuota()
-      risk = smart_guardrails.GetServiceAccountDeletionRisk(
-          self.ReleaseTrack(),
-          service_account.projectId,
-          args.service_account,
-      )
-      base.DisableUserProjectQuota()
-      if risk:
-        prompt_message += '\n\n{0}'.format(risk)
     console_io.PromptContinue(message=prompt_message, cancel_on_no=True)
     client.projects_serviceAccounts.Delete(
         messages.IamProjectsServiceAccountsDeleteRequest(name=sa_resource_name)

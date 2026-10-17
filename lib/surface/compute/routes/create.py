@@ -18,10 +18,10 @@
 import ipaddress
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -108,9 +108,12 @@ def _Args(parser):
 
   parser.add_argument(
       '--next-hop-instance-zone',
-      action=actions.StoreProperty(properties.VALUES.compute.zone),
-      help=('The zone of the next hop instance. ' +
-            instance_flags.ZONE_PROPERTY_EXPLANATION))
+      action=property_actions.StoreProperty(properties.VALUES.compute.zone),
+      help=(
+          'The zone of the next hop instance. '
+          + instance_flags.ZONE_PROPERTY_EXPLANATION
+      ),
+  )
 
   parser.add_argument(
       '--next-hop-vpn-tunnel-region',

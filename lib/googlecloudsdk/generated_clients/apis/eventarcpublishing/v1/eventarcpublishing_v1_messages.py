@@ -47,6 +47,23 @@ class EventarcpublishingProjectsLocationsChannelsPublishEventsRequest(_messages.
   googleCloudEventarcPublishingV1PublishEventsRequest = _messages.MessageField('GoogleCloudEventarcPublishingV1PublishEventsRequest', 2)
 
 
+class EventarcpublishingProjectsLocationsDefaultMessageBusPublishRequest(_messages.Message):
+  r"""A EventarcpublishingProjectsLocationsDefaultMessageBusPublishRequest
+  object.
+
+  Fields:
+    googleCloudEventarcPublishingV1PublishRequest: A
+      GoogleCloudEventarcPublishingV1PublishRequest resource to be passed as
+      the request body.
+    messageBus: Required. The full name of the message bus to publish events
+      to. Format:
+      `projects/{project}/locations/{location}/messageBuses/{messageBus}`.
+  """
+
+  googleCloudEventarcPublishingV1PublishRequest = _messages.MessageField('GoogleCloudEventarcPublishingV1PublishRequest', 1)
+  messageBus = _messages.StringField(2, required=True)
+
+
 class EventarcpublishingProjectsLocationsMessageBusesPublishRequest(_messages.Message):
   r"""A EventarcpublishingProjectsLocationsMessageBusesPublishRequest object.
 

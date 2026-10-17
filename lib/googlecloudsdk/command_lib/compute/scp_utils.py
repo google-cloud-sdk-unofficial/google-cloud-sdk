@@ -17,9 +17,8 @@
 
 
 from argcomplete.completers import FilesCompleter
-
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import scope as compute_scope
@@ -58,9 +57,12 @@ class BaseScpHelper(ssh_utils.BaseSSHCLIHelper):
 
     parser.add_argument(
         '--zone',
-        action=actions.StoreProperty(properties.VALUES.compute.zone),
-        help=('The zone of the instance to copy files to/from.\n\n' +
-              flags.ZONE_PROPERTY_EXPLANATION))
+        action=property_actions.StoreProperty(properties.VALUES.compute.zone),
+        help=(
+            'The zone of the instance to copy files to/from.\n\n'
+            + flags.ZONE_PROPERTY_EXPLANATION
+        ),
+    )
 
   def RunScp(self,
              compute_holder,

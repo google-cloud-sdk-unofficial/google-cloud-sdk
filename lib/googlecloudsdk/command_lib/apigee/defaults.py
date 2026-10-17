@@ -20,7 +20,7 @@ import collections
 from googlecloudsdk.api_lib import apigee
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.apigee import errors
-from googlecloudsdk.command_lib.apigee import request
+from googlecloudsdk.command_lib.apigee import project_mapping
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
@@ -54,13 +54,13 @@ def OrganizationFromGCPProject():
   # Use the cached project_mapping_v2 if available. This should handle all the
   # cases where the project name is same as the organization name when cache
   # miss happens.
-  project_mapping = request.GetProjectMapping(project)
-  if project_mapping:
-    return project_mapping["organization"]
+  mapping = project_mapping.GetProjectMapping(project)
+  if mapping:
+    return mapping["organization"]
 
   # Otherwise, list all organizations and update the project_mapping cache for
   # all the projects in the response.
-  mapping = request.FindMappingForProject(project)
+  mapping = project_mapping.FindMappingForProject(project)
   if mapping:
     return mapping["organization"]
 

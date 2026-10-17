@@ -29,11 +29,11 @@ from googlecloudsdk.core import ecp_proxy_manager
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import proxy_config
 from googlecloudsdk.core import transport
 from googlecloudsdk.core.ecp_proxy_manager import ECPProxyError
 from googlecloudsdk.core.updater import installers
 from googlecloudsdk.core.util import encoding
-from googlecloudsdk.core.util import http_proxy_types
 from googlecloudsdk.core.util import platforms
 import httplib2
 import requests
@@ -166,43 +166,6 @@ class HTTPAdapter(requests.adapters.HTTPAdapter):
     context.load_cert_chain(self._cert_info.certfile, **cert_chain_kwargs)
 
     kwargs['ssl_context'] = context
-
-
-def GetProxyInfo():
-  """Returns the proxy string for use by requests from gcloud properties.
-
-  Returns:
-    str or None: The proxy URL string if configured, otherwise None.
-
-  Raises:
-    properties.InvalidValueError: If a partial proxy configuration is set.
-
-  See https://requests.readthedocs.io/en/master/user/advanced/#proxies.
-  """
-  proxy_type = properties.VALUES.proxy.proxy_type.Get()
-  proxy_address = properties.VALUES.proxy.address.Get()
-  proxy_port = properties.VALUES.proxy.port.GetInt()
-
-  # Validate the core proxy properties before reading the optional ones, so
-  # that a malformed optional property cannot mask this error.
-  try:
-    proxy_configured = http_proxy_types.IsProxyConfigured(
-        proxy_type, proxy_address, proxy_port
-    )
-  except ValueError as e:
-    raise properties.InvalidValueError(str(e))
-
-  if not proxy_configured:
-    return None
-
-  return http_proxy_types.FormatProxyUrl(
-      proxy_type=proxy_type,
-      proxy_address=proxy_address,
-      proxy_port=proxy_port,
-      proxy_rdns=properties.VALUES.proxy.rdns.GetBool(),
-      proxy_user=properties.VALUES.proxy.username.Get(),
-      proxy_pass=properties.VALUES.proxy.password.Get(),
-  )
 
 
 class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
@@ -368,7 +331,7 @@ def Session(
   Returns: A requests.Session subclass.
   """
   session = session or requests.Session()
-  proxy_info = GetProxyInfo()
+  proxy_info = proxy_config.GetProxyInfo()
 
   orig_request_method = session.request
 

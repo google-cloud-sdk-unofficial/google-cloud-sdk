@@ -25,6 +25,12 @@
       api_field: warmPool.serviceAccount
       required: true
       help_text: 'Service account to attach to the warm pool. Format: projects/{projectID}/serviceAccounts/{serviceAccount}'
+    - arg_name: artifacts-gcs-bucket
+      api_field: warmPool.artifactsGcsBucket
+      help_text: |-
+        User-defined location of warm pool logs and artifacts in Google Cloud
+        Storage. Format: `gs://{bucket}/{folder}`. A default bucket will be
+        bootstrapped if the field is not set or empty.
     - group:
         params:
         - arg_name: provisioning-tool

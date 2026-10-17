@@ -2057,6 +2057,7 @@ class OsConstraint(_messages.Message):
       DESKTOP_WINDOWS: A desktop Windows operating system.
       DESKTOP_LINUX: A desktop Linux operating system.
       DESKTOP_CHROME_OS: A desktop ChromeOS operating system.
+      GOOGLEBOOK_OS: A Googlebook operating system.
       ANDROID: An Android operating system.
       IOS: An iOS operating system.
     """
@@ -2065,8 +2066,9 @@ class OsConstraint(_messages.Message):
     DESKTOP_WINDOWS = 2
     DESKTOP_LINUX = 3
     DESKTOP_CHROME_OS = 4
-    ANDROID = 5
-    IOS = 6
+    GOOGLEBOOK_OS = 5
+    ANDROID = 6
+    IOS = 7
 
   minimumVersion = _messages.StringField(1)
   osType = _messages.EnumField('OsTypeValueValuesEnum', 2)

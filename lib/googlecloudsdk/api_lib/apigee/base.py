@@ -15,7 +15,13 @@
 """Generic implementations of Apigee Management APIs."""
 
 
+from googlecloudsdk.command_lib.apigee import project_mapping
 from googlecloudsdk.command_lib.apigee import request
+
+
+def ResolveLocation(identifiers):
+  """Returns the location of the Apigee organization when not overridden."""
+  return project_mapping.ResolveLocation(identifiers)
 
 
 class BaseClient(object):
@@ -35,20 +41,30 @@ class BaseClient(object):
         identifiers or {},
         cls._entity_path[:-1],
         cls._entity_path[-1],
-        query_params=extra_params)
+        query_params=extra_params,
+        location=ResolveLocation(identifiers),
+    )
 
   @classmethod
   def Describe(cls, identifiers=None):
     if cls._entity_path is None:
       raise NotImplementedError("%s class must provide an entity path." % cls)
-    return request.ResponseToApiRequest(identifiers or {}, cls._entity_path)
+    return request.ResponseToApiRequest(
+        identifiers or {},
+        cls._entity_path,
+        location=ResolveLocation(identifiers),
+    )
 
   @classmethod
   def Delete(cls, identifiers=None):
     if cls._entity_path is None:
       raise NotImplementedError("%s class must provide an entity path." % cls)
     return request.ResponseToApiRequest(
-        identifiers or {}, cls._entity_path, method="DELETE")
+        identifiers or {},
+        cls._entity_path,
+        method="DELETE",
+        location=ResolveLocation(identifiers),
+    )
 
 
 class PagedListClient(BaseClient):

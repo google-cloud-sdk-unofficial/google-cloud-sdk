@@ -15,6 +15,7 @@
 """Key generation utilities."""
 
 
+import enum
 import os
 import sys
 
@@ -28,6 +29,35 @@ Possession of this key file could allow anybody to act as this certificate's
 subject. Please make sure that you store this key file in a secure location at
 all times, and ensure that only authorized users have access to it.
 """
+
+
+class KeyAlgorithm(enum.Enum):
+  """Supported key generation algorithms."""
+
+  RSA_2048 = 'rsa-2048'
+  RSA_3072 = 'rsa-3072'
+  RSA_4096 = 'rsa-4096'
+  EC_P256 = 'ec-p256'
+  EC_P384 = 'ec-p384'
+
+
+_RSA_KEY_SIZES = {
+    KeyAlgorithm.RSA_2048: 2048,
+    KeyAlgorithm.RSA_3072: 3072,
+    KeyAlgorithm.RSA_4096: 4096,
+}
+
+
+def _ResolveKeyAlgorithm(algorithm):
+  """Resolves a KeyAlgorithm enum from an enum value or CLI choice string."""
+  if isinstance(algorithm, KeyAlgorithm):
+    return algorithm
+  if isinstance(algorithm, str):
+    try:
+      return KeyAlgorithm(algorithm)
+    except ValueError:
+      return None
+  return None
 
 
 def RSAKeyGen(key_size=2048):
@@ -52,7 +82,6 @@ def RSAKeyGen(key_size=2048):
     # module unless we're actually going down this code path.
     # pylint: disable=g-import-not-at-top
     from cryptography.hazmat.primitives.asymmetric import rsa
-    from cryptography.hazmat.backends.openssl.backend import backend
   except ImportError:
     log.err.Print(import_error_msg)
     sys.exit(1)
@@ -78,7 +107,8 @@ def RSAKeyGen(key_size=2048):
       sys.exit(1)
 
   private_key = rsa.generate_private_key(
-      public_exponent=65537, key_size=key_size, backend=backend)
+      public_exponent=65537, key_size=key_size
+  )
 
   private_key_bytes = private_key.private_bytes(
       Encoding.PEM,
@@ -91,6 +121,80 @@ def RSAKeyGen(key_size=2048):
   return private_key_bytes, public_key_bytes
 
 
+def _GetEcCurve(curve, ec):
+  """Resolves the EC curve object from a KeyAlgorithm enum or curve instance."""
+  if isinstance(curve, ec.EllipticCurve):
+    return curve
+  if isinstance(curve, type) and issubclass(curve, ec.EllipticCurve):
+    return curve()
+  algorithm_enum = _ResolveKeyAlgorithm(curve)
+  if algorithm_enum == KeyAlgorithm.EC_P256:
+    return ec.SECP256R1()
+  if algorithm_enum == KeyAlgorithm.EC_P384:
+    return ec.SECP384R1()
+  raise ValueError(
+      "Unsupported EC curve '{}'. Supported algorithms are '{}' and '{}'."
+      .format(
+          curve,
+          KeyAlgorithm.EC_P256.value,
+          KeyAlgorithm.EC_P384.value,
+      )
+  )
+
+
+def ECKeyGen(curve=KeyAlgorithm.EC_P256):
+  """Generates an EC public-private key pair.
+
+  Args:
+    curve: The EC KeyAlgorithm enum (e.g. KeyAlgorithm.EC_P256,
+      KeyAlgorithm.EC_P384), CLI choice string ('ec-p256', 'ec-p384'), or an
+      EllipticCurve instance. Defaults to KeyAlgorithm.EC_P256.
+
+  Returns:
+    A tuple with: (private_key, public_key) serialized as PEM bytes.
+  """
+  # pylint: disable=g-import-not-at-top
+  from cryptography.hazmat.primitives.asymmetric import ec
+  from cryptography.hazmat.primitives.serialization import Encoding
+  from cryptography.hazmat.primitives.serialization import NoEncryption
+  from cryptography.hazmat.primitives.serialization import PrivateFormat
+  from cryptography.hazmat.primitives.serialization import PublicFormat
+
+  ec_curve = _GetEcCurve(curve, ec)
+  private_key = ec.generate_private_key(ec_curve)
+
+  private_key_bytes = private_key.private_bytes(
+      Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption()
+  )
+
+  public_key_bytes = private_key.public_key().public_bytes(
+      Encoding.PEM, PublicFormat.SubjectPublicKeyInfo
+  )
+
+  return private_key_bytes, public_key_bytes
+
+
+def KeyGenForAlgorithm(key_algorithm):
+  """Generates a key pair for the specified algorithm.
+
+  Args:
+    key_algorithm: The algorithm choice string (e.g. 'rsa-2048', 'rsa-3072',
+      'rsa-4096', 'ec-p256', 'ec-p384') or KeyAlgorithm enum.
+
+  Returns:
+    A tuple with: (private_key, public_key) serialized as PEM bytes.
+  """
+  algorithm_enum = _ResolveKeyAlgorithm(key_algorithm)
+  if algorithm_enum in _RSA_KEY_SIZES:
+    return RSAKeyGen(_RSA_KEY_SIZES[algorithm_enum])
+  if algorithm_enum in (
+      KeyAlgorithm.EC_P256,
+      KeyAlgorithm.EC_P384,
+  ):
+    return ECKeyGen(algorithm_enum)
+  raise ValueError("Unsupported key algorithm '{}'.".format(key_algorithm))
+
+
 def ExportPrivateKey(private_key_output_file, private_key_bytes):
   """Export a private key to a filename, printing a warning to the user.
 
@@ -100,7 +204,7 @@ def ExportPrivateKey(private_key_output_file, private_key_bytes):
   """
 
   try:
-    # Make sure this file is only accesible to the running user before writing.
+    # Make sure this file is only accessible to the running user before writing.
     files.PrivatizeFile(private_key_output_file)
     files.WriteFileContents(private_key_output_file, private_key_bytes)
     # Make file readable only by owner.

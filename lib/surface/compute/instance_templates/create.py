@@ -85,6 +85,7 @@ def _CommonArgs(
     support_external_ip_tier=False,
     support_windows_license_optimization_mode=False,
     support_latency_tolerant=False,
+    support_protection_tier=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -179,6 +180,9 @@ def _CommonArgs(
 
   if support_latency_tolerant:
     instances_flags.AddLatencyTolerantArgs(parser)
+
+  if support_protection_tier:
+    instances_flags.AddProtectionTierArgs(parser)
 
   instance_templates_flags.AddServiceProxyConfigArgs(
       parser, release_track=release_track
@@ -653,6 +657,7 @@ def _RunCreate(
     support_expose_host_topology=False,
     support_windows_license_optimization_mode=False,
     support_latency_tolerant=False,
+    support_protection_tier=False,
 ):
   """Common routine for creating instance template.
 
@@ -727,6 +732,7 @@ def _RunCreate(
       support_windows_license_optimization_mode: Indicate whether Windows
         license optimization mode is supported.
       support_latency_tolerant: Indicate whether latency tolerant is supported.
+      support_protection_tier: Indicate whether protection tier is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -963,6 +969,10 @@ def _RunCreate(
   if support_latency_tolerant and args.IsSpecified('latency_tolerant'):
     latency_tolerant = args.latency_tolerant
 
+  protection_tier = instance_utils.ExtractProtectionTierFromArgs(
+      args, support_protection_tier
+  )
+
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
@@ -986,6 +996,7 @@ def _RunCreate(
       expose_host_topology=expose_host_topology,
       windows_license_optimization_mode=windows_license_optimization_mode,
       latency_tolerant=latency_tolerant,
+      protection_tier=protection_tier,
   )
 
   if args.no_service_account:
@@ -1342,6 +1353,11 @@ class Create(base.CreateCommand):
   _support_windows_license_optimization_mode = False
 
   @classmethod
+  def _SupportProtectionTier(cls):
+    """Returns whether the --protection-tier flag is supported."""
+    return cls.ReleaseTrack() == base.ReleaseTrack.PREVIEW
+
+  @classmethod
   def Args(cls, parser):
     _CommonArgs(
         parser,
@@ -1380,6 +1396,7 @@ class Create(base.CreateCommand):
         support_vsock_mode=cls._support_vsock_mode,
         support_expose_host_topology=cls._support_expose_host_topology,
         support_external_ip_tier=cls._support_external_ip_tier,
+        support_protection_tier=cls._SupportProtectionTier(),
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1407,7 +1424,7 @@ class Create(base.CreateCommand):
       A resource object dispatched by display.Displayer().
     """
     return _RunCreate(
-        base_classes.ComputeApiHolder(base.ReleaseTrack.GA),
+        base_classes.ComputeApiHolder(self.ReleaseTrack()),
         args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
@@ -1445,6 +1462,7 @@ class Create(base.CreateCommand):
         support_nat64_eligible=self._support_nat64_eligible,
         support_vsock_mode=self._support_vsock_mode,
         support_expose_host_topology=self._support_expose_host_topology,
+        support_protection_tier=self._SupportProtectionTier(),
     )
 
 

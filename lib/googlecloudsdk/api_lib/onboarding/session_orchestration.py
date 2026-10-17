@@ -91,9 +91,31 @@ def _ProcessPendingUserInput(
     )
     return client.sessions.Patch(patch_request)
 
+  elif pending_input.project:
+    supported_projects = pending_input.project.supportedProjects or []
+    if not supported_projects:
+      raise onboarding_exceptions.SessionProtocolError(
+          'An error occurred. Please visit the Cloud Console'
+          ' (https://console.cloud.google.com) to select a project.'
+      )
+    selected_project = user_inputs.HandleUserInputSelectProject(
+        supported_projects
+    )
+    if selected_project is None:
+      raise onboarding_exceptions.ProjectNotSelectedError(
+          'No project selected. Onboarding cannot proceed.'
+      )
+
+    updated_session = messages.Session(project=selected_project)
+    patch_request = messages.UseronboardingSessionsPatchRequest(
+        name=canonical_name,
+        session=updated_session,
+        updateMask='project',
+    )
+    return client.sessions.Patch(patch_request)
+
   else:
     field_checks = [
-        (pending_input.project, 'project selection'),
         (pending_input.billingAccount, 'billing account selection'),
         (pending_input.paymentInfo, 'payment information submission'),
         (pending_input.chargingStrategy, 'charging strategy selection'),

@@ -15,7 +15,7 @@ class Appliance(_messages.Message):
   r"""Message describing a physical Appliance. NextID : 112
 
   Enums:
-    ModelValueValuesEnum: The hardware form factor of the appliance.
+    ModelValueValuesEnum: Optional. The hardware form factor of the appliance.
     StateValueValuesEnum: Output only. The state of the physical appliance.
     VerificationStateValueValuesEnum: Output only. Indicates whether appliance
       has been verified by Google.
@@ -54,9 +54,9 @@ class Appliance(_messages.Message):
       field can only be updated to correct attestation_passcode. If the
       provided attestation passcode is wrong, the API will return an error.
     createTime: Output only. Create time.
-    customerManagedKey: The resource name of the customer-managed KMS key used
-      to encrypt data on the appliance. If none is set, a Google-managed key
-      will be used. The name looks like
+    customerManagedKey: Optional. The resource name of the customer-managed
+      KMS key used to encrypt data on the appliance. If none is set, a Google-
+      managed key will be used. The name looks like
       "projects//locations//keyRings//cryptoKeys//cryptoKeyVersions/".
     customerRevokedAccess: Optional. If true, VerificationState is
       BLOCKED_BY_CUSTOMER or BLOCKED_BY_CUSTOMER_AND_GOOGLE. This field is
@@ -68,8 +68,8 @@ class Appliance(_messages.Message):
       request since merge of fields happens in empty updatemask. Use instead
       wildcard * or nonempty updatemask with customer_revoked_access field.
     deleteTime: Output only. Delete time.
-    displayName: A mutable, user-settable name for the resource. It does not
-      need to be unique and should be less than 64 characters.
+    displayName: Optional. A mutable, user-settable name for the resource. It
+      does not need to be unique and should be less than 64 characters.
     etag: Strongly validated etag, computed by the server based on the value
       of other fields, and may be sent on update and delete requests to ensure
       the client has an up-to-date value before proceeding. See
@@ -98,14 +98,16 @@ class Appliance(_messages.Message):
       their appliance can receive disruptive updates, periods of time during
       which they want to block all updates and relative order in which their
       appliances can receive updates.
-    model: The hardware form factor of the appliance.
-    name: Name of resource.
+    model: Optional. The hardware form factor of the appliance.
+    name: Identifier. Name of resource.
     offlineExportFeature: Optional. Export configuration for offline
       appliance.
-    offlineImportFeature: The offline import configuration for this appliance.
+    offlineImportFeature: Optional. The offline import configuration for this
+      appliance.
     onlineEnabled: Optional. Whether the appliance can communicate with GCP
       for purposes like online transfer or monitoring.
-    onlineImportFeature: The online import configuration for this appliance.
+    onlineImportFeature: Optional. The online import configuration for this
+      appliance.
     order: Output only. The order associated with the appliance. Format:
       projects/{project}/locations/{location}/orders/{order}
     pickupInfo: Optional. Details of pickup information for the appliance's
@@ -124,7 +126,7 @@ class Appliance(_messages.Message):
     sessionId: Output only. session_id is a 16 character Unique identifier for
       the session, computed when the resource is created. Example:
       US-a123-b2cd.
-    shipmentInfo: Details of the appliance's shipment.
+    shipmentInfo: Optional. Details of the appliance's shipment.
     state: Output only. The state of the physical appliance.
     stateChangeTime: Output only. Record the time of latest appliance state
       change.
@@ -137,7 +139,7 @@ class Appliance(_messages.Message):
   """
 
   class ModelValueValuesEnum(_messages.Enum):
-    r"""The hardware form factor of the appliance.
+    r"""Optional. The hardware form factor of the appliance.
 
     Values:
       TYPE_UNSPECIFIED: Default value. This value is unused.
@@ -319,13 +321,14 @@ class ContactInfo(_messages.Message):
   r"""Contact information to be used for communication regarding the order.
 
   Fields:
-    additionalEmails: Additional emails to include in correspondence.
-    business: The name of the business, if applicable.
-    contactName: The name of the primary contact.
-    email: The email of the primary contact.
-    phone: The phone number of the primary contact. Should be given in E.164
-      format consisting of the country calling code (1 to 3 digits) and the
-      subscriber number, with no additional spaces or formatting, e.g.
+    additionalEmails: Optional. Additional emails to include in
+      correspondence.
+    business: Optional. The name of the business, if applicable.
+    contactName: Optional. The name of the primary contact.
+    email: Optional. The email of the primary contact.
+    phone: Optional. The phone number of the primary contact. Should be given
+      in E.164 format consisting of the country calling code (1 to 3 digits)
+      and the subscriber number, with no additional spaces or formatting, e.g.
       "15552220123".
   """
 
@@ -936,7 +939,7 @@ class OfflineExportFeature(_messages.Message):
       for this transfer. This account must be given roles/storage.admin access
       to the output bucket.
     transferManifest: Optional. Manifest file for the transfer. When this is
-      provided, only files specificied in the manifest file are transferred.
+      provided, only files specified in the manifest file are transferred.
       Only one GCSSource can be set with this option.
     workloadAccount: Output only. The service account associated with this
       transfer. This account must be granted the roles/storage.admin role on
@@ -1225,18 +1228,18 @@ class Order(_messages.Message):
     address: Optional. The address to ship the order to. See https://github.co
       m/googleapis/googleapis/blob/master/google/type/postal_address.proto.
     annotations: User annotations. See https://google.aip.dev/128#annotations.
-    appliances: The appliances included in this order.
-    cancelled: Whether the order has been cancelled. For an order that is in
-      the FULFILLING state, setting this to true will cause the order to move
-      to the CANCELLED state.
+    appliances: Optional. The appliances included in this order.
+    cancelled: Optional. Whether the order has been cancelled. For an order
+      that is in the FULFILLING state, setting this to true will cause the
+      order to move to the CANCELLED state.
     createTime: Output only. Create time.
     datacenterLocation: Output only. Datacenter location used to register the
       session.
     deleteTime: Output only. Delete time.
-    deliveryNotes: Free text notes included in the order, for any additional
-      details that should be passed on to the shipping company.
-    displayName: A mutable, user-settable name for the resource. It does not
-      need to be unique and should be less than 64 characters.
+    deliveryNotes: Optional. Free text notes included in the order, for any
+      additional details that should be passed on to the shipping company.
+    displayName: Optional. A mutable, user-settable name for the resource. It
+      does not need to be unique and should be less than 64 characters.
     etag: Strongly validated etag, computed by the server based on the value
       of other fields, and may be sent on update and delete requests to ensure
       the client has an up-to-date value before proceeding. See
@@ -1251,20 +1254,22 @@ class Order(_messages.Message):
       regular expression: a-z{0,62}. * Label values must be between 0 and 63
       characters long and must conform to the regular expression
       [a-z0-9_-]{0,63}.
-    name: name of resource.
-    orderContact: Contact information used for general communication from
-      Google about the order and its appliances.
+    name: Identifier. name of resource.
+    orderContact: Optional. Contact information used for general communication
+      from Google about the order and its appliances.
     reconciling: Output only. Reconciling
       (https://google.aip.dev/128#reconciliation). Set to true if the current
       state of Order does not match the user's intended state, and the service
       is actively updating the resource to reconcile them. This can happen due
       to user-triggered updates or system actions like failover or
       maintenance.
-    shippingContact: Contact information used for the order's shipments.
-    skipDraft: If true, submit the order immediately upon creation. The order
-      will skip the DRAFT state and go straight to the PREPARING state as if
-      the Submit method were called on the order. For an order that is in the
-      DRAFT state, setting this to true will also cause it to be submitted.
+    shippingContact: Optional. Contact information used for the order's
+      shipments.
+    skipDraft: Optional. If true, submit the order immediately upon creation.
+      The order will skip the DRAFT state and go straight to the PREPARING
+      state as if the Submit method were called on the order. For an order
+      that is in the DRAFT state, setting this to true will also cause it to
+      be submitted.
     state: Output only. The state of the order.
     submitTime: Output only. Submit time.
     uid: Output only. A system-assigned, unique identifier for the resource.
@@ -1661,15 +1666,15 @@ class SavedAddress(_messages.Message):
       regular expression: a-z{0,62}. * Label values must be between 0 and 63
       characters long and must conform to the regular expression
       [a-z0-9_-]{0,63}.
-    name: name of resource.
+    name: Identifier. name of resource.
     reconciling: Output only. Reconciling
       (https://google.aip.dev/128#reconciliation). Set to true if the current
       state of SavedAddress does not match the user's intended state, and the
       service is actively updating the resource to reconcile them. This can
       happen due to user-triggered updates or system actions like failover or
       maintenance.
-    shippingContact: Contact information used for the shipments to the given
-      address.
+    shippingContact: Optional. Contact information used for the shipments to
+      the given address.
     uid: Output only. A system-assigned, unique identifier (UUID4) for the
       resource.
     updateTime: Output only. Update time.
@@ -1750,9 +1755,9 @@ class ShipmentInfo(_messages.Message):
   r"""Message containing information about the appliance's shipment.
 
   Fields:
-    deliverAfterTime: An optional timestamp to indicate the earliest that the
-      appliance should be delivered. If not set it will be delivered as soon
-      as possible.
+    deliverAfterTime: Optional. An optional timestamp to indicate the earliest
+      that the appliance should be delivered. If not set it will be delivered
+      as soon as possible.
     deliverySealNumber: Output only. Seal number associated with the outbound
       shipment.
     deliveryTrackingCarrier: Output only. Shipment carrier/partner associated
@@ -1931,16 +1936,17 @@ class Subscription(_messages.Message):
   Enums:
     ErrorStateInfoValueValuesEnum: Output only. Additional information on why
       the subscription is in error state.
-    StateValueValuesEnum: A description of state of the subscription.
-    TermEndBehaviorValueValuesEnum: Determine the subscription behavior when
-      current terms end.
+    StateValueValuesEnum: Optional. A description of state of the
+      subscription.
+    TermEndBehaviorValueValuesEnum: Optional. Determine the subscription
+      behavior when current terms end.
 
   Fields:
     creationTime: Output only. Creation time of the subscription.
     definition: Output only. The name of subscription definition.
     definitionDisplay: Output only. A human readable name that describes this
       subscription.
-    display: An alias display name.
+    display: Optional. An alias display name.
     endTime: Output only. The target end time of the subscription.
     errorStateInfo: Output only. Additional information on why the
       subscription is in error state.
@@ -1961,11 +1967,11 @@ class Subscription(_messages.Message):
       receives bill.
     parameters: Output only. A list of parameter that set by creation request.
     startTime: Output only. The start time of the subscription.
-    state: A description of state of the subscription.
+    state: Optional. A description of state of the subscription.
     termDefinitionDisplay: Output only. The term definition display name.
-    termDefinitionId: The term definition id.
-    termEndBehavior: Determine the subscription behavior when current terms
-      end.
+    termDefinitionId: Optional. The term definition id.
+    termEndBehavior: Optional. Determine the subscription behavior when
+      current terms end.
     termEndTime: Output only. End time of the term.
     termStartTime: Output only. Start time of the term.
     trialDuration: Output only. Specifies how long the trial lasts if trial
@@ -1990,7 +1996,7 @@ class Subscription(_messages.Message):
     SWITCH_CASE_FALL_THROUGH = 3
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""A description of state of the subscription.
+    r"""Optional. A description of state of the subscription.
 
     Values:
       STATE_UNSPECIFIED: Default subscription state. Should not be used.
@@ -2010,7 +2016,7 @@ class Subscription(_messages.Message):
     ERROR = 4
 
   class TermEndBehaviorValueValuesEnum(_messages.Enum):
-    r"""Determine the subscription behavior when current terms end.
+    r"""Optional. Determine the subscription behavior when current terms end.
 
     Values:
       TERM_END_BEHAVIOR_UNSPECIFIED: Default term end behavior. Should not be
@@ -2057,22 +2063,22 @@ class SubscriptionInfo(_messages.Message):
   r"""Message containing information for the appliance subscription.
 
   Enums:
-    UpdateTypeValueValuesEnum: Input only. The time when the update will be
-      applied. Only needed for an update.
+    UpdateTypeValueValuesEnum: Optional. Input only. The time when the update
+      will be applied. Only needed for an update.
 
   Fields:
-    effectiveTime: Input only. The timestamp when update will be appliance if
-      update_type is SPECIFIC_DATE.
+    effectiveTime: Optional. Input only. The timestamp when update will be
+      appliance if update_type is SPECIFIC_DATE.
     subscriptionTerm: Required. Input only. Customer selected subscription
       term.
     subscriptions: Optional. List of subscription details.
-    updateType: Input only. The time when the update will be applied. Only
-      needed for an update.
+    updateType: Optional. Input only. The time when the update will be
+      applied. Only needed for an update.
   """
 
   class UpdateTypeValueValuesEnum(_messages.Enum):
-    r"""Input only. The time when the update will be applied. Only needed for
-    an update.
+    r"""Optional. Input only. The time when the update will be applied. Only
+    needed for an update.
 
     Values:
       CHANGE_TIME_TYPE_UNSPECIFIED: Default value. Should not be used.
@@ -2311,7 +2317,7 @@ class TransferapplianceProjectsLocationsAppliancesPatchRequest(_messages.Message
     allowMissing: Optional. If set to true, updating an `Appliance` that does
       not exist will result in the creation of a new `Appliance`.
     appliance: A Appliance resource to be passed as the request body.
-    name: Name of resource.
+    name: Identifier. Name of resource.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -2527,7 +2533,7 @@ class TransferapplianceProjectsLocationsOrdersPatchRequest(_messages.Message):
   Fields:
     allowMissing: Optional. If set to true, updating a `Order` that does not
       exist will result in the creation of a new `Order`.
-    name: name of resource.
+    name: Identifier. name of resource.
     order: A Order resource to be passed as the request body.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -2667,7 +2673,7 @@ class TransferapplianceProjectsLocationsSavedAddressesPatchRequest(_messages.Mes
   Fields:
     allowMissing: Optional. If set to true, updating a `SavedAddress` that
       does not exist will result in the creation of a new `SavedAddress`.
-    name: name of resource.
+    name: Identifier. name of resource.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -2718,16 +2724,18 @@ class WeeklyWindow(_messages.Message):
   hours.
 
   Enums:
-    DayValueValuesEnum: Allows to define schedule that runs on a specified day
-      of the week.
+    DayValueValuesEnum: Optional. Allows to define schedule that runs on a
+      specified day of the week.
 
   Fields:
-    day: Allows to define schedule that runs on a specified day of the week.
-    startTime: Start time of the window in UTC.
+    day: Optional. Allows to define schedule that runs on a specified day of
+      the week.
+    startTime: Optional. Start time of the window in UTC.
   """
 
   class DayValueValuesEnum(_messages.Enum):
-    r"""Allows to define schedule that runs on a specified day of the week.
+    r"""Optional. Allows to define schedule that runs on a specified day of
+    the week.
 
     Values:
       DAY_OF_WEEK_UNSPECIFIED: The day of the week is unspecified.

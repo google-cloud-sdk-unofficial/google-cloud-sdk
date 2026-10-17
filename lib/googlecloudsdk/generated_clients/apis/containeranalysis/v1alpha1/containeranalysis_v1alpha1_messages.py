@@ -2047,6 +2047,33 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptionsPoolOption(_message
   workerRelease = _messages.StringField(3)
 
 
+class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildResourceUsage(_messages.Message):
+  r"""Aggregated/summary metrics over the entire build lifecycle.
+
+  Fields:
+    averageCpuUtilization: Output only. The average CPU utilization ratio
+      across all vCPUs over the duration of the build, expressed as a fraction
+      in the range [0.0, 1.0].
+    averageMemoryUtilization: Output only. The average memory utilization
+      ratio over the duration of the build, expressed as a fraction in the
+      range [0.0, 1.0].
+    peakCpuUtilization: Output only. The highest CPU utilization ratio across
+      all vCPUs observed over the duration of the build, expressed as a
+      fraction in the range [0.0, 1.0].
+    peakMemoryUtilization: Output only. The highest memory utilization ratio
+      observed over the duration of the build, expressed as a fraction in the
+      range [0.0, 1.0].
+    totalCpuDuration: Output only. Total CPU execution time consumed across
+      all cores during build execution.
+  """
+
+  averageCpuUtilization = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  averageMemoryUtilization = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  peakCpuUtilization = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+  peakMemoryUtilization = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
+  totalCpuDuration = _messages.StringField(5)
+
+
 class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
   r"""A step in the build pipeline.
 
@@ -2631,6 +2658,7 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Results(_messages.Message):
       Only populated when artifacts are uploaded to Cloud Storage.
     pythonPackages: Python artifacts uploaded to Artifact Registry at the end
       of the build.
+    resourceUsage: Output only. Aggregated metrics for the build.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -2672,6 +2700,7 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1Results(_messages.Message):
   npmPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedNpmPackage', 10, repeated=True)
   numArtifacts = _messages.IntegerField(11)
   pythonPackages = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1UploadedPythonPackage', 12, repeated=True)
+  resourceUsage = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1BuildResourceUsage', 13)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1Secret(_messages.Message):

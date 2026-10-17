@@ -1413,7 +1413,8 @@ class ApigeeOrganizationsDeleteRequest(_messages.Message):
       MINIMUM: Organization data will be retained for the minimum period of 24
         hours.
       NO_RETENTION: Does not retain organization data and permanently deletes
-        the organization immediately.
+        the organization immediately. **Warning:** You will NOT be able to
+        restore the Apigee organization when using this option.
     """
     DELETION_RETENTION_UNSPECIFIED = 0
     MINIMUM = 1

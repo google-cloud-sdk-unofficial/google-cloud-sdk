@@ -24,9 +24,9 @@ import textwrap
 from googlecloudsdk.api_lib.ml_engine import jobs
 from googlecloudsdk.api_lib.ml_engine import versions_api
 from googlecloudsdk.api_lib.storage import storage_util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.iam import completers as iam_completers
 from googlecloudsdk.command_lib.iam import iam_util as core_iam_util
@@ -383,9 +383,14 @@ POLLING_INTERVAL = base.Argument(
     type=arg_parsers.BoundedInt(1, sys.maxsize, unlimited=True),
     required=False,
     default=60,
-    action=actions.StoreProperty(properties.VALUES.ml_engine.polling_interval),
-    help='Number of seconds to wait between efforts to fetch the latest '
-    'log messages.')
+    action=property_actions.StoreProperty(
+        properties.VALUES.ml_engine.polling_interval
+    ),
+    help=(
+        'Number of seconds to wait between efforts to fetch the latest '
+        'log messages.'
+    ),
+)
 ALLOW_MULTILINE_LOGS = base.Argument(
     '--allow-multiline-logs',
     action='store_true',

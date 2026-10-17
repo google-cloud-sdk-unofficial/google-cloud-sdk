@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: Delete a Dataproc GDC spark application.
     description: Delete a Dataproc GDC spark application.

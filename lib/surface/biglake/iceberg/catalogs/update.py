@@ -60,6 +60,7 @@ class UpdateCatalog(base.UpdateCommand):
   }
 
   _support_service_directory_name = True
+  _support_metadata_service_directory_name = False
   _support_federated_catalog = True
   _support_unity_service_principal_application_id = True
   _support_glue_catalog = True
@@ -81,6 +82,8 @@ class UpdateCatalog(base.UpdateCommand):
 
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
+    if cls._support_metadata_service_directory_name:
+      arguments.AddMetadataServiceDirectoryNameArg(parser, hidden=True)
     if cls._support_unity_service_principal_application_id:
       arguments.AddUnityServicePrincipalApplicationIdArg(parser)
     if cls._support_glue_catalog:
@@ -99,6 +102,13 @@ class UpdateCatalog(base.UpdateCommand):
       update_mask.append('federated_catalog_options.service_directory_name')
       catalog.federated_catalog_options.service_directory_name = (
           args.service_directory_name
+      )
+    if args.IsKnownAndSpecified('metadata_service_directory_name'):
+      update_mask.append(
+          'federated_catalog_options.metadata_service_directory_name'
+      )
+      catalog.federated_catalog_options.metadata_service_directory_name = (
+          args.metadata_service_directory_name
       )
     if args.IsKnownAndSpecified('secret_name'):
       update_mask.append('federated_catalog_options.secret_name')
@@ -199,6 +209,7 @@ class UpdateCatalog(base.UpdateCommand):
         or args.IsKnownAndSpecified('refresh_interval')
         or args.IsKnownAndSpecified('namespace_filters')
         or args.IsKnownAndSpecified('service_directory_name')
+        or args.IsKnownAndSpecified('metadata_service_directory_name')
         or args.IsKnownAndSpecified('snowflake_role')
     ):
       if not is_federated:
@@ -300,6 +311,7 @@ class UpdateCatalog(base.UpdateCommand):
     if self._support_federated_catalog:
       if (
           args.IsKnownAndSpecified('service_directory_name')
+          or args.IsKnownAndSpecified('metadata_service_directory_name')
           or args.IsKnownAndSpecified('secret_name')
           or args.IsKnownAndSpecified('unity_service_principal_application_id')
           or args.IsKnownAndSpecified('glue_aws_role_arn')
@@ -349,6 +361,7 @@ class UpdateBeta(UpdateCatalog):
       'EXAMPLES': help_text + '\n\n' + help_text_alpha,
   }
   _support_service_directory_name = True
+  _support_metadata_service_directory_name = False
   _support_federated_catalog = True
   _support_unity_service_principal_application_id = True
   _support_glue_catalog = True
@@ -360,6 +373,7 @@ class UpdateAlpha(UpdateBeta):
   """Update a BigLake Iceberg REST catalog."""
 
   _support_service_directory_name = True
+  _support_metadata_service_directory_name = True
   _support_unity_service_principal_application_id = True
   _support_glue_catalog = True
   _support_snowflake_catalog = True

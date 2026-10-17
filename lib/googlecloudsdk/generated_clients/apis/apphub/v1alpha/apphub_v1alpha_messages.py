@@ -866,6 +866,8 @@ class Application(_messages.Message):
     StateValueValuesEnum: Output only. Application state.
 
   Fields:
+    applicationProperties: Output only. Properties of an underlying cloud
+      resource that can comprise an Application.
     applicationType: Output only. Application type.
     attributes: Optional. Consumer provided attributes.
     createTime: Output only. Create time.
@@ -898,16 +900,65 @@ class Application(_messages.Message):
     ACTIVE = 2
     DELETING = 3
 
-  applicationType = _messages.MessageField('ApplicationType', 1)
-  attributes = _messages.MessageField('Attributes', 2)
-  createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  displayName = _messages.StringField(5)
-  name = _messages.StringField(6)
-  scope = _messages.MessageField('Scope', 7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  uid = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
+  applicationProperties = _messages.MessageField('ApplicationProperties', 1)
+  applicationType = _messages.MessageField('ApplicationType', 2)
+  attributes = _messages.MessageField('Attributes', 3)
+  createTime = _messages.StringField(4)
+  description = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  name = _messages.StringField(7)
+  scope = _messages.MessageField('Scope', 8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  uid = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
+
+
+class ApplicationProperties(_messages.Message):
+  r"""Additional system properties of an Application.
+
+  Messages:
+    ExtendedMetadataValue: Output only. Additional metadata specific to the
+      App Hub application. The key is a string that identifies the type of
+      metadata and the value is the metadata contents specific to that type.
+      Key format: `apphub.googleapis.com/{metadataType}`
+
+  Fields:
+    extendedMetadata: Output only. Additional metadata specific to the App Hub
+      application. The key is a string that identifies the type of metadata
+      and the value is the metadata contents specific to that type. Key
+      format: `apphub.googleapis.com/{metadataType}`
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExtendedMetadataValue(_messages.Message):
+    r"""Output only. Additional metadata specific to the App Hub application.
+    The key is a string that identifies the type of metadata and the value is
+    the metadata contents specific to that type. Key format:
+    `apphub.googleapis.com/{metadataType}`
+
+    Messages:
+      AdditionalProperty: An additional property for a ExtendedMetadataValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ExtendedMetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExtendedMetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ExtendedMetadata attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ExtendedMetadata', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  extendedMetadata = _messages.MessageField('ExtendedMetadataValue', 1)
 
 
 class ApplicationType(_messages.Message):

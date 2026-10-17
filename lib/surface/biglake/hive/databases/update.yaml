@@ -1,12 +1,12 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Updates a BigLake Hive database.
     description: |
       Updates a BigLake Hive database.
     examples: |-
-      To update a BigLake Hive database named `my-database` in catalog `my-catalog` with a new location, description, and properties, run:
+      To update a BigLake Hive database named `my-database` in catalog `my-catalog` with a new location, description, and parameters, run:
 
-        $ {command} my-database --catalog=my-catalog --location-uri=gs://my-bucket/new-location --description="Updated description" --properties=key1=value1,key2=value2
+        $ {command} my-database --catalog=my-catalog --location-uri=gs://my-bucket/new-location --description="Updated description" --parameters=key1=value1,key2=value2
 
   request:
     collection: biglake.hive.v1.projects.catalogs.databases

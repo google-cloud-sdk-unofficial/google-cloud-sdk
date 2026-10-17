@@ -504,24 +504,32 @@ class FlagTypes:
               "labels": LABEL,
               "bootDisk": self.GetProtoBootDiskType(),
               "storageConfigs": STORAGE_CONFIG,
+              "networkTags": arg_parsers.ArgObject(
+                  value_type=str, repeated=True
+              ),
           },
           required_keys=["machineType", "zone"],
           enable_shorthand=True,
           disable_key_description=True,
       )
     else:
+      spec = {
+          "machineType": str,
+          "zone": str,
+          "count": int,
+          "enableOsLogin": bool,
+          "enablePublicIps": bool,
+          "startupScript": str,
+          "labels": LABEL,
+          "bootDisk": self.GetProtoBootDiskType(),
+          "storageConfigs": STORAGE_CONFIG,
+      }
+      if self.is_beta:
+        spec["networkTags"] = arg_parsers.ArgObject(
+            value_type=str, repeated=True
+        )
       return arg_parsers.ArgObject(
-          spec={
-              "machineType": str,
-              "zone": str,
-              "count": int,
-              "enableOsLogin": bool,
-              "enablePublicIps": bool,
-              "startupScript": str,
-              "labels": LABEL,
-              "bootDisk": self.GetProtoBootDiskType(),
-              "storageConfigs": STORAGE_CONFIG,
-          },
+          spec=spec,
           required_keys=["machineType", "zone"],
           enable_shorthand=True,
           disable_key_description=True,
@@ -700,6 +708,9 @@ class FlagTypes:
                                   "storageConfigs": STORAGE_CONFIG,
                                   "zone": str,
                                   "bootDisk": self.GetProtoBootDiskType(),
+                                  "networkTags": arg_parsers.ArgObject(
+                                      value_type=str, repeated=True
+                                  ),
                               }
                           ),
                           "nodeSets": arg_parsers.ArgObject(

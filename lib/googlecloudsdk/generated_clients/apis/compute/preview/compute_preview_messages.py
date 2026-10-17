@@ -980,6 +980,15 @@ class AccessConfig(_messages.Message):
       assign an external IPv6 address from the instance's subnetwork.
     externalIpv6PrefixLength: Applies to ipv6AccessConfigs only. The prefix
       length of the external IPv6 range.
+    ipCollection: Reference to the source of external IPv4 addresses, like a
+      PublicDelegatedPrefix (PDP) for BYOIP. The PDP must support enhanced
+      IPv4 allocations.  Use one of the following formats to specify a PDP
+      when allocating an external IPv4 address using BYOIP.        -     Full
+      resource URL, as inhttps://www.googleapis.com/compute/v1/projects/projec
+      tId/regions/region/publicDelegatedPrefixes/pdp-name    -     Partial
+      URL, as in                        -
+      projects/projectId/regions/region/publicDelegatedPrefixes/pdp-name
+      - regions/region/publicDelegatedPrefixes/pdp-name
     kind: Output only. [Output Only] Type of the resource.
       Alwayscompute#accessConfig for access configs.
     name: The name of this access configuration. In accessConfigs (IPv4), the
@@ -1051,14 +1060,15 @@ class AccessConfig(_messages.Message):
 
   externalIpv6 = _messages.StringField(1)
   externalIpv6PrefixLength = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  kind = _messages.StringField(3, default='compute#accessConfig')
-  name = _messages.StringField(4)
-  natIP = _messages.StringField(5)
-  networkTier = _messages.EnumField('NetworkTierValueValuesEnum', 6)
-  publicPtrDomainName = _messages.StringField(7)
-  securityPolicy = _messages.StringField(8)
-  setPublicPtr = _messages.BooleanField(9)
-  type = _messages.EnumField('TypeValueValuesEnum', 10)
+  ipCollection = _messages.StringField(3)
+  kind = _messages.StringField(4, default='compute#accessConfig')
+  name = _messages.StringField(5)
+  natIP = _messages.StringField(6)
+  networkTier = _messages.EnumField('NetworkTierValueValuesEnum', 7)
+  publicPtrDomainName = _messages.StringField(8)
+  securityPolicy = _messages.StringField(9)
+  setPublicPtr = _messages.BooleanField(10)
+  type = _messages.EnumField('TypeValueValuesEnum', 11)
 
 
 class Address(_messages.Message):
@@ -1171,6 +1181,9 @@ class Address(_messages.Message):
       character must be a lowercase letter or digit.
     network: The URL of the network in which to reserve the address. This
       field can only be used with INTERNAL type with theVPC_PEERING purpose.
+    networkAttachment: Optional. The URL of the network attachment that this
+      address comes from in the following format: projects/{project}/regions/{
+      region_name}/networkAttachments/{network_attachment_name}.
     networkTier: This signifies the networking tier used for configuring this
       address and can only take the following values: PREMIUM orSTANDARD.
       Internal IP addresses are always Premium Tier; global external IP
@@ -1207,6 +1220,10 @@ class Address(_messages.Message):
       a path parameter in the HTTP request URL. *This field is not applicable
       to global addresses.*
     selfLink: [Output Only] Server-defined URL for the resource.
+    serviceClassId: Optional. Producer Service's Service class ID for the
+      region of this address. Can only be used with network_attachment. It is
+      not possible to use on its own; however, network_attachment can be used
+      without service_class_id.
     status: Output only. [Output Only] The status of the address, which can be
       one ofRESERVING, RESERVED, or IN_USE. An address that is RESERVING is
       currently in the process of being reserved. A RESERVED address is
@@ -1391,14 +1408,16 @@ class Address(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 11)
   name = _messages.StringField(12)
   network = _messages.StringField(13)
-  networkTier = _messages.EnumField('NetworkTierValueValuesEnum', 14)
-  prefixLength = _messages.IntegerField(15, variant=_messages.Variant.INT32)
-  purpose = _messages.EnumField('PurposeValueValuesEnum', 16)
-  region = _messages.StringField(17)
-  selfLink = _messages.StringField(18)
-  status = _messages.EnumField('StatusValueValuesEnum', 19)
-  subnetwork = _messages.StringField(20)
-  users = _messages.StringField(21, repeated=True)
+  networkAttachment = _messages.StringField(14)
+  networkTier = _messages.EnumField('NetworkTierValueValuesEnum', 15)
+  prefixLength = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+  purpose = _messages.EnumField('PurposeValueValuesEnum', 17)
+  region = _messages.StringField(18)
+  selfLink = _messages.StringField(19)
+  serviceClassId = _messages.StringField(20)
+  status = _messages.EnumField('StatusValueValuesEnum', 21)
+  subnetwork = _messages.StringField(22)
+  users = _messages.StringField(23, repeated=True)
 
 
 class AddressAggregatedList(_messages.Message):
@@ -1989,6 +2008,415 @@ class AliasIpRange(_messages.Message):
 
   ipCidrRange = _messages.StringField(1)
   subnetworkRangeName = _messages.StringField(2)
+
+
+class AliasNetworkEndpoint(_messages.Message):
+  r"""Represents an Alias Network Endpoint resource. To be used for GKE pod-
+  native endpoints in Andromeda.
+
+  Enums:
+    SecurityTagInheritanceValueValuesEnum: Optional. The security tag
+      inheritance setting for the AliasNetworkEndpoint.
+
+  Messages:
+    AliasesValue: Required. The map of network aliases allocated for the
+      AliasNetworkEndpoint. This map is keyed with user-provided alias names.
+    AnnotationsValue: Optional. The annotations map for the
+      AliasNetworkEndpoint. Keys and values must follow Kubernetes limits.
+      Keys must be a maximum of 253 characters. Keys should be dot-namespaced,
+      following the Kubernetes annotation key format: `([DNS subdomain]/)?[RFC
+      1123 name]`. Values must be a maximum of 256 characters.
+    LabelsValue: Optional. The labels map for the AliasNetworkEndpoint.
+
+  Fields:
+    aliases: Required. The map of network aliases allocated for the
+      AliasNetworkEndpoint. This map is keyed with user-provided alias names.
+    annotations: Optional. The annotations map for the AliasNetworkEndpoint.
+      Keys and values must follow Kubernetes limits. Keys must be a maximum of
+      253 characters. Keys should be dot-namespaced, following the Kubernetes
+      annotation key format: `([DNS subdomain]/)?[RFC 1123 name]`. Values must
+      be a maximum of 256 characters.
+    creationTimestamp: Output only. [Output Only] Creation timestamp in
+      RFC3339 text format.
+    description: Optional. An optional description of this resource. Provide
+      this field when you create the resource.
+    host: Required. The host that the alias network endpoint is bound to.
+    id: Output only. [Output Only] The unique identifier for the resource.
+      This identifier is defined by the server.
+    labels: Optional. The labels map for the AliasNetworkEndpoint.
+    name: Identifier. Name of the resource. Provided by the client when the
+      resource is created. The name must be 1-63 characters long, and comply
+      with RFC1035.
+    securityTagInheritance: Optional. The security tag inheritance setting for
+      the AliasNetworkEndpoint.
+    selfLink: Output only. [Output Only] Server-defined URL for the resource.
+    status: Output only. [Output Only] Current status of the alias network
+      endpoint.
+    subnetwork: Required. The URL of the subnetwork that this alias network
+      endpoint belongs to.
+    updateTime: Output only. [Output Only] Update timestamp in RFC3339 text
+      format.
+  """
+
+  class SecurityTagInheritanceValueValuesEnum(_messages.Enum):
+    r"""Optional. The security tag inheritance setting for the
+    AliasNetworkEndpoint.
+
+    Values:
+      INHERITED: Security tags are inherited directly from the host instance.
+      NOT_INHERITED: Security tags are not inherited from the host instance.
+        Firewall rules targeting the host instance's tags will not apply to
+        this resource.
+      SECURITY_TAG_INHERITANCE_UNSPECIFIED: Unspecified inheritance.
+    """
+    INHERITED = 0
+    NOT_INHERITED = 1
+    SECURITY_TAG_INHERITANCE_UNSPECIFIED = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AliasesValue(_messages.Message):
+    r"""Required. The map of network aliases allocated for the
+    AliasNetworkEndpoint. This map is keyed with user-provided alias names.
+
+    Messages:
+      AdditionalProperty: An additional property for a AliasesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type AliasesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AliasesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A AliasNetworkEndpointAlias attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('AliasNetworkEndpointAlias', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. The annotations map for the AliasNetworkEndpoint. Keys and
+    values must follow Kubernetes limits. Keys must be a maximum of 253
+    characters. Keys should be dot-namespaced, following the Kubernetes
+    annotation key format: `([DNS subdomain]/)?[RFC 1123 name]`. Values must
+    be a maximum of 256 characters.
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. The labels map for the AliasNetworkEndpoint.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  aliases = _messages.MessageField('AliasesValue', 1)
+  annotations = _messages.MessageField('AnnotationsValue', 2)
+  creationTimestamp = _messages.StringField(3)
+  description = _messages.StringField(4)
+  host = _messages.MessageField('AliasNetworkEndpointHost', 5)
+  id = _messages.IntegerField(6, variant=_messages.Variant.UINT64)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  securityTagInheritance = _messages.EnumField('SecurityTagInheritanceValueValuesEnum', 9)
+  selfLink = _messages.StringField(10)
+  status = _messages.MessageField('AliasNetworkEndpointStatus', 11)
+  subnetwork = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
+
+
+class AliasNetworkEndpointAlias(_messages.Message):
+  r"""Configuration for an IP alias.
+
+  Enums:
+    IpVersionValueValuesEnum: Required. The IP version of the IP. It is IPv4
+      or IPv6.
+
+  Fields:
+    effectiveIpAddress: Output only. [Output Only] The actual IP address
+      allocated by the system.
+    effectiveSubnetworkRangeName: Output only. [Output Only] The actual
+      secondary range used for allocation.
+    ipAddress: Input only. The IP address of the network endpoint. If
+      specified, the server performs a validation check for uniqueness. If the
+      field is omitted, the system automatically allocates an IP and populates
+      the effective_ip_address field.
+    ipVersion: Required. The IP version of the IP. It is IPv4 or IPv6.
+    subnetworkRangeNames: Input only. Defines candidate secondary ranges for
+      allocating the alias IPs. If it is empty, the IP would be allocated from
+      the primary range of the subnetwork. This field is INPUT_ONLY and used
+      only during resource creation, hence a repeated field is acceptable as
+      per AIP-2825. It is not mutable.
+  """
+
+  class IpVersionValueValuesEnum(_messages.Enum):
+    r"""Required. The IP version of the IP. It is IPv4 or IPv6.
+
+    Values:
+      IPV4: IPv4 address.
+      IPV6: IPv6 address.
+      IP_VERSION_UNSPECIFIED: Unspecified IP version.
+    """
+    IPV4 = 0
+    IPV6 = 1
+    IP_VERSION_UNSPECIFIED = 2
+
+  effectiveIpAddress = _messages.StringField(1)
+  effectiveSubnetworkRangeName = _messages.StringField(2)
+  ipAddress = _messages.StringField(3)
+  ipVersion = _messages.EnumField('IpVersionValueValuesEnum', 4)
+  subnetworkRangeNames = _messages.StringField(5, repeated=True)
+
+
+class AliasNetworkEndpointHost(_messages.Message):
+  r"""Information about the host instance.
+
+  Fields:
+    instance: Required. The URL to the instance that this alias network
+      endpoint is bound to.
+  """
+
+  instance = _messages.StringField(1)
+
+
+class AliasNetworkEndpointList(_messages.Message):
+  r"""Response message for AliasNetworkEndpoints.List.
+
+  Messages:
+    WarningValue: [Output Only] Informational warning message.
+
+  Fields:
+    etag: ETag of the resource list.
+    id: [Output Only] Unique identifier for the resource; defined by the
+      server.
+    items: A list of AliasNetworkEndpoint resources.
+    nextPageToken: [Output Only] This token allows you to get the next page of
+      results for list requests. If the number of results is larger
+      thanmaxResults, use the nextPageToken as a value for the query parameter
+      pageToken in the next list request. Subsequent list requests will have
+      their own nextPageToken to continue paging through the results.
+    selfLink: [Output Only] Server-defined URL for this resource.
+    unreachables: Output only. [Output Only] Unreachable resources.
+    warning: [Output Only] Informational warning message.
+  """
+
+  class WarningValue(_messages.Message):
+    r"""[Output Only] Informational warning message.
+
+    Enums:
+      CodeValueValuesEnum: [Output Only] A warning code, if applicable. For
+        example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no
+        results in the response.
+
+    Messages:
+      DataValueListEntry: A DataValueListEntry object.
+
+    Fields:
+      code: [Output Only] A warning code, if applicable. For example, Compute
+        Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+        response.
+      data: [Output Only] Metadata about this warning in key: value format.
+        For example:  "data": [   {    "key": "scope",    "value": "zones/us-
+        east1-d"   }]
+      message: [Output Only] A human-readable description of the warning code.
+    """
+
+    class CodeValueValuesEnum(_messages.Enum):
+      r"""[Output Only] A warning code, if applicable. For example, Compute
+      Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+      response.
+
+      Values:
+        CLEANUP_FAILED: Warning about failed cleanup of transient changes made
+          by a failed operation.
+        DEPRECATED_RESOURCE_USED: A link to a deprecated resource was created.
+        DEPRECATED_TYPE_USED: When deploying and at least one of the resources
+          has a type marked as deprecated
+        DISK_SIZE_LARGER_THAN_IMAGE_SIZE: The user created a boot disk that is
+          larger than image size.
+        EXPERIMENTAL_TYPE_USED: When deploying and at least one of the
+          resources has a type marked as experimental
+        EXTERNAL_API_WARNING: Warning that is present in an external api call
+        FIELD_VALUE_OVERRIDEN: Warning that value of a field has been
+          overridden. Deprecated unused field.
+        INJECTED_KERNELS_DEPRECATED: The operation involved use of an injected
+          kernel, which is deprecated.
+        INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB: A WEIGHTED_MAGLEV
+          backend service is associated with a health check that is not of
+          type HTTP/HTTPS/HTTP2.
+        LARGE_DEPLOYMENT_WARNING: When deploying a deployment with a
+          exceedingly large number of resources
+        LIST_OVERHEAD_QUOTA_EXCEED: Resource can't be retrieved due to list
+          overhead quota exceed which captures the amount of resources
+          filtered out by user-defined list filter.
+        MISSING_TYPE_DEPENDENCY: A resource depends on a missing type
+        NEXT_HOP_ADDRESS_NOT_ASSIGNED: The route's nextHopIp address is not
+          assigned to an instance on the network.
+        NEXT_HOP_CANNOT_IP_FORWARD: The route's next hop instance cannot ip
+          forward.
+        NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE: The route's nextHopInstance
+          URL refers to an instance that does not have an ipv6 interface on
+          the same network as the route.
+        NEXT_HOP_INSTANCE_NOT_FOUND: The route's nextHopInstance URL refers to
+          an instance that does not exist.
+        NEXT_HOP_INSTANCE_NOT_ON_NETWORK: The route's nextHopInstance URL
+          refers to an instance that is not on the same network as the route.
+        NEXT_HOP_NOT_RUNNING: The route's next hop instance does not have a
+          status of RUNNING.
+        NOT_CRITICAL_ERROR: Error which is not critical. We decided to
+          continue the process despite the mentioned error.
+        NO_RESULTS_ON_PAGE: No results are present on a particular list page.
+        PARTIAL_SUCCESS: Success is reported, but some results may be missing
+          due to errors
+        QUOTA_INFO_UNAVAILABLE: Quota information is not available to client
+          requests (e.g: regions.list).
+        REQUIRED_TOS_AGREEMENT: The user attempted to use a resource that
+          requires a TOS they have not accepted.
+        RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING: Warning that a resource is
+          in use.
+        RESOURCE_NOT_DELETED: One or more of the resources set to auto-delete
+          could not be deleted because they were in use.
+        SCHEMA_VALIDATION_IGNORED: When a resource schema validation is
+          ignored.
+        SINGLE_INSTANCE_PROPERTY_TEMPLATE: Instance template used in instance
+          group manager is valid as such, but its application does not make a
+          lot of sense, because it allows only single instance in instance
+          group.
+        UNDECLARED_PROPERTIES: When undeclared properties in the schema are
+          present
+        UNREACHABLE: A given scope cannot be reached.
+      """
+      CLEANUP_FAILED = 0
+      DEPRECATED_RESOURCE_USED = 1
+      DEPRECATED_TYPE_USED = 2
+      DISK_SIZE_LARGER_THAN_IMAGE_SIZE = 3
+      EXPERIMENTAL_TYPE_USED = 4
+      EXTERNAL_API_WARNING = 5
+      FIELD_VALUE_OVERRIDEN = 6
+      INJECTED_KERNELS_DEPRECATED = 7
+      INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB = 8
+      LARGE_DEPLOYMENT_WARNING = 9
+      LIST_OVERHEAD_QUOTA_EXCEED = 10
+      MISSING_TYPE_DEPENDENCY = 11
+      NEXT_HOP_ADDRESS_NOT_ASSIGNED = 12
+      NEXT_HOP_CANNOT_IP_FORWARD = 13
+      NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE = 14
+      NEXT_HOP_INSTANCE_NOT_FOUND = 15
+      NEXT_HOP_INSTANCE_NOT_ON_NETWORK = 16
+      NEXT_HOP_NOT_RUNNING = 17
+      NOT_CRITICAL_ERROR = 18
+      NO_RESULTS_ON_PAGE = 19
+      PARTIAL_SUCCESS = 20
+      QUOTA_INFO_UNAVAILABLE = 21
+      REQUIRED_TOS_AGREEMENT = 22
+      RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING = 23
+      RESOURCE_NOT_DELETED = 24
+      SCHEMA_VALIDATION_IGNORED = 25
+      SINGLE_INSTANCE_PROPERTY_TEMPLATE = 26
+      UNDECLARED_PROPERTIES = 27
+      UNREACHABLE = 28
+
+    class DataValueListEntry(_messages.Message):
+      r"""A DataValueListEntry object.
+
+      Fields:
+        key: [Output Only] A key that provides more detail on the warning
+          being returned. For example, for warnings where there are no results
+          in a list request for a particular zone, this key might be scope and
+          the key value might be the zone name. Other examples might be a key
+          indicating a deprecated resource and a suggested replacement, or a
+          warning about invalid network settings (for example, if an instance
+          attempts to perform IP forwarding but is not enabled for IP
+          forwarding).
+        value: [Output Only] A warning data value corresponding to the key.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    code = _messages.EnumField('CodeValueValuesEnum', 1)
+    data = _messages.MessageField('DataValueListEntry', 2, repeated=True)
+    message = _messages.StringField(3)
+
+  etag = _messages.StringField(1)
+  id = _messages.StringField(2)
+  items = _messages.MessageField('AliasNetworkEndpoint', 3, repeated=True)
+  nextPageToken = _messages.StringField(4)
+  selfLink = _messages.StringField(5)
+  unreachables = _messages.StringField(6, repeated=True)
+  warning = _messages.MessageField('WarningValue', 7)
+
+
+class AliasNetworkEndpointStatus(_messages.Message):
+  r"""Represents the current status of the AliasNetworkEndpoint.
+
+  Enums:
+    StateValueValuesEnum: Output only. [Output Only] The state of the alias
+      network endpoint.
+
+  Fields:
+    network: Output only. [Output Only] The URL of the network that this alias
+      network endpoint belongs to.
+    state: Output only. [Output Only] The state of the alias network endpoint.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output Only] The state of the alias network endpoint.
+
+    Values:
+      ACTIVE: The endpoint is active and ready to process traffic.
+      CREATING: The endpoint is being created.
+      DELETING: The endpoint is being deleted.
+      STATE_UNSPECIFIED: Unspecified state.
+    """
+    ACTIVE = 0
+    CREATING = 1
+    DELETING = 2
+    STATE_UNSPECIFIED = 3
+
+  network = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
 
 
 class AllocationAggregateReservation(_messages.Message):
@@ -9649,6 +10077,18 @@ class Commitment(_messages.Message):
         and 12TB of memory.
       MEMORY_OPTIMIZED_X4_960_16T: CUD bucket for X4 machine with 960 vCPUs
         and 16TB of memory.
+      MEMORY_OPTIMIZED_X5_1376_24T: CUD bucket for X5 machine with 1376 vCPUs
+        and 24TB of memory.
+      MEMORY_OPTIMIZED_X5_1376_32T: CUD bucket for X5 machine with 1376 vCPUs
+        and 32TB of memory.
+      MEMORY_OPTIMIZED_X5_2064_48T: CUD bucket for X5 machine with 2064 vCPUs
+        and 48TB of memory.
+      MEMORY_OPTIMIZED_X5_2752_64T: CUD bucket for X5 machine with 2752 vCPUs
+        and 64TB of memory.
+      MEMORY_OPTIMIZED_X5_688_12T: CUD bucket for X5 machine with 688 vCPUs
+        and 12TB of memory.
+      MEMORY_OPTIMIZED_X5_688_16T: CUD bucket for X5 machine with 688 vCPUs
+        and 16TB of memory.
       NETWORK_OPTIMIZED_C4N: CUD bucket for C4N (dual Diorite) machines.
       NETWORK_OPTIMIZED_U4C: CUD bucket for NETWORK_OPTIMIZED_U4C machines.
       NETWORK_OPTIMIZED_U4P: CUD bucket for NETWORK_OPTIMIZED_U4P machines.
@@ -9702,16 +10142,22 @@ class Commitment(_messages.Message):
     MEMORY_OPTIMIZED_X4_480_8T = 36
     MEMORY_OPTIMIZED_X4_960_12T = 37
     MEMORY_OPTIMIZED_X4_960_16T = 38
-    NETWORK_OPTIMIZED_C4N = 39
-    NETWORK_OPTIMIZED_U4C = 40
-    NETWORK_OPTIMIZED_U4P = 41
-    NETWORK_OPTIMIZED_U4S = 42
-    STORAGE_OPTIMIZED_Z3 = 43
-    STORAGE_OPTIMIZED_Z4D4T = 44
-    STORAGE_OPTIMIZED_Z4DH = 45
-    STORAGE_OPTIMIZED_Z4DS = 46
-    STORAGE_OPTIMIZED_Z4M = 47
-    TYPE_UNSPECIFIED = 48
+    MEMORY_OPTIMIZED_X5_1376_24T = 39
+    MEMORY_OPTIMIZED_X5_1376_32T = 40
+    MEMORY_OPTIMIZED_X5_2064_48T = 41
+    MEMORY_OPTIMIZED_X5_2752_64T = 42
+    MEMORY_OPTIMIZED_X5_688_12T = 43
+    MEMORY_OPTIMIZED_X5_688_16T = 44
+    NETWORK_OPTIMIZED_C4N = 45
+    NETWORK_OPTIMIZED_U4C = 46
+    NETWORK_OPTIMIZED_U4P = 47
+    NETWORK_OPTIMIZED_U4S = 48
+    STORAGE_OPTIMIZED_Z3 = 49
+    STORAGE_OPTIMIZED_Z4D4T = 50
+    STORAGE_OPTIMIZED_Z4DH = 51
+    STORAGE_OPTIMIZED_Z4DS = 52
+    STORAGE_OPTIMIZED_Z4M = 53
+    TYPE_UNSPECIFIED = 54
 
   autoRenew = _messages.BooleanField(1)
   category = _messages.EnumField('CategoryValueValuesEnum', 2)
@@ -11715,6 +12161,124 @@ class ComputeAdviceCapacityRequest(_messages.Message):
   capacityAdviceRequest = _messages.MessageField('CapacityAdviceRequest', 1)
   project = _messages.StringField(2, required=True)
   region = _messages.StringField(3, required=True)
+
+
+class ComputeAliasNetworkEndpointsDeleteRequest(_messages.Message):
+  r"""A ComputeAliasNetworkEndpointsDeleteRequest object.
+
+  Fields:
+    aliasNetworkEndpoint: Required. Name of the AliasNetworkEndpoint resource
+      to delete.
+    project: Required. Project ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.
+    zone: Required. Name of the zone scoping this request.
+  """
+
+  aliasNetworkEndpoint = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  zone = _messages.StringField(4, required=True)
+
+
+class ComputeAliasNetworkEndpointsGetRequest(_messages.Message):
+  r"""A ComputeAliasNetworkEndpointsGetRequest object.
+
+  Fields:
+    aliasNetworkEndpoint: Required. Name of the AliasNetworkEndpoint resource
+      to return.
+    project: Required. Project ID for this request.
+    zone: Required. Name of the zone scoping this request.
+  """
+
+  aliasNetworkEndpoint = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  zone = _messages.StringField(3, required=True)
+
+
+class ComputeAliasNetworkEndpointsInsertRequest(_messages.Message):
+  r"""A ComputeAliasNetworkEndpointsInsertRequest object.
+
+  Fields:
+    aliasNetworkEndpoint: A AliasNetworkEndpoint resource to be passed as the
+      request body.
+    project: Required. Project ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.
+    zone: Required. Name of the zone scoping this request.
+  """
+
+  aliasNetworkEndpoint = _messages.MessageField('AliasNetworkEndpoint', 1)
+  project = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  zone = _messages.StringField(4, required=True)
+
+
+class ComputeAliasNetworkEndpointsListRequest(_messages.Message):
+  r"""A ComputeAliasNetworkEndpointsListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    project: Required. Project ID for this request.
+    zone: Required. Name of the zone of this request.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  pageToken = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
+  zone = _messages.StringField(6, required=True)
 
 
 class ComputeAutoscalersAggregatedListRequest(_messages.Message):
@@ -52361,6 +52925,9 @@ class HaController(_messages.Message):
     networkingAutoConfiguration: Basic networking configuration. Required
       backend services and forwarding rules will be automatically created with
       default parameters.
+    params: Input only. Additional parameters passed with the request, but not
+      persisted as part of the resource. Both `params: null` and `params: {}`
+      are treated identically as a no-op.
     region: Output only. [Output Only] URL of the region where the resource
       resides. You must specify this field as part of the HTTP request URL. It
       is not settable as a field in the request body.
@@ -52457,12 +53024,29 @@ class HaController(_messages.Message):
   kind = _messages.StringField(7, default='compute#HaController')
   name = _messages.StringField(8)
   networkingAutoConfiguration = _messages.MessageField('HaControllerNetworkingAutoConfiguration', 9)
-  region = _messages.StringField(10)
-  selfLink = _messages.StringField(11)
-  selfLinkWithId = _messages.StringField(12)
-  state = _messages.EnumField('StateValueValuesEnum', 13)
-  status = _messages.MessageField('HaControllerStatus', 14)
-  zoneConfigurations = _messages.MessageField('ZoneConfigurationsValue', 15)
+  params = _messages.MessageField('HaControllerParams', 10)
+  region = _messages.StringField(11)
+  selfLink = _messages.StringField(12)
+  selfLinkWithId = _messages.StringField(13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  status = _messages.MessageField('HaControllerStatus', 15)
+  zoneConfigurations = _messages.MessageField('ZoneConfigurationsValue', 16)
+
+
+class HaControllerInstanceNetworkInterface(_messages.Message):
+  r"""The network interface configuration of the VM instance.
+
+  Fields:
+    ipv6Address: Optional. Optional IPv6 address to assign to the instance's
+      network interface. If omitted, an ephemeral IP may be assigned depending
+      on the instance's network interface stack type.
+    networkIP: Optional. Optional IPv4 address to assign to the instance's
+      network interface. If omitted, an ephemeral IP may be assigned depending
+      on the instance's network interface stack type.
+  """
+
+  ipv6Address = _messages.StringField(1)
+  networkIP = _messages.StringField(2)
 
 
 class HaControllerNetworkingAutoConfiguration(_messages.Message):
@@ -52512,6 +53096,18 @@ class HaControllerNetworkingAutoConfigurationInternal(_messages.Message):
   ipAddress = _messages.StringField(1)
   ipv6Address = _messages.StringField(2)
   stackType = _messages.EnumField('StackTypeValueValuesEnum', 3)
+
+
+class HaControllerParams(_messages.Message):
+  r"""Additional HA Controller params.
+
+  Fields:
+    migrateDisksToRegional: Specifies whether to automatically migrate all
+      disks of an instance from zonal to regional before attempting to create
+      the HaController.
+  """
+
+  migrateDisksToRegional = _messages.BooleanField(1)
 
 
 class HaControllerStatus(_messages.Message):
@@ -52789,15 +53385,90 @@ class HaControllerZoneConfiguration(_messages.Message):
   r"""Config for a zone that the HaController may use for running the VM
   instance.
 
+  Messages:
+    InstanceNetworkInterfacesValue: Optional. The network interface
+      configuration of a VM instance in this zone, keyed by the name of the
+      network interface. A VM network interface uses the nicN naming format,
+      where N is a value between 0 and 7. The default interface is nic0. Use
+      this field to choose the internal IP addresses of the VM instance in
+      this zone instead of letting Compute Engine assign them automatically.
+      - Each key must be a name of a network interface that exists on
+      the VM instance. Otherwise, the request fails.       - Network
+      interfaces that are omitted are assigned an ephemeral       internal IP
+      address.       - Every zone must configure the same network interfaces
+      and the       same IP address families.       - For the zone that
+      currently holds the VM instance, this field       is populated
+      automatically, and any addresses you specify must       match the
+      instance's current addresses.       - Only internal IP addresses are
+      supported, and this field can       only be set when the HA Controller
+      is created.
+
   Fields:
+    instanceNetworkInterfaces: Optional. The network interface configuration
+      of a VM instance in this zone, keyed by the name of the network
+      interface. A VM network interface uses the nicN naming format, where N
+      is a value between 0 and 7. The default interface is nic0. Use this
+      field to choose the internal IP addresses of the VM instance in this
+      zone instead of letting Compute Engine assign them automatically.
+      - Each key must be a name of a network interface that exists on
+      the VM instance. Otherwise, the request fails.       - Network
+      interfaces that are omitted are assigned an ephemeral       internal IP
+      address.       - Every zone must configure the same network interfaces
+      and the       same IP address families.       - For the zone that
+      currently holds the VM instance, this field       is populated
+      automatically, and any addresses you specify must       match the
+      instance's current addresses.       - Only internal IP addresses are
+      supported, and this field can       only be set when the HA Controller
+      is created.
     nodeAffinities: A set of node affinity configurations. Refer toConfiguring
       node affinity for more information. Overrides reservationAffinity.
     reservationAffinity: Specifies the reservations that the instance can
       consume from.
   """
 
-  nodeAffinities = _messages.MessageField('HaControllerZoneConfigurationNodeAffinity', 1, repeated=True)
-  reservationAffinity = _messages.MessageField('HaControllerZoneConfigurationReservationAffinity', 2)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class InstanceNetworkInterfacesValue(_messages.Message):
+    r"""Optional. The network interface configuration of a VM instance in this
+    zone, keyed by the name of the network interface. A VM network interface
+    uses the nicN naming format, where N is a value between 0 and 7. The
+    default interface is nic0. Use this field to choose the internal IP
+    addresses of the VM instance in this zone instead of letting Compute
+    Engine assign them automatically.               - Each key must be a name
+    of a network interface that exists on       the VM instance. Otherwise,
+    the request fails.       - Network interfaces that are omitted are
+    assigned an ephemeral       internal IP address.       - Every zone must
+    configure the same network interfaces and the       same IP address
+    families.       - For the zone that currently holds the VM instance, this
+    field       is populated automatically, and any addresses you specify must
+    match the instance's current addresses.       - Only internal IP addresses
+    are supported, and this field can       only be set when the HA Controller
+    is created.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        InstanceNetworkInterfacesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        InstanceNetworkInterfacesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a InstanceNetworkInterfacesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A HaControllerInstanceNetworkInterface attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('HaControllerInstanceNetworkInterface', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  instanceNetworkInterfaces = _messages.MessageField('InstanceNetworkInterfacesValue', 1)
+  nodeAffinities = _messages.MessageField('HaControllerZoneConfigurationNodeAffinity', 2, repeated=True)
+  reservationAffinity = _messages.MessageField('HaControllerZoneConfigurationReservationAffinity', 3)
 
 
 class HaControllerZoneConfigurationNodeAffinity(_messages.Message):
@@ -73768,6 +74439,9 @@ class NetworkEndpointGroup(_messages.Message):
       networkEndpointType set toSERVERLESS or PRIVATE_SERVICE_CONNECT and for
       global NEGs. For all other network endpoint types, this field is
       required.
+    networkAttachment: Optional. The URL of the network attachment that this
+      resource belongs to.projects/{project}/regions/{region_name}/networkAtta
+      chments/{network_attachment_name}.
     networkEndpointType: Type of network endpoints in this network endpoint
       group. Can be one ofGCE_VM_IP, GCE_VM_IP_PORT,NON_GCP_PRIVATE_IP_PORT,
       INTERNET_FQDN_PORT,INTERNET_IP_PORT, SERVERLESS,PRIVATE_SERVICE_CONNECT,
@@ -73781,6 +74455,10 @@ class NetworkEndpointGroup(_messages.Message):
     region: Output only. [Output Only] The URL of theregion where the network
       endpoint group is located.
     selfLink: Output only. [Output Only] Server-defined URL for the resource.
+    serviceClassId: Optional. The service class ID associated with this
+      resource. Can only be used with network_attachment. It is not possible
+      to use on its own; however, network_attachment can be used without
+      service_class_id.
     size: Output only. [Output only] Number of network endpoints in the
       network endpoint group.
     subnetwork: Optional URL of the subnetwork to which all network endpoints
@@ -73864,14 +74542,16 @@ class NetworkEndpointGroup(_messages.Message):
   kind = _messages.StringField(9, default='compute#networkEndpointGroup')
   name = _messages.StringField(10)
   network = _messages.StringField(11)
-  networkEndpointType = _messages.EnumField('NetworkEndpointTypeValueValuesEnum', 12)
-  pscData = _messages.MessageField('NetworkEndpointGroupPscData', 13)
-  pscTargetService = _messages.StringField(14)
-  region = _messages.StringField(15)
-  selfLink = _messages.StringField(16)
-  size = _messages.IntegerField(17, variant=_messages.Variant.INT32)
-  subnetwork = _messages.StringField(18)
-  zone = _messages.StringField(19)
+  networkAttachment = _messages.StringField(12)
+  networkEndpointType = _messages.EnumField('NetworkEndpointTypeValueValuesEnum', 13)
+  pscData = _messages.MessageField('NetworkEndpointGroupPscData', 14)
+  pscTargetService = _messages.StringField(15)
+  region = _messages.StringField(16)
+  selfLink = _messages.StringField(17)
+  serviceClassId = _messages.StringField(18)
+  size = _messages.IntegerField(19, variant=_messages.Variant.INT32)
+  subnetwork = _messages.StringField(20)
+  zone = _messages.StringField(21)
 
 
 class NetworkEndpointGroupAggregatedList(_messages.Message):
@@ -89612,6 +90292,12 @@ class ResourceStatusReservationConsumptionInfo(_messages.Message):
 class ResourceStatusScheduling(_messages.Message):
   r"""A ResourceStatusScheduling object.
 
+  Enums:
+    ProtectionTierValueValuesEnum: Output only. Protection tier for the
+      workload which specifies the workload expectations in the event of
+      infrastructure failures at data center (e.g. power and/or cooling
+      failures).
+
   Fields:
     availabilityDomain: Specifies the availability domain to place the
       instance in. The value must be a number between 1 and the number of
@@ -89619,13 +90305,40 @@ class ResourceStatusScheduling(_messages.Message):
       to the instance.
     gracefulShutdownTimestamp: Output only. Specifies the timestamp, when the
       instance will start graceful shutdown process, in RFC3339 text format.
+    protectionTier: Output only. Protection tier for the workload which
+      specifies the workload expectations in the event of infrastructure
+      failures at data center (e.g. power and/or cooling failures).
     terminationTimestamp: Time in future when the instance will be terminated
       inRFC3339 text format.
   """
 
+  class ProtectionTierValueValuesEnum(_messages.Enum):
+    r"""Output only. Protection tier for the workload which specifies the
+    workload expectations in the event of infrastructure failures at data
+    center (e.g. power and/or cooling failures).
+
+    Values:
+      PROTECTION_TIER_CAPACITY_OPTIMIZED: CAPACITY_OPTIMIZED capacity
+        leverages redundancies (e.g. power, cooling) at the data center during
+        normal operating conditions. In the event of infrastructure failures
+        at data center (e.g. power and/or cooling failures), this workload may
+        be disrupted. As a consequence, it has a weaker availability SLO than
+        STANDARD.
+      PROTECTION_TIER_STANDARD: STANDARD protection for workload that should
+        be protected by redundancies (e.g. power, cooling) at the data center
+        level. In the event of infrastructure failures at data center (e.g.
+        power and/or cooling failures), this workload is expected to continue
+        as normal using the redundancies.
+      PROTECTION_TIER_UNSPECIFIED: Unspecified protection tier.
+    """
+    PROTECTION_TIER_CAPACITY_OPTIMIZED = 0
+    PROTECTION_TIER_STANDARD = 1
+    PROTECTION_TIER_UNSPECIFIED = 2
+
   availabilityDomain = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   gracefulShutdownTimestamp = _messages.StringField(2)
-  terminationTimestamp = _messages.StringField(3)
+  protectionTier = _messages.EnumField('ProtectionTierValueValuesEnum', 3)
+  terminationTimestamp = _messages.StringField(4)
 
 
 class ResourceStatusShutdownDetails(_messages.Message):
@@ -93854,6 +94567,9 @@ class Scheduling(_messages.Message):
       this instance. For standard instances, the default behavior is MIGRATE.
       Forpreemptible instances, the default and only possible behavior is
       TERMINATE. For more information, see  Set  VM host maintenance policy.
+    ProtectionTierValueValuesEnum: Protection tier for the workload which
+      specifies the workload expectations in the event of infrastructure
+      failures at data center (e.g. power and/or cooling failures).
     ProvisioningModelValueValuesEnum: Specifies the provisioning model of the
       instance.
 
@@ -93905,6 +94621,9 @@ class Scheduling(_messages.Message):
       duration before the GCE ACPI G2 Soft Off signal is triggered for Spot
       VMs only. If not specified, there will be no wait before the G2 Soft Off
       signal is triggered.
+    protectionTier: Protection tier for the workload which specifies the
+      workload expectations in the event of infrastructure failures at data
+      center (e.g. power and/or cooling failures).
     provisioningModel: Specifies the provisioning model of the instance.
     skipGuestOsShutdown: Default is false and there will be 120 seconds
       between GCE ACPI G2 Soft Off and ACPI G3 Mechanical Off for Standard VMs
@@ -93945,6 +94664,29 @@ class Scheduling(_messages.Message):
     MIGRATE = 0
     TERMINATE = 1
 
+  class ProtectionTierValueValuesEnum(_messages.Enum):
+    r"""Protection tier for the workload which specifies the workload
+    expectations in the event of infrastructure failures at data center (e.g.
+    power and/or cooling failures).
+
+    Values:
+      PROTECTION_TIER_CAPACITY_OPTIMIZED: CAPACITY_OPTIMIZED capacity
+        leverages redundancies (e.g. power, cooling) at the data center during
+        normal operating conditions. In the event of infrastructure failures
+        at data center (e.g. power and/or cooling failures), this workload may
+        be disrupted. As a consequence, it has a weaker availability SLO than
+        STANDARD.
+      PROTECTION_TIER_STANDARD: STANDARD protection for workload that should
+        be protected by redundancies (e.g. power, cooling) at the data center
+        level. In the event of infrastructure failures at data center (e.g.
+        power and/or cooling failures), this workload is expected to continue
+        as normal using the redundancies.
+      PROTECTION_TIER_UNSPECIFIED: Unspecified protection tier.
+    """
+    PROTECTION_TIER_CAPACITY_OPTIMIZED = 0
+    PROTECTION_TIER_STANDARD = 1
+    PROTECTION_TIER_UNSPECIFIED = 2
+
   class ProvisioningModelValueValuesEnum(_messages.Enum):
     r"""Specifies the provisioning model of the instance.
 
@@ -93977,9 +94719,10 @@ class Scheduling(_messages.Message):
   onInstanceStopAction = _messages.MessageField('SchedulingOnInstanceStopAction', 13)
   preemptible = _messages.BooleanField(14)
   preemptionNoticeDuration = _messages.MessageField('Duration', 15)
-  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 16)
-  skipGuestOsShutdown = _messages.BooleanField(17)
-  terminationTime = _messages.StringField(18)
+  protectionTier = _messages.EnumField('ProtectionTierValueValuesEnum', 16)
+  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 17)
+  skipGuestOsShutdown = _messages.BooleanField(18)
+  terminationTime = _messages.StringField(19)
 
 
 class SchedulingGracefulShutdown(_messages.Message):
@@ -107443,6 +108186,8 @@ class UpcomingMaintenance(_messages.Message):
     r"""MaintenanceReasonsValueListEntryValuesEnum enum type.
 
     Values:
+      FAILURE_CUSTOMER_REPORTED: Maintenance due to a fault reported by the
+        customer via the R&R (Report-and-Replace) API.
       FAILURE_DISK: Maintenance due to disk errors.
       FAILURE_GPU: Maintenance due to GPU errors.
       FAILURE_GPU_MULTIPLE_FAULTY_HOSTS_CUSTOMER_REPORTED: Maintenance due to
@@ -107465,23 +108210,24 @@ class UpcomingMaintenance(_messages.Message):
       PLANNED_NETWORK_UPDATE: Maintenance due to planned network update.
       PLANNED_UPDATE: Maintenance due to planned update to the instance.
     """
-    FAILURE_DISK = 0
-    FAILURE_GPU = 1
-    FAILURE_GPU_MULTIPLE_FAULTY_HOSTS_CUSTOMER_REPORTED = 2
-    FAILURE_GPU_NVLINK_SWITCH_CUSTOMER_REPORTED = 3
-    FAILURE_GPU_TEMPERATURE = 4
-    FAILURE_GPU_XID = 5
-    FAILURE_INFRA = 6
-    FAILURE_INTERFACE = 7
-    FAILURE_MEMORY = 8
-    FAILURE_NETWORK = 9
-    FAILURE_NVLINK = 10
-    FAILURE_REDUNDANT_HARDWARE_FAULT = 11
-    FAILURE_TPU = 12
-    INFRASTRUCTURE_RELOCATION = 13
-    MAINTENANCE_REASON_UNKNOWN = 14
-    PLANNED_NETWORK_UPDATE = 15
-    PLANNED_UPDATE = 16
+    FAILURE_CUSTOMER_REPORTED = 0
+    FAILURE_DISK = 1
+    FAILURE_GPU = 2
+    FAILURE_GPU_MULTIPLE_FAULTY_HOSTS_CUSTOMER_REPORTED = 3
+    FAILURE_GPU_NVLINK_SWITCH_CUSTOMER_REPORTED = 4
+    FAILURE_GPU_TEMPERATURE = 5
+    FAILURE_GPU_XID = 6
+    FAILURE_INFRA = 7
+    FAILURE_INTERFACE = 8
+    FAILURE_MEMORY = 9
+    FAILURE_NETWORK = 10
+    FAILURE_NVLINK = 11
+    FAILURE_REDUNDANT_HARDWARE_FAULT = 12
+    FAILURE_TPU = 13
+    INFRASTRUCTURE_RELOCATION = 14
+    MAINTENANCE_REASON_UNKNOWN = 15
+    PLANNED_NETWORK_UPDATE = 16
+    PLANNED_UPDATE = 17
 
   class MaintenanceStatusValueValuesEnum(_messages.Enum):
     r"""MaintenanceStatusValueValuesEnum enum type.
@@ -111931,11 +112677,9 @@ class WireProperties(_messages.Message):
     Values:
       DYNAMIC_PATH: The wire uses dynamic paths.
       FIXED_PATH: The wire uses fixed paths.
-      FLOW_MANAGEMENT_UNSPECIFIED: <no description>
     """
     DYNAMIC_PATH = 0
     FIXED_PATH = 1
-    FLOW_MANAGEMENT_UNSPECIFIED = 2
 
   bandwidthAllocation = _messages.EnumField('BandwidthAllocationValueValuesEnum', 1)
   bandwidthUnmetered = _messages.IntegerField(2)

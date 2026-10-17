@@ -283,6 +283,25 @@
           required: false
           help_text: |
             If specified, accelerated security patch will be enabled. Use `--no-accelerated-security-patch-enabled` to disable it.
+    # Group for Auth Type
+    - group:
+        required: false
+        release_tracks: [ALPHA]
+        help_text: |
+          Auth Type - Authentication configuration for the Looker instance.
+        params:
+        - api_field: instance.authType.workforceAuthEnabled
+          arg_name: workforce-auth-enabled
+          type: bool
+          required: false
+          help_text: |
+            This specifies whether Workforce auth is enabled on the Looker instance.
+        - api_field: instance.authType.googleAuthEnabled
+          arg_name: google-auth-enabled
+          type: bool
+          required: false
+          help_text: |
+            This specifies whether Google auth is enabled on the Looker instance.
     # Group for PSC
     - group:
         required: false
@@ -414,6 +433,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCatalogIntegrationOptOut
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateReleaseChannel
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateAcceleratedSecurityPatch
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateAuthType
     GA:
       api_version: v1
       modify_request_hooks:

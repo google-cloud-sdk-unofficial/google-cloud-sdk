@@ -652,7 +652,7 @@ class ContainerV1alpha1(base_api.BaseApiClient):
     )
 
     def CompleteConvertToAutopilot(self, request, global_params=None):
-      r"""CompleteConvertToAutopilot is an optional API that commits the conversion by deleting all Standard node pools and completing CA rotation. This action requires that a conversion has been started and that workload migration has completed, with no pods running on GKE Standard node pools. This action will be automatically performed 72 hours after conversion.
+      r"""CompleteConvertToAutopilot is an optional API that commits the conversion by deleting all Standard node pools and completing CA rotation. This action requires that a conversion has been started and that workload migration has completed, with no pods running on GKE Standard node pools. This action will be automatically performed 72 hours after conversion. Deprecated: CompleteConvertToAutopilot is deprecated and no longer supported.
 
       Args:
         request: (ContainerProjectsLocationsClustersCompleteConvertToAutopilotRequest) input message

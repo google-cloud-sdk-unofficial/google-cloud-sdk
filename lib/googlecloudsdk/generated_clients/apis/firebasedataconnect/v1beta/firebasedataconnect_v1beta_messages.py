@@ -923,6 +923,128 @@ class FirebasedataconnectProjectsLocationsServicesPatchRequest(_messages.Message
   validateOnly = _messages.BooleanField(6)
 
 
+class FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestDeleteRequest(_messages.Message):
+  r"""A
+  FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestDeleteRequest
+  object.
+
+  Fields:
+    firebasedataconnectService: Required. The resource name of the service, in
+      the format: `projects/{project}/locations/{location}/services/{service}`
+    firebasedataconnectTable: Required. The name of the table to delete from.
+  """
+
+  firebasedataconnectService = _messages.StringField(1, required=True)
+  firebasedataconnectTable = _messages.StringField(2, required=True)
+
+
+class FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestInsertRequest(_messages.Message):
+  r"""A
+  FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestInsertRequest
+  object.
+
+  Fields:
+    firebasedataconnectService: Required. The resource name of the service, in
+      the format: `projects/{project}/locations/{location}/services/{service}`
+    firebasedataconnectTable: Required. The name of the table to insert into.
+    httpBody: A HttpBody resource to be passed as the request body.
+  """
+
+  firebasedataconnectService = _messages.StringField(1, required=True)
+  firebasedataconnectTable = _messages.StringField(2, required=True)
+  httpBody = _messages.MessageField('HttpBody', 3)
+
+
+class FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestSelectRequest(_messages.Message):
+  r"""A
+  FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestSelectRequest
+  object.
+
+  Fields:
+    firebasedataconnectService: Required. The resource name of the service, in
+      the format: `projects/{project}/locations/{location}/services/{service}`
+    firebasedataconnectTable: Required. The name of the table to select from.
+  """
+
+  firebasedataconnectService = _messages.StringField(1, required=True)
+  firebasedataconnectTable = _messages.StringField(2, required=True)
+
+
+class FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestUpdateRequest(_messages.Message):
+  r"""A
+  FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestUpdateRequest
+  object.
+
+  Fields:
+    firebasedataconnectService: Required. The resource name of the service, in
+      the format: `projects/{project}/locations/{location}/services/{service}`
+    firebasedataconnectTable: Required. The name of the table to update.
+    httpBody: A HttpBody resource to be passed as the request body.
+  """
+
+  firebasedataconnectService = _messages.StringField(1, required=True)
+  firebasedataconnectTable = _messages.StringField(2, required=True)
+  httpBody = _messages.MessageField('HttpBody', 3)
+
+
+class FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestUpsertRequest(_messages.Message):
+  r"""A
+  FirebasedataconnectProjectsLocationsServicesPostgrestPostgrestUpsertRequest
+  object.
+
+  Fields:
+    firebasedataconnectService: Required. The resource name of the service, in
+      the format: `projects/{project}/locations/{location}/services/{service}`
+    firebasedataconnectTable: Required. The name of the table to upsert into.
+    httpBody: A HttpBody resource to be passed as the request body.
+  """
+
+  firebasedataconnectService = _messages.StringField(1, required=True)
+  firebasedataconnectTable = _messages.StringField(2, required=True)
+  httpBody = _messages.MessageField('HttpBody', 3)
+
+
+class FirebasedataconnectProjectsLocationsServicesPostgrestRequest(_messages.Message):
+  r"""A FirebasedataconnectProjectsLocationsServicesPostgrestRequest object.
+
+  Fields:
+    firebasedataconnectService: Required. The resource name of the service, in
+      the format: `projects/{project}/locations/{location}/services/{service}`
+  """
+
+  firebasedataconnectService = _messages.StringField(1, required=True)
+
+
+class FirebasedataconnectProjectsLocationsServicesPostgrestRpcPostgrestCallFunctionRequest(_messages.Message):
+  r"""A FirebasedataconnectProjectsLocationsServicesPostgrestRpcPostgrestCallF
+  unctionRequest object.
+
+  Fields:
+    firebasedataconnectFunction: Required. The name of the database function.
+    firebasedataconnectService: Required. The resource name of the service, in
+      the format: `projects/{project}/locations/{location}/services/{service}`
+    httpBody: A HttpBody resource to be passed as the request body.
+  """
+
+  firebasedataconnectFunction = _messages.StringField(1, required=True)
+  firebasedataconnectService = _messages.StringField(2, required=True)
+  httpBody = _messages.MessageField('HttpBody', 3)
+
+
+class FirebasedataconnectProjectsLocationsServicesPostgrestRpcPostgrestQueryFunctionRequest(_messages.Message):
+  r"""A FirebasedataconnectProjectsLocationsServicesPostgrestRpcPostgrestQuery
+  FunctionRequest object.
+
+  Fields:
+    firebasedataconnectFunction: Required. The name of the database function.
+    firebasedataconnectService: Required. The resource name of the service, in
+      the format: `projects/{project}/locations/{location}/services/{service}`
+  """
+
+  firebasedataconnectFunction = _messages.StringField(1, required=True)
+  firebasedataconnectService = _messages.StringField(2, required=True)
+
+
 class FirebasedataconnectProjectsLocationsServicesSchemasCreateRequest(_messages.Message):
   r"""A FirebasedataconnectProjectsLocationsServicesSchemasCreateRequest
   object.
@@ -1024,6 +1146,22 @@ class FirebasedataconnectProjectsLocationsServicesSchemasListRequest(_messages.M
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class FirebasedataconnectProjectsLocationsServicesSchemasMigrateRequest(_messages.Message):
+  r"""A FirebasedataconnectProjectsLocationsServicesSchemasMigrateRequest
+  object.
+
+  Fields:
+    migrateSchemaRequest: A MigrateSchemaRequest resource to be passed as the
+      request body.
+    name: Required. Resource name of the target schema: projects/{project}/loc
+      ations/{location}/services/{service}/schemas/{schema} Note: Only
+      `schemas/main` is supported (singleton schema per service).
+  """
+
+  migrateSchemaRequest = _messages.MessageField('MigrateSchemaRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class FirebasedataconnectProjectsLocationsServicesSchemasPatchRequest(_messages.Message):
@@ -1480,6 +1618,67 @@ class GraphqlResponseExtensions(_messages.Message):
   dataConnect = _messages.MessageField('DataConnectProperties', 1, repeated=True)
 
 
+class HttpBody(_messages.Message):
+  r"""Message that represents an arbitrary HTTP body. It should only be used
+  for payload formats that can't be represented as JSON, such as raw binary or
+  an HTML page. This message can be used both in streaming and non-streaming
+  API methods in the request as well as the response. It can be used as a top-
+  level request field, which is convenient if one wants to extract parameters
+  from either the URL or HTTP template into the request fields and also want
+  access to the raw HTTP body. Example: message GetResourceRequest { // A
+  unique request id. string request_id = 1; // The raw HTTP body is bound to
+  this field. google.api.HttpBody http_body = 2; } service ResourceService {
+  rpc GetResource(GetResourceRequest) returns (google.api.HttpBody); rpc
+  UpdateResource(google.api.HttpBody) returns (google.protobuf.Empty); }
+  Example with streaming methods: service CaldavService { rpc
+  GetCalendar(stream google.api.HttpBody) returns (stream
+  google.api.HttpBody); rpc UpdateCalendar(stream google.api.HttpBody) returns
+  (stream google.api.HttpBody); } Use of this type only changes how the
+  request and response bodies are handled, all other features will continue to
+  work unchanged.
+
+  Messages:
+    ExtensionsValueListEntry: A ExtensionsValueListEntry object.
+
+  Fields:
+    contentType: The HTTP Content-Type header value specifying the content
+      type of the body.
+    data: The HTTP request/response body as raw binary.
+    extensions: Application specific response metadata. Must be set in the
+      first response for streaming APIs.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExtensionsValueListEntry(_messages.Message):
+    r"""A ExtensionsValueListEntry object.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        ExtensionsValueListEntry object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExtensionsValueListEntry object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  contentType = _messages.StringField(1)
+  data = _messages.BytesField(2)
+  extensions = _messages.MessageField('ExtensionsValueListEntry', 3, repeated=True)
+
+
 class HttpGraphql(_messages.Message):
   r"""Settings for HTTP GraphQL server webhook.
 
@@ -1749,6 +1948,86 @@ class Location(_messages.Message):
   locationId = _messages.StringField(3)
   metadata = _messages.MessageField('MetadataValue', 4)
   name = _messages.StringField(5)
+
+
+class MigrateSchemaRequest(_messages.Message):
+  r"""Request message for `MigrateSchema`. Next tag: 7
+
+  Enums:
+    ExecutionModeValueValuesEnum: Optional. Execution mode controlling DDL
+      execution and ledger recording. Defaults to EXECUTE_AND_RECORD.
+
+  Fields:
+    executionMode: Optional. Execution mode controlling DDL execution and
+      ledger recording. Defaults to EXECUTE_AND_RECORD.
+    migrationSteps: Required. Ordered migration steps from `./sql/migrations/`
+      (or a single ad-hoc step). Backend compares submitted versions against
+      `firebasesql.schema_migrations`: already-applied steps are verified for
+      SQL immutability and skipped, while unapplied steps (`version >
+      MAX(applied_version)`) are executed. All unapplied transactional steps
+      in a single request execute atomically within one database transaction
+      (BEGIN ... COMMIT): either every unapplied step commits and is recorded
+      in the ledger, or the entire request rolls back. An unapplied step
+      containing CREATE INDEX CONCURRENTLY or DROP INDEX CONCURRENTLY cannot
+      be mixed with other unapplied steps and must be the sole unapplied step
+      executed in the request.
+    validateOnly: Optional. When true, runs preflight validation (syntax,
+      applied-step immutability, sequence ordering, CONCURRENTLY isolation,
+      and SAVEPOINT catalog checks) without committing mutations to the
+      database.
+  """
+
+  class ExecutionModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Execution mode controlling DDL execution and ledger
+    recording. Defaults to EXECUTE_AND_RECORD.
+
+    Values:
+      EXECUTION_MODE_UNSPECIFIED: Default behavior. Evaluates to
+        EXECUTE_AND_RECORD.
+      EXECUTE_AND_RECORD: Standard execution: executes DDL statements against
+        the database catalog and records completed steps in
+        `firebasesql.schema_migrations`.
+      EXECUTE_ONLY: Applies DDL statements against the database catalog
+        without writing to the ledger. Used for maintenance scripts, temporary
+        schema objects, and the internal declarative flow.
+      RECORD_ONLY: Records steps into `firebasesql.schema_migrations` without
+        executing their DDL statements. Used for baselining pre-existing
+        schemas or manual out-of-band changes (e.g. ledger-only).
+    """
+    EXECUTION_MODE_UNSPECIFIED = 0
+    EXECUTE_AND_RECORD = 1
+    EXECUTE_ONLY = 2
+    RECORD_ONLY = 3
+
+  executionMode = _messages.EnumField('ExecutionModeValueValuesEnum', 1)
+  migrationSteps = _messages.MessageField('MigrationStep', 2, repeated=True)
+  validateOnly = _messages.BooleanField(3)
+
+
+class MigrationStep(_messages.Message):
+  r"""An individual unit of migration work. Next tag: 4
+
+  Fields:
+    name: Optional. Descriptive migration label (e.g.
+      "create_accounts_table"). If omitted, defaults to "adhoc".
+    sql: Required. Raw multi-statement SQL script. The backend splits it into
+      individual statements before execution; callers do not pre-split.
+      Required whenever the request executes or records DDL, which is every
+      publicly available execution mode; omitting it returns INVALID_ARGUMENT.
+    version: Optional. Monotonic 14-digit UTC timestamp (YYYYMMDDHHMMSS),
+      matching the timestamp prefix of the developer's migration filename.
+      Constrained to `^[0-9]{14}$`. - When specified (file migrations): If
+      `version` is already recorded in `firebasesql.schema_migrations`, the
+      backend verifies that `sql` matches the recorded statements and skips
+      execution. If `version` is unapplied, the backend validates `version >
+      MAX(applied_version)` and records the value unchanged, so the ledger row
+      and the on-disk filename stay identical. - When omitted (Console/ad-
+      hoc): Backend auto-generates a 14-digit UTC timestamp.
+  """
+
+  name = _messages.StringField(1)
+  sql = _messages.StringField(2)
+  version = _messages.StringField(3)
 
 
 class Operation(_messages.Message):

@@ -29,10 +29,6 @@ class ListServicesException(Error):
   """List services command."""
 
 
-class ListMcpServicesException(Error):
-  """List MCP services command."""
-
-
 class GetServicePermissionDeniedException(Error):
   """Permission denied exception for get service command."""
 
@@ -175,42 +171,6 @@ class ListSharedServicesException(Error):
 
 class AnalyzeConsumerPolicyException(Error):
   """Analyze consumer policy."""
-
-
-class TestMcpEnabledException(Error):
-  """Exception for test MCP enabled."""
-
-
-class GetMcpPolicyException(Error):
-  """Exception for get MCP policy."""
-
-
-class GetContentSecurityPolicyException(Error):
-  """Exception for get content security policy."""
-
-
-class UpdateContentSecurityPolicyException(Error):
-  """Exception for update content security policy."""
-
-
-class AddContentSecurityProviderException(Error):
-  """Exception for add content security provider."""
-
-
-class RemoveContentSecurityProviderException(Error):
-  """Exception for remove content security provider."""
-
-
-class GetEffectiveMcpPolicyException(Error):
-  """Exception for get effective MCP policy."""
-
-
-class UpdateMcpPolicyException(Error):
-  """Exception for update MCP policy."""
-
-
-class EnableMcpServiceException(Error):
-  """Exception for enable MCP service."""
 
 
 class OperationErrorException(Error):

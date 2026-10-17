@@ -17,8 +17,14 @@
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class Apps(base.Group):
+  """Manage Firebase applications."""
+
+
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Apps(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AppsBeta(base.Group):
   """Manage Firebase applications."""

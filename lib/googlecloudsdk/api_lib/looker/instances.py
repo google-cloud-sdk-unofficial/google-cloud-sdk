@@ -18,9 +18,9 @@
 from googlecloudsdk.api_lib.looker import utils
 
 
-def GetService(release_track):
+def GetService(release_track, location=None):
   """Returns the service for interacting with the Intances service."""
-  client = utils.LookerClient(release_track)
+  client = utils.LookerClient(release_track, location=location)
   looker_client = client.looker_client
   return looker_client.projects_locations_instances
 
@@ -28,7 +28,7 @@ def GetService(release_track):
 def ExportInstance(instance_ref, args, release_track):
   """Exports a Looker Instance."""
   messages_module = utils.GetMessagesModule(release_track)
-  service = GetService(release_track)
+  service = GetService(release_track, location=instance_ref.locationsId)
 
   encryption_config = messages_module.ExportEncryptionConfig(
       kmsKeyName=args.kms_key
@@ -48,7 +48,7 @@ def ExportInstance(instance_ref, args, release_track):
 def ImportInstance(instance_ref, args, release_track):
   """Imports a Looker Instance."""
   messages_module = utils.GetMessagesModule(release_track)
-  service = GetService(release_track)
+  service = GetService(release_track, location=instance_ref.locationsId)
 
   import_instance_request = messages_module.ImportInstanceRequest(
       gcsUri=args.source_gcs_uri

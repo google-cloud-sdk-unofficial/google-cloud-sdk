@@ -18,17 +18,27 @@
 """File to add optional custom code to extend __init__.py."""
 from googlecloudsdk.calliope import base
 
+_DEPRECATION_WARNING = """\
+The `gcloud blockchain-validator` command group is deprecated and will
+be removed in a future release."""
 
+
+@base.DefaultUniverseOnly
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 class BlockchainValidatorAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
   category = base.UNCATEGORIZED_CATEGORY
 
 
+@base.DefaultUniverseOnly
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 class BlockchainValidatorBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
   category = base.UNCATEGORIZED_CATEGORY
 
 
+@base.DefaultUniverseOnly
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 class BlockchainValidatorGa(base.Group):
   """Optional no-auto-generated code for GA."""
   category = base.UNCATEGORIZED_CATEGORY

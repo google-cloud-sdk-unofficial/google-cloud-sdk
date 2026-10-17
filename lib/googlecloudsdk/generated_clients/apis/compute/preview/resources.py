@@ -58,6 +58,14 @@ class Collections(enum.Enum):
       ['project', 'region', 'address'],
       True
   )
+  ALIASNETWORKENDPOINTS = (
+      'aliasNetworkEndpoints',
+      'projects/{project}/zones/{zone}/aliasNetworkEndpoints/'
+      '{aliasNetworkEndpoint}',
+      {},
+      ['project', 'zone', 'aliasNetworkEndpoint'],
+      True
+  )
   AUTOSCALERS = (
       'autoscalers',
       'projects/{project}/zones/{zone}/autoscalers/{autoscaler}',

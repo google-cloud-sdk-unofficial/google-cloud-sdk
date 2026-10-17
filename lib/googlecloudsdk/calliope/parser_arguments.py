@@ -564,6 +564,9 @@ class ArgumentInterceptor(Argument):
       inverted_synopsis = False
 
     kwargs = dict(original_kwargs)
+    # Excluding custom inverted_help_text so standard argparse actions dont
+    # throw an unrecognized parameter error.
+    kwargs.pop('inverted_help_text', None)
     if _IsStoreTrueAction(action):
       action = 'store_false'
     elif _IsStoreFalseAction(action):

@@ -30,10 +30,12 @@ API_VERSION_DEFAULT = VERSION_MAP[DEFAULT_RELEASE_TRACK]
 class LookerClient(object):
   """Wrapper for looker API client and associated resources."""
 
-  def __init__(self, release_track):
+  def __init__(self, release_track, location=None):
     api_version = VERSION_MAP[release_track]
     self.release_track = release_track
-    self.looker_client = apis.GetClientInstance('looker', api_version)
+    self.looker_client = apis.GetClientInstance(
+        'looker', api_version, location=location
+    )
 
 
 def GetMessagesModule(release_track):

@@ -14,9 +14,12 @@
 # limitations under the License.
 """Secure Source Manager API utilities."""
 
+from apitools.base.protorpclite import messages as protorpc_messages
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.generated_clients.apis.securesourcemanager.v1 import securesourcemanager_v1_messages
 
@@ -44,6 +47,22 @@ def GetClientInstance(release_track=base.ReleaseTrack.ALPHA, location=None):
 def GetMessagesModule(release_track=base.ReleaseTrack.ALPHA):
   api_version = GetApiVersion(release_track)
   return apis.GetMessagesModule(DEFAULT_API_NAME, api_version)
+
+
+def GetResourceNameFromResponse(
+    response: protorpc_messages.Message | None,
+) -> str | None:
+  """Returns the `name` field of an operation response, if present.
+
+  Args:
+    response: The operation response or resource message.
+
+  Returns:
+    The resource name, or None if the response is empty or has no name.
+  """
+  if not response:
+    return None
+  return encoding.MessageToPyValue(response).get('name')
 
 
 class SecureSourceManagerClientBase(object):
@@ -79,10 +98,10 @@ class SecureSourceManagerClientBase(object):
 
   def WaitForOperation(
       self,
-      operation_ref,
-      message,
-      has_result=True,
-  ):
+      operation_ref: resources.Resource | None,
+      message: str,
+      has_result: bool = True,
+  ) -> protorpc_messages.Message | None:
     """Waits for an operation to complete.
 
     Polls the Secure Source Manager Operation service until the operation
@@ -109,3 +128,39 @@ class SecureSourceManagerClientBase(object):
       poller = waiter.CloudOperationPollerNoResources(self.operations_service)
 
     return waiter.WaitFor(poller, operation_ref, message)
+
+  def GetOperationResult(
+      self,
+      operation: securesourcemanager_v1_messages.Operation,
+      message: str,
+      has_result: bool = True,
+  ) -> protorpc_messages.Message | None:
+    """Returns the result of an operation, waiting for it if needed.
+
+    If the operation is already done (or is not a named long-running
+    operation), its response is returned directly. Otherwise, the operation is
+    polled until it completes.
+
+    Args:
+      operation: The operation returned by a mutating API call.
+      message: The message to display to the user while waiting.
+      has_result: See `WaitForOperation`.
+
+    Returns:
+      The operation response or the resulting Secure Source Manager entity.
+
+    Raises:
+      waiter.OperationError: If the operation completed with an error.
+    """
+    # TODO(b/413742800): Remove the non wait logic once the LRO implemented.
+    if operation.done or not operation.name:
+      if operation.error:
+        log.error('Operation failed: %s', operation.error)
+        raise waiter.OperationError(
+            operation.error.message or str(operation.error)
+        )
+      return operation.response
+
+    return self.WaitForOperation(
+        self.GetOperationRef(operation), message, has_result=has_result
+    )

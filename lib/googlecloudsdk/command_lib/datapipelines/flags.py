@@ -15,9 +15,9 @@
 """Flags and helpers for the compute related commands."""
 
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
@@ -253,9 +253,10 @@ def GetDisablePublicIpsArg(required=False):
       '--disable-public-ips',
       required=required,
       default=None,
-      action=actions.StoreBooleanProperty(
-          properties.VALUES.datapipelines.disable_public_ips),
-      help="""Specifies that Cloud Dataflow workers must not use public IP addresses by default."""
+      action=property_actions.StoreBooleanProperty(
+          properties.VALUES.datapipelines.disable_public_ips
+      ),
+      help="""Specifies that Cloud Dataflow workers must not use public IP addresses by default.""",
   )
 
 
@@ -280,9 +281,10 @@ def GetEnableStreamingEngineArg(required=False):
       '--enable-streaming-engine',
       required=required,
       default=None,
-      action=actions.StoreBooleanProperty(
-          properties.VALUES.datapipelines.enable_streaming_engine),
-      help="""Specifies that enabling Streaming Engine for the job by default."""
+      action=property_actions.StoreBooleanProperty(
+          properties.VALUES.datapipelines.enable_streaming_engine
+      ),
+      help="""Specifies that enabling Streaming Engine for the job by default.""",
   )
 
 

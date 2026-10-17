@@ -544,18 +544,44 @@ class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsGetRequest(_messa
   r"""A AssuredworkloadsOrganizationsLocationsWorkloadsViolationsGetRequest
   object.
 
+  Enums:
+    ViewValueValuesEnum: Optional. Specifies the violation view
+      (`AssuredWorkloads` or `DataBoundary`) for fetching violations.
+
   Fields:
     name: Required. The resource name of the Violation to fetch (ie.
       Violation.name). Format: organizations/{organization}/locations/{locatio
       n}/workloads/{workload}/violations/{violation}
+    view: Optional. Specifies the violation view (`AssuredWorkloads` or
+      `DataBoundary`) for fetching violations.
   """
 
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the violation view (`AssuredWorkloads` or
+    `DataBoundary`) for fetching violations.
+
+    Values:
+      VIOLATION_VIEW_UNSPECIFIED: Defaults to the ASSURED_WORKLOADS view.
+      VIOLATION_VIEW_ASSURED_WORKLOADS: Includes the basic metadata about the
+        violation.
+      VIOLATION_VIEW_DATA_BOUNDARY: Includes all information about the
+        violation, including details about the data boundary.
+    """
+    VIOLATION_VIEW_UNSPECIFIED = 0
+    VIOLATION_VIEW_ASSURED_WORKLOADS = 1
+    VIOLATION_VIEW_DATA_BOUNDARY = 2
+
   name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
 
 
 class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest(_messages.Message):
   r"""A AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest
   object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. Specifies the violation
+      view(AssuredWorkloads or DataBoundary) for fetching violations.
 
   Fields:
     filter: Optional. A custom filter for filtering by the Violations
@@ -567,7 +593,24 @@ class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest(_mess
     pageToken: Optional. Page token returned from previous request.
     parent: Required. The Workload name. Format
       `organizations/{org_id}/locations/{location}/workloads/{workload}`.
+    view: Optional. Specifies the violation view(AssuredWorkloads or
+      DataBoundary) for fetching violations.
   """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the violation view(AssuredWorkloads or
+    DataBoundary) for fetching violations.
+
+    Values:
+      VIOLATION_VIEW_UNSPECIFIED: Defaults to the ASSURED_WORKLOADS view.
+      VIOLATION_VIEW_ASSURED_WORKLOADS: Includes the basic metadata about the
+        violation.
+      VIOLATION_VIEW_DATA_BOUNDARY: Includes all information about the
+        violation, including details about the data boundary.
+    """
+    VIOLATION_VIEW_UNSPECIFIED = 0
+    VIOLATION_VIEW_ASSURED_WORKLOADS = 1
+    VIOLATION_VIEW_DATA_BOUNDARY = 2
 
   filter = _messages.StringField(1)
   interval_endTime = _messages.StringField(2)
@@ -576,6 +619,7 @@ class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest(_mess
   pageSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(6)
   parent = _messages.StringField(7, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 8)
 
 
 class AssuredworkloadsProjectsLocationsDbFindingSummariesListRequest(_messages.Message):
@@ -716,6 +760,8 @@ class GoogleCloudAssuredworkloadsV1AcknowledgeViolationRequest(_messages.Message
   Enums:
     AcknowledgeTypeValueValuesEnum: Optional. Acknowledge type of specified
       violation.
+    ViewValueValuesEnum: Optional. Specifies the violation view
+      (`AssuredWorkloads` or `DataBoundary`) for acknowledging violations.
 
   Fields:
     acknowledgeType: Optional. Acknowledge type of specified violation.
@@ -727,6 +773,8 @@ class GoogleCloudAssuredworkloadsV1AcknowledgeViolationRequest(_messages.Message
       Format: projects/{project_number}/policies/{constraint_name}
       folders/{folder_id}/policies/{constraint_name}
       organizations/{organization_id}/policies/{constraint_name}
+    view: Optional. Specifies the violation view (`AssuredWorkloads` or
+      `DataBoundary`) for acknowledging violations.
   """
 
   class AcknowledgeTypeValueValuesEnum(_messages.Enum):
@@ -742,9 +790,25 @@ class GoogleCloudAssuredworkloadsV1AcknowledgeViolationRequest(_messages.Message
     SINGLE_VIOLATION = 1
     EXISTING_CHILD_RESOURCE_VIOLATIONS = 2
 
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the violation view (`AssuredWorkloads` or
+    `DataBoundary`) for acknowledging violations.
+
+    Values:
+      VIOLATION_VIEW_UNSPECIFIED: Defaults to the ASSURED_WORKLOADS view.
+      VIOLATION_VIEW_ASSURED_WORKLOADS: Includes the basic metadata about the
+        violation.
+      VIOLATION_VIEW_DATA_BOUNDARY: Includes all information about the
+        violation, including details about the data boundary.
+    """
+    VIOLATION_VIEW_UNSPECIFIED = 0
+    VIOLATION_VIEW_ASSURED_WORKLOADS = 1
+    VIOLATION_VIEW_DATA_BOUNDARY = 2
+
   acknowledgeType = _messages.EnumField('AcknowledgeTypeValueValuesEnum', 1)
   comment = _messages.StringField(2)
   nonCompliantOrgPolicy = _messages.StringField(3)
+  view = _messages.EnumField('ViewValueValuesEnum', 4)
 
 
 class GoogleCloudAssuredworkloadsV1AcknowledgeViolationResponse(_messages.Message):
@@ -2071,6 +2135,9 @@ class GoogleCloudAssuredworkloadsV1Violation(_messages.Message):
       acknowledged first. Check exception_contexts to find the last time the
       violation was acknowledged when there are more than one violations. This
       field will be absent when acknowledged field is marked as false.
+    affectedFrameworks: Output only. List of compliance frameworks that are
+      affected by this violation. This field is only populated when using
+      `VIOLATION_VIEW_DATA_BOUNDARY`. e.g. "FedRAMP High", "NIST 800-53".
     associatedOrgPolicyViolationId: Optional. Output only. Violation Id of the
       org-policy violation due to which the resource violation is caused.
       Empty for org-policy violations.
@@ -2080,6 +2147,9 @@ class GoogleCloudAssuredworkloadsV1Violation(_messages.Message):
     beginTime: Output only. Time of the event which triggered the Violation.
     category: Output only. Category under which this violation is mapped. e.g.
       Location, Service Usage, Access, Encryption, etc.
+    childResourceViolationCount: Optional. Output only. The number of resource
+      violations for particular org policy violation. This will be 0 in case
+      of resource violation.
     description: Output only. Description for the Violation. e.g. OrgPolicy
       gcp.resourceLocations has non compliant value.
     exceptionAuditLogLink: Output only. Immutable. Audit Log link to find
@@ -2101,6 +2171,8 @@ class GoogleCloudAssuredworkloadsV1Violation(_messages.Message):
     parentProjectNumber: Optional. Output only. Parent project number where
       resource is present. Empty for org-policy violations.
     remediation: Output only. Compliance violation remediation
+    remediationMarkdown: Output only. Contains the remediation instructions
+      for the violation in markdown format.
     resolveTime: Output only. Time of the event which fixed the Violation. If
       the violation is ACTIVE this will be empty.
     resourceName: Optional. Output only. Name of the resource like
@@ -2142,24 +2214,27 @@ class GoogleCloudAssuredworkloadsV1Violation(_messages.Message):
 
   acknowledged = _messages.BooleanField(1)
   acknowledgementTime = _messages.StringField(2)
-  associatedOrgPolicyViolationId = _messages.StringField(3)
-  auditLogLink = _messages.StringField(4)
-  beginTime = _messages.StringField(5)
-  category = _messages.StringField(6)
-  description = _messages.StringField(7)
-  exceptionAuditLogLink = _messages.StringField(8)
-  exceptionContexts = _messages.MessageField('GoogleCloudAssuredworkloadsV1ViolationExceptionContext', 9, repeated=True)
-  name = _messages.StringField(10)
-  nonCompliantOrgPolicy = _messages.StringField(11)
-  orgPolicyConstraint = _messages.StringField(12)
-  parentProjectNumber = _messages.StringField(13)
-  remediation = _messages.MessageField('GoogleCloudAssuredworkloadsV1ViolationRemediation', 14)
-  resolveTime = _messages.StringField(15)
-  resourceName = _messages.StringField(16)
-  resourceType = _messages.StringField(17)
-  state = _messages.EnumField('StateValueValuesEnum', 18)
-  updateTime = _messages.StringField(19)
-  violationType = _messages.EnumField('ViolationTypeValueValuesEnum', 20)
+  affectedFrameworks = _messages.StringField(3, repeated=True)
+  associatedOrgPolicyViolationId = _messages.StringField(4)
+  auditLogLink = _messages.StringField(5)
+  beginTime = _messages.StringField(6)
+  category = _messages.StringField(7)
+  childResourceViolationCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  description = _messages.StringField(9)
+  exceptionAuditLogLink = _messages.StringField(10)
+  exceptionContexts = _messages.MessageField('GoogleCloudAssuredworkloadsV1ViolationExceptionContext', 11, repeated=True)
+  name = _messages.StringField(12)
+  nonCompliantOrgPolicy = _messages.StringField(13)
+  orgPolicyConstraint = _messages.StringField(14)
+  parentProjectNumber = _messages.StringField(15)
+  remediation = _messages.MessageField('GoogleCloudAssuredworkloadsV1ViolationRemediation', 16)
+  remediationMarkdown = _messages.StringField(17)
+  resolveTime = _messages.StringField(18)
+  resourceName = _messages.StringField(19)
+  resourceType = _messages.StringField(20)
+  state = _messages.EnumField('StateValueValuesEnum', 21)
+  updateTime = _messages.StringField(22)
+  violationType = _messages.EnumField('ViolationTypeValueValuesEnum', 23)
 
 
 class GoogleCloudAssuredworkloadsV1ViolationExceptionContext(_messages.Message):

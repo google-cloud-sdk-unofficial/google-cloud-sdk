@@ -21,11 +21,14 @@ from googlecloudsdk.calliope import base
 
 class EgressRoutingsAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY
 
 
 class EgressRoutingsBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY
 
 
 class EgressRoutingsGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY

@@ -80,6 +80,7 @@ class PostgreSQL(calliope_base.Command):
         ),
     )
     cp_flags.AddSslConfigGroup(parser, calliope_base.ReleaseTrack.GA)
+    cp_flags.AddSslFlags(parser)
     cp_flags.AddRoleFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 

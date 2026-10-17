@@ -274,7 +274,7 @@ def AddClientCertificateFlag(parser, required=False):
     authenticate against the database server.  The value for this flag needs to
     be the content of the certificate file, not the path to the file.
     For example, on a Linux machine you can use command substitution:
-    <code>--ca-certificate=$(</path/to/certificate_file.pem)</code>.
+    <code>--client-certificate=$(</path/to/certificate_file.pem)</code>.
     Database Migration Service encrypts the value when storing it.
   """
   parser.add_argument('--client-certificate', help=help_text, required=required)
@@ -287,7 +287,7 @@ def AddPrivateKeyFlag(parser, required=False):
     the Client Certificate.  The value for this flag needs to
     be the content of the certificate file, not the path to the file.
     For example, on a Linux machine you can use command substitution:
-    <code>--ca-certificate=$(</path/to/certificate_file.pem)</code>.
+    <code>--private-key=$(</path/to/private_key_file.pem)</code>.
     Database Migration Service encrypts the value when storing it.
   """
   parser.add_argument('--private-key', help=help_text, required=required)

@@ -21,10 +21,17 @@ from googlecloudsdk.command_lib.apigee import resource_args
 from googlecloudsdk.core import log
 
 
-class Deploy(base.DescribeCommand):
-  """Deploy an API proxy to an environment."""
+def _DetailedHelp(extra_examples=""):
+  """Generates detailed help messages for the deploy command.
 
-  detailed_help = {
+  Args:
+    extra_examples: Additional examples to include in the help message.
+
+  Returns:
+    A detailed_help dictionary suitable for compilation into standard gcloud
+    documentation, --help output, etc.
+  """
+  return {
       "DESCRIPTION":
           """\
    {description}
@@ -39,8 +46,7 @@ class Deploy(base.DescribeCommand):
   can no longer be modified. Any updates to the API proxy must be saved as a new
   revision.
   """,
-      "EXAMPLES":
-          """\
+      "EXAMPLES": """\
   To deploy the latest revision of the API proxy named ``demo'' to the ``test''
   environment, given that the API proxy and environment's matching Cloud
   Platform project has been set in gcloud settings, run:
@@ -55,11 +61,19 @@ class Deploy(base.DescribeCommand):
   To deploy that proxy and print the resulting deployment as a JSON object, run:
 
     $ {command} 3 --organization=my-org --environment=test --api=demo --format=json
-  """
+  """ + extra_examples,
   }
 
-  @staticmethod
-  def Args(parser):
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Deploy(base.DescribeCommand):
+  """Deploy an Apigee API proxy to an environment."""
+
+  detailed_help = _DetailedHelp()
+
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         "--override",
         action="store_true",
@@ -104,5 +118,45 @@ class Deploy(base.DescribeCommand):
       log.status.Print("Using current latest revision `%s`"%latest_revision)
       identifiers["revisionsId"] = latest_revision
 
-    result = apigee.APIsClient.Deploy(identifiers, args.override)
+    # Don't try to access service_account in a release track where it isn't
+    # defined.
+    service_account = getattr(args, "service_account", None)
+
+    result = apigee.APIsClient.Deploy(
+        identifiers, override=args.override, service_account=service_account
+    )
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaDeploy(Deploy):
+  """Deploy an Apigee API proxy to an environment."""
+
+  detailed_help = _DetailedHelp(
+      """
+  To deploy an API proxy with permission to act as a service account, run:
+
+    $ {command} organizations/my-org/environments/test/apis/demo --service-account=my-service-account@my-project.iam.gserviceaccount.com
+  """
+  )
+
+  @classmethod
+  def Args(cls, parser):
+    super().Args(parser)
+    parser.add_argument(
+        "--service-account",
+        type=str,
+        help=(
+            "Service account in whose name the deployed proxy will run. Used "
+            "for proxy policies that rely on authenticating with other Google "
+            "services.\n"
+        ),
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDeploy(BetaDeploy):
+  """Deploy an Apigee API proxy to an environment."""
+
+  # No alpha-only features at this time.
+  pass

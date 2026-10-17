@@ -278,6 +278,56 @@ class ImageChange(ContainerConfigChanger):
     container.image = self.image
 
 
+@dataclasses.dataclass(init=False, frozen=True)
+class BaseImageUriChange(ContainerConfigChanger):
+  """Sets the base_image_uri on a container."""
+
+  base_image: str
+
+  def __init__(self, base_image: str, **kwargs):
+    super().__init__(**kwargs)
+    object.__setattr__(self, 'base_image', base_image)
+
+  def AdjustContainer(self, container: k8s_min.Container):
+    container.base_image_uri = self.base_image
+
+
+@dataclasses.dataclass(init=False, frozen=True)
+class SourceCodeChange(ContainerConfigChanger):
+  """A Cloud Run container deployment from source code location.
+
+  Attributes:
+    bucket: The GCS bucket containing the source code archive.
+    object_: The GCS object name of the source code archive.
+    generation: Optional generation number of the GCS object.
+  """
+
+  bucket: str
+  object_: str
+  generation: int = None
+
+  def __init__(
+      self,
+      bucket: str,
+      object_: str,
+      generation: int = None,
+      **kwargs,
+  ):
+    super().__init__(**kwargs)
+    object.__setattr__(self, 'bucket', bucket)
+    object.__setattr__(self, 'object_', object_)
+    object.__setattr__(self, 'generation', generation)
+
+  def AdjustContainer(self, container: k8s_min.Container):
+    container.source_code = k8s_min.SourceCode(
+        cloud_storage_source=k8s_min.SourceCode.CloudStorageSource(
+            bucket=self.bucket,
+            object_=self.object_,
+            generation=self.generation or 0,
+        )
+    )
+
+
 @dataclasses.dataclass(frozen=True)
 class AddDigestToImageChange(ContainerConfigChanger):
   """Add image digest that comes from source build.

@@ -1334,7 +1334,9 @@ class GoogleDevtoolsRemotebuildbotCommandStatus(_messages.Message):
       BOT_PROFILER_GENERATION_ERROR: An error occurred during the generation
         of the bot profiler trace.
       BOT_PROFILER_UPLOAD_ERROR: An error occurred while uploading the
-        generated bot profiler trace. Next tag to use: 65.
+        generated bot profiler trace.
+      TASK_SERVER_START_ERROR: The bot failed to start the local task server.
+        Next tag to use: 66.
     """
     OK = 0
     INVALID_ARGUMENT = 1
@@ -1401,6 +1403,7 @@ class GoogleDevtoolsRemotebuildbotCommandStatus(_messages.Message):
     BOT_PROFILER_START_ERROR = 62
     BOT_PROFILER_GENERATION_ERROR = 63
     BOT_PROFILER_UPLOAD_ERROR = 64
+    TASK_SERVER_START_ERROR = 65
 
   code = _messages.EnumField('CodeValueValuesEnum', 1)
   message = _messages.StringField(2)
@@ -1506,7 +1509,9 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaAcceleratorConfig(_messages.
     acceleratorCount: The number of guest accelerator cards exposed to each
       VM.
     acceleratorType: The type of accelerator to attach to each VM, e.g.
-      "nvidia-tesla-k80" for nVidia Tesla K80.
+      `nvidia-tesla-t4` for NVIDIA Tesla T4. See
+      https://cloud.google.com/compute/docs/gpus for a list of supported
+      accelerator types.
   """
 
   acceleratorCount = _messages.IntegerField(1)

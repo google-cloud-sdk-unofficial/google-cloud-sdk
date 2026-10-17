@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Creates a BigLake Hive database.
     description: |
@@ -8,9 +8,9 @@
 
         $ {command} my-database --catalog=my-catalog
 
-      To create a BigLake Hive database named `my-database` in catalog `my-catalog`, with bucket `gs://my-bucket`, properties `key1=value1,key2=value2` and description `My new database`, run:
+      To create a BigLake Hive database named `my-database` in catalog `my-catalog`, with bucket `gs://my-bucket`, parameters `key1=value1,key2=value2` and description `My new database`, run:
 
-        $ {command} my-database --catalog=my-catalog --location-uri=gs://my-bucket --description="My new database" --properties=key1=value1,key2=value2
+        $ {command} my-database --catalog=my-catalog --location-uri=gs://my-bucket --description="My new database" --parameters=key1=value1,key2=value2
   request:
     collection: biglake.hive.v1.projects.catalogs.databases
     api_version: v1

@@ -1324,6 +1324,7 @@ class BackupPlanAssociation(_messages.Message):
       DELETING: The resource is being deleted.
       INACTIVE: The resource has been created but is not usable.
       UPDATING: The resource is being updated.
+      PAUSED: The resource has been created but backups are paused.
     """
     STATE_UNSPECIFIED = 0
     CREATING = 1
@@ -1331,6 +1332,7 @@ class BackupPlanAssociation(_messages.Message):
     DELETING = 3
     INACTIVE = 4
     UPDATING = 5
+    PAUSED = 6
 
   alloydbClusterBackupPlanAssociationProperties = _messages.MessageField('AlloyDBClusterBackupPlanAssociationProperties', 1)
   backupPlan = _messages.StringField(2)
@@ -4568,10 +4570,12 @@ class DataSource(_messages.Message):
         BackupPlanAssociation or Appliance SLA pointing to it)
       PASSIVE: The data source is no longer protected (but may have backups
         under it)
+      PAUSED: The data source has been created but backups are paused
     """
     BACKUP_CONFIG_STATE_UNSPECIFIED = 0
     ACTIVE = 1
     PASSIVE = 2
+    PAUSED = 3
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The DataSource resource instance state.
@@ -4791,10 +4795,12 @@ class DataSourceReference(_messages.Message):
         BackupPlanAssociation or Appliance SLA pointing to it)
       PASSIVE: The data source is no longer protected (but may have backups
         under it)
+      PAUSED: The data source has been created but backups are paused
     """
     BACKUP_CONFIG_STATE_UNSPECIFIED = 0
     ACTIVE = 1
     PASSIVE = 2
+    PAUSED = 3
 
   createTime = _messages.StringField(1)
   dataSource = _messages.StringField(2)
@@ -8031,10 +8037,12 @@ class SetInternalStatusRequest(_messages.Message):
         BackupPlanAssociation or Appliance SLA pointing to it)
       PASSIVE: The data source is no longer protected (but may have backups
         under it)
+      PAUSED: The data source has been created but backups are paused
     """
     BACKUP_CONFIG_STATE_UNSPECIFIED = 0
     ACTIVE = 1
     PASSIVE = 2
+    PAUSED = 3
 
   backupConfigState = _messages.EnumField('BackupConfigStateValueValuesEnum', 1)
   requestId = _messages.StringField(2)

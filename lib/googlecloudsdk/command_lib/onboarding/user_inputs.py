@@ -16,10 +16,16 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import dataclasses
+from typing import TYPE_CHECKING
 
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+
+if TYPE_CHECKING:
+  # pylint: disable=g-import-not-at-top
+  from googlecloudsdk.generated_clients.apis.useronboarding.v1alpha import useronboarding_v1alpha_messages as onboarding_messages
 
 CLOUD_TOS_ID = 'cloud'
 STARTER_TIER_TOS_ID = 'starter-tier-additional-terms-of-service'
@@ -92,6 +98,9 @@ _REGION_MESSAGE = (
     'Please select the region where resources (Cloud Run, Firebase, CloudSQL)'
     ' associated with your project will be provisioned in:\n'
 )
+
+_PROJECT_MESSAGE = 'Please select the project to use:'
+_SINGLE_PROJECT_MESSAGE = 'One project found and selected: [{project}].'
 
 
 def HandleUserInputToS(
@@ -185,3 +194,49 @@ def HandleUserInputSelectRegion(
       message=_REGION_MESSAGE,
   )
   return regions[idx] if idx is not None else default_region
+
+
+def _FormatProject(project: onboarding_messages.Project) -> str:
+  """Formats a project for display to the user."""
+  if project.displayName:
+    return f'{project.displayName} ({project.name})'
+  return project.name
+
+
+def HandleUserInputSelectProject(
+    projects: Sequence[onboarding_messages.Project],
+) -> onboarding_messages.Project | None:
+  """Prompts the user to select a project to use for onboarding.
+
+  If exactly one project is available, it is selected automatically without
+  prompting, and the user is informed of the selection. Otherwise, the first
+  project is the default, chosen if the user presses Enter without a value or
+  if prompts are disabled.
+
+  Args:
+    projects: Projects the user can select from.
+
+  Returns:
+    The project selected by the user (or the only/default project), or None
+    if there are no projects to select from or the user chose to cancel.
+  """
+  if not projects:
+    return None
+
+  if len(projects) == 1:
+    project = projects[0]
+    log.status.Print(
+        _SINGLE_PROJECT_MESSAGE.format(project=_FormatProject(project))
+    )
+    return project
+
+  try:
+    idx = console_io.PromptChoice(
+        [_FormatProject(p) for p in projects],
+        default=0,
+        message=_PROJECT_MESSAGE,
+        cancel_option=True,
+    )
+  except console_io.OperationCancelledError:
+    return None
+  return projects[idx] if idx is not None else None

@@ -61755,6 +61755,8 @@ class Instance(_messages.Message):
     attached to the VM.
 
     Values:
+      CMEK_ENCRYPTION: The given VM will use customer-managed encryption keys
+        for encryption of Local SSDs.
       EPHEMERAL_KEY_ENCRYPTION: The given VM will opt-in for using ephemeral
         key for encryption of Local SSDs. The Local SSDs will not be able to
         recover data in case of VM crash.
@@ -61765,9 +61767,10 @@ class Instance(_messages.Message):
         by the cloud infrastructure and the keys will be deleted when the VM
         is deleted.
     """
-    EPHEMERAL_KEY_ENCRYPTION = 0
-    LOCAL_SSD_ENCRYPTION_MODE_UNSPECIFIED = 1
-    STANDARD_ENCRYPTION = 2
+    CMEK_ENCRYPTION = 0
+    EPHEMERAL_KEY_ENCRYPTION = 1
+    LOCAL_SSD_ENCRYPTION_MODE_UNSPECIFIED = 2
+    STANDARD_ENCRYPTION = 3
 
   class PostKeyRevocationActionTypeValueValuesEnum(_messages.Enum):
     r"""PostKeyRevocationActionType of the instance.
@@ -66826,6 +66829,8 @@ class InstanceProperties(_messages.Message):
     attached to the VM.
 
     Values:
+      CMEK_ENCRYPTION: The given VM will use customer-managed encryption keys
+        for encryption of Local SSDs.
       EPHEMERAL_KEY_ENCRYPTION: The given VM will opt-in for using ephemeral
         key for encryption of Local SSDs. The Local SSDs will not be able to
         recover data in case of VM crash.
@@ -66836,9 +66841,10 @@ class InstanceProperties(_messages.Message):
         by the cloud infrastructure and the keys will be deleted when the VM
         is deleted.
     """
-    EPHEMERAL_KEY_ENCRYPTION = 0
-    LOCAL_SSD_ENCRYPTION_MODE_UNSPECIFIED = 1
-    STANDARD_ENCRYPTION = 2
+    CMEK_ENCRYPTION = 0
+    EPHEMERAL_KEY_ENCRYPTION = 1
+    LOCAL_SSD_ENCRYPTION_MODE_UNSPECIFIED = 2
+    STANDARD_ENCRYPTION = 3
 
   class PostKeyRevocationActionTypeValueValuesEnum(_messages.Enum):
     r"""PostKeyRevocationActionType of the instance.

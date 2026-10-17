@@ -280,6 +280,7 @@ def ModifyUpdateMask(ref, unused_args, request):
       "api_requirements",
       "api_functional_requirements",
       "api_technical_requirements",
+      "service_type",
   )
   _AddConfigEntries(
       api_field_config, "owner", ["email", "display_name", "displayName"]

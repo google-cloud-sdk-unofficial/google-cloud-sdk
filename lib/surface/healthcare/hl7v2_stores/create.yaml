@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief:  Create a Cloud Healthcare API HL7v2 store.
@@ -62,6 +64,8 @@
           compared to previous versions.
 
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief:  Create a Cloud Healthcare API HL7v2 store.

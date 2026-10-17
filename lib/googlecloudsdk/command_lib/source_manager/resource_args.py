@@ -130,6 +130,64 @@ def AddRepositoryResourceArgAsFlag(parser, verb):
   ).AddToParser(parser)
 
 
+def HookAttributeConfig() -> concepts.ResourceParameterAttributeConfig:
+  return concepts.ResourceParameterAttributeConfig(
+      name='hook', help_text='Secure Source Manager hook.'
+  )
+
+
+def GetHookResourceSpec() -> concepts.ResourceSpec:
+  return concepts.ResourceSpec(
+      'securesourcemanager.projects.locations.repositories.hooks',
+      resource_name='hook',
+      hooksId=HookAttributeConfig(),
+      repositoriesId=RepositoryAttributeConfig(),
+      locationsId=RegionAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      disable_auto_completers=False,
+  )
+
+
+def AddHookResourceArg(
+    parser: parser_arguments.ArgumentInterceptor, verb: str
+) -> None:
+  concept_parsers.ConceptParser.ForResource(
+      'hook',
+      GetHookResourceSpec(),
+      f'The Secure Source Manager hook {verb}.',
+      required=True,
+  ).AddToParser(parser)
+
+
+def BranchRuleAttributeConfig() -> concepts.ResourceParameterAttributeConfig:
+  return concepts.ResourceParameterAttributeConfig(
+      name='branch_rule', help_text='Secure Source Manager branch rule.'
+  )
+
+
+def GetBranchRuleResourceSpec() -> concepts.ResourceSpec:
+  return concepts.ResourceSpec(
+      'securesourcemanager.projects.locations.repositories.branchRules',
+      resource_name='branch_rule',
+      branchRulesId=BranchRuleAttributeConfig(),
+      repositoriesId=RepositoryAttributeConfig(),
+      locationsId=RegionAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      disable_auto_completers=False,
+  )
+
+
+def AddBranchRuleResourceArg(
+    parser: parser_arguments.ArgumentInterceptor, verb: str
+) -> None:
+  concept_parsers.ConceptParser.ForResource(
+      'branch_rule',
+      GetBranchRuleResourceSpec(),
+      f'The Secure Source Manager branch rule {verb}.',
+      required=True,
+  ).AddToParser(parser)
+
+
 def PullRequestAttributeConfig():
   return concepts.ResourceParameterAttributeConfig(
       name='pull-request', help_text='Secure Source Manager pull request.'
@@ -193,6 +251,36 @@ def AddIssueResourceArgAsFlag(
       '--issue',
       GetIssueResourceSpec(),
       'The Secure Source Manager issue {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+def IssueCommentAttributeConfig() -> concepts.ResourceParameterAttributeConfig:
+  return concepts.ResourceParameterAttributeConfig(
+      name='issue_comment', help_text='Secure Source Manager issue comment.'
+  )
+
+
+def GetIssueCommentResourceSpec() -> concepts.ResourceSpec:
+  return concepts.ResourceSpec(
+      'securesourcemanager.projects.locations.repositories.issues.issueComments',
+      resource_name='issue_comment',
+      issueCommentsId=IssueCommentAttributeConfig(),
+      issuesId=IssueAttributeConfig(),
+      repositoriesId=RepositoryAttributeConfig(),
+      locationsId=RegionAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      disable_auto_completers=False,
+  )
+
+
+def AddIssueCommentResourceArg(
+    parser: parser_arguments.ArgumentInterceptor, verb: str
+) -> None:
+  concept_parsers.ConceptParser.ForResource(
+      'issue_comment',
+      GetIssueCommentResourceSpec(),
+      f'The Secure Source Manager issue comment {verb}.',
       required=True,
   ).AddToParser(parser)
 

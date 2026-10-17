@@ -27,7 +27,7 @@
       table(
         name.basename():label=ASSOCIATION_ID:sort=1,
         resourceType,
-        restoreTemplate.basename():label=TEMPLATE,
+        restoreTemplate:label=TEMPLATE,
         state,
         triggerSummary.nextTriggerTime:label=NEXT_TRIGGER
       )

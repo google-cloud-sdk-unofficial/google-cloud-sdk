@@ -132,7 +132,7 @@ class ConnectionProfilesClient(object):
       )
 
   def _ValidateSslConfigArgs(self, args, cp_type):
-    if cp_type == 'MYSQL' or cp_type == 'POSTGRES':
+    if cp_type in ('MYSQL', 'POSTGRES', 'POSTGRESQL'):
       # This is reachable only for create command, since the connection profile
       # type is known at this point. For update command, the connection profile
       # type is not known at this point, and the validation is done in the
@@ -214,7 +214,12 @@ class ConnectionProfilesClient(object):
       )
 
   def _GetSslServerOnlyConfig(self, args):
-    return self.messages.SslConfig(caCertificate=args.ca_certificate)
+    if not getattr(args, 'ca_certificate', None):
+      return None
+    return self.messages.SslConfig(
+        type=self.messages.SslConfig.TypeValueValuesEnum.SERVER_ONLY,
+        caCertificate=args.ca_certificate,
+    )
 
   def _GetSslServerOnlyConfigWithType(self, args):
     if args.IsSpecified('ca_certificate'):
@@ -248,7 +253,7 @@ class ConnectionProfilesClient(object):
     Returns:
       SslFlagsValue, to use when creating the connection profile.
     """
-    if not args.IsSpecified('ssl_flags'):
+    if not args.IsKnownAndSpecified('ssl_flags'):
       return None
 
     ssl_flags_dict = args.ssl_flags
@@ -295,17 +300,21 @@ class ConnectionProfilesClient(object):
       )
 
   def _GetSslConfig(self, args):
+    """Creates an SslConfig object according to the given args."""
     ssl_type = None
     if self._SupportsSslType() and args.IsSpecified('ssl_type'):
       ssl_type = self.messages.SslConfig.TypeValueValuesEnum.lookup_by_name(
           args.ssl_type
       )
-    return self.messages.SslConfig(
+    ssl_config = self.messages.SslConfig(
         clientKey=args.private_key,
         clientCertificate=args.GetValue(self._ClientCertificateArgName()),
         caCertificate=args.ca_certificate,
         type=ssl_type,
     )
+    if hasattr(self.messages.SslConfig, 'sslFlags'):
+      ssl_config.sslFlags = self._GetSslFlags(args)
+    return ssl_config
 
   def _UpdateMySqlSslConfig(self, connection_profile, args, update_fields):
     """Fills connection_profile and update_fields with MySQL SSL data from args."""
@@ -475,6 +484,15 @@ class ConnectionProfilesClient(object):
 
   def _UpdatePostgreSqlSslConfig(self, connection_profile, args, update_fields):
     """Fills connection_profile and update_fields with PostgreSQL SSL data from args."""
+    has_ssl_args = (
+        (self._SupportsSslType() and args.IsSpecified('ssl_type'))
+        or args.IsSpecified('ca_certificate')
+        or args.IsSpecified('private_key')
+        or args.IsSpecified(self._ClientCertificateArgName())
+        or args.IsKnownAndSpecified('ssl_flags')
+    )
+    if has_ssl_args and connection_profile.postgresql.ssl is None:
+      connection_profile.postgresql.ssl = self.messages.SslConfig()
     if not self._SupportsSslType() or not args.IsSpecified('ssl_type'):
       # Legacy behavior. If ssl_type is not specified (or not supported), the
       # type is inferred from the provided combination of the other SSL fields.
@@ -521,6 +539,9 @@ class ConnectionProfilesClient(object):
                 args.ssl_type
             )
         )
+    if args.IsKnownAndSpecified('ssl_flags'):
+      connection_profile.postgresql.ssl.sslFlags = self._GetSslFlags(args)
+      update_fields.append('postgresql.ssl.sslFlags')
 
   def _GetPostgreSqlConnectionProfile(self, args):
     """Creates a Postgresql connection profile according to the given args.
@@ -685,6 +706,14 @@ class ConnectionProfilesClient(object):
 
   def _UpdateSqlServerSslConfig(self, connection_profile, args, update_fields):
     """Fills connection_profile and update_fields with SqlServer SSL data from args."""
+    has_ssl_args = (
+        args.IsSpecified('ca_certificate')
+        or args.IsSpecified('ssl_type')
+        or args.IsKnownAndSpecified('ssl_flags')
+    )
+    if has_ssl_args and connection_profile.sqlserver.ssl is None:
+      connection_profile.sqlserver.ssl = self.messages.SslConfig()
+
     if args.IsSpecified('ssl_type'):
       if args.ssl_type == 'SERVER_ONLY':
         if args.IsSpecified('ca_certificate'):
@@ -716,6 +745,9 @@ class ConnectionProfilesClient(object):
       self._UpdateSqlServerSslConfigServerOnly(
           connection_profile, args, update_fields
       )
+    if args.IsKnownAndSpecified('ssl_flags'):
+      connection_profile.sqlserver.ssl.sslFlags = self._GetSslFlags(args)
+      update_fields.append('sqlserver.ssl.sslFlags')
 
   def _UpdateSqlServerConnectionProfile(
       self, connection_profile, args, update_fields
@@ -959,9 +991,13 @@ class ConnectionProfilesClient(object):
     database_flags = labels_util.ParseCreateArgs(
         args, primary_settings.DatabaseFlagsValue, 'database_flags')
 
+    machine_config = self.messages.MachineConfig(cpuCount=args.cpu_count)
+    if getattr(args, 'machine_type', None):
+      machine_config.machineType = args.machine_type
+
     primary_settings = primary_settings(
         id=args.primary_id,
-        machineConfig=self.messages.MachineConfig(cpuCount=args.cpu_count),
+        machineConfig=machine_config,
         instanceNetworkConfig=self.messages.InstanceNetworkConfig(
             enablePublicIp=args.enable_public_ip,
             enableOutboundPublicIp=args.enable_outbound_public_ip,
@@ -1027,7 +1063,34 @@ class ConnectionProfilesClient(object):
       )
     elif args.static_ip_connectivity:
       connection_profile_obj.staticServiceIpConnectivity = {}
+
+    asm_config = self._GetOracleAsmConfig(args)
+    if asm_config:
+      connection_profile_obj.oracleAsmConfig = asm_config
     return connection_profile_obj
+
+  def _GetOracleAsmConfig(self, args):
+    """Creates an Oracle ASM config message from args."""
+    if not (
+        getattr(args, 'asm_host', None)
+        or getattr(args, 'asm_port', None)
+        or getattr(args, 'asm_user', None)
+        or getattr(args, 'asm_password', None)
+        or getattr(args, 'asm_service_name', None)
+    ):
+      return None
+    port = (
+        int(args.asm_port)
+        if getattr(args, 'asm_port', None) is not None
+        else None
+    )
+    return self.messages.OracleAsmConfig(
+        hostname=args.asm_host,
+        port=port,
+        username=args.asm_user,
+        password=args.asm_password,
+        asmService=args.asm_service_name,
+    )
 
   def _GetSqlServerBackups(self, args):
     backups_obj = self.messages.SqlServerBackups(gcsBucket=args.gcs_bucket)

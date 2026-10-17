@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Deletes all Products in a ProductSet or all Products that are in no ProductSet.

@@ -39,6 +39,7 @@ class EventarcpublishingV1(base_api.BaseApiClient):
         response_encoding=response_encoding)
     self.projects_locations_channelConnections = self.ProjectsLocationsChannelConnectionsService(self)
     self.projects_locations_channels = self.ProjectsLocationsChannelsService(self)
+    self.projects_locations_defaultMessageBus = self.ProjectsLocationsDefaultMessageBusService(self)
     self.projects_locations_messageBuses = self.ProjectsLocationsMessageBusesService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
@@ -114,6 +115,43 @@ class EventarcpublishingV1(base_api.BaseApiClient):
         request_field='googleCloudEventarcPublishingV1PublishEventsRequest',
         request_type_name='EventarcpublishingProjectsLocationsChannelsPublishEventsRequest',
         response_type_name='GoogleCloudEventarcPublishingV1PublishEventsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDefaultMessageBusService(base_api.BaseApiService):
+    """Service class for the projects_locations_defaultMessageBus resource."""
+
+    _NAME = 'projects_locations_defaultMessageBus'
+
+    def __init__(self, client):
+      super(EventarcpublishingV1.ProjectsLocationsDefaultMessageBusService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Publish(self, request, global_params=None):
+      r"""Publishes events to a message bus.
+
+      Args:
+        request: (EventarcpublishingProjectsLocationsDefaultMessageBusPublishRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudEventarcPublishingV1PublishResponse) The response message.
+      """
+      config = self.GetMethodConfig('Publish')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Publish.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/defaultMessageBus:publish',
+        http_method='POST',
+        method_id='eventarcpublishing.projects.locations.defaultMessageBus.publish',
+        ordered_params=['messageBus'],
+        path_params=['messageBus'],
+        query_params=[],
+        relative_path='v1/{+messageBus}:publish',
+        request_field='googleCloudEventarcPublishingV1PublishRequest',
+        request_type_name='EventarcpublishingProjectsLocationsDefaultMessageBusPublishRequest',
+        response_type_name='GoogleCloudEventarcPublishingV1PublishResponse',
         supports_download=False,
     )
 

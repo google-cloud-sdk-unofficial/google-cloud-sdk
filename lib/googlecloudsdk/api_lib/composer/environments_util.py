@@ -191,6 +191,9 @@ class CreateEnvironmentFlags:
       functions. Can be DIRECT or VIA_NETWORK_ATTACHMENT.
     enable_development_mode: bool or None, whether to enable the development
       mode.
+    user_workloads_service_accounts: dict(str, str) or None, mapping of
+      Kubernetes Service Account names to Google Cloud Service Account emails
+      to be used by user workloads.
   """
 
   # TODO(b/154131605): This a type that is an immutable data object. Can't use
@@ -282,6 +285,7 @@ class CreateEnvironmentFlags:
       storage_bucket=None,
       cloud_run_functions_routing=None,
       enable_development_mode=None,
+      user_workloads_service_accounts=None,
   ):
     self.node_count = node_count
     self.environment_size = environment_size
@@ -369,6 +373,7 @@ class CreateEnvironmentFlags:
     self.storage_bucket = storage_bucket
     self.cloud_run_functions_routing = cloud_run_functions_routing
     self.enable_development_mode = enable_development_mode
+    self.user_workloads_service_accounts = user_workloads_service_accounts
 
 
 def _CreateNodeConfig(messages, flags):
@@ -456,7 +461,8 @@ def _CreateConfig(messages, flags, is_composer_v1):
           flags.snapshot_creation_schedule or flags.snapshot_location or
           flags.snapshot_schedule_timezone or
           flags.enable_cloud_data_lineage_integration or
-          flags.disable_cloud_data_lineage_integration):
+          flags.disable_cloud_data_lineage_integration or
+          flags.user_workloads_service_accounts):
     return None
 
   config = messages.EnvironmentConfig()
@@ -664,6 +670,17 @@ def _CreateConfig(messages, flags, is_composer_v1):
         cidrBlocks=[
             messages.CidrBlock(cidrBlock=network) for network in networks
         ])
+
+  if flags.user_workloads_service_accounts:
+    config.userWorkloadsConfig = messages.UserWorkloadsConfig(
+        serviceAccounts=[
+            messages.UserWorkloadsServiceAccount(
+                kubernetesServiceAccount=k,
+                googleServiceAccount=v,
+            )
+            for k, v in sorted(flags.user_workloads_service_accounts.items())
+        ]
+    )
 
   composer_v2_flags = [
       flags.scheduler_cpu,

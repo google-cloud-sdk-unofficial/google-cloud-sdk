@@ -1387,6 +1387,9 @@ class Backup(_messages.Message):
     expiryTime: Output only. The time at which after the backup is eligible to
       be garbage collected. It is the duration specified by the backup's
       retention policy, added to the backup's create_time.
+    expressConfig: Output only. The Express configuration of the cluster this
+      backup was created from. Any restored cluster created from this backup
+      will have the same Express configuration.
     labels: Labels as key value pairs
     name: Output only. The name of the backup resource with the format: *
       projects/{project}/locations/{region}/backups/{backup_id} where the
@@ -1579,17 +1582,18 @@ class Backup(_messages.Message):
   etag = _messages.StringField(15)
   expiryQuantity = _messages.MessageField('QuantityBasedExpiry', 16)
   expiryTime = _messages.StringField(17)
-  labels = _messages.MessageField('LabelsValue', 18)
-  name = _messages.StringField(19)
-  reconciling = _messages.BooleanField(20)
-  satisfiesPzi = _messages.BooleanField(21)
-  satisfiesPzs = _messages.BooleanField(22)
-  sizeBytes = _messages.IntegerField(23)
-  state = _messages.EnumField('StateValueValuesEnum', 24)
-  tags = _messages.MessageField('TagsValue', 25)
-  type = _messages.EnumField('TypeValueValuesEnum', 26)
-  uid = _messages.StringField(27)
-  updateTime = _messages.StringField(28)
+  expressConfig = _messages.MessageField('ExpressConfig', 18)
+  labels = _messages.MessageField('LabelsValue', 19)
+  name = _messages.StringField(20)
+  reconciling = _messages.BooleanField(21)
+  satisfiesPzi = _messages.BooleanField(22)
+  satisfiesPzs = _messages.BooleanField(23)
+  sizeBytes = _messages.IntegerField(24)
+  state = _messages.EnumField('StateValueValuesEnum', 25)
+  tags = _messages.MessageField('TagsValue', 26)
+  type = _messages.EnumField('TypeValueValuesEnum', 27)
+  uid = _messages.StringField(28)
+  updateTime = _messages.StringField(29)
 
 
 class BackupDrBackupSource(_messages.Message):
@@ -1834,6 +1838,8 @@ class Cluster(_messages.Message):
       protect the user data.
     encryptionInfo: Output only. The encryption information for the cluster.
     etag: For Resource freshness validation (https://google.aip.dev/154)
+    expressConfig: Optional. Configuration that allows the customer to create
+      an AlloyDB Express cluster.
     geminiConfig: Optional. Deprecated and unused. This field will be removed
       in the near future.
     initialUser: Input only. Initial user to setup during cluster creation.
@@ -2111,31 +2117,32 @@ class Cluster(_messages.Message):
   encryptionConfig = _messages.MessageField('EncryptionConfig', 18)
   encryptionInfo = _messages.MessageField('EncryptionInfo', 19)
   etag = _messages.StringField(20)
-  geminiConfig = _messages.MessageField('GeminiClusterConfig', 21)
-  initialUser = _messages.MessageField('UserPassword', 22)
-  labels = _messages.MessageField('LabelsValue', 23)
-  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 24)
-  maintenanceUpdatePolicy = _messages.MessageField('MaintenanceUpdatePolicy', 25)
-  maintenanceVersionSelectionPolicy = _messages.EnumField('MaintenanceVersionSelectionPolicyValueValuesEnum', 26)
-  migrationSource = _messages.MessageField('MigrationSource', 27)
-  name = _messages.StringField(28)
-  network = _messages.StringField(29)
-  networkConfig = _messages.MessageField('NetworkConfig', 30)
-  primaryConfig = _messages.MessageField('PrimaryConfig', 31)
-  pscConfig = _messages.MessageField('PscConfig', 32)
-  reconciling = _messages.BooleanField(33)
-  satisfiesPzi = _messages.BooleanField(34)
-  satisfiesPzs = _messages.BooleanField(35)
-  secondaryConfig = _messages.MessageField('SecondaryConfig', 36)
-  secondaryInfo = _messages.MessageField('SecondaryInfo', 37)
-  serviceAccountEmail = _messages.StringField(38)
-  sslConfig = _messages.MessageField('SslConfig', 39)
-  state = _messages.EnumField('StateValueValuesEnum', 40)
-  subscriptionType = _messages.EnumField('SubscriptionTypeValueValuesEnum', 41)
-  tags = _messages.MessageField('TagsValue', 42)
-  trialMetadata = _messages.MessageField('TrialMetadata', 43)
-  uid = _messages.StringField(44)
-  updateTime = _messages.StringField(45)
+  expressConfig = _messages.MessageField('ExpressConfig', 21)
+  geminiConfig = _messages.MessageField('GeminiClusterConfig', 22)
+  initialUser = _messages.MessageField('UserPassword', 23)
+  labels = _messages.MessageField('LabelsValue', 24)
+  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 25)
+  maintenanceUpdatePolicy = _messages.MessageField('MaintenanceUpdatePolicy', 26)
+  maintenanceVersionSelectionPolicy = _messages.EnumField('MaintenanceVersionSelectionPolicyValueValuesEnum', 27)
+  migrationSource = _messages.MessageField('MigrationSource', 28)
+  name = _messages.StringField(29)
+  network = _messages.StringField(30)
+  networkConfig = _messages.MessageField('NetworkConfig', 31)
+  primaryConfig = _messages.MessageField('PrimaryConfig', 32)
+  pscConfig = _messages.MessageField('PscConfig', 33)
+  reconciling = _messages.BooleanField(34)
+  satisfiesPzi = _messages.BooleanField(35)
+  satisfiesPzs = _messages.BooleanField(36)
+  secondaryConfig = _messages.MessageField('SecondaryConfig', 37)
+  secondaryInfo = _messages.MessageField('SecondaryInfo', 38)
+  serviceAccountEmail = _messages.StringField(39)
+  sslConfig = _messages.MessageField('SslConfig', 40)
+  state = _messages.EnumField('StateValueValuesEnum', 41)
+  subscriptionType = _messages.EnumField('SubscriptionTypeValueValuesEnum', 42)
+  tags = _messages.MessageField('TagsValue', 43)
+  trialMetadata = _messages.MessageField('TrialMetadata', 44)
+  uid = _messages.StringField(45)
+  updateTime = _messages.StringField(46)
 
 
 class ClusterUpgradeDetails(_messages.Message):
@@ -2830,6 +2837,17 @@ class ExportClusterRequest(_messages.Message):
   sqlExportOptions = _messages.MessageField('SqlExportOptions', 4)
 
 
+class ExpressConfig(_messages.Message):
+  r"""Configuration that allows the user to create an AlloyDB Express cluster.
+
+  Fields:
+    enabled: Optional. Whether Express configuration is enabled for the
+      cluster.
+  """
+
+  enabled = _messages.BooleanField(1)
+
+
 class FailoverInstanceRequest(_messages.Message):
   r"""Message for triggering failover on an Instance
 
@@ -3266,16 +3284,27 @@ class Instance(_messages.Message):
     nodes: Output only. List of available read-only VMs in this instance,
       including the standby for a PRIMARY instance.
     observabilityConfig: Configuration for observability.
+    observabilityInstanceInfo: Output only. Instance level observability
+      information, contains the effective values of observability settings for
+      this instance, by merging customer's provided
+      `ObservabilityInstanceConfig` with the Observability defaults.
     outboundPublicIpAddresses: Output only. All outbound public IP addresses
       configured for the instance.
     pscInstanceConfig: Optional. The configuration for Private Service Connect
       (PSC) for the instance.
     pscInstanceInfo: Output only. Information about the Private Service
       Connect (PSC) for the instance.
-    publicIpAddress: Output only. The public IP addresses for the Instance.
-      This is available ONLY when enable_public_ip is set. This is the
-      connection endpoint for an end-user application.
+    publicIpAddress: Output only. The public IP address for the Instance. This
+      is available ONLY when `enable_public_ip` is set or when you have
+      upgraded from an Express Instance that has public DNS enabled. This
+      field is not available for Express Instances. This is the connection
+      endpoint for an end-user application.
     queryInsightsConfig: Configuration for query insights.
+    queryInsightsInfo: Output only. Instance level Query Insights information,
+      which is read-only and available in the output only. Contains the
+      effective query insights settings for this instance, by merging
+      customer's provided `QueryInsightsInstanceConfig` with the Query
+      Insights defaults.
     readPoolConfig: Read pool instance configuration. This is required if the
       value of instanceType is READ_POOL.
     reconciling: Output only. Reconciling
@@ -3526,20 +3555,22 @@ class Instance(_messages.Message):
   networkConfig = _messages.MessageField('InstanceNetworkConfig', 25)
   nodes = _messages.MessageField('Node', 26, repeated=True)
   observabilityConfig = _messages.MessageField('ObservabilityInstanceConfig', 27)
-  outboundPublicIpAddresses = _messages.StringField(28, repeated=True)
-  pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 29)
-  pscInstanceInfo = _messages.MessageField('PscInstanceInfo', 30)
-  publicIpAddress = _messages.StringField(31)
-  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 32)
-  readPoolConfig = _messages.MessageField('ReadPoolConfig', 33)
-  reconciling = _messages.BooleanField(34)
-  satisfiesPzi = _messages.BooleanField(35)
-  satisfiesPzs = _messages.BooleanField(36)
-  state = _messages.EnumField('StateValueValuesEnum', 37)
-  uid = _messages.StringField(38)
-  updatePolicy = _messages.MessageField('UpdatePolicy', 39)
-  updateTime = _messages.StringField(40)
-  writableNode = _messages.MessageField('Node', 41)
+  observabilityInstanceInfo = _messages.MessageField('ObservabilityInstanceInfo', 28)
+  outboundPublicIpAddresses = _messages.StringField(29, repeated=True)
+  pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 30)
+  pscInstanceInfo = _messages.MessageField('PscInstanceInfo', 31)
+  publicIpAddress = _messages.StringField(32)
+  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 33)
+  queryInsightsInfo = _messages.MessageField('QueryInsightsInstanceInfo', 34)
+  readPoolConfig = _messages.MessageField('ReadPoolConfig', 35)
+  reconciling = _messages.BooleanField(36)
+  satisfiesPzi = _messages.BooleanField(37)
+  satisfiesPzs = _messages.BooleanField(38)
+  state = _messages.EnumField('StateValueValuesEnum', 39)
+  uid = _messages.StringField(40)
+  updatePolicy = _messages.MessageField('UpdatePolicy', 41)
+  updateTime = _messages.StringField(42)
+  writableNode = _messages.MessageField('Node', 43)
 
 
 class InstanceDowntimeStatus(_messages.Message):
@@ -4000,6 +4031,45 @@ class ObservabilityInstanceConfig(_messages.Message):
     trackWaitEvents: Track wait events during query execution for an instance.
       This flag is turned "on" by default but tracking is enabled only after
       observability enabled flag is also turned on.
+  """
+
+  assistiveExperiencesEnabled = _messages.BooleanField(1)
+  enabled = _messages.BooleanField(2)
+  maxQueryStringLength = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  preserveComments = _messages.BooleanField(4)
+  queryPlansPerMinute = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  recordApplicationTags = _messages.BooleanField(6)
+  trackActiveQueries = _messages.BooleanField(7)
+  trackActiveQueryPlan = _messages.BooleanField(8)
+  trackClientAddress = _messages.BooleanField(9)
+  trackWaitEventTypes = _messages.BooleanField(10)
+  trackWaitEvents = _messages.BooleanField(11)
+
+
+class ObservabilityInstanceInfo(_messages.Message):
+  r"""A ObservabilityInstanceInfo object.
+
+  Fields:
+    assistiveExperiencesEnabled: Output only. Whether assistive experiences
+      are enabled for this AlloyDB instance.
+    enabled: Output only. Observability feature status for an instance.
+    maxQueryStringLength: Output only. Query string length. The default value
+      is 10k.
+    preserveComments: Output only. Preserve comments in query string for an
+      instance.
+    queryPlansPerMinute: Output only. Number of query execution plans captured
+      by Insights per minute for all queries combined.
+    recordApplicationTags: Output only. Record application tags for an
+      instance.
+    trackActiveQueries: Output only. Track actively running queries on the
+      instance.
+    trackActiveQueryPlan: Output only. Indicates whether to track active query
+      plans for an instance. Deprecated: Use track_active_queries instead.
+    trackClientAddress: Output only. Track client address for an instance.
+    trackWaitEventTypes: Output only. Track wait event types during query
+      execution for an instance.
+    trackWaitEvents: Output only. Track wait events during query execution for
+      an instance.
   """
 
   assistiveExperiencesEnabled = _messages.BooleanField(1)
@@ -4513,12 +4583,32 @@ class QueryInsightsInstanceConfig(_messages.Message):
   recordClientAddress = _messages.BooleanField(4)
 
 
+class QueryInsightsInstanceInfo(_messages.Message):
+  r"""Instance level Query Insights information, which is read-only and
+  available in the output only.
+
+  Fields:
+    enabled: Output only. Whether Query Insights is enabled.
+    queryPlansPerMinute: Output only. Number of query execution plans captured
+      per minute.
+    queryStringLength: Output only. Maximum query string length.
+    recordApplicationTags: Output only. Whether to record application tags.
+    recordClientAddress: Output only. Whether to record client address.
+  """
+
+  enabled = _messages.BooleanField(1)
+  queryPlansPerMinute = _messages.IntegerField(2, variant=_messages.Variant.UINT32)
+  queryStringLength = _messages.IntegerField(3, variant=_messages.Variant.UINT32)
+  recordApplicationTags = _messages.BooleanField(4)
+  recordClientAddress = _messages.BooleanField(5)
+
+
 class ReadPoolConfig(_messages.Message):
   r"""Configuration for a read pool instance.
 
   Fields:
-    autoScalingConfig: Autoscaling configuration for the read pool instance.
-      If not set, the read pool instance will not be autoscaled.
+    autoScalingConfig: Optional. Autoscaling configuration for the read pool
+      instance. If not set, the read pool instance will not be autoscaled.
     nodeCount: Read capacity, i.e. number of nodes in a read pool instance.
   """
 

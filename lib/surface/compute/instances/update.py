@@ -680,8 +680,10 @@ class Update(base.UpdateCommand):
         mgmt_iface.network = mgmt_dict['network']
       if 'subnetwork' in mgmt_dict:
         mgmt_iface.subnetwork = mgmt_dict['subnetwork']
-      if 'network-ip' in mgmt_dict:
-        mgmt_iface.ipv4Address = mgmt_dict['network-ip']
+      if 'ipv4-address' in mgmt_dict:
+        mgmt_iface.ipv4Address = mgmt_dict['ipv4-address']
+      if 'ipv6-address' in mgmt_dict:
+        mgmt_iface.ipv6Address = mgmt_dict['ipv6-address']
       if 'trust-config' in mgmt_dict:
         if mgmt_iface.authenticationConfig is None:
           mgmt_iface.authenticationConfig = (

@@ -70,6 +70,7 @@ auto_flags = [
     'enableK8sTokensViaDns',
     'enableDefaultComputeClass',
     'enableK8sCertsViaDns',
+    'adaptivePodAllocationMode',
     'membershipType',
     'secretSyncConfig',
     'controlPlaneEgress',

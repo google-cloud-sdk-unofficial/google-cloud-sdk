@@ -1494,6 +1494,8 @@ class CustomerManagedCertificate(_messages.Message):
     certificateType: Required. The certificate type.
     content: Required. Input only. The PEM-encoded certificate or key content
       in base64 format.
+    filePath: Output only. File path of the PEM-encoded certificate or key
+      content.
   """
 
   class CertificateTypeValueValuesEnum(_messages.Enum):
@@ -1516,6 +1518,7 @@ class CustomerManagedCertificate(_messages.Message):
 
   certificateType = _messages.EnumField('CertificateTypeValueValuesEnum', 1)
   content = _messages.BytesField(2)
+  filePath = _messages.StringField(3)
 
 
 class CustomerManagedCertificateConfig(_messages.Message):
@@ -1526,7 +1529,7 @@ class CustomerManagedCertificateConfig(_messages.Message):
       certificate configuration.
 
   Fields:
-    bundle: Required. The name of the customer managed certificate
+    bundle: Output only. The name of the customer managed certificate
       configuration. This name will be used to identify a certificate bundle.
     customerManagedCertificates: Required. The server CA certificate, client
       key and client certificate.
@@ -1764,6 +1767,8 @@ class DatabaseInstance(_messages.Message):
     serviceAccountEmailAddress: The service account email address assigned to
       the instance. \This property is read-only.
     settings: The user settings.
+    skipPrecheck: Optional. Input only. Determines whether the precheck step
+      is skipped during a major version upgrade.
     sourceInstanceNames: Optional. A list of names of source instances, each
       of which contains connection information, and is used to perform sync
       and replication setup.
@@ -2306,14 +2311,15 @@ class DatabaseInstance(_messages.Message):
   serverCaCert = _messages.MessageField('SslCert', 49)
   serviceAccountEmailAddress = _messages.StringField(50)
   settings = _messages.MessageField('Settings', 51)
-  sourceInstanceNames = _messages.StringField(52, repeated=True)
-  sqlNetworkArchitecture = _messages.EnumField('SqlNetworkArchitectureValueValuesEnum', 53)
-  state = _messages.EnumField('StateValueValuesEnum', 54)
-  suspensionReason = _messages.EnumField('SuspensionReasonValueListEntryValuesEnum', 55, repeated=True)
-  switchTransactionLogsToCloudStorageEnabled = _messages.BooleanField(56)
-  tags = _messages.MessageField('TagsValue', 57)
-  upgradableDatabaseVersions = _messages.MessageField('AvailableDatabaseVersion', 58, repeated=True)
-  writeEndpoint = _messages.StringField(59)
+  skipPrecheck = _messages.BooleanField(52)
+  sourceInstanceNames = _messages.StringField(53, repeated=True)
+  sqlNetworkArchitecture = _messages.EnumField('SqlNetworkArchitectureValueValuesEnum', 54)
+  state = _messages.EnumField('StateValueValuesEnum', 55)
+  suspensionReason = _messages.EnumField('SuspensionReasonValueListEntryValuesEnum', 56, repeated=True)
+  switchTransactionLogsToCloudStorageEnabled = _messages.BooleanField(57)
+  tags = _messages.MessageField('TagsValue', 58)
+  upgradableDatabaseVersions = _messages.MessageField('AvailableDatabaseVersion', 59, repeated=True)
+  writeEndpoint = _messages.StringField(60)
 
 
 class DatabasesListResponse(_messages.Message):
@@ -2644,7 +2650,8 @@ class ExecuteSqlPayload(_messages.Message):
       associated with the request is used for database authentication. The API
       caller must be an IAM user in the database.
     database: Optional. Name of the database on which the statement will be
-      executed.
+      executed. For Postgres and SQL Server it's required, for MySQL it's
+      optional.
     outputFormat: Optional. Deprecated field. The requested format of the SQL
       response.
     partialResultMode: Optional. Controls how the API should respond when the
@@ -2722,7 +2729,8 @@ class ExecuteSqlReadOnlyPayload(_messages.Message):
       associated with the request is used for database authentication. The API
       caller must be an IAM user in the database.
     database: Optional. Name of the database on which the statement will be
-      executed.
+      executed. For Postgres and SQL Server it's required, for MySQL it's
+      optional.
     passwordSecretVersion: Optional. The resource name of the Secret Manager
       secret holding the password for the user to log into the database. The
       secret should be created using the regional endpoint (for API) or from
@@ -3285,6 +3293,17 @@ class FlagsListResponse(_messages.Message):
   kind = _messages.StringField(2)
 
 
+class FlexibilityPolicy(_messages.Message):
+  r"""Configuration for flexible instance creation across candidate tiers.
+
+  Fields:
+    instanceSelections: Optional. Candidate instance selections evaluated
+      during creation.
+  """
+
+  instanceSelections = _messages.MessageField('InstanceSelection', 1, repeated=True)
+
+
 class GeminiInstanceConfig(_messages.Message):
   r"""Gemini instance configuration.
 
@@ -3673,6 +3692,25 @@ class InstanceReference(_messages.Message):
   name = _messages.StringField(1)
   project = _messages.StringField(2)
   region = _messages.StringField(3)
+
+
+class InstanceSelection(_messages.Message):
+  r"""A candidate instance configuration selection.
+
+  Fields:
+    dataCacheConfig: Optional. Data cache configuration for this candidate
+      selection.
+    dataDiskProvisionedIops: Optional. Provisioned IOPS for the data disk for
+      this candidate selection.
+    dataDiskProvisionedThroughput: Optional. Provisioned throughput (MB/s) for
+      the data disk for this candidate selection.
+    tier: Required. The tier (or machine type) for this candidate selection.
+  """
+
+  dataCacheConfig = _messages.MessageField('DataCacheConfig', 1)
+  dataDiskProvisionedIops = _messages.IntegerField(2)
+  dataDiskProvisionedThroughput = _messages.IntegerField(3)
+  tier = _messages.StringField(4)
 
 
 class InstancesAcquireSsrsLeaseRequest(_messages.Message):
@@ -5147,6 +5185,8 @@ class PreCheckMajorVersionUpgradeContext(_messages.Message):
 
   Fields:
     kind: Optional. This is always `sql#preCheckMajorVersionUpgradeContext`.
+    maxRuntime: Optional. The maximum allowed runtime for the precheck
+      operation.
     preCheckResponse: Output only. The responses from the precheck operation.
     targetDatabaseVersion: Required. The target database version to upgrade
       to.
@@ -5300,8 +5340,9 @@ class PreCheckMajorVersionUpgradeContext(_messages.Message):
     SQLSERVER_2025_EXPRESS = 55
 
   kind = _messages.StringField(1)
-  preCheckResponse = _messages.MessageField('PreCheckResponse', 2, repeated=True)
-  targetDatabaseVersion = _messages.EnumField('TargetDatabaseVersionValueValuesEnum', 3)
+  maxRuntime = _messages.StringField(2)
+  preCheckResponse = _messages.MessageField('PreCheckResponse', 3, repeated=True)
+  targetDatabaseVersion = _messages.EnumField('TargetDatabaseVersionValueValuesEnum', 4)
 
 
 class PreCheckResponse(_messages.Message):
@@ -5424,6 +5465,12 @@ class PscConfig(_messages.Message):
   r"""PSC settings for a Cloud SQL instance.
 
   Fields:
+    allowedConsumerEndpoints: Optional. List of consumer Private Service
+      Connect forwarding rule URIs explicitly allow-listed for connection.
+      Supported format: - Full HTTPS URL: https://www.googleapis.com/compute/v
+      1/projects/{project}/regions/{region}/forwardingRules/{forwarding-rule}
+      - Relative path:
+      projects/{project}/regions/{region}/forwardingRules/{forwarding-rule}
     allowedConsumerProjects: Optional. The list of consumer projects that are
       allow-listed for PSC connections to this instance. This instance can be
       connected to with PSC from any network in these projects. Each consumer
@@ -5444,6 +5491,10 @@ class PscConfig(_messages.Message):
       Private Service Connect auto-connections. This will default to true for
       new instances when Private Service Connect is enabled.
     pscEnabled: Whether PSC connectivity is enabled for this instance.
+    pscEndpointAllowlistingEnabled: Optional. Immutable. Controls whether
+      multi-tenant Private Service Connect endpoint allowlisting is enabled
+      for this instance. Immutable post-creation. Configured via --enable-psc-
+      endpoint-allowlisting.
     pscWriteEndpointDnsEnabled: Optional. Indicates whether Private Service
       Connect write endpoint DNS automation is enabled for this instance. When
       enabled, Cloud SQL provisions a universal global DNS record across all
@@ -5453,13 +5504,15 @@ class PscConfig(_messages.Message):
       enterprise plus instances when `psc_auto_dns_enabled` is enabled.
   """
 
-  allowedConsumerProjects = _messages.StringField(1, repeated=True)
-  networkAttachmentUri = _messages.StringField(2)
-  pscAutoConnectionPolicyEnabled = _messages.BooleanField(3)
-  pscAutoConnections = _messages.MessageField('PscAutoConnectionConfig', 4, repeated=True)
-  pscAutoDnsEnabled = _messages.BooleanField(5)
-  pscEnabled = _messages.BooleanField(6)
-  pscWriteEndpointDnsEnabled = _messages.BooleanField(7)
+  allowedConsumerEndpoints = _messages.StringField(1, repeated=True)
+  allowedConsumerProjects = _messages.StringField(2, repeated=True)
+  networkAttachmentUri = _messages.StringField(3)
+  pscAutoConnectionPolicyEnabled = _messages.BooleanField(4)
+  pscAutoConnections = _messages.MessageField('PscAutoConnectionConfig', 5, repeated=True)
+  pscAutoDnsEnabled = _messages.BooleanField(6)
+  pscEnabled = _messages.BooleanField(7)
+  pscEndpointAllowlistingEnabled = _messages.BooleanField(8)
+  pscWriteEndpointDnsEnabled = _messages.BooleanField(9)
 
 
 class PscDnsReconcileNetworkingRequest(_messages.Message):
@@ -6003,6 +6056,8 @@ class Settings(_messages.Message):
       Server instance.
     finalBackupConfig: Optional. The final backup configuration for the
       instance.
+    flexibilityPolicy: Optional. Input only. Configuration for instance
+      creation flexibility policy.
     hostMappings: Optional. Host mappings for the VM to be used by Microsoft
       Distributed Transaction Coordinator (MSDTC).
     initialUsersConfig: Optional. Input only. Users to be created on the
@@ -6290,34 +6345,35 @@ class Settings(_messages.Message):
   enableGoogleMlIntegration = _messages.BooleanField(27)
   entraidConfig = _messages.MessageField('SqlServerEntraIdConfig', 28)
   finalBackupConfig = _messages.MessageField('FinalBackupConfig', 29)
-  hostMappings = _messages.MessageField('HostMapping', 30, repeated=True)
-  initialUsersConfig = _messages.MessageField('InitialUsersConfig', 31)
-  insightsConfig = _messages.MessageField('InsightsConfig', 32)
-  instanceVersion = _messages.StringField(33)
-  ipConfiguration = _messages.MessageField('IpConfiguration', 34)
-  kind = _messages.StringField(35)
-  locationPreference = _messages.MessageField('LocationPreference', 36)
-  maintenanceVersion = _messages.StringField(37)
-  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 38)
-  msdtcEnabled = _messages.BooleanField(39)
-  msdtcRpcAuthMode = _messages.EnumField('MsdtcRpcAuthModeValueValuesEnum', 40)
-  passwordValidationPolicy = _messages.MessageField('PasswordValidationPolicy', 41)
-  performanceCaptureConfig = _messages.MessageField('PerformanceCaptureConfig', 42)
-  pricingPlan = _messages.EnumField('PricingPlanValueValuesEnum', 43)
-  readPoolAutoScaleConfig = _messages.MessageField('ReadPoolAutoScaleConfig', 44)
-  recreateReplicasOnPrimaryCrash = _messages.BooleanField(45)
-  replicationLagMaxSeconds = _messages.IntegerField(46, variant=_messages.Variant.INT32)
-  replicationType = _messages.EnumField('ReplicationTypeValueValuesEnum', 47)
-  retainBackupsOnDelete = _messages.BooleanField(48)
-  settingsVersion = _messages.IntegerField(49)
-  sqlServerAuditConfig = _messages.MessageField('SqlServerAuditConfig', 50)
-  sqlServerPasswordValidationPolicy = _messages.MessageField('SqlServerPasswordValidationPolicy', 51)
-  storageAutoResize = _messages.BooleanField(52)
-  storageAutoResizeLimit = _messages.IntegerField(53)
-  tier = _messages.StringField(54)
-  timeZone = _messages.StringField(55)
-  uncMappings = _messages.MessageField('UncMapping', 56, repeated=True)
-  userLabels = _messages.MessageField('UserLabelsValue', 57)
+  flexibilityPolicy = _messages.MessageField('FlexibilityPolicy', 30)
+  hostMappings = _messages.MessageField('HostMapping', 31, repeated=True)
+  initialUsersConfig = _messages.MessageField('InitialUsersConfig', 32)
+  insightsConfig = _messages.MessageField('InsightsConfig', 33)
+  instanceVersion = _messages.StringField(34)
+  ipConfiguration = _messages.MessageField('IpConfiguration', 35)
+  kind = _messages.StringField(36)
+  locationPreference = _messages.MessageField('LocationPreference', 37)
+  maintenanceVersion = _messages.StringField(38)
+  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 39)
+  msdtcEnabled = _messages.BooleanField(40)
+  msdtcRpcAuthMode = _messages.EnumField('MsdtcRpcAuthModeValueValuesEnum', 41)
+  passwordValidationPolicy = _messages.MessageField('PasswordValidationPolicy', 42)
+  performanceCaptureConfig = _messages.MessageField('PerformanceCaptureConfig', 43)
+  pricingPlan = _messages.EnumField('PricingPlanValueValuesEnum', 44)
+  readPoolAutoScaleConfig = _messages.MessageField('ReadPoolAutoScaleConfig', 45)
+  recreateReplicasOnPrimaryCrash = _messages.BooleanField(46)
+  replicationLagMaxSeconds = _messages.IntegerField(47, variant=_messages.Variant.INT32)
+  replicationType = _messages.EnumField('ReplicationTypeValueValuesEnum', 48)
+  retainBackupsOnDelete = _messages.BooleanField(49)
+  settingsVersion = _messages.IntegerField(50)
+  sqlServerAuditConfig = _messages.MessageField('SqlServerAuditConfig', 51)
+  sqlServerPasswordValidationPolicy = _messages.MessageField('SqlServerPasswordValidationPolicy', 52)
+  storageAutoResize = _messages.BooleanField(53)
+  storageAutoResizeLimit = _messages.IntegerField(54)
+  tier = _messages.StringField(55)
+  timeZone = _messages.StringField(56)
+  uncMappings = _messages.MessageField('UncMapping', 57, repeated=True)
+  userLabels = _messages.MessageField('UserLabelsValue', 58)
 
 
 class SourceRole(_messages.Message):
@@ -8792,10 +8848,11 @@ class SqlWorkloadCapturesStartRequest(_messages.Message):
 
 
 class SqlWorkloadCapturesStopReplayRequest(_messages.Message):
-  r"""Request to stop executing a captured workload on a replay instance.
+  r"""Request to stop an active workload replay on a target Cloud SQL replay
+  instance.
 
   Fields:
-    stopWorkloadReplayContext: Required. Contains details about the stop
+    stopWorkloadReplayContext: Optional. Contains details about the stop
       workload replay operation.
   """
 
@@ -9107,25 +9164,11 @@ class StopWorkloadCaptureContext(_messages.Message):
 
 
 class StopWorkloadReplayContext(_messages.Message):
-  r"""The context for the `StopWorkloadReplay` operation, which contains
-  details about stopping the execution of a captured workload (recorded read
-  and write SQL queries) on a replay instance.
-
-  Fields:
-    replayInstance: Required. The name of the Cloud SQL instance where the
-      captured workload (SQL queries) is being executed, excluding the project
-      ID (for example, `my-replay-instance`). The instance name must start
-      with a lowercase letter and contain only lowercase letters, numbers, and
-      hyphens. The combined length of `project-ID:instance-name` must be 98
-      characters or less.
-    workloadId: Output only. The ID of the workload to stop executing on the
-      replay instance. Each workload capture generates a unique ID in the
-      format `workload-` (for example, `workload-1786046400`). Use this ID to
-      stop executing the recorded SQL queries.
+  r"""The context for the `StopWorkloadReplay` operation, which represents an
+  operation that stops an active workload replay on a target Cloud SQL replay
+  instance.
   """
 
-  replayInstance = _messages.StringField(1)
-  workloadId = _messages.StringField(2)
 
 
 class SwitchoverBlueGreenDeploymentRequest(_messages.Message):
@@ -9742,6 +9785,8 @@ class WorkloadCapture(_messages.Message):
       workload capture.
 
   Fields:
+    backupId: Output only. The base backup ID associated with the workload
+      capture.
     endTime: Output only. The end time of the workload capture.
     replayInstance: Output only. The name of the replay instance, if live
       replay was enabled.
@@ -9772,13 +9817,14 @@ class WorkloadCapture(_messages.Message):
     FAILED = 3
     TERMINATED = 4
 
-  endTime = _messages.StringField(1)
-  replayInstance = _messages.StringField(2)
-  retentionDays = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  sourceInstance = _messages.StringField(4)
-  startTime = _messages.StringField(5)
-  workloadCaptureState = _messages.EnumField('WorkloadCaptureStateValueValuesEnum', 6)
-  workloadId = _messages.StringField(7)
+  backupId = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  replayInstance = _messages.StringField(3)
+  retentionDays = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  sourceInstance = _messages.StringField(5)
+  startTime = _messages.StringField(6)
+  workloadCaptureState = _messages.EnumField('WorkloadCaptureStateValueValuesEnum', 7)
+  workloadId = _messages.StringField(8)
 
 
 class WorkloadCapturesListResponse(_messages.Message):

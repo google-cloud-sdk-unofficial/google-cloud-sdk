@@ -2706,6 +2706,7 @@ class StoreTrueFalseAction(argparse._StoreTrueAction):  # pylint: disable=protec
   """
 
   def __init__(self, *args, **kwargs):
+    self.inverted_help_text = kwargs.pop('inverted_help_text', False)
     super(StoreTrueFalseAction, self).__init__(*args, default=None, **kwargs)
 
 

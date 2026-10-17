@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for creating Compute Engine commitments."""
 
-
 import re
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -27,7 +26,6 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.commitments import flags
 from googlecloudsdk.command_lib.compute.commitments import reservation_helper
 from googlecloudsdk.core import properties
-
 
 _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 
@@ -53,13 +51,17 @@ class Create(base.Command):
   _support_24_month_plan = False
   _support_resource_manager_tags = True
 
-  detailed_help = {'EXAMPLES': """
+  detailed_help = {
+      'EXAMPLES': (
+          """
         To create a commitment called ``commitment-1'' in the ``us-central1''
         region, with a ``12-month'' plan, ``9GB'' of memory and 4 vcpu cores,
         run:
 
           $ {command} commitment-1 --plan=12-month --resources=memory=9GB,vcpu=4 --region=us-central1
-      """}
+      """
+      )
+  }
 
   @classmethod
   def Args(cls, parser):

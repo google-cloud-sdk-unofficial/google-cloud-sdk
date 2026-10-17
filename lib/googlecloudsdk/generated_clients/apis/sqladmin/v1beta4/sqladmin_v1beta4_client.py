@@ -2581,7 +2581,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
     )
 
     def StopReplay(self, request, global_params=None):
-      r"""Stops executing a captured workload on the separate Cloud SQL instance.
+      r"""Stops an active workload replay on the target Cloud SQL replay instance.
 
       Args:
         request: (SqlWorkloadCapturesStopReplayRequest) input message
@@ -2596,10 +2596,10 @@ class SqladminV1beta4(base_api.BaseApiClient):
     StopReplay.method_config = lambda: base_api.ApiMethodInfo(
         http_method='POST',
         method_id='sql.workloadCaptures.stopReplay',
-        ordered_params=['project', 'instance', 'workloadId'],
-        path_params=['instance', 'project', 'workloadId'],
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
         query_params=[],
-        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/workloadCaptures/{workloadId}:stopReplay',
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/workloadCaptures:stopReplay',
         request_field='sqlWorkloadCapturesStopReplayRequest',
         request_type_name='SqlWorkloadCapturesStopReplayRequest',
         response_type_name='Operation',

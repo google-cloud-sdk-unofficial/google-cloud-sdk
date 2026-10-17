@@ -852,6 +852,33 @@ class MeridianV1alpha(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def AcceptProposal(self, request, global_params=None):
+      r"""Accepts the pending agent proposal and promotes the candidate version.
+
+      Args:
+        request: (MeridianProjectsLocationsWorkspacesDatasetsAcceptProposalRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('AcceptProposal')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AcceptProposal.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/workspaces/{workspacesId}/datasets/{datasetsId}:acceptProposal',
+        http_method='POST',
+        method_id='meridian.projects.locations.workspaces.datasets.acceptProposal',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:acceptProposal',
+        request_field='acceptDatasetProposalRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsAcceptProposalRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def BatchCreate(self, request, global_params=None):
       r"""Creates a batch of Datasets in a given project, location, and workspace.
 
@@ -987,6 +1014,33 @@ class MeridianV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def DeclineProposal(self, request, global_params=None):
+      r"""Declines the pending agent proposal and retains the current version.
+
+      Args:
+        request: (MeridianProjectsLocationsWorkspacesDatasetsDeclineProposalRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('DeclineProposal')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DeclineProposal.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/workspaces/{workspacesId}/datasets/{datasetsId}:declineProposal',
+        http_method='POST',
+        method_id='meridian.projects.locations.workspaces.datasets.declineProposal',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:declineProposal',
+        request_field='declineDatasetProposalRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsDeclineProposalRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Delete(self, request, global_params=None):
       r"""Deletes a single Dataset.
 
@@ -1041,6 +1095,60 @@ class MeridianV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def FetchProposal(self, request, global_params=None):
+      r"""Fetches candidate agent proposal for a dataset.
+
+      Args:
+        request: (MeridianProjectsLocationsWorkspacesDatasetsFetchProposalRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchDatasetProposalResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchProposal')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchProposal.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/workspaces/{workspacesId}/datasets/{datasetsId}:fetchProposal',
+        http_method='GET',
+        method_id='meridian.projects.locations.workspaces.datasets.fetchProposal',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:fetchProposal',
+        request_field='',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsFetchProposalRequest',
+        response_type_name='FetchDatasetProposalResponse',
+        supports_download=False,
+    )
+
+    def FetchRecommendedModelSpec(self, request, global_params=None):
+      r"""Fetches recommended model spec for a dataset.
+
+      Args:
+        request: (MeridianProjectsLocationsWorkspacesDatasetsFetchRecommendedModelSpecRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchRecommendedModelSpecResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchRecommendedModelSpec')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchRecommendedModelSpec.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/workspaces/{workspacesId}/datasets/{datasetsId}:fetchRecommendedModelSpec',
+        http_method='GET',
+        method_id='meridian.projects.locations.workspaces.datasets.fetchRecommendedModelSpec',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:fetchRecommendedModelSpec',
+        request_field='',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsFetchRecommendedModelSpecRequest',
+        response_type_name='FetchRecommendedModelSpecResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets a single Dataset.
 
@@ -1069,7 +1177,7 @@ class MeridianV1alpha(base_api.BaseApiClient):
     )
 
     def GetEdaResult(self, request, global_params=None):
-      r"""Deprecated: Use Meridian.FetchEdaReport instead, which returns both the HTML report and the EdaResult. Gets EDA result for a dataset.
+      r"""Gets EDA result for a dataset.
 
       Args:
         request: (MeridianProjectsLocationsWorkspacesDatasetsGetEdaResultRequest) input message
@@ -1173,6 +1281,33 @@ class MeridianV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='MeridianProjectsLocationsWorkspacesDatasetsPreviewRequest',
         response_type_name='PreviewDatasetResponse',
+        supports_download=False,
+    )
+
+    def TriggerPreModelingAgent(self, request, global_params=None):
+      r"""Triggers the Pre-Modeling Agent to analyze and address user-selected EDA issues.
+
+      Args:
+        request: (MeridianProjectsLocationsWorkspacesDatasetsTriggerPreModelingAgentRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('TriggerPreModelingAgent')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TriggerPreModelingAgent.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/workspaces/{workspacesId}/datasets/{datasetsId}:triggerPreModelingAgent',
+        http_method='POST',
+        method_id='meridian.projects.locations.workspaces.datasets.triggerPreModelingAgent',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:triggerPreModelingAgent',
+        request_field='triggerPreModelingAgentRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsTriggerPreModelingAgentRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

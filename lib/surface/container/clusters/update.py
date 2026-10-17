@@ -495,6 +495,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableDefaultComputeClassFlag(group_default_compute_class)
     flags.AddDefaultComputeClassFlag(group_default_compute_class)
     flags.AddNetworkTierFlag(group)
+    flags.AddAdaptivePodAllocationModeFlag(group)
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
@@ -679,6 +680,7 @@ class Update(base.UpdateCommand):
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.default_compute_class = args.default_compute_class
     opts.network_tier = args.network_tier
+    opts.adaptive_pod_allocation_mode = args.adaptive_pod_allocation_mode
     opts.control_plane_egress_mode = args.control_plane_egress
     opts.managed_otel_scope = args.managed_otel_scope
     opts.autopilot_privileged_admission = (
@@ -1429,6 +1431,7 @@ class UpdateBeta(Update):
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
     flags.AddNetworkTierFlag(group)
+    flags.AddAdaptivePodAllocationModeFlag(group)
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
@@ -1672,6 +1675,7 @@ class UpdateBeta(Update):
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.default_compute_class = args.default_compute_class
     opts.network_tier = args.network_tier
+    opts.adaptive_pod_allocation_mode = args.adaptive_pod_allocation_mode
     opts.control_plane_egress_mode = args.control_plane_egress
     opts.managed_otel_scope = args.managed_otel_scope
     opts.autopilot_privileged_admission = (
@@ -1867,6 +1871,7 @@ class UpdateAlpha(Update):
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
     flags.AddNetworkTierFlag(group)
+    flags.AddAdaptivePodAllocationModeFlag(group)
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
@@ -2106,6 +2111,7 @@ class UpdateAlpha(Update):
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.default_compute_class = args.default_compute_class
     opts.network_tier = args.network_tier
+    opts.adaptive_pod_allocation_mode = args.adaptive_pod_allocation_mode
     opts.control_plane_egress_mode = args.control_plane_egress
     opts.managed_otel_scope = args.managed_otel_scope
     opts.autopilot_privileged_admission = (

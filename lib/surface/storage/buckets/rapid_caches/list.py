@@ -64,15 +64,20 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(_DEFAULT_FORMAT)
 
   def Run(self, args):
+    if args.raw and not args.IsSpecified('format'):
+      args.GetDisplayInfo().AddFormat('yaml')
+
     url = storage_url.storage_url_from_string(args.url)
     errors_util.raise_error_if_not_gcs_bucket(args.command_path, url)
 
     cache_resources = api_factory.get_api(url.scheme).list_rapid_caches(
         url.bucket_name
     )
-    for cache_resource in cache_resources:
-      yield resource_util.get_display_dict_for_resource(
-          cache_resource,
-          describe.RapidCacheDisplayTitlesAndDefaults,
-          args.raw,
-      )
+    return (
+        resource_util.get_display_dict_for_resource(
+            cache_resource,
+            describe.RapidCacheDisplayTitlesAndDefaults,
+            args.raw,
+        )
+        for cache_resource in cache_resources
+    )

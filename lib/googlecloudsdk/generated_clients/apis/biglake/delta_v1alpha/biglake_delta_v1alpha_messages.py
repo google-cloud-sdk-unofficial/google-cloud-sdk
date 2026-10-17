@@ -294,10 +294,13 @@ class ListDeltaSharingCatalogsResponse(_messages.Message):
     catalogs: The DeltaSharing catalogs from the specified project.
     nextPageToken: A token, which can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. The list of unreachable cloud regions. If
+      non-empty, the result set might be incomplete.
   """
 
   catalogs = _messages.MessageField('DeltaSharingCatalog', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListDeltaSharingSchemasResponse(_messages.Message):

@@ -11,6 +11,19 @@ from apitools.base.py import extra_types
 package = 'meridian'
 
 
+class AcceptDatasetProposalRequest(_messages.Message):
+  r"""Request message for Meridian.AcceptDatasetProposal.
+
+  Fields:
+    expectedProposalId: Required. The proposal ID the user actually reviewed.
+      Concurrency guard.
+    requestId: Optional. A unique request ID to identify requests.
+  """
+
+  expectedProposalId = _messages.StringField(1)
+  requestId = _messages.StringField(2)
+
+
 class AdstockDecayByChannel(_messages.Message):
   r"""Specifies the adstock decay function for each channel. Next ID: 2
 
@@ -53,6 +66,19 @@ class AdstockDecayByChannel(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   channelDecays = _messages.MessageField('ChannelDecaysValue', 1)
+
+
+class AgentProposal(_messages.Message):
+  r"""Candidate proposal produced by the Pre-Modeling Agent.
+
+  Fields:
+    createTime: Output only. Creation timestamp of the proposal.
+    proposalId: Output only. Server-generated unique identifier for this
+      proposal.
+  """
+
+  createTime = _messages.StringField(1)
+  proposalId = _messages.StringField(2)
 
 
 class AggCurveSpec(_messages.Message):
@@ -961,6 +987,8 @@ class Dataset(_messages.Message):
   r"""Message describing Dataset object
 
   Enums:
+    AgentJobStateValueValuesEnum: Output only. The status of the pre-modeling
+      agent job execution.
     DataValidationStateValueValuesEnum: Output only. The state of data
       validation.
     EdaJobStateValueValuesEnum: Output only. The status of the EDA job
@@ -971,6 +999,10 @@ class Dataset(_messages.Message):
     LabelsValue: Optional. Labels as key value pairs
 
   Fields:
+    agentError: Output only. Detailed error information if the agent job
+      failed.
+    agentJobState: Output only. The status of the pre-modeling agent job
+      execution.
     createTime: Output only. Create time stamp
     dataValidationState: Output only. The state of data validation.
     datasetSchema: Output only. Holds the data summary schema for the dataset.
@@ -985,12 +1017,32 @@ class Dataset(_messages.Message):
       data validation state for modeling.
     labels: Optional. Labels as key value pairs
     name: Identifier. The resource name of the dataset.
+    pendingProposal: Output only. The pending proposal from the pre-modeling
+      agent, if any.
+    recommendedModelSpecPresent: Output only. Indicates whether a recommended
+      ModelSpec exists for this dataset.
     state: Output only. The lifecycle state of the dataset.
     tenantProjectDatasetId: Output only. The ID of the dataset in the tenant
       project.
     updateTime: Output only. Update time stamp
     workspaceSlice: Immutable. Holds mapping and filtering rules.
   """
+
+  class AgentJobStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The status of the pre-modeling agent job execution.
+
+    Values:
+      AGENT_JOB_STATE_UNSPECIFIED: Default value.
+      AGENT_JOB_STATE_IN_PROGRESS: Agent job in progress.
+      AGENT_JOB_STATE_COMPLETED: Agent job completed successfully,
+        pending_proposal is set and awaiting review.
+      AGENT_JOB_STATE_FAILED: Agent job failed. Details are in
+        Dataset.agent_error.
+    """
+    AGENT_JOB_STATE_UNSPECIFIED = 0
+    AGENT_JOB_STATE_IN_PROGRESS = 1
+    AGENT_JOB_STATE_COMPLETED = 2
+    AGENT_JOB_STATE_FAILED = 3
 
   class DataValidationStateValueValuesEnum(_messages.Enum):
     r"""Output only. The state of data validation.
@@ -1071,21 +1123,25 @@ class Dataset(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  createTime = _messages.StringField(1)
-  dataValidationState = _messages.EnumField('DataValidationStateValueValuesEnum', 2)
-  datasetSchema = _messages.MessageField('MeridianDatasetSchema', 3)
-  defaultModelId = _messages.StringField(4)
-  displayName = _messages.StringField(5)
-  edaJobState = _messages.EnumField('EdaJobStateValueValuesEnum', 6)
-  error = _messages.MessageField('ErrorInfo', 7)
-  etag = _messages.StringField(8)
-  hasEdaOverrides = _messages.BooleanField(9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  name = _messages.StringField(11)
-  state = _messages.EnumField('StateValueValuesEnum', 12)
-  tenantProjectDatasetId = _messages.StringField(13)
-  updateTime = _messages.StringField(14)
-  workspaceSlice = _messages.MessageField('MasterTableSlice', 15)
+  agentError = _messages.MessageField('ErrorInfo', 1)
+  agentJobState = _messages.EnumField('AgentJobStateValueValuesEnum', 2)
+  createTime = _messages.StringField(3)
+  dataValidationState = _messages.EnumField('DataValidationStateValueValuesEnum', 4)
+  datasetSchema = _messages.MessageField('MeridianDatasetSchema', 5)
+  defaultModelId = _messages.StringField(6)
+  displayName = _messages.StringField(7)
+  edaJobState = _messages.EnumField('EdaJobStateValueValuesEnum', 8)
+  error = _messages.MessageField('ErrorInfo', 9)
+  etag = _messages.StringField(10)
+  hasEdaOverrides = _messages.BooleanField(11)
+  labels = _messages.MessageField('LabelsValue', 12)
+  name = _messages.StringField(13)
+  pendingProposal = _messages.MessageField('AgentProposal', 14)
+  recommendedModelSpecPresent = _messages.BooleanField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  tenantProjectDatasetId = _messages.StringField(17)
+  updateTime = _messages.StringField(18)
+  workspaceSlice = _messages.MessageField('MasterTableSlice', 19)
 
 
 class Date(_messages.Message):
@@ -1138,6 +1194,19 @@ class DateRange(_messages.Message):
 
   endDate = _messages.MessageField('Date', 1)
   startDate = _messages.MessageField('Date', 2)
+
+
+class DeclineDatasetProposalRequest(_messages.Message):
+  r"""Request message for Meridian.DeclineDatasetProposal.
+
+  Fields:
+    expectedProposalId: Required. The proposal ID the user actually reviewed.
+      Concurrency guard.
+    requestId: Optional. A unique request ID to identify requests.
+  """
+
+  expectedProposalId = _messages.StringField(1)
+  requestId = _messages.StringField(2)
 
 
 class Deterministic(_messages.Message):
@@ -1377,6 +1446,7 @@ class DtypeAndShape(_messages.Message):
       DT_INT2: <no description>
       DT_UINT2: <no description>
       DT_FLOAT4_E2M1FN: 2 exponent bits, 1 mantissa bit, finite-only
+      DT_FLOAT8_E8M0FNU: 8 exponent bits, 0 mantissa bits, finite-only,
       DT_FLOAT_REF: Do not use! These are only for TF1's obsolete reference
         Variables. Every enum above should have a corresponding value below
         (verified by types_test).
@@ -1412,6 +1482,7 @@ class DtypeAndShape(_messages.Message):
       DT_INT2_REF: <no description>
       DT_UINT2_REF: <no description>
       DT_FLOAT4_E2M1FN_REF: <no description>
+      DT_FLOAT8_E8M0FNU_REF: <no description>
     """
     DT_INVALID = 0
     DT_FLOAT = 1
@@ -1447,39 +1518,41 @@ class DtypeAndShape(_messages.Message):
     DT_INT2 = 31
     DT_UINT2 = 32
     DT_FLOAT4_E2M1FN = 33
-    DT_FLOAT_REF = 34
-    DT_DOUBLE_REF = 35
-    DT_INT32_REF = 36
-    DT_UINT8_REF = 37
-    DT_INT16_REF = 38
-    DT_INT8_REF = 39
-    DT_STRING_REF = 40
-    DT_COMPLEX64_REF = 41
-    DT_INT64_REF = 42
-    DT_BOOL_REF = 43
-    DT_QINT8_REF = 44
-    DT_QUINT8_REF = 45
-    DT_QINT32_REF = 46
-    DT_BFLOAT16_REF = 47
-    DT_QINT16_REF = 48
-    DT_QUINT16_REF = 49
-    DT_UINT16_REF = 50
-    DT_COMPLEX128_REF = 51
-    DT_HALF_REF = 52
-    DT_RESOURCE_REF = 53
-    DT_VARIANT_REF = 54
-    DT_UINT32_REF = 55
-    DT_UINT64_REF = 56
-    DT_FLOAT8_E5M2_REF = 57
-    DT_FLOAT8_E4M3FN_REF = 58
-    DT_FLOAT8_E4M3FNUZ_REF = 59
-    DT_FLOAT8_E4M3B11FNUZ_REF = 60
-    DT_FLOAT8_E5M2FNUZ_REF = 61
-    DT_INT4_REF = 62
-    DT_UINT4_REF = 63
-    DT_INT2_REF = 64
-    DT_UINT2_REF = 65
-    DT_FLOAT4_E2M1FN_REF = 66
+    DT_FLOAT8_E8M0FNU = 34
+    DT_FLOAT_REF = 35
+    DT_DOUBLE_REF = 36
+    DT_INT32_REF = 37
+    DT_UINT8_REF = 38
+    DT_INT16_REF = 39
+    DT_INT8_REF = 40
+    DT_STRING_REF = 41
+    DT_COMPLEX64_REF = 42
+    DT_INT64_REF = 43
+    DT_BOOL_REF = 44
+    DT_QINT8_REF = 45
+    DT_QUINT8_REF = 46
+    DT_QINT32_REF = 47
+    DT_BFLOAT16_REF = 48
+    DT_QINT16_REF = 49
+    DT_QUINT16_REF = 50
+    DT_UINT16_REF = 51
+    DT_COMPLEX128_REF = 52
+    DT_HALF_REF = 53
+    DT_RESOURCE_REF = 54
+    DT_VARIANT_REF = 55
+    DT_UINT32_REF = 56
+    DT_UINT64_REF = 57
+    DT_FLOAT8_E5M2_REF = 58
+    DT_FLOAT8_E4M3FN_REF = 59
+    DT_FLOAT8_E4M3FNUZ_REF = 60
+    DT_FLOAT8_E4M3B11FNUZ_REF = 61
+    DT_FLOAT8_E5M2FNUZ_REF = 62
+    DT_INT4_REF = 63
+    DT_UINT4_REF = 64
+    DT_INT2_REF = 65
+    DT_UINT2_REF = 66
+    DT_FLOAT4_E2M1FN_REF = 67
+    DT_FLOAT8_E8M0FNU_REF = 68
 
   dtype = _messages.EnumField('DtypeValueValuesEnum', 1)
   shape = _messages.MessageField('TensorShapeProto', 2)
@@ -1769,6 +1842,70 @@ class FeatureSelection(_messages.Message):
   paidRfChannels = _messages.StringField(6, repeated=True)
 
 
+class FetchDatasetProposalResponse(_messages.Message):
+  r"""Response message for Meridian.FetchDatasetProposal.
+
+  Enums:
+    CandidateDataValidationStateValueValuesEnum: Validation state of the
+      candidate dataset slice.
+    CandidateEdaJobStateValueValuesEnum: EDA job state of the candidate
+      dataset slice.
+
+  Fields:
+    candidateDataValidationState: Validation state of the candidate dataset
+      slice.
+    candidateEdaJobState: EDA job state of the candidate dataset slice.
+    changeSummary: Human-readable summary of fixes applied by the agent.
+    createTime: Creation timestamp of the proposal.
+    proposalId: Output only. Server-generated unique identifier for this
+      proposal.
+    proposedEffectiveTableMapping: Proposed effective table mapping after
+      agent fixes.
+  """
+
+  class CandidateDataValidationStateValueValuesEnum(_messages.Enum):
+    r"""Validation state of the candidate dataset slice.
+
+    Values:
+      DATA_VALIDATION_STATE_UNSPECIFIED: The default value. This value is used
+        if the state is omitted.
+      DATA_VALIDATION_STATE_PROCESSING: Indicates that the data validation job
+        is in progress.
+      DATA_VALIDATION_STATE_SUCCEEDED: Indicates that the data validation job
+        completed and checks passed.
+      DATA_VALIDATION_STATE_PARTIALLY_SUCCEEDED: Indicates that the data
+        validation job completed but checks failed.
+      DATA_VALIDATION_STATE_FAILED: Indicates that the data validation job
+        failed.
+    """
+    DATA_VALIDATION_STATE_UNSPECIFIED = 0
+    DATA_VALIDATION_STATE_PROCESSING = 1
+    DATA_VALIDATION_STATE_SUCCEEDED = 2
+    DATA_VALIDATION_STATE_PARTIALLY_SUCCEEDED = 3
+    DATA_VALIDATION_STATE_FAILED = 4
+
+  class CandidateEdaJobStateValueValuesEnum(_messages.Enum):
+    r"""EDA job state of the candidate dataset slice.
+
+    Values:
+      EDA_JOB_STATE_UNSPECIFIED: State unspecified.
+      EDA_JOB_STATE_IN_PROGRESS: Job in progress.
+      EDA_JOB_STATE_COMPLETED: Job completed successfully.
+      EDA_JOB_STATE_FAILED: Job failed.
+    """
+    EDA_JOB_STATE_UNSPECIFIED = 0
+    EDA_JOB_STATE_IN_PROGRESS = 1
+    EDA_JOB_STATE_COMPLETED = 2
+    EDA_JOB_STATE_FAILED = 3
+
+  candidateDataValidationState = _messages.EnumField('CandidateDataValidationStateValueValuesEnum', 1)
+  candidateEdaJobState = _messages.EnumField('CandidateEdaJobStateValueValuesEnum', 2)
+  changeSummary = _messages.StringField(3)
+  createTime = _messages.StringField(4)
+  proposalId = _messages.StringField(5)
+  proposedEffectiveTableMapping = _messages.MessageField('BigQueryTableMapping', 6)
+
+
 class FetchEdaReportResponse(_messages.Message):
   r"""Response message for Meridian.FetchEdaReport.
 
@@ -1801,6 +1938,16 @@ class FetchMainModelsResponse(_messages.Message):
 
   defaultModel = _messages.MessageField('Model', 1)
   latestModel = _messages.MessageField('Model', 2)
+
+
+class FetchRecommendedModelSpecResponse(_messages.Message):
+  r"""Response message for Meridian.FetchRecommendedModelSpec.
+
+  Fields:
+    modelSpec: The recommended model specification.
+  """
+
+  modelSpec = _messages.MessageField('ModelSpec', 1)
 
 
 class FunctionParam(_messages.Message):
@@ -2131,7 +2278,7 @@ class HttpHeaderContext(_messages.Message):
 
 
 class Hyperparameters(_messages.Message):
-  r"""Hyperparameters for the MMM model. Next ID: 36
+  r"""Hyperparameters for the MMM model. Next ID: 38
   LINT.IfChange(meridian_model_proto)
 
   Enums:
@@ -2192,6 +2339,10 @@ class Hyperparameters(_messages.Message):
       models. If this is set to true and the knots arg is provided, then an
       error will be raised when deserialized back to ModelSpec. Default:
       `False`.
+    forceNonnegativeAggregateBaseline: Whether to constrain the aggregate
+      baseline, summed over all geos and time periods, to be non-negative.
+      Unset or `false` means unconstrained, which is how models serialized
+      before this field existed were fit.
     globalAdstockDecay: The global adstock decay function to use for all
       channels. Allowed values are 'geometric' or 'binomial'.
     globalSaturation: The global saturation function to use for all channels.
@@ -2453,34 +2604,35 @@ class Hyperparameters(_messages.Message):
   baselineGeoString = _messages.StringField(4)
   controlPopulationScalingId = _messages.MessageField('TensorProto', 5)
   enableAks = _messages.BooleanField(6)
-  globalAdstockDecay = _messages.StringField(7)
-  globalSaturation = _messages.StringField(8)
-  hillBeforeAdstock = _messages.BooleanField(9)
-  holdoutConfig = _messages.MessageField('HoldoutConfig', 10)
-  holdoutId = _messages.MessageField('TensorProto', 11)
-  holdoutRatio = _messages.FloatField(12)
-  knotLocations = _messages.MessageField('KnotLocations', 13)
-  knots = _messages.IntegerField(14, repeated=True, variant=_messages.Variant.INT32)
-  maxLag = _messages.IntegerField(15, variant=_messages.Variant.UINT32)
-  mediaEffectsDist = _messages.EnumField('MediaEffectsDistValueValuesEnum', 16)
-  mediaPriorType = _messages.EnumField('MediaPriorTypeValueValuesEnum', 17)
-  nKnots = _messages.IntegerField(18, variant=_messages.Variant.INT32)
-  nonMediaBaselineValues = _messages.MessageField('NonMediaBaselineValue', 19, repeated=True)
-  nonMediaBaselineValuesMap = _messages.MessageField('NonMediaBaselineValuesMapValue', 20)
-  nonMediaPopulationScalingId = _messages.MessageField('TensorProto', 21)
-  nonMediaTreatmentsPriorType = _messages.EnumField('NonMediaTreatmentsPriorTypeValueValuesEnum', 22)
-  organicMediaPriorType = _messages.EnumField('OrganicMediaPriorTypeValueValuesEnum', 23)
-  organicRfPriorType = _messages.EnumField('OrganicRfPriorTypeValueValuesEnum', 24)
-  paidMediaPriorType = _messages.EnumField('PaidMediaPriorTypeValueValuesEnum', 25)
-  populationScaledControls = _messages.StringField(26, repeated=True)
-  populationScaledNonMediaChannels = _messages.StringField(27, repeated=True)
-  rfPriorType = _messages.EnumField('RfPriorTypeValueValuesEnum', 28)
-  rfRoiCalibrationConfig = _messages.MessageField('CalibrationConfig', 29)
-  rfRoiCalibrationPeriod = _messages.MessageField('TensorProto', 30)
-  roiCalibrationConfig = _messages.MessageField('CalibrationConfig', 31)
-  roiCalibrationPeriod = _messages.MessageField('TensorProto', 32)
-  saturationByChannel = _messages.MessageField('SaturationByChannel', 33)
-  uniqueSigmaForEachGeo = _messages.BooleanField(34)
+  forceNonnegativeAggregateBaseline = _messages.BooleanField(7)
+  globalAdstockDecay = _messages.StringField(8)
+  globalSaturation = _messages.StringField(9)
+  hillBeforeAdstock = _messages.BooleanField(10)
+  holdoutConfig = _messages.MessageField('HoldoutConfig', 11)
+  holdoutId = _messages.MessageField('TensorProto', 12)
+  holdoutRatio = _messages.FloatField(13)
+  knotLocations = _messages.MessageField('KnotLocations', 14)
+  knots = _messages.IntegerField(15, repeated=True, variant=_messages.Variant.INT32)
+  maxLag = _messages.IntegerField(16, variant=_messages.Variant.UINT32)
+  mediaEffectsDist = _messages.EnumField('MediaEffectsDistValueValuesEnum', 17)
+  mediaPriorType = _messages.EnumField('MediaPriorTypeValueValuesEnum', 18)
+  nKnots = _messages.IntegerField(19, variant=_messages.Variant.INT32)
+  nonMediaBaselineValues = _messages.MessageField('NonMediaBaselineValue', 20, repeated=True)
+  nonMediaBaselineValuesMap = _messages.MessageField('NonMediaBaselineValuesMapValue', 21)
+  nonMediaPopulationScalingId = _messages.MessageField('TensorProto', 22)
+  nonMediaTreatmentsPriorType = _messages.EnumField('NonMediaTreatmentsPriorTypeValueValuesEnum', 23)
+  organicMediaPriorType = _messages.EnumField('OrganicMediaPriorTypeValueValuesEnum', 24)
+  organicRfPriorType = _messages.EnumField('OrganicRfPriorTypeValueValuesEnum', 25)
+  paidMediaPriorType = _messages.EnumField('PaidMediaPriorTypeValueValuesEnum', 26)
+  populationScaledControls = _messages.StringField(27, repeated=True)
+  populationScaledNonMediaChannels = _messages.StringField(28, repeated=True)
+  rfPriorType = _messages.EnumField('RfPriorTypeValueValuesEnum', 29)
+  rfRoiCalibrationConfig = _messages.MessageField('CalibrationConfig', 30)
+  rfRoiCalibrationPeriod = _messages.MessageField('TensorProto', 31)
+  roiCalibrationConfig = _messages.MessageField('CalibrationConfig', 32)
+  roiCalibrationPeriod = _messages.MessageField('TensorProto', 33)
+  saturationByChannel = _messages.MessageField('SaturationByChannel', 34)
+  uniqueSigmaForEachGeo = _messages.BooleanField(35)
 
 
 class InferenceData(_messages.Message):
@@ -3165,6 +3317,22 @@ class MeridianProjectsLocationsWorkspacesCreateRequest(_messages.Message):
   workspaceId = _messages.StringField(5)
 
 
+class MeridianProjectsLocationsWorkspacesDatasetsAcceptProposalRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsAcceptProposalRequest
+  object.
+
+  Fields:
+    acceptDatasetProposalRequest: A AcceptDatasetProposalRequest resource to
+      be passed as the request body.
+    name: Required. The name of the dataset to accept the proposal for.
+      Format: projects/{project}/locations/{location}/workspaces/{workspace}/d
+      atasets/{dataset}
+  """
+
+  acceptDatasetProposalRequest = _messages.MessageField('AcceptDatasetProposalRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class MeridianProjectsLocationsWorkspacesDatasetsCreateRequest(_messages.Message):
   r"""A MeridianProjectsLocationsWorkspacesDatasetsCreateRequest object.
 
@@ -3188,6 +3356,22 @@ class MeridianProjectsLocationsWorkspacesDatasetsCreateRequest(_messages.Message
   datasetId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsDeclineProposalRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsDeclineProposalRequest
+  object.
+
+  Fields:
+    declineDatasetProposalRequest: A DeclineDatasetProposalRequest resource to
+      be passed as the request body.
+    name: Required. The name of the dataset to decline the proposal for.
+      Format: projects/{project}/locations/{location}/workspaces/{workspace}/d
+      atasets/{dataset}
+  """
+
+  declineDatasetProposalRequest = _messages.MessageField('DeclineDatasetProposalRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class MeridianProjectsLocationsWorkspacesDatasetsDeleteRequest(_messages.Message):
@@ -3237,6 +3421,33 @@ class MeridianProjectsLocationsWorkspacesDatasetsFetchEdaReportRequest(_messages
   edaReportType = _messages.EnumField('EdaReportTypeValueValuesEnum', 1)
   name = _messages.StringField(2, required=True)
   sendAsFile = _messages.BooleanField(3)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsFetchProposalRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsFetchProposalRequest
+  object.
+
+  Fields:
+    name: Required. The name of the dataset to fetch the agent proposal for.
+      Format: projects/{project}/locations/{location}/workspaces/{workspace}/d
+      atasets/{dataset}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsFetchRecommendedModelSpecRequest(_messages.Message):
+  r"""A
+  MeridianProjectsLocationsWorkspacesDatasetsFetchRecommendedModelSpecRequest
+  object.
+
+  Fields:
+    name: Required. The name of the dataset to fetch the recommended model
+      spec for. Format: projects/{project}/locations/{location}/workspaces/{wo
+      rkspace}/datasets/{dataset}
+  """
+
+  name = _messages.StringField(1, required=True)
 
 
 class MeridianProjectsLocationsWorkspacesDatasetsGetEdaResultRequest(_messages.Message):
@@ -3595,6 +3806,23 @@ class MeridianProjectsLocationsWorkspacesDatasetsPreviewRequest(_messages.Messag
   name = _messages.StringField(1, required=True)
   pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(3)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsTriggerPreModelingAgentRequest(_messages.Message):
+  r"""A
+  MeridianProjectsLocationsWorkspacesDatasetsTriggerPreModelingAgentRequest
+  object.
+
+  Fields:
+    name: Required. The name of the dataset to run the pre-modeling agent on.
+      Format: projects/{project}/locations/{location}/workspaces/{workspace}/d
+      atasets/{dataset}
+    triggerPreModelingAgentRequest: A TriggerPreModelingAgentRequest resource
+      to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  triggerPreModelingAgentRequest = _messages.MessageField('TriggerPreModelingAgentRequest', 2)
 
 
 class MeridianProjectsLocationsWorkspacesDeleteRequest(_messages.Message):
@@ -4307,6 +4535,8 @@ class Outcome(_messages.Message):
     CheckTypeValueValuesEnum: Type of check performed.
 
   Fields:
+    aiFixable: Indicates whether this check type can be automatically resolved
+      by the Pre-Modeling Agent.
     checkType: Type of check performed.
     findings: List of findings for this check.
   """
@@ -4329,8 +4559,9 @@ class Outcome(_messages.Message):
     CHECK_TYPE_KPI_INVARIABILITY = 4
     CHECK_TYPE_COST_PER_MEDIA_UNIT = 5
 
-  checkType = _messages.EnumField('CheckTypeValueValuesEnum', 1)
-  findings = _messages.MessageField('EdaFinding', 2, repeated=True)
+  aiFixable = _messages.BooleanField(1)
+  checkType = _messages.EnumField('CheckTypeValueValuesEnum', 2)
+  findings = _messages.MessageField('EdaFinding', 3, repeated=True)
 
 
 class PaidMediaChannelSpec(_messages.Message):
@@ -5535,6 +5766,7 @@ class TensorProto(_messages.Message):
       DT_INT2: <no description>
       DT_UINT2: <no description>
       DT_FLOAT4_E2M1FN: 2 exponent bits, 1 mantissa bit, finite-only
+      DT_FLOAT8_E8M0FNU: 8 exponent bits, 0 mantissa bits, finite-only,
       DT_FLOAT_REF: Do not use! These are only for TF1's obsolete reference
         Variables. Every enum above should have a corresponding value below
         (verified by types_test).
@@ -5570,6 +5802,7 @@ class TensorProto(_messages.Message):
       DT_INT2_REF: <no description>
       DT_UINT2_REF: <no description>
       DT_FLOAT4_E2M1FN_REF: <no description>
+      DT_FLOAT8_E8M0FNU_REF: <no description>
     """
     DT_INVALID = 0
     DT_FLOAT = 1
@@ -5605,39 +5838,41 @@ class TensorProto(_messages.Message):
     DT_INT2 = 31
     DT_UINT2 = 32
     DT_FLOAT4_E2M1FN = 33
-    DT_FLOAT_REF = 34
-    DT_DOUBLE_REF = 35
-    DT_INT32_REF = 36
-    DT_UINT8_REF = 37
-    DT_INT16_REF = 38
-    DT_INT8_REF = 39
-    DT_STRING_REF = 40
-    DT_COMPLEX64_REF = 41
-    DT_INT64_REF = 42
-    DT_BOOL_REF = 43
-    DT_QINT8_REF = 44
-    DT_QUINT8_REF = 45
-    DT_QINT32_REF = 46
-    DT_BFLOAT16_REF = 47
-    DT_QINT16_REF = 48
-    DT_QUINT16_REF = 49
-    DT_UINT16_REF = 50
-    DT_COMPLEX128_REF = 51
-    DT_HALF_REF = 52
-    DT_RESOURCE_REF = 53
-    DT_VARIANT_REF = 54
-    DT_UINT32_REF = 55
-    DT_UINT64_REF = 56
-    DT_FLOAT8_E5M2_REF = 57
-    DT_FLOAT8_E4M3FN_REF = 58
-    DT_FLOAT8_E4M3FNUZ_REF = 59
-    DT_FLOAT8_E4M3B11FNUZ_REF = 60
-    DT_FLOAT8_E5M2FNUZ_REF = 61
-    DT_INT4_REF = 62
-    DT_UINT4_REF = 63
-    DT_INT2_REF = 64
-    DT_UINT2_REF = 65
-    DT_FLOAT4_E2M1FN_REF = 66
+    DT_FLOAT8_E8M0FNU = 34
+    DT_FLOAT_REF = 35
+    DT_DOUBLE_REF = 36
+    DT_INT32_REF = 37
+    DT_UINT8_REF = 38
+    DT_INT16_REF = 39
+    DT_INT8_REF = 40
+    DT_STRING_REF = 41
+    DT_COMPLEX64_REF = 42
+    DT_INT64_REF = 43
+    DT_BOOL_REF = 44
+    DT_QINT8_REF = 45
+    DT_QUINT8_REF = 46
+    DT_QINT32_REF = 47
+    DT_BFLOAT16_REF = 48
+    DT_QINT16_REF = 49
+    DT_QUINT16_REF = 50
+    DT_UINT16_REF = 51
+    DT_COMPLEX128_REF = 52
+    DT_HALF_REF = 53
+    DT_RESOURCE_REF = 54
+    DT_VARIANT_REF = 55
+    DT_UINT32_REF = 56
+    DT_UINT64_REF = 57
+    DT_FLOAT8_E5M2_REF = 58
+    DT_FLOAT8_E4M3FN_REF = 59
+    DT_FLOAT8_E4M3FNUZ_REF = 60
+    DT_FLOAT8_E4M3B11FNUZ_REF = 61
+    DT_FLOAT8_E5M2FNUZ_REF = 62
+    DT_INT4_REF = 63
+    DT_UINT4_REF = 64
+    DT_INT2_REF = 65
+    DT_UINT2_REF = 66
+    DT_FLOAT4_E2M1FN_REF = 67
+    DT_FLOAT8_E8M0FNU_REF = 68
 
   boolVal = _messages.BooleanField(1, repeated=True)
   dcomplexVal = _messages.FloatField(2, repeated=True)
@@ -5848,6 +6083,19 @@ class TriggerAggcurveRequest(_messages.Message):
   name = _messages.StringField(1)
 
 
+class TriggerPreModelingAgentRequest(_messages.Message):
+  r"""Request message for Meridian.TriggerPreModelingAgent.
+
+  Fields:
+    requestId: Optional. A unique request ID to identify requests.
+    selectedEdaIssues: Optional. Identifiers of EDA findings/issues selected
+      by the user to address.
+  """
+
+  requestId = _messages.StringField(1)
+  selectedEdaIssues = _messages.StringField(2, repeated=True)
+
+
 class TruncatedNormal(_messages.Message):
   r"""A truncated Normal distribution, bounded between `low` and `high`. Next
   ID: 7
@@ -5981,13 +6229,13 @@ class Workspace(_messages.Message):
     LabelsValue: Optional. Labels as key value pairs
 
   Fields:
-    config: Optional. Configuration for automated data processing and model
-      generation. If provided, Meridian will use this configuration to
-      automatically generate input datasets and model specs based on the
-      specified BigQuery data source and dimensions. If omitted, automated
-      generation capabilities are disabled for this workspace, and the
-      workspace serves only as an organizational grouping for other resources.
-      DEPRECATED. Use `v1_config`, instead.
+    config: Optional. Deprecated: Use `v1_config`, instead. Configuration for
+      automated data processing and model generation. If provided, Meridian
+      will use this configuration to automatically generate input datasets and
+      model specs based on the specified BigQuery data source and dimensions.
+      If omitted, automated generation capabilities are disabled for this
+      workspace, and the workspace serves only as an organizational grouping
+      for other resources.
     createTime: Output only. Create time stamp
     creatorId: Output only. User ID of the user who created the workspace.
     dataDateRange: Output only. The calculated date range of the data slices

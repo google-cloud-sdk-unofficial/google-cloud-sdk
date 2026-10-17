@@ -88,3 +88,5 @@
     - arg_name: include-locations
       help_text: |
         Applies policy to selected locations, e.g. `us-central1-a`.
+    - arg_name: description
+      help_text: Description of the policy orchestrator.

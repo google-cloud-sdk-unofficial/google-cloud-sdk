@@ -46,3 +46,25 @@ pipeline:
     attribute_name: pipeline
     help: Pipeline ID
   disable_auto_completers: false
+
+# Parent of `pipeline`, used by `gcloud builds pipelines list`. The region
+# resolves from --region, then the builds/region property, and finally to `-`,
+# which asks the server for pipelines in every region rather than failing.
+pipeline_location:
+  name: location
+  collection: cloudbuild.projects.locations
+  attributes:
+  - parameter_name: projectsId
+    attribute_name: project
+    help: Cloud Project ID
+    property: core/project
+  - parameter_name: locationsId
+    attribute_name: region
+    help: |
+      The Cloud location to list {resource}s in. Use `-` to list across all
+      regions.
+    property: builds/region
+    fallthroughs:
+    - value: '-'
+      hint: defaults to all regions
+  disable_auto_completers: false

@@ -177,12 +177,39 @@ class GoogleIamV3AccessPolicyRule(_messages.Message):
       `principalSet://goog/cloudIdentityCustomerId/{customer_id}`: All of the
       principals associated with the specified Google Workspace or Cloud
       Identity customer ID. For example,
-      `principalSet://goog/cloudIdentityCustomerId/C01Abc35`. If an identifier
-      that was previously set on a policy is soft deleted, then calls to read
-      that policy will return the identifier with a deleted prefix. Users
-      cannot set identifiers with this syntax. *
-      `deleted:principal://goog/subject/{email_id}?uid={uid}`: A specific
-      Google Account that was deleted recently. For example,
+      `principalSet://goog/cloudIdentityCustomerId/C01Abc35`. *
+      `principalSet://goog/public:all`: A special identifier that represents
+      any principal that is on the internet, even if they do not have a Google
+      Account or are not logged in. `principalSet://goog/public:all` is only
+      supported in `DENY` effect rule. * `principal://iam.googleapis.com/locat
+      ions/global/workforcePools/{pool_id}/subject/{subject_attribute_value}`:
+      A single identity in a workforce identity pool. * `principalSet://iam.go
+      ogleapis.com/locations/global/workforcePools/{pool_id}/group/{group_id}`
+      : All workforce identities in a group. * `principalSet://iam.googleapis.
+      com/locations/global/workforcePools/{pool_id}/attribute.{attribute_name}
+      /{attribute_value}`: All workforce identities with a specific attribute
+      value. * `principalSet://iam.googleapis.com/locations/global/workforcePo
+      ols/{pool_id}/*`: All identities in a workforce identity pool. * `princi
+      pal://iam.googleapis.com/projects/{project_number}/locations/global/work
+      loadIdentityPools/{pool_id}/subject/{subject_attribute_value}`: A single
+      identity in a workload identity pool. * `principalSet://iam.googleapis.c
+      om/projects/{project_number}/locations/global/workloadIdentityPools/{poo
+      l_id}/group/{group_id}`: A workload identity pool group. * `principalSet
+      ://iam.googleapis.com/projects/{project_number}/locations/global/workloa
+      dIdentityPools/{pool_id}/attribute.{attribute_name}/{attribute_value}`:
+      All identities in a workload identity pool with a certain attribute. * `
+      principalSet://iam.googleapis.com/projects/{project_number}/locations/gl
+      obal/workloadIdentityPools/{pool_id}/*`: All identities in a workload
+      identity pool. *
+      `principal://{trust_domain}/{agent_resource_path}/{agent_id}`: A single,
+      specific agent identity. * `principalSet://{trust_domain}/*`: All agent
+      identities belonging to a particular trust domain. * `principalSet://{tr
+      ust_domain}/attribute.{attribute_name}/{attribute_value}`: All agents
+      with a particular attribute. If an identifier that was previously set on
+      a policy is soft deleted, then calls to read that policy will return the
+      identifier with a deleted prefix. Users cannot set identifiers with this
+      syntax. * `deleted:principal://goog/subject/{email_id}?uid={uid}`: A
+      specific Google Account that was deleted recently. For example,
       `deleted:principal://goog/subject/alice@example.com?uid=1234567890`. If
       the Google Account is recovered, this identifier reverts to the standard
       identifier for a Google Account. *
@@ -196,7 +223,13 @@ class GoogleIamV3AccessPolicyRule(_messages.Message):
       `deleted:principal://iam.googleapis.com/projects/-/serviceAccounts/my-
       service-account@iam.gserviceaccount.com?uid=1234567890`. If the service
       account is undeleted, this identifier reverts to the standard identifier
-      for a service account.
+      for a service account. * `deleted:principal://iam.googleapis.com/locatio
+      ns/global/workforcePools/{pool_id}/subject/{subject_attribute_value}`: A
+      workforce identity that was deleted recently. For example, `deleted:prin
+      cipal://iam.googleapis.com/locations/global/workforcePools/my-pool-
+      id/subject/my-subject-attribute-value`. If the workforce identity is
+      undeleted, this identifier reverts to the standard identifier for a
+      workforce identity.
   """
 
   class EffectValueValuesEnum(_messages.Enum):

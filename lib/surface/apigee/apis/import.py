@@ -18,6 +18,7 @@ import os
 from googlecloudsdk.api_lib import apigee
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apigee import defaults
+from googlecloudsdk.command_lib.apigee import errors
 from googlecloudsdk.command_lib.apigee import resource_args
 from googlecloudsdk.command_lib.apigee.aft import compiler
 from googlecloudsdk.command_lib.apigee.aft import converter
@@ -27,7 +28,9 @@ from googlecloudsdk.core.util import files
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Import(base.DescribeCommand):
   """Import an Apigee API proxy from local files."""
 
@@ -40,12 +43,14 @@ class Import(base.DescribeCommand):
   proxy with the given name already exists, a new revision is created;
   otherwise, a new API proxy is created.
 
-  The API proxy source is provided in exactly one of two formats. Use
-  `--from-bundle` to upload a standard Apigee API proxy bundle ZIP, which stores
-  the proxy configuration under an `apiproxy/` directory. Use `--from-template`
-  to build the API proxy from an Apigee Feature Template: a YAML file that
-  composes one or more reusable feature files into an API proxy, which is
-  compiled into a bundle locally before being uploaded.
+  The API proxy source is provided in exactly one of two formats.
+
+  Use `--from-bundle` to upload a standard Apigee API proxy bundle ZIP, which
+  stores the proxy configuration under an `apiproxy/` directory.
+
+  Use `--from-template` to build the API proxy from an Apigee Feature Template:
+  a YAML file that composes one or more reusable feature files into an API
+  proxy. The template is compiled into a bundle locally before being uploaded.
 
   When using `--from-template`, any feature files referenced by the template
   must reside in the same directory as the template file.
@@ -56,7 +61,7 @@ class Import(base.DescribeCommand):
   see the
   link:https://cloud.google.com/apigee/docs/api-platform/reference/api-proxy-yaml-configuration-reference[API proxy YAML configuration reference].
 
-  To use this command, the active Cloud Platform project must have an associated
+  To use this command, the active Google Cloud project must have an associated
   Apigee organization, or an organization must be specified with
   `--organization` or by providing the fully qualified name (FQN) of the API
   proxy as the API proxy name (for example,
@@ -65,7 +70,7 @@ class Import(base.DescribeCommand):
       "EXAMPLES": (
           """\
   To import an API proxy named ``helloworld'' from a local bundle ZIP, given
-  that the matching Cloud Platform project has been set in gcloud settings, run:
+  that the matching Google Cloud project has been set in gcloud settings, run:
 
     $ {command} helloworld --from-bundle=./helloworld.zip
 
@@ -107,9 +112,9 @@ class Import(base.DescribeCommand):
             "proxy from.\n\n"
             "The template composes one or more reusable feature files into "
             "an API proxy. Any feature files referenced by the template must "
-            "reside in the same directory as the template file. The template "
-            "is compiled into an API proxy bundle locally before being "
-            "uploaded to Apigee.\n\n"
+            "reside in the same directory as the template file.\n\n"
+            "The template is compiled into an API proxy bundle locally before "
+            "being uploaded to Apigee.\n\n"
             "For an overview of defining an API proxy in YAML, see "
             "link:https://cloud.google.com/apigee/docs/api-platform/"
             "fundamentals/configure-proxy-with-yaml[Configuring a proxy with "
@@ -145,19 +150,37 @@ class Import(base.DescribeCommand):
 
     bundle_path = args.bundle_path
     if args.template_path:
-      template = models.from_dict(
-          models.Template,
-          yaml.load(files.ReadFileContents(args.template_path))
-      )
+      try:
+        file_contents = files.ReadFileContents(args.template_path)
+      except files.Error:  # Issues with file access
+        raise
+      except UnicodeDecodeError as e:
+        raise errors.InvalidTemplateFormatError(args.template_path) from e
+
+      try:
+        template = models.from_dict(
+            models.Template,
+            yaml.load(file_contents)
+        )
+      except Exception as e:
+        raise errors.InvalidTemplateFormatError(args.template_path) from e
+
       template_dir = os.path.dirname(args.template_path)
-      referenced_feature_yaml = [
-          files.ReadFileContents(os.path.join(template_dir, f))
-          for f in template.features
-      ]
-      features = [
-          models.from_dict(models.Feature, yaml.load(yaml_contents))
-          for yaml_contents in referenced_feature_yaml
-      ]
+      features = []
+      for f in template.features:
+        feature_path = os.path.join(template_dir, f)
+        try:
+          feature_yaml = files.ReadFileContents(feature_path)
+        except files.Error:  # Issues with file access
+          raise
+        except UnicodeDecodeError as e:
+          raise errors.InvalidFeatureFormatError(feature_path) from e
+
+        try:
+          feature = models.from_dict(models.Feature, yaml.load(feature_yaml))
+        except Exception as e:
+          raise errors.InvalidFeatureFormatError(feature_path) from e
+        features.append(feature)
       compiled_proxy = compiler.ApigeeCompiler().compile(
           template, features, {}
       )

@@ -164,8 +164,8 @@ class Create(base.Command):
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
   _support_identity_type = False
-  _support_instance_selection_min_cpu_platform = False
-  _support_flex_policy_flag_with_mincpu_and_disks = False
+  _support_instance_selection_min_cpu_platform = True
+  _support_flex_policy_flag_with_mincpu_and_disks = True
   _support_vsock_mode = False
   _support_expose_host_topology = True
 

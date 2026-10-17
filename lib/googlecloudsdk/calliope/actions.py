@@ -22,7 +22,6 @@ import sys
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_errors
-from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core.console import console_io
@@ -102,11 +101,6 @@ def FunctionExitAction(func):
       sys.exit(0)
 
   return Action
-
-
-StoreProperty = property_actions.StoreProperty
-StoreBooleanProperty = property_actions.StoreBooleanProperty
-StoreConstProperty = property_actions.StoreConstProperty
 
 
 # pylint:disable=pointless-string-statement

@@ -55,6 +55,33 @@ class SoftwaredeliverytrustV1alpha(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Create(self, request, global_params=None):
+      r"""Ingests a single piece of supply chain evidence (attestation). Returns a Long Running Operation (LRO).
+
+      Args:
+        request: (SoftwaredeliverytrustProjectsLocationsAttestationsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/attestations',
+        http_method='POST',
+        method_id='softwaredeliverytrust.projects.locations.attestations.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['attestationId'],
+        relative_path='v1alpha/{+parent}/attestations',
+        request_field='attestation',
+        request_type_name='SoftwaredeliverytrustProjectsLocationsAttestationsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single Attestation.
 

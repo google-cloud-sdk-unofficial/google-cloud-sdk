@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
@@ -166,7 +167,7 @@ class Run(base.Command):
 
     parser.add_argument(
         '--disable-public-ips',
-        action=actions.StoreBooleanProperty(
+        action=property_actions.StoreBooleanProperty(
             properties.VALUES.dataflow.disable_public_ips
         ),
         help=(
@@ -228,7 +229,7 @@ class Run(base.Command):
 
     parser.add_argument(
         '--enable-streaming-engine',
-        action=actions.StoreBooleanProperty(
+        action=property_actions.StoreBooleanProperty(
             properties.VALUES.dataflow.enable_streaming_engine
         ),
         help='Enable Streaming Engine for the streaming job.',

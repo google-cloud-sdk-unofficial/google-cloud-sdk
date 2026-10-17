@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import validators
 from googlecloudsdk.command_lib.run.sourcedeploys import region_name_util
 from googlecloudsdk.command_lib.run.sourcedeploys import types
+from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -216,6 +217,33 @@ def GetGcsObject(source: str, location: str):
 def IsGcsObject(source: str) -> bool:
   """Returns true if the source is located remotely in a GCS object."""
   return isinstance(source, str) and source.startswith(_GCS_PREFIX)
+
+
+def ParseGcsSource(source: str) -> tuple[str, str, int | None]:
+  """Parses a `gs://<bucket>/<object>(#<generation>)` source location.
+
+  Args:
+    source: The source location string.
+
+  Returns:
+    A (bucket, object, generation) tuple. `generation` is None when the source
+    does not pin a specific generation.
+
+  Raises:
+    core_exceptions.Error: If the source is not a well-formed GCS object URL.
+  """
+  url = storage_url.storage_url_from_string(source)
+  if (
+      getattr(url, 'scheme', None) != storage_url.ProviderPrefix.GCS
+      or not url.bucket_name
+      or not url.resource_name
+  ):
+    raise core_exceptions.Error(
+        f'Invalid Google Cloud Storage URL [{source}]. Must be in the format'
+        ' gs://bucket/object(#generation).'
+    )
+  generation = int(url.generation) if url.generation else None
+  return url.bucket_name, url.resource_name, generation
 
 
 def ShouldUploadThroughRunApi(container_args: Any, release_track: Any) -> bool:

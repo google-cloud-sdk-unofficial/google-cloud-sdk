@@ -108,7 +108,15 @@ setup_cloudsdk_python() {
   if [ -z "$CLOUDSDK_PYTHON" ]; then
     # Is bundled python present and working?
     ARCH=$(uname -m 2>/dev/null)
-    if [ -x "$CLOUDSDK_ROOT_DIR/platform/bundledpythonunix/bin/python3" ] &&  \
+    # On Alpine Linux, prefer the musl bundled Python. It is checked first
+    # because the glibc bundled Python may also be installed there.
+    if [ -f /etc/alpine-release ] &&  \
+       [ -x "$CLOUDSDK_ROOT_DIR/platform/bundledpythonunixmusl/bin/python3" ] &&  \
+       "$CLOUDSDK_ROOT_DIR/platform/bundledpythonunixmusl/bin/python3" --version > /dev/null 2>&1;
+    then
+      CLOUDSDK_PYTHON="$CLOUDSDK_ROOT_DIR/platform/bundledpythonunixmusl/bin/python3"
+      CLOUDSDK_PYTHON_SITEPACKAGES=1
+    elif [ -x "$CLOUDSDK_ROOT_DIR/platform/bundledpythonunix/bin/python3" ] &&  \
        [ "$ARCH" = "x86_64" ] &&  \
        "$CLOUDSDK_ROOT_DIR/platform/bundledpythonunix/bin/python3" --version > /dev/null 2>&1;
     then

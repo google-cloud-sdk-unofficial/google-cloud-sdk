@@ -94,14 +94,6 @@
           repeated: false
           help_text: |-
             The `:authority` header in the request sent to the extension service.
-        - arg_name: extension-settings-observability-mode
-          api_field: producerExtension.extensionSettings.observabilityMode
-          action: store_true
-          required: false
-          type: bool
-          help_text: |-
-            Whether the extension should function in observability mode.
-          default: null
         - arg_name: extension-settings-supported-events
           api_field: producerExtension.extensionSettings.supportedEvents
           required: true

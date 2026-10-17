@@ -1062,3 +1062,30 @@ workforce_pool_provider_key:
     arg_name: spec
     required: true
     help_text: The specifications for the key.
+
+workforce_pool_installed_app:
+  client_id:
+    api_field: workforcePoolInstalledApp.appMetadata.clientId
+    arg_name: client-id
+    hidden: true
+    required: true
+    help_text: |-
+      OAuth client ID of the app to be installed.
+  all_scopes_granted:
+    api_field: workforcePoolInstalledApp.allScopesGranted
+    arg_name: all-scopes-granted
+    hidden: true
+    help_text: |-
+      Whether all scopes supported by Workforce Identity Federation are granted for the installed app.
+  display_name:
+    api_field: workforcePoolInstalledApp.displayName
+    arg_name: display-name
+    hidden: true
+    help_text: |-
+      Display name for the workforce pool installed app. Cannot exceed 32 characters in length.
+  description:
+    api_field: workforcePoolInstalledApp.description
+    arg_name: description
+    hidden: true
+    help_text: |-
+      Description of the workforce pool installed app. Cannot exceed 256 characters in length.

@@ -453,6 +453,9 @@ class CloudRunRevisionInfo(_messages.Message):
 
   Fields:
     displayName: Name of a Cloud Run revision.
+    ipAddress: IP address of a Cloud Run revision. If the Cloud Run revision
+      is in dual-stack subnetwork, this is the IP address relevant to the
+      trace. Populated for `ARRIVE_AT_CLOUD_RUN_REVISION` steps.
     location: Location in which this revision is deployed.
     serviceUri: URI of Cloud Run service this revision belongs to. Format:
       `projects/{project_id}/locations/{location}/services/{service_id}`
@@ -461,14 +464,15 @@ class CloudRunRevisionInfo(_messages.Message):
       `projects/{project_id}/locations/{location}/revisions/{revision_id}`
     workerPoolUri: URI of Cloud Run worker pool this revision belongs to.
       Format: `projects/{project_id}/locations/{location}/workerPools/{worker_
-      pool_id}`. Mutually exclusive with `service_uri`.
+      pool_id}` Mutually exclusive with `service_uri`.
   """
 
   displayName = _messages.StringField(1)
-  location = _messages.StringField(2)
-  serviceUri = _messages.StringField(3)
-  uri = _messages.StringField(4)
-  workerPoolUri = _messages.StringField(5)
+  ipAddress = _messages.StringField(2)
+  location = _messages.StringField(3)
+  serviceUri = _messages.StringField(4)
+  uri = _messages.StringField(5)
+  workerPoolUri = _messages.StringField(6)
 
 
 class CloudSQLInstanceInfo(_messages.Message):
@@ -716,28 +720,6 @@ class DirectVpcEgressConnectionInfo(_messages.Message):
       range.
     selectedIpRange: Selected IP range.
     subnetworkUri: URI of the subnetwork for direct egress. Format:
-      `projects/{project_id}/regions/{region}/subnetworks/{subnetwork_id}`
-  """
-
-  networkUri = _messages.StringField(1)
-  region = _messages.StringField(2)
-  selectedIpAddress = _messages.StringField(3)
-  selectedIpRange = _messages.StringField(4)
-  subnetworkUri = _messages.StringField(5)
-
-
-class DirectVpcIngressConnectionInfo(_messages.Message):
-  r"""For display only. Metadata associated with a serverless direct VPC
-  ingress connection.
-
-  Fields:
-    networkUri: URI of the VPC network for direct ingress. Format:
-      `projects/{project_id}/global/networks/{network_id}`
-    region: Region in which the Direct VPC ingress is deployed.
-    selectedIpAddress: Selected destination IP address, from the selected IP
-      range.
-    selectedIpRange: Selected IP range.
-    subnetworkUri: URI of the subnetwork for direct ingress. Format:
       `projects/{project_id}/regions/{region}/subnetworks/{subnetwork_id}`
   """
 
@@ -1199,6 +1181,8 @@ class EffectiveVpcFlowLogsConfig(_messages.Message):
   Enums:
     AggregationIntervalValueValuesEnum: The aggregation interval for the logs.
       Default value is INTERVAL_5_SEC.
+    ConnectionLoggingValueValuesEnum: Optional. Configures whether connection
+      logging is enabled for VPC Flow Logs.
     CrossProjectMetadataValueValuesEnum: Determines whether to include cross
       project annotations in the logs. This field is available only for
       organization configurations. If not specified in org configs will be set
@@ -1215,6 +1199,8 @@ class EffectiveVpcFlowLogsConfig(_messages.Message):
   Fields:
     aggregationInterval: The aggregation interval for the logs. Default value
       is INTERVAL_5_SEC.
+    connectionLogging: Optional. Configures whether connection logging is
+      enabled for VPC Flow Logs.
     crossProjectMetadata: Determines whether to include cross project
       annotations in the logs. This field is available only for organization
       configurations. If not specified in org configs will be set to
@@ -1275,6 +1261,20 @@ class EffectiveVpcFlowLogsConfig(_messages.Message):
     INTERVAL_5_MIN = 4
     INTERVAL_10_MIN = 5
     INTERVAL_15_MIN = 6
+
+  class ConnectionLoggingValueValuesEnum(_messages.Enum):
+    r"""Optional. Configures whether connection logging is enabled for VPC
+    Flow Logs.
+
+    Values:
+      CONNECTION_LOGGING_UNSPECIFIED: If not specified, will default to
+        CONNECTION_LOGGING_DISABLED.
+      CONNECTION_LOGGING_ENABLED: Include connection logs.
+      CONNECTION_LOGGING_DISABLED: Do not include connection logs.
+    """
+    CONNECTION_LOGGING_UNSPECIFIED = 0
+    CONNECTION_LOGGING_ENABLED = 1
+    CONNECTION_LOGGING_DISABLED = 2
 
   class CrossProjectMetadataValueValuesEnum(_messages.Enum):
     r"""Determines whether to include cross project annotations in the logs.
@@ -1348,18 +1348,19 @@ class EffectiveVpcFlowLogsConfig(_messages.Message):
     DISABLED = 2
 
   aggregationInterval = _messages.EnumField('AggregationIntervalValueValuesEnum', 1)
-  crossProjectMetadata = _messages.EnumField('CrossProjectMetadataValueValuesEnum', 2)
-  filterExpr = _messages.StringField(3)
-  flowSampling = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
-  interconnectAttachment = _messages.StringField(5)
-  metadata = _messages.EnumField('MetadataValueValuesEnum', 6)
-  metadataFields = _messages.StringField(7, repeated=True)
-  name = _messages.StringField(8)
-  network = _messages.StringField(9)
-  scope = _messages.EnumField('ScopeValueValuesEnum', 10)
-  state = _messages.EnumField('StateValueValuesEnum', 11)
-  subnet = _messages.StringField(12)
-  vpnTunnel = _messages.StringField(13)
+  connectionLogging = _messages.EnumField('ConnectionLoggingValueValuesEnum', 2)
+  crossProjectMetadata = _messages.EnumField('CrossProjectMetadataValueValuesEnum', 3)
+  filterExpr = _messages.StringField(4)
+  flowSampling = _messages.FloatField(5, variant=_messages.Variant.FLOAT)
+  interconnectAttachment = _messages.StringField(6)
+  metadata = _messages.EnumField('MetadataValueValuesEnum', 7)
+  metadataFields = _messages.StringField(8, repeated=True)
+  name = _messages.StringField(9)
+  network = _messages.StringField(10)
+  scope = _messages.EnumField('ScopeValueValuesEnum', 11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  subnet = _messages.StringField(13)
+  vpnTunnel = _messages.StringField(14)
 
 
 class Empty(_messages.Message):
@@ -4197,8 +4198,6 @@ class Step(_messages.Message):
       state.
     directVpcEgressConnection: Display information of a serverless direct VPC
       egress connection.
-    directVpcIngressConnection: Display information of a serverless direct VPC
-      ingress connection.
     dmsPrivateConnection: Display information of a DMS Private Connection.
     drop: Display information of the final state "drop" and reason.
     endpoint: Display information of the source and destination under
@@ -4330,8 +4329,6 @@ class Step(_messages.Message):
         interconnect attachment.
       ARRIVE_AT_VPC_CONNECTOR: Forwarding state: arriving at a VPC connector.
       ARRIVE_AT_GKE_POD: Forwarding state: arriving at a GKE Pod.
-      ARRIVE_AT_DIRECT_VPC_INGRESS_CONNECTION: Forwarding state: arriving at a
-        direct VPC ingress connection.
       DIRECT_VPC_EGRESS_CONNECTION: Forwarding state: for packets originating
         from a serverless endpoint forwarded through Direct VPC egress.
       SERVERLESS_EXTERNAL_CONNECTION: Forwarding state: for packets
@@ -4398,22 +4395,21 @@ class Step(_messages.Message):
     ARRIVE_AT_INTERCONNECT_ATTACHMENT = 31
     ARRIVE_AT_VPC_CONNECTOR = 32
     ARRIVE_AT_GKE_POD = 33
-    ARRIVE_AT_DIRECT_VPC_INGRESS_CONNECTION = 34
-    DIRECT_VPC_EGRESS_CONNECTION = 35
-    SERVERLESS_EXTERNAL_CONNECTION = 36
-    NGFW_PACKET_INSPECTION = 37
-    NAT = 38
-    SKIP_GKE_POD_IP_MASQUERADING = 39
-    SKIP_GKE_INGRESS_NETWORK_POLICY = 40
-    SKIP_GKE_EGRESS_NETWORK_POLICY = 41
-    APPLY_INGRESS_GKE_NETWORK_POLICY = 42
-    APPLY_EGRESS_GKE_NETWORK_POLICY = 43
-    PROXY_CONNECTION = 44
-    DELIVER = 45
-    DROP = 46
-    FORWARD = 47
-    ABORT = 48
-    VIEWER_PERMISSION_MISSING = 49
+    DIRECT_VPC_EGRESS_CONNECTION = 34
+    SERVERLESS_EXTERNAL_CONNECTION = 35
+    NGFW_PACKET_INSPECTION = 36
+    NAT = 37
+    SKIP_GKE_POD_IP_MASQUERADING = 38
+    SKIP_GKE_INGRESS_NETWORK_POLICY = 39
+    SKIP_GKE_EGRESS_NETWORK_POLICY = 40
+    APPLY_INGRESS_GKE_NETWORK_POLICY = 41
+    APPLY_EGRESS_GKE_NETWORK_POLICY = 42
+    PROXY_CONNECTION = 43
+    DELIVER = 44
+    DROP = 45
+    FORWARD = 46
+    ABORT = 47
+    VIEWER_PERMISSION_MISSING = 48
 
   abort = _messages.MessageField('AbortInfo', 1)
   appEngineVersion = _messages.MessageField('AppEngineVersionInfo', 2)
@@ -4426,40 +4422,39 @@ class Step(_messages.Message):
   deliver = _messages.MessageField('DeliverInfo', 9)
   description = _messages.StringField(10)
   directVpcEgressConnection = _messages.MessageField('DirectVpcEgressConnectionInfo', 11)
-  directVpcIngressConnection = _messages.MessageField('DirectVpcIngressConnectionInfo', 12)
-  dmsPrivateConnection = _messages.MessageField('PrivateConnectionInfo', 13)
-  drop = _messages.MessageField('DropInfo', 14)
-  endpoint = _messages.MessageField('EndpointInfo', 15)
-  firewall = _messages.MessageField('FirewallInfo', 16)
-  forward = _messages.MessageField('ForwardInfo', 17)
-  forwardingRule = _messages.MessageField('ForwardingRuleInfo', 18)
-  gkeMaster = _messages.MessageField('GKEMasterInfo', 19)
-  gkeNetworkPolicy = _messages.MessageField('GkeNetworkPolicyInfo', 20)
-  gkeNetworkPolicySkipped = _messages.MessageField('GkeNetworkPolicySkippedInfo', 21)
-  gkePod = _messages.MessageField('GkePodInfo', 22)
-  googleService = _messages.MessageField('GoogleServiceInfo', 23)
-  hybridSubnet = _messages.MessageField('HybridSubnetInfo', 24)
-  instance = _messages.MessageField('InstanceInfo', 25)
-  interconnectAttachment = _messages.MessageField('InterconnectAttachmentInfo', 26)
-  ipMasqueradingSkipped = _messages.MessageField('IpMasqueradingSkippedInfo', 27)
-  loadBalancer = _messages.MessageField('LoadBalancerInfo', 28)
-  loadBalancerBackendInfo = _messages.MessageField('LoadBalancerBackendInfo', 29)
-  nat = _messages.MessageField('NatInfo', 30)
-  network = _messages.MessageField('NetworkInfo', 31)
-  ngfwPacketInspection = _messages.MessageField('NgfwPacketInspectionInfo', 32)
-  projectId = _messages.StringField(33)
-  proxyConnection = _messages.MessageField('ProxyConnectionInfo', 34)
-  redisCluster = _messages.MessageField('RedisClusterInfo', 35)
-  redisInstance = _messages.MessageField('RedisInstanceInfo', 36)
-  route = _messages.MessageField('RouteInfo', 37)
-  serverlessExternalConnection = _messages.MessageField('ServerlessExternalConnectionInfo', 38)
-  serverlessNeg = _messages.MessageField('ServerlessNegInfo', 39)
-  state = _messages.EnumField('StateValueValuesEnum', 40)
-  storageBucket = _messages.MessageField('StorageBucketInfo', 41)
-  viewerPermissionMissingInfo = _messages.MessageField('ViewerPermissionMissingInfo', 42)
-  vpcConnector = _messages.MessageField('VpcConnectorInfo', 43)
-  vpnGateway = _messages.MessageField('VpnGatewayInfo', 44)
-  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 45)
+  dmsPrivateConnection = _messages.MessageField('PrivateConnectionInfo', 12)
+  drop = _messages.MessageField('DropInfo', 13)
+  endpoint = _messages.MessageField('EndpointInfo', 14)
+  firewall = _messages.MessageField('FirewallInfo', 15)
+  forward = _messages.MessageField('ForwardInfo', 16)
+  forwardingRule = _messages.MessageField('ForwardingRuleInfo', 17)
+  gkeMaster = _messages.MessageField('GKEMasterInfo', 18)
+  gkeNetworkPolicy = _messages.MessageField('GkeNetworkPolicyInfo', 19)
+  gkeNetworkPolicySkipped = _messages.MessageField('GkeNetworkPolicySkippedInfo', 20)
+  gkePod = _messages.MessageField('GkePodInfo', 21)
+  googleService = _messages.MessageField('GoogleServiceInfo', 22)
+  hybridSubnet = _messages.MessageField('HybridSubnetInfo', 23)
+  instance = _messages.MessageField('InstanceInfo', 24)
+  interconnectAttachment = _messages.MessageField('InterconnectAttachmentInfo', 25)
+  ipMasqueradingSkipped = _messages.MessageField('IpMasqueradingSkippedInfo', 26)
+  loadBalancer = _messages.MessageField('LoadBalancerInfo', 27)
+  loadBalancerBackendInfo = _messages.MessageField('LoadBalancerBackendInfo', 28)
+  nat = _messages.MessageField('NatInfo', 29)
+  network = _messages.MessageField('NetworkInfo', 30)
+  ngfwPacketInspection = _messages.MessageField('NgfwPacketInspectionInfo', 31)
+  projectId = _messages.StringField(32)
+  proxyConnection = _messages.MessageField('ProxyConnectionInfo', 33)
+  redisCluster = _messages.MessageField('RedisClusterInfo', 34)
+  redisInstance = _messages.MessageField('RedisInstanceInfo', 35)
+  route = _messages.MessageField('RouteInfo', 36)
+  serverlessExternalConnection = _messages.MessageField('ServerlessExternalConnectionInfo', 37)
+  serverlessNeg = _messages.MessageField('ServerlessNegInfo', 38)
+  state = _messages.EnumField('StateValueValuesEnum', 39)
+  storageBucket = _messages.MessageField('StorageBucketInfo', 40)
+  viewerPermissionMissingInfo = _messages.MessageField('ViewerPermissionMissingInfo', 41)
+  vpcConnector = _messages.MessageField('VpcConnectorInfo', 42)
+  vpnGateway = _messages.MessageField('VpnGatewayInfo', 43)
+  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 44)
 
 
 class StorageBucketInfo(_messages.Message):
@@ -4576,6 +4571,8 @@ class VpcFlowLogsConfig(_messages.Message):
   Enums:
     AggregationIntervalValueValuesEnum: Optional. The aggregation interval for
       the logs. Default value is INTERVAL_5_SEC.
+    ConnectionLoggingValueValuesEnum: Optional. Configures whether connection
+      logging is enabled for VPC Flow Logs.
     CrossProjectMetadataValueValuesEnum: Optional. Determines whether to
       include cross project annotations in the logs. This field is available
       only for organization configurations. If not specified in org configs
@@ -4597,6 +4594,8 @@ class VpcFlowLogsConfig(_messages.Message):
   Fields:
     aggregationInterval: Optional. The aggregation interval for the logs.
       Default value is INTERVAL_5_SEC.
+    connectionLogging: Optional. Configures whether connection logging is
+      enabled for VPC Flow Logs.
     createTime: Output only. The time the config was created.
     crossProjectMetadata: Optional. Determines whether to include cross
       project annotations in the logs. This field is available only for
@@ -4662,6 +4661,20 @@ class VpcFlowLogsConfig(_messages.Message):
     INTERVAL_5_MIN = 4
     INTERVAL_10_MIN = 5
     INTERVAL_15_MIN = 6
+
+  class ConnectionLoggingValueValuesEnum(_messages.Enum):
+    r"""Optional. Configures whether connection logging is enabled for VPC
+    Flow Logs.
+
+    Values:
+      CONNECTION_LOGGING_UNSPECIFIED: If not specified, will default to
+        CONNECTION_LOGGING_DISABLED.
+      CONNECTION_LOGGING_ENABLED: Include connection logs.
+      CONNECTION_LOGGING_DISABLED: Do not include connection logs.
+    """
+    CONNECTION_LOGGING_UNSPECIFIED = 0
+    CONNECTION_LOGGING_ENABLED = 1
+    CONNECTION_LOGGING_DISABLED = 2
 
   class CrossProjectMetadataValueValuesEnum(_messages.Enum):
     r"""Optional. Determines whether to include cross project annotations in
@@ -4752,22 +4765,23 @@ class VpcFlowLogsConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   aggregationInterval = _messages.EnumField('AggregationIntervalValueValuesEnum', 1)
-  createTime = _messages.StringField(2)
-  crossProjectMetadata = _messages.EnumField('CrossProjectMetadataValueValuesEnum', 3)
-  description = _messages.StringField(4)
-  filterExpr = _messages.StringField(5)
-  flowSampling = _messages.FloatField(6, variant=_messages.Variant.FLOAT)
-  interconnectAttachment = _messages.StringField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  metadata = _messages.EnumField('MetadataValueValuesEnum', 9)
-  metadataFields = _messages.StringField(10, repeated=True)
-  name = _messages.StringField(11)
-  network = _messages.StringField(12)
-  state = _messages.EnumField('StateValueValuesEnum', 13)
-  subnet = _messages.StringField(14)
-  targetResourceState = _messages.EnumField('TargetResourceStateValueValuesEnum', 15)
-  updateTime = _messages.StringField(16)
-  vpnTunnel = _messages.StringField(17)
+  connectionLogging = _messages.EnumField('ConnectionLoggingValueValuesEnum', 2)
+  createTime = _messages.StringField(3)
+  crossProjectMetadata = _messages.EnumField('CrossProjectMetadataValueValuesEnum', 4)
+  description = _messages.StringField(5)
+  filterExpr = _messages.StringField(6)
+  flowSampling = _messages.FloatField(7, variant=_messages.Variant.FLOAT)
+  interconnectAttachment = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  metadata = _messages.EnumField('MetadataValueValuesEnum', 10)
+  metadataFields = _messages.StringField(11, repeated=True)
+  name = _messages.StringField(12)
+  network = _messages.StringField(13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  subnet = _messages.StringField(15)
+  targetResourceState = _messages.EnumField('TargetResourceStateValueValuesEnum', 16)
+  updateTime = _messages.StringField(17)
+  vpnTunnel = _messages.StringField(18)
 
 
 class VpnGatewayInfo(_messages.Message):

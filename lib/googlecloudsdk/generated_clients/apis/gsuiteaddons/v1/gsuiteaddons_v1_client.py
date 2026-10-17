@@ -13,7 +13,7 @@ class GsuiteaddonsV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://gsuiteaddons.mtls.googleapis.com/'
 
   _PACKAGE = 'gsuiteaddons'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-platform.read-only']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'
@@ -300,5 +300,59 @@ class GsuiteaddonsV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='GsuiteaddonsProjectsGetAuthorizationRequest',
         response_type_name='GoogleCloudGsuiteaddonsV1Authorization',
+        supports_download=False,
+    )
+
+    def GetChatAppConfig(self, request, global_params=None):
+      r"""Gets a Chat app configuration.
+
+      Args:
+        request: (GsuiteaddonsProjectsGetChatAppConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudGsuiteaddonsV1ChatAppConfig) The response message.
+      """
+      config = self.GetMethodConfig('GetChatAppConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetChatAppConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/chatAppConfig',
+        http_method='GET',
+        method_id='gsuiteaddons.projects.getChatAppConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['view'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='GsuiteaddonsProjectsGetChatAppConfigRequest',
+        response_type_name='GoogleCloudGsuiteaddonsV1ChatAppConfig',
+        supports_download=False,
+    )
+
+    def UpdateChatAppConfig(self, request, global_params=None):
+      r"""Updates a Chat app configuration.
+
+      Args:
+        request: (GsuiteaddonsProjectsUpdateChatAppConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudGsuiteaddonsV1ChatAppConfig) The response message.
+      """
+      config = self.GetMethodConfig('UpdateChatAppConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateChatAppConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/chatAppConfig',
+        http_method='PATCH',
+        method_id='gsuiteaddons.projects.updateChatAppConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='googleCloudGsuiteaddonsV1ChatAppConfig',
+        request_type_name='GsuiteaddonsProjectsUpdateChatAppConfigRequest',
+        response_type_name='GoogleCloudGsuiteaddonsV1ChatAppConfig',
         supports_download=False,
     )

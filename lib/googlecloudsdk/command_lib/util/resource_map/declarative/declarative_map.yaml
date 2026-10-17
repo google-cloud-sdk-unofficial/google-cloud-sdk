@@ -3375,13 +3375,6 @@ gameservices:
     - v1
     - v1alpha
     - v1beta
-genomics:
-  projects:
-    supported_apis:
-    - v2alpha1
-  projects.operations:
-    supported_apis:
-    - v2alpha1
 gkebackup:
   projects:
     supported_apis:

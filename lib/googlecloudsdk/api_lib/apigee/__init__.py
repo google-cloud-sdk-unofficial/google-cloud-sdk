@@ -98,19 +98,23 @@ class APIsClient(base.BaseClient):
         body=bundle_file,
         body_mimetype="application/octet-stream",
         query_params=query_params,
+        location=base.ResolveLocation(identifiers),
     )
 
   @classmethod
-  def Deploy(cls, identifiers, override=False):
+  def Deploy(cls, identifiers, override=False, service_account=None):
     deployment_path = ["organization", "environment", "api", "revision"]
     query_params = {"override": "true"} if override else {}
+    if service_account:
+      query_params["serviceAccount"] = service_account
     try:
       return request.ResponseToApiRequest(
           identifiers,
           deployment_path,
           "deployment",
           method="POST",
-          query_params=query_params)
+          query_params=query_params,
+          location=base.ResolveLocation(identifiers))
 
     except errors.RequestError as error:
       # Rewrite error message to better describe what was attempted.
@@ -122,7 +126,8 @@ class APIsClient(base.BaseClient):
       return request.ResponseToApiRequest(
           identifiers, ["organization", "environment", "api", "revision"],
           "deployment",
-          method="DELETE")
+          method="DELETE",
+          location=base.ResolveLocation(identifiers))
     except errors.RequestError as error:
       # Rewrite error message to better describe what was attempted.
       raise error.RewrittenError("deployment", "undeploy")
@@ -269,8 +274,9 @@ class DeploymentsClient(object):
       entity_path.remove("revision")
 
     try:
-      response = request.ResponseToApiRequest(identifiers, entity_path,
-                                              "deployment")
+      response = request.ResponseToApiRequest(
+          identifiers, entity_path, "deployment",
+          location=base.ResolveLocation(identifiers))
     except errors.EntityNotFoundError:
       # If there were no matches, that's just an empty list of matches.
       response = []
@@ -313,7 +319,8 @@ class ProductsClient(base.FieldPagedListClient):
         identifiers, ["organization"],
         "product",
         method="POST",
-        body=json.dumps(product_dict))
+        body=json.dumps(product_dict),
+        location=base.ResolveLocation(identifiers))
 
   @classmethod
   def Update(cls, identifiers, product_info):
@@ -328,7 +335,8 @@ class ProductsClient(base.FieldPagedListClient):
     return request.ResponseToApiRequest(
         identifiers, ["organization", "product"],
         method="PUT",
-        body=json.dumps(product_dict))
+        body=json.dumps(product_dict),
+        location=base.ResolveLocation(identifiers))
 
 
 class ArchivesClient(base.TokenPagedListClient):
@@ -359,7 +367,8 @@ class ArchivesClient(base.TokenPagedListClient):
           identifiers,
           entity_path=cls._entity_path,
           method="PATCH",
-          body=json.dumps(labels))
+          body=json.dumps(labels),
+          location=base.ResolveLocation(identifiers))
     except errors.RequestError as error:
       raise error.RewrittenError("archive deployment", "update")
 
@@ -410,7 +419,8 @@ class ArchivesClient(base.TokenPagedListClient):
           identifiers,
           entity_path=cls._entity_path[:-1],
           entity_collection=cls._entity_path[-1],
-          method=":generateUploadUrl")
+          method=":generateUploadUrl",
+          location=base.ResolveLocation(identifiers))
     except errors.RequestError as error:
       raise error.RewrittenError("archive deployment", "get upload url for")
 
@@ -441,7 +451,8 @@ class ArchivesClient(base.TokenPagedListClient):
           cls._entity_path[:-1],
           cls._entity_path[-1],
           method="POST",
-          body=json.dumps(post_data))
+          body=json.dumps(post_data),
+          location=base.ResolveLocation(identifiers))
     except errors.RequestError as error:
       raise error.RewrittenError("archive deployment", "create")
 

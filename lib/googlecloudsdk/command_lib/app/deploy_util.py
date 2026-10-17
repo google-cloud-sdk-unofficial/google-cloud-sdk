@@ -39,8 +39,8 @@ from googlecloudsdk.api_lib.datastore import index_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.api_lib.tasks import app_deploy_migration_util
 from googlecloudsdk.api_lib.util import exceptions as core_api_exceptions
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.app import create_util
 from googlecloudsdk.command_lib.app import deployables
 from googlecloudsdk.command_lib.app import exceptions
@@ -510,8 +510,9 @@ def ArgsDeploy(parser):
       configuration files (such as app.yaml) in the current directory.""")
   parser.add_argument(
       '--stop-previous-version',
-      action=actions.StoreBooleanProperty(
-          properties.VALUES.app.stop_previous_version),
+      action=property_actions.StoreBooleanProperty(
+          properties.VALUES.app.stop_previous_version
+      ),
       help="""\
       Stop the previously running version when deploying a new version that
       receives all traffic.
@@ -520,7 +521,8 @@ def ArgsDeploy(parser):
       of an auto-scaled service in the App Engine Standard
       environment, using `--stop-previous-version` will not work
       and the previous version will continue to run because auto-scaled service
-      instances are always running.""")
+      instances are always running.""",
+  )
   parser.add_argument(
       '--image-url',
       help='(App Engine flexible environment only.) Deploy with a specific '
@@ -532,9 +534,11 @@ def ArgsDeploy(parser):
       'the one defined in the DEPLOYABLE.')
   parser.add_argument(
       '--promote',
-      action=actions.StoreBooleanProperty(
-          properties.VALUES.app.promote_by_default),
-      help='Promote the deployed version to receive all traffic.')
+      action=property_actions.StoreBooleanProperty(
+          properties.VALUES.app.promote_by_default
+      ),
+      help='Promote the deployed version to receive all traffic.',
+  )
   parser.add_argument(
       '--cache',
       action='store_true',

@@ -64,6 +64,7 @@ class Oracle(base.Command):
     cp_flags.AddSslServerOnlyConfigGroup(parser)
     cp_flags.AddRoleFlag(parser)
     oracle_flags.AddDatabaseServiceFlag(parser)
+    oracle_flags.AddOracleAsmFlags(parser)
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):

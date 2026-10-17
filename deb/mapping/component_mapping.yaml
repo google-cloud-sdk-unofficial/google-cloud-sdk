@@ -42,7 +42,7 @@ skaffold: google-cloud-cli-skaffold
 config-connector: google-cloud-cli-config-connector
 terraform-tools: google-cloud-cli-terraform-tools
 bundled-python3-unix: unavailable
-managed-flink-client: google-cloud-cli-managed-flink-client
+bundled-python3-alpine: unavailable
 spanner-cli: google-cloud-cli-spanner-cli
 sbom-extractor: google-cloud-cli-sbom-extractor
 gcloud-man-pages: unavailable

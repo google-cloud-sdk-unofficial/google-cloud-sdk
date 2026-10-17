@@ -15,8 +15,8 @@
 """utilities to define common arguments."""
 
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.resource_manager import completers as resource_manager_completers
 from googlecloudsdk.core import properties
 
@@ -60,5 +60,6 @@ the `--billing-project` flag or the `{billing_project}` property.
       category=base.COMMONLY_USED_FLAGS,
       suggestion_aliases=['--application'],
       completer=resource_manager_completers.ProjectCompleter,
-      action=actions.StoreProperty(properties.VALUES.core.project),
-      help=help_text)
+      action=property_actions.StoreProperty(properties.VALUES.core.project),
+      help=help_text,
+  )

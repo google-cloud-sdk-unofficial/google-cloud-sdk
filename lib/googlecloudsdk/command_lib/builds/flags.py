@@ -17,9 +17,9 @@
 
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.util import completers
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import properties
@@ -211,11 +211,14 @@ def AddTimeoutFlag(parser):
   """Add a timeout flag."""
   parser.add_argument(
       '--timeout',
-      help='Maximum time a build is run before it is failed as `TIMEOUT`. It '
-      'is specified as a duration; for example, "2h15m5s" is two hours, '
-      'fifteen minutes, and five seconds. If you don\'t specify a unit, '
-      'seconds is assumed. For example, "10" is 10 seconds.',
-      action=actions.StoreProperty(properties.VALUES.builds.timeout))
+      help=(
+          'Maximum time a build is run before it is failed as `TIMEOUT`. It '
+          'is specified as a duration; for example, "2h15m5s" is two hours, '
+          "fifteen minutes, and five seconds. If you don't specify a unit, "
+          'seconds is assumed. For example, "10" is 10 seconds.'
+      ),
+      action=property_actions.StoreProperty(properties.VALUES.builds.timeout),
+  )
 
 
 def AddPollingIntervalFlag(parser):

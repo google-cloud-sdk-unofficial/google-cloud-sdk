@@ -36,8 +36,8 @@ if not hasattr(properties, '_B_468088880_FIXED'):
     print('\nUpdate done!\n')
     sys.exit(0)
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.command_lib.util.args import common_args
 
 
@@ -60,7 +60,8 @@ class Gcloud(base.Group):
         metavar='ACCOUNT',
         category=base.COMMONLY_USED_FLAGS,
         help='Google Cloud user account to use for invocation.',
-        action=actions.StoreProperty(properties.VALUES.core.account))
+        action=property_actions.StoreProperty(properties.VALUES.core.account),
+    )
 
     parser.add_argument(
         '--universe-domain',
@@ -68,7 +69,10 @@ class Gcloud(base.Group):
         category=base.COMMONLY_USED_FLAGS,
         help='Universe domain to target.',
         hidden=True,
-        action=actions.StoreProperty(properties.VALUES.core.universe_domain))
+        action=property_actions.StoreProperty(
+            properties.VALUES.core.universe_domain
+        ),
+    )
 
     # Ideally this would be on the alpha group (since it's alpha) but there are
     # a bunch of problems with doing that. Global flags are treated differently
@@ -114,8 +118,10 @@ class Gcloud(base.Group):
         ``SERVICE_ACCOUNT_1'' is the impersonated service
         account and ``SERVICE_ACCOUNT_2'' is the delegate.
         """,
-        action=actions.StoreProperty(
-            properties.VALUES.auth.impersonate_service_account))
+        action=property_actions.StoreProperty(
+            properties.VALUES.auth.impersonate_service_account
+        ),
+    )
     parser.add_argument(
         '--access-token-file',
         metavar='ACCESS_TOKEN_FILE',
@@ -125,7 +131,10 @@ class Gcloud(base.Group):
         the active account (if exists) will be ignored. The file should
         only contain an access token with no other information.
         """,
-        action=actions.StoreProperty(properties.VALUES.auth.access_token_file))
+        action=property_actions.StoreProperty(
+            properties.VALUES.auth.access_token_file
+        ),
+    )
     common_args.ProjectArgument().AddToParser(parser)
     parser.add_argument(
         '--billing-project',
@@ -141,8 +150,10 @@ class Gcloud(base.Group):
              Run `$ gcloud config set --help` to see more information about
              `billing/quota_project`.
              """,
-        action=actions.StoreProperty(
-            properties.VALUES.billing.quota_project))
+        action=property_actions.StoreProperty(
+            properties.VALUES.billing.quota_project
+        ),
+    )
     # Must have a None default so properties are not always overridden when the
     # arg is not provided.
     parser.add_argument(
@@ -150,8 +161,9 @@ class Gcloud(base.Group):
         '-q',
         default=None,
         category=base.COMMONLY_USED_FLAGS,
-        action=actions.StoreConstProperty(
-            properties.VALUES.core.disable_prompts, True),
+        action=property_actions.StoreConstProperty(
+            properties.VALUES.core.disable_prompts, True
+        ),
         help="""\
         Disable all interactive prompts when running `gcloud` commands. If input
         is required, defaults will be used, or an error will be raised.
@@ -159,12 +171,18 @@ class Gcloud(base.Group):
         Overrides the default core/disable_prompts property value for this
         command invocation. This is equivalent to setting the environment
         variable `CLOUDSDK_CORE_DISABLE_PROMPTS` to 1.
-        """)
+        """,
+    )
 
     trace_group = parser.add_mutually_exclusive_group()
     trace_group.add_argument(
         '--trace-token',
         default=None,
-        action=actions.StoreProperty(properties.VALUES.core.trace_token),
-        help='Token used to route traces of service requests for investigation'
-        ' of issues.')
+        action=property_actions.StoreProperty(
+            properties.VALUES.core.trace_token
+        ),
+        help=(
+            'Token used to route traces of service requests for investigation'
+            ' of issues.'
+        ),
+    )

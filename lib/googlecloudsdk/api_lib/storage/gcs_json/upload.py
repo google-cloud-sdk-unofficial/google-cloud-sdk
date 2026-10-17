@@ -21,6 +21,7 @@ import json
 import re
 
 from apitools.base.py import encoding_helper
+from apitools.base.py import stream_slice
 from apitools.base.py import transfer
 from googlecloudsdk.api_lib.storage import errors
 from googlecloudsdk.api_lib.storage import retry_util
@@ -40,9 +41,12 @@ import six
 class FinalHeadersTransportWrapper(object):
   """Wraps an http client to inject headers in the final resumable upload request."""
 
-  def __init__(self, http_client, final_headers_callback):
+  def __init__(
+      self, http_client, final_headers_callback, source_stream=None
+  ):
     self._http_client = http_client
     self._final_headers_callback = final_headers_callback
+    self._source_stream = source_stream
 
     def request(uri, method='GET', body=None, headers=None, **kwargs):
       headers = headers or {}
@@ -54,9 +58,24 @@ class FinalHeadersTransportWrapper(object):
         if match:
           end, total = map(int, match.groups())
           if end + 1 == total:
-            if hasattr(body, 'read'):
-              body = body.read()
-            extra_headers = self._final_headers_callback()
+            if isinstance(body, stream_slice.StreamSlice):
+              underlying_stream = self._source_stream or getattr(
+                  body, '_StreamSlice__stream', None
+              )
+              slice_length = len(body)
+              start_pos = underlying_stream.tell()
+              # UploadStream.seek() catches up the checksum digesters (without
+              # firing progress_callback) so _final_headers_callback() can read
+              # the final hash. Seeking back to start_pos restores the digester
+              # checkpoint in O(1) so the stream can be sent over HTTP.
+              underlying_stream.seek(start_pos + slice_length)
+              extra_headers = self._final_headers_callback()
+              underlying_stream.seek(start_pos)
+              body = stream_slice.StreamSlice(underlying_stream, slice_length)
+            else:
+              # For streaming uploads/gzipped uploads the data is already in
+              # memory(bytes), hence no need to pre-read.
+              extra_headers = self._final_headers_callback()
             if extra_headers:
               headers = headers.copy()
               headers.update(extra_headers)
@@ -284,7 +303,9 @@ class _BaseRecoverableUpload(_Upload):
     self._apitools_upload = self._get_upload()
     if self._final_headers_callback:
       self._apitools_upload.bytes_http = FinalHeadersTransportWrapper(
-          self._http_client, self._final_headers_callback
+          self._http_client,
+          self._final_headers_callback,
+          source_stream=self._source_stream,
       )
     else:
       self._apitools_upload.bytes_http = self._http_client
@@ -383,10 +404,8 @@ class ResumableUpload(_BaseRecoverableUpload):
 
   def _call_appropriate_apitools_upload_strategy(self):
     """Calls StreamMedia, or StreamInChunks when the final size is unknown."""
-    if self._should_gzip_in_flight or self._final_headers_callback:
+    if self._should_gzip_in_flight:
       # We do not know the final size of the file, so we must use chunks.
-      # Or we need to inject final headers, so we chunk to avoid loading the
-      # entire file into memory at once.
       return self._apitools_upload.StreamInChunks()
     else:
       # We know the size of the file, so use a strategy that requires fewer

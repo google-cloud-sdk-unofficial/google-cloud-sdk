@@ -230,6 +230,24 @@ class CloudDataLineageIntegration(_messages.Message):
   enabled = _messages.BooleanField(1)
 
 
+class ComponentBoundary(_messages.Message):
+  r"""Resource boundaries for a single workload component.
+
+  Fields:
+    count: Allowed count boundaries.
+    cpu: Allowed CPU boundaries (vCPU).
+    memoryCpuRatio: Memory to CPU ratio constraint.
+    memoryGb: Allowed memory boundaries (GB).
+    storageGb: Allowed storage boundaries (GB).
+  """
+
+  count = _messages.MessageField('IntegerConstraint', 1)
+  cpu = _messages.MessageField('NumericConstraint', 2)
+  memoryCpuRatio = _messages.MessageField('RatioConstraint', 3)
+  memoryGb = _messages.MessageField('NumericConstraint', 4)
+  storageGb = _messages.MessageField('NumericConstraint', 5)
+
+
 class ComposerProjectsLocationsEnvironmentsCheckUpgradeRequest(_messages.Message):
   r"""A ComposerProjectsLocationsEnvironmentsCheckUpgradeRequest object.
 
@@ -473,6 +491,45 @@ class ComposerProjectsLocationsEnvironmentsExecuteAirflowCommandRequest(_message
 
   environment = _messages.StringField(1, required=True)
   executeAirflowCommandRequest = _messages.MessageField('ExecuteAirflowCommandRequest', 2)
+
+
+class ComposerProjectsLocationsEnvironmentsFetchCapabilitiesRequest(_messages.Message):
+  r"""A ComposerProjectsLocationsEnvironmentsFetchCapabilitiesRequest object.
+
+  Enums:
+    ModeValueValuesEnum: Optional. Selected environment mode. Defaults to
+      Environment.Mode.MODE_UNSPECIFIED.
+
+  Fields:
+    imageVersion: Optional. The image version for which capabilities are
+      requested (e.g., "composer-3-airflow-2.10.2",
+      "composer-3-airflow-3.0.0-build.0"). If not specified, the system
+      resolves capabilities for the latest default image version.
+    mode: Optional. Selected environment mode. Defaults to
+      Environment.Mode.MODE_UNSPECIFIED.
+    parent: Required. The parent location resource name in the form:
+      "projects/{project}/locations/{location}".
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Selected environment mode. Defaults to
+    Environment.Mode.MODE_UNSPECIFIED.
+
+    Values:
+      MODE_UNSPECIFIED: Represents the default mode, which allows full
+        customization of the environment. It should be used for all production
+        and customized test environments.
+      DEVELOPMENT: Represents the development mode, which has constraints on
+        the environment configuration, but offers an additional feature
+        (environment hibernation). It should be used only for test
+        environments.
+    """
+    MODE_UNSPECIFIED = 0
+    DEVELOPMENT = 1
+
+  imageVersion = _messages.StringField(1)
+  mode = _messages.EnumField('ModeValueValuesEnum', 2)
+  parent = _messages.StringField(3, required=True)
 
 
 class ComposerProjectsLocationsEnvironmentsFetchDatabasePropertiesRequest(_messages.Message):
@@ -1428,6 +1485,7 @@ class Environment(_messages.Message):
       "projects/{projectId}/locations/{locationId}/environments/{environmentId
       }" EnvironmentId must start with a lowercase letter followed by up to 63
       lowercase letters, numbers, or hyphens, and cannot end with a hyphen.
+    operationSettings: Optional. Settings for operations.
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
     state: The current state of the environment.
@@ -1512,12 +1570,13 @@ class Environment(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 3)
   mode = _messages.EnumField('ModeValueValuesEnum', 4)
   name = _messages.StringField(5)
-  satisfiesPzi = _messages.BooleanField(6)
-  satisfiesPzs = _messages.BooleanField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  storageConfig = _messages.MessageField('StorageConfig', 9)
-  updateTime = _messages.StringField(10)
-  uuid = _messages.StringField(11)
+  operationSettings = _messages.MessageField('OperationSettings', 6)
+  satisfiesPzi = _messages.BooleanField(7)
+  satisfiesPzs = _messages.BooleanField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  storageConfig = _messages.MessageField('StorageConfig', 10)
+  updateTime = _messages.StringField(11)
+  uuid = _messages.StringField(12)
 
 
 class EnvironmentConfig(_messages.Message):
@@ -1587,6 +1646,11 @@ class EnvironmentConfig(_messages.Message):
       versions composer-2.2.0-airflow-*.*.* and newer.
     softwareConfig: Optional. The configuration settings for software inside
       the environment.
+    userWorkloadsConfig: Optional. The configuration for the user workloads
+      (Kubernetes pods started using KubernetesPodOperator) running in the
+      composer-user-workloads namespace. This field is supported for Cloud
+      Composer environments in versions `composer-3.*.*-airflow-*.*.*` and
+      newer.
     webServerConfig: Optional. The configuration settings for the Airflow web
       server App Engine instance. This field is supported for Cloud Composer
       environments in versions composer-1.*.*-airflow-*.*.*.
@@ -1648,9 +1712,10 @@ class EnvironmentConfig(_messages.Message):
   recoveryConfig = _messages.MessageField('RecoveryConfig', 14)
   resilienceMode = _messages.EnumField('ResilienceModeValueValuesEnum', 15)
   softwareConfig = _messages.MessageField('SoftwareConfig', 16)
-  webServerConfig = _messages.MessageField('WebServerConfig', 17)
-  webServerNetworkAccessControl = _messages.MessageField('WebServerNetworkAccessControl', 18)
-  workloadsConfig = _messages.MessageField('WorkloadsConfig', 19)
+  userWorkloadsConfig = _messages.MessageField('UserWorkloadsConfig', 17)
+  webServerConfig = _messages.MessageField('WebServerConfig', 18)
+  webServerNetworkAccessControl = _messages.MessageField('WebServerNetworkAccessControl', 19)
+  workloadsConfig = _messages.MessageField('WorkloadsConfig', 20)
 
 
 class ExecuteAirflowCommandRequest(_messages.Message):
@@ -1696,6 +1761,48 @@ class ExitInfo(_messages.Message):
 
   error = _messages.StringField(1)
   exitCode = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class FetchCapabilitiesResponse(_messages.Message):
+  r"""Response containing environment capabilities.
+
+  Enums:
+    DefaultResilienceModeValueValuesEnum: The default resilience mode
+      recommended for this environment.
+    SupportedResilienceModesValueListEntryValuesEnum:
+
+  Fields:
+    defaultResilienceMode: The default resilience mode recommended for this
+      environment.
+    supportedResilienceModes: Supported resilience modes for the environment.
+    workloadCapability: Workload capability specifications and sizing rules.
+  """
+
+  class DefaultResilienceModeValueValuesEnum(_messages.Enum):
+    r"""The default resilience mode recommended for this environment.
+
+    Values:
+      RESILIENCE_MODE_UNSPECIFIED: Default mode doesn't change environment
+        parameters.
+      HIGH_RESILIENCE: Enabled High Resilience mode, including Cloud SQL HA.
+    """
+    RESILIENCE_MODE_UNSPECIFIED = 0
+    HIGH_RESILIENCE = 1
+
+  class SupportedResilienceModesValueListEntryValuesEnum(_messages.Enum):
+    r"""SupportedResilienceModesValueListEntryValuesEnum enum type.
+
+    Values:
+      RESILIENCE_MODE_UNSPECIFIED: Default mode doesn't change environment
+        parameters.
+      HIGH_RESILIENCE: Enabled High Resilience mode, including Cloud SQL HA.
+    """
+    RESILIENCE_MODE_UNSPECIFIED = 0
+    HIGH_RESILIENCE = 1
+
+  defaultResilienceMode = _messages.EnumField('DefaultResilienceModeValueValuesEnum', 1)
+  supportedResilienceModes = _messages.EnumField('SupportedResilienceModesValueListEntryValuesEnum', 2, repeated=True)
+  workloadCapability = _messages.MessageField('WorkloadCapability', 3)
 
 
 class FetchDatabasePropertiesResponse(_messages.Message):
@@ -1813,6 +1920,20 @@ class ImageVersion(_messages.Message):
   upgradeDisabled = _messages.BooleanField(6)
 
 
+class ImageVersionRollbackTarget(_messages.Message):
+  r"""The image version an environment can be rolled back to.
+
+  Fields:
+    imageVersion: Output only. The image version the environment can be rolled
+      back to.
+    lastActiveTime: Output only. The last time when the environment was
+      running this image version.
+  """
+
+  imageVersion = _messages.StringField(1)
+  lastActiveTime = _messages.StringField(2)
+
+
 class ImportError(_messages.Message):
   r"""DAG import error details.
 
@@ -1826,6 +1947,25 @@ class ImportError(_messages.Message):
   creationTime = _messages.StringField(1)
   filename = _messages.StringField(2)
   stackTrace = _messages.StringField(3)
+
+
+class IntegerConstraint(_messages.Message):
+  r"""Sizing constraint and UI slider specification for integer values.
+
+  Fields:
+    allowedDiscreteValues: Discrete allowed options when constrained to
+      specific increments.
+    max: Maximum allowed value (inclusive).
+    min: Minimum allowed value (inclusive).
+    step: Step increment (defaults to 1).
+    suggestedValues: Suggested values for UI autosuggestions.
+  """
+
+  allowedDiscreteValues = _messages.IntegerField(1, repeated=True, variant=_messages.Variant.INT32)
+  max = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  min = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  step = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  suggestedValues = _messages.IntegerField(5, repeated=True, variant=_messages.Variant.INT32)
 
 
 class Line(_messages.Message):
@@ -2274,6 +2414,25 @@ class NodeConfig(_messages.Message):
   trafficRoutingConfig = _messages.MessageField('TrafficRoutingConfig', 14)
 
 
+class NumericConstraint(_messages.Message):
+  r"""Sizing constraint and UI slider specification for continuous values.
+
+  Fields:
+    allowedDiscreteValues: Discrete allowed options when constrained to
+      specific increments.
+    max: Maximum allowed value (inclusive).
+    min: Minimum allowed value (inclusive).
+    step: Granularity step increment for continuous sliders (e.g. 0.5).
+    suggestedValues: Suggested values for UI autosuggestions.
+  """
+
+  allowedDiscreteValues = _messages.FloatField(1, repeated=True)
+  max = _messages.FloatField(2)
+  min = _messages.FloatField(3)
+  step = _messages.FloatField(4)
+  suggestedValues = _messages.FloatField(5, repeated=True)
+
+
 class Operation(_messages.Message):
   r"""This resource represents a long-running operation that is the result of
   a network API call.
@@ -2455,6 +2614,36 @@ class OperationMetadata(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 6)
 
 
+class OperationSettings(_messages.Message):
+  r"""Settings for operations.
+
+  Enums:
+    StrategyValueValuesEnum: Optional. Strategy for operations.
+
+  Fields:
+    strategy: Optional. Strategy for operations.
+  """
+
+  class StrategyValueValuesEnum(_messages.Enum):
+    r"""Optional. Strategy for operations.
+
+    Values:
+      STRATEGY_UNSPECIFIED: Default strategy. Has the same behavior as
+        STANDARD.
+      STANDARD: Non graceful update operations.
+      GRACEFUL: Graceful for supported operations. Validation will fail for
+        unsupported operations.
+      GRACEFUL_WHEN_SUPPORTED: Graceful for supported operations. Will fall
+        back to non graceful for unsupported operations.
+    """
+    STRATEGY_UNSPECIFIED = 0
+    STANDARD = 1
+    GRACEFUL = 2
+    GRACEFUL_WHEN_SUPPORTED = 3
+
+  strategy = _messages.EnumField('StrategyValueValuesEnum', 1)
+
+
 class PauseDagRequest(_messages.Message):
   r"""Request to pause a DAG."""
 
@@ -2598,6 +2787,24 @@ class PrivateEnvironmentConfig(_messages.Message):
   privateClusterConfig = _messages.MessageField('PrivateClusterConfig', 10)
   webServerIpv4CidrBlock = _messages.StringField(11)
   webServerIpv4ReservedRange = _messages.StringField(12)
+
+
+class RatioConstraint(_messages.Message):
+  r"""Ratio constraint between two dependent quantities.
+
+  Fields:
+    defaultRatio: Recommended default ratio.
+    discreteRatios: Optional strict allowlist of discrete memory-to-CPU ratios
+      (e.g. [2.0, 4.0, 8.0] for C3). When populated, selection is restricted
+      strictly to these ratios.
+    maxRatio: Maximum allowed ratio (inclusive).
+    minRatio: Minimum allowed ratio (inclusive).
+  """
+
+  defaultRatio = _messages.FloatField(1)
+  discreteRatios = _messages.FloatField(2, repeated=True)
+  maxRatio = _messages.FloatField(3)
+  minRatio = _messages.FloatField(4)
 
 
 class RecoveryConfig(_messages.Message):
@@ -2777,6 +2984,11 @@ class SoftwareConfig(_messages.Message):
       list](/composer/docs/concepts/versioning/composer-versions) and
       [versioning overview](/composer/docs/concepts/versioning/composer-
       versioning-overview).
+    imageVersionRollbackTargets: Output only. The list of image versions the
+      environment can be rolled back to, sorted by last_active_time in
+      descending order (most recent first). This field is supported for Cloud
+      Composer environments in versions composer-3-airflow-*.*.*-build.* and
+      newer.
     pypiPackages: Optional. Custom Python Package Index (PyPI) packages to be
       installed in the environment. Keys refer to the lowercase package name
       such as "numpy" and values are the lowercase extras and version
@@ -2937,10 +3149,11 @@ class SoftwareConfig(_messages.Message):
   cloudDataLineageIntegration = _messages.MessageField('CloudDataLineageIntegration', 4)
   envVariables = _messages.MessageField('EnvVariablesValue', 5)
   imageVersion = _messages.StringField(6)
-  pypiPackages = _messages.MessageField('PypiPackagesValue', 7)
-  pythonVersion = _messages.StringField(8)
-  schedulerCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 10)
+  imageVersionRollbackTargets = _messages.MessageField('ImageVersionRollbackTarget', 7, repeated=True)
+  pypiPackages = _messages.MessageField('PypiPackagesValue', 8)
+  pythonVersion = _messages.StringField(9)
+  schedulerCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 11)
 
 
 class SourceCode(_messages.Message):
@@ -3431,6 +3644,20 @@ class TriggererResource(_messages.Message):
   memoryGb = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
 
 
+class UserWorkloadsConfig(_messages.Message):
+  r"""Configuration for user workloads in a Composer environment.
+
+  Fields:
+    serviceAccounts: Optional. A list of service accounts used by user
+      workloads. Currently, only KubernetesPodOperator workloads support usage
+      of custom service accounts different from the environment service
+      account. There is a limit of 100 user workloads service accounts per
+      Composer environment. Only used in Composer 3.
+  """
+
+  serviceAccounts = _messages.MessageField('UserWorkloadsServiceAccount', 1, repeated=True)
+
+
 class UserWorkloadsConfigMap(_messages.Message):
   r"""User workloads ConfigMap used by Airflow tasks that run with Kubernetes
   executor or KubernetesPodOperator.
@@ -3545,6 +3772,21 @@ class UserWorkloadsSecret(_messages.Message):
   type = _messages.StringField(3)
 
 
+class UserWorkloadsServiceAccount(_messages.Message):
+  r"""Describes a Kubernetes Service Account and its corresponding Google
+  Service Account.
+
+  Fields:
+    googleServiceAccount: Required. The email address of the Google Service
+      Account that will be used by the Kubernetes Service Account.
+    kubernetesServiceAccount: Required. The name of the Kubernetes Service
+      Account to be created in the Kubernetes cluster.
+  """
+
+  googleServiceAccount = _messages.StringField(1)
+  kubernetesServiceAccount = _messages.StringField(2)
+
+
 class WebServerConfig(_messages.Message):
   r"""The configuration settings for the Airflow web server App Engine
   instance. Supported for Cloud Composer environments in versions
@@ -3590,6 +3832,26 @@ class WebServerResource(_messages.Message):
   storageGb = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
 
 
+class WorkerBoundary(_messages.Message):
+  r"""Resource boundaries for worker workloads.
+
+  Fields:
+    cpu: Allowed CPU boundaries (vCPU).
+    maxCountBounds: Allowed bounds for worker max_count.
+    memoryCpuRatio: Memory to CPU ratio constraint.
+    memoryGb: Allowed memory boundaries (GB).
+    minCountBounds: Allowed bounds for worker min_count.
+    storageGb: Allowed storage boundaries (GB).
+  """
+
+  cpu = _messages.MessageField('NumericConstraint', 1)
+  maxCountBounds = _messages.MessageField('IntegerConstraint', 2)
+  memoryCpuRatio = _messages.MessageField('RatioConstraint', 3)
+  memoryGb = _messages.MessageField('NumericConstraint', 4)
+  minCountBounds = _messages.MessageField('IntegerConstraint', 5)
+  storageGb = _messages.MessageField('NumericConstraint', 6)
+
+
 class WorkerResource(_messages.Message):
   r"""Configuration for resources used by Airflow workers.
 
@@ -3608,6 +3870,17 @@ class WorkerResource(_messages.Message):
   memoryGb = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
   minCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   storageGb = _messages.FloatField(5, variant=_messages.Variant.FLOAT)
+
+
+class WorkloadCapability(_messages.Message):
+  r"""Capabilities and sizing rules for environment workloads.
+
+  Fields:
+    presetGroups: Workload configuration preset groups, organized by
+      resilience mode.
+  """
+
+  presetGroups = _messages.MessageField('WorkloadsPresetGroup', 1, repeated=True)
 
 
 class WorkloadsConfig(_messages.Message):
@@ -3630,6 +3903,95 @@ class WorkloadsConfig(_messages.Message):
   triggerer = _messages.MessageField('TriggererResource', 3)
   webServer = _messages.MessageField('WebServerResource', 4)
   worker = _messages.MessageField('WorkerResource', 5)
+
+
+class WorkloadsConfigPreset(_messages.Message):
+  r"""Workload configuration preset for a specific environment size.
+
+  Enums:
+    EnvironmentSizeValueValuesEnum: The environment size identifier for this
+      preset.
+
+  Fields:
+    environmentSize: The environment size identifier for this preset.
+    id: Unique identifier for this preset (e.g. "SMALL", "MEDIUM", "LARGE",
+      "EXTRA_LARGE").
+    workloadsConfig: Workload resource configuration for this preset.
+  """
+
+  class EnvironmentSizeValueValuesEnum(_messages.Enum):
+    r"""The environment size identifier for this preset.
+
+    Values:
+      ENVIRONMENT_SIZE_UNSPECIFIED: The size of the environment is
+        unspecified.
+      ENVIRONMENT_SIZE_SMALL: The environment size is small.
+      ENVIRONMENT_SIZE_MEDIUM: The environment size is medium.
+      ENVIRONMENT_SIZE_LARGE: The environment size is large.
+      ENVIRONMENT_SIZE_EXTRA_LARGE: The environment size is extra large.
+    """
+    ENVIRONMENT_SIZE_UNSPECIFIED = 0
+    ENVIRONMENT_SIZE_SMALL = 1
+    ENVIRONMENT_SIZE_MEDIUM = 2
+    ENVIRONMENT_SIZE_LARGE = 3
+    ENVIRONMENT_SIZE_EXTRA_LARGE = 4
+
+  environmentSize = _messages.EnumField('EnvironmentSizeValueValuesEnum', 1)
+  id = _messages.StringField(2)
+  workloadsConfig = _messages.MessageField('WorkloadsConfig', 3)
+
+
+class WorkloadsPresetGroup(_messages.Message):
+  r"""Workload configuration presets and validation rules for a specific
+  resilience mode.
+
+  Enums:
+    ResilienceModeValueValuesEnum: Resilience mode for this preset group.
+
+  Fields:
+    defaultPresetId: The default preset ID recommended for this resilience
+      mode.
+    presets: Available presets for this resilience mode.
+    resilienceMode: Resilience mode for this preset group.
+    validationRule: Resource validation min/max boundaries for custom
+      configurations.
+  """
+
+  class ResilienceModeValueValuesEnum(_messages.Enum):
+    r"""Resilience mode for this preset group.
+
+    Values:
+      RESILIENCE_MODE_UNSPECIFIED: Default mode doesn't change environment
+        parameters.
+      HIGH_RESILIENCE: Enabled High Resilience mode, including Cloud SQL HA.
+    """
+    RESILIENCE_MODE_UNSPECIFIED = 0
+    HIGH_RESILIENCE = 1
+
+  defaultPresetId = _messages.StringField(1)
+  presets = _messages.MessageField('WorkloadsConfigPreset', 2, repeated=True)
+  resilienceMode = _messages.EnumField('ResilienceModeValueValuesEnum', 3)
+  validationRule = _messages.MessageField('WorkloadsValidationRules', 4)
+
+
+class WorkloadsValidationRules(_messages.Message):
+  r"""Resource validation boundaries and slider constraints for environment
+  workloads.
+
+  Fields:
+    dagProcessor: DAG processor resource validation rules (Composer 3 and
+      Airflow >= 2.10+ / 3+).
+    scheduler: Scheduler resource validation rules.
+    triggerer: Triggerer resource validation rules.
+    webServer: Web server resource validation rules.
+    worker: Worker resource validation rules.
+  """
+
+  dagProcessor = _messages.MessageField('ComponentBoundary', 1)
+  scheduler = _messages.MessageField('ComponentBoundary', 2)
+  triggerer = _messages.MessageField('ComponentBoundary', 3)
+  webServer = _messages.MessageField('ComponentBoundary', 4)
+  worker = _messages.MessageField('WorkerBoundary', 5)
 
 
 encoding.AddCustomJsonFieldMapping(

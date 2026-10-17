@@ -132,6 +132,7 @@ def _CommonArgs(
     support_expose_host_topology=False,
     include_kms_key_service_account=False,
     support_external_ip_tier=False,
+    support_protection_tier=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -211,6 +212,8 @@ def _CommonArgs(
   instances_flags.AddNestedVirtualizationArgs(parser)
   if support_expose_host_topology:
     instances_flags.AddExposeHostTopologyArg(parser)
+  if support_protection_tier:
+    instances_flags.AddProtectionTierArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
   instances_flags.AddEnableUefiNetworkingArgs(parser)
   instances_flags.AddResourceManagerTagsArgs(parser)
@@ -381,6 +384,11 @@ class Create(base.CreateCommand):
   _support_current_memory = False
 
   @classmethod
+  def _SupportProtectionTier(cls):
+    """Returns whether the --protection-tier flag is supported."""
+    return cls.ReleaseTrack() == base.ReleaseTrack.PREVIEW
+
+  @classmethod
   def Args(cls, parser):
     _CommonArgs(
         parser,
@@ -418,6 +426,7 @@ class Create(base.CreateCommand):
         support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
         support_expose_host_topology=cls._support_expose_host_topology,
         support_external_ip_tier=cls._support_external_ip_tier,
+        support_protection_tier=cls._SupportProtectionTier(),
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -503,6 +512,7 @@ class Create(base.CreateCommand):
             self, '_support_latency_tolerant', False
         ),
         support_current_memory=getattr(self, '_support_current_memory', False),
+        support_protection_tier=self._SupportProtectionTier(),
     )
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)

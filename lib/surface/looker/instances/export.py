@@ -21,6 +21,8 @@ from googlecloudsdk.command_lib.looker import flags
 from googlecloudsdk.core import log
 
 
+@base.RegionalEndpointsSupported
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Export(base.Command):
   """Export a Looker instance.

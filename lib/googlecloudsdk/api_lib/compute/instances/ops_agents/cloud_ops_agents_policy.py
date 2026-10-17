@@ -174,25 +174,6 @@ def CreateAgentsRule(
   )
 
 
-def GetAgentsRuleFromDescription(
-    description: Optional[str],
-) -> Optional[OpsAgentsPolicy.AgentsRule]:
-  """Returns an agents rule from a OSPolicy description."""
-  if description is None:
-    return None
-  description_parts = description.split(' | ', maxsplit=1)
-  if len(description_parts) < 2:
-    return None
-  try:
-    agents_rule_json = json.loads(description_parts[1])
-  except json.JSONDecodeError:
-    return None
-  try:
-    return CreateAgentsRule(agents_rule_json)
-  except exceptions.PolicyValidationError:
-    return None
-
-
 def CreateOpsAgentsPolicy(
     policy_id: str,
     ops_agents_policy: Mapping[str, Any],

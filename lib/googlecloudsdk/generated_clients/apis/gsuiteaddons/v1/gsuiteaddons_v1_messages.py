@@ -755,6 +755,90 @@ class GoogleCloudGsuiteaddonsV1AddOns(_messages.Message):
   slides = _messages.MessageField('GoogleAppsScriptTypeSlidesSlidesAddOnManifest', 9)
 
 
+class GoogleCloudGsuiteaddonsV1AppCommand(_messages.Message):
+  r"""Configuration for an App Command.
+
+  Enums:
+    CommandTypeValueValuesEnum: Required. The type of this command.
+
+  Fields:
+    command: Optional. The name of the command. Required for SLASH_COMMAND, do
+      not set for other command types. Must start with a "/", e.g.,
+      "/command".
+    commandId: Required. The ID of the command (1-1000). Must be unique within
+      the app.
+    commandType: Required. The type of this command.
+    description: Required. A short description of the command.
+    dialogEnabled: Optional. Whether this command should trigger a dialog.
+      Defaults to false if not specified.
+    displayName: Optional. The user-friendly display name of the command.
+      Required for MESSAGE_ACTION and QUICK_COMMAND, do not set for
+      SLASH_COMMAND.
+    loadingNotificationMessage: Optional. A notification to be sent to the
+      user when they trigger the message action. Only supported for
+      MESSAGE_ACTION commands.
+  """
+
+  class CommandTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of this command.
+
+    Values:
+      COMMAND_TYPE_UNSPECIFIED: Default value. Unspecified.
+      SLASH_COMMAND: A command invoked by typing a '/' followed by the command
+        name. It may accept additional arguments in the message text.
+      QUICK_COMMAND: A quick command invoked from the message compose context
+        menu. Quick commands do not accept additional arguments.
+      MESSAGE_ACTION: A command invoked from a message context menu.
+    """
+    COMMAND_TYPE_UNSPECIFIED = 0
+    SLASH_COMMAND = 1
+    QUICK_COMMAND = 2
+    MESSAGE_ACTION = 3
+
+  command = _messages.StringField(1)
+  commandId = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  commandType = _messages.EnumField('CommandTypeValueValuesEnum', 3)
+  description = _messages.StringField(4)
+  dialogEnabled = _messages.BooleanField(5)
+  displayName = _messages.StringField(6)
+  loadingNotificationMessage = _messages.StringField(7)
+
+
+class GoogleCloudGsuiteaddonsV1AppsScriptEndpointConfig(_messages.Message):
+  r"""Apps Script endpoint configuration.
+
+  Fields:
+    deploymentId: Required. The Apps Script deployment ID.
+    perEventEndpointConfig: Optional. Function names for specific event types.
+      If not specified, the default function name will be used.
+  """
+
+  deploymentId = _messages.StringField(1)
+  perEventEndpointConfig = _messages.MessageField('GoogleCloudGsuiteaddonsV1AppsScriptPerEventEndpointConfig', 2)
+
+
+class GoogleCloudGsuiteaddonsV1AppsScriptPerEventEndpointConfig(_messages.Message):
+  r"""Apps Script endpoint configuration for specific event types.
+
+  Fields:
+    addedToSpaceEndpoint: Optional. Optional. Function name for added to space
+      events. If not specified, the default `onAddedToSpace` function name
+      will be used.
+    appCommandEndpoint: Optional. Function name for app command events. If not
+      specified, the default `onAppCommand` function name will be used.
+    messageEndpoint: Optional. Function name for message events. If not
+      specified, the default `onMessage` function name will be used.
+    removedFromSpaceEndpoint: Optional. Optional. Function name for removed
+      from space events. If not specified, the default `onRemovedFromSpace`
+      function name will be used.
+  """
+
+  addedToSpaceEndpoint = _messages.StringField(1)
+  appCommandEndpoint = _messages.StringField(2)
+  messageEndpoint = _messages.StringField(3)
+  removedFromSpaceEndpoint = _messages.StringField(4)
+
+
 class GoogleCloudGsuiteaddonsV1Authorization(_messages.Message):
   r"""The authorization information used when invoking deployment endpoints.
 
@@ -770,6 +854,89 @@ class GoogleCloudGsuiteaddonsV1Authorization(_messages.Message):
   name = _messages.StringField(1)
   oauthClientId = _messages.StringField(2)
   serviceAccountEmail = _messages.StringField(3)
+
+
+class GoogleCloudGsuiteaddonsV1ChatAppConfig(_messages.Message):
+  r"""Represents the configuration of a Google Chat app. Format:
+  `projects/{project}/chatAppConfig`
+
+  Enums:
+    StateValueValuesEnum: Optional. Optional. The state of the app, default to
+      ACTIVE if not specified.
+
+  Fields:
+    avatarUri: Optional. The URL for the app's avatar image. Must be an HTTPS
+      URL that hosts a square (aspect ratio of 1:1) PNG image. Recommended
+      minimum size: 256 by 256 pixels. A default app avatar will be used if
+      not specified.
+    description: Optional. A short description of the Chat app. Should be
+      between 1 and 40 characters. A default description will be used if not
+      specified.
+    displayName: Required. The display name of the Chat app. Length should be
+      between 3 and 25 characters.
+    errorLoggingEnabled: Optional. Whether to log errors to Cloud Logging.
+      Defaults to false if not specified.
+    interactiveFeatureConfig: Optional. The settings for interactive features
+      of the app. If this is not provided, the app will be non-interactive,
+      meaning that it can use the Chat API, but users can't interact with the
+      app.
+    name: Required. Identifier. Resource name of the Chat app configuration.
+      Format: `projects/{project}/chatAppConfig` `{project}` is the Google
+      Cloud project number.
+    state: Optional. Optional. The state of the app, default to ACTIVE if not
+      specified.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Optional. Optional. The state of the app, default to ACTIVE if not
+    specified.
+
+    Values:
+      APP_STATE_UNSPECIFIED: Default value. Unspecified.
+      ACTIVE: Maps to LIVE in the Chat API configuration page. The app is
+        active, it can be found and used by people with visibility.
+      DISABLED: The app is disabled, it can no longer be found by anyone, and
+        nobody can talk to the app any more.
+    """
+    APP_STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    DISABLED = 2
+
+  avatarUri = _messages.StringField(1)
+  description = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  errorLoggingEnabled = _messages.BooleanField(4)
+  interactiveFeatureConfig = _messages.MessageField('GoogleCloudGsuiteaddonsV1InteractiveFeatureConfig', 5)
+  name = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+
+
+class GoogleCloudGsuiteaddonsV1CloudPubSubEndpointConfig(_messages.Message):
+  r"""Pub/Sub endpoint configuration.
+
+  Fields:
+    topic: Required. The Pub/Sub topic name where messages are to be
+      published. The topic should be on the same project as the app. Format:
+      `projects/{project}/topics/{topic}`
+  """
+
+  topic = _messages.StringField(1)
+
+
+class GoogleCloudGsuiteaddonsV1ConnectionConfig(_messages.Message):
+  r"""How the app receives events.
+
+  Fields:
+    appsScriptEndpointConfig: Apps Script deployment configuration.
+    cloudPubSubEndpointConfig: Pub/Sub topic configuration.
+    dialogflowEndpointConfig: Dialogflow configuration.
+    httpEndpointConfig: HTTP endpoint configuration.
+  """
+
+  appsScriptEndpointConfig = _messages.MessageField('GoogleCloudGsuiteaddonsV1AppsScriptEndpointConfig', 1)
+  cloudPubSubEndpointConfig = _messages.MessageField('GoogleCloudGsuiteaddonsV1CloudPubSubEndpointConfig', 2)
+  dialogflowEndpointConfig = _messages.MessageField('GoogleCloudGsuiteaddonsV1DialogflowEndpointConfig', 3)
+  httpEndpointConfig = _messages.MessageField('GoogleCloudGsuiteaddonsV1HttpEndpointConfig', 4)
 
 
 class GoogleCloudGsuiteaddonsV1Deployment(_messages.Message):
@@ -792,6 +959,66 @@ class GoogleCloudGsuiteaddonsV1Deployment(_messages.Message):
   oauthScopes = _messages.StringField(4, repeated=True)
 
 
+class GoogleCloudGsuiteaddonsV1DialogflowEndpointConfig(_messages.Message):
+  r"""Dialogflow endpoint configuration.
+
+  Enums:
+    DialogflowEditionValueValuesEnum: Required. The Dialogflow edition.
+
+  Fields:
+    agent: Optional. The Dialogflow CX agent or environment name. Required for
+      Dialogflow CX. Do not set for Dialogflow ES. Format:
+      `projects/{project}/locations/{location}/agents/{agent}` or `projects/{p
+      roject}/locations/{location}/agents/{agent}/environments/{environment}`.
+    dialogflowEdition: Required. The Dialogflow edition.
+  """
+
+  class DialogflowEditionValueValuesEnum(_messages.Enum):
+    r"""Required. The Dialogflow edition.
+
+    Values:
+      DIALOGFLOW_EDITION_UNSPECIFIED: Default value. Unspecified.
+      ES: Dialogflow ES edition.
+      CX: Dialogflow CX edition.
+    """
+    DIALOGFLOW_EDITION_UNSPECIFIED = 0
+    ES = 1
+    CX = 2
+
+  agent = _messages.StringField(1)
+  dialogflowEdition = _messages.EnumField('DialogflowEditionValueValuesEnum', 2)
+
+
+class GoogleCloudGsuiteaddonsV1HttpEndpointConfig(_messages.Message):
+  r"""HTTP endpoint configuration.
+
+  Fields:
+    commonUrl: Optional. The base HTTPS URL for all event types.
+    perEventEndpointConfig: Optional. URLs for specific event types.
+  """
+
+  commonUrl = _messages.StringField(1)
+  perEventEndpointConfig = _messages.MessageField('GoogleCloudGsuiteaddonsV1HttpPerEventEndpointConfig', 2)
+
+
+class GoogleCloudGsuiteaddonsV1HttpPerEventEndpointConfig(_messages.Message):
+  r"""HTTP endpoint configuration for specific event types.
+
+  Fields:
+    addedToSpaceEndpoint: Required. Required. HTTPS URL endpoint for added to
+      space events.
+    appCommandEndpoint: Required. HTTPS URL endpoint for app command events.
+    messageEndpoint: Required. HTTPS URL endpoint for message events.
+    removedFromSpaceEndpoint: Required. Required. HTTPS URL endpoint for
+      removed from space events.
+  """
+
+  addedToSpaceEndpoint = _messages.StringField(1)
+  appCommandEndpoint = _messages.StringField(2)
+  messageEndpoint = _messages.StringField(3)
+  removedFromSpaceEndpoint = _messages.StringField(4)
+
+
 class GoogleCloudGsuiteaddonsV1InstallDeploymentRequest(_messages.Message):
   r"""Request message to install a deployment for testing."""
 
@@ -809,6 +1036,27 @@ class GoogleCloudGsuiteaddonsV1InstallStatus(_messages.Message):
   name = _messages.StringField(2)
 
 
+class GoogleCloudGsuiteaddonsV1InteractiveFeatureConfig(_messages.Message):
+  r"""Settings for interactive features of the app.
+
+  Fields:
+    allowlistedTestingPrincipals: Optional. Specify the users and groups in
+      your domain that can find and use the app by entering their email
+      addresses.
+    appCommands: Optional. Configuration for app commands.
+    connectionConfig: Required. How the app receives events from Google Chat.
+    supportsMultiuserSpaces: Optional. Whether the app can be added to 1:1
+      human DMs, group chats and spaces. Defaults to false if not specified.
+    urlPatterns: Optional. Configuration for link previews.
+  """
+
+  allowlistedTestingPrincipals = _messages.StringField(1, repeated=True)
+  appCommands = _messages.MessageField('GoogleCloudGsuiteaddonsV1AppCommand', 2, repeated=True)
+  connectionConfig = _messages.MessageField('GoogleCloudGsuiteaddonsV1ConnectionConfig', 3)
+  supportsMultiuserSpaces = _messages.BooleanField(4)
+  urlPatterns = _messages.MessageField('GoogleCloudGsuiteaddonsV1UrlPattern', 5, repeated=True)
+
+
 class GoogleCloudGsuiteaddonsV1ListDeploymentsResponse(_messages.Message):
   r"""Response message to list deployments.
 
@@ -824,6 +1072,25 @@ class GoogleCloudGsuiteaddonsV1ListDeploymentsResponse(_messages.Message):
 
 class GoogleCloudGsuiteaddonsV1UninstallDeploymentRequest(_messages.Message):
   r"""Request message to uninstall a test deployment."""
+
+
+class GoogleCloudGsuiteaddonsV1UrlPattern(_messages.Message):
+  r"""Configuration for a link preview.
+
+  Fields:
+    hostPattern: Required. The domain to match. Match a specific subdomain,
+      like "subdomain.example.com", or an entire domain by including an
+      asterisk (*) as a leading wildcard character. For example,
+      "*.example.com" matches "https://subdomain.example.com" and
+      "https://any.number.of.subdomains.example.com".
+    pathPrefix: Optional. Path prefix appended to the host pattern. If blank,
+      matches all URLs in the host pattern. For example, when paired with the
+      host pattern "subdomain.example.com", specify "path/" to match page URLs
+      that begin with "https://subdomain.example.com/path/".
+  """
+
+  hostPattern = _messages.StringField(1)
+  pathPrefix = _messages.StringField(2)
 
 
 class GoogleProtobufEmpty(_messages.Message):
@@ -963,6 +1230,60 @@ class GsuiteaddonsProjectsGetAuthorizationRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class GsuiteaddonsProjectsGetChatAppConfigRequest(_messages.Message):
+  r"""A GsuiteaddonsProjectsGetChatAppConfigRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. The view of the ChatAppConfig to return. If
+      unspecified, defaults to `BASIC`.
+
+  Fields:
+    name: Required. Resource name of the Chat app configuration. Format:
+      `projects/{project}/chatAppConfig`
+    view: Optional. The view of the ChatAppConfig to return. If unspecified,
+      defaults to `BASIC`.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view of the ChatAppConfig to return. If unspecified,
+    defaults to `BASIC`.
+
+    Values:
+      CHAT_APP_CONFIG_VIEW_UNSPECIFIED: The default / unset value. Defaults to
+        `BASIC`.
+      BASIC: Populates only the basic metadata about the app configuration,
+        without the interactive feature configuration. This is the default
+        value.
+      FULL: Populates all the fields including the interactive feature
+        configurations.
+    """
+    CHAT_APP_CONFIG_VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    FULL = 2
+
+  name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
+
+
+class GsuiteaddonsProjectsUpdateChatAppConfigRequest(_messages.Message):
+  r"""A GsuiteaddonsProjectsUpdateChatAppConfigRequest object.
+
+  Fields:
+    googleCloudGsuiteaddonsV1ChatAppConfig: A
+      GoogleCloudGsuiteaddonsV1ChatAppConfig resource to be passed as the
+      request body.
+    name: Required. Identifier. Resource name of the Chat app configuration.
+      Format: `projects/{project}/chatAppConfig` `{project}` is the Google
+      Cloud project number.
+    updateMask: Optional. The list of fields to update. If omitted, only
+      fields with non-empty values in `chat_app_config` will be updated.
+  """
+
+  googleCloudGsuiteaddonsV1ChatAppConfig = _messages.MessageField('GoogleCloudGsuiteaddonsV1ChatAppConfig', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class StandardQueryParameters(_messages.Message):

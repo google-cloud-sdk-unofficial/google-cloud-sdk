@@ -829,6 +829,9 @@ class BuildOptions(_messages.Message):
       is used. Must be of the format
       `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. ACCOUNT can be email
       address or uniqueId of the service account.
+    kmsKeyName: Optional. Resource name of Cloud KMS crypto key used to
+      encrypt the worker disk. The expected format is
+      projects/*/locations/*/keyRings/*/cryptoKeys/*.
     logStreamingOption: Option to define build log streaming behavior to Cloud
       Storage.
     logging: Option to specify the logging mode, which determines if and where
@@ -1010,19 +1013,47 @@ class BuildOptions(_messages.Message):
   enableStructuredLogging = _messages.BooleanField(8)
   env = _messages.StringField(9, repeated=True)
   infraServiceAccount = _messages.StringField(10)
-  logStreamingOption = _messages.EnumField('LogStreamingOptionValueValuesEnum', 11)
-  logging = _messages.EnumField('LoggingValueValuesEnum', 12)
-  machineType = _messages.EnumField('MachineTypeValueValuesEnum', 13)
-  pool = _messages.MessageField('PoolOption', 14)
-  pubsubTopic = _messages.StringField(15)
-  requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 16)
-  resolvedWorkerRelease = _messages.StringField(17)
-  secretEnv = _messages.StringField(18, repeated=True)
-  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 19, repeated=True)
-  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 20)
-  volumes = _messages.MessageField('Volume', 21, repeated=True)
-  workerPool = _messages.StringField(22)
-  workerRelease = _messages.StringField(23)
+  kmsKeyName = _messages.StringField(11)
+  logStreamingOption = _messages.EnumField('LogStreamingOptionValueValuesEnum', 12)
+  logging = _messages.EnumField('LoggingValueValuesEnum', 13)
+  machineType = _messages.EnumField('MachineTypeValueValuesEnum', 14)
+  pool = _messages.MessageField('PoolOption', 15)
+  pubsubTopic = _messages.StringField(16)
+  requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 17)
+  resolvedWorkerRelease = _messages.StringField(18)
+  secretEnv = _messages.StringField(19, repeated=True)
+  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 20, repeated=True)
+  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 21)
+  volumes = _messages.MessageField('Volume', 22, repeated=True)
+  workerPool = _messages.StringField(23)
+  workerRelease = _messages.StringField(24)
+
+
+class BuildResourceUsage(_messages.Message):
+  r"""Aggregated/summary metrics over the entire build lifecycle.
+
+  Fields:
+    averageCpuUtilization: Output only. The average CPU utilization ratio
+      across all vCPUs over the duration of the build, expressed as a fraction
+      in the range [0.0, 1.0].
+    averageMemoryUtilization: Output only. The average memory utilization
+      ratio over the duration of the build, expressed as a fraction in the
+      range [0.0, 1.0].
+    peakCpuUtilization: Output only. The highest CPU utilization ratio across
+      all vCPUs observed over the duration of the build, expressed as a
+      fraction in the range [0.0, 1.0].
+    peakMemoryUtilization: Output only. The highest memory utilization ratio
+      observed over the duration of the build, expressed as a fraction in the
+      range [0.0, 1.0].
+    totalCpuDuration: Output only. Total CPU execution time consumed across
+      all cores during build execution.
+  """
+
+  averageCpuUtilization = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  averageMemoryUtilization = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  peakCpuUtilization = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+  peakMemoryUtilization = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
+  totalCpuDuration = _messages.StringField(5)
 
 
 class BuildSecurityPolicy(_messages.Message):
@@ -5590,15 +5621,19 @@ class PrivatePoolV1Config(_messages.Message):
   r"""Configuration for a V1 `PrivatePool`.
 
   Fields:
+    kmsKeyName: Optional. Resource name of Cloud KMS crypto key used to
+      encrypt the worker disk. The expected format is
+      projects/*/locations/*/keyRings/*/cryptoKeys/*.
     networkConfig: Network configuration for the pool.
     privateServiceConnect: Immutable. Private Service Connect(PSC) Network
       configuration for the pool.
     workerConfig: Machine configuration for the workers in the pool.
   """
 
-  networkConfig = _messages.MessageField('NetworkConfig', 1)
-  privateServiceConnect = _messages.MessageField('PrivateServiceConnect', 2)
-  workerConfig = _messages.MessageField('WorkerConfig', 3)
+  kmsKeyName = _messages.StringField(1)
+  networkConfig = _messages.MessageField('NetworkConfig', 2)
+  privateServiceConnect = _messages.MessageField('PrivateServiceConnect', 3)
+  workerConfig = _messages.MessageField('WorkerConfig', 4)
 
 
 class PrivateServiceConnect(_messages.Message):
@@ -5960,6 +5995,7 @@ class Results(_messages.Message):
       instead.
     pythonPackages: Python artifacts uploaded to Artifact Registry at the end
       of the build.
+    resourceUsage: Output only. Aggregated metrics for the build.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -6001,6 +6037,7 @@ class Results(_messages.Message):
   numArtifacts = _messages.IntegerField(11)
   ociArtifacts = _messages.MessageField('UploadedOCIArtifact', 12, repeated=True)
   pythonPackages = _messages.MessageField('UploadedPythonPackage', 13, repeated=True)
+  resourceUsage = _messages.MessageField('BuildResourceUsage', 14)
 
 
 class RetryBuildRequest(_messages.Message):

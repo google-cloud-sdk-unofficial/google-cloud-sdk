@@ -348,11 +348,18 @@ def GetArgDetails(arg, depth=0):
     )
   elif isinstance(arg, arg_parsers.StoreTrueFalseAction):
     # This would be a "tri-valued" (True, False, None) command.
-    extra_help.append(
-        'Use *{0}* to enable and *{1}* to disable.'.format(
-            arg.option_strings[0], _GetInvertedFlagName(arg)
-        )
-    )
+    if arg.inverted_help_text:
+      extra_help.append(
+          'Use *{0}* to disable and *{1}* to enable.'.format(
+              arg.option_strings[0], _GetInvertedFlagName(arg)
+          )
+      )
+    else:
+      extra_help.append(
+          'Use *{0}* to enable and *{1}* to disable.'.format(
+              arg.option_strings[0], _GetInvertedFlagName(arg)
+          )
+      )
   if choices:
     metavar = arg.metavar or arg.dest.upper()
     if metavar != ' ':

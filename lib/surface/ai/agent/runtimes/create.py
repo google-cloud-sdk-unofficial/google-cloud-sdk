@@ -14,27 +14,9 @@
 # limitations under the License.
 """Command to create an agent runtime in Vertex AI."""
 
-from apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.api_lib.ai import operations
-from googlecloudsdk.api_lib.ai.agent_runtimes import client
-from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ai import constants
-from googlecloudsdk.command_lib.ai import endpoint_util
-from googlecloudsdk.command_lib.ai import operations_util
-from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.command_lib.ai.agent_runtimes import agent_runtimes_util
 from googlecloudsdk.command_lib.ai.agent_runtimes import flags
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-
-_AGENT_RUNTIME_CREATE_DISPLAY_MESSAGE = """\
-Request to create the agent runtime [{id}] has been sent.
-
-You may view the status of your agent runtime with the command
-
-  $ {command_prefix} ai agent runtimes describe {id} --region={region}
-"""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -75,51 +57,6 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()
-    region = region_ref.AsDict()['locationsId']
-    if properties.IsDefaultUniverse():
-      validation.ValidateRegion(
-          region, available_regions=constants.SUPPORTED_AP_REGIONS
-      )
-    validation.ValidateDisplayName(args.display_name)
-    with endpoint_util.AiplatformEndpointOverrides(
-        constants.BETA_VERSION, region=region
-    ):
-      runtimes_client = client.AgentRuntimesClient(
-          version=constants.BETA_VERSION
-      )
-      agent_runtime = agent_runtimes_util.AgentRuntimeBuilder(
-          runtimes_client
-      ).Build(args)
-      try:
-        operation = runtimes_client.Create(
-            region_ref.RelativeName(), agent_runtime
-        )
-      except apitools_exceptions.HttpError as error:
-        # Translates a generic HTTP error into a user-friendly gcloud
-        # exception.
-        raise api_exceptions.HttpException(
-            error,
-            'ResponseError: code={status_code}, message={status_message}',
-        )
-      op_ref = agent_runtimes_util.ParseOperation(operation.name)
-      runtime_id = op_ref.AsDict().get('reasoningEnginesId')
-      response = operations_util.WaitForOpMaybe(
-          operations_client=operations.OperationsClient(),
-          op=operation,
-          op_ref=op_ref,
-          asynchronous=args.async_,
-          message='Waiting for the agent runtime to be created...',
-      )
-      if args.async_:
-        log.status.Print(
-            _AGENT_RUNTIME_CREATE_DISPLAY_MESSAGE.format(
-                id=runtime_id,
-                region=region,
-                command_prefix=agent_runtimes_util.CommandPrefix(
-                    self.ReleaseTrack()
-                ),
-            )
-        )
-      else:
-        log.CreatedResource(runtime_id, kind='agent runtime')
-      return response
+    return agent_runtimes_util.CreateRuntime(
+        region_ref, args, self.ReleaseTrack(), asynchronous=args.async_
+    )

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   is_python_command: true
   hints:
     read_only: false
@@ -6,8 +6,8 @@
     content: |
       ### Prerequisites
       Requires permission to create API proxies in the target Apigee
-      organization (for example, `roles/apigee.apiAdmin`), and an active Cloud
-      Platform project associated with that organization.
+      organization (for example, `roles/apigee.apiAdmin`), and an active Google
+      Cloud project associated with that organization.
 
       ### Working with templates
       When using `--from-template`, keep the template file and every feature

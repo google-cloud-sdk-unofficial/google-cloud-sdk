@@ -41,7 +41,10 @@ def _AddSourceFlags(parser, required=False):
     required: bool, whether a source must be provided.
   """
   if required:
-    group_help = "Argument group for agent's source."
+    group_help = (
+        "Argument group for agent's source. A source is required because"
+        ' every deployment creates a new runtime revision.'
+    )
   else:
     group_help = (
         "Argument group for agent's source. If none of the flags from this"
@@ -169,14 +172,44 @@ def _AddAgentDefinitionFlags(parser, display_name_required=False):
   )
 
 
-def _AddDeploymentFlags(parser):
-  """Adds the flags configuring how the agent is served."""
+def _AddTrafficFlags(parser):
+  """Adds the flags configuring traffic splitting across revisions."""
+  traffic_group = parser.add_group(
+      mutex=True,
+      help=(
+          'Argument group for traffic config (only applies when updating an'
+          ' existing runtime).'
+      ),
+  )
+  traffic_group.add_argument(
+      '--traffic-split-to-revisions',
+      metavar='REVISION=PERCENT',
+      type=arg_parsers.ArgDict(value_type=int),
+      help=(
+          'Map of runtime revision names to integer percentages of traffic'
+          ' assigned to them. The percentages must sum to 100.'
+      ),
+  )
+  traffic_group.add_argument(
+      '--traffic-split-always-latest',
+      action='store_true',
+      default=None,
+      help='Route 100% of traffic to the latest runtime revision.',
+  )
+
+
+def _AddEnvVarsArg(parser):
+  """Adds the `--env-vars` flag."""
   parser.add_argument(
       '--env-vars',
       metavar='KEY=VALUE',
       type=arg_parsers.ArgDict(),
       help='List of key-value pairs to set as environment variables.',
   )
+
+
+def _AddSecretEnvVarsArg(parser):
+  """Adds the `--secret-env-vars` flag."""
   parser.add_argument(
       '--secret-env-vars',
       metavar='KEY=VALUE',
@@ -186,6 +219,73 @@ def _AddDeploymentFlags(parser):
           ' (VAR=SECRET:VERSION).'
       ),
   )
+
+
+def _AddUpdateEnvVarsFlags(parser):
+  """Adds the flags configuring environment variables."""
+  env_vars_group = parser.add_group(
+      mutex=True,
+      help='Argument group for env vars.',
+  )
+  update_remove_group = env_vars_group.add_group(
+      help='Arguments to update or remove env vars.'
+  )
+  update_remove_group.add_argument(
+      '--update-env-vars',
+      metavar='KEY=VALUE',
+      type=arg_parsers.ArgDict(),
+      help='List of key-value pairs to set or update as environment variables.',
+  )
+  update_remove_group.add_argument(
+      '--remove-env-vars',
+      metavar='KEY',
+      type=arg_parsers.ArgList(),
+      help='List of environment variable keys to remove.',
+  )
+  env_vars_group.add_argument(
+      '--clear-env-vars',
+      action='store_true',
+      default=None,
+      help='Clear all previously set environment variables.',
+  )
+  _AddEnvVarsArg(env_vars_group)
+
+
+def _AddUpdateSecretEnvVarsFlags(parser):
+  """Adds the flags configuring secret environment variables."""
+  secret_env_vars_group = parser.add_group(
+      mutex=True,
+      help='Argument group for secret env vars.',
+  )
+  update_remove_group = secret_env_vars_group.add_group(
+      help='Arguments to update or remove secret env vars.'
+  )
+  update_remove_group.add_argument(
+      '--update-secret-env-vars',
+      metavar='KEY=VALUE',
+      type=arg_parsers.ArgDict(),
+      help=(
+          'List of key-value pairs to set or update as secret environment'
+          ' variables (VAR=SECRET:VERSION).'
+      ),
+  )
+  update_remove_group.add_argument(
+      '--remove-secret-env-vars',
+      metavar='KEY',
+      type=arg_parsers.ArgList(),
+      help='List of secret environment variable keys to remove.',
+  )
+  secret_env_vars_group.add_argument(
+      '--clear-secret-env-vars',
+      action='store_true',
+      default=None,
+      help='Clear all previously set secret environment variables.',
+  )
+  _AddSecretEnvVarsArg(secret_env_vars_group)
+
+
+def _AddDeploymentConfigFlags(parser):
+  """Adds deployment configuration flags other than environment variables."""
   parser.add_argument(
       '--min-instances',
       type=arg_parsers.BoundedInt(0, 75),
@@ -289,6 +389,13 @@ def _AddDeploymentFlags(parser):
   )
 
 
+def _AddDeploymentFlags(parser):
+  """Adds the flags configuring how the agent is served."""
+  _AddEnvVarsArg(parser)
+  _AddSecretEnvVarsArg(parser)
+  _AddDeploymentConfigFlags(parser)
+
+
 def AddCreateFlags(parser):
   """Adds all the flags of `gcloud ai agent runtimes create`."""
   shared_flags.AddRegionResourceArg(
@@ -306,3 +413,42 @@ def AddCreateFlags(parser):
       help='Cloud KMS customer-managed encryption key (CMEK) resource name.',
   )
   _AddDeploymentFlags(parser)
+
+
+def AddDeployFlags(parser):
+  """Adds all the flags of `gcloud ai agent runtimes deploy`."""
+  shared_flags.AddRegionResourceArg(
+      parser,
+      'to deploy the agent runtime in',
+      prompt_func=region_util.PromptForOpRegion,
+  )
+  shared_flags.AddAgentRuntimeResourceArg(
+      parser,
+      'to deploy',
+      required=False,
+      flag_name_overrides={'region': ''},
+      command_level_fallthroughs={'region': ['--region']},
+  )
+  _AddSourceFlags(parser, required=False)
+  _AddIdentityFlags(parser)
+  _AddTrafficFlags(parser)
+  _AddUpdateEnvVarsFlags(parser)
+  _AddUpdateSecretEnvVarsFlags(parser)
+  _AddAgentDefinitionFlags(parser, display_name_required=False)
+  labels_util.AddCreateLabelsFlags(parser)
+  labels_util.AddUpdateLabelsFlags(parser)
+  parser.add_argument(
+      '--etag',
+      help=(
+          'ETag of the agent runtime. Only applies when updating an existing'
+          ' runtime.'
+      ),
+  )
+  parser.add_argument(
+      '--kms-key-name',
+      help=(
+          'Cloud KMS customer-managed encryption key (CMEK) resource name.'
+          ' Only applies when creating a new runtime.'
+      ),
+  )
+  _AddDeploymentConfigFlags(parser)

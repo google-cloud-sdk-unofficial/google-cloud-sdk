@@ -720,6 +720,15 @@ def _update_encryption_config(bucket_metadata, resource_args):
           else:
             # If no KeyError, the field was present, so we update it.
             setattr(bucket_metadata.encryption, field, updated_value)
+  if bucket_metadata.encryption is not None:
+    # effectiveTime is a server-generated, read-only output field returned by
+    # GET with millisecond precision. Echoing it back in PATCH causes the GCS
+    # backend immutability check (which compares against nanosecond precision in
+    # Spanner) to fail with HTTP 400 (b/562183925). Clear it so it is omitted.
+    for field in _ENCRYPTION_ENFORCEMENT_FIELDS:
+      enforcement_config = getattr(bucket_metadata.encryption, field, None)
+      if enforcement_config is not None:
+        enforcement_config.effectiveTime = None
   if _should_clear_encryption_field(bucket_metadata.encryption):
     bucket_metadata.encryption = None
 

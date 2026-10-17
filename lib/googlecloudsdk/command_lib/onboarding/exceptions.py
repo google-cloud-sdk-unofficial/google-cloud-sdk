@@ -25,6 +25,10 @@ class TermsOfServiceDeclinedError(OnboardingError):
   """Raised when required Terms of Service are declined."""
 
 
+class ProjectNotSelectedError(OnboardingError):
+  """Raised when a required project selection is not made."""
+
+
 class UnsupportedUserInputError(OnboardingError):
   """Raised when a pending user input is not supported by the CLI."""
 

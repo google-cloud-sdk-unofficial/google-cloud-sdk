@@ -42,10 +42,8 @@ _SERVICE_RESOURCE = 'services/%s'
 _REVERSE_CLOSURE = '/reverseClosure'
 _CONSUMER_SERVICE_RESOURCE = '%s/services/%s'
 _CONSUMER_POLICY_DEFAULT = '/consumerPolicies/%s'
-_MCP_POLICY_DEFAULT = '/mcpPolicies/%s'
 
 _EFFECTIVE_POLICY = '/effectivePolicy'
-_EFFECTIVE_MCP_POLICY = '/effectiveMcpPolicy'
 _GOOGLE_CATEGORY_RESOURCE = 'categories/google'
 _LIMIT_OVERRIDE_RESOURCE = '%s/consumerOverrides/%s'
 _VALID_CONSUMER_PREFIX = frozenset({'projects/', 'folders/', 'organizations/'})
@@ -76,14 +74,6 @@ class ContainerType(enum.Enum):
 def GetProtectedServiceWarning(service_name):
   """Return the warning message associated with a protected service."""
   return _PROTECTED_SERVICES.get(service_name)
-
-
-def GetMcpEnabledError(service, resource_name):
-  """Return the error message associated with a MCP enabled service."""
-  return (
-      'This command will enable the service'
-      f' {service} for the resource {resource_name}.'
-  )
 
 
 def GetConsumerPolicyV2Beta(policy_name):
@@ -144,137 +134,6 @@ def GetConsumerPolicyV2(policy_name):
       apitools_exceptions.HttpNotFoundError,
   ) as e:
     exceptions.ReraiseError(e, exceptions.GetConsumerPolicyException)
-
-
-def GetMcpPolicy(policy_name):
-  """Make API call to get a MCP policy.
-
-  Args:
-    policy_name: The name of a MCP policy. Currently supported format
-      '{resource_type}/{resource_name}/mcpPolicies/default'. For example,
-      'projects/100/mcpPolicies/default'.
-
-  Raises:
-    exceptions.GetMcpPolicyException: when getting a
-      MCP policy fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    The MCP policy
-  """
-  client = _GetClientInstance(_V2BETA_VERSION)
-  messages = client.MESSAGES_MODULE
-
-  request = messages.ServiceusageMcpPoliciesGetRequest(name=policy_name)
-
-  try:
-    return client.mcpPolicies.Get(request)
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(e, exceptions.GetMcpPolicyException)
-
-
-def GetContentSecurityPolicy(name):
-  """Make API call to get the content security policy for a given project, folder or organization.
-
-  Args:
-    name: The name of a content security policy. Currently supported format
-      '{resource_type}/{resource_name}/contentSecurityPolicies/default'. For
-      example, 'projects/100/contentSecurityPolicies/default'.
-
-  Raises:
-    exceptions.GetContentSecurityPolicyException: when getting a
-      content security policy fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    The content security policy.
-  """
-  client = _GetClientInstance(_V2BETA_VERSION)
-  messages = client.MESSAGES_MODULE
-
-  request = messages.ServiceusageContentSecurityPoliciesGetRequest(name=name)
-
-  try:
-    return client.contentSecurityPolicies.Get(request)
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(e, exceptions.GetContentSecurityPolicyException)
-
-
-def UpdateContentSecurityPolicy(name, content_security_policy):
-  """Make API call to update the content security policy for a given project, folder or organization.
-
-  Args:
-    name: The name of a content security policy. Currently supported format
-      '{resource_type}/{resource_name}/contentSecurityPolicies/default'. For
-      example, 'projects/100/contentSecurityPolicies/default'.
-    content_security_policy: The content security policy to update.
-
-  Raises:
-    exceptions.UpdateContentSecurityPolicyException: when updating a
-      content security policy fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    The content security policy.
-  """
-  client = _GetClientInstance(_V2BETA_VERSION)
-  messages = client.MESSAGES_MODULE
-
-  request = messages.ServiceusageContentSecurityPoliciesPatchRequest(
-      name=name, contentSecurityPolicy=content_security_policy
-  )
-
-  try:
-    return client.contentSecurityPolicies.Patch(request)
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(e, exceptions.UpdateContentSecurityPolicyException)
-
-
-def TestMcpEnabled(name: str, service: str):
-  """Make API call to test MCP enabled.
-
-  Args:
-    name: Parent resource to test a value against the result of merging MCP
-      policies in the resource hierarchy. Format: "projects/{PROJECT_ID}" (e.g.,
-      "projects/foo-bar"), "projects/{PROJECT_NUMBER}" (e.g.,
-      "projects/12345678"), "folders/{FOLDER_NUMBER}" (e.g., "folders/1234567")
-      , "organizations/{ORGANIZATION_NUMBER}" (e.g., "organizations/123456").
-    service: Service name to check if the targeted resource can use this service
-      for MCP. Current supported value: services/{SERVICE_NAME} (format:
-      "services/{service}").
-
-  Raises:
-    exceptions.TestMcpEnabledException: when testing value for a
-      service and resource.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    Message.State: The state of the service.
-  """
-  client = _GetClientInstance(_V2BETA_VERSION)
-  messages = client.MESSAGES_MODULE
-
-  request = messages.ServiceusageTestMcpEnabledRequest(
-      name=name,
-      testMcpEnabledRequest=messages.TestMcpEnabledRequest(serviceName=service),
-  )
-
-  try:
-    return client.v2beta.TestMcpEnabled(request)
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(e, exceptions.TestMcpEnabledException)
 
 
 def TestEnabled(name: str, service: str):
@@ -437,48 +296,6 @@ def GetEffectivePolicyV2(name: str, view: str = 'BASIC'):
       apitools_exceptions.HttpNotFoundError,
   ) as e:
     exceptions.ReraiseError(e, exceptions.GetEffectivePolicyException)
-
-
-def GetEffectiveMcpPolicy(name: str, view: str = 'BASIC'):
-  """Make API call to get a effective MCP policy.
-
-  Args:
-    name: The name of the effective MCP policy. Currently supported format
-      '{resource_type}/{resource_name}/effectiveMcpPolicy'. For example,
-      'projects/100/effectivePolicy'.
-    view: The view of the effective MCP policy to use. The default view is
-      'BASIC'.
-
-  Raises:
-    exceptions.GetEffectiveMcpPolicyException: when getting a
-      effective policy fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    message.EffectiveMcpPolicy: The effective MCP policy
-  """
-  client = _GetClientInstance(version=_V2BETA_VERSION)
-  messages = client.MESSAGES_MODULE
-  if view == 'BASIC':
-    view_type = (
-        messages.ServiceusageGetEffectiveMcpPolicyRequest.ViewValueValuesEnum.EFFECTIVE_MCP_POLICY_VIEW_BASIC
-    )
-  else:
-    view_type = (
-        messages.ServiceusageGetEffectiveMcpPolicyRequest.ViewValueValuesEnum.EFFECTIVE_MCP_POLICY_VIEW_FULL
-    )
-
-  request = messages.ServiceusageGetEffectiveMcpPolicyRequest(
-      name=name, view=view_type
-  )
-
-  try:
-    return client.v2beta.GetEffectiveMcpPolicy(request)
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(e, exceptions.GetEffectiveMcpPolicyException)
 
 
 def GetServiceV2Beta(service):
@@ -1508,128 +1325,6 @@ def UpdateConsumerPolicyV2(
       apitools_exceptions.HttpNotFoundError,
   ) as e:
     exceptions.ReraiseError(e, exceptions.UpdateConsumerPolicyException)
-
-
-def AddContentSecurityProvider(
-    content_security_provider: str,
-    resource_name: str,
-):
-  """Make API call to add a content security provider.
-
-  Args:
-    content_security_provider: The content security provider to add.
-    resource_name: The resource name of the content security policy.
-
-  Raises:
-    exceptions.AddContentSecurityProviderException: when adding content security
-    provider to content security policy fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    The result of the operation
-  """
-
-  client = _GetClientInstance(version=_V2BETA_VERSION)
-  messages = client.MESSAGES_MODULE
-
-  try:
-    content_security_policy = GetContentSecurityPolicy(resource_name)
-
-    if not content_security_provider.startswith('services/'):
-      content_security_provider = f'services/{content_security_provider}'
-
-    mcp_content_security = content_security_policy.mcpContentSecurity
-
-    existing_content_security_providers = [
-        p.name for p in mcp_content_security.contentSecurityProviders
-    ]
-
-    if content_security_provider in existing_content_security_providers:
-      log.warning(
-          f'The content security provider {content_security_provider} already'
-          ' exists.'
-      )
-      return None
-
-    update_policy = copy.deepcopy(content_security_policy)
-
-    update_policy.mcpContentSecurity.contentSecurityProviders.append(
-        messages.ContentSecurityProvider(name=content_security_provider)
-    )
-
-    return UpdateContentSecurityPolicy(
-        resource_name,
-        update_policy,
-    )
-
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(e, exceptions.AddContentSecurityProviderException)
-
-
-def RemoveContentSecurityProvider(
-    content_security_provider: str,
-    resource_name: str,
-):
-  """Make API call to remove a content security provider.
-
-  Args:
-    content_security_provider: The content security provider to remove.
-    resource_name: The resource name of the content security policy.
-
-  Raises:
-    exceptions.RemoveContentSecurityProviderException: when removing content
-    security
-    provider from content security policy fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    The result of the operation
-  """
-
-  try:
-    content_security_policy = GetContentSecurityPolicy(resource_name)
-
-    if not content_security_provider.startswith('services/'):
-      content_security_provider = f'services/{content_security_provider}'
-
-    update_policy = copy.deepcopy(content_security_policy)
-    mcp_content_security = update_policy.mcpContentSecurity
-
-    updated_content_security_providers = []
-    is_present = False
-
-    for p in mcp_content_security.contentSecurityProviders:
-      if p.name == content_security_provider:
-        is_present = True
-      else:
-        updated_content_security_providers.append(p)
-
-    if not is_present:
-      log.warning(
-          f'The content security provider {content_security_provider} does not'
-          ' exist.'
-      )
-      return None
-
-    mcp_content_security.contentSecurityProviders = (
-        updated_content_security_providers
-    )
-
-    return UpdateContentSecurityPolicy(
-        resource_name,
-        update_policy,
-    )
-
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(
-        e, exceptions.RemoveContentSecurityProviderException
-    )
 
 
 def AddEnableRule(

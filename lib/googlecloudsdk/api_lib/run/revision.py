@@ -14,8 +14,14 @@
 # limitations under the License.
 """Wraps a Cloud Run revision message with convenience methods."""
 
+import json
+
+from apitools.base.protorpclite import messages
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.api_lib.run import k8s_object
+from googlecloudsdk.core import log
+from googlecloudsdk.generated_clients.apis.run.v2 import run_v2_messages
 
 # Label names as to be stored in k8s object metadata
 SERVICE_LABEL = 'serving.knative.dev/service'
@@ -50,9 +56,7 @@ GPU_ZONAL_REDUNDANCY_DISABLED_ANNOTATION = (
     'run.googleapis.com/gpu-zonal-redundancy-disabled'
 )
 # gcloud-disable-gdu-domain
-SOURCES_ANNOTATION = (
-    'run.googleapis.com/sources'
-)
+SOURCES_ANNOTATION = 'run.googleapis.com/sources'
 # Annotation that contains a JSON-formatted string representing a map of
 # (container name, BuildConfig) entries, where container name is either empty
 # and corresponds to the ingress container or has a name and corresponds to
@@ -65,11 +69,56 @@ OVERFLOW_SCALING_ANNOTATION = 'run.googleapis.com/overflow-scaling'
 # Annotation to set the CPU utilization target for scaling.
 CPU_UTILIZATION_ANNOTATION = 'run.googleapis.com/scaling-cpu-target'
 # Annotation to set the concurrency utilization target for scaling.
-CONCURRENCY_UTILIZATION_ANNOTATION = 'run.googleapis.com/scaling-concurrency-target'
+CONCURRENCY_UTILIZATION_ANNOTATION = (
+    'run.googleapis.com/scaling-concurrency-target'
+)
 # gcloud-disable-gdu-domain
 AMBIENT_NETWORKING_ANNOTATION = 'run.googleapis.com/ambient-networking'
 # gcloud-disable-gdu-domain
 AMBIENT_SCOPE_ANNOTATION = 'run.googleapis.com/ambient-scope'
+
+
+def _ClearUnrecognizedFields(msg):
+  """Recursively clears unrecognized fields from an apitools Message."""
+  if not isinstance(msg, messages.Message):
+    return
+  setattr(msg, '_Message__unrecognized_fields', {})
+  for field in msg.all_fields():
+    val = getattr(msg, field.name, None)
+    if isinstance(val, messages.Message):
+      _ClearUnrecognizedFields(val)
+    elif isinstance(val, list):
+      for item in val:
+        if isinstance(item, messages.Message):
+          _ClearUnrecognizedFields(item)
+
+
+def _ValidateBuildConfigDictTypes(val, message_type):
+  """Validates that JSON values match expected apitools field types."""
+  if not isinstance(val, dict):
+    raise TypeError('Expected dict, got {}'.format(type(val)))
+  for key, item in val.items():
+    if item is None:
+      continue
+    try:
+      field = message_type.field_by_name(key)
+    except KeyError:
+      continue
+    if field.repeated:
+      if not isinstance(item, list):
+        raise TypeError('Expected list for repeated field {}'.format(key))
+      if isinstance(field, messages.MessageField):
+        for sub_item in item:
+          if not isinstance(sub_item, dict):
+            raise TypeError('Expected dict in list for {}'.format(key))
+          _ValidateBuildConfigDictTypes(sub_item, field.message_type)
+    elif isinstance(field, messages.MessageField):
+      if not isinstance(item, dict):
+        raise TypeError('Expected dict for message field {}'.format(key))
+      _ValidateBuildConfigDictTypes(item, field.message_type)
+    elif isinstance(field, messages.StringField):
+      if not isinstance(item, str):
+        raise TypeError('Expected str for string field {}'.format(key))
 
 
 class Revision(container_resource.ContainerResource):
@@ -82,6 +131,10 @@ class Revision(container_resource.ContainerResource):
   TERMINAL_CONDITIONS = frozenset([
       READY_CONDITION,
   ])
+
+  def __init__(self, *args, **kwargs):
+    super(Revision, self).__init__(*args, **kwargs)
+    self.DeserializeBuildConfig()
 
   @property
   def gcs_location(self):
@@ -175,3 +228,121 @@ class Revision(container_resource.ContainerResource):
         key_field='key',
         value_field='value',
     )
+
+  def DeserializeBuildConfig(self):
+    """Deserializes container build configurations from annotations."""
+    # Skip spec-only Revision objects (where metadata is None); accessing
+    # `self.annotations` on a spec-only object raises ValueError via
+    # AssertFullObject().
+    if not self.IsFullObject():
+      return
+    if not getattr(self.spec, 'containers', None):
+      return
+    # Avoid accessing `self.annotations` if `metadata` or `metadata.annotations`
+    # is None/empty, since `AnnotationsFromMetadata` mutates `metadata` by
+    # attaching an empty `AnnotationsValue` message.
+    if not getattr(self._m, 'metadata', None) or not getattr(
+        self._m.metadata, 'annotations', None
+    ):
+      return
+    if BUILD_CONFIG_ANNOTATION not in self.annotations:
+      return
+    raw_annotation = self.annotations.get(BUILD_CONFIG_ANNOTATION)
+    if not raw_annotation:
+      return
+    try:
+      build_config_map = json.loads(raw_annotation)
+    except (ValueError, TypeError) as e:
+      log.debug(
+          'Failed to parse %s annotation as JSON: %s',
+          BUILD_CONFIG_ANNOTATION,
+          e,
+      )
+      return
+    if not isinstance(build_config_map, dict):
+      log.debug(
+          'Invalid %s annotation format: expected dict, got %s',
+          BUILD_CONFIG_ANNOTATION,
+          type(build_config_map),
+      )
+      return
+
+    for c in self.containers.values():
+      # If `_build_config` is already set on the underlying container message,
+      # do not overwrite it. This preserves in-memory mutations across repeated
+      # instantiations of `Revision.Template` (e.g. accessing `service.template`
+      # constructs a new `Revision.Template` which runs `__init__` and
+      # `DeserializeBuildConfig()`; without this check, in-memory modifications
+      # to `container.build_config` would be clobbered by the stale annotation).
+      if c.HasBuildConfigState():
+        continue
+      key = c.name or ''
+      if key in build_config_map:
+        val = build_config_map[key]
+        if isinstance(val, dict):
+          try:
+            _ValidateBuildConfigDictTypes(
+                val, run_v2_messages.GoogleCloudRunV2BuildConfiguration
+            )
+            bc = encoding.DictToMessage(
+                val, run_v2_messages.GoogleCloudRunV2BuildConfiguration
+            )
+            _ClearUnrecognizedFields(bc)
+            c.build_config = bc
+          except Exception as e:  # pylint: disable=broad-except
+            log.debug(
+                'Failed to deserialize build configuration for container [%s]:'
+                ' %s',
+                key,
+                e,
+            )
+            c.build_config = None
+        else:
+          log.debug(
+              'Invalid build configuration for container [%s]: expected dict,'
+              ' got %s',
+              key,
+              type(val),
+          )
+          c.build_config = None
+      else:
+        # Mark as deserialized (None) so subsequent deserializations skip it.
+        c.build_config = None
+
+  def SerializeBuildConfig(self):
+    """Serializes container build configurations to annotations."""
+    # Skip spec-only Revision objects (where metadata is None); accessing
+    # `self.annotations` on a spec-only object raises ValueError via
+    # AssertFullObject().
+    if not self.IsFullObject():
+      return
+    if not getattr(self.spec, 'containers', None):
+      return
+
+    # Defensively deserialize first so that if BUILD_CONFIG_ANNOTATION was
+    # added to annotations after __init__, containers without in-memory
+    # build_config state (HasBuildConfigState() == False) pick it up before
+    # re-serializing.
+    self.DeserializeBuildConfig()
+
+    build_config_map = {}
+    for c in self.containers.values():
+      bc = c.build_config
+      if bc is not None:
+        key = c.name or ''
+        build_config_map[key] = encoding.MessageToDict(bc)
+
+    if build_config_map:
+      self.annotations[BUILD_CONFIG_ANNOTATION] = json.dumps(
+          build_config_map, sort_keys=True, separators=(',', ':')
+      )
+    elif (
+        getattr(self._m, 'metadata', None)
+        and getattr(self._m.metadata, 'annotations', None)
+        and BUILD_CONFIG_ANNOTATION in self.annotations
+    ):
+      del self.annotations[BUILD_CONFIG_ANNOTATION]
+
+  def Message(self):
+    self.SerializeBuildConfig()
+    return super(Revision, self).Message()

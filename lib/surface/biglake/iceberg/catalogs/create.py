@@ -54,9 +54,13 @@ help_text_preview = textwrap.dedent("""\
 
 def _BuildFederatedCatalogMessage(args, messages, release_track=None):
   """Builds FederatedCatalogMessage for federated catalogs."""
+  metadata_service_directory_name = getattr(
+      args, 'metadata_service_directory_name', None
+  )
   if args.federated_catalog_type == 'unity':
     federated_catalog_options = messages.FederatedCatalogOptions(
         service_directory_name=getattr(args, 'service_directory_name', None),
+        metadata_service_directory_name=metadata_service_directory_name,
         secret_name=args.secret_name,
         unity_catalog_info=messages.UnityCatalogInfo(
             catalog_name=args.unity_catalog_name,
@@ -69,6 +73,7 @@ def _BuildFederatedCatalogMessage(args, messages, release_track=None):
   elif args.federated_catalog_type == 'glue':
     federated_catalog_options = messages.FederatedCatalogOptions(
         service_directory_name=getattr(args, 'service_directory_name', None),
+        metadata_service_directory_name=metadata_service_directory_name,
         glue_catalog_info=messages.GlueCatalogInfo(
             warehouse=args.glue_warehouse,
             aws_region=args.glue_aws_region,
@@ -79,6 +84,7 @@ def _BuildFederatedCatalogMessage(args, messages, release_track=None):
     federated_catalog_options = messages.FederatedCatalogOptions(
         secret_name=args.secret_name,
         service_directory_name=args.service_directory_name,
+        metadata_service_directory_name=metadata_service_directory_name,
         snowflake_catalog_info=messages.SnowflakeCatalogInfo(
             warehouse=args.snowflake_warehouse,
             account_identifier=args.snowflake_account_identifier,
@@ -89,13 +95,16 @@ def _BuildFederatedCatalogMessage(args, messages, release_track=None):
     federated_catalog_options = messages.FederatedCatalogOptions(
         secret_name=args.secret_name,
         service_directory_name=args.service_directory_name,
+        metadata_service_directory_name=metadata_service_directory_name,
         workday_catalog_info=messages.WorkdayCatalogInfo(
             base_url=args.workday_base_url,
             tenant=args.workday_tenant,
         ),
     )
   else:
-    federated_catalog_options = messages.FederatedCatalogOptions()
+    federated_catalog_options = messages.FederatedCatalogOptions(
+        metadata_service_directory_name=metadata_service_directory_name,
+    )
 
   if release_track and args.IsKnownAndSpecified(
       'federated_catalog_identity_mode'
@@ -129,6 +138,7 @@ class CreateCatalog(base.CreateCommand):
       'EXAMPLES': help_text,
   }
   _support_service_directory_name = True
+  _support_metadata_service_directory_name = False
   _support_federated_catalog = True
   _support_glue_catalog = True
   _support_snowflake_catalog = True
@@ -164,6 +174,8 @@ class CreateCatalog(base.CreateCommand):
       arguments.AddWorkdayCatalogArgs(parser)
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
+    if cls._support_metadata_service_directory_name:
+      arguments.AddMetadataServiceDirectoryNameArg(parser, hidden=True)
     if cls._support_unity_service_principal_application_id:
       arguments.AddUnityServicePrincipalApplicationIdArg(parser)
 
@@ -246,6 +258,7 @@ class CreateBeta(CreateCatalog):
       'EXAMPLES': help_text + '\n\n' + help_text_preview,
   }
   _support_service_directory_name = True
+  _support_metadata_service_directory_name = False
   _support_federated_catalog = True
   _support_glue_catalog = True
   _support_snowflake_catalog = True
@@ -259,6 +272,7 @@ class CreateAlpha(CreateBeta):
   """Create a BigLake Iceberg REST catalog."""
 
   _support_service_directory_name = True
+  _support_metadata_service_directory_name = True
   _support_unity_service_principal_application_id = True
   _support_glue_catalog = True
   _support_snowflake_catalog = True

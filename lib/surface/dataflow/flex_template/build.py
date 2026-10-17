@@ -18,9 +18,9 @@
 import json
 
 from googlecloudsdk.api_lib.dataflow import apis
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.core import properties
 
 
@@ -100,11 +100,15 @@ def _CommonArgs(parser):
 
   parser.add_argument(
       '--print-only',
-      help=('Prints the container spec to stdout. Does not save in '
-            'Google Cloud Storage.'),
+      help=(
+          'Prints the container spec to stdout. Does not save in '
+          'Google Cloud Storage.'
+      ),
       default=False,
-      action=actions.StoreBooleanProperty(
-          properties.VALUES.dataflow.print_only))
+      action=property_actions.StoreBooleanProperty(
+          properties.VALUES.dataflow.print_only
+      ),
+  )
 
   parser.add_argument(
       '--staging-location',
@@ -155,9 +159,11 @@ def _CommonArgs(parser):
 
   parser.add_argument(
       '--disable-public-ips',
-      action=actions.StoreBooleanProperty(
-          properties.VALUES.dataflow.disable_public_ips),
-      help='Cloud Dataflow workers must not use public IP addresses.')
+      action=property_actions.StoreBooleanProperty(
+          properties.VALUES.dataflow.disable_public_ips
+      ),
+      help='Cloud Dataflow workers must not use public IP addresses.',
+  )
 
   parser.add_argument(
       '--num-workers',
@@ -194,9 +200,11 @@ def _CommonArgs(parser):
 
   parser.add_argument(
       '--enable-streaming-engine',
-      action=actions.StoreBooleanProperty(
-          properties.VALUES.dataflow.enable_streaming_engine),
-      help='Enable Streaming Engine for the streaming job by default.')
+      action=property_actions.StoreBooleanProperty(
+          properties.VALUES.dataflow.enable_streaming_engine
+      ),
+      help='Enable Streaming Engine for the streaming job by default.',
+  )
 
   parser.add_argument(
       '--gcs-log-dir',

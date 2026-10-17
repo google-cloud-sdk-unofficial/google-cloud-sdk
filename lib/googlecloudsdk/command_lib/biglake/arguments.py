@@ -152,6 +152,28 @@ def AddServiceDirectoryNameArg(parser):
   )
 
 
+def AddMetadataServiceDirectoryNameArg(parser, hidden=False):
+  """Adds the --metadata-service-directory-name argument to the parser.
+
+  Args:
+    parser: The argparse parser to add the argument to.
+    hidden: Whether to hide the argument from help text.
+  """
+  parser.add_argument(
+      '--metadata-service-directory-name',
+      hidden=hidden,
+      help=(
+          'The service directory resource name used to route metadata layer'
+          ' traffic with the remote catalog over a private network connection,'
+          ' in the format'
+          ' `projects/{project_id}/locations/{location}/namespaces/{namespace}/services/{service_name}`.'
+          ' This is used to retrieve catalog metadata (such as Iceberg'
+          ' configurations, namespaces, and tables) and to fetch OAuth tokens.'
+          ' See https://docs.cloud.google.com/lakehouse/docs/set-up-cross-cloud-lakehouse#setup-cci.'
+      ),
+  )
+
+
 def AddUnityServicePrincipalApplicationIdArg(parser):
   """Adds argument for service principal application ID."""
   parser.add_argument(

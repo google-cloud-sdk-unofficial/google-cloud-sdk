@@ -609,14 +609,14 @@ class Empty(_messages.Message):
 
 
 class EmptyDirVolumeSource(_messages.Message):
-  r"""In memory (tmpfs) ephemeral storage. It is ephemeral in the sense that
-  when the sandbox is taken down, the data is destroyed with it (it does not
-  persist across sandbox runs).
+  r"""In memory or disk-backed ephemeral storage. It is ephemeral in the sense
+  that when the sandbox is taken down, the data is destroyed with it (it does
+  not persist across sandbox runs).
 
   Fields:
     medium: The medium on which the data is stored. The default is "" which
       means to use the node's default medium. Must be an empty string
-      (default) or Memory. More info:
+      (default), `Memory`, or `Disk`. More info:
       https://kubernetes.io/docs/concepts/storage/volumes#emptydir
     sizeLimit: Limit on the storage usable by this EmptyDir volume. The size
       limit is also applicable for memory medium. The maximum usage on memory
@@ -1530,6 +1530,33 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
   workerRelease = _messages.StringField(19)
 
 
+class GoogleDevtoolsCloudbuildV1BuildResourceUsage(_messages.Message):
+  r"""Aggregated/summary metrics over the entire build lifecycle.
+
+  Fields:
+    averageCpuUtilization: Output only. The average CPU utilization ratio
+      across all vCPUs over the duration of the build, expressed as a fraction
+      in the range [0.0, 1.0].
+    averageMemoryUtilization: Output only. The average memory utilization
+      ratio over the duration of the build, expressed as a fraction in the
+      range [0.0, 1.0].
+    peakCpuUtilization: Output only. The highest CPU utilization ratio across
+      all vCPUs observed over the duration of the build, expressed as a
+      fraction in the range [0.0, 1.0].
+    peakMemoryUtilization: Output only. The highest memory utilization ratio
+      observed over the duration of the build, expressed as a fraction in the
+      range [0.0, 1.0].
+    totalCpuDuration: Output only. Total CPU execution time consumed across
+      all cores during build execution.
+  """
+
+  averageCpuUtilization = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  averageMemoryUtilization = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  peakCpuUtilization = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+  peakMemoryUtilization = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
+  totalCpuDuration = _messages.StringField(5)
+
+
 class GoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
   r"""A step in the build pipeline.
 
@@ -2279,6 +2306,7 @@ class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
       Only populated when artifacts are uploaded to Cloud Storage.
     pythonPackages: Python artifacts uploaded to Artifact Registry at the end
       of the build.
+    resourceUsage: Output only. Aggregated metrics for the build.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -2319,6 +2347,7 @@ class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
   npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedNpmPackage', 10, repeated=True)
   numArtifacts = _messages.IntegerField(11)
   pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedPythonPackage', 12, repeated=True)
+  resourceUsage = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuildResourceUsage', 13)
 
 
 class GoogleDevtoolsCloudbuildV1Secret(_messages.Message):

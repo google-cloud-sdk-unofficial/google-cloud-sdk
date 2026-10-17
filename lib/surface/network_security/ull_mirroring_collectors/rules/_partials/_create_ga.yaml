@@ -84,6 +84,13 @@
             enum_value: EGRESS
             help_text: |-
               Traffic outbound from the capture point.
+        - arg_name: match-primary-ip-ranges
+          api_field: ullMirroringCollectorRule.match.primaryIpRanges
+          required: false
+          repeated: true
+          help_text: |-
+            Primary IP ranges to match (for the capture point). When unset, matches
+            any primary IP.
     - arg_name: request-id
       api_field: requestId
       required: false

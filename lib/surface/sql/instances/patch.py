@@ -160,6 +160,22 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append('settings.passwordValidationPolicy')
   if getattr(args, 'clear_sql_server_password_policy', False):
     cleared_fields.append('settings.sqlServerPasswordValidationPolicy')
+  if getattr(args, 'clear_sql_server_password_policy_history_length', False):
+    cleared_fields.append(
+        'settings.sqlServerPasswordValidationPolicy.passwordHistoryLength'
+    )
+  if getattr(args, 'clear_sql_server_password_policy_minimum_age', False):
+    cleared_fields.append(
+        'settings.sqlServerPasswordValidationPolicy.passwordMinimumAge'
+    )
+  if getattr(args, 'clear_sql_server_password_policy_maximum_age', False):
+    cleared_fields.append(
+        'settings.sqlServerPasswordValidationPolicy.passwordMaximumAge'
+    )
+  if getattr(args, 'clear_sql_server_password_policy_min_length', False):
+    cleared_fields.append(
+        'settings.sqlServerPasswordValidationPolicy.passwordMinimumLength'
+    )
   if args.IsKnownAndSpecified('clear_allowed_psc_projects'):
     cleared_fields.append(
         'settings.ipConfiguration.pscConfig.allowedConsumerProjects'
@@ -184,6 +200,8 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append('settings.activeDirectoryConfig.dnsServers')
   if args.clear_active_directory:
     cleared_fields.append('settings.activeDirectoryConfig')
+  if args.IsKnownAndSpecified('clear_database_center_integration'):
+    cleared_fields.append('databaseCenterIntegration')
 
   log.status.write(
       'The following message will be used for the patch API method.\n'
@@ -301,11 +319,19 @@ def AddBaseArgs(parser):
   flags.AddPasswordPolicyPasswordChangeInterval(parser)
   flags.AddPasswordPolicyEnablePasswordPolicy(parser)
   flags.AddPasswordPolicyClearPasswordPolicy(parser)
-  flags.AddSqlServerEnablePasswordPolicy(parser)
-  flags.AddSqlServerPasswordPolicyMinLength(parser)
-  flags.AddSqlServerPasswordPolicyHistoryLength(parser)
-  flags.AddSqlServerPasswordPolicyMinimumAge(parser)
-  flags.AddSqlServerPasswordPolicyMaximumAge(parser)
+  flags.AddEnableSqlServerPasswordPolicy(parser)
+  sql_server_min_len_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.AddSqlServerPasswordPolicyMinLength(sql_server_min_len_group)
+  flags.AddSqlServerClearPasswordPolicyMinLength(sql_server_min_len_group)
+  sql_server_history_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.AddSqlServerPasswordPolicyHistoryLength(sql_server_history_group)
+  flags.AddSqlServerClearPasswordPolicyHistoryLength(sql_server_history_group)
+  sql_server_min_age_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.AddSqlServerPasswordPolicyMinimumAge(sql_server_min_age_group)
+  flags.AddSqlServerClearPasswordPolicyMinimumAge(sql_server_min_age_group)
+  sql_server_max_age_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.AddSqlServerPasswordPolicyMaximumAge(sql_server_max_age_group)
+  flags.AddSqlServerClearPasswordPolicyMaximumAge(sql_server_max_age_group)
   flags.AddSqlServerClearPasswordPolicy(parser)
   parser.add_argument(
       '--pricing-plan',
@@ -389,7 +415,12 @@ def AddBaseArgs(parser):
   flags.AddEnablePscAutoConnectionPolicy(parser)
   flags.AddInstanceResizeLimit(parser)
   flags.AddDatabaseCenterIntegrationEnabled(parser)
-  flags.AddDatabaseCenterIntegration(parser)
+  # TODO(b/531563818): Unhide the group once the flags are public.
+  database_center_integration_group = parser.add_mutually_exclusive_group(
+      hidden=True
+  )
+  flags.AddDatabaseCenterIntegration(database_center_integration_group)
+  flags.AddClearDatabaseCenterIntegration(database_center_integration_group)
   flags.AddEnablePscAutoDns(parser)
   flags.AddEnablePscWriteEndpointDns(parser)
 

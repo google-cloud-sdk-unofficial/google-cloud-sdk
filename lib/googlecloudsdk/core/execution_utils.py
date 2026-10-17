@@ -160,13 +160,14 @@ def GetPythonExecutable(sdk_root=None):
             root, 'platform', 'bundledpython', 'python.exe'
         )
       else:
-        bundled = os.path.join(
-            root,
-            'platform',
-            'bundledpythonunix',
-            'bin',
-            'python3',
+        # On Alpine Linux, use the musl bundled Python (bundled-python3-alpine)
+        # rather than the glibc one, matching cloudsdk-sh.preamble.
+        bundled_dir = (
+            'bundledpythonunixmusl'
+            if platforms.OperatingSystem.IsAlpineLinux()
+            else 'bundledpythonunix'
         )
+        bundled = os.path.join(root, 'platform', bundled_dir, 'bin', 'python3')
 
     # 2. Define candidates in order of preference
     virtualenv_python = None

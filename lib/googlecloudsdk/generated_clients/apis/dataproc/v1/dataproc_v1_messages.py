@@ -1539,24 +1539,29 @@ class ClusterConfig(_messages.Message):
     masterConfig: Optional. The Compute Engine config settings for the
       cluster's master instance.
     masterFlexibleConfig: Optional. The High Obtainability (HO) config
-      settings for the cluster's master instance.Only one of master_config or
-      master_flexible_config can be set.High Obtainability (HO) mode requires
-      consistent configuration across node groups: * For single-node clusters:
+      settings for the cluster's master instances.In High Obtainability (HO)
+      mode, flexible configs are the single source of truth for desired
+      cluster configuration across node groups: * For single-node clusters:
       master_flexible_config must be specified, and no worker configs should
       be set. * For multi-node (standard) clusters: both
       master_flexible_config and worker_flexible_config must be specified.
-      Mixing standard and flexible configs across node groups is not allowed.
+      Mixing standard and flexible configs across node groups is not
+      allowed.Only one of master_config or master_flexible_config can be set.
     metastoreConfig: Optional. Metastore configuration.
     schedulingConfig: Optional. Config for scheduling the resources to be
       allocated when available.
     secondaryWorkerConfig: Optional. The Compute Engine config settings for a
       cluster's secondary worker instances
     secondaryWorkerFlexibleConfig: Optional. The High Obtainability (HO)
-      config settings for a cluster's secondary worker instances.Only one of
-      secondary_worker_config or secondary_worker_flexible_config can be
-      set.In High Obtainability (HO) mode, secondary workers are optional. If
-      secondary workers are used in an HO cluster, they must be configured
-      using secondary_worker_flexible_config (not secondary_worker_config).
+      config settings for a cluster's secondary worker instances.In High
+      Obtainability (HO) mode, flexible configs are the single source of truth
+      for desired cluster configuration. num_instances represents the desired
+      capacity of the secondary worker group and is mutable via cluster
+      updates and autoscaling.Only one of secondary_worker_config or
+      secondary_worker_flexible_config can be set.In High Obtainability (HO)
+      mode, secondary workers are optional. If secondary workers are used in
+      an HO cluster, they must be configured using
+      secondary_worker_flexible_config (not secondary_worker_config).
     securityConfig: Optional. Security settings for the cluster.
     softwareConfig: Optional. The config settings for cluster software.
     tempBucket: Optional. A Cloud Storage bucket used to store ephemeral
@@ -1573,12 +1578,15 @@ class ClusterConfig(_messages.Message):
     workerConfig: Optional. The Compute Engine config settings for the
       cluster's worker instances.
     workerFlexibleConfig: Optional. The High Obtainability (HO) config
-      settings for the cluster's worker instances.Only one of worker_config or
-      worker_flexible_config can be set.In High Obtainability (HO) mode, for
-      multi-node (standard) clusters, both master_flexible_config and
-      worker_flexible_config must be specified. Mixing standard and flexible
-      configs across node groups is not allowed. Single-node clusters do not
-      specify worker configs.
+      settings for the cluster's worker instances.In High Obtainability (HO)
+      mode, flexible configs are the single source of truth for desired
+      cluster configuration. num_instances represents the desired capacity of
+      the worker group and is mutable via cluster updates and autoscaling.Only
+      one of worker_config or worker_flexible_config can be set.In High
+      Obtainability (HO) mode, for multi-node (standard) clusters, both
+      master_flexible_config and worker_flexible_config must be specified.
+      Mixing standard and flexible configs across node groups is not allowed.
+      Single-node clusters do not specify worker configs.
   """
 
   class ClusterTierValueValuesEnum(_messages.Enum):
@@ -5161,6 +5169,20 @@ class DataprocProjectsRegionsEmptyOpsCreateEmptyOpRequest(_messages.Message):
   region = _messages.StringField(3, required=True)
 
 
+class DataprocProjectsRegionsEmptyOpsDeleteRequest(_messages.Message):
+  r"""A DataprocProjectsRegionsEmptyOpsDeleteRequest object.
+
+  Fields:
+    emptyOpRequestId: Optional. A unique ID used to identify the request.
+    projectId: Optional. The ID of the project the EmptyOp belongs to.
+    region: Optional. The region in which to handle the request.
+  """
+
+  emptyOpRequestId = _messages.StringField(1, required=True)
+  projectId = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+
+
 class DataprocProjectsRegionsJobsCancelRequest(_messages.Message):
   r"""A DataprocProjectsRegionsJobsCancelRequest object.
 
@@ -6350,21 +6372,31 @@ class FallbackReason(_messages.Message):
 
 class FlexibleInstanceGroupConfig(_messages.Message):
   r"""The configuration for High Obtainability (HO) flexible instance groups.
+  Flexible instance group configs serve as the single source of truth for
+  desired state.
 
   Enums:
     HardwareClassValueValuesEnum: Optional. The hardware class of the
-      instances.
+      instances. This is a create-time specification and is not currently
+      mutable via update masks.
 
   Fields:
-    bootDiskSizeGb: Optional. The boot disk size in GB.
+    bootDiskSizeGb: Optional. The boot disk size in GB. This is a create-time
+      specification and is not currently mutable via update masks.
     coreCount: Optional. The number of vCPUs per instance. Must be a power of
-      2 (2, 4, 8, 16, 32).
-    hardwareClass: Optional. The hardware class of the instances.
-    instanceCount: Optional. The number of VM instances in the instance group.
+      2 (2, 4, 8, 16, 32). This is a create-time specification and is not
+      currently mutable via update masks.
+    hardwareClass: Optional. The hardware class of the instances. This is a
+      create-time specification and is not currently mutable via update masks.
+    numInstances: Optional. The number of VM instances requested.For master
+      instances, this must be 1. For worker and secondary worker instances,
+      this represents the desired capacity of the group and is mutable via
+      cluster update operations and autoscaling.
   """
 
   class HardwareClassValueValuesEnum(_messages.Enum):
-    r"""Optional. The hardware class of the instances.
+    r"""Optional. The hardware class of the instances. This is a create-time
+    specification and is not currently mutable via update masks.
 
     Values:
       HARDWARE_CLASS_UNSPECIFIED: Unspecified hardware class.
@@ -6393,7 +6425,7 @@ class FlexibleInstanceGroupConfig(_messages.Message):
   bootDiskSizeGb = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   coreCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   hardwareClass = _messages.EnumField('HardwareClassValueValuesEnum', 3)
-  instanceCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  numInstances = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class FlinkJob(_messages.Message):
@@ -10618,11 +10650,17 @@ class RuntimeConfig(_messages.Message):
 
   Fields:
     autotuningConfig: Optional. Autotuning configuration of the workload.
+    baseEnvironmentVersion: Optional. The Dataproc predefined base environment
+      version to execute the workload with (for example, 1.0 or 2.0), without
+      a custom Environment resource.
     cohort: Optional. Cohort identifier. Identifies families of the workloads
       that have the same shape, for example, daily ETL jobs.
     containerImage: Optional. Optional custom container image for the job
       runtime environment. If not specified, a default container image will be
       used.
+    environment: Optional. The resource name of the Managed Environment to
+      execute the workload with.Format:
+      projects/{project}/locations/{location}/environments/{environment}
     properties: Optional. A mapping of property names to values, which are
       used to configure workload execution.
     repositoryConfig: Optional. Dependency repository configuration.
@@ -10655,11 +10693,13 @@ class RuntimeConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   autotuningConfig = _messages.MessageField('AutotuningConfig', 1)
-  cohort = _messages.StringField(2)
-  containerImage = _messages.StringField(3)
-  properties = _messages.MessageField('PropertiesValue', 4)
-  repositoryConfig = _messages.MessageField('RepositoryConfig', 5)
-  version = _messages.StringField(6)
+  baseEnvironmentVersion = _messages.StringField(2)
+  cohort = _messages.StringField(3)
+  containerImage = _messages.StringField(4)
+  environment = _messages.StringField(5)
+  properties = _messages.MessageField('PropertiesValue', 6)
+  repositoryConfig = _messages.MessageField('RepositoryConfig', 7)
+  version = _messages.StringField(8)
 
 
 class RuntimeInfo(_messages.Message):

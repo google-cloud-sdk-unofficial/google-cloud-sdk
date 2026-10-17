@@ -39,7 +39,13 @@ def GetProjectIDNumberFlag(verb):
       help='ID or number for the project you want to {0}.'.format(verb))
 
 
-def GetRecommendFlag(action):
+def GetRecommendFlag():
+  """Returns the --recommend flag, which has no effect.
+
+  The flag used to add an Active Assist change-risk warning to the prompt.
+  Those recommendations have been retired; the flag is kept so that existing
+  invocations keep working.
+  """
   return base.Argument(
       '--recommend',
       metavar='BOOLEAN_VALUE',
@@ -47,11 +53,9 @@ def GetRecommendFlag(action):
       default=False,
       required=False,
       help=(
-          'If true, checks Active Assist recommendation for the risk level of '
-          '{}, and issues a warning in the prompt. Optional flag is set to '
-          'false by default. For details see https://cloud.google.com/'
-          'recommender/docs/change-risk-recommendations'
-      ).format(action),
+          'This flag has no effect. It previously added a change-risk warning '
+          'from Active Assist, which has been retired.'
+      ),
   )
 
 
