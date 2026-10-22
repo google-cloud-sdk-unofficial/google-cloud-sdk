@@ -1,4 +1,6 @@
 - release_tracks: [GA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Update Observability settings configured on a project, folder, or organization.
     description: |

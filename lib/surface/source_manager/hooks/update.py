@@ -46,7 +46,6 @@ DETAILED_HELP = {
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.RegionalEndpointsSupported
 class Update(base.UpdateCommand):
   """Update a Secure Source Manager hook."""

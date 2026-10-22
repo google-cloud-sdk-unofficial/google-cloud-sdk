@@ -58,7 +58,7 @@ def AddDryRunFlag(parser):
 def AddPipelineApplyFlags(parser):
   """Add all flags for the `gcloud builds pipelines apply` command."""
   # Supplies the PIPELINE positional along with --region, and resolves the ID
-  # from `metadata.name` in the file named by --file when it is omitted.
+  # from `name` in the file named by --file when it is omitted.
   resource_args.AddPipelineResourceArg(parser, 'to apply')
   AddFileFlag(parser)
   AddServiceAccountFlag(parser)

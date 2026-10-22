@@ -20,7 +20,6 @@ from collections.abc import Callable
 import functools
 import hashlib
 import os
-import random
 import shutil
 import subprocess
 import sys
@@ -75,6 +74,8 @@ _IGNORED_MISSING_COMPONENTS = {
     'app-engine-go-darwin-x86_64': None,
     'app-engine-go-windows-x86': None,
     'app-engine-go-windows-x86_64': None,
+    'app-engine-grpc': None,
+    'cloud-build-local': None,
     'compute': None,
     'dns': None,
     'gae-java': _GAE_REDIRECT_MSG,
@@ -123,24 +124,7 @@ MINIKUBE_DEPRECATION_WARNING = (
     'https://minikube.sigs.k8s.io/docs/start/\n'
 )
 
-MAN_PAGES_DEPRECATION_WARNING = (
-    'The \'gcloud-man-pages\' component in Google Cloud CLI is deprecated and '
-    'will be removed in a future release. Use \'gcloud <command> --help\' for '
-    'interactive help or see https://cloud.google.com/sdk/gcloud/reference/ '
-    'for online documentation.\n'
-)
-
 _SKAFFOLD_COMPONENT_ID = 'skaffold'
-_SKAFFOLD_INSTALL_ERROR_RATE = 0.1
-# Set by the parent process after it has already performed the random
-# Skaffold install check, so a restarted child process (Windows bundled Python)
-# does not draw a second time or print the deprecation warning twice.
-_SKAFFOLD_INSTALL_CHECKED_ENV = '_CLOUDSDK_SKAFFOLD_INSTALL_CHECKED'
-
-SKAFFOLD_UNSUPPORTED_ERROR = (
-    'Skaffold component is not supported by gcloud and should be installed '
-    'following the instructions on https://skaffold.dev/docs/install/.'
-)
 
 SKAFFOLD_DEPRECATION_WARNING = (
     'Skaffold component is deprecated and will be removed from gcloud CLI '
@@ -153,11 +137,6 @@ _DONT_CANCEL_MESSAGE = (
     'Once started, canceling this operation may leave your SDK '
     'installation in an inconsistent state.'
 )
-
-
-def _ShouldFailSkaffoldInstall() -> bool:
-  """Returns True for a random ~10% of explicit Skaffold install attempts."""
-  return random.random() < _SKAFFOLD_INSTALL_ERROR_RATE
 
 
 def _HaltIfBundledPythonUnix():
@@ -226,11 +205,6 @@ class UpdaterDisabledError(Error):
 
 class InvalidComponentError(Error):
   """Error for when a given component id is not valid for the operation."""
-  pass
-
-
-class SkaffoldUnsupportedError(InvalidComponentError):
-  """Error for when installing the unsupported skaffold component fails."""
   pass
 
 
@@ -476,9 +450,6 @@ class UpdateManager(object):
     fixed_version = properties.VALUES.component_manager.fixed_sdk_version.Get()
     self.__fixed_version = fixed_version
     self.__skip_compile_python = skip_compile_python
-    # True once Install() has handled Skaffold, so Update() does not print the
-    # deprecation warning a second time.
-    self.__skaffold_deprecation_warned = False
 
   def GetUniverseSnapshotURL(self, universe_domain):
     """Get the snapshot URL based on the current universe domain."""
@@ -1036,8 +1007,6 @@ version [{1}].  To clear your fixed version setting, run:
 
     Raises:
       InvalidComponentError: If any of the given component ids do not exist.
-      SkaffoldUnsupportedError: If the skaffold component was requested and
-        the random deprecation check failed the install.
 
     Returns:
       bool, True if the update succeeded (or there was nothing to do, False if
@@ -1046,46 +1015,17 @@ version [{1}].  To clear your fixed version setting, run:
     if not components:
       raise InvalidComponentError('You must specify components to install')
 
-    installing_skaffold = _SKAFFOLD_COMPONENT_ID in components
-    if installing_skaffold:
-      self._CheckSkaffoldInstall()
-
     version = config.INSTALLATION_CONFIG.version
     if properties.VALUES.component_manager.additional_repositories.Get():
       log.warning('Additional component repositories are currently active.  '
                   'Running `update` instead of `install`.')
       version = None
 
-    try:
-      return self.Update(
-          components,
-          throw_if_unattended=throw_if_unattended,
-          version=version,
-          restart_args=restart_args)
-    finally:
-      if installing_skaffold:
-        # A bundled-Python restart spawns its child before exiting, so the
-        # child has already inherited this flag by the time it is cleared.
-        encoding.SetEncodedValue(
-            os.environ, _SKAFFOLD_INSTALL_CHECKED_ENV, None)
-
-  def _CheckSkaffoldInstall(self) -> None:
-    """Randomly fails, or else warns about, an explicit Skaffold install.
-
-    Raises:
-      SkaffoldUnsupportedError: For a random ~10% of calls, unless a parent
-        process already performed this check before restarting gcloud.
-    """
-    if encoding.GetEncodedValue(os.environ, _SKAFFOLD_INSTALL_CHECKED_ENV):
-      # A parent process already drew and warned before restarting this
-      # command with a copied bundled Python. Don't draw or warn again.
-      encoding.SetEncodedValue(os.environ, _SKAFFOLD_INSTALL_CHECKED_ENV, None)
-    else:
-      if _ShouldFailSkaffoldInstall():
-        raise SkaffoldUnsupportedError(SKAFFOLD_UNSUPPORTED_ERROR)
-      log.warning(SKAFFOLD_DEPRECATION_WARNING)
-      encoding.SetEncodedValue(os.environ, _SKAFFOLD_INSTALL_CHECKED_ENV, '1')
-    self.__skaffold_deprecation_warned = True
+    return self.Update(
+        components,
+        throw_if_unattended=throw_if_unattended,
+        version=version,
+        restart_args=restart_args)
 
   # Disables CBA during update to avoid locking libecp.dll into process memory
   # on Windows, which would prevent in-place replacement of the
@@ -1161,10 +1101,7 @@ version [{1}].  To clear your fixed version setting, run:
 
     if 'minikube' in to_install:
       log.warning(MINIKUBE_DEPRECATION_WARNING)
-    if 'gcloud-man-pages' in to_install:
-      log.warning(MAN_PAGES_DEPRECATION_WARNING)
-    if (_SKAFFOLD_COMPONENT_ID in to_install and
-        not self.__skaffold_deprecation_warned):
+    if _SKAFFOLD_COMPONENT_ID in to_install:
       log.warning(SKAFFOLD_DEPRECATION_WARNING)
 
     # If explicitly listing components, you are probably installing and not
@@ -1202,6 +1139,12 @@ version [{1}].  To clear your fixed version setting, run:
 
     for c in components_to_install:
       metrics.Installs(c.id, c.version.version_string)
+
+    # Preload all lazily-imported property sections into memory before updating
+    # install state on disk, since post-update steps (_PostProcess via
+    # execution_utils.GetToolEnv and UpdateAllDescriptors via AllValues) need
+    # this information corresponding to the current install.
+    properties.VALUES.AllSections(include_hidden=True)
 
     with execution_utils.UninterruptibleSection(stream=log.status):
       self.__Write(log.status, 'Performing in place update...\n')
@@ -1480,6 +1423,8 @@ To revert your CLI to the previously installed version, you may run:
     if not console_io.PromptContinue(_DONT_CANCEL_MESSAGE):
       return
 
+    properties.VALUES.AllSections(include_hidden=True)
+
     with execution_utils.UninterruptibleSection(stream=log.status):
       self.__Write(log.status, 'Performing in place update...\n')
       self._UpdateWithProgressBar(components_to_remove, 'Uninstalling',
@@ -1517,6 +1462,8 @@ To revert your CLI to the previously installed version, you may run:
         message='Your Google Cloud CLI installation will be restored to its previous '
         'state.'):
       return
+
+    properties.VALUES.AllSections(include_hidden=True)
 
     self.__Write(log.status, 'Restoring backup...')
     install_state.RestoreBackup()

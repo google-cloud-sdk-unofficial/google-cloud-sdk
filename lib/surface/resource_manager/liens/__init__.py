@@ -19,12 +19,14 @@ from googlecloudsdk.api_lib.resource_manager import liens
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Liens(base.Group):
   """Manage Cloud Resource Manager Liens.
 
   Commands to manage your Cloud Resource Liens.
   """
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   @staticmethod
   def Args(parser):

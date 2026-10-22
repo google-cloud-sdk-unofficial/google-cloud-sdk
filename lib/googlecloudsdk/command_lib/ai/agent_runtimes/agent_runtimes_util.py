@@ -23,6 +23,7 @@ the CLI experience.
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable, Iterator
 import functools
 import json
 import os
@@ -56,6 +57,9 @@ from googlecloudsdk.core.util import files
 _OPERATIONS_COLLECTION = 'aiplatform.projects.locations.operations'
 _RUNTIME_OPERATIONS_COLLECTION = (
     'aiplatform.projects.locations.reasoningEngines.operations'
+)
+_RUNTIME_REVISION_OPERATIONS_COLLECTION = (
+    'aiplatform.projects.locations.reasoningEngines.runtimeRevisions.operations'
 )
 _SOURCE_ARCHIVE_NAME = 'source.tar.gz'
 _DEFAULT_SECRET_VERSION = 'latest'
@@ -107,6 +111,8 @@ _FLAG_TO_MASKS = {
     'keep_alive_probe_path': ('spec.deployment_spec.keep_alive_probe',),
     'keep_alive_probe_port': ('spec.deployment_spec.keep_alive_probe',),
     'keep_alive_probe_timeout': ('spec.deployment_spec.keep_alive_probe',),
+    'always_latest': ('traffic_config',),
+    'to_revisions': ('traffic_config',),
     'traffic_split_always_latest': ('traffic_config',),
     'traffic_split_to_revisions': ('traffic_config',),
 }
@@ -136,8 +142,9 @@ _BACKEND_ERROR_FIELD_RE = re.compile(
 def ParseOperation(operation_name: str) -> resources.Resource:
   """Parses an operation resource name into an operation reference.
 
-  Mutations on an agent runtime may return either a location scoped operation
-  or one scoped to the agent runtime itself, so both collections are tried.
+  Mutations on an agent runtime or its revisions may return a location-scoped
+  operation or one scoped to the agent runtime or revision, so all collections
+  are tried.
 
   Args:
     operation_name: The relative name of the operation resource.
@@ -145,13 +152,17 @@ def ParseOperation(operation_name: str) -> resources.Resource:
   Returns:
     The parsed operation reference.
   """
-  if '/reasoningEngines/' in operation_name:
-    try:
-      return resources.REGISTRY.ParseRelativeName(
-          operation_name, collection=_RUNTIME_OPERATIONS_COLLECTION
-      )
-    except resources.WrongResourceCollectionException:
-      pass
+  for marker, collection in (
+      ('/runtimeRevisions/', _RUNTIME_REVISION_OPERATIONS_COLLECTION),
+      ('/reasoningEngines/', _RUNTIME_OPERATIONS_COLLECTION),
+  ):
+    if marker in operation_name:
+      try:
+        return resources.REGISTRY.ParseRelativeName(
+            operation_name, collection=collection
+        )
+      except resources.WrongResourceCollectionException:
+        pass
   return resources.REGISTRY.ParseRelativeName(
       operation_name, collection=_OPERATIONS_COLLECTION
   )
@@ -195,23 +206,29 @@ def ValidateDisplayName(
 
 
 def ValidateTrafficSplitToRevisions(
-    traffic_split_to_revisions: dict[str, int] | None,
+    percent_by_revision: dict[str, int] | None,
+    flag_name: str,
 ) -> None:
-  """Validates traffic split percentage distribution across revisions."""
-  if traffic_split_to_revisions is None:
+  """Validates traffic split percentage distribution across revisions.
+
+  Args:
+    percent_by_revision: Mapping of revision IDs to traffic percentages.
+    flag_name: The CLI flag name to report in validation errors.
+  """
+  if percent_by_revision is None:
     return
-  for revision, percentage in traffic_split_to_revisions.items():
+  for revision, percentage in percent_by_revision.items():
     if percentage < 0:
       raise gcloud_exceptions.InvalidArgumentException(
-          '--traffic-split-to-revisions',
+          flag_name,
           'Traffic percentage for [{}] must be non-negative, got [{}].'.format(
               revision, percentage
           ),
       )
-  total = sum(traffic_split_to_revisions.values())
+  total = sum(percent_by_revision.values())
   if total != 100:
     raise gcloud_exceptions.InvalidArgumentException(
-        '--traffic-split-to-revisions',
+        flag_name,
         'The sum of all traffic split percentages must be 100, got'
         ' [{}].'.format(total),
     )
@@ -324,7 +341,17 @@ def ValidateUpdateArgs(args: Any, for_deploy: bool = False) -> None:
         'Please specify at least one property to update.',
     )
   ValidateDisplayName(args.display_name, required=False)
-  ValidateTrafficSplitToRevisions(args.traffic_split_to_revisions)
+  ValidateTrafficSplitToRevisions(
+      args.traffic_split_to_revisions,
+      flag_name='--traffic-split-to-revisions',
+  )
+
+
+def ValidateUpdateTrafficArgs(args: Any) -> None:
+  """Validates flags when updating traffic for an agent runtime."""
+  ValidateTrafficSplitToRevisions(
+      args.to_revisions, flag_name='--to-revisions'
+  )
 
 
 # --- API Execution Helpers ---
@@ -405,32 +432,83 @@ def TranslateBackendErrorMessage(message: str, args: Any = None) -> str:
   )
 
 
-def _ExecuteApiCall(api_call, *args, cmd_args: Any = None, **kwargs):
-  """Executes an apitools client method and wraps HttpError."""
+def _ToHttpException(
+    error: apitools_exceptions.HttpError, cmd_args: Any = None
+) -> api_exceptions.HttpException:
+  """Translates backend field names and returns an HttpException."""
+  if cmd_args is not None and error.content:
+    try:
+      payload = json.loads(error.content)
+      payload['error']['message'] = TranslateBackendErrorMessage(
+          payload['error']['message'], cmd_args
+      )
+      error.content = json.dumps(payload)
+    except (ValueError, KeyError, TypeError):
+      pass
+  return api_exceptions.HttpException(
+      error, 'ResponseError: code={status_code}, message={status_message}'
+  )
+
+
+def WrapHttpErrors(
+    iterable: Iterable[Any], cmd_args: Any = None
+) -> Iterator[Any]:
+  """Yields items from `iterable`, translating any apitools HttpError.
+
+  Args:
+    iterable: An iterable (such as a `list_pager.YieldFromList` generator) that
+      may raise `apitools_exceptions.HttpError` during iteration.
+    cmd_args: Optional parsed CLI arguments used to translate backend field
+      names in error messages.
+
+  Yields:
+    Items from `iterable`.
+  """
+  try:
+    yield from iterable
+  except apitools_exceptions.HttpError as error:
+    raise _ToHttpException(error, cmd_args=cmd_args) from error
+
+
+def ExecuteApiCall(api_call, *args, cmd_args: Any = None, **kwargs):
+  """Executes an apitools client method and translates any HttpError.
+
+  Args:
+    api_call: The apitools client method to call.
+    *args: Positional arguments forwarded to `api_call`.
+    cmd_args: Optional parsed CLI arguments used to translate backend field
+      names in error messages.
+    **kwargs: Keyword arguments forwarded to `api_call`.
+
+  Returns:
+    The return value of `api_call(*args, **kwargs)`.
+  """
   try:
     return api_call(*args, **kwargs)
   except apitools_exceptions.HttpError as error:
-    if cmd_args is not None and error.content:
-      try:
-        payload = json.loads(error.content)
-        payload['error']['message'] = TranslateBackendErrorMessage(
-            payload['error']['message'], cmd_args
-        )
-        error.content = json.dumps(payload)
-      except (ValueError, KeyError, TypeError):
-        pass
-    raise api_exceptions.HttpException(
-        error, 'ResponseError: code={status_code}, message={status_message}'
-    )
+    raise _ToHttpException(error, cmd_args=cmd_args) from error
 
 
-def _WaitForOperation(
+def WaitForOperation(
     operation: Any,
-    message: str,
+    message: str | None = None,
     asynchronous: bool = False,
     cmd_args: Any = None,
 ) -> tuple[Any, resources.Resource]:
-  """Waits for an operation or returns early if asynchronous."""
+  """Waits for an operation or returns early if asynchronous.
+
+  Args:
+    operation: The long-running operation message returned by the API.
+    message: Progress tracker message displayed while polling.
+    asynchronous: If True, returns the operation immediately without waiting.
+    cmd_args: Optional parsed CLI arguments used to translate backend field
+      names in operation error messages.
+
+  Returns:
+    A tuple of `(response, op_ref)` where `response` is the completed operation
+    result (or the operation itself when `asynchronous=True`) and `op_ref` is
+    the parsed operation resource reference.
+  """
   op_ref = ParseOperation(operation.name)
   try:
     response = operations_util.WaitForOpMaybe(
@@ -471,13 +549,13 @@ def CreateRuntime(
   ):
     runtimes_client = client.AgentRuntimesClient(version=constants.BETA_VERSION)
     agent_runtime = AgentRuntimeBuilder(runtimes_client).Build(args)
-    operation = _ExecuteApiCall(
+    operation = ExecuteApiCall(
         runtimes_client.Create,
         region_ref.RelativeName(),
         agent_runtime,
         cmd_args=args,
     )
-    response, op_ref = _WaitForOperation(
+    response, op_ref = WaitForOperation(
         operation,
         message='Waiting for the agent runtime to be created...',
         asynchronous=asynchronous,
@@ -498,6 +576,50 @@ def CreateRuntime(
     return response
 
 
+def _GetUpdateAndWait(
+    runtime_ref: resources.Resource,
+    args: Any,
+    asynchronous: bool,
+    has_labels_update: bool,
+    build_fn: Callable[[AgentRuntimeBuilder, Any], Any],
+) -> Any:
+  """Gets an existing runtime, builds the update, calls Update, and waits."""
+  region = runtime_ref.locationsId
+  ValidateRegion(region)
+
+  with endpoint_util.AiplatformEndpointOverrides(
+      constants.BETA_VERSION, region=region
+  ):
+    runtimes_client = client.AgentRuntimesClient(version=constants.BETA_VERSION)
+    existing_runtime = ExecuteApiCall(
+        runtimes_client.Get,
+        runtime_ref.RelativeName(),
+        cmd_args=args,
+    )
+    agent_runtime = build_fn(
+        AgentRuntimeBuilder(runtimes_client), existing_runtime
+    )
+    update_mask_paths = GetUpdateMaskPaths(
+        args, has_labels_update=has_labels_update
+    )
+    update_mask = ','.join(update_mask_paths) if update_mask_paths else None
+    operation = ExecuteApiCall(
+        runtimes_client.Update,
+        runtime_ref.RelativeName(),
+        agent_runtime,
+        update_mask=update_mask,
+        cmd_args=args,
+    )
+    response, _ = WaitForOperation(
+        operation,
+        message='Waiting for the agent runtime to be updated...',
+        asynchronous=asynchronous,
+        cmd_args=args,
+    )
+    log.UpdatedResource(runtime_ref.reasoningEnginesId, kind='agent runtime')
+    return response
+
+
 def UpdateRuntime(
     runtime_ref: resources.Resource,
     args: Any,
@@ -508,47 +630,46 @@ def UpdateRuntime(
   """Updates an existing agent runtime and waits for the operation."""
   del release_track  # Unused for now.
   ValidateUpdateArgs(args, for_deploy=for_deploy)
-  region = runtime_ref.locationsId
-  ValidateRegion(region)
+  has_labels_update = labels_util.Diff.FromUpdateArgs(args).MayHaveUpdates()
+  return _GetUpdateAndWait(
+      runtime_ref=runtime_ref,
+      args=args,
+      asynchronous=asynchronous,
+      has_labels_update=has_labels_update,
+      build_fn=lambda builder, existing: builder.BuildForUpdate(
+          args, existing_runtime=existing
+      ),
+  )
 
-  with endpoint_util.AiplatformEndpointOverrides(
-      constants.BETA_VERSION, region=region
-  ):
-    runtimes_client = client.AgentRuntimesClient(version=constants.BETA_VERSION)
-    existing_runtime = _ExecuteApiCall(
-        runtimes_client.Get,
-        runtime_ref.RelativeName(),
-        cmd_args=args,
-    )
-    agent_runtime = AgentRuntimeBuilder(runtimes_client).BuildForUpdate(
-        args, existing_runtime=existing_runtime
-    )
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    has_labels_update = (
-        labels_diff.MayHaveUpdates() and agent_runtime.labels is not None
-    )
-    update_mask_paths = GetUpdateMaskPaths(
-        args, has_labels_update=has_labels_update
-    )
-    update_mask = ','.join(update_mask_paths) if update_mask_paths else None
-    operation = _ExecuteApiCall(
-        runtimes_client.Update,
-        runtime_ref.RelativeName(),
-        agent_runtime,
-        update_mask=update_mask,
-        cmd_args=args,
-    )
-    response, _ = _WaitForOperation(
-        operation,
-        message='Waiting for the agent runtime to be updated...',
-        asynchronous=asynchronous,
-        cmd_args=args,
-    )
-    log.UpdatedResource(runtime_ref.reasoningEnginesId, kind='agent runtime')
-    return response
+
+def UpdateTraffic(
+    runtime_ref: resources.Resource,
+    args: Any,
+    asynchronous: bool = False,
+) -> Any:
+  """Updates traffic routing for an existing agent runtime and waits."""
+  ValidateUpdateTrafficArgs(args)
+  return _GetUpdateAndWait(
+      runtime_ref=runtime_ref,
+      args=args,
+      asynchronous=asynchronous,
+      has_labels_update=False,
+      build_fn=lambda builder, existing: builder.BuildForTrafficUpdate(
+          args,
+          existing_runtime=existing,
+          runtime_name=runtime_ref.RelativeName(),
+      ),
+  )
 
 
 # --- Generic Utility Helpers ---
+
+
+def _RevisionName(runtime_name: str | None, revision: str) -> str:
+  """Returns the revision resource name, expanding short IDs when possible."""
+  if '/' in revision or not runtime_name:
+    return revision
+  return f'{runtime_name}/runtimeRevisions/{revision}'
 
 
 def _BuildIfAny(cls, **kwargs):
@@ -683,8 +804,21 @@ class AgentRuntimeBuilder:
         spec=self._Spec(args),
     )
 
-  def BuildForUpdate(self, args, existing_runtime: Any = None) -> Any:
-    """Builds the `ReasoningEngine` message for updating an existing runtime."""
+  def BuildForUpdate(
+      self,
+      args,
+      existing_runtime: Any = None,
+  ) -> Any:
+    """Builds the `ReasoningEngine` message for updating an existing runtime.
+
+    Args:
+      args: The parsed command-line arguments namespace.
+      existing_runtime: The existing `ReasoningEngine` fetched from the API,
+        used to preserve or mutate existing fields (such as etag, labels, env).
+
+    Returns:
+      A `GoogleCloudAiplatformV1beta1ReasoningEngine` message for the update.
+    """
     runtime_cls = self._messages.GoogleCloudAiplatformV1beta1ReasoningEngine
     etag = args.etag or (existing_runtime.etag if existing_runtime else None)
     return runtime_cls(
@@ -693,7 +827,40 @@ class AgentRuntimeBuilder:
         etag=etag,
         labels=self._UpdateLabels(args, runtime_cls, existing_runtime),
         spec=self._SpecForUpdate(args, existing_runtime),
-        trafficConfig=self._TrafficConfig(args),
+        trafficConfig=self._TrafficConfig(
+            always_latest=bool(args.traffic_split_always_latest),
+            percent_by_revision=args.traffic_split_to_revisions,
+        ),
+    )
+
+  def BuildForTrafficUpdate(
+      self,
+      args,
+      existing_runtime: Any = None,
+      runtime_name: str | None = None,
+  ) -> Any:
+    """Builds the `ReasoningEngine` message for updating traffic routing.
+
+    Args:
+      args: The parsed command-line arguments namespace.
+      existing_runtime: The existing `ReasoningEngine` fetched from the API,
+        used for optimistic concurrency via `etag`.
+      runtime_name: The relative resource name of the runtime, used to expand
+        short revision IDs into full revision resource names.
+
+    Returns:
+      A `GoogleCloudAiplatformV1beta1ReasoningEngine` message containing the
+      updated traffic configuration.
+    """
+    runtime_cls = self._messages.GoogleCloudAiplatformV1beta1ReasoningEngine
+    etag = existing_runtime.etag if existing_runtime else None
+    return runtime_cls(
+        etag=etag,
+        trafficConfig=self._TrafficConfig(
+            always_latest=bool(args.always_latest),
+            percent_by_revision=args.to_revisions,
+            runtime_name=runtime_name,
+        ),
     )
 
   def _UpdateLabels(self, args, runtime_cls: Any, existing_runtime: Any) -> Any:
@@ -704,18 +871,22 @@ class AgentRuntimeBuilder:
     existing_labels = existing_runtime.labels if existing_runtime else None
     return diff.Apply(runtime_cls.LabelsValue, existing_labels).GetOrNone()
 
-  def _TrafficConfig(self, args) -> Any:
-    """Builds `ReasoningEngine.traffic_config` from traffic flags."""
+  def _TrafficConfig(
+      self,
+      always_latest: bool,
+      percent_by_revision: dict[str, int] | None,
+      runtime_name: str | None = None,
+  ) -> Any:
+    """Builds `ReasoningEngine.traffic_config` from traffic parameters."""
     traffic_config_cls = (
         self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineTrafficConfig
     )
-    if args.traffic_split_always_latest:
+    if always_latest:
       always_latest_cls = (
           self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineTrafficConfigTrafficSplitAlwaysLatest
       )
       return traffic_config_cls(trafficSplitAlwaysLatest=always_latest_cls())
-    targets = args.traffic_split_to_revisions
-    if not targets:
+    if not percent_by_revision:
       return None
     target_cls = (
         self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineTrafficConfigTrafficSplitManualTarget
@@ -726,8 +897,11 @@ class AgentRuntimeBuilder:
     return traffic_config_cls(
         trafficSplitManual=manual_cls(
             targets=[
-                target_cls(runtimeRevisionName=revision, percent=percentage)
-                for revision, percentage in sorted(targets.items())
+                target_cls(
+                    runtimeRevisionName=_RevisionName(runtime_name, revision),
+                    percent=percentage,
+                )
+                for revision, percentage in sorted(percent_by_revision.items())
             ]
         )
     )

@@ -25,43 +25,45 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.universe_descriptor import universe_descriptor
 import six
 
 
 IMAGE_URL_MAP = {
     'base-image': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/base:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/base:latest'
     ),
     'clion': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/clion:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/clion:latest'
     ),
     'codeoss': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/code-oss:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/code-oss:latest'
     ),
     'codeoss-cuda': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/code-oss-cuda:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/code-oss-cuda:latest'
     ),
     'goland': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/goland:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/goland:latest'
     ),
     'intellij': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/intellij-ultimate:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/intellij-ultimate:latest'
     ),
     'phpstorm': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/phpstorm:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/phpstorm:latest'
     ),
     'pycharm': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/pycharm:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/pycharm:latest'
     ),
     'rider': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/rider:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/rider:latest'
     ),
     'rubymine': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/rubymine:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/rubymine:latest'
     ),
     'webstorm': (
-        '{location}-docker.pkg.dev/cloud-workstations-images/predefined/webstorm:latest'
+        '{location}-docker.{ar_domain}/{project_prefix}cloud-workstations-images/predefined/webstorm:latest'
     ),
 }
 
@@ -72,6 +74,7 @@ BOOST_CONFIG_MAP = {
     'boot-disk-size': 'bootDiskSizeGb',
     'enable-nested-virtualization': 'enableNestedVirtualization',
     'reservation-affinity': 'reservationAffinity',
+    'enable-automatic-failover': 'enableAutomaticFailover',
 }
 
 RESERVATION_AFFINITY_MAP = {
@@ -79,6 +82,25 @@ RESERVATION_AFFINITY_MAP = {
     'consume-reservation-type': 'consumeReservationType',
     'values': 'values',
 }
+
+
+def _get_predefined_image_url(predefined_image, location):
+  """Returns the predefined container image URL for the current universe."""
+  image_template = IMAGE_URL_MAP.get(predefined_image)
+  ar_domain = 'pkg.dev'
+  project_prefix = ''
+  if not properties.IsDefaultUniverse():
+    descriptor = universe_descriptor.GetUniverseDomainDescriptor()
+    ar_domain = descriptor.artifact_registry_domain
+    project_prefix = (
+        f'{descriptor.project_prefix}/' if descriptor.project_prefix else ''
+    )
+
+  return image_template.format(
+      location=location,
+      ar_domain=ar_domain,
+      project_prefix=project_prefix,
+  )
 
 
 class Configs:
@@ -371,9 +393,9 @@ class Configs:
     if args.container_custom_image:
       config.container.image = args.container_custom_image
     elif args.container_predefined_image:
-      config.container.image = IMAGE_URL_MAP.get(
-          args.container_predefined_image
-      ).format(location=location)
+      config.container.image = _get_predefined_image_url(
+          args.container_predefined_image, location
+      )
     if args.container_command:
       config.container.command = args.container_command
     if args.container_args:
@@ -722,9 +744,9 @@ class Configs:
       config.container.image = args.container_custom_image
       update_mask.append('container.image')
     elif args.IsSpecified('container_predefined_image'):
-      config.container.image = IMAGE_URL_MAP.get(
-          args.container_predefined_image
-      ).format(location=location)
+      config.container.image = _get_predefined_image_url(
+          args.container_predefined_image, location
+      )
       update_mask.append('container.image')
 
     if args.IsSpecified('container_command'):

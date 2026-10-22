@@ -172,3 +172,34 @@ def BuildAddressGroupUrl(address_group, optional_organization,
       org_id=organization,
       collection_name='addressGroups',
       resource_name=address_group)
+
+
+def BuildRolloutOperation(messages, args):
+  """Returns FirewallPolicyRolloutOperation message from args if specified.
+
+  Args:
+    messages: The compute messages module.
+    args: The parsed command-line arguments.
+
+  Returns:
+    FirewallPolicyRolloutOperation message or None if no rollout plan flag is
+    specified.
+  """
+  rollout_input_cls = messages.FirewallPolicyRolloutOperationRolloutInput
+  if args.IsSpecified('rollout_plan'):
+    return messages.FirewallPolicyRolloutOperation(
+        rolloutInput=rollout_input_cls(
+            name=args.rollout_plan,
+        )
+    )
+  if args.IsSpecified('predefined_rollout_plan'):
+    return messages.FirewallPolicyRolloutOperation(
+        rolloutInput=rollout_input_cls(
+            predefinedRolloutPlan=(
+                rollout_input_cls.PredefinedRolloutPlanValueValuesEnum(
+                    args.predefined_rollout_plan
+                )
+            ),
+        )
+    )
+  return None

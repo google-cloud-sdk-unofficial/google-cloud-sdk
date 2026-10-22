@@ -178,3 +178,48 @@ def PartialUpdate(cluster_ref,
           autoscaling_cpu_target=autoscaling_cpu_target,
           autoscaling_storage_target=autoscaling_storage_target,
           update_mask=update_mask))
+
+
+def BuildUpdateNodeScalingFactorRequest(msgs, name, node_scaling_factor):
+  """Build an UpdateNodeScalingFactor request.
+
+  Args:
+    msgs: The Bigtable admin messages module.
+    name: str, the relative resource name of the cluster to update.
+    node_scaling_factor: The target node scaling factor, an
+      UpdateNodeScalingFactorRequest.NodeScalingFactorValueValuesEnum value.
+
+  Returns:
+    A BigtableadminProjectsInstancesClustersUpdateNodeScalingFactorRequest.
+  """
+  request_type = (
+      msgs.BigtableadminProjectsInstancesClustersUpdateNodeScalingFactorRequest
+  )
+  return request_type(
+      name=name,
+      updateNodeScalingFactorRequest=msgs.UpdateNodeScalingFactorRequest(
+          nodeScalingFactor=node_scaling_factor
+      ),
+  )
+
+
+def UpdateNodeScalingFactor(cluster_ref, node_scaling_factor):
+  """Update a cluster's node scaling factor.
+
+  Args:
+    cluster_ref: A resource reference to the cluster to update.
+    node_scaling_factor: The target node scaling factor, an
+      UpdateNodeScalingFactorRequest.NodeScalingFactorValueValuesEnum value.
+
+  Returns:
+    Long running operation.
+  """
+  client = util.GetAdminClient()
+  msgs = util.GetAdminMessages()
+  return client.projects_instances_clusters.UpdateNodeScalingFactor(
+      BuildUpdateNodeScalingFactorRequest(
+          msgs=msgs,
+          name=cluster_ref.RelativeName(),
+          node_scaling_factor=node_scaling_factor,
+      )
+  )

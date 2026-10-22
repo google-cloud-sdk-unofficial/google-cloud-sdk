@@ -23,9 +23,9 @@
     description: |
       Deletes a Managed Lustre instance.
     examples: |-
-      to delete an instance `my-instance` run:
+      To delete an instance `my-instance` in location `us-central1-a` run:
 
-      $ {command} my-instance
+      $ {command} my-instance --location=us-central1-a
   arguments:
     params:
     - help_text: |-

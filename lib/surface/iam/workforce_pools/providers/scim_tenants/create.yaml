@@ -48,5 +48,8 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider_scim_tenant.claim_mapping
       required: true
 
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider_scim_tenant.create_wlid_group
+      release_tracks: [ALPHA]
+
   output:
     format: yaml

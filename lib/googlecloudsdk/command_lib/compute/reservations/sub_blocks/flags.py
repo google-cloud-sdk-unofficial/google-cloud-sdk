@@ -77,20 +77,29 @@ def GetDisruptionScheduleFlag():
       required=True)
 
 
-def GetFaultReasonsFlag():
+def GetFaultReasonsFlag(
+    support_component_id: bool = False,
+) -> base.Argument:
   """Gets the --fault-reasons flag."""
+  spec = {'behavior': str, 'description': str}
+  help_text = (
+      'The reasons for reporting the sub-block as faulty. You can repeat'
+      ' this flag. Each flag must specify a "behavior" attribute and can'
+      ' optionally include a "description" attribute. The possible values'
+      ' for "behavior" are: PERFORMANCE, SWITCH_FAILURE, GPU_ERROR.'
+  )
+  if support_component_id:
+    spec['component-id'] = str
+    help_text += (
+        ' Additionally, "component-id" can be specified to report a specific'
+        ' faulty sub-component (e.g., an NVSwitch ID).'
+    )
+
   return base.Argument(
       '--fault-reasons',
-      type=arg_parsers.ArgDict(
-          spec={'behavior': str, 'description': str},
-      ),
+      type=arg_parsers.ArgDict(spec=spec),
       action='append',
-      help=(
-          'The reasons for reporting the sub-block as faulty. You can repeat'
-          ' this flag. Each flag must specify a "behavior" attribute and can'
-          ' optionally include a "description" attribute. The possible values'
-          ' for "behavior" are: PERFORMANCE, SWITCH_FAILURE, GPU_ERROR.'
-      ),
+      help=help_text,
       required=True,
   )
 

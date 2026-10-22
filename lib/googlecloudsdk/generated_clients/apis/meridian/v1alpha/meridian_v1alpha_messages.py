@@ -766,6 +766,21 @@ class ChannelCalibration(_messages.Message):
   experiments = _messages.MessageField('IncrementalityExperiment', 3, repeated=True)
 
 
+class ChannelConstraint(_messages.Message):
+  r"""Spend constraints for a specific marketing channel.
+
+  Fields:
+    lowerSpendShiftRatio: Optional. Minimum allowable spend ratio below
+      baseline. Must be in [0, 1).
+    upperSpendShiftRatio: Optional. Maximum allowable spend ratio above
+      baseline (e.g., 0.3 = spend cannot increase by >30%, 1.5 = +150%). Must
+      be >= 0.0.
+  """
+
+  lowerSpendShiftRatio = _messages.FloatField(1)
+  upperSpendShiftRatio = _messages.FloatField(2)
+
+
 class ChannelDateRangeCalibration(_messages.Message):
   r"""Specifies ROI calibration date intervals for a subset of channels. In
   Marketing Mix Modeling, ROI calibration incorporates experimental ground
@@ -2728,6 +2743,79 @@ class IncrementalityExperiment(_messages.Message):
   totalSpend = _messages.FloatField(6)
 
 
+class InferModelRequest(_messages.Message):
+  r"""Request message for Meridian.InferModel.
+
+  Fields:
+    inferParameters: Optional. Parameters for the inference optimization run.
+    requestId: Optional. A unique request ID to identify requests.
+  """
+
+  inferParameters = _messages.MessageField('InferParameters', 1)
+  requestId = _messages.StringField(2)
+
+
+class InferParameters(_messages.Message):
+  r"""Parameters for running Meridian inference optimization.
+
+  Messages:
+    ChannelConstraintsValue: Optional. Channel spend boundaries keyed by
+      channel name.
+
+  Fields:
+    channelConstraints: Optional. Channel spend boundaries keyed by channel
+      name.
+    endDate: Optional. End date of the evaluation period. Defaults to the
+      historical date range of the model if unset.
+    flexible: Optional. If true, runs flexible budget optimization targeting
+      an efficiency metric (target_roi or target_mroi). If false (default),
+      runs fixed budget optimization allocating initial_budget across
+      channels.
+    initialBudget: Optional. Initial total budget dollar amount to allocate
+      across channels. Defaults to historical spend over the evaluation period
+      if unset.
+    startDate: Optional. Start date of the evaluation period. Defaults to the
+      historical date range of the model if unset.
+    targetMroi: Target Marginal Return on Investment (return on next
+      incremental dollar).
+    targetRoi: Target Return on Investment (revenue / spend).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ChannelConstraintsValue(_messages.Message):
+    r"""Optional. Channel spend boundaries keyed by channel name.
+
+    Messages:
+      AdditionalProperty: An additional property for a ChannelConstraintsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ChannelConstraintsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ChannelConstraintsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ChannelConstraint attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ChannelConstraint', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  channelConstraints = _messages.MessageField('ChannelConstraintsValue', 1)
+  endDate = _messages.MessageField('Date', 2)
+  flexible = _messages.BooleanField(3)
+  initialBudget = _messages.FloatField(4)
+  startDate = _messages.MessageField('Date', 5)
+  targetMroi = _messages.FloatField(6)
+  targetRoi = _messages.FloatField(7)
+
+
 class InferenceData(_messages.Message):
   r"""InferenceData data contains none, only prior, or both prior and
   posterior sampled parameters and their sampling states and trace from
@@ -3944,6 +4032,21 @@ class MeridianProjectsLocationsWorkspacesDatasetsModelsGetRequest(_messages.Mess
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class MeridianProjectsLocationsWorkspacesDatasetsModelsInferRequest(_messages.Message):
+  r"""A MeridianProjectsLocationsWorkspacesDatasetsModelsInferRequest object.
+
+  Fields:
+    inferModelRequest: A InferModelRequest resource to be passed as the
+      request body.
+    name: Required. The model resource name to run inference against. Format:
+      projects/{project}/locations/{location}/workspaces/{workspace}/datasets/
+      {dataset}/models/{model}
+  """
+
+  inferModelRequest = _messages.MessageField('InferModelRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class MeridianProjectsLocationsWorkspacesDatasetsModelsListRequest(_messages.Message):

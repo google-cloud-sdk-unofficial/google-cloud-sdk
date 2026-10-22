@@ -18,15 +18,15 @@ This module provides helpers for integrating with `requests-oauthlib`_.
 Typically, you'll want to use the higher-level helpers in
 :mod:`google_auth_oauthlib.flow`.
 
-.. _requests-oauthlib: http://requests-oauthlib.readthedocs.io/en/stable/
+.. _requests-oauthlib: http://requests-oauthlib.readthedocs.io/en/latest/
 """
 
 import datetime
 import json
 
-from google.auth import external_account_authorized_user
 import google.oauth2.credentials
 import requests_oauthlib
+from google.auth import external_account_authorized_user
 
 _REQUIRED_CONFIG_KEYS = frozenset(("auth_uri", "token_uri", "client_id"))
 
@@ -123,7 +123,7 @@ def credentials_from_session(session, client_config=None):
 
     if not session.token:
         raise ValueError(
-            "There is no access token for this session, did you call " "fetch_token?"
+            "There is no access token for this session, did you call fetch_token?"
         )
 
     if "3pi" in client_config:
@@ -145,6 +145,9 @@ def credentials_from_session(session, client_config=None):
             client_id=client_config.get("client_id"),
             client_secret=client_config.get("client_secret"),
             scopes=session.scope,
+            granted_scopes=session.token.get("scope"),
         )
-    credentials.expiry = datetime.datetime.utcfromtimestamp(session.token["expires_at"])
+    credentials.expiry = datetime.datetime.fromtimestamp(
+        session.token["expires_at"], datetime.timezone.utc
+    ).replace(tzinfo=None)
     return credentials

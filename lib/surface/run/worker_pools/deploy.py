@@ -301,7 +301,7 @@ class Deploy(base.Command):
             build_pack=pack,
             build_source=source,
             repo_to_create=repo_to_create,
-            deploy_from_source_container_name=name,
+            deploy_from_source_container_name=name or None,
         )
     )
 
@@ -385,7 +385,10 @@ class Deploy(base.Command):
       # only a placeholder.
       for container_args in no_build_containers.values():
         container_args.image = _NO_BUILD_IMAGE
-      config_changes = _GetBaseImageChanges(containers)
+      # The base image changes must follow the deployment type switch changes,
+      # because ClearSourceCodeChange also clears base_image_uri.
+      config_changes = _GetDeploymentTypeSwitchChanges(containers)
+      config_changes.extend(_GetBaseImageChanges(containers))
 
       config_changes.extend(self._GetBaseChanges(args))
       dry_run = getattr(args, 'dry_run', False)
@@ -481,6 +484,35 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
           {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
       )
   return pack
+
+
+def _GetDeploymentTypeSwitchChanges(
+    containers: Mapping[str, Any],
+) -> list[config_changes_mod.ContainerConfigChanger]:
+  """Returns changes that clear fields left by a previous deployment type.
+
+  Expects containers validated by _ValidateAndGetSourceContainers, so each one
+  is deployed from --image, a legacy SubmitBuild source, or a --no-build
+  source.
+
+  ClearSourceCodeChange also clears base_image_uri, so apply these changes
+  before _GetBaseImageChanges.
+
+  Args:
+    containers: map of container name to container args from the CLI input.
+
+  Returns:
+    A list of config changes that clear source fields on --image and legacy
+    SubmitBuild containers.
+  """
+  return [
+      config_changes_mod.ClearSourceCodeChange(
+          container_name=name or None,
+          non_ingress_type=True,
+      )
+      for name, container_args in containers.items()
+      if not getattr(container_args, 'no_build', False)
+  ]
 
 
 def _GetBaseImageChanges(

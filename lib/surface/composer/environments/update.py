@@ -54,6 +54,7 @@ class Update(base.Command):
   _support_environment_size = True
   _support_traffic_routing_config = False
   _support_user_workloads_service_accounts = False
+  _support_airflow_rbac_config = False
 
   @staticmethod
   def Args(parser, release_track=base.ReleaseTrack.GA):
@@ -110,13 +111,15 @@ class Update(base.Command):
     params = dict(
         is_composer_v1=is_composer_v1,
         env_ref=env_ref,
+        env_obj=env_obj,
         node_count=args.node_count,
         update_pypi_packages_from_file=args.update_pypi_packages_from_file,
         clear_pypi_packages=args.clear_pypi_packages,
         remove_pypi_packages=args.remove_pypi_packages,
         update_pypi_packages=dict(
             command_util.SplitRequirementSpecifier(r)
-            for r in args.update_pypi_package),
+            for r in args.update_pypi_package
+        ),
         clear_labels=args.clear_labels,
         remove_labels=args.remove_labels,
         update_labels=args.update_labels,
@@ -415,6 +418,19 @@ class Update(base.Command):
       possible_args['clear-user-workloads-service-accounts'] = (
           args.clear_user_workloads_service_accounts
       )
+    if self._support_airflow_rbac_config:
+      possible_args['clear-airflow-rbac-config'] = (
+          args.clear_airflow_rbac_config
+      )
+      possible_args['update-airflow-rbac-binding'] = (
+          args.update_airflow_rbac_binding
+      )
+      possible_args['remove-airflow-rbac-binding'] = (
+          args.remove_airflow_rbac_binding
+      )
+      possible_args['update-airflow-rbac-config-from-file'] = (
+          args.update_airflow_rbac_config_from_file
+      )
     for k, v in possible_args.items():
       if v is not None and not is_composer3:
         raise command_util.InvalidUserInputError(
@@ -483,6 +499,13 @@ class Update(base.Command):
       )
       params['update_user_workloads_service_accounts'] = (
           args.update_user_workloads_service_accounts
+      )
+    if self._support_airflow_rbac_config:
+      params['clear_airflow_rbac_config'] = args.clear_airflow_rbac_config
+      params['update_airflow_rbac_binding'] = args.update_airflow_rbac_binding
+      params['remove_airflow_rbac_binding'] = args.remove_airflow_rbac_binding
+      params['update_airflow_rbac_config_from_file'] = (
+          args.update_airflow_rbac_config_from_file
       )
     if args.enable_private_builds_only or args.disable_private_builds_only:
       params['support_private_builds_only'] = (
@@ -590,6 +613,7 @@ class UpdateBeta(Update):
   _support_environment_size = True
   _support_traffic_routing_config = True
   _support_user_workloads_service_accounts = False
+  _support_airflow_rbac_config = True
 
   @staticmethod
   def AlphaAndBetaArgs(parser, release_track=base.ReleaseTrack.BETA):
@@ -628,6 +652,7 @@ class UpdateAlpha(UpdateBeta):
   _support_autoscaling = True
   _support_traffic_routing_config = True
   _support_user_workloads_service_accounts = True
+  _support_airflow_rbac_config = True
 
   @staticmethod
   def Args(parser):

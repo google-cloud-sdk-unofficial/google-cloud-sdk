@@ -97,6 +97,7 @@ class PromoteGA(_Promote, base.Command):
     """
     _Promote.Args(parser)
     mj_flags.AddMigrationJobObjectsConfigFlagForPromote(parser)
+    mj_flags.AddFailbackFlag(parser)
 
 
 @base.DefaultUniverseOnly

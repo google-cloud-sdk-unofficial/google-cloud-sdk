@@ -66,6 +66,26 @@ class DataDocumentation(base.UpdateCommand):
         help='Publish data documentation results to Knowledge Catalog.',
         default=False,
     )
+    custom_instructions_group = data_spec_group.add_group(
+        mutex=True,
+        hidden=True,
+        help='Custom instructions for generating data documentation.',
+    )
+    custom_instructions_group.add_argument(
+        '--custom-instructions',
+        hidden=True,
+        help='Custom instructions to guide the data documentation generation.',
+    )
+    custom_instructions_group.add_argument(
+        '--clear-custom-instructions',
+        action='store_true',
+        hidden=True,
+        help=(
+            'Clear any existing custom instructions from the data'
+            ' documentation scan.'
+        ),
+        default=False,
+    )
     execution_spec = parser.add_group(
         help='Data documentation scan execution settings.'
     )

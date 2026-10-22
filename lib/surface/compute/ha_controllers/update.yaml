@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, PREVIEW]
   hints:
     read_only: false
   help_text:
@@ -12,7 +12,10 @@
             --region=us-central1
 
   request:
-    api_version: alpha
+    ALPHA:
+      api_version: alpha
+    PREVIEW:
+      api_version: preview
     collection: compute.haControllers
     method: patch
     modify_request_hooks:

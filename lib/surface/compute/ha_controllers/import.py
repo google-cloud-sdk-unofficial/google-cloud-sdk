@@ -49,6 +49,8 @@ def _GetApiVersion(release_track):
   """Returns the API version for the HA Controller."""
   if release_track == base.ReleaseTrack.ALPHA:
     return 'alpha'
+  elif release_track == base.ReleaseTrack.PREVIEW:
+    return 'preview'
 
 
 def _GetSchemaPath(release_track, for_help=False):
@@ -82,7 +84,7 @@ def _ReadResourceFromYaml(yaml_data, release_track):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.PREVIEW)
 class Import(base.ImportCommand):
   """Import an HA Controller.
 
@@ -91,14 +93,15 @@ class Import(base.ImportCommand):
   automatically managing failover across two zones.
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     base.ASYNC_FLAG.AddToParser(parser)
     utils.AddHaControllerNameArgToParser(
-        parser, base.ReleaseTrack.ALPHA.name.lower()
+        parser, cls.ReleaseTrack().name.lower()
     )
     export_util.AddImportFlags(
-        parser, _GetSchemaPath(base.ReleaseTrack.ALPHA, for_help=True))
+        parser, _GetSchemaPath(cls.ReleaseTrack(), for_help=True)
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

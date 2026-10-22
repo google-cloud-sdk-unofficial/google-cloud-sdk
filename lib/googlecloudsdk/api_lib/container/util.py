@@ -172,6 +172,7 @@ NC_SHUTDOWN_GRACE_PERIOD_SECONDS = 'shutdownGracePeriodSeconds'
 NC_SHUTDOWN_GRACE_PERIOD_CRITICAL_PODS_SECONDS = (
     'shutdownGracePeriodCriticalPodsSeconds'
 )
+NC_RESERVED_SYSTEM_CPUS = 'reservedSystemCpus'
 
 NC_ADDITIONAL_ETC_HOSTS = 'additionalEtcHosts'
 NC_ADDITIONAL_ETC_SYSTEMD_RESOLVED_CONF = 'additionalEtcSystemdResolvedConf'
@@ -969,6 +970,7 @@ def LoadSystemConfigFromYAML(
         NC_EVICTION_MINIMUM_RECLAIM: dict,
         NC_EVICTION_MAX_POD_GRACE_PERIOD_SECONDS: int,
         NC_CRASHLOOPBACKOFF: dict,
+        NC_RESERVED_SYSTEM_CPUS: str,
     }
     _CheckNodeConfigFields(
         NC_KUBELET_CONFIG, kubelet_config_opts, config_fields
@@ -1023,6 +1025,9 @@ def LoadSystemConfigFromYAML(
         kubelet_config_opts.get(
             NC_SHUTDOWN_GRACE_PERIOD_CRITICAL_PODS_SECONDS
         )
+    )
+    node_config.kubeletConfig.reservedSystemCpus = kubelet_config_opts.get(
+        NC_RESERVED_SYSTEM_CPUS
     )
 
     # Populate eviction fields

@@ -1704,6 +1704,32 @@ class SqladminV1beta4(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Start(self, request, global_params=None):
+      r"""Starts a Cloud SQL instance.
+
+      Args:
+        request: (SqlInstancesStartRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Start')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Start.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.instances.start',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=['location'],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:start',
+        request_field='',
+        request_type_name='SqlInstancesStartRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def StartReplica(self, request, global_params=None):
       r"""Starts the replication in the read replica instance.
 
@@ -1726,6 +1752,32 @@ class SqladminV1beta4(base_api.BaseApiClient):
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/startReplica',
         request_field='',
         request_type_name='SqlInstancesStartReplicaRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Stop(self, request, global_params=None):
+      r"""Stops a Cloud SQL instance.
+
+      Args:
+        request: (SqlInstancesStopRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Stop')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Stop.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.instances.stop',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=['location'],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:stop',
+        request_field='',
+        request_type_name='SqlInstancesStopRequest',
         response_type_name='Operation',
         supports_download=False,
     )

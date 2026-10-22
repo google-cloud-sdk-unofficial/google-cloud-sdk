@@ -404,6 +404,7 @@ class Update(base.UpdateCommand):
     flags.AddVerticalPodAutoscalingFlags(group)
     flags.AddAutoprovisioningFlags(group)
     flags.AddAutoscalingProfilesFlag(group)
+    flags.AddManagedAutoscalingFlags(group)
     flags.AddHPAProfilesFlag(group)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1', group, hidden=False)
@@ -681,6 +682,7 @@ class Update(base.UpdateCommand):
     opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.default_compute_class = args.default_compute_class
+    opts.managed_autoscaling_disabled = args.managed_autoscaling_disabled
     opts.enable_cluster_scale_to_zero = args.enable_cluster_scale_to_zero
     opts.cluster_scale_to_zero_delay = args.cluster_scale_to_zero_delay
     opts.network_tier = args.network_tier
@@ -1314,6 +1316,7 @@ class UpdateBeta(Update):
     flags.AddBinauthzFlags(group, release_track=base.ReleaseTrack.BETA)
     flags.AddAutoprovisioningFlags(group)
     flags.AddAutoscalingProfilesFlag(group)
+    flags.AddManagedAutoscalingFlags(group)
     flags.AddVerticalPodAutoscalingFlags(group, experimental=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddIstioConfigFlag(parser)
@@ -1680,6 +1683,7 @@ class UpdateBeta(Update):
     opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.default_compute_class = args.default_compute_class
+    opts.managed_autoscaling_disabled = args.managed_autoscaling_disabled
     opts.enable_cluster_scale_to_zero = args.enable_cluster_scale_to_zero
     opts.cluster_scale_to_zero_delay = args.cluster_scale_to_zero_delay
     opts.network_tier = args.network_tier
@@ -1749,6 +1753,7 @@ class UpdateAlpha(Update):
     flags.AddNetworkPolicyFlags(group)
     flags.AddAutoprovisioningFlags(group, hidden=False)
     flags.AddAutoscalingProfilesFlag(group)
+    flags.AddManagedAutoscalingFlags(group)
     flags.AddMaintenanceDisruptionBudgetFlagGroup(
         group, hidden=False, is_update=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
@@ -2120,6 +2125,7 @@ class UpdateAlpha(Update):
     opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.default_compute_class = args.default_compute_class
+    opts.managed_autoscaling_disabled = args.managed_autoscaling_disabled
     opts.enable_cluster_scale_to_zero = args.enable_cluster_scale_to_zero
     opts.cluster_scale_to_zero_delay = args.cluster_scale_to_zero_delay
     opts.network_tier = args.network_tier

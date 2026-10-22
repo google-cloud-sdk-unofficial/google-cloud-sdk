@@ -629,6 +629,8 @@ class Condition(_messages.Message):
         cluster.
       MODERNIZATION_INCOMPATIBLE_GATEWAY_POD_SCALE: Gateway pods per cluster
         limit exceeded.
+      MODERNIZATION_REQUIRES_MANUAL_WORKLOAD_RESTART: Cluster contains
+        workloads that will require manual restart during modernization.
       MODERNIZATION_SCHEDULED: Modernization is scheduled for a cluster.
       MODERNIZATION_IN_PROGRESS: Modernization is in progress for a cluster.
       MODERNIZATION_COMPLETED: Modernization is completed for a cluster.
@@ -642,6 +644,9 @@ class Condition(_messages.Message):
         the new implementation.
       MODERNIZATION_ROLLING_BACK_CLUSTER: Rollback is in progress for
         modernization of a cluster.
+      MODERNIZATION_AWAITING_MANUAL_WORKLOAD_RESTART: Modernization of a
+        cluster is awaiting manual restart of workloads. The customer must
+        restart these workloads to complete modernization.
       MODERNIZATION_WILL_BE_SCHEDULED: Modernization will be scheduled for a
         fleet.
       MODERNIZATION_MANUAL: Fleet is opted out from automated modernization.
@@ -656,6 +661,9 @@ class Condition(_messages.Message):
         modernization of all clusters in a fleet.
       MODERNIZATION_MODERNIZED: Modernization of all the fleet's clusters is
         complete. Soaking before finalizing the modernization.
+      MODERNIZATION_REQUIRES_CUSTOMER_TRIGGER: Fleet modernization must be
+        Customer-Triggered, and cannot be Google-driven. Specific details may
+        be reported via another fleet/cluster condition.
       MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE: Fleet exceeds service mesh
         services scalability limits.
       MODERNIZATION_COMPATIBLE: Fleet is compatible for modernization.
@@ -711,28 +719,31 @@ class Condition(_messages.Message):
     MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE = 42
     MODERNIZATION_INCOMPATIBLE_CONFIG = 43
     MODERNIZATION_INCOMPATIBLE_GATEWAY_POD_SCALE = 44
-    MODERNIZATION_SCHEDULED = 45
-    MODERNIZATION_IN_PROGRESS = 46
-    MODERNIZATION_COMPLETED = 47
-    MODERNIZATION_ABORTED = 48
-    MODERNIZATION_PREPARING = 49
-    MODERNIZATION_STALLED = 50
-    MODERNIZATION_PREPARED = 51
-    MODERNIZATION_MIGRATING_WORKLOADS = 52
-    MODERNIZATION_ROLLING_BACK_CLUSTER = 53
-    MODERNIZATION_WILL_BE_SCHEDULED = 54
-    MODERNIZATION_MANUAL = 55
-    MODERNIZATION_ELIGIBLE = 56
-    MODERNIZATION_MODERNIZING = 57
-    MODERNIZATION_MODERNIZED_SOAKING = 58
-    MODERNIZATION_FINALIZED = 59
-    MODERNIZATION_ROLLING_BACK_FLEET = 60
-    MODERNIZATION_MODERNIZED = 61
-    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 62
-    MODERNIZATION_COMPATIBLE = 63
-    MODERNIZATION_INCOMPATIBLE = 64
-    MODERNIZATION_INCOMPATIBLE_FLEET_SCALE = 65
-    MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA = 66
+    MODERNIZATION_REQUIRES_MANUAL_WORKLOAD_RESTART = 45
+    MODERNIZATION_SCHEDULED = 46
+    MODERNIZATION_IN_PROGRESS = 47
+    MODERNIZATION_COMPLETED = 48
+    MODERNIZATION_ABORTED = 49
+    MODERNIZATION_PREPARING = 50
+    MODERNIZATION_STALLED = 51
+    MODERNIZATION_PREPARED = 52
+    MODERNIZATION_MIGRATING_WORKLOADS = 53
+    MODERNIZATION_ROLLING_BACK_CLUSTER = 54
+    MODERNIZATION_AWAITING_MANUAL_WORKLOAD_RESTART = 55
+    MODERNIZATION_WILL_BE_SCHEDULED = 56
+    MODERNIZATION_MANUAL = 57
+    MODERNIZATION_ELIGIBLE = 58
+    MODERNIZATION_MODERNIZING = 59
+    MODERNIZATION_MODERNIZED_SOAKING = 60
+    MODERNIZATION_FINALIZED = 61
+    MODERNIZATION_ROLLING_BACK_FLEET = 62
+    MODERNIZATION_MODERNIZED = 63
+    MODERNIZATION_REQUIRES_CUSTOMER_TRIGGER = 64
+    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 65
+    MODERNIZATION_COMPATIBLE = 66
+    MODERNIZATION_INCOMPATIBLE = 67
+    MODERNIZATION_INCOMPATIBLE_FLEET_SCALE = 68
+    MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA = 69
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity level of the condition.
@@ -858,8 +869,8 @@ class ConfigSync(_messages.Message):
       webhook and does not prevent drifts. Defaults to false. See
       https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/how-
       to/prevent-config-drift for details.
-    sourceFormat: Specifies whether the Config Sync repo is in `hierarchical`
-      or `unstructured` mode. Defaults to `hierarchical`. See
+    sourceFormat: Specifies whether the Config Sync repo is in `hierarchy` or
+      `unstructured` mode. Defaults to `hierarchy`. See
       https://docs.cloud.google.com/kubernetes-engine/config-
       sync/docs/concepts/configs#organize-configs for an explanation.
     stopSyncing: Set to true to stop syncing configs for a single cluster.
@@ -2213,10 +2224,16 @@ class GitConfig(_messages.Message):
 
   Fields:
     gcpServiceAccountEmail: The Google Cloud Service Account Email used for
-      auth when secret_type is `gcpserviceaccount`.
+      auth when secret_type is `gcpserviceaccount`. Annotates the `RootSync`
+      or `RepoSync` controller's Kubernetes Service Account.
     httpsProxy: URL for the HTTPS proxy to be used when communicating with the
-      Git repo. Only specify when secret_type is `cookiefile`, `token`, or
-      `none`.
+      Git repo. Defines an HTTPS_PROXY environment variable and only accepts
+      `https` or unadorned URLs. For example,
+      `https://proxy.internal.business.co:443` or
+      `proxy.internal.business.co:443`. If using an unadorned URL, make sure
+      the communication between your proxy server and Git host is secure.
+      Rejects `http://` URLs. Only specify when secret_type is `cookiefile`,
+      `token`, or `none`.
     policyDir: The path within the Git repository that represents the top
       level of the repo to sync. Default: the root directory of the
       repository.
@@ -2226,7 +2243,9 @@ class GitConfig(_messages.Message):
       case-sensitive.
     syncBranch: The branch of the repository to sync from. Default: master.
     syncRepo: The URL of the Git repository to use as the source of truth.
-    syncRev: Git revision (tag or hash) to check out. Default HEAD.
+    syncRev: Git revision (tag or hash) or branch to sync from. Default:
+      `HEAD`. If not `HEAD`, takes precedence over `sync_branch` field. When
+      using a hash, must be a full hash, and not an abbreviated form.
     syncWaitSecs: Period in seconds between consecutive syncs. Default: 15.
   """
 
@@ -3416,7 +3435,8 @@ class OciConfig(_messages.Message):
 
   Fields:
     gcpServiceAccountEmail: The Google Cloud Service Account Email used for
-      auth when secret_type is `gcpserviceaccount`.
+      auth when secret_type is `gcpserviceaccount`. Annotates the `RootSync`
+      or `RepoSync` controller's Kubernetes Service Account.
     policyDir: The absolute path of the directory that contains the local
       resources. Default: the root directory of the image.
     secretType: Type of secret configured for access to the OCI repo. Must be

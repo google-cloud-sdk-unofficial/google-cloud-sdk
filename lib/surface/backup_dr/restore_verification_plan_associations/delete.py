@@ -32,7 +32,7 @@ from googlecloudsdk.core.console import console_io
 
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete the specified restore verification plan association."""
 

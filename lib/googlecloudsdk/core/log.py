@@ -16,7 +16,7 @@
 """Module with logging related functionality for calliope."""
 
 
-from collections import OrderedDict
+import collections
 import contextlib
 import copy
 import datetime
@@ -30,9 +30,9 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console.style import parser as style_parser
 from googlecloudsdk.core.console.style import text
+from googlecloudsdk.core.util import encoding as encoding_util
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import times
-
 import six
 
 
@@ -51,6 +51,7 @@ _VERBOSITY_LEVELS = [
     ('none', logging.CRITICAL + 10)]
 VALID_VERBOSITY_STRINGS = dict(_VERBOSITY_LEVELS)
 LOG_FILE_EXTENSION = '.log'
+_LOG_FILE_ENV_VAR = 'CLOUDSDK_CORE_LOG_FILE'
 # datastore upload and download creates temporary sql3 files in the log dir.
 _KNOWN_LOG_FILE_EXTENSIONS = [LOG_FILE_EXTENSION, '.sql3']
 
@@ -83,8 +84,9 @@ STRUCTURED_RECORD_FIELDS = [
     ('error', 'error',
      'Actual exception or error raised, if message contains exception data.'),
 ]
-REQUIRED_STRUCTURED_RECORD_FIELDS = OrderedDict((x[:2] for x in
-                                                 STRUCTURED_RECORD_FIELDS))
+REQUIRED_STRUCTURED_RECORD_FIELDS = collections.OrderedDict(
+    (x[:2] for x in STRUCTURED_RECORD_FIELDS)
+)
 
 
 class _NullHandler(logging.Handler, object):
@@ -414,7 +416,7 @@ class _JsonFormatter(logging.Formatter):
 
   def GetErrorDict(self, log_record):
     """Extract exception info from a logging.LogRecord as an OrderedDict."""
-    error_dict = OrderedDict()
+    error_dict = collections.OrderedDict()
     if log_record.exc_info:
       if not log_record.exc_text:
         log_record.exc_text = self.formatException(log_record.exc_info)
@@ -446,7 +448,7 @@ class _JsonFormatter(logging.Formatter):
     Returns:
       OrderedDict of required_field values.
     """
-    message_dict = OrderedDict()
+    message_dict = collections.OrderedDict()
     # This perserves the order in the output for each JSON message
     for outfield, logfield in six.iteritems(self.required_fields):
       if outfield == 'version':
@@ -836,6 +838,17 @@ class _LogManager(object):
     Returns:
       str, The path to the file to log to
     """
+    existing_log_file = encoding_util.GetEncodedValue(
+        os.environ, _LOG_FILE_ENV_VAR
+    )
+    if existing_log_file:
+      existing_abs = os.path.abspath(existing_log_file)
+      logs_dir_abs = os.path.abspath(logs_dir)
+      if existing_abs.startswith(logs_dir_abs + os.sep) and os.path.isfile(
+          existing_abs
+      ):
+        return existing_log_file
+
     now = datetime.datetime.now()
     day_dir_name = now.strftime(DAY_DIR_FORMAT)
     day_dir_path = os.path.join(logs_dir, day_dir_name)

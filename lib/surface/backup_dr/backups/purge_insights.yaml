@@ -1,0 +1,61 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  hints:
+    read_only: false
+    destructive: true
+
+  help_text:
+    brief: Purge insights for a Backup and DR backup.
+    description: |
+      Purge insights of the specified type for a Backup and DR backup.
+
+      For the insight type `backup-metadata-indexing`, this permanently deletes
+      the indexed metadata of the backup from the backup vault's insights
+      dataset. The backup itself is not deleted.
+    examples: |
+      To purge backup metadata indexing insights for backup 'my-backup' in backup vault 'my-vault', data source 'my-data-source' and location 'us-central1':
+
+        $ {command} my-backup --backup-vault=my-vault --data-source=my-data-source --location=us-central1 --insight-type=backup-metadata-indexing
+
+      To purge the insights without a confirmation prompt and without waiting for the operation to complete:
+
+        $ {command} my-backup --backup-vault=my-vault --data-source=my-data-source --location=us-central1 --insight-type=backup-metadata-indexing --quiet --async
+
+  request:
+    collection: backupdr.projects.locations.backupVaults.dataSources.backups
+    regional_endpoint_compatibility: SUPPORTED
+    method: purgeBackupInsights
+    display_resource_type: backup
+    ALPHA:
+      api_version: v1alpha
+
+  input:
+    confirmation_prompt: >-
+      Insights for {__resource_type__} [{__name__}] will be permanently purged.
+      The backup itself is not deleted. You cannot undo this action.
+
+  async:
+    collection: backupdr.projects.locations.operations
+    extract_resource_result: false
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The backup whose insights to purge.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:backup
+      is_positional: true
+
+    params:
+    - arg_name: insight-type
+      api_field: purgeBackupInsightsRequest.insightType
+      required: true
+      help_text: |
+        The type of insight to purge.
+      choices:
+      - arg_value: backup-metadata-indexing
+        enum_value: BACKUP_METADATA_INDEXING
+        help_text: Backup metadata indexing insight.
+
+  output:
+    format: none

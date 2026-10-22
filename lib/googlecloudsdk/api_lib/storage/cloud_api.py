@@ -1070,6 +1070,7 @@ class CloudApi(object):
       bucket_name,
       managed_folder_name,
       managed_folder_metadata=None,
+      rapid_cache_config=None,
       if_metageneration_match=None,
   ):
     """Updates a managed folder.
@@ -1079,6 +1080,8 @@ class CloudApi(object):
       managed_folder_name (str): The name of the managed folder to update.
       managed_folder_metadata (messages.ManagedFolder|None): The metadata to
         update on the managed folder.
+      rapid_cache_config (messages.RapidCacheConfig|None): The Rapid Cache
+        configuration to update on the managed folder.
       if_metageneration_match (int|None): If set, the update only succeeds if
         the managed folder's metageneration matches this value.
 

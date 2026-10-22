@@ -14,6 +14,12 @@ package = 'softwaredeliverytrust'
 class Attestation(_messages.Message):
   r"""Cryptographically verifiable evidence about a software artifact.
 
+  Messages:
+    PayloadDigestValue: Output only. Map of hash algorithm to hex digest of
+      the raw `attestation_payload` (e.g., a DSSE envelope or Sigstore
+      bundle), computed by the server at ingestion time. Example: {"sha256":
+      "82a15998df9a8...fa9b"}.
+
   Fields:
     attestationPayload: Required. The raw attestation payload wrapped in a
       standard DSSE envelope where payload is an in-toto attestation. Hard-
@@ -26,6 +32,10 @@ class Attestation(_messages.Message):
       "application/vnd.in-toto+json".
     name: Identifier. Unique resource name of the attestation. Example:
       "projects/123456789/locations/us-central1/attestations/att-9876543210".
+    payloadDigest: Output only. Map of hash algorithm to hex digest of the raw
+      `attestation_payload` (e.g., a DSSE envelope or Sigstore bundle),
+      computed by the server at ingestion time. Example: {"sha256":
+      "82a15998df9a8...fa9b"}.
     predicateType: Output only. Type of claim asserted. Example:
       "https://slsa.dev/provenance/v1".
     signerConfig: Output only. Configuration identifying the signer used for
@@ -36,14 +46,43 @@ class Attestation(_messages.Message):
       attestation is not verified, this field will be unset(null).
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PayloadDigestValue(_messages.Message):
+    r"""Output only. Map of hash algorithm to hex digest of the raw
+    `attestation_payload` (e.g., a DSSE envelope or Sigstore bundle), computed
+    by the server at ingestion time. Example: {"sha256":
+    "82a15998df9a8...fa9b"}.
+
+    Messages:
+      AdditionalProperty: An additional property for a PayloadDigestValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type PayloadDigestValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PayloadDigestValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   attestationPayload = _messages.BytesField(1)
   createTime = _messages.StringField(2)
   envelopePredicateType = _messages.StringField(3)
   name = _messages.StringField(4)
-  predicateType = _messages.StringField(5)
-  signerConfig = _messages.MessageField('SignerConfig', 6)
-  subjects = _messages.MessageField('Subject', 7, repeated=True)
-  verificationTime = _messages.StringField(8)
+  payloadDigest = _messages.MessageField('PayloadDigestValue', 5)
+  predicateType = _messages.StringField(6)
+  signerConfig = _messages.MessageField('SignerConfig', 7)
+  subjects = _messages.MessageField('Subject', 8, repeated=True)
+  verificationTime = _messages.StringField(9)
 
 
 class CancelOperationRequest(_messages.Message):
@@ -57,6 +96,20 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+
+class EvaluatedAttestation(_messages.Message):
+  r"""Verified attestation evaluated for a policy binding.
+
+  Fields:
+    attestation: Resource name of the verified Attestation evaluated. Format:
+      projects/{project}/locations/{location}/attestations/{attestation}
+    attestationPayloadDigest: SHA-256 digest of the verified attestation
+      payload evaluated.
+  """
+
+  attestation = _messages.StringField(1)
+  attestationPayloadDigest = _messages.StringField(2)
 
 
 class ListAttestationsResponse(_messages.Message):
@@ -382,6 +435,8 @@ class PolicyBinding(_messages.Message):
 
   Fields:
     createTime: Output only. Creation timestamp of the policy binding.
+    customGate: Optional. Custom lifecycle gate for which this policy binding
+      applies (e.g., "staging-deploy", "prod-release").
     enforcementMode: Required. How the policy is enforced.
     name: Identifier. Unique resource name of the binding. Example:
       "projects/123456789/locations/global/policyBindings/prod-cluster-
@@ -411,12 +466,92 @@ class PolicyBinding(_messages.Message):
     ENFORCEMENT_MODE_LOG_ONLY = 3
 
   createTime = _messages.StringField(1)
-  enforcementMode = _messages.EnumField('EnforcementModeValueValuesEnum', 2)
-  name = _messages.StringField(3)
-  policy = _messages.StringField(4)
-  policyRevision = _messages.StringField(5)
-  resourceSelectors = _messages.MessageField('ResourceSelector', 6, repeated=True)
-  updateTime = _messages.StringField(7)
+  customGate = _messages.StringField(2)
+  enforcementMode = _messages.EnumField('EnforcementModeValueValuesEnum', 3)
+  name = _messages.StringField(4)
+  policy = _messages.StringField(5)
+  policyRevision = _messages.StringField(6)
+  resourceSelectors = _messages.MessageField('ResourceSelector', 7, repeated=True)
+  updateTime = _messages.StringField(8)
+
+
+class PolicyEvaluationResult(_messages.Message):
+  r"""Detailed result of evaluating a single policy binding.
+
+  Enums:
+    EnforcementModeValueValuesEnum: Enforcement mode configured on the
+      PolicyBinding (DENY or LOG_ONLY).
+    FailureReasonValueValuesEnum: Populated when verdict is VERDICT_FAIL or
+      VERDICT_ERROR.
+    VerdictValueValuesEnum: Individual verdict for this policy binding.
+
+  Fields:
+    enforcementMode: Enforcement mode configured on the PolicyBinding (DENY or
+      LOG_ONLY).
+    errorMessage: Human-readable diagnostic message when evaluation fails or
+      errors.
+    evaluatedAttestations: Verified attestations evaluated for this policy
+      binding.
+    failureReason: Populated when verdict is VERDICT_FAIL or VERDICT_ERROR.
+    policyBinding: Resource name of the PolicyBinding that triggered this
+      evaluation.
+    policyRevision: Resource name of the immutable PolicyRevision that was
+      evaluated.
+    verdict: Individual verdict for this policy binding.
+  """
+
+  class EnforcementModeValueValuesEnum(_messages.Enum):
+    r"""Enforcement mode configured on the PolicyBinding (DENY or LOG_ONLY).
+
+    Values:
+      ENFORCEMENT_MODE_UNSPECIFIED: Enforcement mode is not specified.
+      ENFORCEMENT_MODE_DRY_RUN: Deprecated: Use ENFORCEMENT_MODE_LOG_ONLY
+        instead. Log violations but do not block operations.
+      ENFORCEMENT_MODE_DENY: Actively block non-compliant operations.
+      ENFORCEMENT_MODE_LOG_ONLY: Log violations but do not block operations.
+    """
+    ENFORCEMENT_MODE_UNSPECIFIED = 0
+    ENFORCEMENT_MODE_DRY_RUN = 1
+    ENFORCEMENT_MODE_DENY = 2
+    ENFORCEMENT_MODE_LOG_ONLY = 3
+
+  class FailureReasonValueValuesEnum(_messages.Enum):
+    r"""Populated when verdict is VERDICT_FAIL or VERDICT_ERROR.
+
+    Values:
+      FAILURE_REASON_UNSPECIFIED: Failure reason is not specified.
+      POLICY_VIOLATION: The policy condition evaluated to false.
+      EVALUATION_ERROR: An error occurred while evaluating the policy.
+      EVIDENCE_PENDING: Required attestation evidence is still pending.
+    """
+    FAILURE_REASON_UNSPECIFIED = 0
+    POLICY_VIOLATION = 1
+    EVALUATION_ERROR = 2
+    EVIDENCE_PENDING = 3
+
+  class VerdictValueValuesEnum(_messages.Enum):
+    r"""Individual verdict for this policy binding.
+
+    Values:
+      VERDICT_UNSPECIFIED: Verdict is not specified.
+      VERDICT_PASS: All evaluated DENY policies passed (or no DENY policies
+        applied).
+      VERDICT_FAIL: At least one evaluated DENY policy failed.
+      VERDICT_ERROR: Evaluation encountered a runtime error (e.g., missing
+        mandatory evidence).
+    """
+    VERDICT_UNSPECIFIED = 0
+    VERDICT_PASS = 1
+    VERDICT_FAIL = 2
+    VERDICT_ERROR = 3
+
+  enforcementMode = _messages.EnumField('EnforcementModeValueValuesEnum', 1)
+  errorMessage = _messages.StringField(2)
+  evaluatedAttestations = _messages.MessageField('EvaluatedAttestation', 3, repeated=True)
+  failureReason = _messages.EnumField('FailureReasonValueValuesEnum', 4)
+  policyBinding = _messages.StringField(5)
+  policyRevision = _messages.StringField(6)
+  verdict = _messages.EnumField('VerdictValueValuesEnum', 7)
 
 
 class PolicyRevision(_messages.Message):
@@ -784,6 +919,20 @@ class SoftwaredeliverytrustProjectsLocationsPolicyBindingsListRequest(_messages.
   parent = _messages.StringField(3, required=True)
 
 
+class SoftwaredeliverytrustProjectsLocationsVerifyPolicyRequest(_messages.Message):
+  r"""A SoftwaredeliverytrustProjectsLocationsVerifyPolicyRequest object.
+
+  Fields:
+    parent: Required. Required. The project and location where the subject is.
+      Format: projects/{project}/locations/{location}
+    verifyPolicyRequest: A VerifyPolicyRequest resource to be passed as the
+      request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  verifyPolicyRequest = _messages.MessageField('VerifyPolicyRequest', 2)
+
+
 class StandardQueryParameters(_messages.Message):
   r"""Query parameters accepted by all methods.
 
@@ -940,6 +1089,69 @@ class Subject(_messages.Message):
 
   digests = _messages.MessageField('DigestsValue', 1)
   url = _messages.StringField(2)
+
+
+class VerifyPolicyRequest(_messages.Message):
+  r"""Request message for VerifyPolicy.
+
+  Fields:
+    customGate: Optional. Filters evaluation to PolicyBindings configured for
+      a specific lifecycle gate (e.g., "staging-deploy", "prod-release"). If
+      omitted, all PolicyBindings matching target_resource are evaluated.
+    subjectDigest: Required. Immutable digest of the artifact (e.g., "sha256:e
+      3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").
+    subjectUrl: Required. The artifact URL (e.g., "us-
+      central1-docker.pkg.dev/my-proj/my-repo/app").
+    targetResource: Required. Full resource URI of the target resource being
+      gated. Example: "//artifactregistry.googleapis.com/projects/my-
+      proj/locations/us-central1/repositories/my-repo".
+  """
+
+  customGate = _messages.StringField(1)
+  subjectDigest = _messages.StringField(2)
+  subjectUrl = _messages.StringField(3)
+  targetResource = _messages.StringField(4)
+
+
+class VerifyPolicyResponse(_messages.Message):
+  r"""Response message for VerifyPolicy.
+
+  Enums:
+    VerdictValueValuesEnum: Aggregate verdict across all evaluated
+      PolicyBindings. Note: LOG_ONLY failures are recorded in
+      policy_evaluation_results and Cloud Logging, but do not cause the
+      aggregate verdict to be VERDICT_FAIL.
+
+  Fields:
+    policyEvaluationResults: Per-binding evaluation breakdown.
+    verdict: Aggregate verdict across all evaluated PolicyBindings. Note:
+      LOG_ONLY failures are recorded in policy_evaluation_results and Cloud
+      Logging, but do not cause the aggregate verdict to be VERDICT_FAIL.
+    verificationSummaryAttestation: Serialized JSON DSSE envelope containing
+      the signed Verification Summary Attestation (SVR predicate).
+  """
+
+  class VerdictValueValuesEnum(_messages.Enum):
+    r"""Aggregate verdict across all evaluated PolicyBindings. Note: LOG_ONLY
+    failures are recorded in policy_evaluation_results and Cloud Logging, but
+    do not cause the aggregate verdict to be VERDICT_FAIL.
+
+    Values:
+      VERDICT_UNSPECIFIED: Verdict is not specified.
+      VERDICT_PASS: All evaluated DENY policies passed (or no DENY policies
+        applied).
+      VERDICT_FAIL: At least one evaluated DENY policy failed.
+      VERDICT_ERROR: Evaluation encountered a runtime error (e.g., missing
+        mandatory evidence).
+    """
+    VERDICT_UNSPECIFIED = 0
+    VERDICT_PASS = 1
+    VERDICT_FAIL = 2
+    VERDICT_ERROR = 3
+
+  policyEvaluationResults = _messages.MessageField('PolicyEvaluationResult', 1, repeated=True)
+  verdict = _messages.EnumField('VerdictValueValuesEnum', 2)
+  verificationSummaryAttestation = _messages.StringField(3)
 
 
 encoding.AddCustomJsonFieldMapping(

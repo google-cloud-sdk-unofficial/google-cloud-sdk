@@ -18,7 +18,6 @@
 
 import re
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import walker_util
 from googlecloudsdk.command_lib.meta import help_util
@@ -36,8 +35,7 @@ class GenerateHelpDocs(base.Command):
   """Generate and/or update help document directories.
 
   The DevSite docs are generated in the --devsite-dir directory with pathnames
-  in the reference directory hierarchy. The manpage docs are generated in the
-  --manpage-dir directory with pathnames in the manN/ directory hierarchy.
+  in the reference directory hierarchy.
   """
 
   @staticmethod
@@ -78,23 +76,6 @@ class GenerateHelpDocs(base.Command):
               'for the help text reference document subtree will be written. '
               'If not specified then documentation linter documents will not '
               'be generated.'))
-    parser.add_argument(
-        '--manpage-dir',
-        metavar='DIRECTORY',
-        action=actions.DeprecationAction(
-            '--manpage-dir',
-            warn=(
-                'The {flag_name} option is deprecated and will be removed in '
-                'an upcoming release. Please use --html-dir instead.'
-            ),
-            removed=False,
-        ),
-        help=(
-            'The directory where the generated manpage document subtree will '
-            'be written. If not specified then manpage documents will not be '
-            'generated.'
-        ),
-    )
     parser.add_argument(
         '--test',
         action='store_true',
@@ -165,9 +146,6 @@ class GenerateHelpDocs(base.Command):
                'ascii', hidden=True)
     if args.html_dir:
       Generate('html', walker_util.HtmlGenerator, args.html_dir,
-               hidden=args.hidden)
-    if args.manpage_dir:
-      Generate('man page', walker_util.ManPageGenerator, args.manpage_dir,
                hidden=args.hidden)
     if args.linter_dir:
       Generate('command linter', walker_util.LinterGenerator, args.linter_dir,

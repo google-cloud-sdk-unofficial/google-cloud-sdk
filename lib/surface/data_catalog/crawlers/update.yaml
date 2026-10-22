@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Update a Data Catalog crawler.
     description: Update a Data Catalog crawler.

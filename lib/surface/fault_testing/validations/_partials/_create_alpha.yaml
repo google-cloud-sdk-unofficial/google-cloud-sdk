@@ -209,6 +209,23 @@
                           help_text: |-
                             Specifies instances by name.
                             Format: `projects/{project}/zones/{zone}/instances/{instance}`
+    - arg_name: tags
+      api_field: validation.tags
+      required: false
+      repeated: true
+      hidden: true
+      help_text: |-
+        Tag keys/values directly bound to this resource.
+        For example:
+          "123/environment": "production",
+          "123/costCenter": "marketing"
+      spec:
+      - api_field: key
+        help_text: |-
+          Key for the tag. Either the namespaced name (`{org_id}/{tag_key_short_name}`) or the permanent ID (`tagKeys/{tag_key_id}`).
+      - api_field: value
+        help_text: |-
+          Value for the tag. Either the short name (`{tag_value_short_name}`) or the permanent ID (`tagValues/{tag_value_id}`).
   request:
     api_version: v1alpha
     collection:

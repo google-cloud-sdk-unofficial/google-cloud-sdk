@@ -1268,7 +1268,7 @@ class IamV1(base_api.BaseApiClient):
     )
 
     def RevokeSessions(self, request, global_params=None):
-      r"""Revokes all sessions for a given WorkforcePoolSubject.
+      r"""Revokes all sessions for the specified WorkforcePoolSubject. Revoking sessions invalidates all active sessions and previously issued credentials for the subject, requiring the user to re-authenticate with the identity provider.
 
       Args:
         request: (IamLocationsWorkforcePoolsSubjectsRevokeSessionsRequest) input message

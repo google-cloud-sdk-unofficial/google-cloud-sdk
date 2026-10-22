@@ -1,4 +1,6 @@
 release_tracks: [ALPHA, GA]
+hints:
+  read_only: true
 
 help_text:
   brief: Describe a Google Cloud Platform project enabled on Google Distributed Cloud zone.

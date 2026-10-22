@@ -15,24 +15,177 @@ What do you do?
 
 """
 
-import sys
+import collections.abc
+import enum
+import string
+import typing as t
+import urllib.parse
 
-# This import hack is for Python 2 support.
-# TODO(b/234740725): Import collections.abc once BigQuery bq CLI doesn't require
-# Python 2 support.
-try:
-    import collections.abc as collections_abc
-except ImportError:
-    import collections as collections_abc
-
-if sys.version_info.major == 2:
-    import urllib
-elif sys.version_info.major == 3:
-    import urllib.parse as urllib
+ScalarVariableValue = t.Union[int, float, complex, str, None]
+VariableValue = t.Union[
+    t.Sequence[ScalarVariableValue],
+    t.List[ScalarVariableValue],
+    t.Mapping[str, ScalarVariableValue],
+    t.Tuple[str, ScalarVariableValue],
+    ScalarVariableValue,
+]
+VariableValueDict = t.Dict[str, VariableValue]
 
 
-class URIVariable(object):
+_UNRESERVED_CHARACTERS: t.Final[str] = (
+    f"{string.ascii_letters}{string.digits}~-_."
+)
+_GEN_DELIMS: t.Final[str] = ":/?#[]@"
+_SUB_DELIMS: t.Final[str] = "!$&'()*+,;="
+_RESERVED_CHARACTERS: t.Final[str] = f"{_GEN_DELIMS}{_SUB_DELIMS}"
 
+
+class Operator(enum.Enum):
+    # Section 2.2. Expressions
+    #      expression    =  "{" [ operator ] variable-list "}"
+    #      operator      =  op-level2 / op-level3 / op-reserve
+    #      op-level2     =  "+" / "#"
+    #      op-level3     =  "." / "/" / ";" / "?" / "&"
+    #      op-reserve    =  "=" / "," / "!" / "@" / "|"
+    default = ""  # 3.2.2. Simple String Expansiona: {var}
+    # Operator Level 2 (op-level2)
+    reserved = "+"  # 3.2.3. Reserved Expansion: {+var}
+    fragment = "#"  # 3.2.4. Fragment Expansion: {#var}
+    # Operator Level 3 (op-level3)
+    # 3.2.5. Label Expansion with Dot-Prefix: {.var}
+    label_with_dot_prefix = "."
+    path_segment = "/"  # 3.2.6. Path Segment Expansion: {/var}
+    path_style_parameter = (
+        ";"  # 3.2.7. Path-Style Parameter Expansion: {;var}
+    )
+    form_style_query = "?"  # 3.2.8. Form-Style Query Expansion: {?var}
+    # 3.2.9. Form-Style Query Continuation: {&var}
+    form_style_query_continuation = "&"
+    # Reserved Operators (op-reserve)
+    reserved_eq = "="
+    reserved_comma = ","
+    reserved_bang = "!"
+    reserved_at = "@"
+    reserved_pipe = "|"
+
+    def reserved_characters(self) -> str:
+        # TODO: Re-enable after un-commenting 3.9
+        # match self:
+        #     case Operator.reserved:
+        #         return _RESERVED_CHARACTERS + "%"
+        #     # case Operator.default | Operator.reserved | Operator.fragment:
+        #     case Operator.fragment:
+        #         return _RESERVED_CHARACTERS
+        #     case _:
+        #         return ""
+        if self == Operator.reserved:
+            return _RESERVED_CHARACTERS + "%"
+        if self == Operator.fragment:
+            return _RESERVED_CHARACTERS
+        return ""
+
+    def expansion_separator(self) -> str:
+        """Identify the separator used during expansion.
+
+        Per `Section 3.2.1. Variable Expansion`_:
+
+        ======  ===========    =========
+        Type    Separator
+        ======  ===========    =========
+                ``","``        (default)
+        ``+``   ``","``
+        ``#``   ``","``
+        ``.``   ``"."``
+        ``/``   ``"/"``
+        ``;``   ``";"``
+        ``?``   ``"&"``
+        ``&``   ``"&"``
+        ======  ===========    =========
+
+        .. _`Section 3.2.1. Variable Expansion`:
+            https://www.rfc-editor.org/rfc/rfc6570#section-3.2.1
+        """
+        if self == Operator.label_with_dot_prefix:
+            return "."
+        if self == Operator.path_segment:
+            return "/"
+        if self == Operator.path_style_parameter:
+            return ";"
+        if (
+            self == Operator.form_style_query
+            or self == Operator.form_style_query_continuation
+        ):
+            return "&"
+        # if self == Operator.reserved or self == Operator.fragment:
+        #     return ","
+        return ","
+        # match self:
+        #     case Operator.label_with_dot_prefix:
+        #         return "."
+        #     case Operator.path_segment:
+        #         return "/"
+        #     case Operator.path_style_parameter:
+        #         return ";"
+        #     case (
+        #         Operator.form_style_query |
+        #         Operator.form_style_query_continuation
+        #     ):
+        #         return "&"
+        #     case Operator.reserved | Operator.fragment:
+        #         return ","
+        #     case _:
+        #         return ","
+
+    def variable_prefix(self) -> str:
+        if self == Operator.reserved:
+            return ""
+        return t.cast(str, self.value)
+        # match self:
+        #     case Operator.reserved:
+        #         return ""
+        #     case _:
+        #         return t.cast(str, self.value)
+
+    def _always_quote(self, value: str) -> str:
+        return quote(value, "")
+
+    def _only_quote_unquoted_characters(self, value: str) -> str:
+        if urllib.parse.unquote(value) == value:
+            return quote(value, _RESERVED_CHARACTERS)
+        return value
+
+    def quote(self, value: t.Any) -> str:
+        if not isinstance(value, (str, bytes)):
+            value = str(value)
+        if isinstance(value, bytes):
+            value = value.decode()
+
+        if self == Operator.reserved or self == Operator.fragment:
+            return self._only_quote_unquoted_characters(value)
+        return self._always_quote(value)
+
+    @staticmethod
+    def from_string(s: str) -> "Operator":
+        return _operators.get(s, Operator.default)
+
+
+_operators: t.Final[t.Dict[str, Operator]] = {
+    "+": Operator.reserved,
+    "#": Operator.fragment,
+    ".": Operator.label_with_dot_prefix,
+    "/": Operator.path_segment,
+    ";": Operator.path_style_parameter,
+    "?": Operator.form_style_query,
+    "&": Operator.form_style_query_continuation,
+    "!": Operator.reserved_bang,
+    "|": Operator.reserved_pipe,
+    "@": Operator.reserved_at,
+    "=": Operator.reserved_eq,
+    ",": Operator.reserved_comma,
+}
+
+
+class URIVariable:
     """This object validates everything inside the URITemplate object.
 
     It validates template expansions and will truncate length as decided by
@@ -51,33 +204,29 @@ class URIVariable(object):
 
     """
 
-    operators = ('+', '#', '.', '/', ';', '?', '&', '|', '!', '@')
-    reserved = ":/?#[]@!$&'()*+,;="
-
-    def __init__(self, var):
+    def __init__(self, var: str):
         #: The original string that comes through with the variable
-        self.original = var
+        self.original: str = var
         #: The operator for the variable
-        self.operator = ''
-        #: List of safe characters when quoting the string
-        self.safe = ''
+        self.operator: Operator = Operator.default
         #: List of variables in this variable
-        self.variables = []
+        self.variables: t.List[t.Tuple[str, t.MutableMapping[str, t.Any]]] = (
+            []
+        )
         #: List of variable names
-        self.variable_names = []
+        self.variable_names: t.List[str] = []
         #: List of defaults passed in
-        self.defaults = {}
+        self.defaults: t.MutableMapping[str, ScalarVariableValue] = {}
         # Parse the variable itself.
         self.parse()
-        self.post_parse()
 
-    def __repr__(self):
-        return 'URIVariable(%s)' % self
+    def __repr__(self) -> str:
+        return "URIVariable(%s)" % self
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.original
 
-    def parse(self):
+    def parse(self) -> None:
         """Parse the variable.
 
         This finds the:
@@ -87,213 +236,223 @@ class URIVariable(object):
             - defaults.
 
         """
-        var_list = self.original
-        if self.original[0] in URIVariable.operators:
-            self.operator = self.original[0]
-            var_list = self.original[1:]
+        var_list_str = self.original
+        if (operator_str := self.original[0]) in _operators:
+            self.operator = Operator.from_string(operator_str)
+            var_list_str = self.original[1:]
 
-        if self.operator in URIVariable.operators[:2]:
-            self.safe = URIVariable.reserved
-
-        var_list = var_list.split(',')
+        var_list = var_list_str.split(",")
 
         for var in var_list:
             default_val = None
             name = var
-            if '=' in var:
-                name, default_val = tuple(var.split('=', 1))
+            # NOTE(sigmavirus24): This is from an earlier draft but is not in
+            # the specification
+            if "=" in var:
+                name, default_val = tuple(var.split("=", 1))
 
-            explode = False
-            if name.endswith('*'):
-                explode = True
-                name = name[:-1]
+            explode = name.endswith("*")
+            name = name.rstrip("*")
 
-            prefix = None
-            if ':' in name:
-                name, prefix = tuple(name.split(':', 1))
-                prefix = int(prefix)
+            prefix: t.Optional[int] = None
+            if ":" in name:
+                name, prefix_str = tuple(name.split(":", 1))
+                prefix = int(prefix_str, 10)
 
             if default_val:
                 self.defaults[name] = default_val
 
             self.variables.append(
-                (name, {'explode': explode, 'prefix': prefix})
+                (name, {"explode": explode, "prefix": prefix})
             )
 
         self.variable_names = [varname for (varname, _) in self.variables]
 
-    def post_parse(self):
-        """Set ``start``, ``join_str`` and ``safe`` attributes.
-
-        After parsing the variable, we need to set up these attributes and it
-        only makes sense to do it in a more easily testable way.
-        """
-        self.safe = ''
-        self.start = self.join_str = self.operator
-        if self.operator == '+':
-            self.start = ''
-        if self.operator in ('+', '#', ''):
-            self.join_str = ','
-        if self.operator == '#':
-            self.start = '#'
-        if self.operator == '?':
-            self.start = '?'
-            self.join_str = '&'
-
-        if self.operator in ('+', '#'):
-            self.safe = URIVariable.reserved
-
-    def _query_expansion(self, name, value, explode, prefix):
+    def _query_expansion(
+        self,
+        name: str,
+        value: VariableValue,
+        explode: bool,
+        prefix: t.Optional[int],
+    ) -> t.Optional[str]:
         """Expansion method for the '?' and '&' operators."""
         if value is None:
             return None
 
         tuples, items = is_list_of_tuples(value)
 
-        safe = self.safe
+        safe = self.operator.reserved_characters()
+        _quote = self.operator.quote
         if list_test(value) and not tuples:
             if not value:
                 return None
+            value = t.cast(t.Sequence[ScalarVariableValue], value)
             if explode:
-                return self.join_str.join(
-                    '{}={}'.format(name, quote(v, safe)) for v in value
+                return self.operator.expansion_separator().join(
+                    f"{name}={_quote(v)}" for v in value
                 )
             else:
-                value = ','.join(quote(v, safe) for v in value)
-                return '{}={}'.format(name, value)
+                value = ",".join(_quote(v) for v in value)
+                return f"{name}={value}"
 
         if dict_test(value) or tuples:
             if not value:
                 return None
+            value = t.cast(t.Mapping[str, ScalarVariableValue], value)
             items = items or sorted(value.items())
             if explode:
-                return self.join_str.join(
-                    '{}={}'.format(
-                        quote(k, safe), quote(v, safe)
-                    ) for k, v in items
+                return self.operator.expansion_separator().join(
+                    f"{quote(k, safe)}={_quote(v)}" for k, v in items
                 )
             else:
-                value = ','.join(
-                    '{},{}'.format(
-                        quote(k, safe), quote(v, safe)
-                    ) for k, v in items
+                value = ",".join(
+                    f"{quote(k, safe)},{_quote(v)}" for k, v in items
                 )
-                return '{}={}'.format(name, value)
+                return f"{name}={value}"
 
         if value:
+            value = t.cast(t.Text, value)
             value = value[:prefix] if prefix else value
-            return '{}={}'.format(name, quote(value, safe))
-        return name + '='
+            return f"{name}={_quote(value)}"
+        return name + "="
 
-    def _label_path_expansion(self, name, value, explode, prefix):
+    def _label_path_expansion(
+        self,
+        name: str,
+        value: VariableValue,
+        explode: bool,
+        prefix: t.Optional[int],
+    ) -> t.Optional[str]:
         """Label and path expansion method.
 
         Expands for operators: '/', '.'
 
         """
-        join_str = self.join_str
-        safe = self.safe
+        join_str = self.operator.expansion_separator()
+        safe = self.operator.reserved_characters()
 
-        if value is None or (len(value) == 0 and value != ''):
+        if value is None or (
+            not isinstance(value, (str, int, float, complex))
+            and len(value) == 0
+        ):
             return None
 
         tuples, items = is_list_of_tuples(value)
 
         if list_test(value) and not tuples:
             if not explode:
-                join_str = ','
+                join_str = ","
 
-            fragments = [quote(v, safe) for v in value if v is not None]
+            value = t.cast(t.Sequence[ScalarVariableValue], value)
+            fragments = [
+                self.operator.quote(v) for v in value if v is not None
+            ]
             return join_str.join(fragments) if fragments else None
 
         if dict_test(value) or tuples:
+            value = t.cast(t.Mapping[str, ScalarVariableValue], value)
             items = items or sorted(value.items())
-            format_str = '%s=%s'
+            format_str = "%s=%s"
             if not explode:
-                format_str = '%s,%s'
-                join_str = ','
+                format_str = "%s,%s"
+                join_str = ","
 
             expanded = join_str.join(
-                format_str % (
-                    quote(k, safe), quote(v, safe)
-                ) for k, v in items if v is not None
+                format_str % (quote(k, safe), self.operator.quote(v))
+                for k, v in items
+                if v is not None
             )
             return expanded if expanded else None
 
+        value = t.cast(t.Text, value)
         value = value[:prefix] if prefix else value
-        return quote(value, safe)
+        return self.operator.quote(value)
 
-    def _semi_path_expansion(self, name, value, explode, prefix):
+    def _semi_path_expansion(
+        self,
+        name: str,
+        value: VariableValue,
+        explode: bool,
+        prefix: t.Optional[int],
+    ) -> t.Optional[str]:
         """Expansion method for ';' operator."""
-        join_str = self.join_str
-        safe = self.safe
+        join_str = self.operator.expansion_separator()
+        safe = self.operator.reserved_characters()
 
         if value is None:
             return None
 
-        if self.operator == '?':
-            join_str = '&'
-
         tuples, items = is_list_of_tuples(value)
 
         if list_test(value) and not tuples:
+            value = t.cast(t.Sequence[ScalarVariableValue], value)
             if explode:
                 expanded = join_str.join(
-                    '{}={}'.format(
-                        name, quote(v, safe)
-                    ) for v in value if v is not None
+                    f"{name}={quote(v, safe)}" for v in value if v is not None
                 )
                 return expanded if expanded else None
             else:
-                value = ','.join(quote(v, safe) for v in value)
-                return '{}={}'.format(name, value)
+                value = ",".join(quote(v, safe) for v in value)
+                return f"{name}={value}"
 
         if dict_test(value) or tuples:
+            value = t.cast(t.Mapping[str, ScalarVariableValue], value)
             items = items or sorted(value.items())
 
             if explode:
                 return join_str.join(
-                    '{}={}'.format(
-                        quote(k, safe), quote(v, safe)
-                    ) for k, v in items if v is not None
+                    f"{quote(k, safe)}={self.operator.quote(v)}"
+                    for k, v in items
+                    if v is not None
                 )
             else:
-                expanded = ','.join(
-                    '{},{}'.format(
-                        quote(k, safe), quote(v, safe)
-                    ) for k, v in items if v is not None
+                expanded = ",".join(
+                    f"{quote(k, safe)},{self.operator.quote(v)}"
+                    for k, v in items
+                    if v is not None
                 )
-                return '{}={}'.format(name, expanded)
+                return f"{name}={expanded}"
 
+        value = t.cast(t.Text, value)
         value = value[:prefix] if prefix else value
         if value:
-            return '{}={}'.format(name, quote(value, safe))
+            return f"{name}={self.operator.quote(value)}"
 
         return name
 
-    def _string_expansion(self, name, value, explode, prefix):
+    def _string_expansion(
+        self,
+        name: str,
+        value: VariableValue,
+        explode: bool,
+        prefix: t.Optional[int],
+    ) -> t.Optional[str]:
         if value is None:
             return None
 
         tuples, items = is_list_of_tuples(value)
 
         if list_test(value) and not tuples:
-            return ','.join(quote(v, self.safe) for v in value)
+            value = t.cast(t.Sequence[ScalarVariableValue], value)
+            return ",".join(self.operator.quote(v) for v in value)
 
         if dict_test(value) or tuples:
+            value = t.cast(t.Mapping[str, ScalarVariableValue], value)
             items = items or sorted(value.items())
-            format_str = '%s=%s' if explode else '%s,%s'
+            format_str = "%s=%s" if explode else "%s,%s"
 
-            return ','.join(
-                format_str % (
-                    quote(k, self.safe), quote(v, self.safe)
-                ) for k, v in items
+            return ",".join(
+                format_str % (self.operator.quote(k), self.operator.quote(v))
+                for k, v in items
             )
 
+        value = t.cast(t.Text, value)
         value = value[:prefix] if prefix else value
-        return quote(value, self.safe)
+        return self.operator.quote(value)
 
-    def expand(self, var_dict=None):
+    def expand(
+        self, var_dict: t.Optional[VariableValueDict] = None
+    ) -> t.Mapping[str, str]:
         """Expand the variable in question.
 
         Using ``var_dict`` and the previously parsed defaults, expand this
@@ -321,69 +480,85 @@ class URIVariable(object):
 
         """
         return_values = []
+        if var_dict is None:
+            return {self.original: self.original}
 
         for name, opts in self.variables:
             value = var_dict.get(name, None)
-            if not value and value != '' and name in self.defaults:
+            if not value and value != "" and name in self.defaults:
                 value = self.defaults[name]
 
             if value is None:
                 continue
 
             expanded = None
-            if self.operator in ('/', '.'):
+            if (
+                self.operator == Operator.path_segment
+                or self.operator == Operator.label_with_dot_prefix
+            ):
                 expansion = self._label_path_expansion
-            elif self.operator in ('?', '&'):
+            elif (
+                self.operator == Operator.form_style_query
+                or self.operator == Operator.form_style_query_continuation
+            ):
                 expansion = self._query_expansion
-            elif self.operator == ';':
+            elif self.operator == Operator.path_style_parameter:
                 expansion = self._semi_path_expansion
             else:
                 expansion = self._string_expansion
+            # match self.operator:
+            #     case Operator.path_segment | Operator.label_with_dot_prefix:
+            #         expansion = self._label_path_expansion
+            #     case (Operator.form_style_query |
+            #           Operator.form_style_query_continuation):
+            #         expansion = self._query_expansion
+            #     case Operator.path_style_parameter:
+            #         expansion = self._semi_path_expansion
+            #     case _:
+            #         expansion = self._string_expansion
 
-            expanded = expansion(name, value, opts['explode'], opts['prefix'])
+            expanded = expansion(name, value, opts["explode"], opts["prefix"])
 
             if expanded is not None:
                 return_values.append(expanded)
 
-        value = ''
+        value = ""
         if return_values:
-            value = self.start + self.join_str.join(return_values)
+            value = (
+                self.operator.variable_prefix()
+                + self.operator.expansion_separator().join(return_values)
+            )
         return {self.original: value}
 
 
-def is_list_of_tuples(value):
-    if (not value or
-            not isinstance(value, (list, tuple)) or
-            not all(isinstance(t, tuple) and len(t) == 2 for t in value)):
+def is_list_of_tuples(
+    value: t.Any,
+) -> t.Tuple[bool, t.Optional[t.Sequence[t.Tuple[str, ScalarVariableValue]]]]:
+    if (
+        not value
+        or not isinstance(value, (list, tuple))
+        or not all(isinstance(t, tuple) and len(t) == 2 for t in value)
+    ):
         return False, None
 
     return True, value
 
 
-def list_test(value):
+def list_test(value: t.Any) -> bool:
     return isinstance(value, (list, tuple))
 
 
-def dict_test(value):
-    return isinstance(value, (dict, collections_abc.MutableMapping))
+def dict_test(value: t.Any) -> bool:
+    return isinstance(value, (dict, collections.abc.MutableMapping))
 
 
-try:
-    texttype = unicode
-except NameError:  # Python 3
-    texttype = str
-
-stringlikes = (texttype, bytes)
-
-
-def _encode(value, encoding='utf-8'):
-    if (isinstance(value, texttype) and
-            getattr(value, 'encode', None) is not None):
+def _encode(value: t.AnyStr, encoding: str = "utf-8") -> bytes:
+    if isinstance(value, str):
         return value.encode(encoding)
     return value
 
 
-def quote(value, safe):
-    if not isinstance(value, stringlikes):
+def quote(value: t.Any, safe: str) -> str:
+    if not isinstance(value, (str, bytes)):
         value = str(value)
-    return urllib.quote(_encode(value), safe)
+    return urllib.parse.quote(_encode(value), safe)

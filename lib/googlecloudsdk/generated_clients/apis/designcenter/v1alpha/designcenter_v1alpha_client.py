@@ -1074,16 +1074,14 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
       r"""Ingests IaC for an application template asynchronously.
 
       Args:
-        request:
-          (DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest)
-          input message
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
-
       Returns:
         (Operation) The response message.
       """
       config = self.GetMethodConfig('IngestIaC')
-      return self._RunMethod(config, request, global_params=global_params)
+      return self._RunMethod(
+          config, request, global_params=global_params)
 
     IngestIaC.method_config = lambda: base_api.ApiMethodInfo(
         flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}:ingestIaC',
@@ -1275,15 +1273,14 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
       r"""Exports Terraform files for an application asynchronously.
 
       Args:
-        request: (DesigncenterProjectsLocationsSpacesApplicationsExportRequest)
-          input message
+        request: (DesigncenterProjectsLocationsSpacesApplicationsExportRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
-
       Returns:
         (Operation) The response message.
       """
       config = self.GetMethodConfig('Export')
-      return self._RunMethod(config, request, global_params=global_params)
+      return self._RunMethod(
+          config, request, global_params=global_params)
 
     Export.method_config = lambda: base_api.ApiMethodInfo(
         flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applications/{applicationsId}:export',

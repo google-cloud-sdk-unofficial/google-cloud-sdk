@@ -8242,7 +8242,9 @@ class CacheInvalidationRule(_messages.Message):
       specified, these are treated as Boolean `AND`    with any tags.   Up to
       10 tags can be specified in a single invalidation request.
     host: If set, this invalidation rule will only apply to requests with a
-      Host header matching host.
+      Host header matching host. This field also accepts wildcards (*) to
+      replace the leftmost (or first) label of a hostname. For example,
+      *.example.com will match www.example.com, but not sub1.dev.example.com.
     path: A string attribute.
   """
 
@@ -9324,6 +9326,10 @@ class Commitment(_messages.Message):
       MEMORY_OPTIMIZED: <no description>
       MEMORY_OPTIMIZED_M3: <no description>
       MEMORY_OPTIMIZED_M4: <no description>
+      MEMORY_OPTIMIZED_M4N: CUD bucket for M4N machines with less than 6TB of
+        memory.
+      MEMORY_OPTIMIZED_M4N_6TB: CUD bucket for M4N machines with 6TB of
+        memory.
       MEMORY_OPTIMIZED_M4_6TB: <no description>
       MEMORY_OPTIMIZED_X4_1440_24T: CUD bucket for X4 machine with 1440 vCPUs
         and 24TB of memory.
@@ -9383,26 +9389,28 @@ class Commitment(_messages.Message):
     MEMORY_OPTIMIZED = 26
     MEMORY_OPTIMIZED_M3 = 27
     MEMORY_OPTIMIZED_M4 = 28
-    MEMORY_OPTIMIZED_M4_6TB = 29
-    MEMORY_OPTIMIZED_X4_1440_24T = 30
-    MEMORY_OPTIMIZED_X4_16TB = 31
-    MEMORY_OPTIMIZED_X4_1920_32T = 32
-    MEMORY_OPTIMIZED_X4_24TB = 33
-    MEMORY_OPTIMIZED_X4_32TB = 34
-    MEMORY_OPTIMIZED_X4_480_6T = 35
-    MEMORY_OPTIMIZED_X4_480_8T = 36
-    MEMORY_OPTIMIZED_X4_960_12T = 37
-    MEMORY_OPTIMIZED_X4_960_16T = 38
-    NETWORK_OPTIMIZED_C4N = 39
-    NETWORK_OPTIMIZED_U4C = 40
-    NETWORK_OPTIMIZED_U4P = 41
-    NETWORK_OPTIMIZED_U4S = 42
-    STORAGE_OPTIMIZED_Z3 = 43
-    STORAGE_OPTIMIZED_Z4D4T = 44
-    STORAGE_OPTIMIZED_Z4DH = 45
-    STORAGE_OPTIMIZED_Z4DS = 46
-    STORAGE_OPTIMIZED_Z4M = 47
-    TYPE_UNSPECIFIED = 48
+    MEMORY_OPTIMIZED_M4N = 29
+    MEMORY_OPTIMIZED_M4N_6TB = 30
+    MEMORY_OPTIMIZED_M4_6TB = 31
+    MEMORY_OPTIMIZED_X4_1440_24T = 32
+    MEMORY_OPTIMIZED_X4_16TB = 33
+    MEMORY_OPTIMIZED_X4_1920_32T = 34
+    MEMORY_OPTIMIZED_X4_24TB = 35
+    MEMORY_OPTIMIZED_X4_32TB = 36
+    MEMORY_OPTIMIZED_X4_480_6T = 37
+    MEMORY_OPTIMIZED_X4_480_8T = 38
+    MEMORY_OPTIMIZED_X4_960_12T = 39
+    MEMORY_OPTIMIZED_X4_960_16T = 40
+    NETWORK_OPTIMIZED_C4N = 41
+    NETWORK_OPTIMIZED_U4C = 42
+    NETWORK_OPTIMIZED_U4P = 43
+    NETWORK_OPTIMIZED_U4S = 44
+    STORAGE_OPTIMIZED_Z3 = 45
+    STORAGE_OPTIMIZED_Z4D4T = 46
+    STORAGE_OPTIMIZED_Z4DH = 47
+    STORAGE_OPTIMIZED_Z4DS = 48
+    STORAGE_OPTIMIZED_Z4M = 49
+    TYPE_UNSPECIFIED = 50
 
   autoRenew = _messages.BooleanField(1)
   category = _messages.EnumField('CategoryValueValuesEnum', 2)
@@ -91878,9 +91886,10 @@ class Scheduling(_messages.Message):
       VMs only. If not specified, there will be no wait before the G2 Soft Off
       signal is triggered.
     provisioningModel: Specifies the provisioning model of the instance.
-    skipGuestOsShutdown: Default is false and there will be 120 seconds
-      between GCE ACPI G2 Soft Off and ACPI G3 Mechanical Off for Standard VMs
-      and 30 seconds for Spot VMs.
+    skipGuestOsShutdown: Defines whether GCE ACPI G2 Soft Off signal should be
+      skipped during shutdown operation of VM.  Default is false, meaning
+      there will be 120 seconds between GCE ACPI G2 Soft Off and ACPI G3
+      Mechanical Off for Standard VMs and 30 seconds for Spot VMs.
     terminationTime: Specifies the timestamp, when the instance will be
       terminated, inRFC3339 text format. If specified, the instance
       termination action will be performed at the termination time.

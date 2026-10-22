@@ -168,6 +168,9 @@ class HTTPAdapter(requests.adapters.HTTPAdapter):
     kwargs['ssl_context'] = context
 
 
+_LOOPBACK_HOSTS = frozenset({'localhost', '127.0.0.1', '::1'})
+
+
 class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
   """A requests adapter that routes HTTPS requests through a local ECP proxy.
 
@@ -215,9 +218,12 @@ class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
     Raises:
       ECPProxyError: If the proxy returns an error or fails to send the request.
     """
-    # Rewrite the request to target the proxy
     original_url = urllib.parse.urlsplit(request.url)
-    request.headers['x-goog-ecpproxy-target-host'] = original_url.hostname
+    if original_url.hostname in _LOOPBACK_HOSTS:
+      return super().send(request, **kwargs)
+
+    # Rewrite the request to target the proxy
+    request.headers['x-goog-ecpproxy-target-host'] = original_url.netloc
 
     # The new URL for the request is the proxy address + original path/query
     # urlunsplit takes (scheme, netloc, path, query, fragment).
@@ -459,17 +465,24 @@ def _CreateRawSession(
 
 def _GetURIFromRequestArgs(url, params):
   """Gets the complete URI by merging url and params from the request args."""
-  url_parts = urllib.parse.urlsplit(url)
-  query_params = urllib.parse.parse_qs(url_parts.query, keep_blank_values=True)
-  for param, value in six.iteritems(params or {}):
-    query_params[param] = value
-  # Need to do this to convert a SplitResult into a list so it can be modified.
-  url_parts = list(url_parts)
-  # pylint:disable=redundant-keyword-arg, this is valid syntax for this lib
-  url_parts[3] = urllib.parse.urlencode(query_params, doseq=True)
+  if not params:
+    return url
 
-  # pylint:disable=too-many-function-args, This is just bogus.
-  return urllib.parse.urlunsplit(url_parts)
+  url_parts = urllib.parse.urlsplit(url)
+  # Preserve existing `name=value` segments in query as-is if they don't
+  # appear in params (only the latter should be encoded).
+  preserved_query = '&'.join(
+      segment
+      for segment in url_parts.query.split('&')
+      if segment
+      and urllib.parse.unquote_plus(segment.split('=', 1)[0]) not in params
+  )
+  encoded_params = urllib.parse.urlencode(params, doseq=True)
+  if preserved_query and encoded_params:
+    query = f'{preserved_query}&{encoded_params}'
+  else:
+    query = preserved_query or encoded_params
+  return urllib.parse.urlunsplit(url_parts._replace(query=query))
 
 
 class Request(transport.Request):

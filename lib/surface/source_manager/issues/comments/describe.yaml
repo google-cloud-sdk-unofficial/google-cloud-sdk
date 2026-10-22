@@ -1,6 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
-
   help_text:
     brief: Describe a Secure Source Manager issue comment.
     description: Describe a Secure Source Manager issue comment.
@@ -18,3 +16,6 @@
     resource:
       help_text: The Secure Source Manager issue comment to describe.
       spec: !REF googlecloudsdk.command_lib.source_manager.resources:issue_comment
+
+  hints:
+    read_only: true

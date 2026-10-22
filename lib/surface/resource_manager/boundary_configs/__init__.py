@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
@@ -27,3 +26,4 @@ class BoundaryConfigs(base.Group):
 
   Commands to describe and update Resource Manager boundary configurations.
   """
+  category = base.IDENTITY_AND_SECURITY_CATEGORY

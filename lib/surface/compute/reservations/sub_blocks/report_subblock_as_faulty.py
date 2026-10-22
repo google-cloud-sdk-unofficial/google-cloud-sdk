@@ -33,12 +33,18 @@ def _GetReportFaultyRequest(args, reservation_ref, holder):
   fault_reasons = []
   if args.fault_reasons:
     for reason in args.fault_reasons:
+      fault_reason_kwargs = {
+          'behavior': util.MakeFaultBehavior(
+              client.messages, reason.get('behavior')
+          ),
+          'description': reason.get('description'),
+      }
+      component_id = reason.get('component-id')
+      if component_id:
+        fault_reason_kwargs['componentId'] = component_id
       fault_reasons.append(
           client.messages.ReservationSubBlocksReportFaultyRequestFaultReason(
-              behavior=util.MakeFaultBehavior(
-                  client.messages, reason.get('behavior')
-              ),
-              description=reason.get('description'),
+              **fault_reason_kwargs
           )
       )
 
@@ -74,8 +80,8 @@ def _GetReportFaultyRequest(args, reservation_ref, holder):
 class ReportFaulty(base.UpdateCommand):
   """Report a sub-block within a reservation as faulty."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     resource_args.GetReservationResourceArg(
         help_text=(
             'The name of the reservation containing the sub-block to report as'
@@ -84,7 +90,9 @@ class ReportFaulty(base.UpdateCommand):
     ).AddArgument(parser, operation_type='report-subblock-as-faulty')
     flags.AddDescribeFlags(parser)
     flags.GetDisruptionScheduleFlag().AddToParser(parser)
-    flags.GetFaultReasonsFlag().AddToParser(parser)
+    flags.GetFaultReasonsFlag(
+        support_component_id=(cls.ReleaseTrack() == base.ReleaseTrack.PREVIEW)
+    ).AddToParser(parser)
     flags.GetFailureComponentFlag().AddToParser(parser)
 
   def Run(self, args):

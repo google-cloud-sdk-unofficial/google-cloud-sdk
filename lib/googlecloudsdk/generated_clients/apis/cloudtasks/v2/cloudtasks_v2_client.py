@@ -90,6 +90,60 @@ class CloudtasksV2(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def BatchCreate(self, request, global_params=None):
+      r"""Creates a batch of tasks and adds them to a queue. All tasks must be for the same queue. A maximum of 100 tasks can be created in a single batch.
+
+      Args:
+        request: (CloudtasksProjectsLocationsQueuesTasksBatchCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('BatchCreate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchCreate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/queues/{queuesId}/tasks:batchCreate',
+        http_method='POST',
+        method_id='cloudtasks.projects.locations.queues.tasks.batchCreate',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v2/{+parent}/tasks:batchCreate',
+        request_field='batchCreateTasksRequest',
+        request_type_name='CloudtasksProjectsLocationsQueuesTasksBatchCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def BatchDelete(self, request, global_params=None):
+      r"""Deletes a batch of tasks. This is a non-atomic operation: if deletion fails for some tasks, it can still succeed for others. The metadata field of google.longrunning.Operation contains details of failed deletions. A maximum of 1000 tasks can be deleted in a batch.
+
+      Args:
+        request: (CloudtasksProjectsLocationsQueuesTasksBatchDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('BatchDelete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchDelete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/queues/{queuesId}/tasks:batchDelete',
+        http_method='POST',
+        method_id='cloudtasks.projects.locations.queues.tasks.batchDelete',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v2/{+parent}/tasks:batchDelete',
+        request_field='batchDeleteTasksRequest',
+        request_type_name='CloudtasksProjectsLocationsQueuesTasksBatchDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Buffer(self, request, global_params=None):
       r"""Creates and buffers a new task without the need to explicitly define a Task message. The queue must have HTTP target. To create the task with a custom ID, use the following format and set TASK_ID to your desired ID: projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID/tasks/TASK_ID:buffer To create the task with an automatically generated ID, use the following format: projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID/tasks:buffer.
 
@@ -597,7 +651,7 @@ class CloudtasksV2(base_api.BaseApiClient):
     )
 
     def GetCmekConfig(self, request, global_params=None):
-      r"""Gets the CMEK config. Gets the Customer Managed Encryption Key configured with the Cloud Tasks lcoation. By default there is no kms_key configured.
+      r"""Gets the CMEK config. Gets the Customer Managed Encryption Key configured with the Cloud Tasks location. By default there is no `kms_key` configured.
 
       Args:
         request: (CloudtasksProjectsLocationsGetCmekConfigRequest) input message

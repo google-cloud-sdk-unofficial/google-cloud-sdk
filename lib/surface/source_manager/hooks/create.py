@@ -54,7 +54,6 @@ _EVENT_CHOICES = {
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.RegionalEndpointsSupported
 class Create(base.CreateCommand):
   """Create a Secure Source Manager hook."""

@@ -59,7 +59,9 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class AddSubmissionRule(base.UpdateCommand):
   """Add a WildFire submission rule to a WildFire Analysis Profile."""
 

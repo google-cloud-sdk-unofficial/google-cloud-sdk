@@ -24,3 +24,4 @@ class OrgPolicies(base.Group):
 
   Commands to query and to update your Org Policies.
   """
+  category = base.IDENTITY_AND_SECURITY_CATEGORY

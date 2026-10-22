@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute preview HaControllerInstanceNetworkInterface export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  ipv6Address:
+    description: |-
+      Optional IPv6 address to assign to the instance's network interface. If
+      omitted, an ephemeral IP may be assigned depending on the instance's
+      network interface stack type.
+    type: string
+  networkIP:
+    description: |-
+      Optional IPv4 address to assign to the instance's network interface. If
+      omitted, an ephemeral IP may be assigned depending on the instance's
+      network interface stack type.
+    type: string

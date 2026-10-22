@@ -1,4 +1,6 @@
 release_tracks: [GA, BETA]
+hints:
+  read_only: true
 help_text:
   brief: List semantic governance policies.
   description: List semantic governance policies.

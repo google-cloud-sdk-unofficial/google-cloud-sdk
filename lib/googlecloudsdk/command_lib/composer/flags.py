@@ -2028,6 +2028,7 @@ def AddComposer3FlagsToGroup(update_type_group, release_track=None):
     CLOUD_RUN_FUNCTIONS_ROUTING_BETA.choice_arg.AddToParser(
         traffic_routing_group
     )
+    AddAirflowRbacUpdateFlagsToGroup(update_type_group)
   elif release_track == base.ReleaseTrack.ALPHA:
     CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA.choice_arg.AddToParser(
         traffic_routing_group
@@ -2040,6 +2041,7 @@ def AddComposer3FlagsToGroup(update_type_group, release_track=None):
         USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG_GROUP_DESCRIPTION,
         hidden=True,
     )
+    AddAirflowRbacUpdateFlagsToGroup(update_type_group)
 
 
 def FallthroughToLocationProperty(location_refs, flag_name, failure_msg):
@@ -2096,3 +2098,169 @@ def ValidateIpRanges(ip_ranges):
     except:
       raise command_util.InvalidUserInputError(
           'Invalid IP range: [{}].'.format(ip_range))
+
+
+AIRFLOW_RBAC_FLAG_GROUP_DESCRIPTION = (
+    'Group of arguments for configuring Airflow RBAC in Composer 3.'
+)
+
+AIRFLOW_RBAC_CONFIG_FROM_FILE = base.Argument(
+    '--airflow-rbac-config-from-file',
+    help="""\
+    The path to a local YAML or JSON file containing the Airflow RBAC
+    configuration. The file must specify a list of bindings mapping roles to
+    members (Google Groups, users, service accounts, and workforce identity
+    pool principals).
+    """,
+)
+
+AIRFLOW_RBAC_BINDING = base.Argument(
+    '--airflow-rbac-binding',
+    action='append',
+    type=arg_parsers.ArgDict(
+        spec={
+            'role': str,
+            'user': str,
+            'group': str,
+            'service_account': str,
+            'principal': str,
+        }
+    ),
+    metavar=(
+        'role=ROLE,[user=USER],[group=GROUP],[service_account=SERVICE_ACCOUNT],'
+        '[principal=PRINCIPAL]'
+    ),
+    help="""\
+    A role-to-member binding to configure. This flag can be repeated to grant
+    multiple roles or members.
+
+    *role*::: The Airflow RBAC role name (for example, `Admin`, `Op`, `User`,
+    `Viewer`, or a custom role).
+
+    *user*::: The user email address to bind to the role.
+
+    *group*::: The Google Group email address to bind to the role.
+
+    *service_account*::: The Google Cloud service account email address to bind
+    to the role.
+
+    *principal*::: The Workforce Identity Federation principal identifier to
+    bind to the role.
+    """,
+)
+
+CLEAR_AIRFLOW_RBAC_CONFIG_FLAG = base.Argument(
+    '--clear-airflow-rbac-config',
+    action='store_true',
+    default=None,
+    help="""\
+    Clears the entire Airflow RBAC configuration from the environment.
+    """,
+)
+
+UPDATE_AIRFLOW_RBAC_BINDING_FLAG = base.Argument(
+    '--update-airflow-rbac-binding',
+    action='append',
+    type=arg_parsers.ArgDict(
+        spec={
+            'role': str,
+            'user': str,
+            'group': str,
+            'service_account': str,
+            'principal': str,
+        }
+    ),
+    metavar=(
+        'role=ROLE,[user=USER],[group=GROUP],[service_account=SERVICE_ACCOUNT],'
+        '[principal=PRINCIPAL]'
+    ),
+    help="""\
+    A role-to-member binding to grant or update. This flag can be repeated to
+    grant multiple roles or members.
+
+    *role*::: The Airflow RBAC role name (for example, `Admin`, `Op`, `User`,
+    `Viewer`, or a custom role).
+
+    *user*::: The user email address to bind to the role.
+
+    *group*::: The Google Group email address to bind to the role.
+
+    *service_account*::: The Google Cloud service account email address to bind
+    to the role.
+
+    *principal*::: The Workforce Identity Federation principal identifier to
+    bind to the role.
+    """,
+)
+
+REMOVE_AIRFLOW_RBAC_BINDING_FLAG = base.Argument(
+    '--remove-airflow-rbac-binding',
+    action='append',
+    type=arg_parsers.ArgDict(
+        spec={
+            'role': str,
+            'user': str,
+            'group': str,
+            'service_account': str,
+            'principal': str,
+        }
+    ),
+    metavar=(
+        'role=ROLE,[user=USER],[group=GROUP],[service_account=SERVICE_ACCOUNT],'
+        '[principal=PRINCIPAL]'
+    ),
+    help="""\
+    A role-to-member binding to remove. This flag can be repeated to revoke
+    multiple roles or members.
+
+    *role*::: The Airflow RBAC role name from which to remove members.
+
+    *user*::: The user email address to remove from the role.
+
+    *group*::: The Google Group email address to remove from the role.
+
+    *service_account*::: The Google Cloud service account email address to
+    remove from the role.
+
+    *principal*::: The Workforce Identity Federation principal identifier to
+    remove from the role.
+    """,
+)
+
+UPDATE_AIRFLOW_RBAC_CONFIG_FROM_FILE_FLAG = base.Argument(
+    '--update-airflow-rbac-config-from-file',
+    help="""\
+    The path to a local YAML or JSON file containing the complete Airflow RBAC
+    configuration. The file must specify a list of bindings mapping roles to
+    members (Google Groups, users, service accounts, and workforce identity
+    pool principals).
+    """,
+)
+
+
+def AddAirflowRbacCreateFlags(parser):
+  """Adds Airflow RBAC flags to the environment creation parser."""
+  rbac_group = parser.add_argument_group(
+      help=AIRFLOW_RBAC_FLAG_GROUP_DESCRIPTION, mutex=True, hidden=True
+  )
+  AIRFLOW_RBAC_CONFIG_FROM_FILE.AddToParser(rbac_group)
+  AIRFLOW_RBAC_BINDING.AddToParser(rbac_group)
+
+
+def AddAirflowRbacUpdateFlagsToGroup(update_type_group):
+  """Adds flags related to updating Airflow RBAC configuration.
+
+  Args:
+    update_type_group: argument group, the group to which flags should be added.
+  """
+  rbac_group = update_type_group.add_argument_group(
+      AIRFLOW_RBAC_FLAG_GROUP_DESCRIPTION, mutex=True, hidden=True
+  )
+  UPDATE_AIRFLOW_RBAC_CONFIG_FROM_FILE_FLAG.AddToParser(rbac_group)
+  _AddPartialDictUpdateFlagsToGroup(
+      rbac_group,
+      CLEAR_AIRFLOW_RBAC_CONFIG_FLAG,
+      REMOVE_AIRFLOW_RBAC_BINDING_FLAG,
+      UPDATE_AIRFLOW_RBAC_BINDING_FLAG,
+      AIRFLOW_RBAC_FLAG_GROUP_DESCRIPTION,
+  )

@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
   help_text:
     brief: Update a Data Catalog entry.
     description: |-
@@ -112,6 +114,8 @@
       googlecloudsdk.command_lib.data_catalog.entries.flags:AddEntryUpdateArgs
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Update a Data Catalog entry.
     description: |-

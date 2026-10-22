@@ -833,6 +833,14 @@ class CreateProjectMetadata(_messages.Message):
   ready = _messages.BooleanField(3)
 
 
+class CreateSemanticTagBindingMetadata(_messages.Message):
+  r"""Metadata for the `CreateSemanticTagBinding` long-running operation."""
+
+
+class CreateSemanticTagValueMetadata(_messages.Message):
+  r"""Runtime operation information for creating a `SemanticTagValue`."""
+
+
 class CreateTagBindingMetadata(_messages.Message):
   r"""Runtime operation information for creating a TagValue."""
 
@@ -878,6 +886,14 @@ class DeleteProjectMetadata(_messages.Message):
   returned by `DeleteProject`.
   """
 
+
+
+class DeleteSemanticTagBindingMetadata(_messages.Message):
+  r"""Metadata for the `DeleteSemanticTagBinding` long-running operation."""
+
+
+class DeleteSemanticTagValueMetadata(_messages.Message):
+  r"""Runtime operation information for deleting a `SemanticTagValue`."""
 
 
 class DeleteTagBindingMetadata(_messages.Message):

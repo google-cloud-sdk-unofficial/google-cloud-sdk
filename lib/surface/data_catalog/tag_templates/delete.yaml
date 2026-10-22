@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
   help_text:
     brief: Delete a Data Catalog tag template.
     description: Delete a Data Catalog tag template.
@@ -23,6 +25,8 @@
       help_text: If True, any tags with this tag template will be deleted.
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Delete a Data Catalog tag template.
     description: Delete a Data Catalog tag template.

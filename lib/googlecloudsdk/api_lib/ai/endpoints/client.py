@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import errors
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import requests
@@ -126,6 +127,69 @@ def _CheckIsGdcGgsModel(self, endpoint_ref):
       and 'zone' in endpoint_resource['gdcConfig']
       and endpoint_resource['gdcConfig']['zone']
   )
+
+
+# GGC preview customers deploy this model without specifying resources, so
+# gcloud defaults it to a single replica. Matched exactly.
+_GDC_GGS_DEFAULT_ONE_REPLICA_MODEL = 'gemini-2.5-flash'
+
+
+def _GetGdcGgsDedicatedOnlyFlags(
+    machine_type=None,
+    accelerator_dict=None,
+    tpu_topology=None,
+    multihost_gpu_node_count=None,
+    required_replica_count=None,
+    reservation_affinity=None,
+    autoscaling_metric_specs=None,
+    spot=False,
+    gpu_partition_size=None,
+    min_gpu_driver_version=None,
+    min_scaleup_period=None,
+    idle_scaledown_period=None,
+    initial_replica_count=None,
+):
+  """Returns the set flags that only apply to dedicated resources.
+
+  GDC GGS (GGC) deployments use automatic resources, which only carry replica
+  counts. If any of these flags is set, the request falls back to dedicated
+  resources and the server decides whether to accept it.
+
+  Args:
+    machine_type: str or None, value of --machine-type.
+    accelerator_dict: dict or None, value of --accelerator.
+    tpu_topology: str or None, value of --tpu-topology.
+    multihost_gpu_node_count: int or None, value of --multihost-gpu-node-count.
+    required_replica_count: int or None, value of --required-replica-count.
+    reservation_affinity: dict or None, value of --reservation-affinity.
+    autoscaling_metric_specs: dict or None, value of
+      --autoscaling-metric-specs.
+    spot: bool, value of --spot.
+    gpu_partition_size: str or None, value of --gpu-partition-size.
+    min_gpu_driver_version: str or None, value of --min-gpu-driver-version.
+    min_scaleup_period: str or None, value of --min-scaleup-period.
+    idle_scaledown_period: str or None, value of --idle-scaledown-period.
+    initial_replica_count: int or None, value of --initial-replica-count.
+
+  Returns:
+    A list of flag names (e.g. '--machine-type') in a stable order.
+  """
+  candidates = [
+      ('--machine-type', machine_type is not None),
+      ('--accelerator', accelerator_dict is not None),
+      ('--tpu-topology', tpu_topology is not None),
+      ('--multihost-gpu-node-count', multihost_gpu_node_count is not None),
+      ('--required-replica-count', required_replica_count is not None),
+      ('--reservation-affinity', reservation_affinity is not None),
+      ('--autoscaling-metric-specs', autoscaling_metric_specs is not None),
+      ('--spot', bool(spot)),
+      ('--gpu-partition-size', gpu_partition_size is not None),
+      ('--min-gpu-driver-version', min_gpu_driver_version is not None),
+      ('--min-scaleup-period', min_scaleup_period is not None),
+      ('--idle-scaledown-period', idle_scaledown_period is not None),
+      ('--initial-replica-count', initial_replica_count is not None),
+  ]
+  return [name for name, is_set in candidates if is_set]
 
 
 class EndpointsClient(object):
@@ -796,6 +860,52 @@ class EndpointsClient(object):
         gdcConnectedModel=model,
     )
 
+  def _BuildGdcGgsAutomaticDeployedModel(
+      self,
+      display_name,
+      model,
+      min_replica_count,
+      max_replica_count,
+      version,
+  ):
+    """Builds a DeployedModel message with automatic resources for GDC GGS.
+
+    Replica counts are passed through as-is; validation happens server-side.
+
+    Args:
+      display_name: str, the display name of the new deployed model.
+      model: str, Id of the uploaded model to be deployed.
+      min_replica_count: int or None, the minimum number of replicas the
+        deployed model will be always deployed on.
+      max_replica_count: int or None, the maximum number of replicas the
+        deployed model may be deployed on.
+      version: str, the API version to use for messages (e.g.
+        googlecloudsdk.command_lib.ai.constants.BETA_VERSION).
+
+    Returns:
+      A DeployedModel message with automaticResources tailored for GDC GGS.
+    """
+    automatic_resources_cl = api_util.GetMessage('AutomaticResources', version)
+    deployed_model_cl = api_util.GetMessage('DeployedModel', version)
+    if (
+        min_replica_count is None
+        and max_replica_count is None
+        and model == _GDC_GGS_DEFAULT_ONE_REPLICA_MODEL
+    ):
+      # Preview customers never set replica counts and relied on gcloud
+      # defaulting them to 1.
+      min_replica_count = 1
+    automatic = automatic_resources_cl()
+    if min_replica_count is not None:
+      automatic.minReplicaCount = min_replica_count
+    if max_replica_count is not None:
+      automatic.maxReplicaCount = max_replica_count
+    return deployed_model_cl(
+        automaticResources=automatic,
+        displayName=display_name,
+        gdcConnectedModel=model,
+    )
+
   def DeployModel(
       self,
       endpoint_ref,
@@ -1052,15 +1162,46 @@ class EndpointsClient(object):
     """
     is_gdc_ggs_model = _CheckIsGdcGgsModel(self, endpoint_ref)
     if is_gdc_ggs_model:
-      deployed_model = self._BuildGdcGgsDeployedModel(
-          machine_type,
-          accelerator_dict,
-          display_name,
-          model,
-          min_replica_count,
-          max_replica_count,
-          constants.BETA_VERSION,
+      dedicated_only_flags = _GetGdcGgsDedicatedOnlyFlags(
+          machine_type=machine_type,
+          accelerator_dict=accelerator_dict,
+          tpu_topology=tpu_topology,
+          multihost_gpu_node_count=multihost_gpu_node_count,
+          required_replica_count=required_replica_count,
+          reservation_affinity=reservation_affinity,
+          autoscaling_metric_specs=autoscaling_metric_specs,
+          spot=spot,
+          gpu_partition_size=gpu_partition_size,
+          min_gpu_driver_version=min_gpu_driver_version,
+          min_scaleup_period=min_scaleup_period,
+          idle_scaledown_period=idle_scaledown_period,
+          initial_replica_count=initial_replica_count,
       )
+      if dedicated_only_flags:
+        log.warning(
+            'The following flags are not supported with automatic resources '
+            'for GDC endpoints: {}. Deploying with dedicated resources '
+            'instead; the request may be rejected by the server.'.format(
+                ', '.join(dedicated_only_flags)
+            )
+        )
+        deployed_model = self._BuildGdcGgsDeployedModel(
+            machine_type,
+            accelerator_dict,
+            display_name,
+            model,
+            min_replica_count,
+            max_replica_count,
+            constants.BETA_VERSION,
+        )
+      else:
+        deployed_model = self._BuildGdcGgsAutomaticDeployedModel(
+            display_name,
+            model,
+            min_replica_count,
+            max_replica_count,
+            constants.BETA_VERSION,
+        )
     else:
       model_ref = _ParseModel(model, region)
       resource_type = _GetModelDeploymentResourceType(

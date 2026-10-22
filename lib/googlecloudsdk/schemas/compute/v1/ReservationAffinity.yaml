@@ -28,7 +28,7 @@ properties:
   consumeReservationType:
     description: |-
       Specifies the type of reservation from which this instance can consume
-      resources: ANY_RESERVATION (default), SPECIFIC_RESERVATION, or
+      resources: ANY_RESERVATION (default),SPECIFIC_RESERVATION, or
       NO_RESERVATION. See Consuming reserved instances for examples.
     type: string
     enum:
@@ -38,8 +38,8 @@ properties:
     - UNSPECIFIED
   key:
     description: |-
-      Corresponds to the label key of a reservation resource. To target a
-      SPECIFIC_RESERVATION by name, specify googleapis.com/reservation-name as
+      Corresponds to the label key of a reservation resource. To target
+      aSPECIFIC_RESERVATION by name, specifygoogleapis.com/reservation-name as
       the key and specify the name of your reservation as its value.
     type: string
   values:

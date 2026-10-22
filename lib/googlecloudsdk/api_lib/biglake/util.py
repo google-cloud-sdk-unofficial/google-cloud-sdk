@@ -142,9 +142,6 @@ def GetCatalogTypeEnumMapper(release_track):
   mapper = arg_utils.ChoiceEnumMapper(
       '--catalog-type',
       catalog_type_enum,
-      hidden_choices=['federated']
-      if release_track == base.ReleaseTrack.GA
-      else [],
       required=True,
       help_str='Catalog type to create the catalog with.',
       custom_mappings={

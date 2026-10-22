@@ -2042,6 +2042,25 @@ def AddAuthorizedExternalNetworks(parser):
   )
 
 
+def AddEnablePublicDns(parser):
+  """Adds the `--enable-public-dns` flag to the parser.
+
+  Args:
+    parser: argparse.ArgumentParser, The parser to which the flag will be added.
+  """
+  parser.add_argument(
+      '--enable-public-dns',
+      required=False,
+      action=arg_parsers.StoreTrueFalseAction,
+      help=(
+          'Enable or disable Public DNS for the instance. When enabled, the'
+          ' instance is assigned a public DNS name, which is returned in'
+          ' `networkInfo.publicDnsName`. Public DNS is only supported for'
+          ' instances in Express clusters.'
+      ),
+  )
+
+
 def AddMaintenanceVersion(parser):
   """Adds a `--maintenance-version` flag to parser.
 

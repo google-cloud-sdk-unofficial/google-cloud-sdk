@@ -70,6 +70,22 @@ def ListKeys(
   )
 
 
+def GetKeyString(name, release_track=calliope_base.ReleaseTrack.GA):
+  """Get the key string of an API key.
+
+  Args:
+    name: The resource name of the API key.
+    release_track: The release track of the command.
+
+  Returns:
+    The key string of the API key.
+  """
+  client = GetClientInstance(release_track)
+  messages = client.MESSAGES_MODULE
+  request = messages.ApikeysProjectsLocationsKeysGetKeyStringRequest(name=name)
+  return client.projects_locations_keys.GetKeyString(request).keyString
+
+
 def GetClientInstance(release_track=calliope_base.ReleaseTrack.GA):
   """Returns an API client for ApiKeys."""
   api_version = _RELEASE_TRACK_TO_API_VERSION.get(release_track)

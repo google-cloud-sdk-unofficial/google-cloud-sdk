@@ -1684,7 +1684,7 @@ class EnvironmentConfig(_messages.Message):
       versions composer-2.2.0-airflow-*.*.* and newer.
     scheduledHibernationConfig: Optional. The configuration for hibernating
       and resuming the environment on a schedule. Supported for environments
-      in the development mode.
+      that have `mode` set to `DEVELOPMENT`.
     softwareConfig: Optional. The configuration settings for software inside
       the environment.
     userWorkloadsConfig: Optional. The configuration for the user workloads.
@@ -2191,6 +2191,10 @@ class LoadSnapshotRequest(_messages.Message):
       loading the environment's state.
     skipPypiPackagesInstallation: Whether or not to skip installing Pypi
       packages when loading the environment's state.
+    skipUserWorkloadsServiceAccountsSetting: Optional. Whether or not to skip
+      setting user workloads service accounts when loading the environment's
+      state. This field is supported for Cloud Composer environments in
+      versions `composer-3-airflow-*.*.*` and newer.
     snapshotPath: A Cloud Storage path to a snapshot to load, e.g.: "gs://my-
       bucket/snapshots/project_location_environment_timestamp".
   """
@@ -2199,7 +2203,8 @@ class LoadSnapshotRequest(_messages.Message):
   skipEnvironmentVariablesSetting = _messages.BooleanField(2)
   skipGcsDataCopying = _messages.BooleanField(3)
   skipPypiPackagesInstallation = _messages.BooleanField(4)
-  snapshotPath = _messages.StringField(5)
+  skipUserWorkloadsServiceAccountsSetting = _messages.BooleanField(5)
+  snapshotPath = _messages.StringField(6)
 
 
 class LoadSnapshotResponse(_messages.Message):

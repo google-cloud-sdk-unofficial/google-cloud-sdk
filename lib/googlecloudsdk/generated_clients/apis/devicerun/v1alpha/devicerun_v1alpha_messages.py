@@ -1217,27 +1217,26 @@ class DevicerunProjectsLocationsSessionsGetRequest(_messages.Message):
 
   Enums:
     ViewValueValuesEnum: Optional. The view of the session to return. If not
-      set, the default BASIC view will be returned.
+      set, the `FULL` view will be returned.
 
   Fields:
     name: Required. The name of the session. Format:
       `projects/{project}/locations/{location}/sessions/{session}`.
-    view: Optional. The view of the session to return. If not set, the default
-      BASIC view will be returned.
+    view: Optional. The view of the session to return. If not set, the `FULL`
+      view will be returned.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
-    r"""Optional. The view of the session to return. If not set, the default
-    BASIC view will be returned.
+    r"""Optional. The view of the session to return. If not set, the `FULL`
+    view will be returned.
 
     Values:
       SESSION_VIEW_UNSPECIFIED: The default / unset value. The API will
-        default to the BASIC view.
+        default to the FULL view.
       SESSION_VIEW_BASIC: Include basic view of the session but not the full
         contents. Only the uid/display_name/status/result of the session and
-        its jobs/executions will be included. This is the default value (for
-        GetSession).
-      SESSION_VIEW_FULL: Include everything.
+        its jobs/executions will be included.
+      SESSION_VIEW_FULL: Include everything. This is the default value.
     """
     SESSION_VIEW_UNSPECIFIED = 0
     SESSION_VIEW_BASIC = 1
@@ -1252,7 +1251,7 @@ class DevicerunProjectsLocationsSessionsListRequest(_messages.Message):
 
   Enums:
     ViewValueValuesEnum: Optional. The view of the sessions to return. If not
-      set, the `BASIC` view will be returned.
+      set, the `FULL` view will be returned.
 
   Fields:
     filter: Optional. The raw filter text to constrain the results.
@@ -1273,22 +1272,21 @@ class DevicerunProjectsLocationsSessionsListRequest(_messages.Message):
     parent: Required. Parent value for ListSessionsRequest The parent of the
       collection of sessions. Format:
       `projects/{project}/locations/{location}`.
-    view: Optional. The view of the sessions to return. If not set, the
-      `BASIC` view will be returned.
+    view: Optional. The view of the sessions to return. If not set, the `FULL`
+      view will be returned.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
-    r"""Optional. The view of the sessions to return. If not set, the `BASIC`
+    r"""Optional. The view of the sessions to return. If not set, the `FULL`
     view will be returned.
 
     Values:
       SESSION_VIEW_UNSPECIFIED: The default / unset value. The API will
-        default to the BASIC view.
+        default to the FULL view.
       SESSION_VIEW_BASIC: Include basic view of the session but not the full
         contents. Only the uid/display_name/status/result of the session and
-        its jobs/executions will be included. This is the default value (for
-        GetSession).
-      SESSION_VIEW_FULL: Include everything.
+        its jobs/executions will be included.
+      SESSION_VIEW_FULL: Include everything. This is the default value.
     """
     SESSION_VIEW_UNSPECIFIED = 0
     SESSION_VIEW_BASIC = 1
@@ -1705,8 +1703,12 @@ class IssueSummary(_messages.Message):
     TypeValueValuesEnum: Output only. The issue classification based on
       responsibility.
 
+  Messages:
+    MetadataValue: Output only. Additional metadata about the issue.
+
   Fields:
     message: Output only. Human-readable explanation of the issue in English.
+    metadata: Output only. Additional metadata about the issue.
     reason: Output only. The reason of the issue. This is a constant value
       that identifies the proximate cause of the issue. This should be at most
       63 characters and match a regular expression of `A-Z*[A-Z0-9]`, which
@@ -1728,9 +1730,34 @@ class IssueSummary(_messages.Message):
     INFRA = 1
     CUSTOMER = 2
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Output only. Additional metadata about the issue.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   message = _messages.StringField(1)
-  reason = _messages.StringField(2)
-  type = _messages.EnumField('TypeValueValuesEnum', 3)
+  metadata = _messages.MessageField('MetadataValue', 2)
+  reason = _messages.StringField(3)
+  type = _messages.EnumField('TypeValueValuesEnum', 4)
 
 
 class JobAction(_messages.Message):

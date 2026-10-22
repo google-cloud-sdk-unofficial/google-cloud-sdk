@@ -18,6 +18,7 @@ import time
 from googlecloudsdk.api_lib.composer import dags_util
 from googlecloudsdk.api_lib.composer import util
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration import trigger as serverless_trigger
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_utils
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import log
@@ -65,6 +66,9 @@ class Trigger(calliope_base.Command):
     yaml_processor.add_substitution_flags(parser)
 
   def Run(self, args):
+    if serverless_trigger.IsServerlessOrchestrationTrigger(args.runner):
+      return serverless_trigger.Trigger(args)
+
     api_version = util.GetApiVersion(self.ReleaseTrack())
 
     # 1. Retrieve the pipeline to be triggered.

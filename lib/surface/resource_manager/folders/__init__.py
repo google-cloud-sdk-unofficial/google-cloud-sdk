@@ -20,11 +20,13 @@ from googlecloudsdk.calliope import base
 
 
 # @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Folders(base.Group):
   """Manage Cloud Folders.
 
   Commands to query and update your Cloud Folders.
   """
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   @staticmethod
   def Args(parser):

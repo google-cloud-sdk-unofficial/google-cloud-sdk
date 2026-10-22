@@ -539,6 +539,8 @@ class BaseSSHHelper(object):
   Attributes:
     keys: ssh.Keys, the public/private key pair.
     env: ssh.Environment, the current environment, used by subclasses.
+    keys_mismatched: bool or None, flags if the incoming keys from guest
+      attributes conflicted with the existing known_hosts entries.
   """
 
   keys = None
@@ -716,6 +718,23 @@ class BaseSSHHelper(object):
       host_key_entry = '{0} {1}'.format(key_type, key)
       host_key_entries.append(host_key_entry)
     host_key_entries.sort()
+
+    existing_entries = [
+        key for key in known_hosts.known_hosts
+        if key.startswith(host_key_alias)
+    ]
+    existing_keys = {}
+
+    for entry in existing_entries:
+      parts = entry.split()
+      if len(parts) >= 3:
+        existing_keys[parts[1]] = parts[2]
+
+    self.keys_mismatched = any(
+        key_type in existing_keys and existing_keys[key_type] != key_val
+        for key_type, key_val in host_keys.items()
+    )
+
     new_keys_added = known_hosts.AddMultiple(
         host_key_alias, host_key_entries, overwrite=False
     )

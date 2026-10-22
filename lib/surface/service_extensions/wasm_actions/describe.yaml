@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: Show details about a `WasmAction` resource.
     description: Show details about a `WasmAction` resource.

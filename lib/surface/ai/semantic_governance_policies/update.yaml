@@ -1,4 +1,6 @@
 release_tracks: [GA, BETA]
+hints:
+  read_only: false
 help_text:
   brief: Update a semantic governance policy.
   description: Update a semantic governance policy.

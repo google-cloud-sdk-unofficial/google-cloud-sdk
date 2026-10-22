@@ -39,8 +39,10 @@ class DnsV1beta2(base_api.BaseApiClient):
         response_encoding=response_encoding)
     self.changes = self.ChangesService(self)
     self.dnsKeys = self.DnsKeysService(self)
+    self.locations = self.LocationsService(self)
     self.managedZoneOperations = self.ManagedZoneOperationsService(self)
     self.managedZones = self.ManagedZonesService(self)
+    self.operations = self.OperationsService(self)
     self.outboundEndpoints = self.OutboundEndpointsService(self)
     self.policies = self.PoliciesService(self)
     self.projects = self.ProjectsService(self)
@@ -195,6 +197,70 @@ class DnsV1beta2(base_api.BaseApiClient):
         request_field='',
         request_type_name='DnsDnsKeysListRequest',
         response_type_name='DnsKeysListResponse',
+        supports_download=False,
+    )
+
+  class LocationsService(base_api.BaseApiService):
+    """Service class for the locations resource."""
+
+    _NAME = 'locations'
+
+    def __init__(self, client):
+      super(DnsV1beta2.LocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets information about a location.
+
+      Args:
+        request: (DnsLocationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Location) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{projectsId}/locations/{locationsId}',
+        http_method='GET',
+        method_id='dns.locations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='{+name}',
+        request_field='',
+        request_type_name='DnsLocationsGetRequest',
+        response_type_name='Location',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+
+      Args:
+        request: (DnsLocationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListLocationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{projectsId}/locations',
+        http_method='GET',
+        method_id='dns.locations.list',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['extraLocationTypes', 'filter', 'pageSize', 'pageToken'],
+        relative_path='{+name}/locations',
+        request_field='',
+        request_type_name='DnsLocationsListRequest',
+        response_type_name='ListLocationsResponse',
         supports_download=False,
     )
 
@@ -501,6 +567,124 @@ class DnsV1beta2(base_api.BaseApiClient):
         request_field='managedZoneResource',
         request_type_name='DnsManagedZonesUpdateRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class OperationsService(base_api.BaseApiService):
+    """Service class for the operations resource."""
+
+    _NAME = 'operations'
+
+    def __init__(self, client):
+      super(DnsV1beta2.OperationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.
+
+      Args:
+        request: (DnsOperationsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{projectsId}/locations/{locationsId}/operations/{operationsId}:cancel',
+        http_method='POST',
+        method_id='dns.operations.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='{+name}:cancel',
+        request_field='',
+        request_type_name='DnsOperationsCancelRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`.
+
+      Args:
+        request: (DnsOperationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{projectsId}/locations/{locationsId}/operations/{operationsId}',
+        http_method='DELETE',
+        method_id='dns.operations.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='{+name}',
+        request_field='',
+        request_type_name='DnsOperationsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+
+      Args:
+        request: (DnsOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{projectsId}/locations/{locationsId}/operations/{operationsId}',
+        http_method='GET',
+        method_id='dns.operations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='{+name}',
+        request_field='',
+        request_type_name='DnsOperationsGetRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`.
+
+      Args:
+        request: (DnsOperationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningListOperationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{projectsId}/locations/{locationsId}/operations',
+        http_method='GET',
+        method_id='dns.operations.list',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'pageSize', 'pageToken', 'returnPartialSuccess'],
+        relative_path='{+name}/operations',
+        request_field='',
+        request_type_name='DnsOperationsListRequest',
+        response_type_name='GoogleLongrunningListOperationsResponse',
         supports_download=False,
     )
 

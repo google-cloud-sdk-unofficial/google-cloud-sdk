@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: false
+  help_text:
     brief: Resume execution of a paused job.
     description: Resume execution of a paused job.
     examples: |

@@ -43,7 +43,6 @@ DETAILED_HELP = {
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.RegionalEndpointsSupported
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update a Secure Source Manager branch rule."""
 

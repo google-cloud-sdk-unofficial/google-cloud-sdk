@@ -1,4 +1,6 @@
 release_tracks: [ALPHA, BETA, GA, PREVIEW]
+hints:
+  read_only: false
 
 help_text:
   brief: Remove IAM policy binding from the IAM policy of a Compute Engine machine image.

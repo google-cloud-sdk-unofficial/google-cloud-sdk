@@ -37,7 +37,6 @@ DETAILED_HELP = {
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.RegionalEndpointsSupported
-@base.Hidden
 class Create(base.CreateCommand):
   """Create a Secure Source Manager branch rule."""
 

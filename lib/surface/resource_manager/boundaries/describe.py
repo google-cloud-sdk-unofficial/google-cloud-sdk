@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager.boundaries import resource_args
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA

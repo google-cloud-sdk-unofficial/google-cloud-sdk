@@ -578,7 +578,9 @@ class InitialConfig(_messages.Message):
   r"""Repository initialization configuration.
 
   Fields:
-    defaultBranch: Default branch name of the repository.
+    defaultBranch: Default branch name of the repository. When creating a
+      repository, this field or top-level `default_branch` can be used to set
+      the initial default branch. It is an error to specify both.
     gitignores: List of gitignore template names user can choose from. Valid
       values: actionscript, ada, agda, android, anjuta, ansible, appcelerator-
       titanium, app-engine, archives, arch-linux-packages, atmel-studio,

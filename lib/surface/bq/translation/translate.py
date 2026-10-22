@@ -428,9 +428,6 @@ To translate a Snowflake query from a file and save the output and logs to files
       raise exceptions.Error('No input query provided.')
 
     client = api_util.GetMigrationApiClient()
-    client.additional_http_headers[api_util.TOOL_TAG_HEADER] = (
-        api_util.GCLOUD_TOOL_TAG
-    )
     messages = typing.cast(
         typing.Any, apis.GetMessagesModule('bigquerymigration', 'v2')
     )

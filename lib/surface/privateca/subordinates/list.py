@@ -67,7 +67,6 @@ class List(base.ListCommand):
               'omitted, subordinate CAs across all CA pools will be listed.'
              )).AddToParser(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
-    base.FILTER_FLAG.RemoveFromParser(parser)
 
     parser.display_info.AddFormat("""
         table(
@@ -110,10 +109,16 @@ class List(base.ListCommand):
     parent_resource = 'projects/{}/locations/{}/caPools/{}'.format(
         properties.VALUES.core.project.GetOrFail(), location, ca_pool_id)
 
+    if args.IsSpecified('filter'):
+      filter_info = '({}) AND type:SUBORDINATE'.format(args.filter)
+    else:
+      filter_info = 'type:SUBORDINATE'
+
     request = messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesListRequest(
         parent=parent_resource,
-        filter='type:SUBORDINATE',
-        orderBy=common_args.ParseSortByArg(args.sort_by))
+        filter=filter_info,
+        orderBy=common_args.ParseSortByArg(args.sort_by),
+    )
 
     return list_pager.YieldFromList(
         client.projects_locations_caPools_certificateAuthorities,

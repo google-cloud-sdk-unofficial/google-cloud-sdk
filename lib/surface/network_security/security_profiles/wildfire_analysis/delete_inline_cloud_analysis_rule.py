@@ -49,7 +49,9 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class DeleteInlineCloudAnalysisRule(base.UpdateCommand):
   """Delete a WildFire inline cloud analysis rule from a WildFire Analysis Profile."""
 

@@ -37,7 +37,6 @@ DETAILED_HELP = {
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.RegionalEndpointsSupported
 class Merge(base.Command):
   """Merge a Secure Source Manager pull request."""

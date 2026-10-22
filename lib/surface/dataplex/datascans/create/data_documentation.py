@@ -92,6 +92,11 @@ class DataDocumentation(base.Command):
         help='Publish data documentation results to Knowledge Catalog.',
         default=False,
     )
+    data_spec_group.add_argument(
+        '--custom-instructions',
+        hidden=True,
+        help='Custom instructions to guide the data documentation generation.',
+    )
     execution_spec = parser.add_group(
         help='Data documentation scan execution settings.'
     )

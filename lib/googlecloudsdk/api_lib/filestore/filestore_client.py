@@ -77,6 +77,22 @@ class InvalidDisconnectLdapError(Error):
   """Raised when an invalid LDAP value is provided."""
 
 
+class InvalidConnectModeError(Error):
+  """Raised when an invalid connect mode value is provided."""
+
+
+class InvalidPscEndpointCreationModeError(Error):
+  """Raised when an invalid PSC endpoint creation mode value is provided."""
+
+
+class InvalidIpAddressError(Error):
+  """Raised when an invalid IP address value is provided."""
+
+
+class InvalidPscConnectionIdError(Error):
+  """Raised when an invalid PSC connection ID value is provided."""
+
+
 class FilestoreClient(object):
   """Wrapper for working with the file API."""
 
@@ -308,6 +324,196 @@ class FilestoreClient(object):
           psc_endpoint_project, psc_requested_ip, network_config
       )
     return [network_config]
+
+  def MakeUserCreatedPscEndpoint(self, ip_address=None, connection_id=None):
+    """Creates a UserCreatedPscEndpoint message.
+
+    Args:
+      ip_address: str, the IP address of the user-created PSC endpoint.
+      connection_id: str, the PSC connection ID of the user-created PSC
+        endpoint.
+
+    Returns:
+      A UserCreatedPscEndpoint message.
+    """
+    return self.messages.UserCreatedPscEndpoint(
+        ipAddress=ip_address, connectionId=connection_id
+    )
+
+  @staticmethod
+  def _NetworkNamesMatch(name1, name2):
+    """Returns True if the two network names refer to the same network.
+
+    A network may be specified either by its short name (e.g. `default`) or
+    by its full resource name (e.g.
+    `projects/my-project/global/networks/default`). If only one of the names
+    is a full resource name, only the last path segments are compared.
+
+    Args:
+      name1: str, a network name.
+      name2: str, a network name.
+    """
+    if not name1 or not name2:
+      return False
+    if name1 == name2:
+      return True
+    if '/' in name1 and '/' in name2:
+      return False
+    return name1.split('/')[-1] == name2.split('/')[-1]
+
+  def FindNetworkConfig(self, instance, network_name):
+    """Returns the NetworkConfig of the given network in the instance.
+
+    Args:
+      instance: Instance message.
+      network_name: str, the name of the network to look for.
+
+    Returns:
+      The matching NetworkConfig message, or None if there is no match.
+    """
+    for network_config in instance.networks or []:
+      if self._NetworkNamesMatch(network_config.network, network_name):
+        return network_config
+    return None
+
+  def ParseAddNetworkIntoInstance(
+      self,
+      instance,
+      network_name,
+      connect_mode=None,
+      address_mode=None,
+      psc_endpoint_creation_mode=None,
+      ip_address=None,
+      psc_connection_id=None,
+  ):
+    """Appends a new network configuration to an instance.
+
+    Args:
+      instance: Instance message to add the network to.
+      network_name: str, the name of the VPC network to add.
+      connect_mode: str, the name of a NetworkConfig.ConnectModeValueValuesEnum
+        value, if any.
+      address_mode: str, the name of a
+        NetworkConfig.ModesValueListEntryValuesEnum value, if any.
+      psc_endpoint_creation_mode: str, the name of a
+        NetworkConfig.PscEndpointCreationModeValueValuesEnum value, if any.
+      ip_address: str, the IP address of the user-created PSC endpoint, if any.
+      psc_connection_id: str, the PSC connection ID of the user-created PSC
+        endpoint, if any.
+
+    Raises:
+      InvalidArgumentError: If the network is already attached to the instance.
+      InvalidConnectModeError: If connect-mode is not set to
+        Private Service Connect.
+      InvalidPscEndpointCreationModeError: if psc-endpoint-creation-mode
+        is not user-created.
+      InvalidIpAddressError: If --psc-endpoint-creation-mode=user-created
+        and ip-address is not set.
+      InvalidPscConnectionIdError: If --psc-endpoint-creation-mode=user-created
+        and psc-connection-id is not set.
+
+    Returns:
+      The updated Instance message.
+    """
+    if self.FindNetworkConfig(instance, network_name) is not None:
+      raise InvalidArgumentError(
+          'Network [{}] is already attached to the instance.'.format(
+              network_name
+          )
+      )
+    network_config = self.messages.NetworkConfig(network=network_name)
+    network_config.modes = [
+        self.messages.NetworkConfig.ModesValueListEntryValuesEnum.lookup_by_name(
+            address_mode
+        )
+    ]
+
+    self._adapter.ParseConnectMode(network_config, connect_mode)
+    connect_modes = (self.messages.NetworkConfig.ConnectModeValueValuesEnum)
+    if network_config.connectMode != connect_modes.PRIVATE_SERVICE_CONNECT:
+      raise InvalidConnectModeError(
+          '--connect-mode must be private-service-connect for adding a new'
+          ' network to an existing instance.'
+      )
+
+    creation_modes = (
+        self.messages.NetworkConfig.PscEndpointCreationModeValueValuesEnum
+    )
+    network_config.pscEndpointCreationMode = creation_modes.lookup_by_name(
+        psc_endpoint_creation_mode
+    )
+
+    if network_config.pscEndpointCreationMode != creation_modes.USER_CREATED:
+      raise InvalidPscEndpointCreationModeError(
+          '--psc-endpoint-creation-mode must be user-created for adding a new'
+          ' network to an existing instance.'
+      )
+
+    if not ip_address:
+      raise InvalidIpAddressError(
+          '--ip-address is required when'
+          ' --psc-endpoint-creation-mode is user-created.'
+      )
+
+    if not psc_connection_id:
+      raise InvalidPscConnectionIdError(
+          '--psc-connection-id is required when'
+          ' --psc-endpoint-creation-mode is user-created.'
+      )
+
+    network_config.userCreatedPscEndpoints = [
+        self.MakeUserCreatedPscEndpoint(
+            ip_address=ip_address, connection_id=psc_connection_id
+        )
+    ]
+    instance.networks = list(instance.networks or []) + [network_config]
+    return instance
+
+  def ParseUpdatedNetworkPscEndpointIntoInstance(
+      self, instance, network_name, ip_address, psc_connection_id
+  ):
+    """Replaces the user-created PSC endpoint of an existing instance network.
+
+    All the other fields of the network configuration are kept as is.
+
+    Args:
+      instance: Instance message to update.
+      network_name: str, the name of the existing network to update.
+      ip_address: str, the IP address of the new user-created PSC endpoint.
+      psc_connection_id: str, the PSC connection ID of the new user-created
+        PSC endpoint.
+
+    Raises:
+      InvalidArgumentError: If the network is not attached to the instance.
+      InvalidIpAddressError: If ip-address is not set.
+      InvalidPscConnectionIdError: If psc-connection-id is not set.
+
+    Returns:
+      The updated Instance message.
+    """
+    network_config = self.FindNetworkConfig(instance, network_name)
+    if network_config is None:
+      raise InvalidArgumentError(
+          'Network [{}] is not attached to the instance. Attached networks:'
+          ' [{}].'.format(
+              network_name,
+              ', '.join(n.network or '' for n in instance.networks or []),
+          )
+      )
+    if not ip_address:
+      raise InvalidIpAddressError(
+          '--ip-address is required.'
+      )
+    if not psc_connection_id:
+      raise InvalidPscConnectionIdError(
+          '--psc-connection-id is required.'
+      )
+    network_config.userCreatedPscEndpoints = [
+        self.MakeUserCreatedPscEndpoint(
+            ip_address=ip_address, connection_id=psc_connection_id
+        )
+    ]
+    return instance
 
   def ParseFilestoreConfig(
       self,

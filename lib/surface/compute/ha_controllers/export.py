@@ -50,6 +50,8 @@ def _GetApiVersion(release_track):
   """Returns the API version for the HA Controller."""
   if release_track == base.ReleaseTrack.ALPHA:
     return 'alpha'
+  elif release_track == base.ReleaseTrack.PREVIEW:
+    return 'preview'
 
 
 def _GetSchemaPath(release_track, for_help=False):
@@ -63,7 +65,7 @@ def _GetSchemaPath(release_track, for_help=False):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.PREVIEW)
 class Export(base.ExportCommand):
   """Export an HA Controller.
 
@@ -74,13 +76,14 @@ class Export(base.ExportCommand):
 
   detailed_help = _DetailedHelp()
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     utils.AddHaControllerNameArgToParser(
-        parser, base.ReleaseTrack.ALPHA.name.lower()
+        parser, cls.ReleaseTrack().name.lower()
     )
     export_util.AddExportFlags(
-        parser, _GetSchemaPath(base.ReleaseTrack.ALPHA, for_help=True))
+        parser, _GetSchemaPath(cls.ReleaseTrack(), for_help=True)
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

@@ -181,6 +181,7 @@ class UpdateBeta(Update):
     flags.AddAutoscalerUpdateFlags(parser)
     flags.AddEnablePscAutoDns(parser)
     flags.AddEnablePscAutoConnectionPolicy(parser)
+    flags.AddEnablePublicDns(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsBeta(

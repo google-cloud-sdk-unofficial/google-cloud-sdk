@@ -1835,12 +1835,14 @@ class ArgObject(ArgDict):
     )
 
   def __call__(self, arg_value):
-    if not isinstance(arg_value, str):
+    if isinstance(arg_value, (dict, list)):
+      json_dict = self._StringifyDictValues(arg_value)
+      value = self._ParseAndValidateJSON(json_dict)
+    elif not isinstance(arg_value, str):
       raise ValueError(
           'ArgObject can only convert string values. Received {}.'.format(
               arg_value))
-
-    if self._CheckIfFileFormat(arg_value):
+    elif self._CheckIfFileFormat(arg_value):
       file_content = _LoadFile(arg_value)
       json_dict = self._LoadJSON(file_content)
       value = self._ParseAndValidateJSON(json_dict)

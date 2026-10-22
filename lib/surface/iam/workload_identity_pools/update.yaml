@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Update a workload identity pool.
@@ -62,6 +64,8 @@
 # ALPHA and BETA release track should not be updated going forward. All preview features should be
 # added to the GA release track and marked as hidden.
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Update a workload identity pool.

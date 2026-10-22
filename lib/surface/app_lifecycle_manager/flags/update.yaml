@@ -60,10 +60,6 @@
 
           $ {command} my-flag --location=global --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 50}, {"variant": "Enabled", "weight": 50}]}], "defaultTarget": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}'
 
-      To update a flag with progressive rollout using dynamic allocations, run:
-
-          $ {command} my-flag --location=global --evaluation-spec='{"dynamicAllocations": [{"id": "p10", "randomizedOn": "userID", "initialVariant": "Disabled", "finalVariant": "Enabled"}], "defaultDynamicAllocation": "p10"}'
-
       To add labels to a flag, run:
 
           $ {command} my-flag --location=global --labels=environment=prod,team=frontend
@@ -96,9 +92,11 @@
         help_text: |-
           Default variant for the flag.
       - api_field: defaultDynamicAllocation
+        hidden: true
         help_text: |-
           The ID of a dynamic allocation to use as the default.
       - api_field: dynamicAllocations
+        hidden: true
         help_text: |-
           A list of dynamic allocations.
         spec:

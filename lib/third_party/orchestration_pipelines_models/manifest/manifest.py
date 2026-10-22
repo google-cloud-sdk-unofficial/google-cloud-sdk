@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 """Module for a Manifest wrapper that provides helper methods."""
+
 from typing import Optional
 
 from cloudsdk.google.protobuf import json_format

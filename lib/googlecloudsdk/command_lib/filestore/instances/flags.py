@@ -969,3 +969,157 @@ def AddInstanceUpdateArgs(parser, api_version):
     AddDirectoryServicesConnectDisconnectArgs(parser, api_version)
     AddPerformanceArg(parser)
     dp_util.AddDeletionProtectionUpdateArgs(parser)
+
+
+NETWORK_CONNECT_MODE_CHOICES = {
+    'direct-peering': 'Connect via direct peering to the Filestore service.',
+    'private-service-access': (
+        'Connect to the Filestore instance using Private Service Access.'
+    ),
+    'private-service-connect': (
+        'Connect to the Filestore instance using Private Service Connect.'
+    ),
+}
+
+NETWORK_ADDRESS_MODE_CHOICES = {
+    'mode-ipv4': 'Use the IPv4 internet protocol.',
+    'mode-ipv6': (
+        'Use the IPv6 internet protocol. Only supported when using Private'
+        ' Service Connect.'
+    ),
+}
+
+PSC_ENDPOINT_CREATION_MODE_CHOICES = {
+    'auto': (
+        'The Private Service Connect endpoint is created automatically by'
+        ' Filestore.'
+    ),
+    'user-created': (
+        'The Private Service Connect endpoint is created by the user, and is'
+        ' registered using `--ip-address` and `--psc-connection-id`.'
+    ),
+}
+
+
+def ChoiceToEnumName(choice):
+  """Converts a choice flag value (e.g. `user-created`) to an enum name.
+
+  Args:
+    choice: str, a choice flag value in lower case with words separated by
+      hyphens, or None.
+
+  Returns:
+    The corresponding enum value name (e.g. `USER_CREATED`), or None if choice
+    is None.
+  """
+  if choice is None:
+    return None
+  return choice.replace('-', '_').upper()
+
+
+def AddNetworkNameArg(parser, help_text):
+  """Adds a required --name flag for the instance network name.
+
+  Args:
+    parser: argparse parser.
+    help_text: str, the help text of the flag.
+  """
+  parser.add_argument('--name', required=True, help=help_text)
+
+
+def AddUserCreatedPscEndpointArgs(parser):
+  """Adds the required --ip-address and --psc-connection-id flags.
+
+  Args:
+    parser: argparse parser or argument group.
+  """
+  parser.add_argument(
+      '--ip-address',
+      required=True,
+      help="""\
+        IP address of the user-created Private Service Connect endpoint (the
+        IP address of the forwarding rule that connects to the instance's
+        service attachment).""",
+  )
+  parser.add_argument(
+      '--psc-connection-id',
+      required=True,
+      help="""\
+        Private Service Connect connection ID of the user-created endpoint.
+        The connection ID can be found by describing the forwarding rule that
+        was created by the user for the endpoint.""",
+  )
+
+
+def AddInstanceNetworksAddArgs(parser):
+  """Adds args for adding a network to an instance."""
+  concept_parsers.ConceptParser([
+      flags.GetInstancePresentationSpec('The instance to add the network to.')
+  ]).AddToParser(parser)
+  AddLocationArg(parser)
+  AddRegionArg(parser)
+  AddAsyncFlag(parser)
+  AddNetworkNameArg(
+      parser,
+      help_text="""\
+        The name of the Google Compute Engine
+        [VPC network](/compute/docs/networks-and-firewalls#networks) to which
+        the instance is connected.""",
+  )
+  base.ChoiceArgument(
+      '--address-mode',
+      choices=NETWORK_ADDRESS_MODE_CHOICES,
+      help_str=(
+          'Internet protocol version for which the instance has IP address'
+          ' assigned.'
+      ),
+      required=True,
+  ).AddToParser(parser)
+  base.ChoiceArgument(
+      '--connect-mode',
+      choices=NETWORK_CONNECT_MODE_CHOICES,
+      help_str='Network connection mode used by the instance.',
+      required=True,
+  ).AddToParser(parser)
+  base.ChoiceArgument(
+      '--psc-endpoint-creation-mode',
+      choices=PSC_ENDPOINT_CREATION_MODE_CHOICES,
+      help_str="""\
+        Private Service Connect endpoint creation mode. Only relevant when
+        `--connect-mode=private-service-connect`.""",
+      required=True,
+  ).AddToParser(parser)
+  user_created_psc_endpoint_group = parser.add_group(
+      help="""\
+        User-created Private Service Connect endpoint to register for the
+        network. Only relevant when
+        `--psc-endpoint-creation-mode=user-created`.""",
+      required=False,
+  )
+  AddUserCreatedPscEndpointArgs(user_created_psc_endpoint_group)
+
+
+def AddInstanceNetworksUpdateArgs(parser):
+  """Adds args for updating a network of an instance."""
+  concept_parsers.ConceptParser([
+      flags.GetInstancePresentationSpec(
+          'The instance whose network is updated.'
+      )
+  ]).AddToParser(parser)
+  AddLocationArg(parser)
+  AddRegionArg(parser)
+  AddAsyncFlag(parser)
+  AddNetworkNameArg(
+      parser,
+      help_text="""\
+          The name of the Google Compute Engine
+          [VPC network](/compute/docs/networks-and-firewalls#networks) of the
+          instance to update.""",
+  )
+  user_created_psc_endpoint_group = parser.add_group(
+      help="""\
+        User-created Private Service Connect endpoint to register for the
+        network.""",
+      required=False,
+  )
+  AddUserCreatedPscEndpointArgs(user_created_psc_endpoint_group)

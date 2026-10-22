@@ -194,6 +194,8 @@ class CreateEnvironmentFlags:
     user_workloads_service_accounts: dict(str, str) or None, mapping of
       Kubernetes Service Account names to Google Cloud Service Account emails
       to be used by user workloads.
+    airflow_rbac_config: messages.AirflowRbacConfig or None, Airflow RBAC
+      configuration for the environment.
   """
 
   # TODO(b/154131605): This a type that is an immutable data object. Can't use
@@ -286,6 +288,7 @@ class CreateEnvironmentFlags:
       cloud_run_functions_routing=None,
       enable_development_mode=None,
       user_workloads_service_accounts=None,
+      airflow_rbac_config=None,
   ):
     self.node_count = node_count
     self.environment_size = environment_size
@@ -374,6 +377,7 @@ class CreateEnvironmentFlags:
     self.cloud_run_functions_routing = cloud_run_functions_routing
     self.enable_development_mode = enable_development_mode
     self.user_workloads_service_accounts = user_workloads_service_accounts
+    self.airflow_rbac_config = airflow_rbac_config
 
 
 def _CreateNodeConfig(messages, flags):
@@ -462,7 +466,7 @@ def _CreateConfig(messages, flags, is_composer_v1):
           flags.snapshot_schedule_timezone or
           flags.enable_cloud_data_lineage_integration or
           flags.disable_cloud_data_lineage_integration or
-          flags.user_workloads_service_accounts):
+          flags.user_workloads_service_accounts or flags.airflow_rbac_config):
     return None
 
   config = messages.EnvironmentConfig()
@@ -492,6 +496,7 @@ def _CreateConfig(messages, flags, is_composer_v1):
       or (flags.scheduler_count and is_composer_v1)
       or flags.enable_cloud_data_lineage_integration
       or flags.disable_cloud_data_lineage_integration
+      or flags.airflow_rbac_config
   ):
     config.softwareConfig = messages.SoftwareConfig()
     if flags.image_version:
@@ -533,6 +538,8 @@ def _CreateConfig(messages, flags, is_composer_v1):
               ),
           )
       )
+    if flags.airflow_rbac_config:
+      config.softwareConfig.airflowRbacConfig = flags.airflow_rbac_config
 
   if flags.maintenance_window_start:
     assert flags.maintenance_window_end, 'maintenance_window_end is missing'

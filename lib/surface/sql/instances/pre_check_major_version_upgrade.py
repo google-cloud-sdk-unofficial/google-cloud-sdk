@@ -21,6 +21,7 @@ import time
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
@@ -67,6 +68,17 @@ class PreCheckMajorVersionUpgrade(base.Command):
         required=True,
         help='Target database version for the upgrade.',
     )
+    parser.add_argument(
+        '--max-runtime',
+        default=None,
+        type=arg_parsers.Duration(lower_bound='10m'),
+        required=False,
+        help=(
+            'Maximum runtime for the pre-check, for example, 10m or 2h. Only'
+            ' applicable to Cloud SQL for MySQL instances. See $ gcloud topic'
+            ' datetimes for information on duration formats.'
+        ),
+    )
 
   def Run(self, args):
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
@@ -101,6 +113,10 @@ class PreCheckMajorVersionUpgrade(base.Command):
             'Missing or Invalid parameter: Target database version.',
         )
 
+      max_runtime_str = (
+          f'{args.max_runtime}s' if args.max_runtime is not None else None
+      )
+
       # Perform the pre-check
       request = sql_messages.SqlInstancesPreCheckMajorVersionUpgradeRequest(
           instance=args.instance,
@@ -108,7 +124,8 @@ class PreCheckMajorVersionUpgrade(base.Command):
           instancesPreCheckMajorVersionUpgradeRequest=
           sql_messages.InstancesPreCheckMajorVersionUpgradeRequest(
               preCheckMajorVersionUpgradeContext=sql_messages.PreCheckMajorVersionUpgradeContext(
-                  targetDatabaseVersion=target_version_enum
+                  targetDatabaseVersion=target_version_enum,
+                  maxRuntime=max_runtime_str,
               )
           )
       )

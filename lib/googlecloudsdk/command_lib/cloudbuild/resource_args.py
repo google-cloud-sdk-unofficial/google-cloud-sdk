@@ -16,6 +16,7 @@
 
 
 from googlecloudsdk.api_lib.cloudbuild import pipeline_config
+from googlecloudsdk.api_lib.cloudbuild import pipeline_trigger_config
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -23,13 +24,11 @@ from googlecloudsdk.core import properties
 
 
 def RegionAttributeConfig():
-  fallthroughs = [
-      deps.PropertyFallthrough(properties.VALUES.builds.region)
-  ]
   return concepts.ResourceParameterAttributeConfig(
       name='region',
-      fallthroughs=fallthroughs,
-      help_text='The Cloud location for the {resource}.')
+      fallthroughs=[deps.PropertyFallthrough(properties.VALUES.builds.region)],
+      help_text='The Cloud location for the {resource}.',
+  )
 
 
 def GetTriggerResourceSpec():
@@ -81,7 +80,7 @@ def GitLabConfigAttributeConfig():
 class PipelineIdFromFileFallthrough(deps.ArgFallthrough):
   """Resolves the pipeline ID from the pipeline definition file.
 
-  A declarative definition already names itself in `metadata.name`, so
+  A declarative definition already names itself in `name`, so
   demanding the ID on the command line as well would defeat the purpose of
   applying a file. This reads the ID back out of the file named by the given
   flag whenever the user supplies no ID of their own.
@@ -90,7 +89,7 @@ class PipelineIdFromFileFallthrough(deps.ArgFallthrough):
   def __init__(self, arg_name='--file'):
     super(PipelineIdFromFileFallthrough, self).__init__(arg_name)
     self._hint = (
-        'set `metadata.name` in the pipeline definition file given by `{}`'
+        'set `name` in the pipeline definition file given by `{}`'
         .format(arg_name)
     )
 
@@ -107,7 +106,7 @@ def PipelineAttributeConfig():
       fallthroughs=[PipelineIdFromFileFallthrough()],
       help_text=(
           'The ID of the {resource}. If omitted, it is read from '
-          '`metadata.name` in the pipeline definition file.'
+          '`name` in the pipeline definition file.'
       ))
 
 
@@ -138,3 +137,83 @@ def AddPipelineResourceArg(parser, verb, positional=True, required=True):
       GetPipelineResourceSpec(),
       'The Cloud Build pipeline {}.'.format(verb),
       required=required).AddToParser(parser)
+
+
+class TriggerIdFromFileFallthrough(deps.ArgFallthrough):
+  """Resolves the pipeline trigger ID from the trigger definition file.
+
+  A trigger definition names itself in `name`, so this reads the ID back out of
+  the file named by the given flag whenever the user supplies no ID of their
+  own.
+  """
+
+  def __init__(self, arg_name='--file'):
+    super(TriggerIdFromFileFallthrough, self).__init__(arg_name)
+    self._hint = (
+        'set `name` in the trigger definition file given by `{}`'.format(
+            arg_name
+        )
+    )
+
+  def _Call(self, parsed_args):
+    path = super(TriggerIdFromFileFallthrough, self)._Call(parsed_args)
+    if not path:
+      return None
+    return pipeline_trigger_config.ExtractTriggerId(path)
+
+
+def ParentPipelineAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='pipeline',
+      help_text='The ID of the parent pipeline of the {resource}.',
+  )
+
+
+def PipelineTriggerAttributeConfig(from_file=False):
+  """Returns the attribute config for a pipeline trigger ID.
+
+  Args:
+    from_file: bool, whether the ID may fall through to the trigger definition
+      file named by --file.
+  """
+  help_text = 'The ID of the {resource}.'
+  fallthroughs = []
+  if from_file:
+    help_text += (
+        ' If omitted, it is read from `name` in the trigger definition file.'
+    )
+    fallthroughs.append(TriggerIdFromFileFallthrough())
+  return concepts.ResourceParameterAttributeConfig(
+      name='trigger', fallthroughs=fallthroughs, help_text=help_text
+  )
+
+
+def GetPipelineTriggerResourceSpec(from_file=False):
+  """Returns the resource spec for a pipeline trigger.
+
+  Args:
+    from_file: bool, whether the trigger ID may fall through to `name` in the
+      trigger definition file named by --file.
+  """
+  return concepts.ResourceSpec(
+      'cloudbuild.projects.locations.pipelines.triggers',
+      api_version='v1',
+      resource_name='pipeline trigger',
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=RegionAttributeConfig(),
+      pipelinesId=ParentPipelineAttributeConfig(),
+      triggersId=PipelineTriggerAttributeConfig(from_file),
+      disable_auto_completers=False,
+  )
+
+
+def GetPipelineTriggerApplyResourceArgs():
+  """Returns the resource arguments for `gcloud builds pipelines triggers apply`."""
+  return [
+      concept_parsers.ConceptParser.ForResource(
+          'trigger',
+          GetPipelineTriggerResourceSpec(from_file=True),
+          'The Cloud Build pipeline trigger to apply.',
+          required=True,
+      )
+  ]

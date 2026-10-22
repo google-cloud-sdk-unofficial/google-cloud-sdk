@@ -75,12 +75,12 @@ class AutonomousDatabase(_messages.Message):
       Database.
 
   Fields:
-    adminPassword: Optional. Immutable. The password for the default ADMIN
-      user. Note: Only one of `admin_password_secret_version` or
+    adminPassword: Optional. Input only. Immutable. The password for the
+      default ADMIN user. Note: Only one of `admin_password_secret_version` or
       `admin_password` can be populated.
-    adminPasswordSecretVersion: Optional. Immutable. The resource name of a
-      secret version in Secret Manager which contains the database admin
-      user's password. Format:
+    adminPasswordSecretVersion: Optional. Input only. Immutable. The resource
+      name of a secret version in Secret Manager which contains the database
+      admin user's password. Format:
       projects/{project}/secrets/{secret}/versions/{version}. Note: Only one
       of `admin_password_secret_version` or `admin_password` can be populated.
     cidr: Optional. Immutable. The subnet CIDR range for the Autonomous
@@ -1837,12 +1837,12 @@ class Database(_messages.Message):
       Insights for this Database.
 
   Fields:
-    adminPassword: Optional. The password for the default ADMIN user. Note:
-      Only one of `admin_password_secret_version` or `admin_password` can be
-      populated.
-    adminPasswordSecretVersion: Optional. The resource name of a secret
-      version in Secret Manager which contains the database admin user's
-      password. Format:
+    adminPassword: Optional. Input only. The password for the default ADMIN
+      user. Note: Only one of `admin_password_secret_version` or
+      `admin_password` can be populated.
+    adminPasswordSecretVersion: Optional. Input only. The resource name of a
+      secret version in Secret Manager which contains the database admin
+      user's password. Format:
       projects/{project}/secrets/{secret}/versions/{version}. Note: Only one
       of `admin_password_secret_version` or `admin_password` can be populated.
     characterSet: Optional. The character set for the database. The default is
@@ -1873,12 +1873,12 @@ class Database(_messages.Message):
       the Database. The name must begin with an alphabetic character and can
       contain a maximum of thirty alphanumeric characters.
     properties: Optional. The properties of the Database.
-    tdeWalletPassword: Optional. The TDE wallet password for the database.
-      Note: Only one of `tde_wallet_password_secret_version` or
+    tdeWalletPassword: Optional. Input only. The TDE wallet password for the
+      database. Note: Only one of `tde_wallet_password_secret_version` or
       `tde_wallet_password` can be populated.
-    tdeWalletPasswordSecretVersion: Optional. The resource name of a secret
-      version in Secret Manager which contains the TDE wallet password for the
-      database. Format:
+    tdeWalletPasswordSecretVersion: Optional. Input only. The resource name of
+      a secret version in Secret Manager which contains the TDE wallet
+      password for the database. Format:
       projects/{project}/secrets/{secret}/versions/{version}. Note: Only one
       of `tde_wallet_password_secret_version` or `tde_wallet_password` can be
       populated.
@@ -6109,8 +6109,8 @@ class GoldengateOggDeployment(_messages.Message):
       GoldengateDeployment.
 
   Fields:
-    adminPassword: Optional. The Goldengate deployment console password in
-      plain text.
+    adminPassword: Optional. Input only. The Goldengate deployment console
+      password in plain text.
     adminPasswordSecretVersion: Optional. Input only. The Goldengate
       deployment console password secret version.
     adminUsername: Required. The Goldengate deployment console username.

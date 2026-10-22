@@ -18,6 +18,6 @@
   output:
     format: |
       table(
-        name.basename():label=SITE_KEY,
-        ip_overrides:label=IP_OVERRIDE_DATA
+        ip:label=IP,
+        overrideType:label=OVERRIDE_TYPE
       )

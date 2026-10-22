@@ -25,17 +25,56 @@ from apitools.base.py.exceptions import HttpError
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.diagnose import diagnose_utils
+from googlecloudsdk.api_lib.storage import storage_api
+from googlecloudsdk.api_lib.storage import storage_util
+from googlecloudsdk.api_lib.support import attachments
+from googlecloudsdk.api_lib.support import cases
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.util import time_util
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.credentials import requests as creds_requests
+from googlecloudsdk.core.util import retry
 import six
+from six.moves import urllib
 
 _DIAGNOSTICS_METADATA_KEY = 'diagnostics'
 _SERVICE_ACCOUNT_NAME = 'gce-diagnostics-extract-logs'
 _GCS_LOGS_BUCKET_PREFIX = 'diagnostics_logs_project'
+
+# --support-case: wait for the guest to upload the logs, then attach them to
+# the Cloud Support case.
+_SUPPORT_CASE_POLL_TIMEOUT_MS = 15 * 60 * 1000
+_SUPPORT_CASE_POLL_INTERVAL_MS = 15 * 1000
+_SUPPORT_ATTACHMENT_MAX_BYTES = 400 * 1024 * 1024
+# Media-read URL path for streaming the object straight out of the diagnostics
+# bucket into the upload session.
+_LOG_OBJECT_MEDIA_PATH = '/b/{bucket}/o/{object}?alt=media'
+_SUPPORT_CASE_TIMEOUT_MSG = """\
+Timed out after {minutes} minutes waiting for the VM to upload its logs.
+Log collection may still be running on the VM. Check its progress with:
+  gcloud compute instances get-serial-port-output {instance} --zone={zone} --project={project}
+When collection finishes the logs will be available at:
+  gs://{bucket}/{log_path}
+Attach them to the case manually, or re-run this command."""
+_SUPPORT_CASE_CLOSED_MSG = (
+    'Support case [{case}] is closed. Attachments can only be added to open '
+    'cases; reopen the case or open a new one, then retry.')
+# Appended to case and upload failures after the logs reached Cloud Storage.
+_LOGS_REMAIN_MSG = (
+    'The logs remain available at gs://{bucket}/{log_path}. Download them '
+    'with `gcloud storage cp gs://{bucket}/{log_path} .` and attach the file '
+    'to the case in the Google Cloud console.')
+_SERVICE_ACCOUNT_TOKEN_CREATOR_ROLE_MISSING_MSG = """
+To use this feature you must grant the iam.serviceAccountTokenCreator role on the project.
+For more information please refer to Collecting diagnostic information:
+[https://cloud.google.com/compute/docs/instances/collecting-diagnostic-information]
+"""
 _SUCCESS_MSG = """Log collection has begun.
 It may take several minutes for this operation to complete.
 
@@ -53,11 +92,19 @@ DETAILED_HELP = {
           $ {command} example-instance --zone=us-central1
         """,
 }
-_SERVICE_ACCOUNT_TOKEN_CREATOR_ROLE_MISSING_MSG = """
-To use this feature you must grant the iam.serviceAccountTokenCreator role on the project.
-For more information please refer to Collecting diagnostic information:
-[https://cloud.google.com/compute/docs/instances/collecting-diagnostic-information]
-"""
+
+
+def _BuildLogObjectMediaUrl(bucket, log_path):
+  """Builds the media download URL for a GCS log object."""
+  endpoint = apis.GetEffectiveApiEndpoint('storage', 'v1').rstrip('/')
+  return (endpoint + _LOG_OBJECT_MEDIA_PATH).format(
+      bucket=bucket, object=urllib.parse.quote(log_path, safe=''))
+
+
+def _WithLogsLocation(error, bucket, log_path):
+  """Returns an error with the message of error plus where the logs remain."""
+  return core_exceptions.Error('{}\n{}'.format(
+      error, _LOGS_REMAIN_MSG.format(bucket=bucket, log_path=log_path)))
 
 
 @base.ReleaseTracks(
@@ -85,6 +132,16 @@ class ExportLogs(base_classes.BaseCommand):
         help=('Collect a 10 minute trace of the running system. On Windows, '
               'this utilizes Windows Performance Recorder. It records CPU, '
               'disk, file, and network activity during that time.'))
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--support-case',
+          metavar='CASE',
+          help=('Cloud Support case to attach the exported logs to. Accepts a '
+                'case number (under the current project) or resource name '
+                '(projects/PROJECT/cases/CASE or '
+                'organizations/ORG/cases/CASE). Waits for the VM to finish '
+                'collecting logs, then uploads the archive. Requires '
+                'roles/cloudsupport.techSupportEditor.'))
     parser.display_info.AddFormat('none')
     return
 
@@ -93,6 +150,17 @@ class ExportLogs(base_classes.BaseCommand):
     self._diagnose_client = diagnose_utils.DiagnoseClient()
     instance_ref = self._ResolveInstance(args)
     project = properties.VALUES.core.project.Get(required=True)
+
+    # Preflight the support case before touching the VM, so a bad case number,
+    # missing permission or closed case fails fast without triggering log
+    # collection.
+    case_name = None
+    support_case = getattr(args, 'support_case', None)
+    if support_case:
+      case_name = self._ParseSupportCase(support_case, project)
+      case = self._PreflightSupportCase(case_name)
+      log.status.Print('Support case [{}] found: {}'.format(
+          case_name, case.displayName))
 
     service_account = self._GetDiagnosticsServiceAccount(project)
     expiration_time = self._GetSignedUrlExpiration()
@@ -106,9 +174,102 @@ class ExportLogs(base_classes.BaseCommand):
     self._diagnose_client.UpdateMetadata(
         project, instance_ref, _DIAGNOSTICS_METADATA_KEY, diagnostics_entry)
 
-    log.Print(_SUCCESS_MSG.format(bucket, log_path))
+    if case_name:
+      log.status.Print(_SUCCESS_MSG.format(bucket, log_path))
+    else:
+      log.Print(_SUCCESS_MSG.format(bucket, log_path))
 
-    return {'bucket': bucket, 'logPath': log_path, 'signedUrl': url}
+    result = {'bucket': bucket, 'logPath': log_path, 'signedUrl': url}
+    if case_name:
+      result['supportCaseAttachment'] = self._AttachLogsToSupportCase(
+          bucket, log_path, case_name, instance_ref, project)
+    return result
+
+  def _ParseSupportCase(self, value, project):
+    """Parses a case number or resource name into a full case resource name."""
+    if '/' in value:
+      return value
+    if not value.isdigit():
+      raise core_exceptions.Error(
+          'Invalid --support-case value [{}]. Provide a case number or a full '
+          'resource name (projects/PROJECT/cases/CASE or '
+          'organizations/ORG/cases/CASE).'.format(value))
+    return 'projects/{}/cases/{}'.format(project, value)
+
+  def _PreflightSupportCase(self, case_name):
+    """Verifies the support case exists, is accessible and is open."""
+    case = cases.GetCase(case_name)
+    if cases.IsClosed(case):
+      raise core_exceptions.Error(
+          _SUPPORT_CASE_CLOSED_MSG.format(case=case_name))
+    return case
+
+  def _AttachLogsToSupportCase(self, bucket, log_path, case_name,
+                               instance_ref, project):
+    """Attaches the exported logs to the support case after GCS upload."""
+    storage_client = storage_api.StorageClient()
+    object_ref = storage_util.ObjectReference.FromUrl(
+        'gs://{}/{}'.format(bucket, log_path))
+
+    def _GetObjectOrNone():
+      """Gets the log object from GCS, or returns None if not found."""
+      try:
+        return storage_client.GetObject(object_ref)
+      except HttpError as e:
+        if e.status_code == 404:
+          return None
+        raise
+
+    with progress_tracker.ProgressTracker(
+        'Waiting for the VM to finish collecting logs'):
+      try:
+        obj = retry.Retryer(
+            max_wait_ms=_SUPPORT_CASE_POLL_TIMEOUT_MS).RetryOnResult(
+                _GetObjectOrNone,
+                should_retry_if=None,
+                sleep_ms=_SUPPORT_CASE_POLL_INTERVAL_MS)
+      except retry.RetryException as e:
+        raise core_exceptions.Error(_SUPPORT_CASE_TIMEOUT_MSG.format(
+            minutes=_SUPPORT_CASE_POLL_TIMEOUT_MS // 60000,
+            instance=instance_ref.instance, zone=instance_ref.zone,
+            project=project, bucket=bucket, log_path=log_path)) from e
+
+    size = int(obj.size)
+    if size > _SUPPORT_ATTACHMENT_MAX_BYTES:
+      raise core_exceptions.Error(
+          'The exported logs ({:.1f} MiB) exceed the 400 MiB support '
+          'attachment limit. They remain available at gs://{}/{}.'.format(
+              size / (1024 * 1024), bucket, log_path))
+
+    # The case can be closed while the VM collects logs, so check it again
+    # right before uploading.
+    try:
+      self._PreflightSupportCase(case_name)
+    except core_exceptions.Error as e:
+      raise _WithLogsLocation(e, bucket, log_path) from e
+
+    # Stream the archive straight from Cloud Storage into the case attachment,
+    # so nothing is written to disk and peak memory stays at one chunk.
+    session = creds_requests.GetSession()
+    media_url = _BuildLogObjectMediaUrl(bucket, log_path)
+    with session.get(media_url, stream=True) as source:
+      if source.status_code != 200:
+        raise core_exceptions.Error(
+            'Failed to read the exported logs from gs://{}/{} (HTTP {}). '
+            'They remain available in Cloud Storage; attach them to the case '
+            'manually.'.format(bucket, log_path, source.status_code))
+      try:
+        attachment = attachments.UploadFromStream(
+            case_name, log_path, source.iter_content(chunk_size=1024 * 1024),
+            size)
+      except attachments.UploadError as e:
+        raise _WithLogsLocation(e, bucket, log_path) from e
+    log.status.Print('Attached [{}] ({} bytes) to support case [{}].'.format(
+        attachment.get('filename'), attachment.get('sizeBytes'), case_name))
+    log.status.Print(
+        'The logs also remain at gs://{}/{} (deleted automatically after 10 '
+        'days).'.format(bucket, log_path))
+    return attachment
 
   def _CreateResumableSignedUrl(self, service_account, expiration, bucket,
                                 filepath):

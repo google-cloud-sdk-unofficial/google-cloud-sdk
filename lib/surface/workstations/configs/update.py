@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.RegionalEndpointsSupported
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA

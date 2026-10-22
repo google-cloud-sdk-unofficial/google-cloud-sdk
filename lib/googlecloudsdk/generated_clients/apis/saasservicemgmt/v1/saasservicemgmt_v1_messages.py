@@ -171,6 +171,24 @@ class Deprovision(_messages.Message):
 
 
 
+class DurationLimits(_messages.Message):
+  r"""DurationLimits defines the time-related constraints for a
+  UnitOperation's execution. This allows users to control how long an
+  operation can run before being cancelled by the system.
+
+  Fields:
+    unitOperationTimeout: Optional. The maximum duration a UnitOperation is
+      allowed to execute in the RUNNING state. - Minimum value: 60 seconds (1
+      minute) - Maximum value: 604800 seconds (7 days) If this field is not
+      set, or if the provided value falls outside the allowed range, the
+      system will use a default timeout of 10800 seconds (3 hours). Upon
+      exceeding this time limit, the UnitOperation will be best-effort
+      cancelled, and its state will be set to FAILED.
+  """
+
+  unitOperationTimeout = _messages.StringField(1)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -2913,6 +2931,14 @@ class UnitKind(_messages.Message):
     dependencies: Optional. Immutable. List of other unit kinds that this
       release will depend on. Dependencies will be automatically provisioned
       if not found. Maximum 10.
+    durationLimits: Optional. Defines the default duration limits for
+      UnitOperations created from this UnitKind. These settings provide a
+      baseline for execution time constraints. The limits specified here can
+      be overridden by more specific settings on an individual UnitOperation
+      resource. See the DurationLimits message definition for details on the
+      constraints like minimum, maximum, and system default values for
+      unit_operation_timeout. If not set, UnitOperations will use the system
+      default duration limits unless overridden on the UnitOperation.
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
@@ -3014,14 +3040,15 @@ class UnitKind(_messages.Message):
   defaultRelease = _messages.StringField(6)
   deleteTime = _messages.StringField(7)
   dependencies = _messages.MessageField('Dependency', 8, repeated=True)
-  etag = _messages.StringField(9)
-  inputVariableMappings = _messages.MessageField('VariableMapping', 10, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 11)
-  name = _messages.StringField(12)
-  outputVariableMappings = _messages.MessageField('VariableMapping', 13, repeated=True)
-  saas = _messages.StringField(14)
-  uid = _messages.StringField(15)
-  updateTime = _messages.StringField(16)
+  durationLimits = _messages.MessageField('DurationLimits', 9)
+  etag = _messages.StringField(10)
+  inputVariableMappings = _messages.MessageField('VariableMapping', 11, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 12)
+  name = _messages.StringField(13)
+  outputVariableMappings = _messages.MessageField('VariableMapping', 14, repeated=True)
+  saas = _messages.StringField(15)
+  uid = _messages.StringField(16)
+  updateTime = _messages.StringField(17)
 
 
 class UnitOperation(_messages.Message):
@@ -3062,6 +3089,11 @@ class UnitOperation(_messages.Message):
     deleteTime: Output only. The timestamp when the resource was marked for
       deletion (deletion is an asynchronous operation).
     deprovision: Optional. Deprovision operation.
+    durationLimits: Optional. Defines the duration limits for this specific
+      UnitOperation instance. These settings override any default duration
+      limits set on the UnitKind. See the DurationLimits message definition
+      for details on the constraints like minimum, maximum, and system default
+      values for unit_operation_timeout.
     engineState: Optional. Output only. The engine state for on-going
       deployment engine operation(s). This field is opaque for external usage.
     errorCategory: Optional. Output only. UnitOperationErrorCategory describe
@@ -3203,20 +3235,21 @@ class UnitOperation(_messages.Message):
   createTime = _messages.StringField(4)
   deleteTime = _messages.StringField(5)
   deprovision = _messages.MessageField('Deprovision', 6)
-  engineState = _messages.StringField(7)
-  errorCategory = _messages.EnumField('ErrorCategoryValueValuesEnum', 8)
-  etag = _messages.StringField(9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  name = _messages.StringField(11)
-  parentUnitOperation = _messages.StringField(12)
-  provision = _messages.MessageField('Provision', 13)
-  rollout = _messages.StringField(14)
-  schedule = _messages.MessageField('Schedule', 15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  uid = _messages.StringField(17)
-  unit = _messages.StringField(18)
-  updateTime = _messages.StringField(19)
-  upgrade = _messages.MessageField('Upgrade', 20)
+  durationLimits = _messages.MessageField('DurationLimits', 7)
+  engineState = _messages.StringField(8)
+  errorCategory = _messages.EnumField('ErrorCategoryValueValuesEnum', 9)
+  etag = _messages.StringField(10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  name = _messages.StringField(12)
+  parentUnitOperation = _messages.StringField(13)
+  provision = _messages.MessageField('Provision', 14)
+  rollout = _messages.StringField(15)
+  schedule = _messages.MessageField('Schedule', 16)
+  state = _messages.EnumField('StateValueValuesEnum', 17)
+  uid = _messages.StringField(18)
+  unit = _messages.StringField(19)
+  updateTime = _messages.StringField(20)
+  upgrade = _messages.MessageField('Upgrade', 21)
 
 
 class UnitOperationCondition(_messages.Message):

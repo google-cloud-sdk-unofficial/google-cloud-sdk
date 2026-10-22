@@ -28,16 +28,24 @@ properties:
   ipAddress:
     description: |-
       An IPv4 internal IP address to assign to the instance for this
-      subinterface.
+      subinterface. If specified, ip_allocation_mode should be set to
+      ALLOCATE_IP.
     type: string
+  ipAllocationMode:
+    description: A IpAllocationModeValueValuesEnum attribute.
+    type: string
+    enum:
+    - ALLOCATE_IP
+    - DO_NOT_ALLOCATE_IP
+    - UNSPECIFIED
   subnetwork:
     description: |-
       If specified, this subnetwork must belong to the same network as that of
       the network interface. If not specified the subnet of network interface
       will be used. If you specify this property, you can specify the subnetwork
       as a full or partial URL. For example, the following are all valid URLs:
-      - https://www.googleapis.com/compute/v1/projects/proje
-      ct/regions/region/subnetworks/subnetwork  -
+      - https://www.googleapis.com/compute/v1/pr
+      ojects/project/regions/region/subnetworks/subnetwork     -
       regions/region/subnetworks/subnetwork
     type: string
   vlan:

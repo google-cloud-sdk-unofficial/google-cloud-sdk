@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   command_type: GENERIC
   help_text:
     brief: Reject a pending build.

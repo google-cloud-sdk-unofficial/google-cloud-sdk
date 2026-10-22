@@ -14,6 +14,8 @@
 # limitations under the License.
 """Hooks for mldiagnostics commands."""
 
+from googlecloudsdk.calliope import exceptions
+
 
 def RemoveAnalyzerReports(response, args):
   """Removes analyzerReports from the response to match list command behavior."""
@@ -22,3 +24,13 @@ def RemoveAnalyzerReports(response, args):
     if hasattr(event, 'analyzerReports'):
       event.analyzerReports = []
     yield event
+
+
+def ValidateProfilerSessionCaptureRequest(unused_ref, args, request):
+  """Validates arguments for profiler-session capture command."""
+  if args.kind == 'on-demand' and not args.IsSpecified('duration'):
+    raise exceptions.RequiredArgumentException(
+        '--duration',
+        'Duration is required when --kind is on-demand.',
+    )
+  return request

@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.PREVIEW)
 class HaControllers(base.Group):
   """Manage HA Controllers.
 

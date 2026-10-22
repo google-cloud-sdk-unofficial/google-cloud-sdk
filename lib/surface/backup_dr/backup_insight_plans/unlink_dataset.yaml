@@ -1,0 +1,50 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  hints:
+    read_only: false
+    destructive: true
+
+  help_text:
+    brief: Unlink the BigQuery dataset for a Backup and DR Backup Insight Plan.
+    description: |
+      Unlink the BigQuery dataset for a Backup and DR Backup Insight Plan.
+
+      This removes the linked BigQuery dataset from the backup vault's consumer
+      project. No insights data is deleted, and the Backup Insight Plan itself
+      is not deleted; run `link-dataset` to recreate the linked dataset.
+    examples: |
+      To unlink the dataset for a Backup Insight Plan named 'my-insight-plan' in backup vault 'my-vault' and location 'us-central1':
+
+        $ {command} my-insight-plan --backup-vault=my-vault --location=us-central1
+
+      To unlink the dataset without a confirmation prompt and without waiting for the operation to complete:
+
+        $ {command} my-insight-plan --backup-vault=my-vault --location=us-central1 --quiet --async
+
+  request:
+    collection: backupdr.projects.locations.backupVaults.backupInsightPlans
+    regional_endpoint_compatibility: SUPPORTED
+    method: unlinkDataset
+    display_resource_type: backup insight plan
+    ALPHA:
+      api_version: v1alpha
+
+  input:
+    confirmation_prompt: >-
+      The linked BigQuery dataset for {__resource_type__} [{__name__}] will be
+      removed from the consumer project. No insights data is deleted; run
+      link-dataset to recreate it.
+
+  async:
+    collection: backupdr.projects.locations.operations
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Backup Insight Plan whose dataset to unlink.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:backupInsightPlan
+      is_positional: true
+
+  output:
+    format: json

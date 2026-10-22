@@ -23,13 +23,21 @@ from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 import six
 
+# pip evaluates these environment markers against the virtualenv's Python.
+# cryptography>=49 publishes no Intel macOS wheels, so Intel macOS uses the
+# last release that does.
+_INTEL_MAC = 'sys_platform == "darwin" and platform_machine == "x86_64"'
+_NOT_INTEL_MAC = 'sys_platform != "darwin" or platform_machine != "x86_64"'
+
 # Python modules to install into virtual env environment
 MODULES = [
     'crcmod',
     'grpcio==1.84.0',
     # pyOpenSSL pins an upper bound on cryptography, so the two move together.
-    'pyopenssl==26.0.0',
-    'cryptography==46.0.7',
+    'pyopenssl==26.4.0; ' + _NOT_INTEL_MAC,
+    'cryptography==50.0.1; ' + _NOT_INTEL_MAC,
+    'pyopenssl==26.2.0; ' + _INTEL_MAC,
+    'cryptography==48.0.1; ' + _INTEL_MAC,
     'google_crc32c',
     'certifi',
 ]

@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.resource_manager import boundary_configs_flags as flags
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA

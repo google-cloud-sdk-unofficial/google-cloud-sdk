@@ -1792,6 +1792,8 @@ class Instance(_messages.Message):
     replication: Optional. Replication configuration.
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
+    serviceAttachmentUri: Output only. Service Attachment URI for Private
+      Service Connect user created endpoints.
     state: Output only. The instance state.
     statusMessage: Output only. Additional information about the instance
       state, if available.
@@ -1994,11 +1996,12 @@ class Instance(_messages.Message):
   replication = _messages.MessageField('Replication', 23)
   satisfiesPzi = _messages.BooleanField(24)
   satisfiesPzs = _messages.BooleanField(25)
-  state = _messages.EnumField('StateValueValuesEnum', 26)
-  statusMessage = _messages.StringField(27)
-  suspensionReasons = _messages.EnumField('SuspensionReasonsValueListEntryValuesEnum', 28, repeated=True)
-  tags = _messages.MessageField('TagsValue', 29)
-  tier = _messages.EnumField('TierValueValuesEnum', 30)
+  serviceAttachmentUri = _messages.StringField(26)
+  state = _messages.EnumField('StateValueValuesEnum', 27)
+  statusMessage = _messages.StringField(28)
+  suspensionReasons = _messages.EnumField('SuspensionReasonsValueListEntryValuesEnum', 29, repeated=True)
+  tags = _messages.MessageField('TagsValue', 30)
+  tier = _messages.EnumField('TierValueValuesEnum', 31)
 
 
 class LdapConfig(_messages.Message):
@@ -2370,6 +2373,9 @@ class NetworkConfig(_messages.Message):
     ConnectModeValueValuesEnum: The network connect mode of the Filestore
       instance. If not provided, the connect mode defaults to DIRECT_PEERING.
     ModesValueListEntryValuesEnum:
+    PscEndpointCreationModeValueValuesEnum: Optional. Immutable. Private
+      Service Connect Endpoint Creation Mode. Defaults to AUTO when
+      connect_mode is PRIVATE_SERVICE_CONNECT.
 
   Fields:
     connectMode: The network connect mode of the Filestore instance. If not
@@ -2384,6 +2390,9 @@ class NetworkConfig(_messages.Message):
       connected.
     pscConfig: Optional. Private Service Connect configuration. Should only be
       set when connect_mode is PRIVATE_SERVICE_CONNECT.
+    pscEndpointCreationMode: Optional. Immutable. Private Service Connect
+      Endpoint Creation Mode. Defaults to AUTO when connect_mode is
+      PRIVATE_SERVICE_CONNECT.
     reservedIpRange: Optional, reserved_ip_range can have one of the following
       two types of values. * CIDR range value when using DIRECT_PEERING
       connect mode. * [Allocated IP address
@@ -2400,6 +2409,9 @@ class NetworkConfig(_messages.Message):
       respectively. The range you specify can't overlap with either existing
       subnets or assigned IP address ranges for other Filestore instances in
       the selected VPC network.
+    userCreatedPscEndpoints: Optional. User Created Private Service Connect
+      Endpoints. Should only be set when connect_mode is
+      PRIVATE_SERVICE_CONNECT and psc_endpoint_creation_mode is USER_CREATED.
   """
 
   class ConnectModeValueValuesEnum(_messages.Enum):
@@ -2434,12 +2446,27 @@ class NetworkConfig(_messages.Message):
     MODE_IPV4 = 1
     MODE_IPV6 = 2
 
+  class PscEndpointCreationModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Immutable. Private Service Connect Endpoint Creation Mode.
+    Defaults to AUTO when connect_mode is PRIVATE_SERVICE_CONNECT.
+
+    Values:
+      PSC_ENDPOINT_CREATION_MODE_UNSPECIFIED: PscEndpointCreationMode not set.
+      AUTO: Automatic.
+      USER_CREATED: User created.
+    """
+    PSC_ENDPOINT_CREATION_MODE_UNSPECIFIED = 0
+    AUTO = 1
+    USER_CREATED = 2
+
   connectMode = _messages.EnumField('ConnectModeValueValuesEnum', 1)
   ipAddresses = _messages.StringField(2, repeated=True)
   modes = _messages.EnumField('ModesValueListEntryValuesEnum', 3, repeated=True)
   network = _messages.StringField(4)
   pscConfig = _messages.MessageField('PscConfig', 5)
-  reservedIpRange = _messages.StringField(6)
+  pscEndpointCreationMode = _messages.EnumField('PscEndpointCreationModeValueValuesEnum', 6)
+  reservedIpRange = _messages.StringField(7)
+  userCreatedPscEndpoints = _messages.MessageField('UserCreatedPscEndpoint', 8, repeated=True)
 
 
 class NfsExportOptions(_messages.Message):
@@ -2887,7 +2914,10 @@ class RestoreConfig(_messages.Message):
   r"""Optional configuration for restore backup operations.
 
   Fields:
-    pathPatterns: Optional. Example: If you want to restore
+    pathPatterns: Optional. A collection of paths/patterns to restore from the
+      backup. If empty, a full restore is performed. A valid path is relative
+      to the file share's mount point and must not include a trailing slash.
+      The path must start with a leading `/`. Example: If you want to restore
       `/mnt/share/dir1/file.txt`, the path pattern must be `/dir1/file.txt`.
       If you want to restore `/mnt/share/dir1/`, the path pattern must be
       `/dir1`. Currently only single path is supported, Glob patterns are not
@@ -3378,6 +3408,18 @@ class UpdatePolicy(_messages.Message):
   channel = _messages.EnumField('ChannelValueValuesEnum', 1)
   denyMaintenancePeriods = _messages.MessageField('DenyMaintenancePeriod', 2, repeated=True)
   window = _messages.MessageField('MaintenanceWindow', 3)
+
+
+class UserCreatedPscEndpoint(_messages.Message):
+  r"""User Created Private Service Connect Endpoint.
+
+  Fields:
+    connectionId: Connection ID of the Private Service Connect endpoint.
+    ipAddress: IP Address of the Private Service Connect endpoint.
+  """
+
+  connectionId = _messages.StringField(1)
+  ipAddress = _messages.StringField(2)
 
 
 class Volume(_messages.Message):

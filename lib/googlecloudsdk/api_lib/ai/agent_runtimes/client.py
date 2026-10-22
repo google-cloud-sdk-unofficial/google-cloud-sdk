@@ -44,6 +44,9 @@ class AgentRuntimesClient:
     self._messages = client.MESSAGES_MODULE
     self._version = version
     self._service = client.projects_locations_reasoningEngines
+    self._revisions_service = (
+        client.projects_locations_reasoningEngines_runtimeRevisions
+    )
     self._message_prefix = constants.AI_PLATFORM_MESSAGE_PREFIX[version]
 
   @property
@@ -167,3 +170,58 @@ class AgentRuntimesClient:
         )
     )
     return self._service.Patch(request)
+
+  def ListRevisions(self, parent: str, limit: int | None = None) -> Any:
+    """Lists revisions of an Agent Runtime.
+
+    Args:
+      parent: The parent Agent Runtime resource name, in the form
+        `projects/{project}/locations/{location}/reasoningEngines/{reasoning_engine}`.
+      limit: How many items to return in the list.
+
+    Returns:
+      An iterator yielding ReasoningEngineRuntimeRevision resources.
+    """
+    return list_pager.YieldFromList(
+        self._revisions_service,
+        self._messages.AiplatformProjectsLocationsReasoningEnginesRuntimeRevisionsListRequest(
+            parent=parent
+        ),
+        field='reasoningEngineRuntimeRevisions',
+        batch_size_attribute='pageSize',
+        limit=limit,
+    )
+
+  def GetRevision(self, name: str) -> Any:
+    """Retrieves an Agent Runtime Revision resource by name.
+
+    Args:
+      name: The Agent Runtime Revision resource name, in the form
+        `projects/{project}/locations/{location}/reasoningEngines/{reasoning_engine}/runtimeRevisions/{runtime_revision}`.
+
+    Returns:
+      The ReasoningEngineRuntimeRevision resource message.
+    """
+    request = (
+        self._messages.AiplatformProjectsLocationsReasoningEnginesRuntimeRevisionsGetRequest(
+            name=name
+        )
+    )
+    return self._revisions_service.Get(request)
+
+  def DeleteRevision(self, name: str) -> Any:
+    """Deletes an Agent Runtime Revision resource by name.
+
+    Args:
+      name: The Agent Runtime Revision resource name, in the form
+        `projects/{project}/locations/{location}/reasoningEngines/{reasoning_engine}/runtimeRevisions/{runtime_revision}`.
+
+    Returns:
+      The long-running operation for the delete request.
+    """
+    request = (
+        self._messages.AiplatformProjectsLocationsReasoningEnginesRuntimeRevisionsDeleteRequest(
+            name=name
+        )
+    )
+    return self._revisions_service.Delete(request)

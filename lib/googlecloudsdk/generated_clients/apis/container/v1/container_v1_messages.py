@@ -2484,11 +2484,13 @@ class ConfidentialNodes(_messages.Message):
       SEV: AMD Secure Encrypted Virtualization.
       SEV_SNP: AMD Secure Encrypted Virtualization - Secure Nested Paging.
       TDX: Intel Trust Domain eXtension.
+      BMSAI: Bare Metal Secure AI.
     """
     CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED = 0
     SEV = 1
     SEV_SNP = 2
     TDX = 3
+    BMSAI = 4
 
   confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
   enabled = _messages.BooleanField(2)

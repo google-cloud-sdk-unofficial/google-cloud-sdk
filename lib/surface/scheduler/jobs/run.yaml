@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: false
+  help_text:
     brief: Trigger an on-demand execution of a job.
     description: Trigger an on-demand execution of a job.
     examples: |

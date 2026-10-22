@@ -15,7 +15,7 @@ class AdminSettings(_messages.Message):
   r"""Looker instance Admin settings fields.
 
   Fields:
-    allowedEmailDomains: Email domain allowlist for the instance.
+    allowedEmailDomains: Optional. Email domain allowlist for the instance.
   """
 
   allowedEmailDomains = _messages.StringField(1, repeated=True)
@@ -99,15 +99,15 @@ class CustomDomain(_messages.Message):
   r"""Custom domain information.
 
   Enums:
-    StateValueValuesEnum: Domain state.
+    StateValueValuesEnum: Output only. Domain state.
 
   Fields:
-    domain: Domain name.
-    state: Domain state.
+    domain: Optional. Domain name.
+    state: Output only. Domain state.
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Domain state.
+    r"""Output only. Domain state.
 
     Values:
       CUSTOM_DOMAIN_STATE_UNSPECIFIED: Unspecified state.
@@ -186,7 +186,8 @@ class EncryptionConfig(_messages.Message):
     KmsKeyStateValueValuesEnum: Output only. Status of the CMEK key.
 
   Fields:
-    kmsKeyName: Name of the CMEK key in KMS (input parameter).
+    kmsKeyName: Optional. Immutable. Name of the CMEK key in KMS (input
+      parameter).
     kmsKeyNameVersion: Output only. Full name and version of the CMEK key
       currently in use to encrypt Looker data. Format: `projects/{project}/loc
       ations/{location}/keyRings/{ring}/cryptoKeys/{key}/cryptoKeyVersions/{ve
@@ -250,6 +251,10 @@ class ExportMetadata(_messages.Message):
     exportEncryptionKey: Encryption key that was used to encrypt the export
       artifacts.
     exportMetrics: Overall export metrics, timing, and component telemetry.
+    exportTime: A string of digits representing the number of microseconds
+      since the Unix epoch when the export was created. Used to identify the
+      cloned source Elite System Activity (ESA) BigQuery dataset for O2C
+      direct dataset migration.
     filePaths: List of files created as part of export artifact (excluding the
       metadata). The paths are relative to the folder containing the metadata.
     lookerEncryptionKey: Looker encryption key, encrypted with the provided
@@ -279,12 +284,13 @@ class ExportMetadata(_messages.Message):
   esaSourceDatasetId = _messages.StringField(1)
   exportEncryptionKey = _messages.MessageField('ExportMetadataEncryptionKey', 2)
   exportMetrics = _messages.MessageField('ExportMetrics', 3)
-  filePaths = _messages.StringField(4, repeated=True)
-  lookerEncryptionKey = _messages.StringField(5)
-  lookerInstance = _messages.StringField(6)
-  lookerPlatformEdition = _messages.StringField(7)
-  lookerVersion = _messages.StringField(8)
-  source = _messages.EnumField('SourceValueValuesEnum', 9)
+  exportTime = _messages.StringField(4)
+  filePaths = _messages.StringField(5, repeated=True)
+  lookerEncryptionKey = _messages.StringField(6)
+  lookerInstance = _messages.StringField(7)
+  lookerPlatformEdition = _messages.StringField(8)
+  lookerVersion = _messages.StringField(9)
+  source = _messages.EnumField('SourceValueValuesEnum', 10)
 
 
 class ExportMetadataEncryptionKey(_messages.Message):
@@ -356,7 +362,9 @@ class Instance(_messages.Message):
 
   Enums:
     ClassTypeValueValuesEnum: Optional. Storage class of the instance.
-    PlatformEditionValueValuesEnum: Platform edition.
+    PlatformEditionValueValuesEnum: Optional. Platform edition. Marked as
+      OPTIONAL for backward compatibility, though it is required during
+      instance creation.
     ReleaseChannelValueValuesEnum: Optional. The selected release channel for
       the instance.
     SoftDeleteReasonValueValuesEnum: Output only. The reason for the instance
@@ -366,12 +374,12 @@ class Instance(_messages.Message):
   Fields:
     acceleratedSecurityPatchEnabled: Optional. Accelerated security patch
       enabled for the instance.
-    adminSettings: Looker Instance Admin settings.
+    adminSettings: Optional. Looker Instance Admin settings.
     authType: Optional. Auth type for the Looker instance.
     catalogIntegrationOptOut: Optional. Indicates whether catalog integration
       is disabled for the Looker instance.
     classType: Optional. Storage class of the instance.
-    consumerNetwork: Network name in the consumer project. Format:
+    consumerNetwork: Optional. Network name in the consumer project. Format:
       `projects/{project}/global/networks/{network}`. Note that the consumer
       network may be in a different GCP project than the consumer project that
       is hosting the Looker Instance.
@@ -380,11 +388,12 @@ class Instance(_messages.Message):
       the Looker instance.
     createTime: Output only. The time when the Looker instance provisioning
       was first requested.
-    customDomain: Custom domain configuration for the instance.
-    denyMaintenancePeriod: Maintenance denial period for this instance.
+    customDomain: Optional. Custom domain configuration for the instance.
+    denyMaintenancePeriod: Optional. Maintenance denial period for this
+      instance.
     egressPublicIp: Output only. Public Egress IP (IPv4).
-    encryptionConfig: Encryption configuration (CMEK). Only set if CMEK has
-      been enabled on the instance.
+    encryptionConfig: Optional. Encryption configuration (CMEK). Only set if
+      CMEK has been enabled on the instance.
     fipsEnabled: Optional. Whether FIPS is enabled on the Looker instance.
     geminiEnabled: Optional. Whether Gemini feature is enabled on the Looker
       instance or not.
@@ -399,21 +408,24 @@ class Instance(_messages.Message):
     lookerUri: Output only. Looker instance URI which can be used to access
       the Looker Instance UI.
     lookerVersion: Output only. The Looker version that the instance is using.
-    maintenanceSchedule: Maintenance schedule for this instance.
-    maintenanceWindow: Maintenance window for this instance.
+    maintenanceSchedule: Output only. Maintenance schedule for this instance.
+    maintenanceWindow: Optional. Maintenance window for this instance.
     name: Output only. Format:
       `projects/{project}/locations/{location}/instances/{instance}`.
-    oauthConfig: Looker instance OAuth login settings.
+    oauthConfig: Optional. Looker instance OAuth login settings.
     periodicExportConfig: Optional. Configuration for periodic export.
-    platformEdition: Platform edition.
-    privateIpEnabled: Whether private IP is enabled on the Looker instance.
+    platformEdition: Optional. Platform edition. Marked as OPTIONAL for
+      backward compatibility, though it is required during instance creation.
+    privateIpEnabled: Optional. Whether private IP is enabled on the Looker
+      instance.
     pscConfig: Optional. PSC configuration. Used when `psc_enabled` is true.
     pscEnabled: Optional. Whether to use Private Service Connect (PSC) for
       private IP connectivity. If true, neither `public_ip_enabled` nor
       `private_ip_enabled` can be true.
-    publicIpEnabled: Whether public IP is enabled on the Looker instance.
+    publicIpEnabled: Optional. Whether public IP is enabled on the Looker
+      instance.
     releaseChannel: Optional. The selected release channel for the instance.
-    reservedRange: Name of a reserved IP address range within the
+    reservedRange: Optional. Name of a reserved IP address range within the
       Instance.consumer_network, to be used for private services access
       connection. May or may not be specified in a create request.
     satisfiesPzi: Output only. Reserved for future use.
@@ -441,7 +453,8 @@ class Instance(_messages.Message):
     P1 = 2
 
   class PlatformEditionValueValuesEnum(_messages.Enum):
-    r"""Platform edition.
+    r"""Optional. Platform edition. Marked as OPTIONAL for backward
+    compatibility, though it is required during instance creation.
 
     Values:
       PLATFORM_EDITION_UNSPECIFIED: Represents an unspecified platform

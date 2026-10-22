@@ -19,8 +19,8 @@
   - GA
   auto_generated: true
   help_text:
-    brief: Reschedule a planned maintenance window for a Managed Lustre instance.
-    description: Reschedule a planned maintenance window for a Managed Lustre instance.
+    brief: Reschedules a planned maintenance window for a Managed Lustre instance
+    description: Reschedules a planned maintenance window for a Managed Lustre instance.
     examples: |-
       To reschedule maintenance immediately for an instance `my-instance` in location `us-central1-a`, run:
 
@@ -50,7 +50,7 @@
       - arg_value: immediate
         enum_value: IMMEDIATE
         help_text: |-
-          Apply update immediately
+          Apply update immediately.
       - arg_value: next-available-window
         enum_value: NEXT_AVAILABLE_WINDOW
         help_text: |-
@@ -66,7 +66,7 @@
       type: googlecloudsdk.core.util.times:ParseDateTime
       processor: googlecloudsdk.core.util.times:FormatDateTime
       help_text: |-
-        Required if reschedule_type is BY_TIME. Timestamp when the
+        Required if `reschedule_type` is `BY_TIME`. Timestamp when the
         maintenance shall be rescheduled to. This time must be within
         28 days of the original scheduled maintenance start time.
     - arg_name: request-id

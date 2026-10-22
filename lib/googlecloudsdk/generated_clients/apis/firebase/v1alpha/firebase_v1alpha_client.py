@@ -13,10 +13,7 @@ class FirebaseV1alpha(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://firebase.mtls.googleapis.com/'
 
   _PACKAGE = 'firebase'
-  _SCOPES = [
-      'https://www.googleapis.com/auth/cloud-platform',
-      'https://www.googleapis.com/auth/firebase',
-  ]
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-platform.read-only', 'https://www.googleapis.com/auth/firebase', 'https://www.googleapis.com/auth/firebase.readonly']
   _VERSION = 'v1alpha'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'
@@ -25,37 +22,27 @@ class FirebaseV1alpha(base_api.BaseApiClient):
   _URL_VERSION = 'v1alpha'
   _API_KEY = None
 
-  def __init__(
-      self,
-      url='',
-      credentials=None,
-      get_credentials=True,
-      http=None,
-      model=None,
-      log_request=False,
-      log_response=False,
-      credentials_args=None,
-      default_global_params=None,
-      additional_http_headers=None,
-      response_encoding=None,
-  ):
+  def __init__(self, url='', credentials=None,
+               get_credentials=True, http=None, model=None,
+               log_request=False, log_response=False,
+               credentials_args=None, default_global_params=None,
+               additional_http_headers=None, response_encoding=None):
     """Create a new firebase handle."""
     url = url or self.BASE_URL
     super(FirebaseV1alpha, self).__init__(
-        url,
-        credentials=credentials,
-        get_credentials=get_credentials,
-        http=http,
-        model=model,
-        log_request=log_request,
-        log_response=log_response,
+        url, credentials=credentials,
+        get_credentials=get_credentials, http=http, model=model,
+        log_request=log_request, log_response=log_response,
         credentials_args=credentials_args,
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
-        response_encoding=response_encoding,
-    )
+        response_encoding=response_encoding)
     self.firebase = self.FirebaseService(self)
     self.operations = self.OperationsService(self)
+    self.projects_apps = self.ProjectsAppsService(self)
+    self.projects_playLinks = self.ProjectsPlayLinksService(self)
+    self.projects_products = self.ProjectsProductsService(self)
+    self.projects = self.ProjectsService(self)
 
   class FirebaseService(base_api.BaseApiService):
     """Service class for the firebase resource."""
@@ -64,12 +51,47 @@ class FirebaseV1alpha(base_api.BaseApiClient):
 
     def __init__(self, client):
       super(FirebaseV1alpha.FirebaseService, self).__init__(client)
-      self._upload_configs = {}
+      self._upload_configs = {
+          }
+
+    def GetTosStatus(self, request, global_params=None):
+      r"""User Scoped request that returns if the User needs to accept ToS, and if so, necessary details to present ToS and accept it as part of a subsequent call to [ProvisionFirebaseApp]().
+
+      Args:
+        request: (FirebaseFirebaseGetTosStatusRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GetTosStatusResponse) The response message.
+      """
+      config = self.GetMethodConfig('GetTosStatus')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetTosStatus.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='firebase.firebase.getTosStatus',
+        ordered_params=[],
+        path_params=[],
+        query_params=[],
+        relative_path='v1alpha/firebase:getTosStatus',
+        request_field='',
+        request_type_name='FirebaseFirebaseGetTosStatusRequest',
+        response_type_name='GetTosStatusResponse',
+        supports_download=False,
+    )
 
     def ProvisionFirebaseApp(self, request, global_params=None):
-      r"""Provisions a new Firebase App and associated resources."""
+      r"""Provisions a new Firebase App and associated resources as specified in the request.
+
+      Args:
+        request: (ProvisionFirebaseAppRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
       config = self.GetMethodConfig('ProvisionFirebaseApp')
-      return self._RunMethod(config, request, global_params=global_params)
+      return self._RunMethod(
+          config, request, global_params=global_params)
 
     ProvisionFirebaseApp.method_config = lambda: base_api.ApiMethodInfo(
         http_method='POST',
@@ -91,12 +113,21 @@ class FirebaseV1alpha(base_api.BaseApiClient):
 
     def __init__(self, client):
       super(FirebaseV1alpha.OperationsService, self).__init__(client)
-      self._upload_configs = {}
+      self._upload_configs = {
+          }
 
     def Get(self, request, global_params=None):
-      r"""Gets the latest state of a long-running operation."""
+      r"""Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+
+      Args:
+        request: (FirebaseOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
       config = self.GetMethodConfig('Get')
-      return self._RunMethod(config, request, global_params=global_params)
+      return self._RunMethod(
+          config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
         flat_path='v1alpha/operations/{operationsId}',
@@ -111,3 +142,232 @@ class FirebaseV1alpha(base_api.BaseApiClient):
         response_type_name='Operation',
         supports_download=False,
     )
+
+  class ProjectsAppsService(base_api.BaseApiService):
+    """Service class for the projects_apps resource."""
+
+    _NAME = 'projects_apps'
+
+    def __init__(self, client):
+      super(FirebaseV1alpha.ProjectsAppsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def GetPlayLink(self, request, global_params=None):
+      r"""Gets the specified PlayLink Since a Play Link is a Singleton Resource, if the Link has not yet been initialized with UpdatePlayLink an empty PlayLink will be returned. [AIP-156](https://google.aip.dev/156).
+
+      Args:
+        request: (FirebaseProjectsAppsGetPlayLinkRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PlayLink) The response message.
+      """
+      config = self.GetMethodConfig('GetPlayLink')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetPlayLink.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/apps/{appsId}/playLink',
+        http_method='GET',
+        method_id='firebase.projects.apps.getPlayLink',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='FirebaseProjectsAppsGetPlayLinkRequest',
+        response_type_name='PlayLink',
+        supports_download=False,
+    )
+
+    def GetWebConfig(self, request, global_params=None):
+      r"""Fetches the dynamic configuration data for a Firebase Web App. This entity is distinct because it provides non-static values (like measurement ID), and does not provide more sensitive information like ApiKeys.
+
+      Args:
+        request: (FirebaseProjectsAppsGetWebConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DynamicWebConfig) The response message.
+      """
+      config = self.GetMethodConfig('GetWebConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetWebConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/apps/{appsId}/webConfig',
+        http_method='GET',
+        method_id='firebase.projects.apps.getWebConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}/webConfig',
+        request_field='',
+        request_type_name='FirebaseProjectsAppsGetWebConfigRequest',
+        response_type_name='DynamicWebConfig',
+        supports_download=False,
+    )
+
+    def UpdatePlayLink(self, request, global_params=None):
+      r"""Updates the attributes of the specified PlayLink. As this is a Singleton Resource, the PlayLink is initialized by the first call to UpdatePlayLink. [AIP-156](https://google.aip.dev/156).
+
+      Args:
+        request: (FirebaseProjectsAppsUpdatePlayLinkRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PlayLink) The response message.
+      """
+      config = self.GetMethodConfig('UpdatePlayLink')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdatePlayLink.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/apps/{appsId}/playLink',
+        http_method='PATCH',
+        method_id='firebase.projects.apps.updatePlayLink',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['allowMissing', 'updateMask', 'validateOnly'],
+        relative_path='v1alpha/{+name}',
+        request_field='playLink',
+        request_type_name='FirebaseProjectsAppsUpdatePlayLinkRequest',
+        response_type_name='PlayLink',
+        supports_download=False,
+    )
+
+  class ProjectsPlayLinksService(base_api.BaseApiService):
+    """Service class for the projects_playLinks resource."""
+
+    _NAME = 'projects_playLinks'
+
+    def __init__(self, client):
+      super(FirebaseV1alpha.ProjectsPlayLinksService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Search(self, request, global_params=None):
+      r"""Searches for PlayLinks that match the provided filter. Only links the Caller has permission to view will be returned. Callers may choose to read across multiple Projects as per [AIP-159](https://google.aip.dev/159) if the filter provided includes a value for [`play_account_id`] (../projects.playlinks#PlayLink.FIELDS.play_account_id) The elements are returned in no particular order, but will be a consistent view of the PlayLinks when additional requests are made with a `pageToken`.
+
+      Args:
+        request: (FirebaseProjectsPlayLinksSearchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SearchPlayLinksResponse) The response message.
+      """
+      config = self.GetMethodConfig('Search')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Search.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/playLinks:search',
+        http_method='GET',
+        method_id='firebase.projects.playLinks.search',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}:search',
+        request_field='',
+        request_type_name='FirebaseProjectsPlayLinksSearchRequest',
+        response_type_name='SearchPlayLinksResponse',
+        supports_download=False,
+    )
+
+  class ProjectsProductsService(base_api.BaseApiService):
+    """Service class for the projects_products resource."""
+
+    _NAME = 'projects_products'
+
+    def __init__(self, client):
+      super(FirebaseV1alpha.ProjectsProductsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets metadata about the specified Firebase product.
+
+      Args:
+        request: (FirebaseProjectsProductsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Product) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/products/{productsId}',
+        http_method='GET',
+        method_id='firebase.projects.products.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='FirebaseProjectsProductsGetRequest',
+        response_type_name='Product',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists metadata about the Firebase products activated on the project.
+
+      Args:
+        request: (FirebaseProjectsProductsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListProductsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/products',
+        http_method='GET',
+        method_id='firebase.projects.products.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/products',
+        request_field='',
+        request_type_name='FirebaseProjectsProductsListRequest',
+        response_type_name='ListProductsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates metadata about the specified Firebase product.
+
+      Args:
+        request: (FirebaseProjectsProductsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/products/{productsId}',
+        http_method='PATCH',
+        method_id='firebase.projects.products.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask', 'validateOnly'],
+        relative_path='v1alpha/{+name}',
+        request_field='product',
+        request_type_name='FirebaseProjectsProductsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsService(base_api.BaseApiService):
+    """Service class for the projects resource."""
+
+    _NAME = 'projects'
+
+    def __init__(self, client):
+      super(FirebaseV1alpha.ProjectsService, self).__init__(client)
+      self._upload_configs = {
+          }

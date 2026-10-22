@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: List Data Catalog crawler runs.
     description: List Data Catalog crawler runs.

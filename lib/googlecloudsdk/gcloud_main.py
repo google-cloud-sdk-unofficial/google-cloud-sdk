@@ -230,11 +230,11 @@ def main(gcloud_cli=None, credential_providers=None):
     gcloud_cli = CreateCLI([])
 
   payload_str = encoding.GetEncodedValue(os.environ, 'GOCLOUD_PAYLOAD')
-  exec_mode = encoding.GetEncodedValue(os.environ, 'GOCLOUD_EXEC_MODE')
+  parser_mode = encoding.GetEncodedValue(os.environ, 'GOCLOUD_PARSER')
 
   with creds_context_managers.CredentialProvidersManager(credential_providers):
     try:
-      if payload_str and exec_mode not in ('bootstrap', 'bootstrap-fallback'):
+      if payload_str and parser_mode != 'python':
         # Remove GOCLOUD_PAYLOAD after consuming it so child gcloud invocations
         # do not inherit and re-execute the parent command's payload.
         encoding.SetEncodedValue(os.environ, 'GOCLOUD_PAYLOAD', None)

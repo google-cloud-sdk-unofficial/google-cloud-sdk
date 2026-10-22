@@ -43,9 +43,7 @@ help_text = textwrap.dedent("""\
     To create a catalog `my-lakehouse-catalog` with CMEK encryption, run:
 
       $ {command} my-lakehouse-catalog --catalog-type=lakehouse --default-location=gs://my-bucket --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-key
-    """)
 
-help_text_preview = textwrap.dedent("""\
     To create a unity federated catalog `my-federated-catalog`, run:
 
       $ {command} my-federated-catalog --catalog-type=federated --federated-catalog-type=unity --service-directory-name=projects/my-project/locations/us/namespaces/my-namespace/services/my-service --unity-catalog-name=my-catalog --unity-instance-name=instance.cloud.databricks.com --unity-service-principal-application-id=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --primary-location=us
@@ -138,27 +136,27 @@ class CreateCatalog(base.CreateCommand):
       'EXAMPLES': help_text,
   }
   _support_service_directory_name = True
-  _support_metadata_service_directory_name = False
+  _support_metadata_service_directory_name = True
   _support_federated_catalog = True
   _support_glue_catalog = True
   _support_snowflake_catalog = True
   _support_workday_catalog = True
   _support_unity_service_principal_application_id = True
-  _support_identity_mode = False
+  _support_identity_mode = True
 
   @classmethod
   def Args(cls, parser):
     flags.AddCatalogResourceArg(parser, 'to create')
-    util.GetCredentialModeEnumMapper(
-        cls.ReleaseTrack()
-    ).choice_arg.AddToParser(parser)
+    util.GetCredentialModeEnumMapper(cls.ReleaseTrack()).choice_arg.AddToParser(
+        parser
+    )
     if cls._support_identity_mode:
-      util.GetIdentityModeEnumMapper(
-          cls.ReleaseTrack(), hidden=True
-      ).choice_arg.AddToParser(parser)
-    util.GetCatalogTypeEnumMapper(
-        cls.ReleaseTrack()
-    ).choice_arg.AddToParser(parser)
+      util.GetIdentityModeEnumMapper(cls.ReleaseTrack()).choice_arg.AddToParser(
+          parser
+      )
+    util.GetCatalogTypeEnumMapper(cls.ReleaseTrack()).choice_arg.AddToParser(
+        parser
+    )
     arguments.AddCatalogsCreateArgs(parser)
     if cls._support_federated_catalog:
       arguments.AddFederatedCatalogArgs(
@@ -175,7 +173,7 @@ class CreateCatalog(base.CreateCommand):
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
     if cls._support_metadata_service_directory_name:
-      arguments.AddMetadataServiceDirectoryNameArg(parser, hidden=True)
+      arguments.AddMetadataServiceDirectoryNameArg(parser)
     if cls._support_unity_service_principal_application_id:
       arguments.AddUnityServicePrincipalApplicationIdArg(parser)
 
@@ -210,10 +208,8 @@ class CreateCatalog(base.CreateCommand):
     if args.IsSpecified('default_location'):
       catalog.default_location = args.default_location
     if args.IsSpecified('restricted_locations'):
-      catalog.restricted_locations_config = (
-          messages.RestrictedLocationsConfig(
-              restricted_locations=args.restricted_locations
-          )
+      catalog.restricted_locations_config = messages.RestrictedLocationsConfig(
+          restricted_locations=args.restricted_locations
       )
 
     kms_key = arguments.GetAndValidateKmsKeyName(args)
@@ -230,9 +226,7 @@ class CreateCatalog(base.CreateCommand):
     response = util.CreateCatalog(
         args.catalog,
         catalog,
-        primary_location=(
-            args.primary_location
-        ),
+        primary_location=(args.primary_location),
     )
     if response:
       log.CreatedResource(catalog_name, 'catalog')
@@ -254,27 +248,11 @@ class CreateCatalog(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(CreateCatalog):
   """Create a BigLake Iceberg REST catalog."""
-  detailed_help = {
-      'EXAMPLES': help_text + '\n\n' + help_text_preview,
-  }
-  _support_service_directory_name = True
-  _support_metadata_service_directory_name = False
-  _support_federated_catalog = True
-  _support_glue_catalog = True
-  _support_snowflake_catalog = True
-  _support_workday_catalog = True
-  _support_unity_service_principal_application_id = True
-  _support_identity_mode = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a BigLake Iceberg REST catalog."""
 
-  _support_service_directory_name = True
   _support_metadata_service_directory_name = True
-  _support_unity_service_principal_application_id = True
-  _support_glue_catalog = True
-  _support_snowflake_catalog = True
-  _support_workday_catalog = True
   _support_identity_mode = True

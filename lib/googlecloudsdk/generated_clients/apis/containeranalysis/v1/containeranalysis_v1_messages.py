@@ -7305,7 +7305,7 @@ class Subject(_messages.Message):
 
 
 class Task(_messages.Message):
-  r"""A task in a build step. Next ID: 14
+  r"""A task in a build step. Next ID: 15
 
   Enums:
     StatusValueValuesEnum: Output only. Status of the task.
@@ -7326,13 +7326,18 @@ class Task(_messages.Message):
     envs: Environment variables to be set for this task.
     evaluatedParams: Output only. The evaluated parameters for the task.
     exitCode: Output only. Return code from running the task.
+    id: ID of the task to be executed.
     metadata: Metadata for the task.
-    name: Name of the task to be executed. Note that this field cannot be
-      parameterized.
     params: Parameters to be passed to the task.
     remoteConfig: Remote configuration for the task.
     results: Output only. The results of the task.
     script: A shell script to be executed in the task.
+    snapshot: Output only. If `remote_config` is set, this holds the
+      unmodified Task definition fetched from that location. Remote resolution
+      only populates this field and leaves the inline fields as they are. The
+      worker overlays the two right before execution, since CEL evaluation
+      needs to know whether a param was set inline or by the remote
+      definition.
     status: Output only. Status of the task.
   """
 
@@ -7483,13 +7488,14 @@ class Task(_messages.Message):
   envs = _messages.MessageField('EnvsValue', 4)
   evaluatedParams = _messages.MessageField('EvaluatedParamsValue', 5)
   exitCode = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  metadata = _messages.MessageField('TaskMetadata', 7)
-  name = _messages.StringField(8)
+  id = _messages.StringField(7)
+  metadata = _messages.MessageField('TaskMetadata', 8)
   params = _messages.MessageField('ParamsValue', 9)
   remoteConfig = _messages.StringField(10)
   results = _messages.MessageField('ResultsValue', 11)
   script = _messages.StringField(12)
-  status = _messages.EnumField('StatusValueValuesEnum', 13)
+  snapshot = _messages.MessageField('Task', 13)
+  status = _messages.EnumField('StatusValueValuesEnum', 14)
 
 
 class TaskDependency(_messages.Message):
@@ -7498,12 +7504,12 @@ class TaskDependency(_messages.Message):
 
   Fields:
     dep: Dependency to fetch.
-    name: Name of the dependency.
+    id: ID of the dependency.
     sha256: SHA256 digest of the dependency.
   """
 
   dep = _messages.MessageField('Dependency', 1)
-  name = _messages.StringField(2)
+  id = _messages.StringField(2)
   sha256 = _messages.StringField(3)
 
 

@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
   help_text:
     brief: Rename an enum value in Data Catalog tag template enum field.
     description: Rename an enum value in Data Catalog tag template enum field.

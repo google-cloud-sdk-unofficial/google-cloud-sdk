@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a workstation.
 

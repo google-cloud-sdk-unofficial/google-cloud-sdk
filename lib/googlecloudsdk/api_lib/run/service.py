@@ -65,6 +65,21 @@ RUN_FUNCTIONS_BUILD_BASE_IMAGE = 'run.googleapis.com/build-base-image'
 RUN_FUNCTIONS_BUILD_ENABLE_AUTOMATIC_UPDATES = (
     'run.googleapis.com/build-enable-automatic-updates'
 )
+# Service-level annotations written by legacy (Cloud Build) source deploys.
+# Unified build keeps this configuration per container in the
+# `run.googleapis.com/build-config` template annotation instead.
+RUN_FUNCTIONS_BUILD_ANNOTATIONS = (
+    RUN_FUNCTIONS_BUILD_ENV_VARS_ANNOTATION,
+    RUN_FUNCTIONS_BUILD_IMAGE_URI_ANNOTATION,
+    RUN_FUNCTIONS_BUILD_SERVICE_ACCOUNT_ANNOTATION,
+    RUN_FUNCTIONS_BUILD_WORKER_POOL_ANNOTATION,
+    RUN_FUNCTIONS_BUILD_BASE_IMAGE,
+    RUN_FUNCTIONS_BUILD_ENABLE_AUTOMATIC_UPDATES,
+    RUN_FUNCTIONS_BUILD_FUNCTION_TARGET_ANNOTATION,
+    RUN_FUNCTIONS_BUILD_ID_ANNOTATION,
+    RUN_FUNCTIONS_BUILD_NAME_ANNOTATION,
+    RUN_FUNCTIONS_BUILD_SOURCE_LOCATION_ANNOTATION,
+)
 # TODO(b/365567914): Remove these annotations once the new ones are in use.
 RUN_FUNCTIONS_SOURCE_LOCATION_ANNOTATION_DEPRECATED = (
     'run.googleapis.com/source-location'
@@ -77,9 +92,9 @@ RUN_FUNCTIONS_ENABLE_AUTOMATIC_UPDATES_DEPRECATED = (
     'run.googleapis.com/enable-automatic-updates'
 )
 
-# zip deploy source location annotation.
+# source deploy source location annotation.
 # A json map string from container to GCS source location.
-SOURCE_DEPLOY_NO_BUILD_SOURCE_LOCATION_ANNOTATION = 'run.googleapis.com/sources'
+SOURCE_DEPLOY_SOURCE_LOCATION_ANNOTATION = 'run.googleapis.com/sources'
 
 # Functional type annotation.
 FUNCTIONAL_TYPE_ANNOTATION = 'apphub.cloud.google.com/functional-type'
@@ -276,10 +291,10 @@ class Service(k8s_object.KubernetesObject):
     )
 
   @property
-  def source_deploy_no_build_source_location_map(self):
-    """Returns the function target from the service annotations."""
+  def source_deploy_source_location_map(self):
+    """Returns the source location map from the service annotations."""
     return self.template_annotations.get(
-        SOURCE_DEPLOY_NO_BUILD_SOURCE_LOCATION_ANNOTATION, None
+        SOURCE_DEPLOY_SOURCE_LOCATION_ANNOTATION, None
     )
 
   def DeserializeBuildConfig(self):

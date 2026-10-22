@@ -636,6 +636,45 @@ def AddAutoscalingProfilesFlag(parser, hidden=False):
   )
 
 
+def AddManagedAutoscalingFlags(parser, hidden=True):
+  """Adds managed autoscaling flags to parser.
+
+  Managed autoscaling flags are --enable-managed-autoscaling and
+  --disable-managed-autoscaling. They are mutually exclusive and both store
+  into `managed_autoscaling_disabled`.
+
+  Args:
+    parser: A given parser.
+    hidden: If true, suppress help text for added options.
+  """
+  group = parser.add_group(mutex=True, hidden=hidden)
+  group.add_argument(
+      '--enable-managed-autoscaling',
+      dest='managed_autoscaling_disabled',
+      action='store_const',
+      const=False,
+      default=None,
+      help="""\
+        Enable GKE managed autoscaling in the cluster.
+        This setting enables the GKE-managed Cluster Autoscaler component in the cluster.
+      """,
+      hidden=hidden,
+  )
+  group.add_argument(
+      '--disable-managed-autoscaling',
+      dest='managed_autoscaling_disabled',
+      action='store_const',
+      const=True,
+      default=None,
+      help="""\
+        Disable GKE managed autoscaling in the cluster.
+        This setting disables the GKE-managed Cluster Autoscaler component in the cluster.
+        It is used to enable self-hosting of GKE Cluster Autoscaler.
+      """,
+      hidden=hidden,
+  )
+
+
 def AddEnableDefaultComputeClassFlag(parser, hidden=False):
   """Adds default compute class flag to parser.
 
@@ -5980,6 +6019,7 @@ allowedUnsafeSysctls                   | list of sysctls (Allowlisted groups: 'k
 singleProcessOomKill                   | true or false
 maxParallelImagePulls                  | integer (The value must be between [2, 5].)
 crashLoopBackOff                       | specify crashloopbackoff thresholds
+reservedSystemCpus                     | string. The list of CPUs reserved for host system services (for example, '0-3' or '0,1').
 
 
 List of supported keys in memoryManager in 'kubeletConfig'.
@@ -6739,7 +6779,7 @@ def AddMaxNodesPerPool(parser):
 def AddNumNodes(parser, default=3):
   parser.add_argument(
       '--num-nodes',
-      type=arg_parsers.BoundedInt(1),
+      type=arg_parsers.BoundedInt(0),
       help="The number of nodes to be created in each of the cluster's zones.",
       default=default,
   )
@@ -7392,7 +7432,7 @@ def AddWindowsOsVersionFlag(parser, hidden=False):
   """Adds --windows-os-version flag to the given parser.
 
   Flag:
-  --windows-os-version={ltsc2019|ltsc2022}
+  --windows-os-version={ltsc2019|ltsc2022|ltsc2025}
 
   Args:
     parser: A given parser.
@@ -7400,15 +7440,17 @@ def AddWindowsOsVersionFlag(parser, hidden=False):
   """
   help_text = """
     Specifies the Windows Server Image to use when creating a Windows node pool.
-    Valid variants can be "ltsc2019", "ltsc2022". It means using LTSC2019 server
-    image or LTSC2022 server image. If the node pool doesn't specify a Windows
-    Server Image Os version, then Ltsc2019 will be the default one to use.
+    Valid variants can be "ltsc2019", "ltsc2022", "ltsc2025". It means using
+    LTSC2019 server image, LTSC2022 server image or LTSC2025 server image. If
+    the node pool doesn't specify a Windows Server Image OS version, then the
+    default depends on the node version: Ltsc2019 for node versions before
+    1.37, and Ltsc2022 for node versions 1.37 and later.
   """
   parser.add_argument(
       '--windows-os-version',
       help=help_text,
       hidden=hidden,
-      choices=['ltsc2019', 'ltsc2022'],
+      choices=['ltsc2019', 'ltsc2022', 'ltsc2025'],
       default=None,
   )
 

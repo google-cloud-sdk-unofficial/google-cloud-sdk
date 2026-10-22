@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""This file defines utility functions for the orchestration pipelines models."""
+"""Utility functions for orchestration pipelines models."""
 
 import re
 
@@ -86,6 +86,7 @@ def _check_part(part, min_v, max_v, mapping):
 
 
 def is_valid_field(field_str, min_val, max_val, mapping):
+    """Checks if a single cron field string is valid."""
     if not _FIELD_PATTERN.match(field_str):
         return False
     return all(
@@ -94,6 +95,7 @@ def is_valid_field(field_str, min_val, max_val, mapping):
 
 
 def check_cron_expression(value):
+    """Validates that a string is a valid 5-field cron expression or alias."""
     if not value or not isinstance(value, str):
         raise ValueError("CRON expression must be a non-empty string.")
 
@@ -105,6 +107,7 @@ def check_cron_expression(value):
         "@daily",
         "@midnight",
         "@hourly",
+        "@once",
     ]
     if value.strip().lower() in aliases:
         return
@@ -115,12 +118,15 @@ def check_cron_expression(value):
             f"Invalid CRON expression (must have 5 fields): '{value}'"
         )
 
-    for (name, min_val, max_val, mapping), part in zip(_CRON_FIELDS, parts):
+    for (name, min_val, max_val, mapping), part in zip(
+        _CRON_FIELDS, parts, strict=False
+    ):
         if not is_valid_field(part, min_val, max_val, mapping):
             raise ValueError(f"Invalid {name} field: '{part}'")
 
 
 def check_timezone(value):
+    """Validates that a string is a recognized IANA timezone."""
     try:
         pytz.timezone(value)
     except (pytz.UnknownTimeZoneError, AttributeError, TypeError) as e:
@@ -128,19 +134,29 @@ def check_timezone(value):
 
 
 def check_duration(value):
-    """Validates that a string is a valid time duration (e.g., '30s', '5m', '2h').
+    """Validates that a string is a valid positive duration (e.g., '30s', '5m').
+
     Allowed units: s (seconds), m (minutes), h (hours), d (days), w (weeks).
     """
     pattern = r"^(\s*\d+[smhdw]\s*)+$"
 
     if not isinstance(value, str):
         raise TypeError(
-            f"Duration must be a string (e.g., '10m'), got {type(value).__name__}."
+            "Duration must be a string (e.g., '10m'), "
+            f"got {type(value).__name__}."
         )
 
-    if not re.match(pattern, value.strip().lower()):
+    normalized = value.strip().lower()
+    if not re.match(pattern, normalized):
         raise ValueError(
             f"Invalid duration format: '{value}'. "
             "Expected format: <number><unit> (e.g., '1h 30m', '30s'). "
             "Valid units are: s, m, h, d, w."
+        )
+
+    amounts = [int(n) for n in re.findall(r"(\d+)[smhdw]", normalized)]
+    if sum(amounts) <= 0:
+        raise ValueError(
+            f"Invalid duration: '{value}'. "
+            "Duration must be strictly positive (> 0)."
         )

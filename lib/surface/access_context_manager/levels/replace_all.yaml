@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: false
   command_type: GENERIC
 
   help_text:

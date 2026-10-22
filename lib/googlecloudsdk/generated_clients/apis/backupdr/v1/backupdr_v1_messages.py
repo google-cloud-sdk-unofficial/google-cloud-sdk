@@ -1285,6 +1285,10 @@ class BackupPlanAssociation(_messages.Message):
   Fields:
     alloydbClusterBackupPlanAssociationProperties: Output only. AlloyDB
       cluster's backup plan association properties.
+    autoProtectionPolicyBinding: Output only. The resource name of the
+      `AutoProtectionPolicyBinding` that manages this association, if any.
+      Format: `projects/{project}/locations/{location}/autoProtectionPolicies/
+      {policy}/bindings/{binding}`.
     backupPlan: Required. Resource name of backup plan which needs to be
       applied on workload. Format:
       projects/{project}/locations/{location}/backupPlans/{backupPlanId}
@@ -1340,20 +1344,21 @@ class BackupPlanAssociation(_messages.Message):
     PAUSED = 6
 
   alloydbClusterBackupPlanAssociationProperties = _messages.MessageField('AlloyDBClusterBackupPlanAssociationProperties', 1)
-  backupPlan = _messages.StringField(2)
-  backupPlanRevisionId = _messages.StringField(3)
-  backupPlanRevisionName = _messages.StringField(4)
-  cloudSqlInstanceBackupPlanAssociationProperties = _messages.MessageField('CloudSqlInstanceBackupPlanAssociationProperties', 5)
-  createTime = _messages.StringField(6)
-  dataSource = _messages.StringField(7)
-  filestoreInstanceBackupPlanAssociationProperties = _messages.MessageField('FilestoreInstanceBackupPlanAssociationProperties', 8)
-  name = _messages.StringField(9)
-  netappVolumeBackupPlanAssociationProperties = _messages.MessageField('NetAppVolumeBackupPlanAssociationProperties', 10)
-  resource = _messages.StringField(11)
-  resourceType = _messages.StringField(12)
-  rulesConfigInfo = _messages.MessageField('RuleConfigInfo', 13, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 14)
-  updateTime = _messages.StringField(15)
+  autoProtectionPolicyBinding = _messages.StringField(2)
+  backupPlan = _messages.StringField(3)
+  backupPlanRevisionId = _messages.StringField(4)
+  backupPlanRevisionName = _messages.StringField(5)
+  cloudSqlInstanceBackupPlanAssociationProperties = _messages.MessageField('CloudSqlInstanceBackupPlanAssociationProperties', 6)
+  createTime = _messages.StringField(7)
+  dataSource = _messages.StringField(8)
+  filestoreInstanceBackupPlanAssociationProperties = _messages.MessageField('FilestoreInstanceBackupPlanAssociationProperties', 9)
+  name = _messages.StringField(10)
+  netappVolumeBackupPlanAssociationProperties = _messages.MessageField('NetAppVolumeBackupPlanAssociationProperties', 11)
+  resource = _messages.StringField(12)
+  resourceType = _messages.StringField(13)
+  rulesConfigInfo = _messages.MessageField('RuleConfigInfo', 14, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 15)
+  updateTime = _messages.StringField(16)
 
 
 class BackupPlanDetail(_messages.Message):
@@ -2040,6 +2045,11 @@ class BackupdrProjectsLocationsBackupPlanAssociationsDeleteRequest(_messages.Mes
   r"""A BackupdrProjectsLocationsBackupPlanAssociationsDeleteRequest object.
 
   Fields:
+    autoProtectionPolicyBinding: Optional. This field is exclusively used by
+      Backup and DR's auto-protection feature. The resource name of the
+      `AutoProtectionPolicyBinding` that triggered the deletion of this
+      association. Format: `projects/{project}/locations/{location}/autoProtec
+      tionPolicies/{policy}/bindings/{binding}`.
     name: Required. Name of the backup plan association resource, in the
       format `projects/{project}/locations/{location}/backupPlanAssociations/{
       backupPlanAssociationId}`
@@ -2056,8 +2066,9 @@ class BackupdrProjectsLocationsBackupPlanAssociationsDeleteRequest(_messages.Mes
       not supported (00000000-0000-0000-0000-000000000000).
   """
 
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
+  autoProtectionPolicyBinding = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
 
 
 class BackupdrProjectsLocationsBackupPlanAssociationsFetchForResourceTypeRequest(_messages.Message):
@@ -5554,6 +5565,10 @@ class GcpBackupConfig(_messages.Message):
   with backup plan associations.
 
   Fields:
+    autoProtectionPolicyBinding: Output only. The resource name of the
+      `AutoProtectionPolicyBinding` that manages this datasource, if any.
+      Format: `projects/{project}/locations/{location}/autoProtectionPolicies/
+      {policy}/bindings/{binding}`.
     backupPlan: The name of the backup plan.
     backupPlanAssociation: The name of the backup plan association.
     backupPlanDescription: The description of the backup plan.
@@ -5564,12 +5579,13 @@ class GcpBackupConfig(_messages.Message):
       backupvault
   """
 
-  backupPlan = _messages.StringField(1)
-  backupPlanAssociation = _messages.StringField(2)
-  backupPlanDescription = _messages.StringField(3)
-  backupPlanRevisionId = _messages.StringField(4)
-  backupPlanRevisionName = _messages.StringField(5)
-  backupPlanRules = _messages.StringField(6, repeated=True)
+  autoProtectionPolicyBinding = _messages.StringField(1)
+  backupPlan = _messages.StringField(2)
+  backupPlanAssociation = _messages.StringField(3)
+  backupPlanDescription = _messages.StringField(4)
+  backupPlanRevisionId = _messages.StringField(5)
+  backupPlanRevisionName = _messages.StringField(6)
+  backupPlanRules = _messages.StringField(7, repeated=True)
 
 
 class GcpResource(_messages.Message):
@@ -7467,7 +7483,14 @@ class RestoreTemplate(_messages.Message):
   Messages:
     LabelsValue: Optional. User-defined labels.
     RestorePropertiesValue: Required. Defines target environments where the
-      resource will be restored.
+      resource will be restored. The target resource name in
+      `restore_properties` supports the `{EXECUTION_ID}` token to dynamically
+      generate unique resource names for each execution. During restore
+      execution, every occurrence of `{EXECUTION_ID}` in the target resource
+      name is replaced with the 8-character `RestoreTemplateExecution` ID (for
+      example, `"restored-resource-{EXECUTION_ID}"` or
+      `"restored-{EXECUTION_ID}-resource"` resolves to `"restored-
+      resource-5d437b06"` or `"restored-5d437b06-resource"`).
 
   Fields:
     backupSelectionConfig: Required. Backup selection configuration.
@@ -7483,7 +7506,14 @@ class RestoreTemplate(_messages.Message):
       restored. The format is "{service_name}/{resource_kind}", for example,
       "compute.googleapis.com/Instance".
     restoreProperties: Required. Defines target environments where the
-      resource will be restored.
+      resource will be restored. The target resource name in
+      `restore_properties` supports the `{EXECUTION_ID}` token to dynamically
+      generate unique resource names for each execution. During restore
+      execution, every occurrence of `{EXECUTION_ID}` in the target resource
+      name is replaced with the 8-character `RestoreTemplateExecution` ID (for
+      example, `"restored-resource-{EXECUTION_ID}"` or
+      `"restored-{EXECUTION_ID}-resource"` resolves to `"restored-
+      resource-5d437b06"` or `"restored-5d437b06-resource"`).
     state: Output only. The state of the restore template.
     updateTime: Output only. The time when the restore template was last
       updated.
@@ -7533,7 +7563,13 @@ class RestoreTemplate(_messages.Message):
   @encoding.MapUnrecognizedFields('additionalProperties')
   class RestorePropertiesValue(_messages.Message):
     r"""Required. Defines target environments where the resource will be
-    restored.
+    restored. The target resource name in `restore_properties` supports the
+    `{EXECUTION_ID}` token to dynamically generate unique resource names for
+    each execution. During restore execution, every occurrence of
+    `{EXECUTION_ID}` in the target resource name is replaced with the
+    8-character `RestoreTemplateExecution` ID (for example, `"restored-
+    resource-{EXECUTION_ID}"` or `"restored-{EXECUTION_ID}-resource"` resolves
+    to `"restored-resource-5d437b06"` or `"restored-5d437b06-resource"`).
 
     Messages:
       AdditionalProperty: An additional property for a RestorePropertiesValue
@@ -8567,13 +8603,18 @@ class TriggerSummary(_messages.Message):
       trigger.
     lastTriggerTime: Output only. The time of the most recent trigger
       initiation.
+    lastVerificationExecution: Output only. The resource name of the most
+      recent initiated RestoreTemplateExecution. Format: `projects/{project}/l
+      ocations/{location}/restoreTemplates/{restore_template}/executions/{exec
+      ution}`
     nextTriggerTime: Output only. The scheduled time of the next trigger
       initiation.
   """
 
   lastTriggerError = _messages.MessageField('Status', 1)
   lastTriggerTime = _messages.StringField(2)
-  nextTriggerTime = _messages.StringField(3)
+  lastVerificationExecution = _messages.StringField(3)
+  nextTriggerTime = _messages.StringField(4)
 
 
 class VerificationConfig(_messages.Message):

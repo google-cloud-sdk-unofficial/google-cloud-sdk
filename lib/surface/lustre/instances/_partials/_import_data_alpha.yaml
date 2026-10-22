@@ -19,13 +19,13 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Imports data from Cloud Storage to Managed Lustre instance.
+    brief: Imports data from Cloud Storage to a Managed Lustre instance
     description: |
-      Imports data from Cloud Storage to Managed Lustre instance.
+      Imports data from Cloud Storage to a Managed Lustre instance.
     examples: |-
-      To import data from `gs://my-bucket` storage to `my-instance` run:
+      To import data from Cloud Storage bucket `gs://my-bucket/` to instance `my-instance` in location `us-central1-a`, run:
 
-      $ {command} my-instance --location=us-central-a --gcs-path-uri=gs://my_bucket --lustre-path='/path/to/lustre/dir'
+      $ {command} my-instance --location=us-central1-a --gcs-path-uri=gs://my-bucket/ --lustre-path='/path/to/lustre/dir'
   arguments:
     params:
     - arg_name: gcs-path-uri

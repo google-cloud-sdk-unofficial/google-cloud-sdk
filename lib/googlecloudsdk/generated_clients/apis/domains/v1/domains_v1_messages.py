@@ -1067,12 +1067,14 @@ class GeoPolicy(_messages.Message):
       healthy targets. However, if all targets are unhealthy, we don't
       failover to the next nearest bucket; instead, we return all the items in
       the current bucket even when all targets are unhealthy.
-    item: The primary geo routing configuration. If there are multiple items
+    items: The primary geo routing configuration. If there are multiple items
       with the same location, an error is returned instead.
+    kind: A string attribute.
   """
 
   enableFencing = _messages.BooleanField(1)
-  item = _messages.MessageField('GeoPolicyItem', 2, repeated=True)
+  items = _messages.MessageField('GeoPolicyItem', 2, repeated=True)
+  kind = _messages.StringField(3, default='dns#rRSetRoutingPolicyGeoPolicy')
 
 
 class GeoPolicyItem(_messages.Message):
@@ -1082,19 +1084,21 @@ class GeoPolicyItem(_messages.Message):
     healthCheckedTargets: For A and AAAA types only. Endpoints to return in
       the query result only if they are healthy. These can be specified along
       with `rrdata` within this item.
+    kind: A string attribute.
     location: The geo-location granularity is a GCP region. This location
       string should correspond to a GCP region. e.g. "us-east1",
       "southamerica-east1", "asia-east1", etc.
-    rrdata: A string attribute.
-    signatureRrdata: DNSSEC generated signatures for all the `rrdata` within
+    rrdatas: A string attribute.
+    signatureRrdatas: DNSSEC generated signatures for all the `rrdata` within
       this item. When using health-checked targets for DNSSEC-enabled zones,
       you can only use at most one health-checked IP address per item.
   """
 
   healthCheckedTargets = _messages.MessageField('HealthCheckTargets', 1)
-  location = _messages.StringField(2)
-  rrdata = _messages.StringField(3, repeated=True)
-  signatureRrdata = _messages.StringField(4, repeated=True)
+  kind = _messages.StringField(2, default='dns#rRSetRoutingPolicyGeoPolicyGeoPolicyItem')
+  location = _messages.StringField(3)
+  rrdatas = _messages.StringField(4, repeated=True)
+  signatureRrdatas = _messages.StringField(5, repeated=True)
 
 
 class GlueRecord(_messages.Message):
@@ -1176,12 +1180,12 @@ class HealthCheckTargets(_messages.Message):
     externalEndpoints: The Internet IP addresses to be health checked. The
       format matches the format of ResourceRecordSet.rrdata as defined in RFC
       1035 (section 5) and RFC 1034 (section 3.6.1)
-    internalLoadBalancer: Configuration for internal load balancers to be
+    internalLoadBalancers: Configuration for internal load balancers to be
       health checked.
   """
 
   externalEndpoints = _messages.StringField(1, repeated=True)
-  internalLoadBalancer = _messages.MessageField('LoadBalancerTarget', 2, repeated=True)
+  internalLoadBalancers = _messages.MessageField('LoadBalancerTarget', 2, repeated=True)
 
 
 class ImportDomainRequest(_messages.Message):
@@ -1302,6 +1306,7 @@ class LoadBalancerTarget(_messages.Message):
   Fields:
     ipAddress: The frontend IP address of the load balancer to health check.
     ipProtocol: The protocol of the load balancer to health check.
+    kind: A string attribute.
     loadBalancerType: The type of load balancer specified by this target. This
       value must match the configuration of the load balancer located at the
       LoadBalancerTarget's IP address, port, and region. Use the following: -
@@ -1354,11 +1359,12 @@ class LoadBalancerTarget(_messages.Message):
 
   ipAddress = _messages.StringField(1)
   ipProtocol = _messages.EnumField('IpProtocolValueValuesEnum', 2)
-  loadBalancerType = _messages.EnumField('LoadBalancerTypeValueValuesEnum', 3)
-  networkUrl = _messages.StringField(4)
-  port = _messages.StringField(5)
-  project = _messages.StringField(6)
-  region = _messages.StringField(7)
+  kind = _messages.StringField(3, default='dns#rRSetRoutingPolicyLoadBalancerTarget')
+  loadBalancerType = _messages.EnumField('LoadBalancerTypeValueValuesEnum', 4)
+  networkUrl = _messages.StringField(5)
+  port = _messages.StringField(6)
+  project = _messages.StringField(7)
+  region = _messages.StringField(8)
 
 
 class Location(_messages.Message):
@@ -1934,6 +1940,7 @@ class PrimaryBackupPolicy(_messages.Message):
     backupGeoTargets: Backup targets provide a regional failover policy for
       the otherwise global primary targets. If serving state is set to
       `BACKUP`, this policy essentially becomes a geo routing policy.
+    kind: A string attribute.
     primaryTargets: Endpoints that are health checked before making the
       routing decision. Unhealthy endpoints are omitted from the results. If
       all endpoints are unhealthy, we serve a response based on the
@@ -1944,8 +1951,9 @@ class PrimaryBackupPolicy(_messages.Message):
   """
 
   backupGeoTargets = _messages.MessageField('GeoPolicy', 1)
-  primaryTargets = _messages.MessageField('HealthCheckTargets', 2)
-  trickleTraffic = _messages.FloatField(3)
+  kind = _messages.StringField(2, default='dns#rRSetRoutingPolicyPrimaryBackupPolicy')
+  primaryTargets = _messages.MessageField('HealthCheckTargets', 3)
+  trickleTraffic = _messages.FloatField(4)
 
 
 class RRSetRoutingPolicy(_messages.Message):
@@ -1960,6 +1968,7 @@ class RRSetRoutingPolicy(_messages.Message):
       RRSetRoutingPolicy. Format this URL like `https://www.googleapis.com/com
       pute/v1/projects/{project}/global/healthChecks/{healthCheck}`.
       https://cloud.google.com/compute/docs/reference/rest/v1/healthChecks
+    kind: A string attribute.
     primaryBackup: A PrimaryBackupPolicy attribute.
     wrr: A WrrPolicy attribute.
     wrrPolicy: A WrrPolicy attribute.
@@ -1968,9 +1977,10 @@ class RRSetRoutingPolicy(_messages.Message):
   geo = _messages.MessageField('GeoPolicy', 1)
   geoPolicy = _messages.MessageField('GeoPolicy', 2)
   healthCheck = _messages.StringField(3)
-  primaryBackup = _messages.MessageField('PrimaryBackupPolicy', 4)
-  wrr = _messages.MessageField('WrrPolicy', 5)
-  wrrPolicy = _messages.MessageField('WrrPolicy', 6)
+  kind = _messages.StringField(4, default='dns#rRSetRoutingPolicy')
+  primaryBackup = _messages.MessageField('PrimaryBackupPolicy', 5)
+  wrr = _messages.MessageField('WrrPolicy', 6)
+  wrrPolicy = _messages.MessageField('WrrPolicy', 7)
 
 
 class RegisterDomainRequest(_messages.Message):
@@ -2455,26 +2465,28 @@ class ResourceRecordSet(_messages.Message):
   r"""A unit of data that is returned by the DNS servers.
 
   Fields:
+    kind: A string attribute.
     name: For example, www.example.com.
     routingPolicy: Configures dynamic query responses based on either the geo
       location of the querying user or a weighted round robin based routing
       policy. A valid `ResourceRecordSet` contains only `rrdata` (for static
       resolution) or a `routing_policy` (for dynamic resolution).
-    rrdata: As defined in RFC 1035 (section 5) and RFC 1034 (section 3.6.1) --
-      see examples.
-    signatureRrdata: As defined in RFC 4034 (section 3.2).
+    rrdatas: As defined in RFC 1035 (section 5) and RFC 1034 (section 3.6.1)
+      -- see examples.
+    signatureRrdatas: A string attribute.
     ttl: Number of seconds that this `ResourceRecordSet` can be cached by
       resolvers.
     type: The identifier of a supported record type. See the list of Supported
       DNS record types.
   """
 
-  name = _messages.StringField(1)
-  routingPolicy = _messages.MessageField('RRSetRoutingPolicy', 2)
-  rrdata = _messages.StringField(3, repeated=True)
-  signatureRrdata = _messages.StringField(4, repeated=True)
-  ttl = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  type = _messages.StringField(6)
+  kind = _messages.StringField(1, default='dns#resourceRecordSet')
+  name = _messages.StringField(2)
+  routingPolicy = _messages.MessageField('RRSetRoutingPolicy', 3)
+  rrdatas = _messages.StringField(4, repeated=True)
+  signatureRrdatas = _messages.StringField(5, repeated=True)
+  ttl = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  type = _messages.StringField(7)
 
 
 class RetrieveGoogleDomainsDnsRecordsResponse(_messages.Message):
@@ -2844,10 +2856,12 @@ class WrrPolicy(_messages.Message):
   fashion.
 
   Fields:
-    item: A WrrPolicyItem attribute.
+    items: A WrrPolicyItem attribute.
+    kind: A string attribute.
   """
 
-  item = _messages.MessageField('WrrPolicyItem', 1, repeated=True)
+  items = _messages.MessageField('WrrPolicyItem', 1, repeated=True)
+  kind = _messages.StringField(2, default='dns#rRSetRoutingPolicyWrrPolicy')
 
 
 class WrrPolicyItem(_messages.Message):
@@ -2860,8 +2874,9 @@ class WrrPolicyItem(_messages.Message):
       bucket (sampled with respect to its weight) for responding. If DNSSEC is
       enabled for this zone, only one of `rrdata` or `health_checked_targets`
       can be set.
-    rrdata: A string attribute.
-    signatureRrdata: DNSSEC generated signatures for all the `rrdata` within
+    kind: A string attribute.
+    rrdatas: A string attribute.
+    signatureRrdatas: DNSSEC generated signatures for all the `rrdata` within
       this item. When using health-checked targets for DNSSEC-enabled zones,
       you can only use at most one health-checked IP address per item.
     weight: The weight corresponding to this `WrrPolicyItem` object. When
@@ -2872,9 +2887,10 @@ class WrrPolicyItem(_messages.Message):
   """
 
   healthCheckedTargets = _messages.MessageField('HealthCheckTargets', 1)
-  rrdata = _messages.StringField(2, repeated=True)
-  signatureRrdata = _messages.StringField(3, repeated=True)
-  weight = _messages.FloatField(4)
+  kind = _messages.StringField(2, default='dns#rRSetRoutingPolicyWrrPolicyWrrPolicyItem')
+  rrdatas = _messages.StringField(3, repeated=True)
+  signatureRrdatas = _messages.StringField(4, repeated=True)
+  weight = _messages.FloatField(5)
 
 
 encoding.AddCustomJsonFieldMapping(

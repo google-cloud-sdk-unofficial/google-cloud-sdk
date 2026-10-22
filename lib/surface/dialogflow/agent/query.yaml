@@ -1,4 +1,6 @@
 release_tracks: [ALPHA]
+hints:
+  read_only: false
 help_text:
   brief: Send a text or audio conversational query to the agent of the current project.
   description: |

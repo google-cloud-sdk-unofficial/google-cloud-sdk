@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Workstations(base.Group):
   """Manage Cloud Workstations resources."""
 

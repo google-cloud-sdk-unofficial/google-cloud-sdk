@@ -716,7 +716,9 @@ def _ApplyNetworkEgressCostAllocationUpdate(
       update = messages.ClusterUpdate()
     if update.desiredCostManagementConfig is None:
       update.desiredCostManagementConfig = messages.CostManagementConfig()
-    update.desiredCostManagementConfig.networkEgressCostAllocationEnabled = False
+    update.desiredCostManagementConfig.networkEgressCostAllocationEnabled = (
+        False
+    )
 
   if options.enable_network_egress_cost_allocation:
     cost_allocation_enabled = options.enable_cost_allocation
@@ -892,6 +894,7 @@ class CreateClusterOptions(object):
       max_surge_upgrade=None,
       max_unavailable_upgrade=None,
       enable_autoprovisioning=None,
+      managed_autoscaling_disabled=None,
       autoprovisioning_config_file=None,
       autoprovisioning_service_account=None,
       autoprovisioning_scopes=None,
@@ -1189,11 +1192,14 @@ class CreateClusterOptions(object):
     self.maintenance_window_duration = maintenance_window_duration
     self.maintenance_window_recurrence = maintenance_window_recurrence
     self.enable_cost_allocation = enable_cost_allocation
-    self.enable_network_egress_cost_allocation = enable_network_egress_cost_allocation
+    self.enable_network_egress_cost_allocation = (
+        enable_network_egress_cost_allocation
+    )
     self.gpudirect_strategy = gpudirect_strategy
     self.max_surge_upgrade = max_surge_upgrade
     self.max_unavailable_upgrade = max_unavailable_upgrade
     self.enable_autoprovisioning = enable_autoprovisioning
+    self.managed_autoscaling_disabled = managed_autoscaling_disabled
     self.autoprovisioning_config_file = autoprovisioning_config_file
     self.autoprovisioning_service_account = autoprovisioning_service_account
     self.autoprovisioning_scopes = autoprovisioning_scopes
@@ -1451,6 +1457,7 @@ class UpdateClusterOptions(object):
       enable_cost_allocation=None,
       enable_network_egress_cost_allocation=None,
       enable_autoprovisioning=None,
+      managed_autoscaling_disabled=None,
       autoprovisioning_config_file=None,
       autoprovisioning_service_account=None,
       autoprovisioning_scopes=None,
@@ -1670,8 +1677,11 @@ class UpdateClusterOptions(object):
     self.database_encryption_key = database_encryption_key
     self.disable_database_encryption = disable_database_encryption
     self.enable_cost_allocation = enable_cost_allocation
-    self.enable_network_egress_cost_allocation = enable_network_egress_cost_allocation
+    self.enable_network_egress_cost_allocation = (
+        enable_network_egress_cost_allocation
+    )
     self.enable_autoprovisioning = enable_autoprovisioning
+    self.managed_autoscaling_disabled = managed_autoscaling_disabled
     self.autoprovisioning_config_file = autoprovisioning_config_file
     self.autoprovisioning_service_account = autoprovisioning_service_account
     self.autoprovisioning_scopes = autoprovisioning_scopes
@@ -4203,6 +4213,10 @@ class APIAdapter(object):
     Returns:
       List of node pools.
     """
+    if options.num_nodes == 0:
+      # No initial nodes: send no node pools so that GKE creates the cluster
+      # without a default node pool.
+      return []
     max_nodes_per_pool = (
         options.max_nodes_per_pool or DEFAULT_MAX_NODES_PER_POOL
     )
@@ -4763,6 +4777,9 @@ class APIAdapter(object):
         autoscaling.defaultComputeClassConfig = (
             cluster.autoscaling.defaultComputeClassConfig
         )
+        autoscaling.managedAutoscalingDisabled = (
+            cluster.autoscaling.managedAutoscalingDisabled
+        )
     else:
       autoscaling.enableNodeAutoprovisioning = options.enable_autoprovisioning
 
@@ -4931,6 +4948,11 @@ class APIAdapter(object):
       )
       if autopilot_general_profile_enum:
         autoscaling.autopilotGeneralProfile = autopilot_general_profile_enum
+
+    if options.managed_autoscaling_disabled is not None:
+      autoscaling.managedAutoscalingDisabled = (
+          options.managed_autoscaling_disabled
+      )
 
     self.ValidateClusterAutoscaling(autoscaling, for_update)
     return autoscaling
@@ -7986,14 +8008,9 @@ class APIAdapter(object):
       update_request.loggingConfig = logging_config
     elif options.windows_os_version is not None:
       windows_node_config = self.messages.WindowsNodeConfig()
-      if options.windows_os_version == 'ltsc2022':
-        windows_node_config.osVersion = (
-            self.messages.WindowsNodeConfig.OsVersionValueValuesEnum.OS_VERSION_LTSC2022
-        )
-      else:
-        windows_node_config.osVersion = (
-            self.messages.WindowsNodeConfig.OsVersionValueValuesEnum.OS_VERSION_LTSC2019
-        )
+      windows_node_config.osVersion = WindowsOsVersionEnumFromString(
+          self.messages, options.windows_os_version
+      )
       update_request.windowsNodeConfig = windows_node_config
     elif options.resource_manager_tags is not None:
       tags = options.resource_manager_tags
@@ -10783,7 +10800,9 @@ class V1Beta1Adapter(V1Adapter):
           desiredTargetNodeVersion=options.target_node_version
       )
     elif options.clear_target_node_version is not None:
-      update = self.messages.ClusterUpdate(desiredTargetNodeVersion='')
+      # '-' is the API magic value that clears the field server-side; an empty
+      # string is treated as "no update".
+      update = self.messages.ClusterUpdate(desiredTargetNodeVersion='-')
 
     if options.jwt_authenticator_config is not None:
       if update is None:
@@ -11052,6 +11071,9 @@ class V1Beta1Adapter(V1Adapter):
       autoscaling.defaultComputeClassConfig = (
           cluster.autoscaling.defaultComputeClassConfig
       )
+      autoscaling.managedAutoscalingDisabled = (
+          cluster.autoscaling.managedAutoscalingDisabled
+      )
 
     if (
         options.enable_default_compute_class is not None
@@ -11217,6 +11239,11 @@ class V1Beta1Adapter(V1Adapter):
       )
       if autopilot_general_profile_enum:
         autoscaling.autopilotGeneralProfile = autopilot_general_profile_enum
+
+    if options.managed_autoscaling_disabled is not None:
+      autoscaling.managedAutoscalingDisabled = (
+          options.managed_autoscaling_disabled
+      )
 
     self.ValidateClusterAutoscaling(autoscaling, for_update)
     return autoscaling
@@ -11843,6 +11870,9 @@ class V1Alpha1Adapter(V1Beta1Adapter):
       autoscaling.defaultComputeClassConfig = (
           cluster.autoscaling.defaultComputeClassConfig
       )
+      autoscaling.managedAutoscalingDisabled = (
+          cluster.autoscaling.managedAutoscalingDisabled
+      )
 
     resource_limits = []
     if options.autoprovisioning_config_file is not None:
@@ -12011,6 +12041,11 @@ class V1Alpha1Adapter(V1Beta1Adapter):
       if autopilot_general_profile_enum:
         autoscaling.autopilotGeneralProfile = autopilot_general_profile_enum
 
+    if options.managed_autoscaling_disabled is not None:
+      autoscaling.managedAutoscalingDisabled = (
+          options.managed_autoscaling_disabled
+      )
+
     self.ValidateClusterAutoscaling(autoscaling, for_update)
     return autoscaling
 
@@ -12024,12 +12059,20 @@ class V1Alpha1Adapter(V1Beta1Adapter):
     Returns:
       List of node pools.
     """
+    if options.num_nodes == 0 and not options.node_pool_name:
+      # No initial nodes: send no node pools so that GKE creates the cluster
+      # without a default node pool.
+      return []
     max_nodes_per_pool = (
         options.max_nodes_per_pool or DEFAULT_MAX_NODES_PER_POOL
     )
-    num_pools = (
-        options.num_nodes + max_nodes_per_pool - 1
-    ) // max_nodes_per_pool
+    if options.num_nodes == 0:
+      # A named initial node pool was requested without nodes.
+      num_pools = 1
+    else:
+      num_pools = (
+          options.num_nodes + max_nodes_per_pool - 1
+      ) // max_nodes_per_pool
     # pool consistency with server default
     node_pool_name = options.node_pool_name or 'default-pool'
 
@@ -12235,14 +12278,9 @@ def _AddWindowsNodeConfigToNodeConfig(node_config, options, messages):
   if options.windows_os_version is not None:
     if node_config.windowsNodeConfig is None:
       node_config.windowsNodeConfig = messages.WindowsNodeConfig()
-    if options.windows_os_version == 'ltsc2022':
-      node_config.windowsNodeConfig.osVersion = (
-          messages.WindowsNodeConfig.OsVersionValueValuesEnum.OS_VERSION_LTSC2022
-      )
-    else:
-      node_config.windowsNodeConfig.osVersion = (
-          messages.WindowsNodeConfig.OsVersionValueValuesEnum.OS_VERSION_LTSC2019
-      )
+    node_config.windowsNodeConfig.osVersion = WindowsOsVersionEnumFromString(
+        messages, options.windows_os_version
+    )
 
 
 def _AddShieldedInstanceConfigToNodeConfig(node_config, options, messages):
@@ -13119,6 +13157,33 @@ def VariantConfigEnumFromString(messages, variant):
   return variant_config_enum
 
 
+def WindowsOsVersionEnumFromString(messages, windows_os_version):
+  """Converts a --windows-os-version flag value to an OSVersion enum value.
+
+  Args:
+    messages: The API messages module.
+    windows_os_version: The Windows OS version string, e.g. 'ltsc2022'.
+
+  Returns:
+    The WindowsNodeConfig.OsVersionValueValuesEnum value.
+
+  Raises:
+    util.Error: If the given Windows OS version is not supported.
+  """
+  os_version_enum = messages.WindowsNodeConfig.OsVersionValueValuesEnum
+  os_versions = {
+      'ltsc2019': os_version_enum.OS_VERSION_LTSC2019,
+      'ltsc2022': os_version_enum.OS_VERSION_LTSC2022,
+      'ltsc2025': os_version_enum.OS_VERSION_LTSC2025,
+  }
+  if windows_os_version not in os_versions:
+    raise util.Error(
+        'Unsupported Windows OS version: {0}. Supported values are: {1}.'
+        .format(windows_os_version, ', '.join(sorted(os_versions)))
+    )
+  return os_versions[windows_os_version]
+
+
 def _GetAnonymousAuthenticationConfig(options, messages):
   """Configures the AnonymousAuthenticationConfig from options."""
   config = messages.AnonymousAuthenticationConfig()
@@ -13505,4 +13570,5 @@ def _ClusterAutoscalingOptionsChanged(options):
       or options.autopilot_general_profile is not None
       or options.enable_cluster_scale_to_zero is not None
       or options.cluster_scale_to_zero_delay is not None
+      or options.managed_autoscaling_disabled is not None
   )

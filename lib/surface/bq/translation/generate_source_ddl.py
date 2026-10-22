@@ -14,6 +14,7 @@
 # limitations under the License.
 """Implements command to generate source DDL for a batch of SQL queries."""
 
+from googlecloudsdk.api_lib.bq import util as api_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bq import translation_utils as utils
@@ -127,7 +128,7 @@ class GenerateSourceDdl(base.Command):
         source_local_files=args.source_local_files or {},
     )
 
-    client = utils.get_migration_client(location=args.location)
+    client = api_util.GetMigrationApiClient(location=args.location)
     messages = client.MESSAGES_MODULE
     migration_service = client.projects_locations_workflows
 

@@ -17,13 +17,22 @@
 import copy
 import os
 
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.util.anthos import binary_operations
 from googlecloudsdk.core import exceptions as c_except
 from googlecloudsdk.core import execution_utils
+from googlecloudsdk.core import log
 
 # default base command is sql
 _BASE_COMMAND = "sql"
 _SPANNER_CLI_BINARY = "spanner-cli"
+_NON_COMPONENT_BINARY_WARNING = (
+    "`gcloud spanner cli` ran [%s] from your PATH because the `spanner-cli`"
+    " component is not installed. This binary may be incompatible with gcloud"
+    " (for example, the open-source spanner-cli). To use the supported Spanner"
+    " CLI, install the component (it takes precedence over your PATH):\n"
+    "  $ gcloud components install spanner-cli"
+)
 
 
 def GetEnvArgsForCommand(extra_vars=None, exclude_vars=None):
@@ -135,5 +144,12 @@ class SpannerCliWrapper(binary_operations.BinaryBackedOperation):
     return formatted_arguments
 
   def _Execute(self, cmd, stdin=None, env=None, **kwargs):
-    """Call the spanner cli binary with the given arguments."""
-    execution_utils.Exec(cmd)
+    """Executes the spanner-cli binary; exits with child status on failure."""
+    exit_code = execution_utils.Exec(cmd, no_exit=True)
+    if exit_code != 0:
+      is_component = binary_operations.CheckBinaryComponentInstalled(
+          _SPANNER_CLI_BINARY
+      )
+      if is_component is not None and not is_component:
+        log.warning(_NON_COMPONENT_BINARY_WARNING, cmd[0])
+      raise calliope_exceptions.ExitCodeNoError(exit_code=exit_code)

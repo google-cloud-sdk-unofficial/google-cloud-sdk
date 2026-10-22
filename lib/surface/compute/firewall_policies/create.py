@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.firewall_policies import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.firewall_policies import firewall_policies_utils
 from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
@@ -57,18 +58,10 @@ class Create(base.CreateCommand):
     elif args.IsSpecified('folder'):
       parent_id = 'folders/' + args.folder
 
-    rollout_plan = None
-    if self.support_rollout_plan and args.IsSpecified('rollout_plan'):
-      rollout_plan = args.rollout_plan
-
     rollout_operation = None
-    if rollout_plan:
-      rollout_operation = holder.client.messages.FirewallPolicyRolloutOperation(
-          rolloutInput=(
-              holder.client.messages.FirewallPolicyRolloutOperationRolloutInput(
-                  name=rollout_plan,
-              )
-          )
+    if self.support_rollout_plan:
+      rollout_operation = firewall_policies_utils.BuildRolloutOperation(
+          holder.client.messages, args
       )
 
     security_profile_fallback_action = None

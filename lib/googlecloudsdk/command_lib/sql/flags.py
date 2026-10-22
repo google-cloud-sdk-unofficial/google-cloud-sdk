@@ -618,10 +618,6 @@ def AddDatabaseVersion(
   ]
   # End of engine-specific content.
 
-  hidden_choices = [
-      'POSTGRES_19',
-  ]
-
   help_text_unspecified_part = (
       DEFAULT_INSTANCE_DATABASE_VERSION + ' is used.'
       if support_default_version
@@ -649,9 +645,6 @@ def AddDatabaseVersion(
       if support_default_version
       else None,
       choices=_MajorVersionMatchList(choices) if restrict_choices else None,
-      hidden_choices=_MajorVersionMatchList(hidden_choices)
-      if restrict_choices
-      else None,
       help=help_text,
       hidden=hidden,
   )
@@ -3470,7 +3463,26 @@ def AddReplicationLagMaxSecondsForRecreate(parser):
           'Set a maximum replication lag for a MySQL read replica in '
           'seconds. If the replica lag exceeds the specified value, the read'
           'replica(s) will be recreated. Min value=300 seconds,'
-          'Max value=31536000 seconds, default value=31536000 seconds.'
+          'Max value=31536000 seconds, default value=31536000 seconds. '
+          'Note that legacy replica and external master replica are not '
+          'supported.'
+      ),
+  )
+
+
+def AddNoReplicationLagMaxSecondsForRecreate(parser):
+  """Adds the '--no-replication-lag-max-seconds-for-recreate' flag to the parser for instances patch action.
+
+  Args:
+    parser: The current argparse parser to add this to.
+  """
+  parser.add_argument(
+      '--no-replication-lag-max-seconds-for-recreate',
+      action='store_true',
+      required=False,
+      help=(
+          'Disable recreating a lagging MySQL read replica by resetting the '
+          'maximum replication lag to the default value (31536000 seconds).'
       ),
   )
 

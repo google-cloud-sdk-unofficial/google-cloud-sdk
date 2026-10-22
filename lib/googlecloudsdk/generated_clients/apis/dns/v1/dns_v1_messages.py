@@ -2413,9 +2413,10 @@ class OutboundEndpoint(_messages.Message):
     annotations: Optional. Annotations as key value pairs
     createTime: Output only. [Output only] Create time stamp
     description: Optional. User provided description.
-    endpointIp: Required. Immutable. User provided IP address to use for
+    endpointIp: Optional. Immutable. User provided IP address to use for
       outbound DNS forwarding. This address must be a free address on the
-      subnetwork.
+      subnetwork. If omitted, a free IP address from the subnetwork is
+      automatically allocated.
     labels: Optional. Labels as key value pairs
     name: Identifier. The resource name of the OutboundEndpoint. Format: `proj
       ects/{project}/locations/{location}/outboundEndpoints/{outboundEndpoint}

@@ -2408,12 +2408,14 @@ class AliasNetworkEndpointStatus(_messages.Message):
       ACTIVE: The endpoint is active and ready to process traffic.
       CREATING: The endpoint is being created.
       DELETING: The endpoint is being deleted.
+      FROZEN: The endpoint is frozen and deprogrammed from the dataplane.
       STATE_UNSPECIFIED: Unspecified state.
     """
     ACTIVE = 0
     CREATING = 1
     DELETING = 2
-    STATE_UNSPECIFIED = 3
+    FROZEN = 3
+    STATE_UNSPECIFIED = 4
 
   network = _messages.StringField(1)
   state = _messages.EnumField('StateValueValuesEnum', 2)
@@ -8963,7 +8965,9 @@ class CacheInvalidationRule(_messages.Message):
       specified, these are treated as Boolean `AND`    with any tags.   Up to
       10 tags can be specified in a single invalidation request.
     host: If set, this invalidation rule will only apply to requests with a
-      Host header matching host.
+      Host header matching host. This field also accepts wildcards (*) to
+      replace the leftmost (or first) label of a hostname. For example,
+      *.example.com will match www.example.com, but not sub1.dev.example.com.
     path: A string attribute.
   """
 
@@ -9332,13 +9336,17 @@ class CapacityAdviceRequest(_messages.Message):
       zones within the requested region.
     instanceFlexibilityPolicy: Policy for instance selectors.
     instanceProperties: Instance properties for this request.
+    sessionId: Optional. Input only. Client-provided UUID correlating multiple
+      capacity advice requests belonging to a single logical client-side
+      fanout session.
     size: The number of VM instances to request.
   """
 
   distributionPolicy = _messages.MessageField('CapacityAdviceRequestDistributionPolicy', 1)
   instanceFlexibilityPolicy = _messages.MessageField('CapacityAdviceRequestInstanceFlexibilityPolicy', 2)
   instanceProperties = _messages.MessageField('CapacityAdviceRequestInstanceProperties', 3)
-  size = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  sessionId = _messages.StringField(4)
+  size = _messages.IntegerField(5, variant=_messages.Variant.INT32)
 
 
 class CapacityAdviceRequestDistributionPolicy(_messages.Message):
@@ -10061,6 +10069,10 @@ class Commitment(_messages.Message):
       MEMORY_OPTIMIZED: <no description>
       MEMORY_OPTIMIZED_M3: <no description>
       MEMORY_OPTIMIZED_M4: <no description>
+      MEMORY_OPTIMIZED_M4N: CUD bucket for M4N machines with less than 6TB of
+        memory.
+      MEMORY_OPTIMIZED_M4N_6TB: CUD bucket for M4N machines with 6TB of
+        memory.
       MEMORY_OPTIMIZED_M4_6TB: <no description>
       MEMORY_OPTIMIZED_X4_1440_24T: CUD bucket for X4 machine with 1440 vCPUs
         and 24TB of memory.
@@ -10132,32 +10144,34 @@ class Commitment(_messages.Message):
     MEMORY_OPTIMIZED = 26
     MEMORY_OPTIMIZED_M3 = 27
     MEMORY_OPTIMIZED_M4 = 28
-    MEMORY_OPTIMIZED_M4_6TB = 29
-    MEMORY_OPTIMIZED_X4_1440_24T = 30
-    MEMORY_OPTIMIZED_X4_16TB = 31
-    MEMORY_OPTIMIZED_X4_1920_32T = 32
-    MEMORY_OPTIMIZED_X4_24TB = 33
-    MEMORY_OPTIMIZED_X4_32TB = 34
-    MEMORY_OPTIMIZED_X4_480_6T = 35
-    MEMORY_OPTIMIZED_X4_480_8T = 36
-    MEMORY_OPTIMIZED_X4_960_12T = 37
-    MEMORY_OPTIMIZED_X4_960_16T = 38
-    MEMORY_OPTIMIZED_X5_1376_24T = 39
-    MEMORY_OPTIMIZED_X5_1376_32T = 40
-    MEMORY_OPTIMIZED_X5_2064_48T = 41
-    MEMORY_OPTIMIZED_X5_2752_64T = 42
-    MEMORY_OPTIMIZED_X5_688_12T = 43
-    MEMORY_OPTIMIZED_X5_688_16T = 44
-    NETWORK_OPTIMIZED_C4N = 45
-    NETWORK_OPTIMIZED_U4C = 46
-    NETWORK_OPTIMIZED_U4P = 47
-    NETWORK_OPTIMIZED_U4S = 48
-    STORAGE_OPTIMIZED_Z3 = 49
-    STORAGE_OPTIMIZED_Z4D4T = 50
-    STORAGE_OPTIMIZED_Z4DH = 51
-    STORAGE_OPTIMIZED_Z4DS = 52
-    STORAGE_OPTIMIZED_Z4M = 53
-    TYPE_UNSPECIFIED = 54
+    MEMORY_OPTIMIZED_M4N = 29
+    MEMORY_OPTIMIZED_M4N_6TB = 30
+    MEMORY_OPTIMIZED_M4_6TB = 31
+    MEMORY_OPTIMIZED_X4_1440_24T = 32
+    MEMORY_OPTIMIZED_X4_16TB = 33
+    MEMORY_OPTIMIZED_X4_1920_32T = 34
+    MEMORY_OPTIMIZED_X4_24TB = 35
+    MEMORY_OPTIMIZED_X4_32TB = 36
+    MEMORY_OPTIMIZED_X4_480_6T = 37
+    MEMORY_OPTIMIZED_X4_480_8T = 38
+    MEMORY_OPTIMIZED_X4_960_12T = 39
+    MEMORY_OPTIMIZED_X4_960_16T = 40
+    MEMORY_OPTIMIZED_X5_1376_24T = 41
+    MEMORY_OPTIMIZED_X5_1376_32T = 42
+    MEMORY_OPTIMIZED_X5_2064_48T = 43
+    MEMORY_OPTIMIZED_X5_2752_64T = 44
+    MEMORY_OPTIMIZED_X5_688_12T = 45
+    MEMORY_OPTIMIZED_X5_688_16T = 46
+    NETWORK_OPTIMIZED_C4N = 47
+    NETWORK_OPTIMIZED_U4C = 48
+    NETWORK_OPTIMIZED_U4P = 49
+    NETWORK_OPTIMIZED_U4S = 50
+    STORAGE_OPTIMIZED_Z3 = 51
+    STORAGE_OPTIMIZED_Z4D4T = 52
+    STORAGE_OPTIMIZED_Z4DH = 53
+    STORAGE_OPTIMIZED_Z4DS = 54
+    STORAGE_OPTIMIZED_Z4M = 55
+    TYPE_UNSPECIFIED = 56
 
   autoRenew = _messages.BooleanField(1)
   category = _messages.EnumField('CategoryValueValuesEnum', 2)
@@ -15130,6 +15144,547 @@ class ComputeFirewallsUpdateRequest(_messages.Message):
   requestId = _messages.StringField(4)
 
 
+class ComputeFolderGlobalVmExtensionPoliciesAggregatedListRequest(_messages.Message):
+  r"""A ComputeFolderGlobalVmExtensionPoliciesAggregatedListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    folder: Folder ID for this request.
+    includeAllScopes: Indicates whether every visible scope for each scope
+      type (zone, region, global) should be included in the response. For new
+      resource types added after this field, the flag has no effect as new
+      resource types will always include every visible scope for each scope
+      type in response. For resource types which predate this field, if this
+      flag is omitted or false, only scopes of the scope types where the
+      resource type is expected to be found will be included.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    serviceProjectNumber: The Shared VPC service project id or service project
+      number for which aggregated list request is invoked for subnetworks
+      list-usable api.
+  """
+
+  filter = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  includeAllScopes = _messages.BooleanField(3)
+  maxResults = _messages.IntegerField(4, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(5)
+  pageToken = _messages.StringField(6)
+  serviceProjectNumber = _messages.IntegerField(7)
+
+
+class ComputeFolderGlobalVmExtensionPoliciesDeleteRequest(_messages.Message):
+  r"""A ComputeFolderGlobalVmExtensionPoliciesDeleteRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    globalVmExtensionPolicy: Name of the global VM extension policy to purge
+      scoped resources for.
+    globalVmExtensionPolicyRolloutOperationRolloutInput: A
+      GlobalVmExtensionPolicyRolloutOperationRolloutInput resource to be
+      passed as the request body.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  folder = _messages.StringField(1, required=True)
+  globalVmExtensionPolicy = _messages.StringField(2, required=True)
+  globalVmExtensionPolicyRolloutOperationRolloutInput = _messages.MessageField('GlobalVmExtensionPolicyRolloutOperationRolloutInput', 3)
+  requestId = _messages.StringField(4)
+
+
+class ComputeFolderGlobalVmExtensionPoliciesGetRequest(_messages.Message):
+  r"""A ComputeFolderGlobalVmExtensionPoliciesGetRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    globalVmExtensionPolicy: Name of the GlobalVmExtensionPolicy resource to
+      return.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  globalVmExtensionPolicy = _messages.StringField(2, required=True)
+
+
+class ComputeFolderGlobalVmExtensionPoliciesGetVmExtensionRequest(_messages.Message):
+  r"""A ComputeFolderGlobalVmExtensionPoliciesGetVmExtensionRequest object.
+
+  Fields:
+    extensionName: Required. Name of the VM extension for this request.
+    folder: Folder ID for this request.
+  """
+
+  extensionName = _messages.StringField(1, required=True)
+  folder = _messages.StringField(2, required=True)
+
+
+class ComputeFolderGlobalVmExtensionPoliciesInsertRequest(_messages.Message):
+  r"""A ComputeFolderGlobalVmExtensionPoliciesInsertRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    globalVmExtensionPolicy: A GlobalVmExtensionPolicy resource to be passed
+      as the request body.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  folder = _messages.StringField(1, required=True)
+  globalVmExtensionPolicy = _messages.MessageField('GlobalVmExtensionPolicy', 2)
+  requestId = _messages.StringField(3)
+
+
+class ComputeFolderGlobalVmExtensionPoliciesListRequest(_messages.Message):
+  r"""A ComputeFolderGlobalVmExtensionPoliciesListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    folder: Folder ID for this request.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+  """
+
+  filter = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  maxResults = _messages.IntegerField(3, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(4)
+  pageToken = _messages.StringField(5)
+
+
+class ComputeFolderGlobalVmExtensionPoliciesListVmExtensionsRequest(_messages.Message):
+  r"""A ComputeFolderGlobalVmExtensionPoliciesListVmExtensionsRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    folder: Required. Folder ID for this request.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+  """
+
+  filter = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  maxResults = _messages.IntegerField(3, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(4)
+  pageToken = _messages.StringField(5)
+
+
+class ComputeFolderGlobalVmExtensionPoliciesUpdateRequest(_messages.Message):
+  r"""A ComputeFolderGlobalVmExtensionPoliciesUpdateRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    globalVmExtensionPolicy: Name of the global VM extension policy to update.
+    globalVmExtensionPolicyResource: A GlobalVmExtensionPolicy resource to be
+      passed as the request body.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  folder = _messages.StringField(1, required=True)
+  globalVmExtensionPolicy = _messages.StringField(2, required=True)
+  globalVmExtensionPolicyResource = _messages.MessageField('GlobalVmExtensionPolicy', 3)
+  requestId = _messages.StringField(4)
+
+
+class ComputeFolderZoneVmExtensionPoliciesDeleteRequest(_messages.Message):
+  r"""A ComputeFolderZoneVmExtensionPoliciesDeleteRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    vmExtensionPolicy: Name of the zone VM extension policy to delete.
+    zone: Name of the zone for this request.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  vmExtensionPolicy = _messages.StringField(3, required=True)
+  zone = _messages.StringField(4, required=True)
+
+
+class ComputeFolderZoneVmExtensionPoliciesGetRequest(_messages.Message):
+  r"""A ComputeFolderZoneVmExtensionPoliciesGetRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    vmExtensionPolicy: Name of the VM extension policy resource to return.
+    zone: Name of the zone for this request.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  vmExtensionPolicy = _messages.StringField(2, required=True)
+  zone = _messages.StringField(3, required=True)
+
+
+class ComputeFolderZoneVmExtensionPoliciesGetVmExtensionRequest(_messages.Message):
+  r"""A ComputeFolderZoneVmExtensionPoliciesGetVmExtensionRequest object.
+
+  Fields:
+    extensionName: Required. Name of the VM extension for this request.
+    folder: Folder ID for this request.
+    zone: Name of the zone for this request.
+  """
+
+  extensionName = _messages.StringField(1, required=True)
+  folder = _messages.StringField(2, required=True)
+  zone = _messages.StringField(3, required=True)
+
+
+class ComputeFolderZoneVmExtensionPoliciesInsertRequest(_messages.Message):
+  r"""A ComputeFolderZoneVmExtensionPoliciesInsertRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    vmExtensionPolicy: A VmExtensionPolicy resource to be passed as the
+      request body.
+    zone: Name of the zone for this request.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  vmExtensionPolicy = _messages.MessageField('VmExtensionPolicy', 3)
+  zone = _messages.StringField(4, required=True)
+
+
+class ComputeFolderZoneVmExtensionPoliciesListRequest(_messages.Message):
+  r"""A ComputeFolderZoneVmExtensionPoliciesListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    folder: Folder ID for this request.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    zone: Name of the zone for this request.
+  """
+
+  filter = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  maxResults = _messages.IntegerField(3, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(4)
+  pageToken = _messages.StringField(5)
+  zone = _messages.StringField(6, required=True)
+
+
+class ComputeFolderZoneVmExtensionPoliciesListVmExtensionsRequest(_messages.Message):
+  r"""A ComputeFolderZoneVmExtensionPoliciesListVmExtensionsRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    folder: Folder ID for this request.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    zone: Name of the zone for this request.
+  """
+
+  filter = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  maxResults = _messages.IntegerField(3, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(4)
+  pageToken = _messages.StringField(5)
+  zone = _messages.StringField(6, required=True)
+
+
+class ComputeFolderZoneVmExtensionPoliciesUpdateRequest(_messages.Message):
+  r"""A ComputeFolderZoneVmExtensionPoliciesUpdateRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    vmExtensionPolicy: Name of the zone VM extension policy to update.
+    vmExtensionPolicyResource: A VmExtensionPolicy resource to be passed as
+      the request body.
+    zone: Name of the zone for this request.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  vmExtensionPolicy = _messages.StringField(3, required=True)
+  vmExtensionPolicyResource = _messages.MessageField('VmExtensionPolicy', 4)
+  zone = _messages.StringField(5, required=True)
+
+
 class ComputeForwardingRulesAggregatedListRequest(_messages.Message):
   r"""A ComputeForwardingRulesAggregatedListRequest object.
 
@@ -15877,6 +16432,81 @@ class ComputeGlobalAddressesTestIamPermissionsRequest(_messages.Message):
   project = _messages.StringField(1, required=True)
   resource = _messages.StringField(2, required=True)
   testPermissionsRequest = _messages.MessageField('TestPermissionsRequest', 3)
+
+
+class ComputeGlobalFolderOperationsGetRequest(_messages.Message):
+  r"""A ComputeGlobalFolderOperationsGetRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    operation: Name of the Operations resource to return.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  operation = _messages.StringField(2, required=True)
+
+
+class ComputeGlobalFolderOperationsListRequest(_messages.Message):
+  r"""A ComputeGlobalFolderOperationsListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    folder: Folder ID for this request.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+  """
+
+  filter = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  maxResults = _messages.IntegerField(3, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(4)
+  pageToken = _messages.StringField(5)
 
 
 class ComputeGlobalForwardingRulesDeleteRequest(_messages.Message):
@@ -16904,6 +17534,18 @@ class ComputeGlobalVmExtensionPoliciesGetRequest(_messages.Message):
   project = _messages.StringField(2, required=True)
 
 
+class ComputeGlobalVmExtensionPoliciesGetVmExtensionRequest(_messages.Message):
+  r"""A ComputeGlobalVmExtensionPoliciesGetVmExtensionRequest object.
+
+  Fields:
+    extensionName: Required. Name of the VM extension for this request.
+    project: Project ID for this request.
+  """
+
+  extensionName = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+
+
 class ComputeGlobalVmExtensionPoliciesInsertRequest(_messages.Message):
   r"""A ComputeGlobalVmExtensionPoliciesInsertRequest object.
 
@@ -16982,6 +17624,69 @@ class ComputeGlobalVmExtensionPoliciesListRequest(_messages.Message):
       `nextPageToken` returned by a previous list request to get the next page
       of results.
     project: Project ID for this request.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  pageToken = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
+
+
+class ComputeGlobalVmExtensionPoliciesListVmExtensionsRequest(_messages.Message):
+  r"""A ComputeGlobalVmExtensionPoliciesListVmExtensionsRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    project: Required. Project ID for this request.
   """
 
   filter = _messages.StringField(1)
@@ -25653,6 +26358,32 @@ class ComputeNetworksSwitchToCustomModeRequest(_messages.Message):
   requestId = _messages.StringField(3)
 
 
+class ComputeNetworksUpdateNetworkProfileRequest(_messages.Message):
+  r"""A ComputeNetworksUpdateNetworkProfileRequest object.
+
+  Fields:
+    network: Name of the network resource to update the network profile for.
+    networksUpdateNetworkProfileRequest: A NetworksUpdateNetworkProfileRequest
+      resource to be passed as the request body.
+    project: Project ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  network = _messages.StringField(1, required=True)
+  networksUpdateNetworkProfileRequest = _messages.MessageField('NetworksUpdateNetworkProfileRequest', 2)
+  project = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
 class ComputeNetworksUpdatePeeringRequest(_messages.Message):
   r"""A ComputeNetworksUpdatePeeringRequest object.
 
@@ -26580,6 +27311,313 @@ class ComputeNodeTypesListRequest(_messages.Message):
   zone = _messages.StringField(6, required=True)
 
 
+class ComputeOrganizationGlobalVmExtensionPoliciesAggregatedListRequest(_messages.Message):
+  r"""A ComputeOrganizationGlobalVmExtensionPoliciesAggregatedListRequest
+  object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    includeAllScopes: Indicates whether every visible scope for each scope
+      type (zone, region, global) should be included in the response. For new
+      resource types added after this field, the flag has no effect as new
+      resource types will always include every visible scope for each scope
+      type in response. For resource types which predate this field, if this
+      flag is omitted or false, only scopes of the scope types where the
+      resource type is expected to be found will be included.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    organization: Organization ID for this request.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    serviceProjectNumber: The Shared VPC service project id or service project
+      number for which aggregated list request is invoked for subnetworks
+      list-usable api.
+  """
+
+  filter = _messages.StringField(1)
+  includeAllScopes = _messages.BooleanField(2)
+  maxResults = _messages.IntegerField(3, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(4)
+  organization = _messages.StringField(5, required=True)
+  pageToken = _messages.StringField(6)
+  serviceProjectNumber = _messages.IntegerField(7)
+
+
+class ComputeOrganizationGlobalVmExtensionPoliciesDeleteRequest(_messages.Message):
+  r"""A ComputeOrganizationGlobalVmExtensionPoliciesDeleteRequest object.
+
+  Fields:
+    globalVmExtensionPolicy: Name of the global VM extension policy to purge
+      scoped resources for.
+    globalVmExtensionPolicyRolloutOperationRolloutInput: A
+      GlobalVmExtensionPolicyRolloutOperationRolloutInput resource to be
+      passed as the request body.
+    organization: Organization ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  globalVmExtensionPolicy = _messages.StringField(1, required=True)
+  globalVmExtensionPolicyRolloutOperationRolloutInput = _messages.MessageField('GlobalVmExtensionPolicyRolloutOperationRolloutInput', 2)
+  organization = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class ComputeOrganizationGlobalVmExtensionPoliciesGetRequest(_messages.Message):
+  r"""A ComputeOrganizationGlobalVmExtensionPoliciesGetRequest object.
+
+  Fields:
+    globalVmExtensionPolicy: Name of the GlobalVmExtensionPolicy resource to
+      return.
+    organization: Organization ID for this request.
+  """
+
+  globalVmExtensionPolicy = _messages.StringField(1, required=True)
+  organization = _messages.StringField(2, required=True)
+
+
+class ComputeOrganizationGlobalVmExtensionPoliciesGetVmExtensionRequest(_messages.Message):
+  r"""A ComputeOrganizationGlobalVmExtensionPoliciesGetVmExtensionRequest
+  object.
+
+  Fields:
+    extensionName: Required. Name of the VM extension for this request.
+    organization: Organization ID for this request.
+  """
+
+  extensionName = _messages.StringField(1, required=True)
+  organization = _messages.StringField(2, required=True)
+
+
+class ComputeOrganizationGlobalVmExtensionPoliciesInsertRequest(_messages.Message):
+  r"""A ComputeOrganizationGlobalVmExtensionPoliciesInsertRequest object.
+
+  Fields:
+    globalVmExtensionPolicy: A GlobalVmExtensionPolicy resource to be passed
+      as the request body.
+    organization: Organization ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  globalVmExtensionPolicy = _messages.MessageField('GlobalVmExtensionPolicy', 1)
+  organization = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class ComputeOrganizationGlobalVmExtensionPoliciesListRequest(_messages.Message):
+  r"""A ComputeOrganizationGlobalVmExtensionPoliciesListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    organization: Organization ID for this request.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  organization = _messages.StringField(4, required=True)
+  pageToken = _messages.StringField(5)
+
+
+class ComputeOrganizationGlobalVmExtensionPoliciesListVmExtensionsRequest(_messages.Message):
+  r"""A ComputeOrganizationGlobalVmExtensionPoliciesListVmExtensionsRequest
+  object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    organization: Required. Organization ID for this request.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  organization = _messages.StringField(4, required=True)
+  pageToken = _messages.StringField(5)
+
+
+class ComputeOrganizationGlobalVmExtensionPoliciesUpdateRequest(_messages.Message):
+  r"""A ComputeOrganizationGlobalVmExtensionPoliciesUpdateRequest object.
+
+  Fields:
+    globalVmExtensionPolicy: Name of the global VM extension policy to update.
+    globalVmExtensionPolicyResource: A GlobalVmExtensionPolicy resource to be
+      passed as the request body.
+    organization: Organization ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  globalVmExtensionPolicy = _messages.StringField(1, required=True)
+  globalVmExtensionPolicyResource = _messages.MessageField('GlobalVmExtensionPolicy', 2)
+  organization = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
 class ComputeOrganizationSecurityPoliciesAddAssociationRequest(_messages.Message):
   r"""A ComputeOrganizationSecurityPoliciesAddAssociationRequest object.
 
@@ -26995,6 +28033,245 @@ class ComputeOrganizationSecurityPoliciesRemoveRuleRequest(_messages.Message):
   priority = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   requestId = _messages.StringField(2)
   securityPolicy = _messages.StringField(3, required=True)
+
+
+class ComputeOrganizationZoneVmExtensionPoliciesDeleteRequest(_messages.Message):
+  r"""A ComputeOrganizationZoneVmExtensionPoliciesDeleteRequest object.
+
+  Fields:
+    organization: Organization ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    vmExtensionPolicy: Name of the zone VM extension policy to delete.
+    zone: Name of the zone for this request.
+  """
+
+  organization = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  vmExtensionPolicy = _messages.StringField(3, required=True)
+  zone = _messages.StringField(4, required=True)
+
+
+class ComputeOrganizationZoneVmExtensionPoliciesGetRequest(_messages.Message):
+  r"""A ComputeOrganizationZoneVmExtensionPoliciesGetRequest object.
+
+  Fields:
+    organization: Organization ID for this request.
+    vmExtensionPolicy: Name of the VM extension policy resource to return.
+    zone: Name of the zone for this request.
+  """
+
+  organization = _messages.StringField(1, required=True)
+  vmExtensionPolicy = _messages.StringField(2, required=True)
+  zone = _messages.StringField(3, required=True)
+
+
+class ComputeOrganizationZoneVmExtensionPoliciesGetVmExtensionRequest(_messages.Message):
+  r"""A ComputeOrganizationZoneVmExtensionPoliciesGetVmExtensionRequest
+  object.
+
+  Fields:
+    extensionName: Required. Name of the VM extension for this request.
+    organization: Organization ID for this request.
+    zone: Name of the zone for this request.
+  """
+
+  extensionName = _messages.StringField(1, required=True)
+  organization = _messages.StringField(2, required=True)
+  zone = _messages.StringField(3, required=True)
+
+
+class ComputeOrganizationZoneVmExtensionPoliciesInsertRequest(_messages.Message):
+  r"""A ComputeOrganizationZoneVmExtensionPoliciesInsertRequest object.
+
+  Fields:
+    organization: Organization ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    vmExtensionPolicy: A VmExtensionPolicy resource to be passed as the
+      request body.
+    zone: Name of the zone for this request.
+  """
+
+  organization = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  vmExtensionPolicy = _messages.MessageField('VmExtensionPolicy', 3)
+  zone = _messages.StringField(4, required=True)
+
+
+class ComputeOrganizationZoneVmExtensionPoliciesListRequest(_messages.Message):
+  r"""A ComputeOrganizationZoneVmExtensionPoliciesListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    organization: Organization ID for this request.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    zone: Name of the zone for this request.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  organization = _messages.StringField(4, required=True)
+  pageToken = _messages.StringField(5)
+  zone = _messages.StringField(6, required=True)
+
+
+class ComputeOrganizationZoneVmExtensionPoliciesListVmExtensionsRequest(_messages.Message):
+  r"""A ComputeOrganizationZoneVmExtensionPoliciesListVmExtensionsRequest
+  object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    organization: Organization ID for this request.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    zone: Name of the zone for this request.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  organization = _messages.StringField(4, required=True)
+  pageToken = _messages.StringField(5)
+  zone = _messages.StringField(6, required=True)
+
+
+class ComputeOrganizationZoneVmExtensionPoliciesUpdateRequest(_messages.Message):
+  r"""A ComputeOrganizationZoneVmExtensionPoliciesUpdateRequest object.
+
+  Fields:
+    organization: Organization ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    vmExtensionPolicy: Name of the zone VM extension policy to update.
+    vmExtensionPolicyResource: A VmExtensionPolicy resource to be passed as
+      the request body.
+    zone: Name of the zone for this request.
+  """
+
+  organization = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  vmExtensionPolicy = _messages.StringField(3, required=True)
+  vmExtensionPolicyResource = _messages.MessageField('VmExtensionPolicy', 4)
+  zone = _messages.StringField(5, required=True)
 
 
 class ComputePacketMirroringsAggregatedListRequest(_messages.Message):
@@ -43774,6 +45051,85 @@ class ComputeWireGroupsPatchRequest(_messages.Message):
   wireGroupResource = _messages.MessageField('WireGroup', 7)
 
 
+class ComputeZoneFolderOperationsGetRequest(_messages.Message):
+  r"""A ComputeZoneFolderOperationsGetRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    operation: Name of the Operations resource to return.
+    zone: Name of the zone for this request.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  operation = _messages.StringField(2, required=True)
+  zone = _messages.StringField(3, required=True)
+
+
+class ComputeZoneFolderOperationsListRequest(_messages.Message):
+  r"""A ComputeZoneFolderOperationsListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    folder: Folder ID for this request.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    zone: Name of the zone for request.
+  """
+
+  filter = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  maxResults = _messages.IntegerField(3, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(4)
+  pageToken = _messages.StringField(5)
+  zone = _messages.StringField(6, required=True)
+
+
 class ComputeZoneOperationsDeleteRequest(_messages.Message):
   r"""A ComputeZoneOperationsDeleteRequest object.
 
@@ -43888,6 +45244,86 @@ class ComputeZoneOperationsWaitRequest(_messages.Message):
   zone = _messages.StringField(3, required=True)
 
 
+class ComputeZoneOrganizationOperationsGetRequest(_messages.Message):
+  r"""A ComputeZoneOrganizationOperationsGetRequest object.
+
+  Fields:
+    operation: Name of the Operations resource to return. Parent is derived
+      from this field.
+    organization: Organization ID for this request.
+    zone: Name of the zone for this request.
+  """
+
+  operation = _messages.StringField(1, required=True)
+  organization = _messages.StringField(2, required=True)
+  zone = _messages.StringField(3, required=True)
+
+
+class ComputeZoneOrganizationOperationsListRequest(_messages.Message):
+  r"""A ComputeZoneOrganizationOperationsListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    organization: Organization ID for this request.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    zone: Name of the zone for request.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  organization = _messages.StringField(4, required=True)
+  pageToken = _messages.StringField(5)
+  zone = _messages.StringField(6, required=True)
+
+
 class ComputeZoneVmExtensionPoliciesDeleteRequest(_messages.Message):
   r"""A ComputeZoneVmExtensionPoliciesDeleteRequest object.
 
@@ -43924,6 +45360,20 @@ class ComputeZoneVmExtensionPoliciesGetRequest(_messages.Message):
 
   project = _messages.StringField(1, required=True)
   vmExtensionPolicy = _messages.StringField(2, required=True)
+  zone = _messages.StringField(3, required=True)
+
+
+class ComputeZoneVmExtensionPoliciesGetVmExtensionRequest(_messages.Message):
+  r"""A ComputeZoneVmExtensionPoliciesGetVmExtensionRequest object.
+
+  Fields:
+    extensionName: Required. Name of the VM extension for this request.
+    project: Project ID for this request.
+    zone: Name of the zone for this request.
+  """
+
+  extensionName = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
   zone = _messages.StringField(3, required=True)
 
 
@@ -44007,6 +45457,71 @@ class ComputeZoneVmExtensionPoliciesListRequest(_messages.Message):
       `nextPageToken` returned by a previous list request to get the next page
       of results.
     project: Project ID for this request.
+    zone: Name of the zone for this request.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  pageToken = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
+  zone = _messages.StringField(6, required=True)
+
+
+class ComputeZoneVmExtensionPoliciesListVmExtensionsRequest(_messages.Message):
+  r"""A ComputeZoneVmExtensionPoliciesListVmExtensionsRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    project: Required. Project ID for this request.
     zone: Name of the zone for this request.
   """
 
@@ -48666,6 +50181,204 @@ class FlexibleTimeRange(_messages.Message):
   startTimeNotLaterThan = _messages.StringField(4)
 
 
+class FolderVmExtensionPolicyAggregatedListResponse(_messages.Message):
+  r"""A FolderVmExtensionPolicyAggregatedListResponse object.
+
+  Messages:
+    ItemsValue: A list of VmExtensionPoliciesScopedList resources.
+    WarningValue: [Output Only] Informational warning message.
+
+  Fields:
+    etag: A string attribute.
+    id: [Output Only] Unique identifier for the resource; defined by the
+      server.
+    items: A list of VmExtensionPoliciesScopedList resources.
+    kind: Output only. [Output Only] Type of resource.
+      Alwayscompute#FolderVmExtensionPolicyAggregatedList for lists of
+      VmExtensionPolicies.
+    nextPageToken: [Output Only] This token allows you to get the next page of
+      results for list requests. If the number of results is larger
+      thanmaxResults, use the nextPageToken as a value for the query parameter
+      pageToken in the next list request. Subsequent list requests will have
+      their own nextPageToken to continue paging through the results.
+    selfLink: Output only. [Output Only] Server-defined URL for this resource.
+    unreachables: Output only. [Output Only] Unreachable resources.
+    warning: [Output Only] Informational warning message.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ItemsValue(_messages.Message):
+    r"""A list of VmExtensionPoliciesScopedList resources.
+
+    Messages:
+      AdditionalProperty: An additional property for a ItemsValue object.
+
+    Fields:
+      additionalProperties: Name of the scope containing this set of
+        VmExtensionPolicies.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ItemsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A VmExtensionPoliciesScopedList attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('VmExtensionPoliciesScopedList', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  class WarningValue(_messages.Message):
+    r"""[Output Only] Informational warning message.
+
+    Enums:
+      CodeValueValuesEnum: [Output Only] A warning code, if applicable. For
+        example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no
+        results in the response.
+
+    Messages:
+      DataValueListEntry: A DataValueListEntry object.
+
+    Fields:
+      code: [Output Only] A warning code, if applicable. For example, Compute
+        Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+        response.
+      data: [Output Only] Metadata about this warning in key: value format.
+        For example:  "data": [   {    "key": "scope",    "value": "zones/us-
+        east1-d"   }]
+      message: [Output Only] A human-readable description of the warning code.
+    """
+
+    class CodeValueValuesEnum(_messages.Enum):
+      r"""[Output Only] A warning code, if applicable. For example, Compute
+      Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+      response.
+
+      Values:
+        CLEANUP_FAILED: Warning about failed cleanup of transient changes made
+          by a failed operation.
+        DEPRECATED_RESOURCE_USED: A link to a deprecated resource was created.
+        DEPRECATED_TYPE_USED: When deploying and at least one of the resources
+          has a type marked as deprecated
+        DISK_SIZE_LARGER_THAN_IMAGE_SIZE: The user created a boot disk that is
+          larger than image size.
+        EXPERIMENTAL_TYPE_USED: When deploying and at least one of the
+          resources has a type marked as experimental
+        EXTERNAL_API_WARNING: Warning that is present in an external api call
+        FIELD_VALUE_OVERRIDEN: Warning that value of a field has been
+          overridden. Deprecated unused field.
+        INJECTED_KERNELS_DEPRECATED: The operation involved use of an injected
+          kernel, which is deprecated.
+        INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB: A WEIGHTED_MAGLEV
+          backend service is associated with a health check that is not of
+          type HTTP/HTTPS/HTTP2.
+        LARGE_DEPLOYMENT_WARNING: When deploying a deployment with a
+          exceedingly large number of resources
+        LIST_OVERHEAD_QUOTA_EXCEED: Resource can't be retrieved due to list
+          overhead quota exceed which captures the amount of resources
+          filtered out by user-defined list filter.
+        MISSING_TYPE_DEPENDENCY: A resource depends on a missing type
+        NEXT_HOP_ADDRESS_NOT_ASSIGNED: The route's nextHopIp address is not
+          assigned to an instance on the network.
+        NEXT_HOP_CANNOT_IP_FORWARD: The route's next hop instance cannot ip
+          forward.
+        NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE: The route's nextHopInstance
+          URL refers to an instance that does not have an ipv6 interface on
+          the same network as the route.
+        NEXT_HOP_INSTANCE_NOT_FOUND: The route's nextHopInstance URL refers to
+          an instance that does not exist.
+        NEXT_HOP_INSTANCE_NOT_ON_NETWORK: The route's nextHopInstance URL
+          refers to an instance that is not on the same network as the route.
+        NEXT_HOP_NOT_RUNNING: The route's next hop instance does not have a
+          status of RUNNING.
+        NOT_CRITICAL_ERROR: Error which is not critical. We decided to
+          continue the process despite the mentioned error.
+        NO_RESULTS_ON_PAGE: No results are present on a particular list page.
+        PARTIAL_SUCCESS: Success is reported, but some results may be missing
+          due to errors
+        QUOTA_INFO_UNAVAILABLE: Quota information is not available to client
+          requests (e.g: regions.list).
+        REQUIRED_TOS_AGREEMENT: The user attempted to use a resource that
+          requires a TOS they have not accepted.
+        RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING: Warning that a resource is
+          in use.
+        RESOURCE_NOT_DELETED: One or more of the resources set to auto-delete
+          could not be deleted because they were in use.
+        SCHEMA_VALIDATION_IGNORED: When a resource schema validation is
+          ignored.
+        SINGLE_INSTANCE_PROPERTY_TEMPLATE: Instance template used in instance
+          group manager is valid as such, but its application does not make a
+          lot of sense, because it allows only single instance in instance
+          group.
+        UNDECLARED_PROPERTIES: When undeclared properties in the schema are
+          present
+        UNREACHABLE: A given scope cannot be reached.
+      """
+      CLEANUP_FAILED = 0
+      DEPRECATED_RESOURCE_USED = 1
+      DEPRECATED_TYPE_USED = 2
+      DISK_SIZE_LARGER_THAN_IMAGE_SIZE = 3
+      EXPERIMENTAL_TYPE_USED = 4
+      EXTERNAL_API_WARNING = 5
+      FIELD_VALUE_OVERRIDEN = 6
+      INJECTED_KERNELS_DEPRECATED = 7
+      INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB = 8
+      LARGE_DEPLOYMENT_WARNING = 9
+      LIST_OVERHEAD_QUOTA_EXCEED = 10
+      MISSING_TYPE_DEPENDENCY = 11
+      NEXT_HOP_ADDRESS_NOT_ASSIGNED = 12
+      NEXT_HOP_CANNOT_IP_FORWARD = 13
+      NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE = 14
+      NEXT_HOP_INSTANCE_NOT_FOUND = 15
+      NEXT_HOP_INSTANCE_NOT_ON_NETWORK = 16
+      NEXT_HOP_NOT_RUNNING = 17
+      NOT_CRITICAL_ERROR = 18
+      NO_RESULTS_ON_PAGE = 19
+      PARTIAL_SUCCESS = 20
+      QUOTA_INFO_UNAVAILABLE = 21
+      REQUIRED_TOS_AGREEMENT = 22
+      RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING = 23
+      RESOURCE_NOT_DELETED = 24
+      SCHEMA_VALIDATION_IGNORED = 25
+      SINGLE_INSTANCE_PROPERTY_TEMPLATE = 26
+      UNDECLARED_PROPERTIES = 27
+      UNREACHABLE = 28
+
+    class DataValueListEntry(_messages.Message):
+      r"""A DataValueListEntry object.
+
+      Fields:
+        key: [Output Only] A key that provides more detail on the warning
+          being returned. For example, for warnings where there are no results
+          in a list request for a particular zone, this key might be scope and
+          the key value might be the zone name. Other examples might be a key
+          indicating a deprecated resource and a suggested replacement, or a
+          warning about invalid network settings (for example, if an instance
+          attempts to perform IP forwarding but is not enabled for IP
+          forwarding).
+        value: [Output Only] A warning data value corresponding to the key.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    code = _messages.EnumField('CodeValueValuesEnum', 1)
+    data = _messages.MessageField('DataValueListEntry', 2, repeated=True)
+    message = _messages.StringField(3)
+
+  etag = _messages.StringField(1)
+  id = _messages.StringField(2)
+  items = _messages.MessageField('ItemsValue', 3)
+  kind = _messages.StringField(4, default='compute#FolderVmExtensionPolicyAggregatedList')
+  nextPageToken = _messages.StringField(5)
+  selfLink = _messages.StringField(6)
+  unreachables = _messages.StringField(7, repeated=True)
+  warning = _messages.MessageField('WarningValue', 8)
+
+
 class ForwardingRule(_messages.Message):
   r"""Represents a Forwarding Rule resource.  Forwarding rule resources in
   Google Cloud can be either regional or global in scope:  * [Global](https://
@@ -51664,6 +53377,181 @@ class GlobalFrontendSettingsPatchResponse(_messages.Message):
   operation = _messages.MessageField('Operation', 1)
 
 
+class GlobalListVmExtensionsResponse(_messages.Message):
+  r"""A GlobalListVmExtensionsResponse object.
+
+  Messages:
+    WarningValue: Output only. Informational warning message.
+
+  Fields:
+    etag: Output only. Fingerprint of this resource. A hash of the contents
+      stored in this object. This field is used in optimistic locking. This
+      field will be ignored when inserting a VmExtensionPolicy. An up-to-date
+      fingerprint must be provided in order to update the VmExtensionPolicy.
+      To see the latest value of the fingerprint, make a get() request to
+      retrieve a VmExtensionPolicy.
+    id: Output only. Unique identifier for the resource; defined by the
+      server.
+    items: Output only. A list of VM extensions.
+    kind: Output only. Type of resource.
+    nextPageToken: Output only. This token allows you to get the next page of
+      results for list requests. If the number of results is larger
+      thanmaxResults, use the nextPageToken as a value for the query parameter
+      pageToken in the next list request. Subsequent list requests will have
+      their own nextPageToken to continue paging through the results.
+    selfLink: Output only. Server-defined URL for this resource.
+    unreachables: Output only. Unreachable resources.
+    warning: Output only. Informational warning message.
+  """
+
+  class WarningValue(_messages.Message):
+    r"""Output only. Informational warning message.
+
+    Enums:
+      CodeValueValuesEnum: [Output Only] A warning code, if applicable. For
+        example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no
+        results in the response.
+
+    Messages:
+      DataValueListEntry: A DataValueListEntry object.
+
+    Fields:
+      code: [Output Only] A warning code, if applicable. For example, Compute
+        Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+        response.
+      data: [Output Only] Metadata about this warning in key: value format.
+        For example:  "data": [   {    "key": "scope",    "value": "zones/us-
+        east1-d"   }]
+      message: [Output Only] A human-readable description of the warning code.
+    """
+
+    class CodeValueValuesEnum(_messages.Enum):
+      r"""[Output Only] A warning code, if applicable. For example, Compute
+      Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+      response.
+
+      Values:
+        CLEANUP_FAILED: Warning about failed cleanup of transient changes made
+          by a failed operation.
+        DEPRECATED_RESOURCE_USED: A link to a deprecated resource was created.
+        DEPRECATED_TYPE_USED: When deploying and at least one of the resources
+          has a type marked as deprecated
+        DISK_SIZE_LARGER_THAN_IMAGE_SIZE: The user created a boot disk that is
+          larger than image size.
+        EXPERIMENTAL_TYPE_USED: When deploying and at least one of the
+          resources has a type marked as experimental
+        EXTERNAL_API_WARNING: Warning that is present in an external api call
+        FIELD_VALUE_OVERRIDEN: Warning that value of a field has been
+          overridden. Deprecated unused field.
+        INJECTED_KERNELS_DEPRECATED: The operation involved use of an injected
+          kernel, which is deprecated.
+        INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB: A WEIGHTED_MAGLEV
+          backend service is associated with a health check that is not of
+          type HTTP/HTTPS/HTTP2.
+        LARGE_DEPLOYMENT_WARNING: When deploying a deployment with a
+          exceedingly large number of resources
+        LIST_OVERHEAD_QUOTA_EXCEED: Resource can't be retrieved due to list
+          overhead quota exceed which captures the amount of resources
+          filtered out by user-defined list filter.
+        MISSING_TYPE_DEPENDENCY: A resource depends on a missing type
+        NEXT_HOP_ADDRESS_NOT_ASSIGNED: The route's nextHopIp address is not
+          assigned to an instance on the network.
+        NEXT_HOP_CANNOT_IP_FORWARD: The route's next hop instance cannot ip
+          forward.
+        NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE: The route's nextHopInstance
+          URL refers to an instance that does not have an ipv6 interface on
+          the same network as the route.
+        NEXT_HOP_INSTANCE_NOT_FOUND: The route's nextHopInstance URL refers to
+          an instance that does not exist.
+        NEXT_HOP_INSTANCE_NOT_ON_NETWORK: The route's nextHopInstance URL
+          refers to an instance that is not on the same network as the route.
+        NEXT_HOP_NOT_RUNNING: The route's next hop instance does not have a
+          status of RUNNING.
+        NOT_CRITICAL_ERROR: Error which is not critical. We decided to
+          continue the process despite the mentioned error.
+        NO_RESULTS_ON_PAGE: No results are present on a particular list page.
+        PARTIAL_SUCCESS: Success is reported, but some results may be missing
+          due to errors
+        QUOTA_INFO_UNAVAILABLE: Quota information is not available to client
+          requests (e.g: regions.list).
+        REQUIRED_TOS_AGREEMENT: The user attempted to use a resource that
+          requires a TOS they have not accepted.
+        RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING: Warning that a resource is
+          in use.
+        RESOURCE_NOT_DELETED: One or more of the resources set to auto-delete
+          could not be deleted because they were in use.
+        SCHEMA_VALIDATION_IGNORED: When a resource schema validation is
+          ignored.
+        SINGLE_INSTANCE_PROPERTY_TEMPLATE: Instance template used in instance
+          group manager is valid as such, but its application does not make a
+          lot of sense, because it allows only single instance in instance
+          group.
+        UNDECLARED_PROPERTIES: When undeclared properties in the schema are
+          present
+        UNREACHABLE: A given scope cannot be reached.
+      """
+      CLEANUP_FAILED = 0
+      DEPRECATED_RESOURCE_USED = 1
+      DEPRECATED_TYPE_USED = 2
+      DISK_SIZE_LARGER_THAN_IMAGE_SIZE = 3
+      EXPERIMENTAL_TYPE_USED = 4
+      EXTERNAL_API_WARNING = 5
+      FIELD_VALUE_OVERRIDEN = 6
+      INJECTED_KERNELS_DEPRECATED = 7
+      INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB = 8
+      LARGE_DEPLOYMENT_WARNING = 9
+      LIST_OVERHEAD_QUOTA_EXCEED = 10
+      MISSING_TYPE_DEPENDENCY = 11
+      NEXT_HOP_ADDRESS_NOT_ASSIGNED = 12
+      NEXT_HOP_CANNOT_IP_FORWARD = 13
+      NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE = 14
+      NEXT_HOP_INSTANCE_NOT_FOUND = 15
+      NEXT_HOP_INSTANCE_NOT_ON_NETWORK = 16
+      NEXT_HOP_NOT_RUNNING = 17
+      NOT_CRITICAL_ERROR = 18
+      NO_RESULTS_ON_PAGE = 19
+      PARTIAL_SUCCESS = 20
+      QUOTA_INFO_UNAVAILABLE = 21
+      REQUIRED_TOS_AGREEMENT = 22
+      RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING = 23
+      RESOURCE_NOT_DELETED = 24
+      SCHEMA_VALIDATION_IGNORED = 25
+      SINGLE_INSTANCE_PROPERTY_TEMPLATE = 26
+      UNDECLARED_PROPERTIES = 27
+      UNREACHABLE = 28
+
+    class DataValueListEntry(_messages.Message):
+      r"""A DataValueListEntry object.
+
+      Fields:
+        key: [Output Only] A key that provides more detail on the warning
+          being returned. For example, for warnings where there are no results
+          in a list request for a particular zone, this key might be scope and
+          the key value might be the zone name. Other examples might be a key
+          indicating a deprecated resource and a suggested replacement, or a
+          warning about invalid network settings (for example, if an instance
+          attempts to perform IP forwarding but is not enabled for IP
+          forwarding).
+        value: [Output Only] A warning data value corresponding to the key.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    code = _messages.EnumField('CodeValueValuesEnum', 1)
+    data = _messages.MessageField('DataValueListEntry', 2, repeated=True)
+    message = _messages.StringField(3)
+
+  etag = _messages.StringField(1)
+  id = _messages.StringField(2)
+  items = _messages.MessageField('GlobalVmExtension', 3, repeated=True)
+  kind = _messages.StringField(4, default='compute#globalVmExtensionList')
+  nextPageToken = _messages.StringField(5)
+  selfLink = _messages.StringField(6)
+  unreachables = _messages.StringField(7, repeated=True)
+  warning = _messages.MessageField('WarningValue', 8)
+
+
 class GlobalNetworkEndpointGroupsAttachEndpointsRequest(_messages.Message):
   r"""A GlobalNetworkEndpointGroupsAttachEndpointsRequest object.
 
@@ -51773,6 +53661,32 @@ class GlobalSetPolicyRequest(_messages.Message):
   bindings = _messages.MessageField('Binding', 1, repeated=True)
   etag = _messages.BytesField(2)
   policy = _messages.MessageField('Policy', 3)
+
+
+class GlobalVmExtension(_messages.Message):
+  r"""A GlobalVmExtension object.
+
+  Fields:
+    creationTimestamp: Output only. [Output Only] Creation timestamp inRFC3339
+      text format.
+    description: Output only. [Output Only] An optional textual description of
+      the resource.
+    id: Output only. [Output Only] The unique identifier for the resource.
+      This identifier is defined by the server.
+    kind: Output only. [Output Only] Type of the resource.
+      Alwayscompute#globalVmExtension.
+    name: A string attribute.
+    selfLink: Output only. [Output Only] Server-defined URL for the resource.
+    versions: A string attribute.
+  """
+
+  creationTimestamp = _messages.StringField(1)
+  description = _messages.StringField(2)
+  id = _messages.IntegerField(3, variant=_messages.Variant.UINT64)
+  kind = _messages.StringField(4, default='compute#globalVmExtension')
+  name = _messages.StringField(5)
+  selfLink = _messages.StringField(6)
+  versions = _messages.StringField(7, repeated=True)
 
 
 class GlobalVmExtensionPolicy(_messages.Message):
@@ -61276,6 +63190,8 @@ class InstanceGroupManagerStatusAcceleratorTopology(_messages.Message):
     Values:
       ACTIVATING: The accelerator topology is being activated.
       ACTIVE: The accelerator topology is active.
+      ACTIVE_DEGRADED: The accelerator topology is active but operating in
+        degraded mode.
       DEACTIVATING: The accelerator topology is being deactivated.
       FAILED: The accelerator topology failed.
       INCOMPLETE: The configuration is incomplete and the accelerator topology
@@ -61284,10 +63200,11 @@ class InstanceGroupManagerStatusAcceleratorTopology(_messages.Message):
     """
     ACTIVATING = 0
     ACTIVE = 1
-    DEACTIVATING = 2
-    FAILED = 3
-    INCOMPLETE = 4
-    REACTIVATING = 5
+    ACTIVE_DEGRADED = 2
+    DEACTIVATING = 3
+    FAILED = 4
+    INCOMPLETE = 5
+    REACTIVATING = 6
 
   acceleratorTopology = _messages.StringField(1)
   state = _messages.EnumField('StateValueValuesEnum', 2)
@@ -71045,6 +72962,181 @@ class ListInstantSnapshotGroups(_messages.Message):
   warning = _messages.MessageField('WarningValue', 8)
 
 
+class ListVmExtensionsResponse(_messages.Message):
+  r"""A ListVmExtensionsResponse object.
+
+  Messages:
+    WarningValue: Output only. Informational warning message.
+
+  Fields:
+    etag: Output only. Fingerprint of this resource. A hash of the contents
+      stored in this object. This field is used in optimistic locking. This
+      field will be ignored when inserting a VmExtensionPolicy. An up-to-date
+      fingerprint must be provided in order to update the VmExtensionPolicy.
+      To see the latest value of the fingerprint, make a get() request to
+      retrieve a VmExtensionPolicy.
+    id: Output only. Unique identifier for the resource; defined by the
+      server.
+    items: Output only. A list of VM extensions.
+    kind: Output only. Type of resource.
+    nextPageToken: Output only. This token allows you to get the next page of
+      results for list requests. If the number of results is larger
+      thanmaxResults, use the nextPageToken as a value for the query parameter
+      pageToken in the next list request. Subsequent list requests will have
+      their own nextPageToken to continue paging through the results.
+    selfLink: Output only. Server-defined URL for this resource.
+    unreachables: Output only. Unreachable resources.
+    warning: Output only. Informational warning message.
+  """
+
+  class WarningValue(_messages.Message):
+    r"""Output only. Informational warning message.
+
+    Enums:
+      CodeValueValuesEnum: [Output Only] A warning code, if applicable. For
+        example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no
+        results in the response.
+
+    Messages:
+      DataValueListEntry: A DataValueListEntry object.
+
+    Fields:
+      code: [Output Only] A warning code, if applicable. For example, Compute
+        Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+        response.
+      data: [Output Only] Metadata about this warning in key: value format.
+        For example:  "data": [   {    "key": "scope",    "value": "zones/us-
+        east1-d"   }]
+      message: [Output Only] A human-readable description of the warning code.
+    """
+
+    class CodeValueValuesEnum(_messages.Enum):
+      r"""[Output Only] A warning code, if applicable. For example, Compute
+      Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+      response.
+
+      Values:
+        CLEANUP_FAILED: Warning about failed cleanup of transient changes made
+          by a failed operation.
+        DEPRECATED_RESOURCE_USED: A link to a deprecated resource was created.
+        DEPRECATED_TYPE_USED: When deploying and at least one of the resources
+          has a type marked as deprecated
+        DISK_SIZE_LARGER_THAN_IMAGE_SIZE: The user created a boot disk that is
+          larger than image size.
+        EXPERIMENTAL_TYPE_USED: When deploying and at least one of the
+          resources has a type marked as experimental
+        EXTERNAL_API_WARNING: Warning that is present in an external api call
+        FIELD_VALUE_OVERRIDEN: Warning that value of a field has been
+          overridden. Deprecated unused field.
+        INJECTED_KERNELS_DEPRECATED: The operation involved use of an injected
+          kernel, which is deprecated.
+        INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB: A WEIGHTED_MAGLEV
+          backend service is associated with a health check that is not of
+          type HTTP/HTTPS/HTTP2.
+        LARGE_DEPLOYMENT_WARNING: When deploying a deployment with a
+          exceedingly large number of resources
+        LIST_OVERHEAD_QUOTA_EXCEED: Resource can't be retrieved due to list
+          overhead quota exceed which captures the amount of resources
+          filtered out by user-defined list filter.
+        MISSING_TYPE_DEPENDENCY: A resource depends on a missing type
+        NEXT_HOP_ADDRESS_NOT_ASSIGNED: The route's nextHopIp address is not
+          assigned to an instance on the network.
+        NEXT_HOP_CANNOT_IP_FORWARD: The route's next hop instance cannot ip
+          forward.
+        NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE: The route's nextHopInstance
+          URL refers to an instance that does not have an ipv6 interface on
+          the same network as the route.
+        NEXT_HOP_INSTANCE_NOT_FOUND: The route's nextHopInstance URL refers to
+          an instance that does not exist.
+        NEXT_HOP_INSTANCE_NOT_ON_NETWORK: The route's nextHopInstance URL
+          refers to an instance that is not on the same network as the route.
+        NEXT_HOP_NOT_RUNNING: The route's next hop instance does not have a
+          status of RUNNING.
+        NOT_CRITICAL_ERROR: Error which is not critical. We decided to
+          continue the process despite the mentioned error.
+        NO_RESULTS_ON_PAGE: No results are present on a particular list page.
+        PARTIAL_SUCCESS: Success is reported, but some results may be missing
+          due to errors
+        QUOTA_INFO_UNAVAILABLE: Quota information is not available to client
+          requests (e.g: regions.list).
+        REQUIRED_TOS_AGREEMENT: The user attempted to use a resource that
+          requires a TOS they have not accepted.
+        RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING: Warning that a resource is
+          in use.
+        RESOURCE_NOT_DELETED: One or more of the resources set to auto-delete
+          could not be deleted because they were in use.
+        SCHEMA_VALIDATION_IGNORED: When a resource schema validation is
+          ignored.
+        SINGLE_INSTANCE_PROPERTY_TEMPLATE: Instance template used in instance
+          group manager is valid as such, but its application does not make a
+          lot of sense, because it allows only single instance in instance
+          group.
+        UNDECLARED_PROPERTIES: When undeclared properties in the schema are
+          present
+        UNREACHABLE: A given scope cannot be reached.
+      """
+      CLEANUP_FAILED = 0
+      DEPRECATED_RESOURCE_USED = 1
+      DEPRECATED_TYPE_USED = 2
+      DISK_SIZE_LARGER_THAN_IMAGE_SIZE = 3
+      EXPERIMENTAL_TYPE_USED = 4
+      EXTERNAL_API_WARNING = 5
+      FIELD_VALUE_OVERRIDEN = 6
+      INJECTED_KERNELS_DEPRECATED = 7
+      INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB = 8
+      LARGE_DEPLOYMENT_WARNING = 9
+      LIST_OVERHEAD_QUOTA_EXCEED = 10
+      MISSING_TYPE_DEPENDENCY = 11
+      NEXT_HOP_ADDRESS_NOT_ASSIGNED = 12
+      NEXT_HOP_CANNOT_IP_FORWARD = 13
+      NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE = 14
+      NEXT_HOP_INSTANCE_NOT_FOUND = 15
+      NEXT_HOP_INSTANCE_NOT_ON_NETWORK = 16
+      NEXT_HOP_NOT_RUNNING = 17
+      NOT_CRITICAL_ERROR = 18
+      NO_RESULTS_ON_PAGE = 19
+      PARTIAL_SUCCESS = 20
+      QUOTA_INFO_UNAVAILABLE = 21
+      REQUIRED_TOS_AGREEMENT = 22
+      RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING = 23
+      RESOURCE_NOT_DELETED = 24
+      SCHEMA_VALIDATION_IGNORED = 25
+      SINGLE_INSTANCE_PROPERTY_TEMPLATE = 26
+      UNDECLARED_PROPERTIES = 27
+      UNREACHABLE = 28
+
+    class DataValueListEntry(_messages.Message):
+      r"""A DataValueListEntry object.
+
+      Fields:
+        key: [Output Only] A key that provides more detail on the warning
+          being returned. For example, for warnings where there are no results
+          in a list request for a particular zone, this key might be scope and
+          the key value might be the zone name. Other examples might be a key
+          indicating a deprecated resource and a suggested replacement, or a
+          warning about invalid network settings (for example, if an instance
+          attempts to perform IP forwarding but is not enabled for IP
+          forwarding).
+        value: [Output Only] A warning data value corresponding to the key.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    code = _messages.EnumField('CodeValueValuesEnum', 1)
+    data = _messages.MessageField('DataValueListEntry', 2, repeated=True)
+    message = _messages.StringField(3)
+
+  etag = _messages.StringField(1)
+  id = _messages.StringField(2)
+  items = _messages.MessageField('VmExtension', 3, repeated=True)
+  kind = _messages.StringField(4, default='compute#vmExtensionList')
+  nextPageToken = _messages.StringField(5)
+  selfLink = _messages.StringField(6)
+  unreachables = _messages.StringField(7, repeated=True)
+  warning = _messages.MessageField('WarningValue', 8)
+
+
 class LocalDisk(_messages.Message):
   r"""A LocalDisk object.
 
@@ -77432,6 +79524,22 @@ class NetworksRequestRemovePeeringRequest(_messages.Message):
   name = _messages.StringField(1)
 
 
+class NetworksUpdateNetworkProfileRequest(_messages.Message):
+  r"""A NetworksUpdateNetworkProfileRequest object.
+
+  Fields:
+    clearNetworkProfile: If true, clear the network profile from the network.
+    networkProfile: A full or partial URL of the new network profile to apply
+      to this network. For example, the following are valid URLs:         - ht
+      tps://www.googleapis.com/compute/{api_version}/projects/{project_id}/glo
+      bal/networkProfiles/{network_profile_name}    -
+      projects/{project_id}/global/networkProfiles/{network_profile_name}
+  """
+
+  clearNetworkProfile = _messages.BooleanField(1)
+  networkProfile = _messages.StringField(2)
+
+
 class NetworksUpdatePeeringRequest(_messages.Message):
   r"""A NetworksUpdatePeeringRequest object.
 
@@ -80285,6 +82393,7 @@ class Operation(_messages.Message):
     creationTimestamp: [Deprecated] This field is deprecated.
     description: [Output Only] A textual description of the operation, which
       is set when the operation is created.
+    details: [Output Only] Extended details about the operation's execution.
     endTime: [Output Only] The time that this operation was completed. This
       value is inRFC3339 text format.
     error: [Output Only] If errors are generated during processing of the
@@ -80558,32 +82667,33 @@ class Operation(_messages.Message):
   clientOperationId = _messages.StringField(1)
   creationTimestamp = _messages.StringField(2)
   description = _messages.StringField(3)
-  endTime = _messages.StringField(4)
-  error = _messages.MessageField('ErrorValue', 5)
-  getHealthOperationMetadata = _messages.MessageField('GetHealthOperationMetadata', 6)
-  getVersionOperationMetadata = _messages.MessageField('GetVersionOperationMetadata', 7)
-  httpErrorMessage = _messages.StringField(8)
-  httpErrorStatusCode = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  id = _messages.IntegerField(10, variant=_messages.Variant.UINT64)
-  insertTime = _messages.StringField(11)
-  instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 12)
-  instancesTroubleshootOperationMetadata = _messages.MessageField('InstancesTroubleshootOperationMetadata', 13)
-  kind = _messages.StringField(14, default='compute#operation')
-  name = _messages.StringField(15)
-  operationGroupId = _messages.StringField(16)
-  operationType = _messages.StringField(17)
-  progress = _messages.IntegerField(18, variant=_messages.Variant.INT32)
-  region = _messages.StringField(19)
-  selfLink = _messages.StringField(20)
-  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 21)
-  startTime = _messages.StringField(22)
-  status = _messages.EnumField('StatusValueValuesEnum', 23)
-  statusMessage = _messages.StringField(24)
-  targetId = _messages.IntegerField(25, variant=_messages.Variant.UINT64)
-  targetLink = _messages.StringField(26)
-  user = _messages.StringField(27)
-  warnings = _messages.MessageField('WarningsValueListEntry', 28, repeated=True)
-  zone = _messages.StringField(29)
+  details = _messages.MessageField('OperationDetails', 4)
+  endTime = _messages.StringField(5)
+  error = _messages.MessageField('ErrorValue', 6)
+  getHealthOperationMetadata = _messages.MessageField('GetHealthOperationMetadata', 7)
+  getVersionOperationMetadata = _messages.MessageField('GetVersionOperationMetadata', 8)
+  httpErrorMessage = _messages.StringField(9)
+  httpErrorStatusCode = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  id = _messages.IntegerField(11, variant=_messages.Variant.UINT64)
+  insertTime = _messages.StringField(12)
+  instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 13)
+  instancesTroubleshootOperationMetadata = _messages.MessageField('InstancesTroubleshootOperationMetadata', 14)
+  kind = _messages.StringField(15, default='compute#operation')
+  name = _messages.StringField(16)
+  operationGroupId = _messages.StringField(17)
+  operationType = _messages.StringField(18)
+  progress = _messages.IntegerField(19, variant=_messages.Variant.INT32)
+  region = _messages.StringField(20)
+  selfLink = _messages.StringField(21)
+  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 22)
+  startTime = _messages.StringField(23)
+  status = _messages.EnumField('StatusValueValuesEnum', 24)
+  statusMessage = _messages.StringField(25)
+  targetId = _messages.IntegerField(26, variant=_messages.Variant.UINT64)
+  targetLink = _messages.StringField(27)
+  user = _messages.StringField(28)
+  warnings = _messages.MessageField('WarningsValueListEntry', 29, repeated=True)
+  zone = _messages.StringField(30)
 
 
 class OperationAggregatedList(_messages.Message):
@@ -80779,6 +82889,45 @@ class OperationAggregatedList(_messages.Message):
   selfLink = _messages.StringField(5)
   unreachables = _messages.StringField(6, repeated=True)
   warning = _messages.MessageField('WarningValue', 7)
+
+
+class OperationDetails(_messages.Message):
+  r"""A OperationDetails object.
+
+  Messages:
+    DataValue: Machine readable data from the message.
+
+  Fields:
+    data: Machine readable data from the message.
+    message: Human or AI readable details on execution of the operation.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DataValue(_messages.Message):
+    r"""Machine readable data from the message.
+
+    Messages:
+      AdditionalProperty: An additional property for a DataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type DataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  data = _messages.MessageField('DataValue', 1)
+  message = _messages.StringField(2)
 
 
 class OperationList(_messages.Message):
@@ -81116,6 +83265,204 @@ class OrganizationSecurityPoliciesListAssociationsResponse(_messages.Message):
 
   associations = _messages.MessageField('SecurityPolicyAssociation', 1, repeated=True)
   kind = _messages.StringField(2, default='compute#organizationSecurityPoliciesListAssociationsResponse')
+
+
+class OrganizationVmExtensionPolicyAggregatedListResponse(_messages.Message):
+  r"""A OrganizationVmExtensionPolicyAggregatedListResponse object.
+
+  Messages:
+    ItemsValue: A list of VmExtensionPoliciesScopedList resources.
+    WarningValue: [Output Only] Informational warning message.
+
+  Fields:
+    etag: A string attribute.
+    id: [Output Only] Unique identifier for the resource; defined by the
+      server.
+    items: A list of VmExtensionPoliciesScopedList resources.
+    kind: Output only. [Output Only] Type of resource.
+      Alwayscompute#OrganizationVmExtensionPolicyAggregatedList for lists of
+      VmExtensionPolicies.
+    nextPageToken: [Output Only] This token allows you to get the next page of
+      results for list requests. If the number of results is larger
+      thanmaxResults, use the nextPageToken as a value for the query parameter
+      pageToken in the next list request. Subsequent list requests will have
+      their own nextPageToken to continue paging through the results.
+    selfLink: Output only. [Output Only] Server-defined URL for this resource.
+    unreachables: Output only. [Output Only] Unreachable resources.
+    warning: [Output Only] Informational warning message.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ItemsValue(_messages.Message):
+    r"""A list of VmExtensionPoliciesScopedList resources.
+
+    Messages:
+      AdditionalProperty: An additional property for a ItemsValue object.
+
+    Fields:
+      additionalProperties: Name of the scope containing this set of
+        VmExtensionPolicies.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ItemsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A VmExtensionPoliciesScopedList attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('VmExtensionPoliciesScopedList', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  class WarningValue(_messages.Message):
+    r"""[Output Only] Informational warning message.
+
+    Enums:
+      CodeValueValuesEnum: [Output Only] A warning code, if applicable. For
+        example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no
+        results in the response.
+
+    Messages:
+      DataValueListEntry: A DataValueListEntry object.
+
+    Fields:
+      code: [Output Only] A warning code, if applicable. For example, Compute
+        Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+        response.
+      data: [Output Only] Metadata about this warning in key: value format.
+        For example:  "data": [   {    "key": "scope",    "value": "zones/us-
+        east1-d"   }]
+      message: [Output Only] A human-readable description of the warning code.
+    """
+
+    class CodeValueValuesEnum(_messages.Enum):
+      r"""[Output Only] A warning code, if applicable. For example, Compute
+      Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+      response.
+
+      Values:
+        CLEANUP_FAILED: Warning about failed cleanup of transient changes made
+          by a failed operation.
+        DEPRECATED_RESOURCE_USED: A link to a deprecated resource was created.
+        DEPRECATED_TYPE_USED: When deploying and at least one of the resources
+          has a type marked as deprecated
+        DISK_SIZE_LARGER_THAN_IMAGE_SIZE: The user created a boot disk that is
+          larger than image size.
+        EXPERIMENTAL_TYPE_USED: When deploying and at least one of the
+          resources has a type marked as experimental
+        EXTERNAL_API_WARNING: Warning that is present in an external api call
+        FIELD_VALUE_OVERRIDEN: Warning that value of a field has been
+          overridden. Deprecated unused field.
+        INJECTED_KERNELS_DEPRECATED: The operation involved use of an injected
+          kernel, which is deprecated.
+        INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB: A WEIGHTED_MAGLEV
+          backend service is associated with a health check that is not of
+          type HTTP/HTTPS/HTTP2.
+        LARGE_DEPLOYMENT_WARNING: When deploying a deployment with a
+          exceedingly large number of resources
+        LIST_OVERHEAD_QUOTA_EXCEED: Resource can't be retrieved due to list
+          overhead quota exceed which captures the amount of resources
+          filtered out by user-defined list filter.
+        MISSING_TYPE_DEPENDENCY: A resource depends on a missing type
+        NEXT_HOP_ADDRESS_NOT_ASSIGNED: The route's nextHopIp address is not
+          assigned to an instance on the network.
+        NEXT_HOP_CANNOT_IP_FORWARD: The route's next hop instance cannot ip
+          forward.
+        NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE: The route's nextHopInstance
+          URL refers to an instance that does not have an ipv6 interface on
+          the same network as the route.
+        NEXT_HOP_INSTANCE_NOT_FOUND: The route's nextHopInstance URL refers to
+          an instance that does not exist.
+        NEXT_HOP_INSTANCE_NOT_ON_NETWORK: The route's nextHopInstance URL
+          refers to an instance that is not on the same network as the route.
+        NEXT_HOP_NOT_RUNNING: The route's next hop instance does not have a
+          status of RUNNING.
+        NOT_CRITICAL_ERROR: Error which is not critical. We decided to
+          continue the process despite the mentioned error.
+        NO_RESULTS_ON_PAGE: No results are present on a particular list page.
+        PARTIAL_SUCCESS: Success is reported, but some results may be missing
+          due to errors
+        QUOTA_INFO_UNAVAILABLE: Quota information is not available to client
+          requests (e.g: regions.list).
+        REQUIRED_TOS_AGREEMENT: The user attempted to use a resource that
+          requires a TOS they have not accepted.
+        RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING: Warning that a resource is
+          in use.
+        RESOURCE_NOT_DELETED: One or more of the resources set to auto-delete
+          could not be deleted because they were in use.
+        SCHEMA_VALIDATION_IGNORED: When a resource schema validation is
+          ignored.
+        SINGLE_INSTANCE_PROPERTY_TEMPLATE: Instance template used in instance
+          group manager is valid as such, but its application does not make a
+          lot of sense, because it allows only single instance in instance
+          group.
+        UNDECLARED_PROPERTIES: When undeclared properties in the schema are
+          present
+        UNREACHABLE: A given scope cannot be reached.
+      """
+      CLEANUP_FAILED = 0
+      DEPRECATED_RESOURCE_USED = 1
+      DEPRECATED_TYPE_USED = 2
+      DISK_SIZE_LARGER_THAN_IMAGE_SIZE = 3
+      EXPERIMENTAL_TYPE_USED = 4
+      EXTERNAL_API_WARNING = 5
+      FIELD_VALUE_OVERRIDEN = 6
+      INJECTED_KERNELS_DEPRECATED = 7
+      INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB = 8
+      LARGE_DEPLOYMENT_WARNING = 9
+      LIST_OVERHEAD_QUOTA_EXCEED = 10
+      MISSING_TYPE_DEPENDENCY = 11
+      NEXT_HOP_ADDRESS_NOT_ASSIGNED = 12
+      NEXT_HOP_CANNOT_IP_FORWARD = 13
+      NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE = 14
+      NEXT_HOP_INSTANCE_NOT_FOUND = 15
+      NEXT_HOP_INSTANCE_NOT_ON_NETWORK = 16
+      NEXT_HOP_NOT_RUNNING = 17
+      NOT_CRITICAL_ERROR = 18
+      NO_RESULTS_ON_PAGE = 19
+      PARTIAL_SUCCESS = 20
+      QUOTA_INFO_UNAVAILABLE = 21
+      REQUIRED_TOS_AGREEMENT = 22
+      RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING = 23
+      RESOURCE_NOT_DELETED = 24
+      SCHEMA_VALIDATION_IGNORED = 25
+      SINGLE_INSTANCE_PROPERTY_TEMPLATE = 26
+      UNDECLARED_PROPERTIES = 27
+      UNREACHABLE = 28
+
+    class DataValueListEntry(_messages.Message):
+      r"""A DataValueListEntry object.
+
+      Fields:
+        key: [Output Only] A key that provides more detail on the warning
+          being returned. For example, for warnings where there are no results
+          in a list request for a particular zone, this key might be scope and
+          the key value might be the zone name. Other examples might be a key
+          indicating a deprecated resource and a suggested replacement, or a
+          warning about invalid network settings (for example, if an instance
+          attempts to perform IP forwarding but is not enabled for IP
+          forwarding).
+        value: [Output Only] A warning data value corresponding to the key.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    code = _messages.EnumField('CodeValueValuesEnum', 1)
+    data = _messages.MessageField('DataValueListEntry', 2, repeated=True)
+    message = _messages.StringField(3)
+
+  etag = _messages.StringField(1)
+  id = _messages.StringField(2)
+  items = _messages.MessageField('ItemsValue', 3)
+  kind = _messages.StringField(4, default='compute#OrganizationVmExtensionPolicyAggregatedList')
+  nextPageToken = _messages.StringField(5)
+  selfLink = _messages.StringField(6)
+  unreachables = _messages.StringField(7, repeated=True)
+  warning = _messages.MessageField('WarningValue', 8)
 
 
 class OutlierDetection(_messages.Message):
@@ -88799,6 +91146,9 @@ class ReservationSubBlocksReportFaultyRequestFaultReason(_messages.Message):
 
   Fields:
     behavior: The behavior of the fault experienced with the subBlock.
+    componentId: The identifier of the specific faulty sub-component (e.g.,
+      NVSwitch ID). Optional. If not specified, all switches in the sub-block
+      are targeted for triage.
     description: The description of the fault experienced with the subBlock.
   """
 
@@ -88828,7 +91178,8 @@ class ReservationSubBlocksReportFaultyRequestFaultReason(_messages.Message):
     SWITCH_FAILURE = 7
 
   behavior = _messages.EnumField('BehaviorValueValuesEnum', 1)
-  description = _messages.StringField(2)
+  componentId = _messages.StringField(2)
+  description = _messages.StringField(3)
 
 
 class ReservationsBlocksPerformMaintenanceRequest(_messages.Message):
@@ -94617,9 +96968,10 @@ class Scheduling(_messages.Message):
       workload expectations in the event of infrastructure failures at data
       center (e.g. power and/or cooling failures).
     provisioningModel: Specifies the provisioning model of the instance.
-    skipGuestOsShutdown: Default is false and there will be 120 seconds
-      between GCE ACPI G2 Soft Off and ACPI G3 Mechanical Off for Standard VMs
-      and 30 seconds for Spot VMs.
+    skipGuestOsShutdown: Defines whether GCE ACPI G2 Soft Off signal should be
+      skipped during shutdown operation of VM.  Default is false, meaning
+      there will be 120 seconds between GCE ACPI G2 Soft Off and ACPI G3
+      Mechanical Off for Standard VMs and 30 seconds for Spot VMs.
     terminationTime: Specifies the timestamp, when the instance will be
       terminated, inRFC3339 text format. If specified, the instance
       termination action will be performed at the termination time.
@@ -105162,6 +107514,8 @@ class TargetInstance(_messages.Message):
     network: The URL of the network this target instance uses to forward
       traffic. If not specified, the traffic will be forwarded to the network
       that the default network interface belongs to.
+    params: Input only. [Input Only] Additional params passed with the
+      request, but not persisted as part of resource payload.
     securityPolicy: [Output Only] The resource URL for the security policy
       associated with this target instance.
     selfLink: [Output Only] Server-defined URL for the resource.
@@ -105188,9 +107542,10 @@ class TargetInstance(_messages.Message):
   name = _messages.StringField(6)
   natPolicy = _messages.EnumField('NatPolicyValueValuesEnum', 7)
   network = _messages.StringField(8)
-  securityPolicy = _messages.StringField(9)
-  selfLink = _messages.StringField(10)
-  zone = _messages.StringField(11)
+  params = _messages.MessageField('TargetInstanceParams', 9)
+  securityPolicy = _messages.StringField(10)
+  selfLink = _messages.StringField(11)
+  zone = _messages.StringField(12)
 
 
 class TargetInstanceAggregatedList(_messages.Message):
@@ -105553,6 +107908,74 @@ class TargetInstanceList(_messages.Message):
   warning = _messages.MessageField('WarningValue', 6)
 
 
+class TargetInstanceParams(_messages.Message):
+  r"""Additional target instance parameters.
+
+  Messages:
+    ResourceManagerTagsValue: Tag keys/values directly bound to this resource.
+      Tag keys and values have the same definition as resource manager tags.
+      The field is allowed for INSERT only. The keys/values to set on the
+      resource should be specified in either ID { : } or Namespaced format { :
+      }. For example the following are valid inputs: * {"tagKeys/333" :
+      "tagValues/444", "tagKeys/123" : "tagValues/456"} * {"123/environment" :
+      "production", "345/abc" : "xyz"} Note: * Invalid combinations of ID &
+      namespaced format are not supported. For   instance: {"123/environment"
+      : "tagValues/444"} is invalid. * Inconsistent format is not supported.
+      For instance:   {"tagKeys/333" : "tagValues/444", "123/env" : "prod"} is
+      invalid.
+
+  Fields:
+    resourceManagerTags: Tag keys/values directly bound to this resource. Tag
+      keys and values have the same definition as resource manager tags. The
+      field is allowed for INSERT only. The keys/values to set on the resource
+      should be specified in either ID { : } or Namespaced format { : }. For
+      example the following are valid inputs: * {"tagKeys/333" :
+      "tagValues/444", "tagKeys/123" : "tagValues/456"} * {"123/environment" :
+      "production", "345/abc" : "xyz"} Note: * Invalid combinations of ID &
+      namespaced format are not supported. For   instance: {"123/environment"
+      : "tagValues/444"} is invalid. * Inconsistent format is not supported.
+      For instance:   {"tagKeys/333" : "tagValues/444", "123/env" : "prod"} is
+      invalid.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResourceManagerTagsValue(_messages.Message):
+    r"""Tag keys/values directly bound to this resource. Tag keys and values
+    have the same definition as resource manager tags. The field is allowed
+    for INSERT only. The keys/values to set on the resource should be
+    specified in either ID { : } or Namespaced format { : }. For example the
+    following are valid inputs: * {"tagKeys/333" : "tagValues/444",
+    "tagKeys/123" : "tagValues/456"} * {"123/environment" : "production",
+    "345/abc" : "xyz"} Note: * Invalid combinations of ID & namespaced format
+    are not supported. For   instance: {"123/environment" : "tagValues/444"}
+    is invalid. * Inconsistent format is not supported. For instance:
+    {"tagKeys/333" : "tagValues/444", "123/env" : "prod"} is invalid.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        ResourceManagerTagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ResourceManagerTagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResourceManagerTagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 1)
+
+
 class TargetInstancesScopedList(_messages.Message):
   r"""A TargetInstancesScopedList object.
 
@@ -105771,6 +108194,8 @@ class TargetPool(_messages.Message):
       character must be a lowercase letter, and all following characters must
       be a dash, lowercase letter, or digit, except the last character, which
       cannot be a dash.
+    params: Input only. [Input Only] Additional params passed with the
+      request, but not persisted as part of resource payload.
     region: Output only. [Output Only] URL of the region where the target pool
       resides.
     securityPolicy: [Output Only] The resource URL for the security policy
@@ -105843,10 +108268,11 @@ class TargetPool(_messages.Message):
   instances = _messages.StringField(7, repeated=True)
   kind = _messages.StringField(8, default='compute#targetPool')
   name = _messages.StringField(9)
-  region = _messages.StringField(10)
-  securityPolicy = _messages.StringField(11)
-  selfLink = _messages.StringField(12)
-  sessionAffinity = _messages.EnumField('SessionAffinityValueValuesEnum', 13)
+  params = _messages.MessageField('TargetPoolParams', 10)
+  region = _messages.StringField(11)
+  securityPolicy = _messages.StringField(12)
+  selfLink = _messages.StringField(13)
+  sessionAffinity = _messages.EnumField('SessionAffinityValueValuesEnum', 14)
 
 
 class TargetPoolAggregatedList(_messages.Message):
@@ -106224,6 +108650,74 @@ class TargetPoolList(_messages.Message):
   nextPageToken = _messages.StringField(4)
   selfLink = _messages.StringField(5)
   warning = _messages.MessageField('WarningValue', 6)
+
+
+class TargetPoolParams(_messages.Message):
+  r"""Additional target pool parameters.
+
+  Messages:
+    ResourceManagerTagsValue: Tag keys/values directly bound to this resource.
+      Tag keys and values have the same definition as resource manager tags.
+      The field is allowed for INSERT only. The keys/values to set on the
+      resource should be specified in either ID { : } or Namespaced format { :
+      }. For example the following are valid inputs: * {"tagKeys/333" :
+      "tagValues/444", "tagKeys/123" : "tagValues/456"} * {"123/environment" :
+      "production", "345/abc" : "xyz"} Note: * Invalid combinations of ID &
+      namespaced format are not supported. For   instance: {"123/environment"
+      : "tagValues/444"} is invalid. * Inconsistent format is not supported.
+      For instance:   {"tagKeys/333" : "tagValues/444", "123/env" : "prod"} is
+      invalid.
+
+  Fields:
+    resourceManagerTags: Tag keys/values directly bound to this resource. Tag
+      keys and values have the same definition as resource manager tags. The
+      field is allowed for INSERT only. The keys/values to set on the resource
+      should be specified in either ID { : } or Namespaced format { : }. For
+      example the following are valid inputs: * {"tagKeys/333" :
+      "tagValues/444", "tagKeys/123" : "tagValues/456"} * {"123/environment" :
+      "production", "345/abc" : "xyz"} Note: * Invalid combinations of ID &
+      namespaced format are not supported. For   instance: {"123/environment"
+      : "tagValues/444"} is invalid. * Inconsistent format is not supported.
+      For instance:   {"tagKeys/333" : "tagValues/444", "123/env" : "prod"} is
+      invalid.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResourceManagerTagsValue(_messages.Message):
+    r"""Tag keys/values directly bound to this resource. Tag keys and values
+    have the same definition as resource manager tags. The field is allowed
+    for INSERT only. The keys/values to set on the resource should be
+    specified in either ID { : } or Namespaced format { : }. For example the
+    following are valid inputs: * {"tagKeys/333" : "tagValues/444",
+    "tagKeys/123" : "tagValues/456"} * {"123/environment" : "production",
+    "345/abc" : "xyz"} Note: * Invalid combinations of ID & namespaced format
+    are not supported. For   instance: {"123/environment" : "tagValues/444"}
+    is invalid. * Inconsistent format is not supported. For instance:
+    {"tagKeys/333" : "tagValues/444", "123/env" : "prod"} is invalid.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        ResourceManagerTagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ResourceManagerTagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResourceManagerTagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 1)
 
 
 class TargetPoolsAddHealthCheckRequest(_messages.Message):
@@ -109677,6 +112171,18 @@ class VmEndpointNatMappingsList(_messages.Message):
   result = _messages.MessageField('VmEndpointNatMappings', 4, repeated=True)
   selfLink = _messages.StringField(5)
   warning = _messages.MessageField('WarningValue', 6)
+
+
+class VmExtension(_messages.Message):
+  r"""A VM extension that can be installed on a VM.
+
+  Fields:
+    name: The name of the vm extension.
+    versions: The latest 10 versions of the vm extension.
+  """
+
+  name = _messages.StringField(1)
+  versions = _messages.StringField(2, repeated=True)
 
 
 class VmExtensionPoliciesScopedList(_messages.Message):

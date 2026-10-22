@@ -1,4 +1,6 @@
 release_tracks: [GA, BETA]
+hints:
+  read_only: false
 help_text:
   brief: Create a new semantic governance policy.
   description: Create a new semantic governance policy.

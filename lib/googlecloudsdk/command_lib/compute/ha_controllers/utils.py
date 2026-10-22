@@ -38,8 +38,6 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 
 
-_MESSAGES = apis.GetMessagesModule("compute", "alpha")
-
 SUPPORTED_DISK_TYPES = {
     "e2": "Regional PD",
     "n1": "Regional PD",
@@ -157,11 +155,53 @@ def AddHaControllerNameArgToParser(parser, api_version=None):
 
 def MakeZoneConfiguration(
     zone_config: list[dict[str, str]],
-) -> _MESSAGES.HaController.ZoneConfigurationsValue:
+    api_version: str = "alpha",
+    instance_network_interface: list[dict[str, str]] | None = None,
+) -> messages.Message:
   """Convert zone-configuration to the zoneConfigurations api field."""
-  zone_configs_parsed: list[
-      _MESSAGES.HaController.ZoneConfigurationsValue.AdditionalProperty
-  ] = []
+  messages_module = apis.GetMessagesModule("compute", api_version)
+  nics_by_zone: dict[str, list[messages.Message]] = collections.defaultdict(
+      list
+  )
+  if instance_network_interface:
+    configured_zones = {c["zone"] for c in zone_config if "zone" in c}
+    seen_zone_nics = set()
+    for nic_config in instance_network_interface:
+      zone = nic_config.get("zone")
+      name = nic_config.get("name")
+      if not zone or not name:
+        raise calliope_exceptions.InvalidArgumentException(
+            "--instance-network-interface",
+            "Both [zone] and [name] must be specified for"
+            " --instance-network-interface.",
+        )
+      if zone not in configured_zones:
+        raise calliope_exceptions.InvalidArgumentException(
+            "--instance-network-interface",
+            f"Zone [{zone}] in --instance-network-interface must be specified"
+            " in --zone-configuration.",
+        )
+      if (zone, name) in seen_zone_nics:
+        raise calliope_exceptions.InvalidArgumentException(
+            "--instance-network-interface",
+            f"Duplicate network interface [{name}] specified for zone"
+            f" [{zone}].",
+        )
+      seen_zone_nics.add((zone, name))
+      nic_kwargs = {}
+      if "address" in nic_config:
+        nic_kwargs["networkIP"] = nic_config["address"]
+      if "internal-ipv6-address" in nic_config:
+        nic_kwargs["ipv6Address"] = nic_config["internal-ipv6-address"]
+      nics_by_zone[zone].append(
+          messages_module.HaControllerZoneConfiguration.InstanceNetworkInterfacesValue.AdditionalProperty(
+              key=name,
+              value=messages_module.HaControllerInstanceNetworkInterface(
+                  **nic_kwargs
+              ),
+          )
+      )
+  zone_configs_parsed: list[messages.Message] = []
   if len(zone_config) == 1:
     if console_io.CanPrompt() and not console_io.PromptContinue(
         "Only one zone configuration was specified. Is it the primary zone? If"
@@ -178,8 +218,8 @@ def MakeZoneConfiguration(
     single_zone_config = {}
     if "reservation-affinity" in config:
       single_zone_config["reservationAffinity"] = (
-          _MESSAGES.HaControllerZoneConfigurationReservationAffinity(
-              consumeReservationType=_MESSAGES.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum(
+          messages_module.HaControllerZoneConfigurationReservationAffinity(
+              consumeReservationType=messages_module.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum(
                   config["reservation-affinity"],
               )
           )
@@ -193,20 +233,26 @@ def MakeZoneConfiguration(
         single_zone_config["reservationAffinity"].values = [
             config["reservation"]
         ]
-    node_affinities = _GetNodeAffinities(config)
+    node_affinities = _GetNodeAffinities(config, api_version=api_version)
     if node_affinities:
       single_zone_config["nodeAffinities"] = node_affinities
+    if config["zone"] in nics_by_zone:
+      single_zone_config["instanceNetworkInterfaces"] = (
+          messages_module.HaControllerZoneConfiguration.InstanceNetworkInterfacesValue(
+              additionalProperties=nics_by_zone[config["zone"]]
+          )
+      )
 
     zone_configs_parsed.append(
-        _MESSAGES.HaController.ZoneConfigurationsValue.AdditionalProperty(
+        messages_module.HaController.ZoneConfigurationsValue.AdditionalProperty(
             key=config["zone"],
-            value=_MESSAGES.HaControllerZoneConfiguration(
+            value=messages_module.HaControllerZoneConfiguration(
                 **single_zone_config
             ),
         )
     )
 
-  res = _MESSAGES.HaController.ZoneConfigurationsValue(
+  res = messages_module.HaController.ZoneConfigurationsValue(
       additionalProperties=zone_configs_parsed
   )
   return res
@@ -214,8 +260,10 @@ def MakeZoneConfiguration(
 
 def MakeNetworkConfiguration(
     network_config: list[dict[str, str]],
-) -> _MESSAGES.HaControllerNetworkingAutoConfiguration:
+    api_version: str = "alpha",
+) -> messages.Message | None:
   """Convert network-auto-configuration args to the networkConfiguration api field."""
+  messages_module = apis.GetMessagesModule("compute", api_version)
   network_config_parsed = {}
   if network_config and len(network_config) > 1:
     raise calliope_exceptions.InvalidArgumentException(
@@ -236,8 +284,8 @@ def MakeNetworkConfiguration(
         network_config["internal-ipv6-address"]
     )
 
-  return _MESSAGES.HaControllerNetworkingAutoConfiguration(
-      internal=_MESSAGES.HaControllerNetworkingAutoConfigurationInternal(
+  return messages_module.HaControllerNetworkingAutoConfiguration(
+      internal=messages_module.HaControllerNetworkingAutoConfigurationInternal(
           **network_config_parsed
       )
   )
@@ -259,12 +307,14 @@ def SetResourceName(unused_ref, unused_args, request):
   return request
 
 
-def _GetNodeAffinities(config: dict[str, str]) -> list[
-    _MESSAGES.HaControllerZoneConfigurationNodeAffinity
-]:
+def _GetNodeAffinities(
+    config: dict[str, str],
+    api_version: str = "alpha",
+) -> list[messages.Message]:
   """Get node affinities from the zone configuration."""
+  messages_module = apis.GetMessagesModule("compute", api_version)
   node_affinity_operator_enum = (
-      _MESSAGES.HaControllerZoneConfigurationNodeAffinity.OperatorValueValuesEnum
+      messages_module.HaControllerZoneConfigurationNodeAffinity.OperatorValueValuesEnum
   )
   node_affinities = []
 
@@ -280,7 +330,7 @@ def _GetNodeAffinities(config: dict[str, str]) -> list[
         raise NodeAffinityFileParseError("Empty list item in JSON/YAML file.")
       try:
         node_affinity = encoding.PyValueToMessage(
-            _MESSAGES.HaControllerZoneConfigurationNodeAffinity,
+            messages_module.HaControllerZoneConfigurationNodeAffinity,
             affinity,
         )
       except Exception as e:  # pylint: disable=broad-except
@@ -299,7 +349,7 @@ def _GetNodeAffinities(config: dict[str, str]) -> list[
       node_affinities.append(node_affinity)
   if "node-group" in config:
     node_affinities.append(
-        _MESSAGES.HaControllerZoneConfigurationNodeAffinity(
+        messages_module.HaControllerZoneConfigurationNodeAffinity(
             key="compute."
             + properties.VALUES.core.universe_domain.Get()
             + "/node-group-name",
@@ -309,7 +359,7 @@ def _GetNodeAffinities(config: dict[str, str]) -> list[
     )
   if "node" in config:
     node_affinities.append(
-        _MESSAGES.HaControllerZoneConfigurationNodeAffinity(
+        messages_module.HaControllerZoneConfigurationNodeAffinity(
             key="compute."
             + properties.VALUES.core.universe_domain.Get()
             + "/node-name",
@@ -319,7 +369,7 @@ def _GetNodeAffinities(config: dict[str, str]) -> list[
     )
   if "node-project" in config:
     node_affinities.append(
-        _MESSAGES.HaControllerZoneConfigurationNodeAffinity(
+        messages_module.HaControllerZoneConfigurationNodeAffinity(
             key="compute."
             + properties.VALUES.core.universe_domain.Get()
             + "/project",

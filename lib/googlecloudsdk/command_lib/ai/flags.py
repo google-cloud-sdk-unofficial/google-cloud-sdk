@@ -1670,6 +1670,7 @@ def AddAgentRuntimeResourceArg(
     required=True,
     flag_name_overrides=None,
     command_level_fallthroughs=None,
+    positional=True,
 ):
   """Add a resource argument for a Vertex AI agent runtime.
 
@@ -1683,9 +1684,11 @@ def AddAgentRuntimeResourceArg(
       name. To remove a flag altogether, use '' as its rename value.
     command_level_fallthroughs: a map of attribute names to lists of command-
       specific fallthroughs.
+    positional: bool, whether the runtime argument is positional or a flag.
   """
+  name = 'runtime' if positional else '--runtime'
   concept_parsers.ConceptParser.ForResource(
-      'runtime',
+      name,
       GetAgentRuntimeResourceSpec(
           prompt_func=prompt_func, required=required
       ),
@@ -1693,6 +1696,50 @@ def AddAgentRuntimeResourceArg(
       required=required,
       flag_name_overrides=flag_name_overrides,
       command_level_fallthroughs=command_level_fallthroughs,
+  ).AddToParser(parser)
+
+
+def AgentRuntimeAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='runtime',
+      help_text='ID of the agent runtime for the {resource}.',
+  )
+
+
+def GetAgentRuntimeRevisionResourceSpec(
+    resource_name='revision',
+    prompt_func=region_util.PromptForOpRegion,
+):
+  """Gets a concepts.ResourceSpec for an agent runtime revision."""
+  return concepts.ResourceSpec(
+      constants.AGENT_RUNTIME_REVISIONS_COLLECTION,
+      resource_name=resource_name,
+      api_version=constants.AI_PLATFORM_API_VERSION[constants.BETA_VERSION],
+      reasoningEnginesId=AgentRuntimeAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=RegionAttributeConfig(prompt_func=prompt_func),
+      disable_auto_completers=False,
+  )
+
+
+def AddAgentRuntimeRevisionResourceArg(
+    parser,
+    verb,
+    prompt_func=region_util.PromptForOpRegion,
+):
+  """Add a resource argument for a Vertex AI agent runtime revision.
+
+  Args:
+    parser: the parser for the command.
+    verb: str, the verb to describe the resource, such as 'to describe'.
+    prompt_func: function, the function to prompt for region from list of
+      available regions.
+  """
+  concept_parsers.ConceptParser.ForResource(
+      'revision',
+      GetAgentRuntimeRevisionResourceSpec(prompt_func=prompt_func),
+      'The agent runtime revision {}.'.format(verb),
+      required=True,
   ).AddToParser(parser)
 
 

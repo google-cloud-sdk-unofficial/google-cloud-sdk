@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
@@ -28,3 +27,4 @@ class CapabilityConfigs(base.Group):
   A CapabilityConfig allows managing experiences like applications and agents on
   a logical administrative perimeter of Projects (Boundary).
   """
+  category = base.IDENTITY_AND_SECURITY_CATEGORY

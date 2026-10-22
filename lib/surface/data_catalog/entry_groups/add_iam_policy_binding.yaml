@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
   help_text:
     brief: Add an IAM policy binding to a Data Catalog entry group.
     description: Add an IAM policy binding to a Data Catalog entry group.
@@ -23,6 +25,8 @@
       is_positional: true
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Add an IAM policy binding to a Data Catalog entry group.
     description: Add an IAM policy binding to a Data Catalog entry group.

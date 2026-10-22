@@ -2371,6 +2371,8 @@ class Service(_messages.Message):
       value of other fields, and may be sent on update and delete requests to
       ensure the client has an up-to-date value before proceeding.
       [AIP-154](https://google.aip.dev/154)
+    graphqlSource: Optional. Input only. The GraphQL source files like
+      `dataconnect.yaml` and `*.gql`.
     labels: Optional. Labels as key value pairs.
     name: Identifier. The relative resource name of the Firebase SQL Connect
       service, in the format: ```
@@ -2380,9 +2382,12 @@ class Service(_messages.Message):
       connections.
     reconciling: Output only. A field that if true, indicates that the system
       is working update the service.
-    schemas: Output only. The list of schemas in this service.
-    source: Optional. Input only. The source files for service, schemas, and
+    schemas: Optional. The list of schemas in this service.
+    source: Optional. Input only. Deprecated: Use `sql_source` or
+      `graphql_source` instead. The source files for service, schemas, and
       connectors.
+    sqlSource: Optional. Input only. The SQL source files like `*.sql` for
+      deploying a PostgREST service.
     uid: Output only. System-assigned, unique identifier.
     updateTime: Output only. [Output only] Update time stamp.
   """
@@ -2441,13 +2446,15 @@ class Service(_messages.Message):
   createTime = _messages.StringField(3)
   displayName = _messages.StringField(4)
   etag = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  reconciling = _messages.BooleanField(8)
-  schemas = _messages.MessageField('Schema', 9, repeated=True)
-  source = _messages.MessageField('Source', 10)
-  uid = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
+  graphqlSource = _messages.MessageField('Source', 6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  reconciling = _messages.BooleanField(9)
+  schemas = _messages.MessageField('Schema', 10, repeated=True)
+  source = _messages.MessageField('Source', 11)
+  sqlSource = _messages.MessageField('Source', 12)
+  uid = _messages.StringField(13)
+  updateTime = _messages.StringField(14)
 
 
 class Source(_messages.Message):

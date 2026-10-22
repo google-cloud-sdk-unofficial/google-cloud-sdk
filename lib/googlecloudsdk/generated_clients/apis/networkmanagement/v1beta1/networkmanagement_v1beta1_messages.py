@@ -1954,8 +1954,7 @@ class GkeNetworkPolicySkippedInfo(_messages.Message):
         evaluation is stateful in both GKE Dataplane V2 (eBPF) and legacy
         (iptables) implementations.
       NETWORK_POLICY_ANALYSIS_UNSUPPORTED: Network Policy evaluation is
-        currently not supported for clusters with FQDN Network Policies
-        enabled.
+        currently not supported for Pods selected by an FQDN Network Policy.
     """
     REASON_UNSPECIFIED = 0
     NETWORK_POLICY_DISABLED = 1
@@ -2612,7 +2611,8 @@ class NatInfo(_messages.Message):
     protocol: IP protocol in string format, for example: "TCP", "UDP", "ICMP".
     routerUri: URI of the Cloud Router. Only valid when type is CLOUD_NAT.
       Format: `projects/{project_id}/regions/{region}/routers/{router_id}`
-    ruleNumber: The number of the NAT rule that was matched.
+    ruleNumber: The number of the NAT rule that was matched. Only valid when
+      `type` is CLOUD_NAT.
     type: Type of NAT.
   """
 

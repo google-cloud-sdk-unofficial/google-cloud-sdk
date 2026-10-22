@@ -28,34 +28,47 @@ class CertificateClient(object):
     self._service = self._client.projects_locations_certificates
     self.messages = messages or self._client.MESSAGES_MODULE
 
-  def Create(self,
-             parent_ref,
-             cert_id,
-             self_managed_cert_data=None,
-             description='',
-             labels=None):
+  def Create(
+      self,
+      parent_ref,
+      cert_id,
+      self_managed_cert_data=None,
+      managed_cert_data=None,
+      scope=None,
+      description=None,
+      labels=None,
+      tags=None,
+  ):
     """Creates a certificate.
 
     Args:
       parent_ref: a Resource reference to a
         certificatemanager.projects.locations resource for the parent of this
         certificate.
-      cert_id: str, the ID of the cerificate to create.
+      cert_id: str, the ID of the certificate to create.
       self_managed_cert_data: API message for self-managed certificate data.
+      managed_cert_data: API message for managed certificate data.
+      scope: ScopeValueValuesEnum, scope of the certificate.
       description: str, user-provided description.
       labels: Unified GCP Labels for the resource.
+      tags: Unified GCP Tags for the resource.
 
     Returns:
       Operation: the long running operation to create a certificate.
     """
+    certificate = self.messages.Certificate(
+        selfManaged=self_managed_cert_data,
+        managed=managed_cert_data,
+        scope=scope,
+        description=description,
+        labels=labels,
+        tags=tags,
+    )
     req = self.messages.CertificatemanagerProjectsLocationsCertificatesCreateRequest(
         parent=parent_ref.RelativeName(),
         certificateId=cert_id,
-        certificate=self.messages.Certificate(
-            labels=labels,
-            description=description,
-            selfManagedCertData=self_managed_cert_data,
-        ))
+        certificate=certificate,
+    )
 
     return self._service.Create(req)
 

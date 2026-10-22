@@ -19,13 +19,13 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: deletes a Managed Lustre instance
+    brief: Deletes a Managed Lustre instance
     description: |
-      deletes a Managed Lustre instance.
+      Deletes a Managed Lustre instance.
     examples: |-
-      to delete an instance `my-instance` run:
+      To delete an instance `my-instance` in location `us-central1-a` run:
 
-      $ {command} my-instance
+      $ {command} my-instance --location=us-central1-a
   arguments:
     params:
     - help_text: |-

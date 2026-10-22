@@ -121,7 +121,6 @@ backupPlanAssociations:
 restoreVerificationPlans:
   name: restore_verification_plan
   collection: backupdr.projects.locations.restoreVerificationPlans
-  api_version: v1alpha
   request_id_field: restoreVerificationPlansId
   attributes:
   - *project
@@ -135,7 +134,6 @@ restoreVerificationPlans:
 restoreVerificationPlanDefault:
   name: restore_verification_plan
   collection: backupdr.projects.locations.restoreVerificationPlans
-  api_version: v1alpha
   request_id_field: restoreVerificationPlansId
   attributes:
   - *project
@@ -152,7 +150,6 @@ restoreVerificationPlanDefault:
 restoreVerificationPlanAssociations:
   name: restore_verification_plan_association
   collection: backupdr.projects.locations.restoreVerificationPlans.associations
-  api_version: v1alpha
   request_id_field: associationsId
   attributes:
   - *project
@@ -170,7 +167,6 @@ restoreVerificationPlanAssociations:
 restoreVerificationPlanAssociationDefault:
   name: restore_verification_plan_association
   collection: backupdr.projects.locations.restoreVerificationPlans.associations
-  api_version: v1alpha
   request_id_field: associationsId
   attributes:
   - *project
@@ -188,7 +184,6 @@ restoreVerificationPlanAssociationDefault:
 restoreTemplates:
   name: restore_template
   collection: backupdr.projects.locations.restoreTemplates
-  api_version: v1alpha
   request_id_field: restoreTemplatesId
   attributes:
   - *project
@@ -202,7 +197,6 @@ restoreTemplates:
 restoreTemplateDefault:
   name: restore_template
   collection: backupdr.projects.locations.restoreTemplates
-  api_version: v1alpha
   request_id_field: restoreTemplatesId
   attributes:
   - *project
@@ -219,7 +213,6 @@ restoreTemplateDefault:
 restoreTemplateExecutions:
   name: restore_template_execution
   collection: backupdr.projects.locations.restoreTemplates.executions
-  api_version: v1alpha
   request_id_field: executionsId
   attributes:
   - *project
@@ -237,7 +230,6 @@ restoreTemplateExecutions:
 restoreTemplateExecutionDefault:
   name: restore_template_execution
   collection: backupdr.projects.locations.restoreTemplates.executions
-  api_version: v1alpha
   request_id_field: executionsId
   attributes:
   - *project

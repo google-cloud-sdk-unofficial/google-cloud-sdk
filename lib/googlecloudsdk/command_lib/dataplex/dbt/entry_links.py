@@ -693,4 +693,9 @@ def build_entry_links(
     links.extend(
         _emit_physical_reference(ctx, manifest, known_ids, linkable_datasets)
     )
-  return links
+  # Resources that share an entry id emit identical links, and Dataplex fails
+  # the whole import on a duplicate, so keep one link per name.
+  unique = {}
+  for link in links:
+    unique.setdefault(link['entryLink']['name'], link)
+  return list(unique.values())

@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Onboarding(base.Group):

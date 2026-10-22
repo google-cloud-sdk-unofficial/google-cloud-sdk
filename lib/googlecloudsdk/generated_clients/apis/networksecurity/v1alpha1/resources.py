@@ -551,6 +551,28 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_TOKENAGGREGATIONPOLICIES = (
+      'projects.locations.tokenAggregationPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'tokenAggregationPolicies/{tokenAggregationPoliciesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_TOKENBUDGETPOLICIES = (
+      'projects.locations.tokenBudgetPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'tokenBudgetPolicies/{tokenBudgetPoliciesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_ULLMIRRORINGCOLLECTORS = (
       'projects.locations.ullMirroringCollectors',
       '{+name}',

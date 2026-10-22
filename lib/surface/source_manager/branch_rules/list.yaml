@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: List Secure Source Manager branch rules.
     description: |
@@ -21,3 +20,6 @@
     resource:
       help_text: The Secure Source Manager repository to list branch rules from.
       spec: !REF googlecloudsdk.command_lib.source_manager.resources:repository
+
+  hints:
+    read_only: true

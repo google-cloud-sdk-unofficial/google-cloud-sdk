@@ -400,6 +400,8 @@ class BetaUpdate(Update):
     flags.IdentityCertificateFlag().AddToParser(parser)
     flags.IdentityTypeFlag(release_track=cls.ReleaseTrack()).AddToParser(parser)
     flags.FunctionalTypeFlag(resource='service').AddToParser(parser)
+    flags.AMBIENT_NETWORKING_FLAG.AddToParser(parser)
+    flags.AMBIENT_SCOPE_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

@@ -40,9 +40,12 @@ class Collections(enum.Enum):
   )
   LOCATIONS = (
       'locations',
-      'projects/{projectsId}/locations/{locationsId}',
-      {},
-      ['projectsId', 'locationsId'],
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}',
+      },
+      ['name'],
       True
   )
   MANAGEDZONEOPERATIONS = (
@@ -57,6 +60,17 @@ class Collections(enum.Enum):
       'projects/{project}/managedZones/{managedZone}',
       {},
       ['project', 'managedZone'],
+      True
+  )
+  OPERATIONS = (
+      'operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
       True
   )
   OUTBOUNDENDPOINTS = (

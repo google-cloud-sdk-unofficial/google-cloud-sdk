@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.composer import environments_util as environments_ap
 from googlecloudsdk.api_lib.composer import operations_util as operations_api_util
 from googlecloudsdk.api_lib.composer import util as api_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.composer import airflow_rbac_util
 from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.core import log
 import six
@@ -113,6 +114,7 @@ def Patch(env_resource,
 def ConstructPatch(
     is_composer_v1,
     env_ref=None,
+    env_obj=None,
     node_count=None,
     update_pypi_packages_from_file=None,
     clear_pypi_packages=None,
@@ -179,6 +181,10 @@ def ConstructPatch(
     clear_user_workloads_service_accounts=None,
     remove_user_workloads_service_accounts=None,
     update_user_workloads_service_accounts=None,
+    clear_airflow_rbac_config=None,
+    update_airflow_rbac_binding=None,
+    remove_airflow_rbac_binding=None,
+    update_airflow_rbac_config_from_file=None,
 ):
   """Constructs an environment patch.
 
@@ -187,6 +193,8 @@ def ConstructPatch(
       Environment.
     env_ref: resource argument, Environment resource argument for environment
       being updated.
+    env_obj: messages.Environment, existing environment object if already
+      fetched.
     node_count: int, the desired node count
     update_pypi_packages_from_file: str, path to local requirements file
       containing desired pypi dependencies.
@@ -320,6 +328,15 @@ def ConstructPatch(
     update_user_workloads_service_accounts: {string: string} or None, dict of
       Kubernetes Service Account names and Google Service Account emails to set.
       Can be specified only in Composer 3.
+    clear_airflow_rbac_config: bool or None, whether to clear the Airflow RBAC
+      configuration. Can be specified only in Composer 3.
+    update_airflow_rbac_binding: list(dict) or None, role-to-member bindings to
+      add or update. Can be specified only in Composer 3.
+    remove_airflow_rbac_binding: list(dict) or None, role-to-member bindings to
+      remove. Can be specified only in Composer 3.
+    update_airflow_rbac_config_from_file: str or None, path to local YAML/JSON
+      file containing Airflow RBAC configuration. Can be specified only in
+      Composer 3.
 
   Returns:
     (str, Environment), the field mask and environment to use for update.
@@ -482,6 +499,21 @@ def ConstructPatch(
   if enable_logs_in_cloud_logging_only is not None:
     return _ConstructLogsInCloudLoggingOnlyPatch(
         enable_logs_in_cloud_logging_only, release_track
+    )
+  if (
+      clear_airflow_rbac_config
+      or update_airflow_rbac_binding
+      or remove_airflow_rbac_binding
+      or update_airflow_rbac_config_from_file
+  ):
+    return airflow_rbac_util.ConstructAirflowRbacPatch(
+        env_ref=env_ref,
+        env_obj=env_obj,
+        clear_airflow_rbac_config=clear_airflow_rbac_config,
+        update_airflow_rbac_binding=update_airflow_rbac_binding,
+        remove_airflow_rbac_binding=remove_airflow_rbac_binding,
+        update_airflow_rbac_config_from_file=update_airflow_rbac_config_from_file,
+        release_track=release_track,
     )
   raise command_util.Error(
       'Cannot update Environment with no update type specified.'

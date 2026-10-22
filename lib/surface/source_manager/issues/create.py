@@ -41,7 +41,6 @@ DETAILED_HELP = {
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.RegionalEndpointsSupported
 class Create(base.CreateCommand):
   """Create a Secure Source Manager issue."""

@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: true
+  help_text:
     brief: List uptime checks and synthetic monitors.
     description: List uptime checks and synthetic monitors.
     examples: |

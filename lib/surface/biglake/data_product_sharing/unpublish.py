@@ -39,7 +39,7 @@ class UnpublishDataProduct(base.Command):
           api_version='data_product_sharing_v1alpha',
       )
 
-    source_group = parser.add_group('source', mutex=True)
+    source_group = parser.add_group('source', mutex=True, hidden=True)
     delta_sharing_catalog_resource = presentation_specs.ResourcePresentationSpec(
         '--connection-catalog',
         GetCatalogResourceSpec(),
@@ -55,6 +55,7 @@ class UnpublishDataProduct(base.Command):
         'have permissions revoked.',
         prefixes=True,
         group=source_group,
+        hidden=True,
     )
     concept_parsers.ConceptParser(
         [delta_sharing_catalog_resource, irc_catalog_resource]
@@ -70,6 +71,7 @@ class UnpublishDataProduct(base.Command):
     )
     parser.add_argument(
         '--sap-federated-identity-provider',
+        hidden=True,
         help=(
             'The resource name of the Workload Identity Federation (WIF) '
             'provider resource representing the SAP federated identity. If '

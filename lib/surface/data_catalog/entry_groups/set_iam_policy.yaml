@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Set the IAM policy for a Data Catalog entry group.
@@ -27,6 +29,8 @@
       is_positional: true
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Set the IAM policy for a Data Catalog entry group.

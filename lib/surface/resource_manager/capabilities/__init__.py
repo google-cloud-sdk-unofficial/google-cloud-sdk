@@ -28,3 +28,4 @@ class Capabilities(base.Group):
 
   Commands to query and update your Cloud Folder's Capabilities.
   """
+  category = base.IDENTITY_AND_SECURITY_CATEGORY

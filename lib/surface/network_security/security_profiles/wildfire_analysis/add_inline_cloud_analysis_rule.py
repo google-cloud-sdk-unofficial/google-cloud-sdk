@@ -50,7 +50,9 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class AddInlineCloudAnalysisRule(base.UpdateCommand):
   """Add a WildFire inline cloud analysis rule to a WildFire Analysis Profile."""
 

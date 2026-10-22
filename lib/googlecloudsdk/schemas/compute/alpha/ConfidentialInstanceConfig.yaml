@@ -25,6 +25,20 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
+  confidentialInstanceType:
+    description: |-
+      Defines the type of technology used by the confidential instance.
+    type: string
+    enum:
+    - BMSAI
+    - CCA
+    - CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED
+    - SEV
+    - SEV_SNP
+    - TDX
+  confidentialParavisorConfig:
+    description: Defines a set of Confidential Paravisor (SVSM) options.
+    $ref: ConfidentialParavisorConfig.yaml
   enableConfidentialCompute:
     description: |-
       Defines whether the instance should have confidential compute enabled.

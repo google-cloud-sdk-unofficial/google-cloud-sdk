@@ -32,13 +32,11 @@ DETAILED_HELP = {
         To update a WildFire Analysis security-profile `my-wildfire-security-profile` with
         organization 1234, location global, and project my-project, run:
 
-        $ {command} my-wildfire-security-profile \
-            --organization=1234 --location=global --project=my-project \
-            --no-wildfire-realtime-lookup --analyze-windows-executables --no-analyze-shell
+          $ {command} my-wildfire-security-profile --organization=1234 --location=global --project=my-project --no-wildfire-realtime-lookup --analyze-windows-executables --no-analyze-shell
 
         To update labels of a WildFire Analysis security-profile, run:
 
-        $ {command} my-wildfire-security-profile --organization=1234 --location=global --update-labels=key1=value1,key2=value2
+          $ {command} my-wildfire-security-profile --organization=1234 --location=global --update-labels=key1=value1,key2=value2
         """),
 }
 
@@ -50,7 +48,9 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a WildFire Analysis Security Profile."""
 

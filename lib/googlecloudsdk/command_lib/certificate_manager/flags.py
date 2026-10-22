@@ -17,6 +17,8 @@
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.certificate_manager import hooks
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 def AddAsyncFlagToParser(parser):
@@ -77,6 +79,20 @@ def AddSelfManagedCertificateDataFlagsToParser(parser, is_required):
   group.AddToParser(parser)
 
 
+def GetSelfManagedCertificateFromArgs(args, messages):
+  """Constructs SelfManagedCertificate message from args."""
+  if not (
+      args.IsSpecified('certificate_file')
+      and args.IsSpecified('private_key_file')
+  ):
+    return None
+
+  return messages.SelfManagedCertificate(
+      pemCertificate=args.certificate_file.encode('utf-8'),
+      pemPrivateKey=args.private_key_file.encode('utf-8'),
+  )
+
+
 def GetTags(parser):
   """Makes the base.Argument for --tags flag."""
   help_parts = [
@@ -113,3 +129,165 @@ def GetTagsFromArgs(args, tags_message, tags_arg_name='tags'):
       tags_message.AdditionalProperty(key=key, value=value)
       for key, value in sorted(tags.items())])
 
+
+def AddScopeFlagToParser(parser):
+  """Adds scope flag to parser."""
+  scope_arg = base.ChoiceArgument(
+      '--scope',
+      choices={
+          'default': (
+              'Certificates with DEFAULT scope are used for Load Balancing and'
+              ' Cloud CDN.\n\nIf unsure, choose this option.\n'
+          ),
+          'edge-cache': (
+              'Certificates with scope EDGE_CACHE are special-purposed'
+              ' certificates, scoped for use with Media Edge services only.\n'
+          ),
+          'all-regions': (
+              'Certificates with scope ALL_REGIONS are currently used for'
+              ' Cross-region Internal Application Load Balancer only.\n'
+          ),
+          'client-auth': (
+              'Certificates with scope CLIENT_AUTH are used for client'
+              ' authentication.\n'
+          ),
+      },
+      default='DEFAULT',
+      help_str=(
+          'Scope of the managed certificate. This determines which services the'
+          ' certificate can be attached to/associated with. Defaults to'
+          ' `DEFAULT`.'
+      ),
+  )
+  scope_arg.AddToParser(parser)
+
+
+def GetScopeFromArgs(args, scope_enum):
+  """Returns the apitools enum value for the scope flag."""
+  scope = getattr(args, 'scope', None)
+  if not scope:
+    return scope_enum.DEFAULT
+  return arg_utils.ChoiceToEnum(scope, scope_enum)
+
+
+def AddCertificateConfigFlagsToParser(parser):
+  """Adds flags for managed or self-managed certificate configuration."""
+  root_group = base.ArgumentGroup(
+      mutex=True,
+      required=True,
+      help=(
+          'Configuration for creating and uploading certificates to Cloud'
+          ' Certificate Manager.'
+      ),
+  )
+
+  managed_group = base.ArgumentGroup(
+      help='Configuration for creating new managed certificates.'
+  )
+  managed_group.AddArgument(
+      base.Argument(
+          '--domains',
+          type=arg_parsers.ArgList(),
+          metavar='DOMAINS',
+          action=arg_parsers.UpdateAction,
+          required=True,
+          help=(
+              'Public domain name(s) to create a certificate for.\n\n'
+              '* If a DNS authorization is provided for the domain, the'
+              ' certificate will be validated against the DNS record you added'
+              ' as part of the authorization flow.\n* If no DNS authorization'
+              ' is provided, Certificate Manager will attempt to validate the'
+              ' domain against the serving endpoint directly.\n\nYou may list'
+              ' multiple, comma-separated domain names to include multiple'
+              ' names as Subject Alternative Names on the issued certificate.'
+          ),
+      )
+  )
+
+  auth_group = base.ArgumentGroup(mutex=True)
+  auth_group.AddArgument(
+      base.Argument(
+          '--dns-authorizations',
+          type=arg_parsers.ArgList(),
+          metavar='DNS_AUTHORIZATIONS',
+          action=arg_parsers.FlattenAction(dedup=False),
+          help=(
+              'Name(s) of the DNS authorizations for each listed'
+              ' domain.\n\nNote that each domain requires a matching'
+              ' authorization, and any domain that fails authorization will'
+              ' prevent issuance and/or renewal of the certificate.\n\nTo'
+              ' reference multiple DNS authorizations, provide a list of comma'
+              ' separated DNS authorization resource names or URLs. For'
+              ' example:\n\n $ {command}'
+              ' --dns-authorizations=api-example-com,www-example-com'
+          ),
+      )
+  )
+  auth_group.AddArgument(
+      base.Argument(
+          '--issuance-config',
+          help='Name of the Certificate Issuance Config to use for issuance.',
+      )
+  )
+  managed_group.AddArgument(auth_group)
+
+  self_managed_group = base.ArgumentGroup(
+      help='Configuration for uploading self-managed certificates and keys.'
+  )
+  self_managed_group.AddArgument(
+      base.Argument(
+          '--certificate-file',
+          type=arg_parsers.FileContents(),
+          required=True,
+          help='Certificate data in PEM-encoded form.',
+      )
+  )
+  self_managed_group.AddArgument(
+      base.Argument(
+          '--private-key-file',
+          type=arg_parsers.FileContents(),
+          required=True,
+          help='Private key data in PEM-encoded form.',
+      )
+  )
+
+  root_group.AddArgument(managed_group)
+  root_group.AddArgument(self_managed_group)
+  root_group.AddToParser(parser)
+
+
+def GetManagedCertificateFromArgs(args, messages, parent_ref):
+  """Constructs ManagedCertificate message from args."""
+  if not (
+      args.IsSpecified('domains')
+      or args.IsSpecified('dns_authorizations')
+      or args.IsSpecified('issuance_config')
+  ):
+    return None
+
+  kwargs = {}
+  if getattr(args, 'domains', None) is not None:
+    kwargs['domains'] = args.domains
+
+  if getattr(args, 'dns_authorizations', None):
+    dns_authorizations = []
+    for auth in args.dns_authorizations:
+      if not auth.startswith('projects/'):
+        dns_authorizations.append(
+            hooks.DNS_AUTHORIZATIONS_TEMPLATE.format(
+                parent_ref.RelativeName(), auth
+            )
+        )
+      else:
+        dns_authorizations.append(auth)
+    kwargs['dnsAuthorizations'] = dns_authorizations
+
+  if getattr(args, 'issuance_config', None) is not None:
+    if not args.issuance_config.startswith('projects/'):
+      kwargs['issuanceConfig'] = hooks.ISSUANCE_CONFIG_TEMPLATE.format(
+          parent_ref.RelativeName(), args.issuance_config
+      )
+    else:
+      kwargs['issuanceConfig'] = args.issuance_config
+
+  return messages.ManagedCertificate(**kwargs)

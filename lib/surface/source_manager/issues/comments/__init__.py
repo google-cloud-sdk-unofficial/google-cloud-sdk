@@ -20,6 +20,5 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.RegionalEndpointsSupported
-@base.Hidden
 class Comments(base.Group):
   """Manage Secure Source Manager issue comments."""

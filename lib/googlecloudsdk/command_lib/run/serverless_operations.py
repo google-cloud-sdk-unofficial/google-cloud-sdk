@@ -1010,6 +1010,14 @@ class ServerlessOperations(object):
       tracker.StartStage(stages.UPLOAD_SOURCE)
       try:
         for context in source_containers_context:
+          if context.is_source_build:
+            archive_type = sources.ArchiveType.ZIP
+            respect_gitignore = True
+            skip_build = False
+          else:
+            archive_type = sources.ArchiveType.TAR
+            respect_gitignore = False
+            skip_build = True
           if sources.IsGcsObject(context.source):
             tracker.UpdateHeaderMessage(
                 'Using the source from the specified bucket.'
@@ -1035,7 +1043,7 @@ class ServerlessOperations(object):
                 region=region,
                 service_ref=service_ref,
                 kms_key=kms_key,
-                skip_build=True,
+                skip_build=skip_build,
             )
             source_path = sources.GetGsutilUri(source_object)
           else:
@@ -1045,8 +1053,8 @@ class ServerlessOperations(object):
                 region,
                 service_ref,
                 context.source_bucket,
-                sources.ArchiveType.TAR,
-                respect_gitignore=False,
+                archive_type,
+                respect_gitignore=respect_gitignore,
             )
             source_path = sources.GetGsutilUri(source)
           config_changes.append(
@@ -1749,6 +1757,7 @@ class ServerlessOperations(object):
       tracker=None,
       stage_key=None,
       show_ready_message=True,
+      dry_run=False,
   ):
     """Create a domain mapping.
 
@@ -1761,6 +1770,8 @@ class ServerlessOperations(object):
       stage_key: str, key of the stage to update in the tracker.
       show_ready_message: bool, whether to print the ready message from the
         mapping.
+      dry_run: bool, if True, only validate the request. The domain mapping is
+        not persisted and its completion is not polled.
 
     Returns:
       A domain_mapping.DomainMapping object.
@@ -1781,6 +1792,10 @@ class ServerlessOperations(object):
         domainMapping=new_mapping.Message(),
         parent=domain_mapping_ref.Parent().RelativeName(),
     )
+    if dry_run:
+      # Only set when requested: the v1alpha1 request used for Cloud Run for
+      # Anthos has no dryRun field.
+      request.dryRun = 'all'
     with metrics.RecordDuration(metric_names.CREATE_DOMAIN_MAPPING):
       try:
         response = self._client.namespaces_domainmappings.Create(request)
@@ -1790,6 +1805,9 @@ class ServerlessOperations(object):
                 domain_mapping_ref.Name()
             )
         )
+      if dry_run:
+        # Nothing was persisted, so there is nothing to poll.
+        return domain_mapping.DomainMapping(response, messages)
       # 'run domain-mappings create' is synchronous. Poll for its completion.x
       if tracker and stage_key:
         tracker.StartStage(stage_key)

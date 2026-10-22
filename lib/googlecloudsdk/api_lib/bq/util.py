@@ -48,7 +48,11 @@ def GetMigrationApiMessage(
   return GetApiMessage(message_name, api, api_version)
 
 
-def GetMigrationApiClient():
-  return GetApiClient(
-      api=_BQ_MIGRATION_API, api_version=_BQ_MIGRATION_API_VERSION
+def GetMigrationApiClient(location=None):
+  client = GetApiClient(
+      api=_BQ_MIGRATION_API,
+      api_version=_BQ_MIGRATION_API_VERSION,
+      location=location,
   )
+  client.additional_http_headers[TOOL_TAG_HEADER] = GCLOUD_TOOL_TAG
+  return client

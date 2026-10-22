@@ -876,9 +876,8 @@ class GoogleCloudGsuiteaddonsV1ChatAppConfig(_messages.Message):
       URL that hosts a square (aspect ratio of 1:1) PNG image. Recommended
       minimum size: 256 by 256 pixels. A default app avatar will be used if
       not specified.
-    description: Optional. A short description of the Chat app. Should be
-      between 1 and 40 characters. A default description will be used if not
-      specified.
+    description: Required. A short description of the Chat app. Should be
+      between 1 and 40 characters.
     displayName: Required. The display name of the Chat app. Length should be
       between 3 and 25 characters.
     errorLoggingEnabled: Optional. Whether to log errors to Cloud Logging.

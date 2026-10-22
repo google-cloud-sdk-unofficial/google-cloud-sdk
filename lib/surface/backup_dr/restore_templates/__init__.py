@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RestoreTemplates(base.Group):
   """Manage Cloud Backup and DR Restore Templates."""
 

@@ -89,21 +89,78 @@ LINK_TYPE_IDS: tuple[str, ...] = (
 MATERIALIZED_RESOURCE_TYPES = frozenset(['model', 'seed', 'snapshot'])
 
 
+# Characters outside the set Dataplex allows in a dbt entry id, plus any `/`
+# followed by another. The server also allows `.` and `:`, but dots have always
+# been rewritten here and a colon is reserved for first-party entries. A slash
+# may not repeat; it can't lead, since every unique_id starts with its type.
+_ENTRY_ID_DISALLOWED = re.compile(r"[^a-z0-9\-_~%!$&'()*+,;=@/]|/(?=/)")
+
+
 def entry_id(unique_id: str) -> str:
   """Maps a dbt unique_id to a Dataplex entry id.
 
-  dbt unique_ids look like ``model.my_project.my_model``; Dataplex entry ids
-  disallow dots, so they are lowercased and dots become underscores. This is
-  lossy (``a.b_c`` and ``a_b.c`` both collapse to ``a_b_c``); callers that build
-  many entries should watch for collisions -- see ``entry_builders``.
+  dbt unique_ids look like ``model.my_project.my_model``, but the names in them
+  are user content and may hold characters an entry id cannot, such as the
+  spaces in a source table named ``raw table``. The id is lowercased and every
+  such character, dots included, becomes an underscore. A ``/`` is kept unless
+  it is doubled, since Dataplex rejects ``//`` in an entry id. This is lossy
+  (``a.b_c`` and ``a_b.c`` both collapse to ``a_b_c``); callers that build many
+  entries should watch for collisions -- see ``entry_builders``.
+
+  For example:
+
+    model.my_project.my_model
+      -> model_my_project_my_model
+    source.my_project.raw.raw table
+      -> source_my_project_raw_raw_table
+    test.my_project.not_null_dim_v3.1_id.ab12
+      -> test_my_project_not_null_dim_v3_1_id_ab12
+    model.My_Project.orders:eu
+      -> model_my_project_orders_eu
+    source.my_project.raw.events/2024
+      -> source_my_project_raw_events/2024
 
   Args:
     unique_id: the dbt unique_id (e.g. ``model.my_project.my_model``).
 
   Returns:
-    The Dataplex entry id (lowercased, with dots replaced by underscores).
+    The Dataplex entry id.
   """
-  return unique_id.lower().replace('.', '_')
+  return _ENTRY_ID_DISALLOWED.sub('_', unique_id.lower())
+
+
+def fqn_segment(value: str) -> str:
+  """Encodes one segment of a fullyQualifiedName the way Dataplex does.
+
+  dbt names are user content and may hold a dot (a test on a decimal model
+  version such as ``not_null_dim_v3.1_id``), a colon, whitespace or a
+  backtick. Unescaped, a dot opens an extra segment and the server rejects the
+  entry. Such a segment is wrapped in backticks, with any backtick inside
+  doubled. Any other segment is returned unchanged.
+
+  For example, the FQN of a test on version 3.1 of model ``dim``:
+
+    segment:  not_null_dim_v3.1_id
+    encoded:  `not_null_dim_v3.1_id`
+    FQN:      dbt:test:my-gcp-project.my_project.`not_null_dim_v3.1_id`
+
+  and of a source table named ``raw table``:
+
+    dbt:source:my-gcp-project.my_project.raw.`raw table`
+
+  Without the backticks the server reads the test FQN as four segments
+  (``my-gcp-project``, ``my_project``, ``not_null_dim_v3``, ``1_id``) and
+  rejects it.
+
+  Args:
+    value: the raw segment.
+
+  Returns:
+    The segment, backtick-quoted when it holds a reserved character.
+  """
+  if not any(c in '.:`' or c.isspace() for c in value):
+    return value
+  return '`{0}`'.format(value.replace('`', '``'))
 
 
 def version_string(value: Any) -> str:
@@ -399,14 +456,19 @@ class Context:
 
   def dbt_project_fqn(self, project_name: str) -> str:
     """Returns the FQN for a dbt project entry."""
-    return 'dbt:project:{0}.{1}'.format(self.eg_project_id, project_name)
+    return 'dbt:project:{0}.{1}'.format(
+        fqn_segment(self.eg_project_id), fqn_segment(project_name)
+    )
 
   def dbt_source_fqn(
       self, project_name: str, source_name: str, table_name: str
   ) -> str:
     """Returns the FQN for a dbt source entry."""
     return 'dbt:source:{0}.{1}.{2}.{3}'.format(
-        self.eg_project_id, project_name, source_name, table_name
+        fqn_segment(self.eg_project_id),
+        fqn_segment(project_name),
+        fqn_segment(source_name),
+        fqn_segment(table_name),
     )
 
   def dbt_resource_fqn(
@@ -415,7 +477,10 @@ class Context:
     """Returns the FQN for a standard dbt resource (model, seed, etc.)."""
     subtype = entry_type.removeprefix('dbt-').replace('-', '_')
     return 'dbt:{0}:{1}.{2}.{3}'.format(
-        subtype, self.eg_project_id, project_name, resource
+        subtype,
+        fqn_segment(self.eg_project_id),
+        fqn_segment(project_name),
+        fqn_segment(resource),
     )
 
   def entry_name(self, resource_entry_id: str) -> str:

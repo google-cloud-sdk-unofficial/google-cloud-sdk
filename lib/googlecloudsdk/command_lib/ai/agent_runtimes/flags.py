@@ -495,3 +495,31 @@ def AddUpdateFlags(parser):
   labels_util.AddUpdateLabelsFlags(parser)
   _AddEtagFlag(parser)
   _AddDeploymentConfigFlags(parser, with_clear_dns_peering=True)
+
+
+def AddUpdateTrafficFlags(parser):
+  """Adds all the flags of `gcloud ai agent runtimes update-traffic`."""
+  shared_flags.AddAgentRuntimeResourceArg(
+      parser,
+      'to update traffic for',
+  )
+  traffic_group = parser.add_group(
+      mutex=True,
+      required=True,
+      help='Argument group for configuring traffic splitting across revisions.',
+  )
+  traffic_group.add_argument(
+      '--to-revisions',
+      metavar='REVISION=PERCENT',
+      type=arg_parsers.ArgDict(value_type=int),
+      help=(
+          'Map of runtime revision names to integer percentages of traffic'
+          ' assigned to them. The percentages must sum to 100.'
+      ),
+  )
+  traffic_group.add_argument(
+      '--always-latest',
+      action='store_true',
+      default=None,
+      help='Route 100% of traffic to the latest runtime revision.',
+  )

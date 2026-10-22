@@ -187,6 +187,29 @@ def IsLocalBuildFromSource(release_track, container_args):
   return container_args.IsSpecified('local_build')
 
 
+def IsSourceBuild(container_args: Any) -> bool:
+  """Checks if the container is a source deployment that requires a build.
+
+  Must be called after ValidateImplicitSourceContainers: when neither --image
+  nor --source is given, that validator prompts for the source and assigns it
+  to `container_args.source`. Reading the attribute (instead of IsSpecified)
+  is what lets this pick up the prompted value; before the prompt an implicit
+  source container still has `source=None` and would read as an image deploy.
+
+  Args:
+    container_args: command line arguments for the container.
+
+  Returns:
+    True for legacy and unified source builds, False for image deploys and for
+    source deploys using --no-build or --local-build.
+  """
+  return (
+      bool(getattr(container_args, 'source', None))
+      and not getattr(container_args, 'no_build', False)
+      and not getattr(container_args, 'local_build', False)
+  )
+
+
 def GetValidLocalBuildSourceContainer(release_track, build_from_source):
   """Checks if this is a local build source deployment."""
   if release_track != base.ReleaseTrack.ALPHA:

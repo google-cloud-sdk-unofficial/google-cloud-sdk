@@ -73,12 +73,10 @@
           required: false
           repeated: false
           help_text: |-
-            The target version of the instance. Setting this field triggers a
-            self-service update to the specified version.
-            Format: `Lustre_YYYYMMDD.NN_pXX` or `latest`
+            The target version for the instance. To trigger an upgrade, specify a
+            version listed in `available_version`, or `latest` for the newest version.
     - help_text: |-
-        Identifier.
-        The name of the instance.
+        Identifier. The name of the instance.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_instances
@@ -90,7 +88,7 @@
       type: long
       help_text: |-
         The storage capacity of the instance in gibibytes (GiB). Allowed values
-        depend on the `perUnitStorageThroughput`.
+        depend on the `per_unit_storage_throughput`.
         See [Performance
         tiers](https://docs.cloud.google.com/managed-lustre/docs/performance-tiers)
         for specific minimums, maximums, and step sizes for each performance tier.
@@ -165,7 +163,7 @@
             help_text: |-
               The name of the access rule policy group.
               Must be 16 characters or less and include only alphanumeric characters
-              or '_'.
+              or underscores.
           - api_field: ipAddressRanges
             help_text: |-
               The IP address ranges to which to apply this access rule. Accepts
@@ -174,8 +172,7 @@
           - api_field: accessMode
             hidden: true
             help_text: |-
-              The access mode for the access rule nodemap.
-              Default is [READ_WRITE][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule.AccessMode.READ_WRITE].
+              The access mode for the access rule nodemap. Default is `READ_WRITE`.
           - api_field: squashMode
             help_text: |-
               Squash mode for the access rule.
@@ -183,16 +180,14 @@
             hidden: true
             help_text: |-
               Squash UID for the access rule. If the squash mode for this rule is
-              [ROOT_SQUASH][google.cloud.lustre.v1alpha.AccessRulesOptions.SquashMode.ROOT_SQUASH], root users matching the
-              [ip_address_ranges][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule.ip_address_ranges] are squashed to this
-              UID. Defaults to 0 (no root squash).
+              `ROOT_SQUASH`, root users matching the `ip_address_ranges` are squashed
+              to this UID. Defaults to 0 (no root squash).
           - api_field: squashGid
             hidden: true
             help_text: |-
               Squash GID for the access rule. If the squash mode for this rule is
-              [ROOT_SQUASH][google.cloud.lustre.v1alpha.AccessRulesOptions.SquashMode.ROOT_SQUASH], root users matching the
-              [ip_address_ranges][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule.ip_address_ranges] are squashed to this
-              GID. Defaults to 0 (no root squash).
+              `ROOT_SQUASH`, root users matching the `ip_address_ranges` are squashed
+              to this GID. Defaults to 0 (no root squash).
           - api_field: mountableSubdirectories
             hidden: true
             help_text: |-
@@ -211,35 +206,31 @@
             help_text: |-
               Squash is disabled.
 
-              If set inside an [AccessRule][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule], root users matching the
-              [ip_ranges][AccessRule.ip_ranges] are not squashed.
+              If set inside an `AccessRule`, root users matching the
+              `ip_address_ranges` are not squashed.
 
-              If set as the [default_squash_mode][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_mode], root squash is
-              disabled for this instance.
+              If set as the `default_squash_mode`, root squash is disabled for this
+              instance.
 
               If the default squash mode is `NO_SQUASH`, do not set the
-              [default_squash_uid][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_uid] or
-              [default_squash_gid][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_gid], or an `invalid argument` error
-              is returned.
+              `default_squash_uid` or `default_squash_gid`, or an `invalid argument`
+              error is returned.
           - arg_value: root-squash
             enum_value: ROOT_SQUASH
             help_text: |-
               Root user squash is enabled.
 
-              Not supported inside an [AccessRule][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule].
+              Not supported inside an `AccessRule`.
 
-              If set as the [default_squash_mode][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_mode],
-              root users not matching any of the [access_rules][google.cloud.lustre.v1alpha.AccessRulesOptions.access_rules] are
-              squashed to the [default_squash_uid][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_uid] and
-              [default_squash_gid][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_gid].
+              If set as the `default_squash_mode`, root users not matching any of the
+              `access_rules` are squashed to the `default_squash_uid` and
+              `default_squash_gid`.
           - arg_value: all-users-squash
             enum_value: ALL_USERS_SQUASH
             help_text: |-
-              All users squashed to the [squash_uid][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule.squash_uid] and
-              [squash_gid][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule.squash_gid] for the access rule.
-              If this is for the [default_squash_mode][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_mode], then the
-              [default_squash_uid][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_uid] and
-              [default_squash_gid][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_gid] will be squashed.
+              All users squashed to the `squash_uid` and `squash_gid` for the access
+              rule. If this is for the `default_squash_mode`, then the
+              `default_squash_uid` and `default_squash_gid` will be squashed.
             hidden: true
         - arg_name: default-squash-uid
           api_field: instance.accessRulesOptions.defaultSquashUid
@@ -360,10 +351,10 @@
                 significant.
           - api_field: time
             help_text: |-
-              Time in UTC when the exclusion window starts on start_date and ends on
-              end_date. This can be:
+              Time in UTC when the exclusion window starts on `start_date` and ends on
+              `end_date`. This can be:
               * Full time OR
-              * All zeros for 00:00:00 UTC
+              * All zeros for 00:00:00 UTC.
             spec:
             - api_field: hours
               help_text: |-

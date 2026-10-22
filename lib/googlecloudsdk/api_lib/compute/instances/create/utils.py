@@ -1237,7 +1237,7 @@ def GetProjectServiceAccount(args,
     service_account = args.service_account
   has_workload_identity = args.IsKnownAndSpecified(
       'identity_type'
-  ) and args.identity_type in ('AGENT_IDENTITY', 'WORKLOAD_IDENTITY')
+  ) and args.identity_type == 'AGENT_IDENTITY'
   if (
       (skip_defaults or has_workload_identity)
       and not args.IsSpecified('scopes')

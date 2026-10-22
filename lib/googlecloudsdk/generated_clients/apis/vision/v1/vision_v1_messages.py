@@ -791,16 +791,16 @@ class FaceAnnotation(_messages.Message):
   r"""A face annotation object contains the results of face detection.
 
   Enums:
-    AngerLikelihoodValueValuesEnum: Anger likelihood.
+    AngerLikelihoodValueValuesEnum: Deprecated: No longer populated.
     BlurredLikelihoodValueValuesEnum: Blurred likelihood.
     HeadwearLikelihoodValueValuesEnum: Headwear likelihood.
-    JoyLikelihoodValueValuesEnum: Joy likelihood.
-    SorrowLikelihoodValueValuesEnum: Sorrow likelihood.
-    SurpriseLikelihoodValueValuesEnum: Surprise likelihood.
+    JoyLikelihoodValueValuesEnum: Deprecated: No longer populated.
+    SorrowLikelihoodValueValuesEnum: Deprecated: No longer populated.
+    SurpriseLikelihoodValueValuesEnum: Deprecated: No longer populated.
     UnderExposedLikelihoodValueValuesEnum: Under-exposed likelihood.
 
   Fields:
-    angerLikelihood: Anger likelihood.
+    angerLikelihood: Deprecated: No longer populated.
     blurredLikelihood: Blurred likelihood.
     boundingPoly: The bounding polygon around the face. The coordinates of the
       bounding box are in the original image's scale. The bounding box is
@@ -817,7 +817,7 @@ class FaceAnnotation(_messages.Message):
       landmarker results, only on the initial face detection, hence the fd
       (face detection) prefix.
     headwearLikelihood: Headwear likelihood.
-    joyLikelihood: Joy likelihood.
+    joyLikelihood: Deprecated: No longer populated.
     landmarkingConfidence: Face landmarking confidence. Range [0, 1].
     landmarks: Detected face landmarks.
     panAngle: Yaw angle, which indicates the leftward/rightward angle that the
@@ -826,8 +826,8 @@ class FaceAnnotation(_messages.Message):
     rollAngle: Roll angle, which indicates the amount of clockwise/anti-
       clockwise rotation of the face relative to the image vertical about the
       axis perpendicular to the face. Range [-180,180].
-    sorrowLikelihood: Sorrow likelihood.
-    surpriseLikelihood: Surprise likelihood.
+    sorrowLikelihood: Deprecated: No longer populated.
+    surpriseLikelihood: Deprecated: No longer populated.
     tiltAngle: Pitch angle, which indicates the upwards/downwards angle that
       the face is pointing relative to the image's horizontal plane. Range
       [-180,180].
@@ -835,7 +835,7 @@ class FaceAnnotation(_messages.Message):
   """
 
   class AngerLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Anger likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -889,7 +889,7 @@ class FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class JoyLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Joy likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -907,7 +907,7 @@ class FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SorrowLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Sorrow likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -925,7 +925,7 @@ class FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SurpriseLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Surprise likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -1324,16 +1324,16 @@ class GoogleCloudVisionV1p1beta1FaceAnnotation(_messages.Message):
   r"""A face annotation object contains the results of face detection.
 
   Enums:
-    AngerLikelihoodValueValuesEnum: Anger likelihood.
+    AngerLikelihoodValueValuesEnum: Deprecated: No longer populated.
     BlurredLikelihoodValueValuesEnum: Blurred likelihood.
     HeadwearLikelihoodValueValuesEnum: Headwear likelihood.
-    JoyLikelihoodValueValuesEnum: Joy likelihood.
-    SorrowLikelihoodValueValuesEnum: Sorrow likelihood.
-    SurpriseLikelihoodValueValuesEnum: Surprise likelihood.
+    JoyLikelihoodValueValuesEnum: Deprecated: No longer populated.
+    SorrowLikelihoodValueValuesEnum: Deprecated: No longer populated.
+    SurpriseLikelihoodValueValuesEnum: Deprecated: No longer populated.
     UnderExposedLikelihoodValueValuesEnum: Under-exposed likelihood.
 
   Fields:
-    angerLikelihood: Anger likelihood.
+    angerLikelihood: Deprecated: No longer populated.
     blurredLikelihood: Blurred likelihood.
     boundingPoly: The bounding polygon around the face. The coordinates of the
       bounding box are in the original image's scale. The bounding box is
@@ -1350,7 +1350,7 @@ class GoogleCloudVisionV1p1beta1FaceAnnotation(_messages.Message):
       landmarker results, only on the initial face detection, hence the fd
       (face detection) prefix.
     headwearLikelihood: Headwear likelihood.
-    joyLikelihood: Joy likelihood.
+    joyLikelihood: Deprecated: No longer populated.
     landmarkingConfidence: Face landmarking confidence. Range [0, 1].
     landmarks: Detected face landmarks.
     panAngle: Yaw angle, which indicates the leftward/rightward angle that the
@@ -1359,8 +1359,8 @@ class GoogleCloudVisionV1p1beta1FaceAnnotation(_messages.Message):
     rollAngle: Roll angle, which indicates the amount of clockwise/anti-
       clockwise rotation of the face relative to the image vertical about the
       axis perpendicular to the face. Range [-180,180].
-    sorrowLikelihood: Sorrow likelihood.
-    surpriseLikelihood: Surprise likelihood.
+    sorrowLikelihood: Deprecated: No longer populated.
+    surpriseLikelihood: Deprecated: No longer populated.
     tiltAngle: Pitch angle, which indicates the upwards/downwards angle that
       the face is pointing relative to the image's horizontal plane. Range
       [-180,180].
@@ -1368,7 +1368,7 @@ class GoogleCloudVisionV1p1beta1FaceAnnotation(_messages.Message):
   """
 
   class AngerLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Anger likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -1422,7 +1422,7 @@ class GoogleCloudVisionV1p1beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class JoyLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Joy likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -1440,7 +1440,7 @@ class GoogleCloudVisionV1p1beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SorrowLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Sorrow likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -1458,7 +1458,7 @@ class GoogleCloudVisionV1p1beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SurpriseLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Surprise likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -2593,16 +2593,16 @@ class GoogleCloudVisionV1p2beta1FaceAnnotation(_messages.Message):
   r"""A face annotation object contains the results of face detection.
 
   Enums:
-    AngerLikelihoodValueValuesEnum: Anger likelihood.
+    AngerLikelihoodValueValuesEnum: Deprecated: No longer populated.
     BlurredLikelihoodValueValuesEnum: Blurred likelihood.
     HeadwearLikelihoodValueValuesEnum: Headwear likelihood.
-    JoyLikelihoodValueValuesEnum: Joy likelihood.
-    SorrowLikelihoodValueValuesEnum: Sorrow likelihood.
-    SurpriseLikelihoodValueValuesEnum: Surprise likelihood.
+    JoyLikelihoodValueValuesEnum: Deprecated: No longer populated.
+    SorrowLikelihoodValueValuesEnum: Deprecated: No longer populated.
+    SurpriseLikelihoodValueValuesEnum: Deprecated: No longer populated.
     UnderExposedLikelihoodValueValuesEnum: Under-exposed likelihood.
 
   Fields:
-    angerLikelihood: Anger likelihood.
+    angerLikelihood: Deprecated: No longer populated.
     blurredLikelihood: Blurred likelihood.
     boundingPoly: The bounding polygon around the face. The coordinates of the
       bounding box are in the original image's scale. The bounding box is
@@ -2619,7 +2619,7 @@ class GoogleCloudVisionV1p2beta1FaceAnnotation(_messages.Message):
       landmarker results, only on the initial face detection, hence the fd
       (face detection) prefix.
     headwearLikelihood: Headwear likelihood.
-    joyLikelihood: Joy likelihood.
+    joyLikelihood: Deprecated: No longer populated.
     landmarkingConfidence: Face landmarking confidence. Range [0, 1].
     landmarks: Detected face landmarks.
     panAngle: Yaw angle, which indicates the leftward/rightward angle that the
@@ -2628,8 +2628,8 @@ class GoogleCloudVisionV1p2beta1FaceAnnotation(_messages.Message):
     rollAngle: Roll angle, which indicates the amount of clockwise/anti-
       clockwise rotation of the face relative to the image vertical about the
       axis perpendicular to the face. Range [-180,180].
-    sorrowLikelihood: Sorrow likelihood.
-    surpriseLikelihood: Surprise likelihood.
+    sorrowLikelihood: Deprecated: No longer populated.
+    surpriseLikelihood: Deprecated: No longer populated.
     tiltAngle: Pitch angle, which indicates the upwards/downwards angle that
       the face is pointing relative to the image's horizontal plane. Range
       [-180,180].
@@ -2637,7 +2637,7 @@ class GoogleCloudVisionV1p2beta1FaceAnnotation(_messages.Message):
   """
 
   class AngerLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Anger likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -2691,7 +2691,7 @@ class GoogleCloudVisionV1p2beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class JoyLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Joy likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -2709,7 +2709,7 @@ class GoogleCloudVisionV1p2beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SorrowLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Sorrow likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -2727,7 +2727,7 @@ class GoogleCloudVisionV1p2beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SurpriseLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Surprise likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -3902,16 +3902,16 @@ class GoogleCloudVisionV1p3beta1FaceAnnotation(_messages.Message):
   r"""A face annotation object contains the results of face detection.
 
   Enums:
-    AngerLikelihoodValueValuesEnum: Anger likelihood.
+    AngerLikelihoodValueValuesEnum: Deprecated: No longer populated.
     BlurredLikelihoodValueValuesEnum: Blurred likelihood.
     HeadwearLikelihoodValueValuesEnum: Headwear likelihood.
-    JoyLikelihoodValueValuesEnum: Joy likelihood.
-    SorrowLikelihoodValueValuesEnum: Sorrow likelihood.
-    SurpriseLikelihoodValueValuesEnum: Surprise likelihood.
+    JoyLikelihoodValueValuesEnum: Deprecated: No longer populated.
+    SorrowLikelihoodValueValuesEnum: Deprecated: No longer populated.
+    SurpriseLikelihoodValueValuesEnum: Deprecated: No longer populated.
     UnderExposedLikelihoodValueValuesEnum: Under-exposed likelihood.
 
   Fields:
-    angerLikelihood: Anger likelihood.
+    angerLikelihood: Deprecated: No longer populated.
     blurredLikelihood: Blurred likelihood.
     boundingPoly: The bounding polygon around the face. The coordinates of the
       bounding box are in the original image's scale. The bounding box is
@@ -3928,7 +3928,7 @@ class GoogleCloudVisionV1p3beta1FaceAnnotation(_messages.Message):
       landmarker results, only on the initial face detection, hence the fd
       (face detection) prefix.
     headwearLikelihood: Headwear likelihood.
-    joyLikelihood: Joy likelihood.
+    joyLikelihood: Deprecated: No longer populated.
     landmarkingConfidence: Face landmarking confidence. Range [0, 1].
     landmarks: Detected face landmarks.
     panAngle: Yaw angle, which indicates the leftward/rightward angle that the
@@ -3937,8 +3937,8 @@ class GoogleCloudVisionV1p3beta1FaceAnnotation(_messages.Message):
     rollAngle: Roll angle, which indicates the amount of clockwise/anti-
       clockwise rotation of the face relative to the image vertical about the
       axis perpendicular to the face. Range [-180,180].
-    sorrowLikelihood: Sorrow likelihood.
-    surpriseLikelihood: Surprise likelihood.
+    sorrowLikelihood: Deprecated: No longer populated.
+    surpriseLikelihood: Deprecated: No longer populated.
     tiltAngle: Pitch angle, which indicates the upwards/downwards angle that
       the face is pointing relative to the image's horizontal plane. Range
       [-180,180].
@@ -3946,7 +3946,7 @@ class GoogleCloudVisionV1p3beta1FaceAnnotation(_messages.Message):
   """
 
   class AngerLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Anger likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -4000,7 +4000,7 @@ class GoogleCloudVisionV1p3beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class JoyLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Joy likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -4018,7 +4018,7 @@ class GoogleCloudVisionV1p3beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SorrowLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Sorrow likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -4036,7 +4036,7 @@ class GoogleCloudVisionV1p3beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SurpriseLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Surprise likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -5290,16 +5290,16 @@ class GoogleCloudVisionV1p4beta1FaceAnnotation(_messages.Message):
   r"""A face annotation object contains the results of face detection.
 
   Enums:
-    AngerLikelihoodValueValuesEnum: Anger likelihood.
+    AngerLikelihoodValueValuesEnum: Deprecated: No longer populated.
     BlurredLikelihoodValueValuesEnum: Blurred likelihood.
     HeadwearLikelihoodValueValuesEnum: Headwear likelihood.
-    JoyLikelihoodValueValuesEnum: Joy likelihood.
-    SorrowLikelihoodValueValuesEnum: Sorrow likelihood.
-    SurpriseLikelihoodValueValuesEnum: Surprise likelihood.
+    JoyLikelihoodValueValuesEnum: Deprecated: No longer populated.
+    SorrowLikelihoodValueValuesEnum: Deprecated: No longer populated.
+    SurpriseLikelihoodValueValuesEnum: Deprecated: No longer populated.
     UnderExposedLikelihoodValueValuesEnum: Under-exposed likelihood.
 
   Fields:
-    angerLikelihood: Anger likelihood.
+    angerLikelihood: Deprecated: No longer populated.
     blurredLikelihood: Blurred likelihood.
     boundingPoly: The bounding polygon around the face. The coordinates of the
       bounding box are in the original image's scale. The bounding box is
@@ -5316,7 +5316,7 @@ class GoogleCloudVisionV1p4beta1FaceAnnotation(_messages.Message):
       landmarker results, only on the initial face detection, hence the fd
       (face detection) prefix.
     headwearLikelihood: Headwear likelihood.
-    joyLikelihood: Joy likelihood.
+    joyLikelihood: Deprecated: No longer populated.
     landmarkingConfidence: Face landmarking confidence. Range [0, 1].
     landmarks: Detected face landmarks.
     panAngle: Yaw angle, which indicates the leftward/rightward angle that the
@@ -5329,8 +5329,8 @@ class GoogleCloudVisionV1p4beta1FaceAnnotation(_messages.Message):
     rollAngle: Roll angle, which indicates the amount of clockwise/anti-
       clockwise rotation of the face relative to the image vertical about the
       axis perpendicular to the face. Range [-180,180].
-    sorrowLikelihood: Sorrow likelihood.
-    surpriseLikelihood: Surprise likelihood.
+    sorrowLikelihood: Deprecated: No longer populated.
+    surpriseLikelihood: Deprecated: No longer populated.
     tiltAngle: Pitch angle, which indicates the upwards/downwards angle that
       the face is pointing relative to the image's horizontal plane. Range
       [-180,180].
@@ -5338,7 +5338,7 @@ class GoogleCloudVisionV1p4beta1FaceAnnotation(_messages.Message):
   """
 
   class AngerLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Anger likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -5392,7 +5392,7 @@ class GoogleCloudVisionV1p4beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class JoyLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Joy likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -5410,7 +5410,7 @@ class GoogleCloudVisionV1p4beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SorrowLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Sorrow likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -5428,7 +5428,7 @@ class GoogleCloudVisionV1p4beta1FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SurpriseLikelihoodValueValuesEnum(_messages.Enum):
-    r"""Surprise likelihood.
+    r"""Deprecated: No longer populated.
 
     Values:
       UNKNOWN: Unknown likelihood.

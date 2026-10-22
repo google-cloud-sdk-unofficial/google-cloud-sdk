@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: false
+  help_text:
     brief: Pause the execution of a job.
     description: Pause the execution of a job.
     examples: |

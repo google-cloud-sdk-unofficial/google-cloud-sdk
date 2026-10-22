@@ -14,8 +14,6 @@
 # limitations under the License.
 """Command to query formability for accelerator interconnects."""
 
-from typing import List
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -31,11 +29,12 @@ from googlecloudsdk.core import properties
 @base.UniverseCompatible
 @base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
-class QueryFormability(base.Command):
+class QueryFormability(base.ListCommand):
   """Query formability for accelerator interconnects."""
 
   @staticmethod
   def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
+    base.URI_FLAG.RemoveFromParser(parser)
     compute_flags.AddZoneFlag(
         parser,
         resource_type='accelerator interconnect',
@@ -48,34 +47,26 @@ class QueryFormability(base.Command):
         required=True,
         help='List of reservation subblock names or resource URLs to evaluate.',
     )
-    parser.add_argument(
-        '--topology',
-        type=arg_parsers.RegexpValidator(
-            r'^\d+x\d+x\d+$',
-            'Topology shape must be in the format NxNxN (e.g. 2x2x4, 4x4x4).',
-        ),
-        metavar='TOPOLOGY',
-        help=(
-            'Filter results to partitions matching the specified accelerator'
-            ' topology shape.'
-        ),
-    )
     parser.display_info.AddFormat("""
         table(
           partitionId:label=PARTITION_ID,
           acceleratorTopology:label=TOPOLOGY,
-          state:label=STATE,
-          infrastructureHealth:label=INFRA_HEALTH,
-          instanceState:label=INSTANCE_STATE,
-          usageState:label=USAGE_STATE,
-          subblock:label=SUBBLOCK,
-          parent:label=PARENT
+          status.state:label=STATE,
+          status.infrastructureHealth:label=INFRA_HEALTH,
+          status.instanceState:label=INSTANCE_STATE,
+          status.usageState:label=USAGE_STATE,
+          subblock.basename():label=SUBBLOCK,
+          parent:label=PARENT,
+          status.acceleratorInterconnect.basename():label=ACCELERATOR_INTERCONNECT:optional,
+          status.instance.basename():label=INSTANCE:optional,
+          status.error.message:label=ERROR:wrap:optional
         )
     """)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(
       self, args: parser_extensions.Namespace
-  ) -> List[util.PartitionFormabilityRecord]:
+  ) -> list[util.PartitionFormabilityRecord]:
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = client.messages
@@ -116,28 +107,45 @@ class QueryFormability(base.Command):
       raise core_exceptions.MultiError(errors)
     response = responses[0] if responses else None
 
-    results = util.TransformFormabilityResponse(response, args.topology)
-    if not results:
-      if args.topology:
-        log.status.Print(
-            'No partitions found matching topology [{0}].'.format(args.topology)
+    results = util.TransformFormabilityResponse(response)
+    for record in results:
+      status = record.get('status')
+      if isinstance(status, dict) and 'error' in status:
+        error = status['error']
+        message = (
+            error.get('message') if isinstance(error, dict) else str(error)
         )
-      else:
-        log.status.Print('No partitions found for the specified subblocks.')
+        subblock_name = record.get('subblock', '').split('/')[-1]
+        log.warning(
+            'Subblock [{0}] formability item error: {1}'.format(
+                subblock_name, message or 'Evaluation failed'
+            )
+        )
+
+    self._had_results = bool(results)
+    if not results:
+      log.status.Print('No partitions found for the specified subblocks.')
       return []
 
     return results
 
+  def Epilog(self, resources_were_displayed: bool) -> None:
+    if getattr(self, '_had_results', True):
+      super().Epilog(resources_were_displayed)
+
 
 QueryFormability.detailed_help = {
     'brief': 'Query formability for accelerator interconnects.',
-    'DESCRIPTION': """
+    'DESCRIPTION': (
+        """
         *{command}* queries hierarchical partition trees across dense
         reservation subblocks to determine physical topology health, instance
         lifecycle states, and placement formability for accelerator
         interconnects in a specified zone.
-    """,
-    'EXAMPLES': """
+    """
+    ),
+    'EXAMPLES': (
+        """
         To query formability for subblock `sb-1` in zone `us-central1-a`:
 
           $ {command} --zone=us-central1-a --subblocks=sb-1
@@ -149,6 +157,8 @@ QueryFormability.detailed_help = {
         To filter results by a specific accelerator topology shape
         (e.g., 4x4x4):
 
-          $ {command} --zone=us-central1-a --subblocks=sb-1 --topology=4x4x4
-    """,
+          $ {command} --zone=us-central1-a --subblocks=sb-1 \
+              --filter="acceleratorTopology=4x4x4"
+    """
+    ),
 }

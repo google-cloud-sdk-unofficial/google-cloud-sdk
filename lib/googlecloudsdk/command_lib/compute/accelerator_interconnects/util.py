@@ -14,21 +14,15 @@
 # limitations under the License.
 """Utility functions for compute accelerator interconnects commands."""
 
+from collections.abc import Mapping, Sequence
 import types
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    TypedDict,
-    Union,
-)
+from typing import Any, TypedDict
 
 from apitools.base.protorpclite import messages as protorpc_messages
+from apitools.base.py import encoding
 
 
-def _UnpackItems(element: Any) -> Optional[List[Any]]:
+def _UnpackItems(element: Any) -> list[Any] | None:
   """Extracts an items list from an element if it represents a container."""
   if element is None:
     return None
@@ -46,7 +40,7 @@ def _UnpackItems(element: Any) -> Optional[List[Any]]:
   return None
 
 
-def ExtractAcceleratorInterconnects(responses: Any) -> List[Any]:
+def ExtractAcceleratorInterconnects(responses: Any) -> list[Any]:
   """Extracts and flattens items from list API responses.
 
   Handles single page objects, multiple unflattened page response objects,
@@ -67,7 +61,7 @@ def ExtractAcceleratorInterconnects(responses: Any) -> List[Any]:
       return unpacked
     return [responses]
 
-  results: List[Any] = []
+  results: list[Any] = []
   for response in responses:
     unpacked = _UnpackItems(response)
     if unpacked is not None:
@@ -80,8 +74,8 @@ def ExtractAcceleratorInterconnects(responses: Any) -> List[Any]:
 
 def _MakeCapacityPool(
     messages: Any,
-    partition_ids: Optional[Sequence[str]] = None,
-    capacity_pool: Optional[Sequence[str]] = None,
+    partition_ids: Sequence[str] | None = None,
+    capacity_pool: Sequence[str] | None = None,
 ) -> Any:
   """Constructs CapacityPool message or dict."""
   pool_cls = getattr(messages, 'CapacityPool', None)
@@ -102,12 +96,12 @@ def _MakeCapacityPool(
 def _MakeAcceleratorInterconnect(
     messages: Any,
     name: str,
-    accelerator_topology: Optional[str] = None,
-    partition_ids: Optional[Sequence[str]] = None,
-    capacity_pool: Optional[Sequence[str]] = None,
-    description: Optional[str] = None,
-    reactivation_mode: Optional[str] = None,
-    labels: Optional[Any] = None,
+    accelerator_topology: str | None = None,
+    partition_ids: Sequence[str] | None = None,
+    capacity_pool: Sequence[str] | None = None,
+    description: str | None = None,
+    reactivation_mode: str | None = None,
+    labels: Any | None = None,
 ) -> Any:
   """Constructs AcceleratorInterconnect message or dict."""
   interconnect_cls = getattr(messages, 'AcceleratorInterconnect', None)
@@ -184,12 +178,12 @@ def MakeCreateRequest(
     project: str,
     zone: str,
     name: str,
-    accelerator_topology: Optional[str] = None,
-    partition_ids: Optional[Sequence[str]] = None,
-    capacity_pool: Optional[Sequence[str]] = None,
-    description: Optional[str] = None,
-    reactivation_mode: Optional[str] = None,
-    labels: Optional[Any] = None,
+    accelerator_topology: str | None = None,
+    partition_ids: Sequence[str] | None = None,
+    capacity_pool: Sequence[str] | None = None,
+    description: str | None = None,
+    reactivation_mode: str | None = None,
+    labels: Any | None = None,
 ) -> Any:
   """Constructs an Insert request for an accelerator interconnect."""
   interconnect = _MakeAcceleratorInterconnect(
@@ -224,7 +218,7 @@ def MakeCreateRequest(
   else:
     insert_body = {'resource': interconnect}
 
-  kwargs: Dict[str, Any] = {'project': project, 'zone': zone}
+  kwargs: dict[str, Any] = {'project': project, 'zone': zone}
   if valid_fields is not None:
     if 'acceleratorInterconnectsInsertRequest' in valid_fields:
       kwargs['acceleratorInterconnectsInsertRequest'] = insert_body
@@ -309,11 +303,11 @@ def MakeListRequest(
     messages: types.ModuleType,
     project: str,
     zone: str,
-    filter_expr: Optional[str] = None,
-    max_results: Optional[int] = None,
-    page_token: Optional[str] = None,
-    return_partial_success: Optional[bool] = None,
-) -> Union[protorpc_messages.Message, Dict[str, Union[str, int, bool]]]:
+    filter_expr: str | None = None,
+    max_results: int | None = None,
+    page_token: str | None = None,
+    return_partial_success: bool | None = None,
+) -> protorpc_messages.Message | dict[str, str | int | bool]:
   """Constructs a List request for accelerator interconnects."""
   req_class = getattr(
       messages,
@@ -324,7 +318,7 @@ def MakeListRequest(
       'AcceleratorInterconnectsListRequest',
       None,
   )
-  kwargs: Dict[str, Union[str, int, bool]] = {'project': project, 'zone': zone}
+  kwargs: dict[str, str | int | bool] = {'project': project, 'zone': zone}
   if filter_expr is not None:
     kwargs['filter'] = filter_expr
   if max_results is not None:
@@ -343,30 +337,17 @@ def MakeListRequest(
   return kwargs
 
 
-PartitionFormabilityRecord = TypedDict(
-    'PartitionFormabilityRecord',
-    {
-        'partitionId': str,
-        'acceleratorTopology': str,
-        'state': str,
-        'infrastructureHealth': str,
-        'instanceState': str,
-        'usageState': str,
-        'subblock': str,
-        'parent': str,
-    },
-)
-
-
+PartitionFormabilityStatusRecord = dict[str, Any]
+PartitionFormabilityRecord = dict[str, Any]
 FormabilityRecord = PartitionFormabilityRecord
 
 
 def ParseSubblocks(
-    subblocks: Optional[Sequence[str]] = None,
-    subblocks_flag: Optional[Sequence[str]] = None,
-) -> List[str]:
+    subblocks: Sequence[str] | None = None,
+    subblocks_flag: Sequence[str] | None = None,
+) -> list[str]:
   """Parses, deduplicates, and concatenates subblock inputs."""
-  combined: List[str] = []
+  combined: list[str] = []
   seen = set()
   for source in (subblocks, subblocks_flag):
     if not source:
@@ -383,101 +364,64 @@ def ParseSubblocks(
   return combined
 
 
+def _GetField(resource: Any, field_name: str) -> Any:
+  """Safely gets field from Mapping or object/Message."""
+  if resource is None:
+    return None
+  if isinstance(resource, Mapping):
+    return resource.get(field_name)
+  return getattr(resource, field_name, None)
+
+
+def TransformFormabilityStatus(
+    status: Any,
+) -> PartitionFormabilityStatusRecord | None:
+  """Transforms status proto or mapping into status record."""
+  if not status:
+    return None
+  if isinstance(status, protorpc_messages.Message):
+    return encoding.MessageToDict(status)
+  return dict(status)
+
+
 def TransformFormabilityItem(
-    item: Any, topology_filter: Optional[str] = None
-) -> Optional[PartitionFormabilityRecord]:
+    item: Any,
+) -> PartitionFormabilityRecord | None:
   """Pure transform of a single proto/dict item into a record."""
-  if item is None:
+  if not item:
     return None
 
-  if isinstance(item, dict):
-    partition_id = item.get('partitionId') or item.get('partition_id')
-    accelerator_topology = item.get('acceleratorTopology') or item.get(
-        'accelerator_topology'
-    )
-    status = item.get('status')
-    parent = item.get('parent')
-    subblock = item.get('subblock')
+  if isinstance(item, protorpc_messages.Message):
+    record = encoding.MessageToDict(item)
   else:
-    partition_id = getattr(item, 'partitionId', None) or getattr(
-        item, 'partition_id', None
-    )
-    accelerator_topology = (
-        getattr(item, 'acceleratorTopology', None)
-        or getattr(item, 'accelerator_topology', None)
-    )
-    status = getattr(item, 'status', None)
-    parent = getattr(item, 'parent', None)
-    subblock = getattr(item, 'subblock', None)
+    record = dict(item)
 
-  if topology_filter and accelerator_topology != topology_filter:
+  if not record:
     return None
 
-  state = None
-  infra_health = None
-  instance_state = None
-  usage_state = None
-
-  if status:
-    if isinstance(status, dict):
-      state = status.get('state')
-      infra_health = status.get('infrastructureHealth') or status.get(
-          'infrastructure_health'
-      )
-      instance_state = status.get('instanceState') or status.get(
-          'instance_state'
-      )
-      usage_state = status.get('usageState') or status.get('usage_state')
-    else:
-      state = getattr(status, 'state', None)
-      infra_health = getattr(status, 'infrastructureHealth', None) or getattr(
-          status, 'infrastructure_health', None
-      )
-      instance_state = getattr(status, 'instanceState', None) or getattr(
-          status, 'instance_state', None
-      )
-      usage_state = getattr(status, 'usageState', None) or getattr(
-          status, 'usage_state', None
-      )
-
-  subblock_name = str(subblock).split('/')[-1] if subblock else '-'
-
-  return {
-      'partitionId': str(partition_id or '-'),
-      'acceleratorTopology': str(accelerator_topology or '-'),
-      'state': str(state or '-'),
-      'infrastructureHealth': str(infra_health or '-'),
-      'instanceState': str(instance_state or '-'),
-      'usageState': str(usage_state or '-'),
-      'subblock': subblock_name,
-      'parent': str(parent or '-'),
-  }
+  return record
 
 
 def TransformFormabilityResponse(
-    response: Any, topology_filter: Optional[str] = None
-) -> List[PartitionFormabilityRecord]:
+    response: Any,
+) -> list[PartitionFormabilityRecord]:
   """Pure transform of the top-level response container into records."""
   if not response:
     return []
 
   if isinstance(response, (list, tuple)):
     items = response
-  elif isinstance(response, dict):
-    items = response.get('items')
-    if callable(items):
-      items = None
   else:
-    items = getattr(response, 'items', None)
+    items = _GetField(response, 'items')
     if callable(items):
       items = None
 
   if not items:
     return []
 
-  records: List[PartitionFormabilityRecord] = []
+  records: list[PartitionFormabilityRecord] = []
   for item in items:
-    record = TransformFormabilityItem(item, topology_filter=topology_filter)
+    record = TransformFormabilityItem(item)
     if record is not None:
       records.append(record)
   return records
@@ -527,9 +471,9 @@ MemberInstanceRecord = TypedDict(
     'MemberInstanceRecord',
     {
         'instance': str,
-        'instance_id': Union[int, str],
-        'instanceId': Union[int, str],
-        'id': Union[int, str],
+        'instance_id': int | str,
+        'instanceId': int | str,
+        'id': int | str,
         'zone': str,
     },
 )
@@ -543,12 +487,12 @@ def GetMemberInstanceUri(resource: Any) -> str:
 
 
 def FormatMemberInstances(
-    responses: Any, zone: Optional[str] = None
-) -> List[MemberInstanceRecord]:
+    responses: Any, zone: str | None = None
+) -> list[MemberInstanceRecord]:
   """Extracts member instances from API responses and returns formatted records.
   """
   items = ExtractAcceleratorInterconnects(responses)
-  results: List[MemberInstanceRecord] = []
+  results: list[MemberInstanceRecord] = []
   for item in items:
     if isinstance(item, dict):
       instance_url = item.get('instance') or ''
@@ -582,10 +526,10 @@ def MakeMemberInstancesListRequest(
     project: str,
     zone: str,
     interconnect_name: str,
-    filter_expr: Optional[str] = None,
-    max_results: Optional[int] = None,
-    page_token: Optional[str] = None,
-    return_partial_success: Optional[bool] = None,
+    filter_expr: str | None = None,
+    max_results: int | None = None,
+    page_token: str | None = None,
+    return_partial_success: bool | None = None,
 ) -> Any:
   """Constructs a list request for member instances of an interconnect."""
   req_class = (
@@ -605,7 +549,7 @@ def MakeMemberInstancesListRequest(
           None,
       )
   )
-  request_kwargs: Dict[str, Any] = {
+  request_kwargs: dict[str, Any] = {
       'project': project,
       'zone': zone,
       'acceleratorInterconnect': interconnect_name,

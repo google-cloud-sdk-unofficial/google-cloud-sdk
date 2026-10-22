@@ -14,8 +14,8 @@
 # limitations under the License.
 """Lists instances in a given project.
 
-Lists instances in a given project in the alphabetical order of the
-instance name.
+Lists instances in a given project. To sort the instances in alphabetical
+order by instance name, use the `--sort-by=name` flag.
 """
 
 
@@ -38,8 +38,8 @@ def _GetUriFromResource(resource):
 class List(base.ListCommand):
   """Lists Cloud SQL instances in a given project.
 
-  Lists Cloud SQL instances in a given project in the alphabetical
-  order of the instance name.
+  Lists Cloud SQL instances in a given project. To sort the instances in
+  alphabetical order by instance name, use the `--sort-by=name` flag.
   """
 
   @staticmethod
@@ -80,8 +80,8 @@ class List(base.ListCommand):
 class ListBeta(base.ListCommand):
   """Lists Cloud SQL instances in a given project.
 
-  Lists Cloud SQL instances in a given project in the alphabetical
-  order of the instance name.
+  Lists Cloud SQL instances in a given project. To sort the instances in
+  alphabetical order by instance name, use the `--sort-by=name` flag.
   """
 
   @staticmethod

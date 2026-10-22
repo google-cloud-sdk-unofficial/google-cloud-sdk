@@ -1,6 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
-
   help_text:
     brief: List Secure Source Manager comments under a pull request.
     description: List Secure Source Manager comments under a pull request.
@@ -31,3 +29,6 @@
         comment.body:label=BODY,
         createTime.date()
       )
+
+  hints:
+    read_only: true

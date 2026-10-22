@@ -1,0 +1,55 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute preview HaControllerZoneConfiguration export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  instanceNetworkInterfaces:
+    description: |-
+      The network interface configuration of a VM instance in this zone, keyed
+      by the name of the network interface. A VM network interface uses the nicN
+      naming format, where N is a value between 0 and 7. The default interface
+      is nic0. Use this field to choose the internal IP addresses of the VM
+      instance in this zone instead of letting Compute Engine assign them
+      automatically. Each key must be a name of a network interface that
+      exists on the VM instance. Otherwise, the request fails. Network
+      interfaces that are omitted are assigned an ephemeral internal IP
+      address. Every zone must configure the same network interfaces and
+      the same IP address families. For the zone that currently
+      holds the VM instance, this field is populated automatically, and
+      any addresses you specify must match the instance's current
+      addresses. Only internal IP addresses are supported, and this
+      field can only be set when the HA Controller is created.
+    $ref: InstanceNetworkInterfacesValue.yaml
+  nodeAffinities:
+    description: |-
+      A set of node affinity configurations. Refer toConfiguring node affinity
+      for more information. Overrides reservationAffinity.
+    type: array
+    items:
+      $ref: HaControllerZoneConfigurationNodeAffinity.yaml
+  reservationAffinity:
+    description: |-
+      Specifies the reservations that the instance can consume from.
+    $ref: HaControllerZoneConfigurationReservationAffinity.yaml

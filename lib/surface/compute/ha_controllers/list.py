@@ -60,7 +60,7 @@ def _TransformSecondaryZone(resource):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.PREVIEW)
 class List(base.ListCommand):
   """List Compute Engine HA Controllers."""
 

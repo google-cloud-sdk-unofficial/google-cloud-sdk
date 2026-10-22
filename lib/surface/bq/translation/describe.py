@@ -14,8 +14,8 @@
 # limitations under the License.
 """Implements command to describe a batch translation."""
 
+from googlecloudsdk.api_lib.bq import util as api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.bq import translation_utils as utils
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -47,7 +47,7 @@ class Describe(base.DescribeCommand):
     )
 
   def Run(self, args):
-    client = utils.get_migration_client()
+    client = api_util.GetMigrationApiClient()
     migration_service = client.projects_locations_workflows
 
     project = properties.VALUES.core.project.Get(required=True)

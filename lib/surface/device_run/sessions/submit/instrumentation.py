@@ -437,6 +437,14 @@ targets in the module will be run.
           'Required when --sharding-option is uniform.',
       )
     if (
+        args.uniform_sharding_count is not None
+        and args.sharding_option != 'uniform'
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--uniform-sharding-count',
+          'Can only be specified when --sharding-option is uniform.',
+      )
+    if (
         args.sharding_option == 'smart'
         and args.smart_sharding_target_duration is None
     ):
@@ -445,12 +453,28 @@ targets in the module will be run.
           'Required when --sharding-option is smart.',
       )
     if (
+        args.smart_sharding_target_duration is not None
+        and args.sharding_option != 'smart'
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--smart-sharding-target-duration',
+          'Can only be specified when --sharding-option is smart.',
+      )
+    if (
         args.sharding_option == 'smart'
         and args.smart_sharding_record_name is None
     ):
       raise calliope_exceptions.RequiredArgumentException(
           '--smart-sharding-record-name',
           'Required when --sharding-option is smart.',
+      )
+    if (
+        args.smart_sharding_record_name is not None
+        and args.sharding_option != 'smart'
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--smart-sharding-record-name',
+          'Can only be specified when --sharding-option is smart.',
       )
     if (
         args.smart_sharding_max_shard_count is not None

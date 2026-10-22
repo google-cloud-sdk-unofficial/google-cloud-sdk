@@ -30,7 +30,7 @@
     - help_text: |-
         Resource name of the policy binding to retrieve.
         Example:
-        "projects/123456789/locations/global/policyBindings/prod-cluster-binding".
+        "projects/123456789/locations/us-central1/policyBindings/prod-cluster-binding".
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.software_delivery_trust.v1alpha_resources:projects_locations_policy_bindings

@@ -184,7 +184,9 @@ def GetStoragePoolScaleTypeArg(messages: Any) -> arg_utils.ChoiceEnumMapper:
       custom_mappings={
           'SCALE_TYPE_DEFAULT': 'default',
           'SCALE_TYPE_SCALEOUT': 'scaleout',
+          'SCALE_TYPE_SCALEOUT_24': 'scaleout-24',
       },
+      hidden_choices=['scaleout-24'],
   )
 
 

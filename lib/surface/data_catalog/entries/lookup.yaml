@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: true
   help_text:
     brief: Lookup a Data Catalog entry by its target name.
     description: Lookup a Data Catalog entry by its target name.
@@ -37,6 +39,8 @@
         SQL lexical structure: https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
   help_text:
     brief: Lookup a Data Catalog entry by its target name.
     description: Lookup a Data Catalog entry by its target name.

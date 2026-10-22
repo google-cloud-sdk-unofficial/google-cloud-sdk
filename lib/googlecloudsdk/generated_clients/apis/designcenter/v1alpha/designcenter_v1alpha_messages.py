@@ -2443,11 +2443,8 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesImportRequest(_mess
   name = _messages.StringField(2, required=True)
 
 
-class DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest(
-    _messages.Message
-):
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest(_messages.Message):
   r"""A
-
   DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest
   object.
 
@@ -2457,9 +2454,7 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest(
     name: Required. The name of the application template.
   """
 
-  ingestApplicationTemplateIaCRequest = _messages.MessageField(
-      'IngestApplicationTemplateIaCRequest', 1
-  )
+  ingestApplicationTemplateIaCRequest = _messages.MessageField('IngestApplicationTemplateIaCRequest', 1)
   name = _messages.StringField(2, required=True)
 
 
@@ -2783,9 +2778,7 @@ class DesigncenterProjectsLocationsSpacesApplicationsDeployRequest(_messages.Mes
   name = _messages.StringField(2, required=True)
 
 
-class DesigncenterProjectsLocationsSpacesApplicationsExportRequest(
-    _messages.Message
-):
+class DesigncenterProjectsLocationsSpacesApplicationsExportRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationsExportRequest object.
 
   Fields:
@@ -2794,9 +2787,7 @@ class DesigncenterProjectsLocationsSpacesApplicationsExportRequest(
     name: Required. The name of the application.
   """
 
-  exportApplicationIaCRequest = _messages.MessageField(
-      'ExportApplicationIaCRequest', 1
-  )
+  exportApplicationIaCRequest = _messages.MessageField('ExportApplicationIaCRequest', 1)
   name = _messages.StringField(2, required=True)
 
 
@@ -3851,6 +3842,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class Environment(_messages.Message):
   r"""Environment of the Application, Service, or Workload
 
@@ -3905,7 +3897,6 @@ class ExportApplicationIaCRequest(_messages.Message):
       TERRAFORM: IaC format is Terraform.
       HELM: IaC format is HELM.
     """
-
     IAC_FORMAT_UNSPECIFIED = 0
     TERRAFORM = 1
     HELM = 2
@@ -4808,9 +4799,7 @@ class IngestApplicationTemplateIaCRequest(_messages.Message):
       imported IaC is compatible with the catalog.
   """
 
-  devconnectSourceConfig = _messages.MessageField(
-      'DeveloperConnectSourceConfig', 1
-  )
+  devconnectSourceConfig = _messages.MessageField('DeveloperConnectSourceConfig', 1)
   gcsUri = _messages.StringField(2)
   gitSource = _messages.MessageField('GitSource', 3)
   iacModule = _messages.MessageField('IaCModule', 4)

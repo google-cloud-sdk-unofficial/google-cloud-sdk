@@ -1678,9 +1678,17 @@ class JsonClient(cloud_api.CloudApi):
       bucket_name,
       managed_folder_name,
       managed_folder_metadata=None,
+      rapid_cache_config=None,
       if_metageneration_match=None,
   ):
     """See CloudApi class for function doc strings."""
+    if rapid_cache_config is not None:
+      if managed_folder_metadata is None:
+        managed_folder_metadata = self.messages.ManagedFolder(
+            bucket=bucket_name,
+            name=managed_folder_name,
+        )
+      managed_folder_metadata.rapidCacheConfig = rapid_cache_config
     request = self.messages.StorageManagedFoldersUpdateRequest(
         bucket=bucket_name,
         managedFolder=managed_folder_name,

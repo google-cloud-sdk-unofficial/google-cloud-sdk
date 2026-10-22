@@ -126,7 +126,7 @@ def HandleOauth2FlowErrors():
     raise six.raise_from(AuthRequestFailedError(e), e)
 
 
-class WSGIServer(wsgiref.simple_server.WSGIServer):
+class WSGIServer(google_auth_flow._ExclusiveWSGIServer):  # pylint: disable=protected-access
   """WSGI server to handle more than one connections.
 
   A normal WSGI server will handle connections one-by-one. When running a local

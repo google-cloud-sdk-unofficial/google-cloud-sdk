@@ -4882,11 +4882,8 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
       r"""Lists multicast group range activations in a given project and location.
 
       Args:
-        request:
-          (NetworkservicesProjectsLocationsMulticastGroupRangeActivationsListRequest)
-          input message
+        request: (NetworkservicesProjectsLocationsMulticastGroupRangeActivationsListRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
-
       Returns:
         (ListMulticastGroupRangeActivationsResponse) The response message.
       """

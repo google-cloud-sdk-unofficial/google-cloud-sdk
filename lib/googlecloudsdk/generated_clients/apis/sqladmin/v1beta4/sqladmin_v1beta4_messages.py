@@ -8045,6 +8045,23 @@ class SqlInstancesStartReplicaRequest(_messages.Message):
   project = _messages.StringField(3, required=True)
 
 
+class SqlInstancesStartRequest(_messages.Message):
+  r"""A SqlInstancesStartRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    location: Optional. The region of the Cloud SQL instance, for example `us-
+      central1`. If omitted, the region is determined from the instance.
+    project: Required. Project ID of the project that contains the instance to
+      be started.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
+
+
 class SqlInstancesStopReplicaRequest(_messages.Message):
   r"""A SqlInstancesStopReplicaRequest object.
 
@@ -8052,6 +8069,23 @@ class SqlInstancesStopReplicaRequest(_messages.Message):
     instance: Cloud SQL read replica instance name.
     location: Optional. Region of the Cloud SQL instance.
     project: ID of the project that contains the read replica.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
+
+
+class SqlInstancesStopRequest(_messages.Message):
+  r"""A SqlInstancesStopRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    location: Optional. The region of the Cloud SQL instance, for example `us-
+      central1`. If omitted, the region is determined from the instance.
+    project: Required. Project ID of the project that contains the instance to
+      be stopped.
   """
 
   instance = _messages.StringField(1, required=True)

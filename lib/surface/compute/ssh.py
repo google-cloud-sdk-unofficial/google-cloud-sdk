@@ -538,7 +538,8 @@ class Ssh(base.Command):
           ssh_helper.env, putty_force_connect=putty_force_connect
       )
     except ssh.CommandError as e:
-      if not on_prem:
+      mismatched = getattr(ssh_helper, 'keys_mismatched', False)
+      if not on_prem and not mismatched:
         log.status.Print(
             self.createRecommendMessage(
                 args, instance_name, instance_ref, project

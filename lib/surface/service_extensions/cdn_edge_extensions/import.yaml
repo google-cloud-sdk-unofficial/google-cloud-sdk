@@ -1,4 +1,8 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
+
+hints:
+  read_only: false
+
 help_text:
   brief: |
     Import a `CdnEdgeExtension` resource.
@@ -14,7 +18,8 @@ request:
   collection: networkservices.projects.locations.cdnEdgeExtensions
   ALPHA:
     api_version: v1alpha1
-
+  BETA:
+    api_version: v1beta1
 
 arguments:
   resource:
@@ -32,4 +37,6 @@ import:
     collection: networkservices.projects.locations.cdnEdgeExtensions
     ALPHA:
       api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     method: create

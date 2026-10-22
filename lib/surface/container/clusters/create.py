@@ -154,6 +154,63 @@ def _IsSpecified(args, name):
   return hasattr(args, name) and args.IsSpecified(name)
 
 
+# Flags that only configure the initial node pool, which is not created when
+# --num-nodes=0.
+_INITIAL_NODE_POOL_FLAGS = (
+    'accelerator',
+    'disk_size',
+    'disk_type',
+    'enable_autorepair',
+    'enable_autoscaling',
+    'enable_autoupgrade',
+    'image_type',
+    'local_ssd_count',
+    'location_policy',
+    'machine_type',
+    'max_nodes',
+    'max_nodes_per_pool',
+    'max_surge_upgrade',
+    'max_unavailable_upgrade',
+    'metadata',
+    'metadata_from_file',
+    'min_cpu_platform',
+    'min_nodes',
+    'node_labels',
+    'node_taints',
+    'node_version',
+    'preemptible',
+    'scopes',
+    'service_account',
+    'spot',
+    'tags',
+    'total_max_nodes',
+    'total_min_nodes',
+)
+
+
+def _ValidateZeroNodesFlags(args):
+  """Rejects initial node pool flags when no initial node pool is created."""
+  if not (args.IsKnownAndSpecified('num_nodes') and args.num_nodes == 0):
+    return
+  if args.IsKnownAndSpecified('node_pool_name'):
+    # A named initial node pool is still created, with 0 nodes.
+    return
+  specified = [
+      '--' + name.replace('_', '-')
+      for name in _INITIAL_NODE_POOL_FLAGS
+      if args.IsKnownAndSpecified(name)
+  ]
+  if specified:
+    raise exceptions.InvalidArgumentException(
+        '--num-nodes',
+        '--num-nodes=0 creates the cluster without a default node pool, so the'
+        ' following flags cannot be specified: {}. Use `gcloud container'
+        ' node-pools create` to add a node pool to the cluster.'.format(
+            ', '.join(specified)
+        ),
+    )
+
+
 cloudNatTemplate = string.Template(
     'Note: This cluster has private nodes. If you need connectivity to the '
     'public internet, for example to pull public containers, you must '
@@ -234,6 +291,8 @@ def ParseCreateOptionsBase(
         '--enable-cluster-scale-to-zero must be specified when'
         ' --cluster-scale-to-zero-delay is specified.',
     )
+
+  _ValidateZeroNodesFlags(args)
 
   ephemeral_storage_local_ssd = None
   if args.IsKnownAndSpecified('ephemeral_storage_local_ssd'):
@@ -525,6 +584,9 @@ def ParseCreateOptionsBase(
       enable_cost_allocation=get_default('enable_cost_allocation'),
       enable_network_egress_cost_allocation=get_default(
           'enable_network_egress_cost_allocation'
+      ),
+      managed_autoscaling_disabled=get_default(
+          'managed_autoscaling_disabled'
       ),
       enable_multi_networking=get_default('enable_multi_networking'),
       placement_type=get_default('placement_type'),
@@ -944,6 +1006,7 @@ flags_to_add = {
         'enableSliceController': flags.AddEnableSliceControllerFlag,
         'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
         'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=False),
+        'managedAutoscaling': flags.AddManagedAutoscalingFlags,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1204,6 +1267,7 @@ flags_to_add = {
         ),
         'enableScheduledUpgrades': flags.AddEnableScheduledUpgradesFlag,
         'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=False),
+        'managedAutoscaling': flags.AddManagedAutoscalingFlags,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1470,6 +1534,7 @@ flags_to_add = {
         ),
         'enableScheduledUpgrades': flags.AddEnableScheduledUpgradesFlag,
         'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=False),
+        'managedAutoscaling': flags.AddManagedAutoscalingFlags,
     },
 }
 # LINT.ThenChange(create_auto.py:auto_flags)
@@ -1879,6 +1944,9 @@ class CreateBeta(Create):
         'enable_default_compute_class'
     )
     ops.default_compute_class = get_default('default_compute_class')
+    ops.managed_autoscaling_disabled = get_default(
+        'managed_autoscaling_disabled'
+    )
     ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
     ops.control_plane_egress_mode = get_default('control_plane_egress')
     ops.gpudirect_strategy = get_default('gpudirect_strategy')
@@ -2068,6 +2136,9 @@ class CreateAlpha(Create):
         'enable_default_compute_class'
     )
     ops.default_compute_class = get_default('default_compute_class')
+    ops.managed_autoscaling_disabled = get_default(
+        'managed_autoscaling_disabled'
+    )
     ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
     ops.control_plane_egress_mode = get_default('control_plane_egress')
     ops.gpudirect_strategy = get_default('gpudirect_strategy')

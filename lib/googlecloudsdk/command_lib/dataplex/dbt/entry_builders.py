@@ -1430,9 +1430,10 @@ def build_entries(
 
   entries = []
   # entry_id -> unique_id, tracked as entries are added. This hands entry_links
-  # a ready id set and lets us warn when the lossy unique_id -> entry_id mapping
-  # (naming.entry_id lowercases and replaces dots) collapses two distinct
-  # resources onto one id -- one would silently overwrite the other on import.
+  # a ready id set and catches the lossy unique_id -> entry_id mapping
+  # (naming.entry_id lowercases and replaces characters) collapsing two distinct
+  # resources onto one id. Dataplex fails the whole import on a duplicate entry,
+  # so only the first is kept.
   ids = {}
 
   # dbt unique_ids already emitted. `parentEntry` is validated against an
@@ -1450,12 +1451,20 @@ def build_entries(
     # type we don't emit, say -- would be a dangling reference that Dataplex
     # rejects, so fall back to the project to keep the tree connected. The
     # project itself is the root and takes no parent.
+    entry_id = naming.entry_id(unique_id)
+    if entry_id in ids and ids[entry_id] != unique_id:
+      log.warning(
+          'Two dbt resources map to the same Dataplex entry id [{0}] ([{1}] '
+          'and [{2}]); only the first is imported.'.format(
+              entry_id, ids[entry_id], unique_id
+          )
+      )
+      return
     parent = parent_unique_id if parent_unique_id in emitted else project_id
     if parent != unique_id:
       record['entry']['parentEntry'] = ctx.entry_name(naming.entry_id(parent))
     emitted.add(unique_id)
     entries.append(record)
-    entry_id = naming.entry_id(unique_id)
     if len(entry_id) > naming.MAX_ENTRY_ID_LENGTH:
       log.warning(
           'Dataplex entry id [{0}] for dbt resource [{1}] exceeds the '
@@ -1464,13 +1473,6 @@ def build_entries(
           )
       )
     _check_size_limits(ctx, unique_id, record)
-    if entry_id in ids and ids[entry_id] != unique_id:
-      log.warning(
-          'Two dbt resources map to the same Dataplex entry id [{0}] ([{1}] '
-          'and [{2}]); one will overwrite the other on import.'.format(
-              entry_id, ids[entry_id], unique_id
-          )
-      )
     ids[entry_id] = unique_id
 
   def group_uid(node: dict[str, Any]) -> str | None:

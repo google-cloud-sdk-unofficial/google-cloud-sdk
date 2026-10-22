@@ -170,7 +170,8 @@ class AutoscalingSchedule(_messages.Message):
       schedule is active.
     priority: Optional. Specifies the priority of the schedule. If two
       schedules overlap, the one with the higher priority will be used. The
-      higher the value, the higher the priority of the schedule.
+      higher the value, the higher the priority of the schedule. The value
+      must be non-negative; the lowest priority is `0`, which is the default.
     timeZone: Optional. The time zone for the schedule. The value of this
       field must be a time zone name from the [tz
       database](http://en.wikipedia.org/wiki/Tz_database). The default value

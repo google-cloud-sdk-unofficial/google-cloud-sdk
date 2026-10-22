@@ -1,4 +1,6 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
   hidden: true
   help_text:
     brief: List Cloud Backup and DR restore template executions.
@@ -11,6 +13,8 @@
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection: backupdr.projects.locations.restoreTemplates.executions
 
   response:

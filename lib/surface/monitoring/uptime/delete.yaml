@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: false
+  help_text:
     brief: Delete an uptime check or synthetic monitor.
     description: Delete an uptime check or synthetic monitor
     examples: |

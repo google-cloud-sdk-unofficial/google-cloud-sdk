@@ -221,6 +221,23 @@
         Mark the internal range as immutable. Then only non-semantic fields like description and
         labels could be modified after creation.
       type: bool
+    - arg_name: purpose
+      api_field: internalRange.purpose
+      help_text: |
+        Purpose of the internal range. Defines the intended use of the range and
+        any restrictions associated with it. If not specified, it defaults to
+        `vpc-subnet`.
+      choices:
+      - arg_value: vpc-subnet
+        enum_value: VPC_SUBNET
+        help_text: |
+          The internal range is used for VPC subnetworks.
+      - arg_value: internal-address
+        enum_value: INTERNAL_ADDRESS
+        help_text: |
+          The internal range is used exclusively for allocating individual IP
+          addresses (for example, for global PSC endpoints). Child ranges or
+          subnetworks cannot be created from a range with this purpose.
 
   async:
     collection: networkconnectivity.projects.locations.operations

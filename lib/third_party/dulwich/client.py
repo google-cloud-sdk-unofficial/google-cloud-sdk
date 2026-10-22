@@ -244,6 +244,7 @@ from .refs import (
     SYMREF,
     Ref,
     _import_remote_refs,
+    _set_branch_tracking,
     _set_default_branch,
     _set_head,
     _set_origin_head,
@@ -1597,6 +1598,10 @@ class GitClient:
                 # Update target head
                 if head_ref:
                     head = _set_head(target.refs, head_ref, ref_message)
+                    if not bare:
+                        _set_branch_tracking(
+                            target.get_config(), head_ref, origin.encode("utf-8")
+                        )
                 else:
                     head = None
 
@@ -3323,6 +3328,10 @@ class LocalGitClient(GitClient):
                 # Update target head
                 if head_ref:
                     head = _set_head(target.refs, head_ref, ref_message)
+                    if not bare:
+                        _set_branch_tracking(
+                            target.get_config(), head_ref, origin.encode("utf-8")
+                        )
                 else:
                     head = None
 
@@ -3963,6 +3972,14 @@ class SSHGitClient(TraditionalGitClient):
 
         if self.username is not None:
             netloc = urlquote(self.username, "@/:") + "@" + netloc
+
+        if not path.startswith("/"):
+            # Paths in ssh:// URLs are absolute, but scp-style URLs take a
+            # path relative to the home directory. Use git's /~/ form so the
+            # URL still refers to the same repository.
+            if not path.startswith("~"):
+                path = "~/" + path
+            path = "/" + path
 
         return urlunsplit(("ssh", netloc, path, "", ""))
 

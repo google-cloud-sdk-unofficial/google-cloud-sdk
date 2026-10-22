@@ -38,7 +38,6 @@ DETAILED_HELP = {
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.RegionalEndpointsSupported
-@base.Hidden
 class Close(base.Command):
   """Close a Secure Source Manager issue."""
 

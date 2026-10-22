@@ -3346,7 +3346,7 @@ class NetworkservicesV1beta1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists multicast group range activationsin a given project and location.
+      r"""Lists multicast group range activations in a given project and location.
 
       Args:
         request: (NetworkservicesProjectsLocationsMulticastGroupRangeActivationsListRequest) input message
@@ -4824,7 +4824,7 @@ class NetworkservicesV1beta1(base_api.BaseApiClient):
         method_id='networkservices.projects.locations.serviceBindings.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['serviceBindingId'],
+        query_params=['requestId', 'serviceBindingId'],
         relative_path='v1beta1/{+parent}/serviceBindings',
         request_field='serviceBinding',
         request_type_name='NetworkservicesProjectsLocationsServiceBindingsCreateRequest',
@@ -4851,7 +4851,7 @@ class NetworkservicesV1beta1(base_api.BaseApiClient):
         method_id='networkservices.projects.locations.serviceBindings.delete',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=[],
+        query_params=['requestId'],
         relative_path='v1beta1/{+name}',
         request_field='',
         request_type_name='NetworkservicesProjectsLocationsServiceBindingsDeleteRequest',
@@ -4932,7 +4932,7 @@ class NetworkservicesV1beta1(base_api.BaseApiClient):
         method_id='networkservices.projects.locations.serviceBindings.patch',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['updateMask'],
+        query_params=['requestId', 'updateMask'],
         relative_path='v1beta1/{+name}',
         request_field='serviceBinding',
         request_type_name='NetworkservicesProjectsLocationsServiceBindingsPatchRequest',

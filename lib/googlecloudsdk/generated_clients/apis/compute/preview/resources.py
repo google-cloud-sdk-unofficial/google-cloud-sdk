@@ -129,6 +129,35 @@ class Collections(enum.Enum):
       ['project', 'firewall'],
       True
   )
+  FOLDERGLOBALVMEXTENSIONPOLICIES = (
+      'folderGlobalVmExtensionPolicies',
+      '{+folder}/global/vmExtensionPolicies/{globalVmExtensionPolicy}',
+      {
+          '':
+              'folders/{folder}/global/vmExtensionPolicies/'
+              '{globalVmExtensionPolicy}',
+      },
+      ['folder', 'globalVmExtensionPolicy'],
+      True
+  )
+  FOLDERZONEVMEXTENSIONPOLICIES = (
+      'folderZoneVmExtensionPolicies',
+      '{+folder}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
+      {
+          '':
+              'folders/{folder}/zones/{zone}/vmExtensionPolicies/'
+              '{vmExtensionPolicy}',
+      },
+      ['folder', 'zone', 'vmExtensionPolicy'],
+      True
+  )
+  FOLDERS = (
+      'folders',
+      'folders/{foldersId}',
+      {},
+      ['foldersId'],
+      True
+  )
   FORWARDINGRULES = (
       'forwardingRules',
       'projects/{project}/regions/{region}/forwardingRules/{forwardingRule}',
@@ -148,6 +177,16 @@ class Collections(enum.Enum):
       'projects/{project}/global/addresses/{address}',
       {},
       ['project', 'address'],
+      True
+  )
+  GLOBALFOLDEROPERATIONS = (
+      'globalFolderOperations',
+      '{+folder}/global/operations/{operation}',
+      {
+          '':
+              'folders/{foldersId}/global/operations/{operation}',
+      },
+      ['folder', 'operation'],
       True
   )
   GLOBALFORWARDINGRULES = (
@@ -469,11 +508,40 @@ class Collections(enum.Enum):
       ['project', 'zone', 'nodeType'],
       True
   )
+  ORGANIZATIONGLOBALVMEXTENSIONPOLICIES = (
+      'organizationGlobalVmExtensionPolicies',
+      '{+organization}/global/vmExtensionPolicies/{globalVmExtensionPolicy}',
+      {
+          '':
+              'organizations/{organization}/global/vmExtensionPolicies/'
+              '{globalVmExtensionPolicy}',
+      },
+      ['organization', 'globalVmExtensionPolicy'],
+      True
+  )
   ORGANIZATIONSECURITYPOLICIES = (
       'organizationSecurityPolicies',
       'locations/global/securityPolicies/{securityPolicy}',
       {},
       ['securityPolicy'],
+      True
+  )
+  ORGANIZATIONZONEVMEXTENSIONPOLICIES = (
+      'organizationZoneVmExtensionPolicies',
+      '{+organization}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
+      {
+          '':
+              'organizations/{organization}/zones/{zone}/vmExtensionPolicies/'
+              '{vmExtensionPolicy}',
+      },
+      ['organization', 'zone', 'vmExtensionPolicy'],
+      True
+  )
+  ORGANIZATIONS = (
+      'organizations',
+      'organizations/{organizationsId}',
+      {},
+      ['organizationsId'],
       True
   )
   PACKETMIRRORINGS = (
@@ -1001,11 +1069,32 @@ class Collections(enum.Enum):
       ['project', 'crossSiteNetwork', 'wireGroup'],
       True
   )
+  ZONEFOLDEROPERATIONS = (
+      'zoneFolderOperations',
+      '{+folder}/zones/{zone}/operations/{operation}',
+      {
+          '':
+              'folders/{foldersId}/zones/{zone}/operations/{operation}',
+      },
+      ['folder', 'zone', 'operation'],
+      True
+  )
   ZONEOPERATIONS = (
       'zoneOperations',
       'projects/{project}/zones/{zone}/operations/{operation}',
       {},
       ['project', 'zone', 'operation'],
+      True
+  )
+  ZONEORGANIZATIONOPERATIONS = (
+      'zoneOrganizationOperations',
+      '{+organization}/zones/{zone}/operations/{operation}',
+      {
+          '':
+              'organizations/{organizationsId}/zones/{zone}/operations/'
+              '{operation}',
+      },
+      ['organization', 'zone', 'operation'],
       True
   )
   ZONEVMEXTENSIONPOLICIES = (

@@ -1638,6 +1638,9 @@ class EnvironmentConfig(_messages.Message):
     resilienceMode: Optional. Resilience mode of the Cloud Composer
       Environment. This field is supported for Cloud Composer environments in
       versions composer-2.2.0-airflow-*.*.* and newer.
+    scheduledHibernationConfig: Optional. The configuration for hibernating
+      and resuming the environment on a schedule. Supported for environments
+      that have `mode` set to `DEVELOPMENT`.
     softwareConfig: Optional. The configuration settings for software inside
       the environment.
     userWorkloadsConfig: Optional. The configuration for the user workloads
@@ -1705,11 +1708,12 @@ class EnvironmentConfig(_messages.Message):
   privateEnvironmentConfig = _messages.MessageField('PrivateEnvironmentConfig', 13)
   recoveryConfig = _messages.MessageField('RecoveryConfig', 14)
   resilienceMode = _messages.EnumField('ResilienceModeValueValuesEnum', 15)
-  softwareConfig = _messages.MessageField('SoftwareConfig', 16)
-  userWorkloadsConfig = _messages.MessageField('UserWorkloadsConfig', 17)
-  webServerConfig = _messages.MessageField('WebServerConfig', 18)
-  webServerNetworkAccessControl = _messages.MessageField('WebServerNetworkAccessControl', 19)
-  workloadsConfig = _messages.MessageField('WorkloadsConfig', 20)
+  scheduledHibernationConfig = _messages.MessageField('ScheduledHibernationConfig', 16)
+  softwareConfig = _messages.MessageField('SoftwareConfig', 17)
+  userWorkloadsConfig = _messages.MessageField('UserWorkloadsConfig', 18)
+  webServerConfig = _messages.MessageField('WebServerConfig', 19)
+  webServerNetworkAccessControl = _messages.MessageField('WebServerNetworkAccessControl', 20)
+  workloadsConfig = _messages.MessageField('WorkloadsConfig', 21)
 
 
 class ExecuteAirflowCommandRequest(_messages.Message):
@@ -2137,6 +2141,10 @@ class LoadSnapshotRequest(_messages.Message):
       loading the environment's state.
     skipPypiPackagesInstallation: Whether or not to skip installing Pypi
       packages when loading the environment's state.
+    skipUserWorkloadsServiceAccountsSetting: Optional. Whether or not to skip
+      setting user workloads service accounts when loading the environment's
+      state. This field is supported for Cloud Composer environments in
+      versions `composer-3-airflow-*.*.*` and newer.
     snapshotPath: A Cloud Storage path to a snapshot to load, e.g.: "gs://my-
       bucket/snapshots/project_location_environment_timestamp".
   """
@@ -2145,7 +2153,8 @@ class LoadSnapshotRequest(_messages.Message):
   skipEnvironmentVariablesSetting = _messages.BooleanField(2)
   skipGcsDataCopying = _messages.BooleanField(3)
   skipPypiPackagesInstallation = _messages.BooleanField(4)
-  snapshotPath = _messages.StringField(5)
+  skipUserWorkloadsServiceAccountsSetting = _messages.BooleanField(5)
+  snapshotPath = _messages.StringField(6)
 
 
 class LoadSnapshotResponse(_messages.Message):
@@ -2842,6 +2851,29 @@ class SaveSnapshotResponse(_messages.Message):
   """
 
   snapshotPath = _messages.StringField(1)
+
+
+class ScheduledHibernationConfig(_messages.Message):
+  r"""The configuration for hibernating and resuming the environment on a
+  schedule. Supported for environments in the development mode.
+
+  Fields:
+    enabled: Optional. Whether hibernating and resuming the environment on a
+      schedule is enabled.
+    hibernationSchedules: Optional. The cron expressions representing the
+      times when the environment will automatically hibernate, entering the
+      HIBERNATED state.
+    resumptionSchedules: Optional. The cron expressions representing the times
+      when the environment will automatically resume, entering the RUNNING
+      state.
+    timeZone: Optional. Time zone that sets the context to interpret the
+      schedule expressions. Expected format is "UTC+05", "UTC-03", etc.
+  """
+
+  enabled = _messages.BooleanField(1)
+  hibernationSchedules = _messages.StringField(2, repeated=True)
+  resumptionSchedules = _messages.StringField(3, repeated=True)
+  timeZone = _messages.StringField(4)
 
 
 class ScheduledSnapshotsConfig(_messages.Message):

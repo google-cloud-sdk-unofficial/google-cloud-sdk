@@ -1446,6 +1446,19 @@ class GenericIcebergCatalogInfo(_messages.Message):
       specified: - `User-Agent` - `Authorization` - `Accept` - `Content-Type`
       - `If-None-Match` - `X-Iceberg-Access-Delegation` - `X-Snowflake-
       Workload-Identity-Provider` - `X-Amz-Date` - `X-Amz-Security-Token`
+    oauth2_server_url: Optional. The OAuth2 server URL (specifically the Token
+      Endpoint) used to obtain an access token when authenticating with the
+      remote catalog (e.g., `https://auth.example.com/oauth2/token`). The
+      protocol must be `https`. When used with google.cloud.biglake.v1main.Ice
+      bergCatalog.FederatedCatalogOptions.secret_name, credentials from the
+      secret are exchanged at this URL for an access token. If omitted, the
+      token endpoint is discovered automatically via RFC 8414 using the
+      hostname from `GenericIcebergCatalogInfo.base_url` plus the path
+      `/.well-known/oauth-authorization-server`. When used with google.cloud.b
+      iglake.v1main.IcebergCatalog.FederatedCatalogOptions.GenericIcebergCatal
+      ogInfo.oidc_audience, the Google-signed OIDC ID token is exchanged at
+      this URL for an access token. If omitted, the OIDC ID token is sent
+      directly to the remote catalog as the Bearer token.
     oidc_audience: Optional. The audience claim (`aud`) to include in the
       generated OpenID Connect (OIDC) token. When specified, Lakehouse
       generates a Google-signed OIDC ID token on behalf of the BigLake service
@@ -1500,8 +1513,9 @@ class GenericIcebergCatalogInfo(_messages.Message):
 
   base_url = _messages.StringField(1)
   custom_headers = _messages.MessageField('CustomHeadersValue', 2)
-  oidc_audience = _messages.StringField(3)
-  warehouse = _messages.StringField(4)
+  oauth2_server_url = _messages.StringField(3)
+  oidc_audience = _messages.StringField(4)
+  warehouse = _messages.StringField(5)
 
 
 class GlueCatalogInfo(_messages.Message):
@@ -3018,6 +3032,8 @@ encoding.AddCustomJsonFieldMapping(
     GenericIcebergCatalogInfo, 'base_url', 'base-url')
 encoding.AddCustomJsonFieldMapping(
     GenericIcebergCatalogInfo, 'custom_headers', 'custom-headers')
+encoding.AddCustomJsonFieldMapping(
+    GenericIcebergCatalogInfo, 'oauth2_server_url', 'oauth2-server-url')
 encoding.AddCustomJsonFieldMapping(
     GenericIcebergCatalogInfo, 'oidc_audience', 'oidc-audience')
 encoding.AddCustomJsonFieldMapping(

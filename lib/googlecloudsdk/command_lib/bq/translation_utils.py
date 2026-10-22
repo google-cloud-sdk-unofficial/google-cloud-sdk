@@ -20,9 +20,7 @@ import os
 import pkgutil
 import typing
 
-from googlecloudsdk.api_lib.bq import util as api_util
 from googlecloudsdk.api_lib.storage import storage_util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.bq import command_utils
@@ -297,20 +295,6 @@ def build_migration_workflow(messages, task_key: str, task):
       additionalProperties=[prop_cls(key=task_key, value=task)]
   )
   return workflow_cls(tasks=workflow_tasks_value)
-
-
-def get_migration_client(location=None):
-  """Returns a BigQuery Migration API client configured with the gcloud tool-tag header."""
-  if location:
-    client = apis.GetClientInstance(
-        'bigquerymigration', 'v2', location=location
-    )
-  else:
-    client = api_util.GetMigrationApiClient()
-  client.additional_http_headers[api_util.TOOL_TAG_HEADER] = (
-      api_util.GCLOUD_TOOL_TAG
-  )
-  return client
 
 
 def execute_workflow(

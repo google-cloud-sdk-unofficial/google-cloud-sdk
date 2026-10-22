@@ -59,11 +59,19 @@ def _GAArgs(parser):
   flags.AddGuestFlushFlag(
       parser,
       'snapshot',
-      custom_help="""
-  Create an application-consistent snapshot by informing the OS
-  to prepare for the snapshot process. Currently only supported
-  for creating snapshots of disks attached to Windows instances.
-  """,
+      custom_help="""\
+Create an application-consistent snapshot. If the disk is attached to a Windows
+VM instance, this creates a Volume Shadow Copy Service (VSS) of the disk. For
+Linux instances, Compute Engine executes pre- and post-snapshot scripts before
+and after creating the snapshot of the disk. Before you run this command, you
+must have already saved the scripts on the instance in the directory
+`/etc/google/snapshots/`.
+
+To learn more about application-consistent snapshots on Windows and Linux, see
+[Create a Windows application-consistent disk snapshot](https://docs.cloud.google.com/compute/docs/instances/windows/creating-windows-persistent-disk-snapshot)
+and [Create Linux application-consistent disk snapshots](https://docs.cloud.google.com/compute/docs/disks/creating-linux-application-consistent-pd-snapshots)
+respectively.
+""",
   )
   flags.AddStorageLocationFlag(parser, 'snapshot')
   labels_util.AddCreateLabelsFlags(parser)

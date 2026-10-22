@@ -205,6 +205,8 @@ class Experiment(_messages.Message):
       experiment was stopped, particularly if it was manually cancelled.
     endReason: Output only. Why the experiment stopped. Example: It finished
       normally, or was cancelled by a user.
+    error: Output only. Details of any error encountered while preparing or
+      injecting this Experiment. Empty if successful.
     experimentTemplate: Required. The unique identifier of the reusable
       experiment template used to configure the experiment. This field
       determines the type of fault, target, and duration. Format: `projects/{p
@@ -310,17 +312,18 @@ class Experiment(_messages.Message):
   effectiveAction = _messages.MessageField('Action', 4)
   endNotes = _messages.StringField(5)
   endReason = _messages.EnumField('EndReasonValueValuesEnum', 6)
-  experimentTemplate = _messages.StringField(7)
-  name = _messages.StringField(8)
-  startOnCreateEnabled = _messages.BooleanField(9)
-  startTime = _messages.StringField(10)
-  state = _messages.EnumField('StateValueValuesEnum', 11)
-  stateUpdateTime = _messages.StringField(12)
-  stopTime = _messages.StringField(13)
-  tags = _messages.MessageField('TagsValue', 14)
-  templateDescription = _messages.StringField(15)
-  templateDisplayName = _messages.StringField(16)
-  templateDuration = _messages.StringField(17)
+  error = _messages.MessageField('Status', 7)
+  experimentTemplate = _messages.StringField(8)
+  name = _messages.StringField(9)
+  startOnCreateEnabled = _messages.BooleanField(10)
+  startTime = _messages.StringField(11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  stateUpdateTime = _messages.StringField(13)
+  stopTime = _messages.StringField(14)
+  tags = _messages.MessageField('TagsValue', 15)
+  templateDescription = _messages.StringField(16)
+  templateDisplayName = _messages.StringField(17)
+  templateDuration = _messages.StringField(18)
 
 
 class ExperimentTemplate(_messages.Message):
@@ -1545,6 +1548,8 @@ class Validation(_messages.Message):
     description: Optional. Notes or details about the `Validation` dry run.
       Minimum length is 0, maximum length is 2000.
     displayName: Optional. A human-readable name of the `Validation` dry run.
+    error: Output only. Details of any error encountered while preparing this
+      Validation. Empty if successful.
     name: Identifier. Unique identifier for the `Validation` dry run. Format:
       `projects/{project_id}/locations/{location}/validations/{validationId}`.
     state: Output only. The current state of the `Validation` dry run. Either
@@ -1614,10 +1619,11 @@ class Validation(_messages.Message):
   createTime = _messages.StringField(2)
   description = _messages.StringField(3)
   displayName = _messages.StringField(4)
-  name = _messages.StringField(5)
-  state = _messages.EnumField('StateValueValuesEnum', 6)
-  stopTime = _messages.StringField(7)
-  tags = _messages.MessageField('TagsValue', 8)
+  error = _messages.MessageField('Status', 5)
+  name = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  stopTime = _messages.StringField(8)
+  tags = _messages.MessageField('TagsValue', 9)
 
 
 class ValidationResource(_messages.Message):

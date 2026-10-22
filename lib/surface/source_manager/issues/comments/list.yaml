@@ -1,6 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
-
   help_text:
     brief: List Secure Source Manager comments under an issue.
     description: List Secure Source Manager comments under an issue.
@@ -31,3 +29,6 @@
         body:label=BODY,
         createTime.date()
       )
+
+  hints:
+    read_only: true

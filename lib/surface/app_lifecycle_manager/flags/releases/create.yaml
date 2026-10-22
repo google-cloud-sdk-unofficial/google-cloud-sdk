@@ -19,10 +19,6 @@
       To create a Flag Release that includes all current flags in a UnitKind, run:
 
           $ {command} full-sync --unit-kind=my-unit-kind --all-flags --location=global
-
-      To create a Flag Release for progressive rollout with dynamic allocations, run:
-
-          $ {command} progressive-rollout --unit-kind=my-unit-kind --allocations=flagName=projects/my-project/locations/global/flags/beta-feature,dynamicAllocationName=p10,initialVariant=Disabled,finalVariant=Enabled --location=global
   arguments:
     params:
     - help_text: |-
@@ -82,6 +78,7 @@
           is_positional: false
           required: false
           repeated: true
+          hidden: true
           help_text: |-
             Flag allocations to be rolled out.
           spec:

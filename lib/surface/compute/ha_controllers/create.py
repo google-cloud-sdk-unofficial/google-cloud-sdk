@@ -48,7 +48,7 @@ _NODE_AFFINITY_FILE_HELP_TEXT = textwrap.dedent("""\
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.PREVIEW)
 class Create(base.CreateCommand):
   """Create an HA Controller.
 
@@ -57,13 +57,13 @@ class Create(base.CreateCommand):
   automatically managing failover across two zones.
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     base.ASYNC_FLAG.AddToParser(parser)
     utils.AddHaControllerNameArgToParser(
-        parser, base.ReleaseTrack.ALPHA.name.lower()
+        parser, cls.ReleaseTrack().name.lower()
     )
-    messages = utils.GetMessagesModule('alpha')
+    messages = utils.GetMessagesModule(cls.ReleaseTrack().name.lower())
     parser.add_argument(
         '--description',
         help=(
@@ -207,6 +207,49 @@ class Create(base.CreateCommand):
             'Adds a network interface to the instance.'
         ),
     )
+    if cls.ReleaseTrack() == base.ReleaseTrack.PREVIEW:
+      parser.add_argument(
+          '--instance-network-interface',
+          required=False,
+          type=arg_parsers.ArgObject(
+              spec={
+                  'zone': arg_parsers.ArgObject(
+                      value_type=str,
+                      help_text=(
+                          'Specifies the zone of the network interface. The'
+                          ' zone must be specified in --zone-configuration.'
+                      ),
+                  ),
+                  'name': arg_parsers.ArgObject(
+                      value_type=str,
+                      help_text=(
+                          'Specifies the name of the network interface (for'
+                          ' example, nic0).'
+                      ),
+                  ),
+                  'address': arg_parsers.ArgObject(
+                      value_type=str,
+                      help_text=(
+                          'Specifies an optional IPv4 address to assign to the'
+                          ' network interface in the specified zone.'
+                      ),
+                  ),
+                  'internal-ipv6-address': arg_parsers.ArgObject(
+                      value_type=str,
+                      help_text=(
+                          'Specifies an optional internal IPv6 address to'
+                          ' assign to the network interface in the specified'
+                          ' zone.'
+                      ),
+                  ),
+              },
+          ),
+          action=arg_parsers.FlattenAction(),
+          help=(
+              'Configures per-zone IP addresses for the instance network'
+              ' interfaces.'
+          ),
+      )
     parser.add_argument(
         '--backend-service',
         required=False,
@@ -248,9 +291,16 @@ class Create(base.CreateCommand):
         description=args.description,
         instanceName=args.instance_name,
         failoverInitiation=args.failover_initiation,
-        zoneConfigurations=utils.MakeZoneConfiguration(args.zone_configuration),
+        zoneConfigurations=utils.MakeZoneConfiguration(
+            args.zone_configuration,
+            api_version=client.api_version,
+            instance_network_interface=getattr(
+                args, 'instance_network_interface', None
+            ),
+        ),
         networkingAutoConfiguration=utils.MakeNetworkConfiguration(
-            args.network_auto_configuration
+            args.network_auto_configuration,
+            api_version=client.api_version,
         ),
     )
     if len(configuration_zones) == 2 and args.migrate_disks_to_regional:

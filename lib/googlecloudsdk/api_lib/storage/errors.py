@@ -217,7 +217,8 @@ class S3ErrorPayload(api_exceptions.FormattableErrorPayload):
       self.content = client_error.response
       if 'ResponseMetadata' in client_error.response:
         self.status_code = client_error.response['ResponseMetadata'].get(
-            'HttpStatusCode', 0)
+            'HTTPStatusCode', 0
+        )
       if 'Error' in client_error.response:
         error = client_error.response['Error']
         self.status_description = error.get('Code', '')

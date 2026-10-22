@@ -34,14 +34,14 @@ class AgentConnectivityTemplate(_messages.Message):
   r"""AgentConnectivityTemplate represents a reusable network configuration.
 
   Enums:
-    AccessPathValueValuesEnum: Required. Immutable. The path of the access.
+    AccessPathValueValuesEnum: Optional. Immutable. The path of the access.
       Maps roughly to ingress/egress, though we keep CLIENT_TO_AGENT and
       AGENT_TO_ANYWHERE as carryovers from Agent Gateway's original resource
       model. The path is immutable once set. Exactly one path can be set.
     AccessTypesValueListEntryValuesEnum:
     AgentComputeValueValuesEnum: Optional. The compute environment where the
       agent is hosted. Exactly one type of compute must be chosen.
-    DeploymentModelValueValuesEnum: Required. The deployment model for the
+    DeploymentModelValueValuesEnum: Optional. The deployment model for the
       gateway.
 
   Messages:
@@ -49,7 +49,7 @@ class AgentConnectivityTemplate(_messages.Message):
       AgentConnectivityTemplate resource.
 
   Fields:
-    accessPath: Required. Immutable. The path of the access. Maps roughly to
+    accessPath: Optional. Immutable. The path of the access. Maps roughly to
       ingress/egress, though we keep CLIENT_TO_AGENT and AGENT_TO_ANYWHERE as
       carryovers from Agent Gateway's original resource model. The path is
       immutable once set. Exactly one path can be set.
@@ -58,7 +58,7 @@ class AgentConnectivityTemplate(_messages.Message):
     agentCompute: Optional. The compute environment where the agent is hosted.
       Exactly one type of compute must be chosen.
     createTime: Output only. The timestamp when the resource was created.
-    deploymentModel: Required. The deployment model for the gateway.
+    deploymentModel: Optional. The deployment model for the gateway.
     description: Optional. A free-text description of the resource. Max length
       1024 characters.
     egressNetworkConfig: Optional. Configuration for egress network traffic.
@@ -73,7 +73,7 @@ class AgentConnectivityTemplate(_messages.Message):
   """
 
   class AccessPathValueValuesEnum(_messages.Enum):
-    r"""Required. Immutable. The path of the access. Maps roughly to
+    r"""Optional. Immutable. The path of the access. Maps roughly to
     ingress/egress, though we keep CLIENT_TO_AGENT and AGENT_TO_ANYWHERE as
     carryovers from Agent Gateway's original resource model. The path is
     immutable once set. Exactly one path can be set.
@@ -100,9 +100,8 @@ class AgentConnectivityTemplate(_messages.Message):
     PRIVATE = 2
 
   class AgentComputeValueValuesEnum(_messages.Enum):
-    r"""Optional. The compute environment where the agent is hosted.
-
-    Exactly one type of compute must be chosen.
+    r"""Optional. The compute environment where the agent is hosted. Exactly
+    one type of compute must be chosen.
 
     Values:
       AGENT_COMPUTE_UNSPECIFIED: Unspecified compute type.
@@ -118,7 +117,7 @@ class AgentConnectivityTemplate(_messages.Message):
     GCE_VM = 4
 
   class DeploymentModelValueValuesEnum(_messages.Enum):
-    r"""Required. The deployment model for the gateway.
+    r"""Optional. The deployment model for the gateway.
 
     Values:
       DEPLOYMENT_MODEL_UNSPECIFIED: Unspecified deployment model.
@@ -1821,6 +1820,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EndpointMatcher(_messages.Message):
   r"""A definition of a matcher that selects endpoints to which the policies
   should be applied.
@@ -2357,7 +2357,6 @@ class ExpressLinkSource(_messages.Message):
 
 class ExtensionBinding(_messages.Message):
   r"""`ExtensionBinding` is a resource representing the attachment of an
-
   extension to a service.
 
   Messages:
@@ -2393,9 +2392,7 @@ class ExtensionBinding(_messages.Message):
     name: Identifier. Name of the `ExtensionBinding` resource in the following
       format: `projects/{project}/locations/{location}/extensionBindings/{exte
       nsion_binding}`.
-    priority: Optional. Priority of the extension binding. Lower numbers
-      indicate higher priority. The priority determines the order in which
-      extension bindings are applied to a request.
+    priority: Optional. This field is not supported.
     producerExtension: Required. The name of the extension that this binding
       should attach to target resources. Format: For Google-provided
       extensions, specify the service endpoint, for example `modelarmor.us-
@@ -2440,13 +2437,12 @@ class ExtensionBinding(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ProducerMetadataValue(_messages.Message):
-    r"""Optional.
-
-    Additional metadata that should be passed to the attached extension with
-    each request. This field is subject to the following limitations: * The
-    total size of the metadata must be less than 1 KiB. * The total number of
-    keys must be less than 16. * The length of each key must be less than 64
-    characters. * The length of each value must be less than 1024 characters.
+    r"""Optional. Additional metadata that should be passed to the attached
+    extension with each request. This field is subject to the following
+    limitations: * The total size of the metadata must be less than 1 KiB. *
+    The total number of keys must be less than 16. * The length of each key
+    must be less than 64 characters. * The length of each value must be less
+    than 1024 characters.
 
     Messages:
       AdditionalProperty: An additional property for a ProducerMetadataValue
@@ -2597,7 +2593,6 @@ class ExtensionBindingMatchConditionToDestinationHeaderSet(_messages.Message):
 
 class ExtensionBindingTarget(_messages.Message):
   r"""Specifies a list of targets to which this `ExtensionBinding` should
-
   attach.
 
   Fields:
@@ -6316,10 +6311,11 @@ class MatchRule(_messages.Message):
 
 
 class McpTranscoder(_messages.Message):
-  r"""Represents an McpTranscoder resource. This resource configures the Model
-  Context Protocol (MCP) to OpenAPI transcoding capabilities, linking an
-  AgentGateway to one or more Endpoints that define the tools via OpenAPI
-  specifications.
+  r"""Represents an McpTranscoder resource.
+
+  This resource configures the Model Context Protocol (MCP) to OpenAPI
+  transcoding capabilities, linking an AgentGateway to one or more Endpoints
+  that define the tools via OpenAPI specifications.
 
   Messages:
     LabelsValue: Optional. Set of labels associated with the McpTranscoder
@@ -6328,27 +6324,27 @@ class McpTranscoder(_messages.Message):
   Fields:
     agentGateway: Required. The resource name of the AgentGateway this
       McpTranscoder is associated with. Must be in the format
-      projects/*/locations/*/agentGateways/{agent_gateway_id}. The referenced
-      AgentGateway must have MCP listed in its protocols.
+      `projects/*/locations/*/agentGateways/{agent_gateway_id}`.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. An optional description of the McpTranscoder
       resource. Max length 1024 characters.
-    endpoints: Required. A list of resource names of Service resources (from
+    endpoints: Required. A list of resource URIs of Service resources (from
       Agent Registry) that contain the OpenAPI specifications. Must be in the
-      format projects/*/locations/*/services/{service}. Note: For the MVP,
-      each McpTranscoder is limited to a single tool set.
+      format `//agentregistry.googleapis.com/projects/*/locations/*/services/{
+      service}`. Note: For the MVP, each McpTranscoder is limited to a single
+      tool set.
     etag: Optional. Etag of the resource. If this is provided, it must match
       the server's etag. If the provided etag does not match the server's
       etag, the request will fail with a 409 ABORTED error.
     labels: Optional. Set of labels associated with the McpTranscoder
       resource.
     mcpServerUrl: Required. Specifies the MCP server URL used for the MCP
-      request calls. This typically specifies the host and path (e.g.,
-      "api.example.com/v1/mcp").
+      request calls. Must be a valid URL starting with `http://` or `https://`
+      (e.g., "https://api.example.com/v1/mcp").
     name: Identifier. Resource name of the McpTranscoder. It must be in the
-      format projects/*/locations/*/mcpTranscoders/{mcp_transcoder}.
-      {mcp_transcoder} must be 1-63 characters long and match the regex
-      [a-z]([-a-z0-9]*[a-z0-9])?.
+      format `projects/*/locations/*/mcpTranscoders/{mcp_transcoder}`.
+      `{mcp_transcoder}` must be 1-63 characters long and match the regex
+      `[a-z]([-a-z0-9]*[a-z0-9])?`.
     updateTime: Output only. The timestamp when the resource was last updated.
   """
 
@@ -9803,9 +9799,9 @@ class NetworkservicesProjectsLocationsMcpTranscodersPatchRequest(_messages.Messa
   Fields:
     mcpTranscoder: A McpTranscoder resource to be passed as the request body.
     name: Identifier. Resource name of the McpTranscoder. It must be in the
-      format projects/*/locations/*/mcpTranscoders/{mcp_transcoder}.
-      {mcp_transcoder} must be 1-63 characters long and match the regex
-      [a-z]([-a-z0-9]*[a-z0-9])?.
+      format `projects/*/locations/*/mcpTranscoders/{mcp_transcoder}`.
+      `{mcp_transcoder}` must be 1-63 characters long and match the regex
+      `[a-z]([-a-z0-9]*[a-z0-9])?`.
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the McpTranscoder resource by the update.
   """
@@ -13528,8 +13524,7 @@ class ProducerExtensionExtensionSettings(_messages.Message):
   Fields:
     authority: Optional. The `:authority` header in the request sent to the
       extension service.
-    observabilityMode: Optional. Whether the extension should function in
-      observability mode.
+    observabilityMode: Optional. This field is not supported.
     service: Required. URI of the PSC attachment.
     supportedEvents: Required. The event types supported by the extension.
   """
@@ -15733,9 +15728,9 @@ class WasmPluginLogConfig(_messages.Message):
     MinLogLevelValueValuesEnum: Optional. Non-empty default. Specifies the
       lowest level of the plugin logs that are exported to Cloud Logging. This
       setting relates to the logs generated by using logging statements in
-      your Wasm code. This field is can be set only if logging is enabled for
-      the plugin. If the field is not provided when logging is enabled, it is
-      set to `INFO` by default.
+      your Wasm code. This field can be set only if logging is enabled for the
+      plugin. If the field is not provided when logging is enabled, it is set
+      to `INFO` by default.
 
   Fields:
     enable: Optional. Specifies whether to enable logging for activity by this
@@ -15743,9 +15738,9 @@ class WasmPluginLogConfig(_messages.Message):
     minLogLevel: Optional. Non-empty default. Specifies the lowest level of
       the plugin logs that are exported to Cloud Logging. This setting relates
       to the logs generated by using logging statements in your Wasm code.
-      This field is can be set only if logging is enabled for the plugin. If
-      the field is not provided when logging is enabled, it is set to `INFO`
-      by default.
+      This field can be set only if logging is enabled for the plugin. If the
+      field is not provided when logging is enabled, it is set to `INFO` by
+      default.
     sampleRate: Optional. Non-empty default. Configures the sampling rate of
       activity logs, where `1.0` means all logged activity is reported and
       `0.0` means no activity is reported. A floating point value between
@@ -15758,8 +15753,8 @@ class WasmPluginLogConfig(_messages.Message):
   class MinLogLevelValueValuesEnum(_messages.Enum):
     r"""Optional. Non-empty default. Specifies the lowest level of the plugin
     logs that are exported to Cloud Logging. This setting relates to the logs
-    generated by using logging statements in your Wasm code. This field is can
-    be set only if logging is enabled for the plugin. If the field is not
+    generated by using logging statements in your Wasm code. This field can be
+    set only if logging is enabled for the plugin. If the field is not
     provided when logging is enabled, it is set to `INFO` by default.
 
     Values:

@@ -97,8 +97,15 @@ class ExportDNSRecordSets(base.Command):
       rrset = resp.rrset
       if rrset is not None:
         for rr in rrset:
+          rrdatas = getattr(rr, 'rrdatas', None)
+          if not rrdatas:
+            rrdatas = getattr(rr, 'rrdata', None)
+          if not rrdatas and hasattr(rr, 'get_unrecognized_field_info'):
+            rrdatas, _ = rr.get_unrecognized_field_info(
+                'rrdata', value_default=[]
+            )
           record_sets.append(
-              ResourceRecordSet(rr.name, rr.type, rr.ttl, rr.rrdata)
+              ResourceRecordSet(rr.name, rr.type, rr.ttl, rrdatas)
           )
       page_token = resp.nextPageToken
       if not page_token:

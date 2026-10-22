@@ -1,4 +1,6 @@
 release_tracks: [GA, BETA]
+hints:
+  read_only: false
 help_text:
   brief: Delete a semantic governance policy.
   description: Delete a semantic governance policy.

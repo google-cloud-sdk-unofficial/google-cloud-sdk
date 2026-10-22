@@ -612,6 +612,47 @@ workforce_pool_provider_scim_tenant:
     help_text: |-
       Deletes the SCIM tenant immediately. This operation cannot be undone.
 
+  workload_identity_federation_issuer_uri: &scim_tenant_wlid_issuer_uri
+    api_field: workforcePoolProviderScimTenant.workloadIdentityFederationConfig.issuerUri
+    arg_name: workload-identity-federation-issuer-uri
+    metavar: ISSUER_URI
+    hidden: true
+    help_text: |-
+      OIDC issuer URI of the identity provider that issues tokens to the SCIM client.
+
+  workload_identity_federation_client_id: &scim_tenant_wlid_client_id
+    api_field: workforcePoolProviderScimTenant.workloadIdentityFederationConfig.clientId
+    arg_name: workload-identity-federation-client-id
+    metavar: CLIENT_ID
+    hidden: true
+    help_text: |-
+      Client ID of the SCIM client application that is registered with the identity
+      provider.
+
+  create_wlid_group:
+    group:
+      hidden: true
+      help_text: |-
+        Workload Identity Federation configuration for the SCIM tenant. When set, the SCIM client
+        can authenticate by using tokens that are issued by its identity provider instead of SCIM
+        tokens.
+      params:
+      - <<: *scim_tenant_wlid_issuer_uri
+        required: true
+      - <<: *scim_tenant_wlid_client_id
+        required: true
+
+  update_wlid_group:
+    group:
+      hidden: true
+      help_text: |-
+        Workload Identity Federation configuration for the SCIM tenant. When set, the SCIM client
+        can authenticate by using tokens that are issued by its identity provider instead of SCIM
+        tokens.
+      params:
+      - *scim_tenant_wlid_issuer_uri
+      - *scim_tenant_wlid_client_id
+
 workforce_pool_provider_scim_token:
   display_name:
     api_field: workforcePoolProviderScimToken.displayName
@@ -954,7 +995,6 @@ workforce_pool_provider:
   vendor_type: &vendor_type
     arg_name: vendor-type
     api_field: workforcePoolProvider.vendorType
-    hidden: true
     choices:
     - arg_value: entra-id
       enum_value: ENTRA_ID
@@ -974,8 +1014,6 @@ workforce_pool_provider:
       enum_value: ONE_LOGIN
     - arg_value: generic
       enum_value: GENERIC
-    - arg_value: vendor-type-unspecified
-      enum_value: VENDOR_TYPE_UNSPECIFIED
     help_text: |-
       The vendor type of the third-party identity provider.
 
@@ -988,7 +1026,6 @@ workforce_pool_provider:
       Use `jump-cloud` for JumpCloud.
       Use `one-login` for OneLogin.
       Use `generic` for other generic identity providers.
-      Use `vendor-type-unspecified` to clear the vendor type.
 
   scim_usage: &scim_usage
     arg_name: scim-usage

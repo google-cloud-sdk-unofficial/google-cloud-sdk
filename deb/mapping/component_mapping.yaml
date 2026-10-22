@@ -1,5 +1,4 @@
 app-engine-go: google-cloud-cli-app-engine-go
-app-engine-grpc: google-cloud-cli-app-engine-grpc
 app-engine-java: google-cloud-cli-app-engine-java
 app-engine-php: unavailable
 app-engine-python: google-cloud-cli-app-engine-python
@@ -11,7 +10,6 @@ beta: google-cloud-cli
 bigtable: google-cloud-cli-bigtable-emulator
 bq: google-cloud-cli
 cbt: google-cloud-cli-cbt
-cloud-build-local: google-cloud-cli-cloud-build-local
 cloud-run-proxy: google-cloud-cli-cloud-run-proxy
 cloud-sql-proxy: unavailable
 run-compose: google-cloud-cli-run-compose
@@ -45,4 +43,3 @@ bundled-python3-unix: unavailable
 bundled-python3-alpine: unavailable
 spanner-cli: google-cloud-cli-spanner-cli
 sbom-extractor: google-cloud-cli-sbom-extractor
-gcloud-man-pages: unavailable

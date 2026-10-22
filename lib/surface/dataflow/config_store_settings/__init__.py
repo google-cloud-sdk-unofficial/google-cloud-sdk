@@ -18,13 +18,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ConfigStoreSettingsAlpha(base.Group):
-  """Manage Dataflow ConfigStore settings."""
-
-
-@base.Hidden
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class ConfigStoreSettings(base.Group):
   """Manage Dataflow ConfigStore settings."""

@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Get the IAM policy for a Data Catalog tag template.
@@ -24,6 +26,8 @@
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:tag_template
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Get the IAM policy for a Data Catalog tag template.

@@ -19,12 +19,14 @@ from googlecloudsdk.api_lib.resource_manager import operations
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Operations(base.Group):
   """Query Cloud Resource Manager long-running operations.
 
   Commands to query long-running operations created in Cloud Resource Manager.
   """
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   @staticmethod
   def Args(parser):

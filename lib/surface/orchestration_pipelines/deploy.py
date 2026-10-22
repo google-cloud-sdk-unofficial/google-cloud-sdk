@@ -42,6 +42,7 @@ from googlecloudsdk.command_lib.orchestration_pipelines import gcp_deployer
 from googlecloudsdk.command_lib.orchestration_pipelines import git_context
 from googlecloudsdk.command_lib.orchestration_pipelines.handlers import registry
 from googlecloudsdk.command_lib.orchestration_pipelines.processors import action_processor
+from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration import deployer as serverless_deployer
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_utils
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import gcs_utils
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
@@ -418,6 +419,13 @@ class Deploy(calliope_base.Command):
     yaml_processor.add_substitution_flags(parser)
 
   def Run(self, args: argparse.Namespace) -> DeploymentResult:
+    # Serverless Orchestration deployments are detected before the Cloud
+    # Composer-specific argument validation below (e.g. `--pipeline` requiring
+    # `--local`, `--rollback` running `git checkout`), as those rules do not
+    # apply to them.
+    if serverless_deployer.IsServerlessOrchestrationDeployment(args):
+      return serverless_deployer.Deploy(args)
+
     work_dir = pathlib.Path.cwd()
     status = {
         "resource_deployment": "SKIPPED",

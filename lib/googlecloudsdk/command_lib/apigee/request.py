@@ -31,9 +31,6 @@ from googlecloudsdk.core.credentials import requests
 from six.moves import urllib
 
 
-APIGEE_GLOBAL_HOST = "apigee.googleapis.com"
-APIGEE_LEP_HOST = "%s-apigee.googleapis.com"
-APIGEE_MREP_HOST = "apigee.%s.rep.googleapis.com"
 ERROR_FIELD = "error"
 MESSAGE_FIELD = "message"
 SUPPORTED_MREP_REGIONS = ["us", "eu", "in", "sa", "ch"]
@@ -109,15 +106,31 @@ def _ExtractErrorMessage(response):
   return None
 
 
+def _UseMtls() -> bool:
+  """Returns whether to use the MTLS endpoint."""
+  if properties.VALUES.context_aware.always_use_mtls_endpoint.GetBool():
+    return True
+  return properties.VALUES.context_aware.use_client_certificate.GetBool()
+
+
 def _GetApigeeHostByLocation(location: str | None = None) -> str:
   """Returns the Apigee host based on the location."""
-  if not location or location == "global":
-    return APIGEE_GLOBAL_HOST
-
   if location in SUPPORTED_MREP_REGIONS:
-    return APIGEE_MREP_HOST % location
+    apigee_domain_path = ["apigee", location, "rep"]
+  elif location and location != "global":
+    apigee_domain_path = [f"{location}-apigee"]
+  else:
+    apigee_domain_path = ["apigee"]
 
-  return APIGEE_LEP_HOST % location
+  if _UseMtls():
+    apigee_domain_path.append("mtls")
+
+  # gcloud-disable-gdu-domain
+  # In non-GDU universes, the root domain of the Apigee Management APIs isn't
+  # necessarily "googleapis.com".
+  apigee_domain_path.append(properties.VALUES.core.universe_domain.Get())
+
+  return ".".join(apigee_domain_path)
 
 
 def ResponseToApiRequest(identifiers,

@@ -17,14 +17,26 @@
 #    under the License.
 
 import logging
+import os
 import time
-
-from monotonic import monotonic as now  # noqa
 
 # log level for low-level debugging
 BLATHER = 5
 
 LOG = logging.getLogger(__name__)
+
+
+def canonicalize_path(path):
+    """Canonicalizes a potential path.
+
+    Returns a binary string encoded into filesystem encoding.
+    """
+    if isinstance(path, bytes):
+        return path
+    if isinstance(path, str):
+        return os.fsencode(path)
+    else:
+        return canonicalize_path(str(path))
 
 
 def pick_first_not_none(*values):
@@ -120,7 +132,7 @@ class StopWatch(object):
         if self.stopped_at is not None:
             end_time = self.stopped_at
         else:
-            end_time = now()
+            end_time = time.monotonic()
         return max(0.0, end_time - self.started_at)
 
     def __enter__(self):
@@ -128,10 +140,10 @@ class StopWatch(object):
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
-        self.stopped_at = now()
+        self.stopped_at = time.monotonic()
 
     def start(self):
-        self.started_at = now()
+        self.started_at = time.monotonic()
         self.stopped_at = None
 
     def expired(self):

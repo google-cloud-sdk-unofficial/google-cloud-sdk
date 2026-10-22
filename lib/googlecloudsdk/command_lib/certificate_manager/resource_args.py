@@ -67,6 +67,7 @@ def OperationAttributeConfig():
 def GetCertificateMapResourceSpec():
   return concepts.ResourceSpec(
       'certificatemanager.projects.locations.certificateMaps',
+      api_version='v1',
       resource_name='certificate map',
       certificateMapsId=CertificateMapAttributeConfig(),
       locationsId=LocationAttributeConfig(),
@@ -77,6 +78,7 @@ def GetCertificateMapResourceSpec():
 def GetCertificateMapEntryResourceSpec():
   return concepts.ResourceSpec(
       'certificatemanager.projects.locations.certificateMaps.certificateMapEntries',
+      api_version='v1',
       resource_name='certificate map entry',
       certificateMapEntriesId=CertificateMapEntryAttributeConfig(),
       certificateMapsId=CertificateMapAttributeConfig(),
@@ -88,6 +90,7 @@ def GetCertificateMapEntryResourceSpec():
 def GetCertificateResourceSpec():
   return concepts.ResourceSpec(
       'certificatemanager.projects.locations.certificates',
+      api_version='v1',
       resource_name='certificate',
       certificatesId=CertificateAttributeConfig(),
       locationsId=LocationAttributeConfig(),
@@ -98,6 +101,7 @@ def GetCertificateResourceSpec():
 def GetLocationResourceSpec():
   return concepts.ResourceSpec(
       'certificatemanager.projects.locations',
+      api_version='v1',
       resource_name='location',
       locationsId=LocationAttributeConfig(),
       projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG)
@@ -106,6 +110,7 @@ def GetLocationResourceSpec():
 def GetAllDefaultLocationResourceSpec():
   return concepts.ResourceSpec(
       'certificatemanager.projects.locations',
+      api_version='v1',
       resource_name='location',
       locationsId=AllDefaultLocationAttributeConfig(),
       projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG)
@@ -114,6 +119,7 @@ def GetAllDefaultLocationResourceSpec():
 def GetOperationResourceSpec():
   return concepts.ResourceSpec(
       'certificatemanager.projects.locations.operations',
+      api_version='v1',
       resource_name='operation',
       operationsId=OperationAttributeConfig(),
       locationsId=LocationAttributeConfig(),

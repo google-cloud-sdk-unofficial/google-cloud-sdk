@@ -21,3 +21,4 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class SemanticsCatalog(base.Group):
   """View semantic catalog entries."""
+  category = base.IDENTITY_AND_SECURITY_CATEGORY

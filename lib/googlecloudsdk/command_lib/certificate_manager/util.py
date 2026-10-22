@@ -17,6 +17,7 @@
 
 from googlecloudsdk.api_lib.certificate_manager import api_client
 from googlecloudsdk.api_lib.certificate_manager import operations
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -106,3 +107,38 @@ def CertificateMapEntryUriFunc(resource):
 
 def CertificateUriFunc(resource):
   return _ParseCertificate(resource.name).SelfLink()
+
+
+def WaitForCertificateCreation(response, cert_ref, is_async=False):
+  """Handles waiting for certificate creation operation.
+
+  Args:
+    response: Long running operation response.
+    cert_ref: Resource reference to the certificate being created.
+    is_async: If true, do not wait for the operation.
+
+  Returns:
+    The created certificate or operation if async.
+  """
+  log.status.Print('Create request issued for: [{}]'.format(cert_ref.Name()))
+  operation_ref = _ParseOperation(response.name)
+  if is_async:
+    log.status.Print(
+        'Check operation [{}] for status.'.format(operation_ref.RelativeName())
+    )
+    return response
+
+  client = api_client.GetClientInstance()
+  poller = waiter.CloudOperationPoller(
+      client.projects_locations_certificates,
+      client.projects_locations_operations,
+  )
+  result = waiter.WaitFor(
+      poller,
+      operation_ref,
+      'Waiting for operation [{}] to complete'.format(
+          operation_ref.RelativeName()
+      ),
+  )
+  log.CreatedResource(cert_ref.Name(), 'certificate')
+  return result

@@ -1098,7 +1098,8 @@ def AddBoostConfigs(parser):
   help_text = """\
   Boost Configuration(s) that workstations running with this configuration can
   boost up to. This includes id (required), machine-type, accelerator-type,
-  accelerator-count, pool-size, boot-disk-size, and enable-nested-virtualization.
+  accelerator-count, pool-size, boot-disk-size, enable-nested-virtualization,
+  and enable-automatic-failover.
 
   Example:
 
@@ -1115,6 +1116,7 @@ def AddBoostConfigs(parser):
               'pool-size': int,
               'boot-disk-size': int,
               'enable-nested-virtualization': bool,
+              'enable-automatic-failover': bool,
               'reservation-affinity': arg_parsers.ArgObject(
                   spec={
                       'key': str,

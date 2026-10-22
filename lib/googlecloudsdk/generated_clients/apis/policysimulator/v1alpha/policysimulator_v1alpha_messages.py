@@ -1068,10 +1068,12 @@ class GoogleCloudPolicysimulatorV1alphaActivityBacktest(_messages.Message):
 
     Values:
       POLICY_KIND_UNSPECIFIED: Unspecified policy kind; Not a valid state
+      PRINCIPAL_ACCESS_BOUNDARY: Principal access boundary policy kind.
       REGIONAL_ACCESS_BOUNDARY: Regional access boundary policy kind
     """
     POLICY_KIND_UNSPECIFIED = 0
-    REGIONAL_ACCESS_BOUNDARY = 1
+    PRINCIPAL_ACCESS_BOUNDARY = 1
+    REGIONAL_ACCESS_BOUNDARY = 2
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The state of the ActivityBacktest. Output only.

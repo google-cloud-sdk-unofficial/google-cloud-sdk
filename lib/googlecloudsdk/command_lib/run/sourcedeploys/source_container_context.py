@@ -27,6 +27,7 @@ class SourceContainerContext:
   source: str = None  # local source code location
   source_bucket: str = None  # GCS bucket to use for upload
   upload_through_run_api: bool = False  # whether to upload through Run API
+  is_source_build: bool = False  # whether the source is built
 
 
 @dataclasses.dataclass

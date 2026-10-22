@@ -1,4 +1,4 @@
-- release_tracks: [GA]
+- release_tracks: [BETA, GA]
   hints:
     read_only: false
   help_text:

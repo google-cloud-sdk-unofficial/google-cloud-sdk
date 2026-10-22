@@ -637,6 +637,7 @@ class ArgAdder(object):
       num_nodes_default=None,
       add_disable_autoscaling=False,
       require_all_essential_autoscaling_args=False,
+      add_node_scaling_factor=False,
   ):
     """Add scaling related arguments."""
     scaling_group = self.parser.add_mutually_exclusive_group(required=required)
@@ -703,12 +704,31 @@ class ArgAdder(object):
         type=int,
         metavar='AUTOSCALING_STORAGE_TARGET',
     )
+
+    if add_node_scaling_factor:
+      # TODO(b/568765572): Unhide once the TRUSTED_TESTER_2X_MIGRATION
+      # visibility label is removed.
+      base.ChoiceArgument(
+          '--node-scaling-factor',
+          choices=GetValidNodeScalingFactors(),
+          hidden=True,
+          help_str=(
+              'The target node scaling factor for the cluster. Before'
+              ' updating, disable autoscaling and set `--num-nodes` to a'
+              ' multiple of the target node scaling factor (for example, an'
+              ' even node count for 2x). Only SSD clusters support node'
+              ' scaling factor updates.'
+          ),
+      ).AddToParser(scaling_group)
     return self
 
-  def AddScalingArgsForClusterUpdate(self):
+  def AddScalingArgsForClusterUpdate(self, add_node_scaling_factor=False):
     """Add scaling related arguments."""
     return self.AddScalingArgs(
-        required=True, num_nodes_required=True, add_disable_autoscaling=True
+        required=True,
+        num_nodes_required=True,
+        add_disable_autoscaling=True,
+        add_node_scaling_factor=add_node_scaling_factor,
     )
 
   def AddScalingArgsForClusterCreate(self):

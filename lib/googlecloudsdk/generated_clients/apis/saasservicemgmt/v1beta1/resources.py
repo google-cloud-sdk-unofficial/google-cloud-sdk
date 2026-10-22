@@ -18,7 +18,7 @@ import enum
 
 
 BASE_URL = 'https://saasservicemgmt.googleapis.com/v1beta1/'
-DOCS_URL = 'https://cloud.google.com/saas-runtime/docs'
+DOCS_URL = 'https://docs.cloud.google.com/app-lifecycle-manager'
 
 
 class Collections(enum.Enum):
@@ -123,17 +123,6 @@ class Collections(enum.Enum):
       {
           '':
               'projects/{projectsId}/locations/{locationsId}/saas/{saasId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_SAASRELEASES = (
-      'projects.locations.saasReleases',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/saasReleases/'
-              '{saasReleasesId}',
       },
       ['name'],
       True

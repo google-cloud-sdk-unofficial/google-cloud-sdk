@@ -40,7 +40,6 @@ class StorageV1(base_api.BaseApiClient):
     self.anywhereCaches = self.AnywhereCachesService(self)
     self.bucketAccessControls = self.BucketAccessControlsService(self)
     self.buckets = self.BucketsService(self)
-    self.channels = self.ChannelsService(self)
     self.defaultObjectAccessControls = self.DefaultObjectAccessControlsService(self)
     self.folders = self.FoldersService(self)
     self.managedFolders = self.ManagedFoldersService(self)
@@ -756,42 +755,6 @@ class StorageV1(base_api.BaseApiClient):
         request_field='bucketResource',
         request_type_name='StorageBucketsUpdateRequest',
         response_type_name='Bucket',
-        supports_download=False,
-    )
-
-  class ChannelsService(base_api.BaseApiService):
-    """Service class for the channels resource."""
-
-    _NAME = 'channels'
-
-    def __init__(self, client):
-      super(StorageV1.ChannelsService, self).__init__(client)
-      self._upload_configs = {
-          }
-
-    def Stop(self, request, global_params=None):
-      r"""Stop watching resources through this channel.
-
-      Args:
-        request: (Channel) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (StorageChannelsStopResponse) The response message.
-      """
-      config = self.GetMethodConfig('Stop')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Stop.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='POST',
-        method_id='storage.channels.stop',
-        ordered_params=[],
-        path_params=[],
-        query_params=[],
-        relative_path='channels/stop',
-        request_field='<request>',
-        request_type_name='Channel',
-        response_type_name='StorageChannelsStopResponse',
         supports_download=False,
     )
 

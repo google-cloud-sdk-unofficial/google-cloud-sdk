@@ -38,7 +38,6 @@ DETAILED_HELP = {
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.RegionalEndpointsSupported
-@base.Hidden
 class Delete(base.DeleteCommand):
   """Delete a Secure Source Manager issue."""
 

@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.resource_manager.boundaries import resource_args
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA

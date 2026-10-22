@@ -1,0 +1,95 @@
+- release_tracks: [ALPHA]
+
+  # Keeps the command out of help text, tab-completion and the public
+  # reference documentation while Cloud Build Pipelines is in preview.
+  hidden: true
+  universe_compatible: true
+
+  hints:
+    read_only: false
+
+  help_text:
+    brief: Create or update a Cloud Build Pipeline Trigger declaratively.
+    description: |
+      Create or update a Cloud Build Pipeline Trigger declaratively.
+
+      The trigger is created if it does not exist and replaced if it does,
+      so the stored trigger always matches the definition file. A field left
+      out of the file is cleared on the server.
+
+      The definition file holds the fields of the PipelineTrigger resource,
+      in camelCase or snake_case. For example:
+
+        name: deploy-main
+        displayName: Deploy on push to main
+        gitRepositoryLink: projects/my-project/locations/us-central1/connections/github-conn/gitRepositoryLinks/payments-repo
+        branchPush:
+          gitRef:
+            globs:
+              - main
+              - release/*
+          pathFilter:
+            includedGlobs:
+              - src/**
+            excludedGlobs:
+              - docs/**
+          celFilters:
+            - expression: '!headCommit.message.startsWith("chore:")'
+              notification: Skipping chore commit
+        params:
+          COMMIT_SHA: headCommit.id
+          BRANCH_NAME: refName
+          ENVIRONMENT: production
+    examples: |
+      To apply the trigger defined in `trigger.yaml` to pipeline
+      `payments-pipeline` in region `us-central1`:
+
+        $ {command} --pipeline=payments-pipeline --file=trigger.yaml \
+            --region=us-central1
+
+      To apply it under the ID `deploy-main`:
+
+        $ {command} deploy-main --pipeline=payments-pipeline \
+            --file=trigger.yaml --region=us-central1
+
+      To validate the definition on the server without saving it:
+
+        $ {command} --pipeline=payments-pipeline --file=trigger.yaml \
+            --region=us-central1 --dry-run
+
+  request:
+    collection: cloudbuild.projects.locations.pipelines.triggers
+    api_version: v1
+    method: patch
+    # regional_endpoint_compatibility: SUPPORTED is inherited from the parent
+    # Triggers group; omitted here because the resource argument is registered
+    # via additional_arguments_hook.
+    issue_request_hook: googlecloudsdk.api_lib.cloudbuild.pipeline_triggers:ApplyFromHook
+
+  # Adds --async. When omitted, polls the returned operation to completion.
+  async:
+    collection: cloudbuild.projects.locations.operations
+    api_version: v1
+    extract_resource_result: false
+    result_attribute: response
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.api_lib.cloudbuild.pipeline_triggers:LogApplySuccess
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.cloudbuild.resource_args:GetPipelineTriggerApplyResourceArgs
+    params:
+    - arg_name: file
+      required: true
+      help_text: |
+        Path to the YAML trigger definition file.
+    - arg_name: dry-run
+      api_field: validateOnly
+      type: bool
+      default: false
+      help_text: |
+        Validate the trigger on the server without creating or updating it.
+
+  output:
+    format: none

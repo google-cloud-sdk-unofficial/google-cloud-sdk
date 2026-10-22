@@ -26,6 +26,14 @@ class Environments(base.Group):
 
   ## EXAMPLES
 
+  To create an environment, run:
+
+    $ {command} create my-env --location=us-central1 --base-version=1.0
+
+  To replace the Python packages of an environment, run:
+
+    $ {command} update my-env --location=us-central1 --python-package=numpy
+
   To describe an environment, run:
 
     $ {command} describe my-env --location=us-central1
@@ -37,4 +45,16 @@ class Environments(base.Group):
   To delete an environment, run:
 
     $ {command} delete my-env --location=us-central1
+
+  To export an environment to a file, run:
+
+    $ {command} export my-env --location=us-central1 --destination=my-env.yaml
+
+  To create or replace an environment from a file, run:
+
+    $ {command} import my-env --location=us-central1 --source=my-env.yaml
+
+  To list the revisions of an environment, run:
+
+    $ {command} revisions list --environment=my-env --location=us-central1
   """

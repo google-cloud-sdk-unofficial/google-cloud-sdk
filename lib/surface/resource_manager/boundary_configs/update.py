@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.resource_manager import boundary_configs_flags a
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA

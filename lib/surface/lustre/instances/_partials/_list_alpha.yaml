@@ -19,11 +19,11 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: List Lustre instances
+    brief: Lists Managed Lustre instances
     description: |
-      List Managed Lustre instances.
+      Lists Managed Lustre instances.
     examples: |-
-      To list all instances in particular location `us-central1-a` run:
+      To list all instances in location `us-central1-a`, run:
 
       $ {command} --location=us-central1-a
   arguments:

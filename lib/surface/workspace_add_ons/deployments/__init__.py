@@ -19,6 +19,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Deployments(base.Group):
   """Manage Google Workspace Add-ons Deployments."""

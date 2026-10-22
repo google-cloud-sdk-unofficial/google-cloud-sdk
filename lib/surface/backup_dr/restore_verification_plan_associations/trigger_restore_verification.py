@@ -31,7 +31,7 @@ from googlecloudsdk.core import log
 
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class TriggerRestoreVerification(base.Command):
   """Trigger a restore verification for an association."""
 

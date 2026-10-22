@@ -168,6 +168,7 @@ class ProjectionSpec(object):
       out: The output stream.
       level: The nesting level counting from 1 at the root.
     """
+    # TODO(b/532454974): Mixed key kinds raise TypeError after partial output.
     for key in sorted(projection.tree):
       out.write('{indent} {key} : {attribute}\n'.format(
           indent='  ' * level,

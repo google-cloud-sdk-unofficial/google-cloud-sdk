@@ -1029,67 +1029,6 @@ class BulkRestoreObjectsRequest(_messages.Message):
   softDeletedBeforeTime = _message_types.DateTimeField(7)
 
 
-class Channel(_messages.Message):
-  r"""An notification channel used to watch for resource changes.
-
-  Messages:
-    ParamsValue: Additional parameters controlling delivery channel behavior.
-      Optional.
-
-  Fields:
-    address: The address where notifications are delivered for this channel.
-    expiration: Date and time of notification channel expiration, expressed as
-      a Unix timestamp, in milliseconds. Optional.
-    id: A UUID or similar unique string that identifies this channel.
-    kind: Identifies this as a notification channel used to watch for changes
-      to a resource, which is "api#channel".
-    params: Additional parameters controlling delivery channel behavior.
-      Optional.
-    payload: A Boolean value to indicate whether payload is wanted. Optional.
-    resourceId: An opaque ID that identifies the resource being watched on
-      this channel. Stable across different API versions.
-    resourceUri: A version-specific identifier for the watched resource.
-    token: An arbitrary string delivered to the target address with each
-      notification delivered over this channel. Optional.
-    type: The type of delivery mechanism used for this channel.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class ParamsValue(_messages.Message):
-    r"""Additional parameters controlling delivery channel behavior. Optional.
-
-    Messages:
-      AdditionalProperty: An additional property for a ParamsValue object.
-
-    Fields:
-      additionalProperties: Declares a new parameter by name.
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a ParamsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  address = _messages.StringField(1)
-  expiration = _messages.IntegerField(2)
-  id = _messages.StringField(3)
-  kind = _messages.StringField(4, default='api#channel')
-  params = _messages.MessageField('ParamsValue', 5)
-  payload = _messages.BooleanField(6)
-  resourceId = _messages.StringField(7)
-  resourceUri = _messages.StringField(8)
-  token = _messages.StringField(9)
-  type = _messages.StringField(10)
-
-
 class ComposeRequest(_messages.Message):
   r"""A Compose request.
 
@@ -3095,10 +3034,6 @@ class StorageBucketsUpdateRequest(_messages.Message):
   predefinedDefaultObjectAcl = _messages.EnumField('PredefinedDefaultObjectAclValueValuesEnum', 6)
   projection = _messages.EnumField('ProjectionValueValuesEnum', 7)
   userProject = _messages.StringField(8)
-
-
-class StorageChannelsStopResponse(_messages.Message):
-  r"""An empty StorageChannelsStop response."""
 
 
 class StorageDefaultObjectAccessControlsDeleteRequest(_messages.Message):

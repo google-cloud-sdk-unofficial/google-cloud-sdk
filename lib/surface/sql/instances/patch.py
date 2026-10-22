@@ -267,6 +267,20 @@ def AddBaseArgs(parser):
             'WARNING: Instance will be restarted.'))
   flags.AddCPU(parser)
   parser.add_argument(
+      '--skip-precheck',
+      action='store_true',
+      default=None,
+      required=False,
+      help=(
+          'Skip the automated compatibility check step during an in-place'
+          ' major version upgrade of a Cloud SQL for MySQL instance initiated'
+          ' with `--database-version`. Use this if you have already performed'
+          ' a manual pre-check or if the automated check is timing out on a'
+          ' large instance. Note that skipping this step increases the risk'
+          ' of the upgrade failing during the downtime phase.'
+      ),
+  )
+  parser.add_argument(
       '--diff',
       action='store_true',
       help='Show what changed as a result of the update.')
@@ -429,7 +443,9 @@ def AddBetaArgs(parser):
   """Adds beta args and flags to the parser."""
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
-  flags.AddReplicationLagMaxSecondsForRecreate(parser)
+  replication_lag_group = parser.add_mutually_exclusive_group()
+  flags.AddReplicationLagMaxSecondsForRecreate(replication_lag_group)
+  flags.AddNoReplicationLagMaxSecondsForRecreate(replication_lag_group)
   flags.AddEnableAcceleratedReplicaMode(parser)
   unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddUncMappings(unc_mappings_group)

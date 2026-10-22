@@ -1330,6 +1330,8 @@ class MigrationJobsClient(object):
     promote_mj_req = self.messages.PromoteMigrationJobRequest()
     if args.IsKnownAndSpecified('databases_filter'):
       promote_mj_req.objectsFilter = self._GetMigrationJobObjectsConfig(args)
+    if args.IsKnownAndSpecified('failback'):
+      promote_mj_req.failback = args.failback
 
     promote_req = (
         self.messages.DatamigrationProjectsLocationsMigrationJobsPromoteRequest(

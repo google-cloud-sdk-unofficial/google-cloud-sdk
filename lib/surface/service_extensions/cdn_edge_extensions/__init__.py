@@ -17,8 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class CdnEdgeExtensions(base.Group):
   """Manage Service Extensions `CdnEdgeExtension` resources."""

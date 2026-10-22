@@ -49,19 +49,13 @@ _MUTABLE_FIELD_DEFAULTS = {
     'labels': {},
 }
 
-# Server-generated fields to drop from the definition. Most output-only fields
-# are harmless to leave in the parsed message, because the mask allowlist keeps
-# them out of the update. The etag is the exception: the server validates it,
-# so an exported pipeline could not be re-applied without first hitting a
-# checksum mismatch.
-_IGNORED_FIELDS = ('etag',)
-
-# The `kind` of the Kubernetes-style layout that this command accepts.
-_DOCUMENT_KIND = 'Pipeline'
-
-# Keys nested under `metadata` in the Kubernetes-style layout that are
-# top-level fields on the Pipeline resource.
-_LIFTED_METADATA_FIELDS = ('labels', 'annotations')
+# Resource identity and server-generated fields to drop from the request body.
+# `name` is resolved via the resource argument (and passed as the PATCH target
+# path) rather than sent in the body. Most output-only fields are harmless to
+# leave in the parsed message, because the mask allowlist keeps them out of the
+# update. The etag is the exception: the server validates it, so an exported
+# pipeline could not be re-applied without first hitting a checksum mismatch.
+_IGNORED_FIELDS = ('etag', 'name')
 
 
 def ComputeUpdateMask(pipeline):
@@ -138,7 +132,7 @@ def _ReadYamlMapping(path):
 
 
 def ExtractPipelineId(path):
-  """Reads the pipeline ID declared by a pipeline config file.
+  """Reads the pipeline ID or resource name declared by a pipeline config file.
 
   This resolves the pipeline resource argument when the user gives no ID on the
   command line. It deliberately reports any problem with the file as a missing
@@ -150,32 +144,22 @@ def ExtractPipelineId(path):
     path: str, path to the JSON or YAML data to be decoded.
 
   Returns:
-    str, the ID in `metadata.name`, or None if the file declares none.
+    str, the ID or resource name in `name`, or None if the file declares none.
   """
   try:
     data = _ReadYamlMapping(path)
   except c_exceptions.BadFileException:
     return None
 
-  # Only the Kubernetes-style layout carries a bare ID. The flat layout has
-  # nowhere to put one, because `name` on the Pipeline resource is the full
-  # relative name rather than an ID.
-  if data.get('kind') != _DOCUMENT_KIND:
+  name = data.get('name')
+  if not isinstance(name, str) or not name:
     return None
 
-  metadata = data.get('metadata')
-  if not isinstance(metadata, dict):
-    return None
-
-  return metadata.get('name')
+  return name
 
 
 def LoadPipelineConfigFromPath(path, messages):
   """Loads a pipeline config file into a Pipeline message.
-
-  Both the flat layout, whose keys are the fields of the Pipeline resource, and
-  the Kubernetes-style layout, which wraps those fields in `apiVersion`, `kind`
-  and `metadata`, are accepted.
 
   Args:
     path: str, path to the JSON or YAML data to be decoded.
@@ -190,18 +174,6 @@ def LoadPipelineConfigFromPath(path, messages):
   """
   data = _ReadYamlMapping(path)
   clean_data = dict(data)
-
-  if clean_data.get('kind') == _DOCUMENT_KIND:
-    metadata = clean_data.pop('metadata', None)
-    if isinstance(metadata, dict):
-      # Labels and annotations are nested under `metadata` in the
-      # Kubernetes-style layout, but are top-level fields on the Pipeline
-      # resource, so lift them instead of dropping them with the metadata.
-      for field in _LIFTED_METADATA_FIELDS:
-        if field in metadata and field not in clean_data:
-          clean_data[field] = metadata[field]
-    clean_data.pop('apiVersion', None)
-    clean_data.pop('kind', None)
 
   for field in _IGNORED_FIELDS:
     clean_data.pop(field, None)

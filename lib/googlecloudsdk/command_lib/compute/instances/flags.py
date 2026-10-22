@@ -4577,7 +4577,6 @@ def AddWorkloadIdentityConfigArgs(parser, support_identity_type=False):
         '--identity-type',
         choices={
             'AGENT_IDENTITY': 'Use an agent identity.',
-            'WORKLOAD_IDENTITY': 'Use a workload identity.',
             'SERVICE_ACCOUNT': 'Use a service account.',
             'IDENTITY_TYPE_UNSPECIFIED': 'Use an unspecified identity type.'
         },

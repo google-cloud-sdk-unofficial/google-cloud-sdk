@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class GSuiteAddOns(base.Group):
   """Manage Google Workspace Add-ons resources.
 
@@ -31,3 +32,13 @@ class GSuiteAddOns(base.Group):
     # TODO(b/190541887):  Determine if command group works with project number
     base.RequireProjectID(args)
     del context, args
+
+
+# Hidden until the chat-app-config beta launch (go/gcp-cli-for-chatappconfig).
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class GSuiteAddOnsBeta(GSuiteAddOns):
+  """Manage Google Workspace Add-ons resources.
+
+  Commands for managing Google Workspace Add-ons resources.
+  """

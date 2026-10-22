@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 DOMAIN_MAPPINGS_HELP_DOCS_URL = ('https://cloud.google.com/run/docs/'
@@ -94,6 +95,11 @@ class Create(base.Command):
 
   def Run(self, args):
     """Create a domain mapping."""
+    dry_run = getattr(args, 'dry_run', False)
+    if dry_run and platforms.GetPlatform() != platforms.PLATFORM_MANAGED:
+      raise exceptions.ConfigurationError(
+          '--dry-run is only supported on Cloud Run.'
+      )
     # domains.cloudrun.com api group only supports v1alpha1 on clusters.
     conn_context = connection_context.GetConnectionContext(
         args,
@@ -110,20 +116,40 @@ class Create(base.Command):
 
     with serverless_operations.Connect(conn_context) as client:
       try:
-        mapping = client.CreateDomainMapping(domain_mapping_ref, args.service,
-                                             changes, args.force_override)
+        mapping = client.CreateDomainMapping(
+            domain_mapping_ref,
+            args.service,
+            changes,
+            args.force_override,
+            dry_run=dry_run,
+        )
       except exceptions.DomainMappingAlreadyExistsError as e:
-        if console_io.CanPrompt() and console_io.PromptContinue(
-            ('This domain is already being used as a mapping elsewhere. '
-             'The existing mapping can be overridden by passing '
-             '`--force-override` or by continuing at the prompt below.'),
-            prompt_string='Override the existing mapping'):
+        # Never delete an existing mapping as part of a dry run.
+        if (
+            not dry_run
+            and console_io.CanPrompt()
+            and console_io.PromptContinue(
+                (
+                    'This domain is already being used as a mapping elsewhere.'
+                    ' The existing mapping can be overridden by passing'
+                    ' `--force-override` or by continuing at the prompt below.'
+                ),
+                prompt_string='Override the existing mapping',
+            )
+        ):
           deletion.Delete(domain_mapping_ref, client.GetDomainMapping,
                           client.DeleteDomainMapping, async_=False)
           mapping = client.CreateDomainMapping(domain_mapping_ref, args.service,
                                                changes, True)
         else:
           raise e
+
+      if dry_run:
+        log.status.Print(
+            'Dry run: domain mapping [{}] to service [{}] is valid and would '
+            'be created.'.format(domain_mapping_ref.Name(), args.service)
+        )
+        return None
 
       for record in mapping.records:
         record.name = record.name or mapping.route_name
@@ -141,12 +167,20 @@ class BetaCreate(Create):
           To create a Cloud Run domain mapping, run:
 
               $ {command} --service=myapp --domain=www.example.com
+
+          To check that a domain mapping is valid and available without
+          creating it, run:
+
+              $ {command} --service=myapp --domain=example.cloud.run --dry-run
           """,
   }
 
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
+    # Not offered in GA: the GA group only targets Cloud Run for Anthos,
+    # whose domain mappings API (v1alpha1) has no dryRun.
+    flags.AddDryRunFlag(parser)
 
   def VerifyDomain(self, domain_mapping_ref):
     """Verify the domain ownership. Skip for custom URLs."""
@@ -162,4 +196,4 @@ class AlphaCreate(BetaCreate):
 
   @staticmethod
   def Args(parser):
-    Create.CommonArgs(parser)
+    BetaCreate.Args(parser)

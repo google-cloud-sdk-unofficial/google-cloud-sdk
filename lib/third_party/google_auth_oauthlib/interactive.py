@@ -26,7 +26,6 @@ import socket
 
 import google_auth_oauthlib.flow
 
-
 LOCALHOST = "localhost"
 DEFAULT_PORTS_TO_TRY = 100
 
@@ -51,6 +50,13 @@ def is_port_open(port):
             is_open = False
         else:
             is_open = True
+    # Also verify that no process is already listening on IPv6 loopback (::1).
+    if is_open and hasattr(socket, "AF_INET6"):
+        is_open = (
+            not google_auth_oauthlib.flow._ExclusiveWSGIServer.is_listener_present(
+                socket.AF_INET6, "::1", port
+            )
+        )
     return is_open
 
 
@@ -156,7 +162,6 @@ def get_user_credentials(
         "installed": {
             "client_id": client_id,
             "client_secret": client_secret,
-            "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob"],
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
         }

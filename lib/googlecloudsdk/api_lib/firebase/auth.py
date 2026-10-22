@@ -171,3 +171,35 @@ class AuthClient:
       return self.client.firebase.ProvisionFirebaseApp(req)
     except apitools_exceptions.HttpError as e:
       firebase_util.HandleHttpError(e)
+
+
+class AuthConfigClient:
+  """Client for the Firebase Auth project config (Identity Toolkit API)."""
+
+  def __init__(self, client=None, messages=None):
+    self.client = client or firebase_util.GetIdentityToolkitClientInstance()
+    self.messages = (
+        messages or firebase_util.GetIdentityToolkitMessagesModule()
+    )
+
+  def ListAuthorizedDomains(self, project_id):
+    """Lists the domains authorized for Firebase Auth OAuth redirects.
+
+    Only `authorizedDomains` is read from the project config. The rest of the
+    config (which includes secrets such as the password hash signer key) is
+    not returned.
+
+    Args:
+      project_id: str, Google Cloud project ID.
+
+    Returns:
+      list of str, The authorized domains, in the order the API returns them.
+    """
+    req = self.messages.IdentitytoolkitProjectsGetConfigRequest(
+        name=f'projects/{project_id}/config'
+    )
+    try:
+      config = self.client.projects.GetConfig(req)
+    except apitools_exceptions.HttpError as e:
+      firebase_util.HandleHttpError(e)
+    return list(config.authorizedDomains)

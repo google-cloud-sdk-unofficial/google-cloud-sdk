@@ -3626,8 +3626,8 @@ class Skill(_messages.Message):
     Values:
       STATE_UNSPECIFIED: Default value. This value is unused.
       STATE_CREATING: The skill is being created. It is not served.
-      STATE_DRAFT: The skill is in draft, or lacks a valid payload. It is not
-        served.
+      STATE_DRAFT: Deprecated: Use STATE_DISABLED instead. The skill is in
+        draft, or lacks a valid payload. It is not served.
       STATE_ACTIVE: The skill is active and is served.
       STATE_DISABLED: The skill is disabled and is not served.
       STATE_DEPRECATED: The skill is deprecated. It is served, but emits
@@ -3649,7 +3649,9 @@ class Skill(_messages.Message):
 
     Values:
       TARGET_STATE_UNSPECIFIED: Default value. This value is unused.
-      TARGET_STATE_DRAFT: The skill is in draft and cannot be served.
+      TARGET_STATE_DRAFT: Deprecated: Use TARGET_STATE_DISABLED instead. The
+        skill is in draft and cannot be served. If set, it is treated as
+        TARGET_STATE_DISABLED.
       TARGET_STATE_ACTIVE: The skill is active and can be served.
       TARGET_STATE_DISABLED: The skill is disabled and cannot be served.
       TARGET_STATE_DEPRECATED: The skill is deprecated. It can still be

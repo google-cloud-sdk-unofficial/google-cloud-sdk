@@ -85,6 +85,8 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     self.projects_locations_serverTlsPolicies = self.ProjectsLocationsServerTlsPoliciesService(self)
     self.projects_locations_sseGatewayReferences = self.ProjectsLocationsSseGatewayReferencesService(self)
     self.projects_locations_tlsInspectionPolicies = self.ProjectsLocationsTlsInspectionPoliciesService(self)
+    self.projects_locations_tokenAggregationPolicies = self.ProjectsLocationsTokenAggregationPoliciesService(self)
+    self.projects_locations_tokenBudgetPolicies = self.ProjectsLocationsTokenBudgetPoliciesService(self)
     self.projects_locations_ullMirroringCollectors_rules = self.ProjectsLocationsUllMirroringCollectorsRulesService(self)
     self.projects_locations_ullMirroringCollectors = self.ProjectsLocationsUllMirroringCollectorsService(self)
     self.projects_locations_ullMirroringEngines = self.ProjectsLocationsUllMirroringEnginesService(self)
@@ -6967,6 +6969,296 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
         relative_path='v1alpha1/{+name}',
         request_field='tlsInspectionPolicy',
         request_type_name='NetworksecurityProjectsLocationsTlsInspectionPoliciesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsTokenAggregationPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_tokenAggregationPolicies resource."""
+
+    _NAME = 'projects_locations_tokenAggregationPolicies'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.ProjectsLocationsTokenAggregationPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new `TokenAggregationPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsTokenAggregationPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/tokenAggregationPolicies',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.tokenAggregationPolicies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['tokenAggregationPolicyId'],
+        relative_path='v1alpha1/{+parent}/tokenAggregationPolicies',
+        request_field='tokenAggregationPolicy',
+        request_type_name='NetworksecurityProjectsLocationsTokenAggregationPoliciesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single `TokenAggregationPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsTokenAggregationPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/tokenAggregationPolicies/{tokenAggregationPoliciesId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.tokenAggregationPolicies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsTokenAggregationPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single `TokenAggregationPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsTokenAggregationPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TokenAggregationPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/tokenAggregationPolicies/{tokenAggregationPoliciesId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.tokenAggregationPolicies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsTokenAggregationPoliciesGetRequest',
+        response_type_name='TokenAggregationPolicy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists `TokenAggregationPolicy` resources in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsTokenAggregationPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListTokenAggregationPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/tokenAggregationPolicies',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.tokenAggregationPolicies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/tokenAggregationPolicies',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsTokenAggregationPoliciesListRequest',
+        response_type_name='ListTokenAggregationPoliciesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a single `TokenAggregationPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsTokenAggregationPoliciesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/tokenAggregationPolicies/{tokenAggregationPoliciesId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.tokenAggregationPolicies.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='tokenAggregationPolicy',
+        request_type_name='NetworksecurityProjectsLocationsTokenAggregationPoliciesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsTokenBudgetPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_tokenBudgetPolicies resource."""
+
+    _NAME = 'projects_locations_tokenBudgetPolicies'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.ProjectsLocationsTokenBudgetPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new `TokenBudgetPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsTokenBudgetPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/tokenBudgetPolicies',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.tokenBudgetPolicies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['tokenBudgetPolicyId'],
+        relative_path='v1alpha1/{+parent}/tokenBudgetPolicies',
+        request_field='tokenBudgetPolicy',
+        request_type_name='NetworksecurityProjectsLocationsTokenBudgetPoliciesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single `TokenBudgetPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsTokenBudgetPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/tokenBudgetPolicies/{tokenBudgetPoliciesId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.tokenBudgetPolicies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsTokenBudgetPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single `TokenBudgetPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsTokenBudgetPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TokenBudgetPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/tokenBudgetPolicies/{tokenBudgetPoliciesId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.tokenBudgetPolicies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsTokenBudgetPoliciesGetRequest',
+        response_type_name='TokenBudgetPolicy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists `TokenBudgetPolicy` resources in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsTokenBudgetPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListTokenBudgetPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/tokenBudgetPolicies',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.tokenBudgetPolicies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/tokenBudgetPolicies',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsTokenBudgetPoliciesListRequest',
+        response_type_name='ListTokenBudgetPoliciesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a single `TokenBudgetPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsTokenBudgetPoliciesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/tokenBudgetPolicies/{tokenBudgetPoliciesId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.tokenBudgetPolicies.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='tokenBudgetPolicy',
+        request_type_name='NetworksecurityProjectsLocationsTokenBudgetPoliciesPatchRequest',
         response_type_name='Operation',
         supports_download=False,
     )

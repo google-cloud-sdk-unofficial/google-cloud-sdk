@@ -19,13 +19,13 @@
   - GA
   auto_generated: true
   help_text:
-    brief: Exports data from Managed Lustre instance to Cloud Storage.
+    brief: Exports data from a Managed Lustre instance to Cloud Storage
     description: |
-      Exports data from Managed Lustre instance to Cloud Storage.
+      Exports data from a Managed Lustre instance to Cloud Storage.
     examples: |-
-      To export data from `my-instance` to `gs://my-bucket` storage  run:
+      To export data from instance `my-instance` in location `us-central1-a` to Cloud Storage bucket `gs://my-bucket/`, run:
 
-      $ {command} my-instance --location=us-central-a --gcs-path-uri=gs://my-bucket --lustre-path='/path/to/lustre/dir'
+      $ {command} my-instance --location=us-central1-a --gcs-path-uri=gs://my-bucket/ --lustre-path='/path/to/lustre/dir'
   arguments:
     params:
     - arg_name: lustre-path

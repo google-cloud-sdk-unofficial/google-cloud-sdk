@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
   help_text:
     brief: Remove an IAM policy binding from a Data Catalog entry group.
     description: Remove an IAM policy binding from a Data Catalog entry group.
@@ -29,6 +31,8 @@
       is_positional: true
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Remove an IAM policy binding from a Data Catalog entry group.
     description: Remove an IAM policy binding from a Data Catalog entry group.

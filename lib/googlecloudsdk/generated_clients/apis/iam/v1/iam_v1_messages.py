@@ -1490,9 +1490,9 @@ class IamLocationsWorkforcePoolsSubjectsRevokeSessionsRequest(_messages.Message)
 
   Fields:
     name: Required. The resource name of the WorkforcePoolSubject. Special
-      characters, like `/` and `:`, must be escaped, because all URLs need to
-      conform to the "When to Escape and Unescape" section of
-      [RFC3986](https://www.ietf.org/rfc/rfc2396.txt). Format: `locations/{loc
+      characters, such as `/` and `:`, must be escaped, because all URLs must
+      conform to the "When to Escape and Unescape" section of [RFC
+      3986](https://www.rfc-editor.org/info/rfc3986/). Format: `locations/{loc
       ation}/workforcePools/{workforce_pool_id}/subjects/{subject_id}`
     revokeWorkforcePoolSubjectSessionsRequest: A
       RevokeWorkforcePoolSubjectSessionsRequest resource to be passed as the

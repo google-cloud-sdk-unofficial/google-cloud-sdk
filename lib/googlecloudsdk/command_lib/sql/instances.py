@@ -355,6 +355,13 @@ def _ShowAcceleratedReplicaModeWarning():
   )
 
 
+def _ShowReplicationLagMaxSecondsForRecreateWarning():
+  log.warning(
+      'Legacy replica and external master replica are not supported for '
+      'recreating lagging replicas.'
+  )
+
+
 class _BaseInstances(object):
   """Common utility functions for sql instance commands."""
 
@@ -677,9 +684,17 @@ class _BaseInstances(object):
     # BETA args.
     if IsBetaOrNewer(release_track):
       if args.replication_lag_max_seconds_for_recreate is not None:
+        _ShowReplicationLagMaxSecondsForRecreateWarning()
         settings.replicationLagMaxSeconds = (
             args.replication_lag_max_seconds_for_recreate
         )
+      if (
+          args.IsKnownAndSpecified(
+              'no_replication_lag_max_seconds_for_recreate'
+          )
+          and args.no_replication_lag_max_seconds_for_recreate
+      ):
+        settings.replicationLagMaxSeconds = 31536000
 
       if args.IsKnownAndSpecified('enable_db_aligned_atomic_writes'):
         if not settings.dbAlignedAtomicWritesConfig:
@@ -1562,6 +1577,9 @@ class _BaseInstances(object):
       instance_resource.includeReplicasForMajorVersionUpgrade = (
           args.include_replicas_for_major_version_upgrade
       )
+
+    if args.IsKnownAndSpecified('skip_precheck'):
+      instance_resource.skipPrecheck = args.skip_precheck
 
     if args.IsKnownAndSpecified('instance_type'):
       instance_resource.instanceType = _ParseInstanceType(

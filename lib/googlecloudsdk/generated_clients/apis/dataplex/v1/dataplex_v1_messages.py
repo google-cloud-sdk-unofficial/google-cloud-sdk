@@ -4094,7 +4094,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class GoogleCloudDataplexV1Action(_messages.Message):
   r"""Action represents an issue requiring administrator action for
   resolution.
@@ -4285,13 +4284,11 @@ class GoogleCloudDataplexV1ActionMissingResource(_messages.Message):
   """
 
 
-
 class GoogleCloudDataplexV1ActionUnauthorizedResource(_messages.Message):
   r"""Action details for unauthorized resource issues raised to indicate that
   the service account associated with the lake instance is not authorized to
   access or manage the resource associated with an asset.
   """
-
 
 
 class GoogleCloudDataplexV1ApproveChangeRequestRequest(_messages.Message):
@@ -4559,9 +4556,9 @@ class GoogleCloudDataplexV1AspectTypeMetadataTemplateAnnotations(_messages.Messa
       reorder where a field is rendered.
     stringType: Optional. You can use String Type annotations to specify
       special meaning to string fields. The following values are supported:
-      richText: The field must be interpreted as a rich text field. url: A
-      fully qualified URL link. resource: A service qualified resource
-      reference.
+      richText: The field must be interpreted as a rich text field. markdown:
+      The field must be interpreted as a markdown field. url: A fully
+      qualified URL link. resource: A service qualified resource reference.
     stringValues: Optional. Suggested hints for string fields. You can use
       them to suggest values to users through console.
   """
@@ -5962,6 +5959,8 @@ class GoogleCloudDataplexV1DataDocumentationSpec(_messages.Message):
   Fields:
     catalogPublishingEnabled: Optional. Whether to publish result to Dataplex
       Catalog.
+    customInstructions: Optional. Custom instructions for generating data
+      documentation. The maximum length is 2,048 characters.
     generationScopes: Optional. Specifies which components of the data
       documentation to generate. Any component that is required to generate
       the specified components will also be generated. If no generation scope
@@ -6004,8 +6003,11 @@ class GoogleCloudDataplexV1DataDocumentationSpec(_messages.Message):
     SPARK_SQL = 2
 
   catalogPublishingEnabled = _messages.BooleanField(1)
-  generationScopes = _messages.EnumField('GenerationScopesValueListEntryValuesEnum', 2, repeated=True)
-  sqlDialect = _messages.EnumField('SqlDialectValueValuesEnum', 3)
+  customInstructions = _messages.StringField(2)
+  generationScopes = _messages.EnumField(
+      'GenerationScopesValueListEntryValuesEnum', 3, repeated=True
+  )
+  sqlDialect = _messages.EnumField('SqlDialectValueValuesEnum', 4)
 
 
 class GoogleCloudDataplexV1DataDomain(_messages.Message):
@@ -7526,12 +7528,10 @@ class GoogleCloudDataplexV1DataQualitySpecPostScanActionsJobEndTrigger(_messages
   """
 
 
-
 class GoogleCloudDataplexV1DataQualitySpecPostScanActionsJobFailureTrigger(_messages.Message):
   r"""This trigger is triggered when the scan job itself fails, regardless of
   the result.
   """
-
 
 
 class GoogleCloudDataplexV1DataQualitySpecPostScanActionsNotificationReport(_messages.Message):
@@ -8826,6 +8826,8 @@ class GoogleCloudDataplexV1EntryGroup(_messages.Message):
     LabelsValue: Optional. User-defined labels for the EntryGroup.
 
   Fields:
+    changeRequestConfig: Optional. Specifies the configuration for requesting
+      changes in the metadata belonging to the Entry Group.
     createTime: Output only. The time when the EntryGroup was created.
     description: Optional. Description of the EntryGroup.
     displayName: Optional. User friendly display name.
@@ -8886,15 +8888,30 @@ class GoogleCloudDataplexV1EntryGroup(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  etag = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  transferStatus = _messages.EnumField('TransferStatusValueValuesEnum', 7)
-  uid = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  changeRequestConfig = _messages.MessageField('GoogleCloudDataplexV1EntryGroupChangeRequestConfig', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  etag = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  transferStatus = _messages.EnumField('TransferStatusValueValuesEnum', 8)
+  uid = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+
+
+class GoogleCloudDataplexV1EntryGroupChangeRequestConfig(_messages.Message):
+  r"""Specifies the configuration for requesting changes in the metadata
+  belonging to the Entry Group.
+
+  Fields:
+    approverEmails: Optional. Specifies the email addresses of users who are
+      potential approvers and are notified when a change request is created
+      for the metadata belonging to the Entry Group. The maximum number of
+      emails allowed is 10.
+  """
+
+  approverEmails = _messages.StringField(1, repeated=True)
 
 
 class GoogleCloudDataplexV1EntryLink(_messages.Message):

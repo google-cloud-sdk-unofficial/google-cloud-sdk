@@ -38,7 +38,7 @@ have [SSH enabled](https://cloud.google.com/compute/docs/connect/windows-ssh).
 
 In order to set up a successful transfer, follow these guidelines:
 *   Prefix remote file names with the virtual machine instance
-    name (e.g., _example-instance_:~/_FILE_).
+    name (e.g., _example-instance_:~/_FILE_ or _USER@example-instance_:~/_FILE_).
 *   Local file names can be used as is (e.g., ~/_FILE_).
 *   File names containing a colon (``:'') must be invoked by either their
     absolute path or a path that begins with ``./''.
@@ -48,6 +48,14 @@ In order to set up a successful transfer, follow these guidelines:
     be local.
 *   When the destination is Windows Server, the source must be using a similar
     SSH version.
+
+`USER` specifies the username with which to connect. If omitted, the local
+operating system username is used. If OS Login is enabled, the username is
+defaulted to the OS Login user. Note that relative paths like `~/` are resolved
+relative to this user's home directory on the remote virtual machine. If you are
+not using OS Login and the user account you expect to log in as differs from
+your local username, explicitly specify `USER@` (e.g.,
+`ubuntu@example-instance`) to ensure files are placed in the expected directory.
 
 Under the covers, *scp(1)* is used to facilitate the transfer.
 
@@ -65,6 +73,11 @@ To copy a remote directory, `~/narnia`, from ``example-instance'' to the
 Conversely, files from your local computer can be copied to a virtual machine:
 
   $ {command} ~/localtest.txt ~/localtest2.txt example-instance:~/narnia
+
+To copy files to a specific user's home directory on the remote virtual machine,
+prefix the instance with the username:
+
+  $ {command} ~/localtest.txt user@example-instance:~/path
 
 Remote Windows-based virtual machines require you to provide a path using
 backslash notation:

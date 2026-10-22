@@ -341,5 +341,8 @@ def strip_locations(obj):
   if list_like(obj):
     return [strip_locations(item) for item in obj]
   if dict_like(obj):
-    return {key: strip_locations(value) for key, value in six.iteritems(obj)}
+    return {
+        strip_locations(key): strip_locations(value)
+        for key, value in six.iteritems(obj)
+    }
   return obj.value

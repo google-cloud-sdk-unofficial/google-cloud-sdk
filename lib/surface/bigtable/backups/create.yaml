@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: Creates a backup of a Cloud Bigtable table.
     description: Creates a backup of a Cloud Bigtable table.

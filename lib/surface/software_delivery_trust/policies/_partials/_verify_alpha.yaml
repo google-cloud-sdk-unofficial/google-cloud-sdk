@@ -1,0 +1,71 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+- release_tracks:
+  - ALPHA
+  auto_generated: true
+  help_text:
+    brief: Verify policies against a target resource and software artifact.
+    description: |-
+      Verify Software Delivery Trust policies in a given project and location against a target resource and artifact digest.
+    examples: |-
+      To verify policies in location 'us-central1' for a container image:
+
+        # gcloud-disable-gdu-domain
+        $ {command} \
+            --location=us-central1 \
+            --target-resource="//container.googleapis.com/projects/my-project/locations/us-central1/clusters/prod-cluster" \
+            --subject-url="us-central1-docker.pkg.dev/my-project/my-repo/my-app" \
+            --subject-digest="sha256:82a15998df9a8fa9b" \
+            --custom-gate="prod-release"
+  arguments:
+    params:
+    - help_text: |-
+        Parent location to evaluate policies in.
+        Example: "projects/123456789/locations/global".
+      is_positional: false
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.software_delivery_trust.v1alpha_resources:projects_locations
+      required: true
+    - arg_name: target-resource
+      api_field: verifyPolicyRequest.targetResource
+      required: true
+      help_text: |-
+        # gcloud-disable-gdu-domain
+        Full resource URI of the target resource being gated.
+        Example: "//artifactregistry.googleapis.com/projects/my-project/locations/us-central1/repositories/my-repo"
+    - arg_name: subject-url
+      api_field: verifyPolicyRequest.subjectUrl
+      required: true
+      help_text: |-
+        The artifact URL.
+        Example: "us-central1-docker.pkg.dev/my-project/my-repo/app"
+    - arg_name: subject-digest
+      api_field: verifyPolicyRequest.subjectDigest
+      required: true
+      help_text: |-
+        Immutable cryptographic digest of the software artifact.
+        Example: "sha256:82a15998df9a8fa9b"
+    - arg_name: custom-gate
+      api_field: verifyPolicyRequest.customGate
+      required: false
+      help_text: |-
+        Optional lifecycle gate identifier for filtering policy bindings (e.g. 'prod-release' or 'staging-deploy').
+  request:
+    api_version: v1alpha
+    collection:
+    - softwaredeliverytrust.projects.locations
+    method: verifyPolicy
+    regional_endpoint_compatibility: SUPPORTED

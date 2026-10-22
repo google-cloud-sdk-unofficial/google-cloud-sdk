@@ -29,7 +29,8 @@ class ResourceManager(base.Group):
   category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   def Filter(self, context, args):
-    # TODO(b/190539161):  Determine if command group works with project number
-    base.RequireProjectID(args)
+    if 'capability-configs' not in args.command_path:
+      # TODO(b/190539161):  Determine if command group works with project number
+      base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

@@ -270,6 +270,10 @@ class UnresolvedDeltas(Exception):
         self.shas = shas
 
 
+class DeltaCycle(UnresolvedDeltas):
+    """A pack's delta chain references itself and cannot be resolved."""
+
+
 class ObjectContainer(Protocol):
     """Protocol for objects that can contain git objects."""
 
@@ -296,6 +300,17 @@ class ObjectContainer(Protocol):
     def __getitem__(self, sha1: "ObjectID | RawObjectID") -> ShaFile:
         """Retrieve an object."""
         ...
+
+    def peel(self, sha: "ObjectID | RawObjectID") -> tuple[ShaFile, ShaFile]:
+        """Peel all tags from a SHA.
+
+        Args:
+          sha: The object SHA to peel.
+        Returns: Tuple of (unpeeled, peeled) objects.
+        """
+        from .object_store import peel_sha
+
+        return peel_sha(self, sha)
 
     def get_commit_graph(self) -> "CommitGraph | None":
         """Get the commit graph for this object store.
@@ -4863,6 +4878,7 @@ class Pack:
         base_type = type
         base_obj = obj
         delta_stack = []
+        seen_ref_offsets: set[int] = {offset}
         while base_type in DELTA_TYPES:
             prev_offset = base_offset
             if get_ref is None:
@@ -4892,6 +4908,12 @@ class Pack:
                 base_offset = base_offset_temp
                 if base_offset == prev_offset:  # object is based on itself
                     raise UnresolvedDeltas([basename])
+                # A repeated REF_DELTA base offset means the chain cycles;
+                # without this check the loop would never terminate.
+                if base_offset is not None:
+                    if base_offset in seen_ref_offsets:
+                        raise DeltaCycle([basename])
+                    seen_ref_offsets.add(base_offset)
             else:
                 raise AssertionError(f"Unexpected delta type: {base_type}")
             delta_stack.append((prev_offset, base_type, delta))

@@ -16,6 +16,7 @@
 
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import multitype
+from googlecloudsdk.command_lib.resource_manager.capability_configs import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
@@ -26,6 +27,7 @@ def OrgAttributeConfig():
   return concepts.ResourceParameterAttributeConfig(
       name='organization',
       help_text='Organization ID or full resource name of the {resource}.',
+      value_type=flags.ValidateOrganizationId,
   )
 
 
@@ -33,11 +35,16 @@ def FolderAttributeConfig():
   return concepts.ResourceParameterAttributeConfig(
       name='folder',
       help_text='Folder ID or full resource name of the {resource}.',
+      value_type=flags.ValidateFolderId,
   )
 
 
 def ProjectAttributeConfig():
-  return concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG
+  return concepts.ResourceParameterAttributeConfig(
+      name='project',
+      help_text='Project number or full resource name of the {resource}.',
+      value_type=flags.ValidateProject,
+  )
 
 
 def CapabilityConfigAttributeConfig():
@@ -99,6 +106,7 @@ def AddCapabilityConfigResourceArgToParser(
           spec,
           'The CapabilityConfig {}.'.format(verb),
           required=required,
+          flag_name_overrides={'project': '--project'},
       )
   ]).AddToParser(parser)
 

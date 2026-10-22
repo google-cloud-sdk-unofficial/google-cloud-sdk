@@ -734,6 +734,33 @@ class MeridianV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Infer(self, request, global_params=None):
+      r"""Triggers a model inference run.
+
+      Args:
+        request: (MeridianProjectsLocationsWorkspacesDatasetsModelsInferRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Infer')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Infer.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/workspaces/{workspacesId}/datasets/{datasetsId}/models/{modelsId}:infer',
+        http_method='POST',
+        method_id='meridian.projects.locations.workspaces.datasets.models.infer',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:infer',
+        request_field='inferModelRequest',
+        request_type_name='MeridianProjectsLocationsWorkspacesDatasetsModelsInferRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists all Models in a given project, location, workspace, and dataset.
 

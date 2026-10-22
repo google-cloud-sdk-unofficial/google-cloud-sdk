@@ -15209,9 +15209,10 @@ class GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionQueryConfigSecti
       REASON_FOR_CANCELLATION: Reason for cancellation if the customer
         requests for a cancellation. "N/A" otherwise. Section name:
         "reason_for_cancellation".
-      CUSTOMER_SATISFACTION: "Unsatisfied" or "Satisfied" depending on the
-        customer's feelings at the end of the conversation. Section name:
-        "customer_satisfaction".
+      CUSTOMER_SATISFACTION: Customer satisfaction derived from the text
+        transcript only (not audio). Categorized based on customer statements
+        by the end of the conversation. `D` for dissatisfied and `N` for
+        neutral or satisfied (default). Section name: `customer_satisfaction`.
       ENTITIES: Key entities extracted from the conversation, such as ticket
         number, order number, dollar amount, etc. Section names are prefixed
         by "entities/".
@@ -15688,6 +15689,8 @@ class GoogleCloudDialogflowV2InputAudioConfig(_messages.Message):
 
   Fields:
     audioEncoding: Required. Audio encoding of the audio content to process.
+    disableInterimInputTranscripts: Optional. Disables emission of interim
+      input transcriptions when set to `true`.
     disableNoSpeechRecognizedEvent: Only used in Participants.AnalyzeContent
       and Participants.StreamingAnalyzeContent. If `false` and recognition
       doesn't return any result, trigger `NO_SPEECH_RECOGNIZED` event to
@@ -15829,21 +15832,22 @@ class GoogleCloudDialogflowV2InputAudioConfig(_messages.Message):
     USE_ENHANCED = 3
 
   audioEncoding = _messages.EnumField('AudioEncodingValueValuesEnum', 1)
-  disableNoSpeechRecognizedEvent = _messages.BooleanField(2)
-  enableAutomaticPunctuation = _messages.BooleanField(3)
-  enableVoiceActivityEvents = _messages.BooleanField(4)
-  enableWordInfo = _messages.BooleanField(5)
-  geminiAsrConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig', 6)
-  languageCode = _messages.StringField(7)
-  model = _messages.StringField(8)
-  modelVariant = _messages.EnumField('ModelVariantValueValuesEnum', 9)
-  optOutConformerModelMigration = _messages.BooleanField(10)
-  phraseHints = _messages.StringField(11, repeated=True)
-  phraseSets = _messages.StringField(12, repeated=True)
-  sampleRateHertz = _messages.IntegerField(13, variant=_messages.Variant.INT32)
-  singleUtterance = _messages.BooleanField(14)
-  speechContexts = _messages.MessageField('GoogleCloudDialogflowV2SpeechContext', 15, repeated=True)
-  useGeminiAsr = _messages.BooleanField(16)
+  disableInterimInputTranscripts = _messages.BooleanField(2)
+  disableNoSpeechRecognizedEvent = _messages.BooleanField(3)
+  enableAutomaticPunctuation = _messages.BooleanField(4)
+  enableVoiceActivityEvents = _messages.BooleanField(5)
+  enableWordInfo = _messages.BooleanField(6)
+  geminiAsrConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig', 7)
+  languageCode = _messages.StringField(8)
+  model = _messages.StringField(9)
+  modelVariant = _messages.EnumField('ModelVariantValueValuesEnum', 10)
+  optOutConformerModelMigration = _messages.BooleanField(11)
+  phraseHints = _messages.StringField(12, repeated=True)
+  phraseSets = _messages.StringField(13, repeated=True)
+  sampleRateHertz = _messages.IntegerField(14, variant=_messages.Variant.INT32)
+  singleUtterance = _messages.BooleanField(15)
+  speechContexts = _messages.MessageField('GoogleCloudDialogflowV2SpeechContext', 16, repeated=True)
+  useGeminiAsr = _messages.BooleanField(17)
 
 
 class GoogleCloudDialogflowV2InputConfig(_messages.Message):
@@ -19405,6 +19409,8 @@ class GoogleCloudDialogflowV2SpeechToTextConfig(_messages.Message):
 
   Fields:
     audioEncoding: Audio encoding of the audio content to process.
+    disableInterimInputTranscripts: Optional. Disables emission of interim
+      input transcriptions when set to `true`.
     enableWordInfo: If `true`, Dialogflow returns SpeechWordInfo in
       StreamingRecognitionResult with information about the recognized speech
       words, e.g. start and end time offsets. If false or unspecified, Speech
@@ -19537,15 +19543,16 @@ class GoogleCloudDialogflowV2SpeechToTextConfig(_messages.Message):
     USE_ENHANCED = 3
 
   audioEncoding = _messages.EnumField('AudioEncodingValueValuesEnum', 1)
-  enableWordInfo = _messages.BooleanField(2)
-  geminiAsrConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig', 3)
-  languageCode = _messages.StringField(4)
-  model = _messages.StringField(5)
-  phraseSets = _messages.StringField(6, repeated=True)
-  sampleRateHertz = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  speechModelVariant = _messages.EnumField('SpeechModelVariantValueValuesEnum', 8)
-  useGeminiAsr = _messages.BooleanField(9)
-  useTimeoutBasedEndpointing = _messages.BooleanField(10)
+  disableInterimInputTranscripts = _messages.BooleanField(2)
+  enableWordInfo = _messages.BooleanField(3)
+  geminiAsrConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig', 4)
+  languageCode = _messages.StringField(5)
+  model = _messages.StringField(6)
+  phraseSets = _messages.StringField(7, repeated=True)
+  sampleRateHertz = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  speechModelVariant = _messages.EnumField('SpeechModelVariantValueValuesEnum', 9)
+  useGeminiAsr = _messages.BooleanField(10)
+  useTimeoutBasedEndpointing = _messages.BooleanField(11)
 
 
 class GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig(_messages.Message):
@@ -19561,9 +19568,6 @@ class GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig(_messages.Message
 
   Fields:
     endOfSpeechSensitivity: Optional. End of speech sensitivity.
-    modelId: Optional. The Gemini ASR model ID used for transcription. This
-      value overrides the default model ID configured on the server. Example:
-      "gemini-3-flash-lite-asr-preview"
     prefixPaddingMs: Optional. The required duration of detected speech before
       start-of-speech is committed.
     silenceDurationMs: Optional. The required duration of detected silence (or
@@ -19598,10 +19602,9 @@ class GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig(_messages.Message
     START_SENSITIVITY_LOW = 2
 
   endOfSpeechSensitivity = _messages.EnumField('EndOfSpeechSensitivityValueValuesEnum', 1)
-  modelId = _messages.StringField(2)
-  prefixPaddingMs = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  silenceDurationMs = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  startOfSpeechSensitivity = _messages.EnumField('StartOfSpeechSensitivityValueValuesEnum', 5)
+  prefixPaddingMs = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  silenceDurationMs = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  startOfSpeechSensitivity = _messages.EnumField('StartOfSpeechSensitivityValueValuesEnum', 4)
 
 
 class GoogleCloudDialogflowV2SpeechWordInfo(_messages.Message):
@@ -20423,9 +20426,10 @@ class GoogleCloudDialogflowV2SummarizationSection(_messages.Message):
       REASON_FOR_CANCELLATION: Reason for cancellation if the customer
         requests for a cancellation. "N/A" otherwise. Section name:
         "reason_for_cancellation".
-      CUSTOMER_SATISFACTION: "Unsatisfied" or "Satisfied" depending on the
-        customer's feelings at the end of the conversation. Section name:
-        "customer_satisfaction".
+      CUSTOMER_SATISFACTION: Customer satisfaction derived from the text
+        transcript only (not audio). Categorized based on customer statements
+        by the end of the conversation. `D` for dissatisfied and `N` for
+        neutral or satisfied (default). Section name: `customer_satisfaction`.
       ENTITIES: Key entities extracted from the conversation, such as ticket
         number, order number, dollar amount, etc. Section names are prefixed
         by "entities/".

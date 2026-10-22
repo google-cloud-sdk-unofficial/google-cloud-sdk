@@ -207,8 +207,15 @@ def GenerateDataDocumentationSpec(
       if args.IsKnownAndSpecified('enable_catalog_publishing')
       else None
   )
+  custom_instructions = (
+      args.custom_instructions
+      if args.IsKnownAndSpecified('custom_instructions')
+      else None
+  )
+
   return module.GoogleCloudDataplexV1DataDocumentationSpec(
-      catalogPublishingEnabled=catalog_publishing_enabled
+      catalogPublishingEnabled=catalog_publishing_enabled,
+      customInstructions=custom_instructions,
   )
 
 
@@ -364,6 +371,12 @@ def GenerateUpdateMask(args: parser_extensions.Namespace):
       update_mask.append('dataProfileSpec.catalogPublishingEnabled')
     elif args.scan_type == 'QUALITY':
       update_mask.append('dataQualitySpec.catalogPublishingEnabled')
+
+  if args.IsKnownAndSpecified('custom_instructions') or (
+      args.IsKnownAndSpecified('clear_custom_instructions')
+      and args.clear_custom_instructions
+  ):
+    update_mask.append('dataDocumentationSpec.customInstructions')
   return update_mask
 
 

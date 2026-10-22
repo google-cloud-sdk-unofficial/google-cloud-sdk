@@ -61,7 +61,7 @@
       default: null
     - arg_name: duration
       api_field: profilerSession.duration
-      required: true
+      required: false
       repeated: false
       type: googlecloudsdk.core.util.times:ParseDuration
       processor: googlecloudsdk.core.util.times:FormatDurationForJson
@@ -153,6 +153,8 @@
     collection:
     - hypercomputecluster.projects.locations.machineLearningRuns.profilerSessions
     method: create
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.mldiagnostics.hooks:ValidateProfilerSessionCaptureRequest
   async:
     collection:
     - hypercomputecluster.projects.locations.operations

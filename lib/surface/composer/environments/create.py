@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.composer import environments_util as environments_ap
 from googlecloudsdk.api_lib.composer import operations_util as operations_api_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.composer import airflow_rbac_util
 from googlecloudsdk.command_lib.composer import flags
 from googlecloudsdk.command_lib.composer import image_versions_util
 from googlecloudsdk.command_lib.composer import parsers
@@ -275,6 +276,7 @@ class Create(base.Command):
   _support_max_pods_per_node = False
   _support_traffic_routing_config = False
   _support_user_workloads_service_accounts = False
+  _support_airflow_rbac_config = False
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.GA):
@@ -578,6 +580,11 @@ class Create(base.Command):
       possible_args['user-workloads-service-accounts'] = (
           args.user_workloads_service_accounts
       )
+    if self._support_airflow_rbac_config:
+      possible_args['airflow-rbac-config-from-file'] = (
+          args.airflow_rbac_config_from_file
+      )
+      possible_args['airflow-rbac-binding'] = args.airflow_rbac_binding
 
     for k, v in possible_args.items():
       if v is not None and not is_composer3:
@@ -606,6 +613,13 @@ class Create(base.Command):
       args.network_attachment = parsers.ParseNetworkAttachment(
           args.network_attachment, fallback_region=self.env_ref.Parent().Name()
       ).RelativeName()
+    self.airflow_rbac_config = None
+    if self._support_airflow_rbac_config:
+      self.airflow_rbac_config = airflow_rbac_util.ParseAirflowRbacConfig(
+          airflow_rbac_binding=args.airflow_rbac_binding,
+          config_file=args.airflow_rbac_config_from_file,
+          release_track=self.ReleaseTrack(),
+      )
 
   def ValidateFlagsAddedInComposer2(self, args, is_composer_v1, release_track):
     """Raises InputError if flags from Composer v2 are used when creating v1."""
@@ -812,6 +826,7 @@ class CreateBeta(Create):
   _support_max_pods_per_node = True
   _support_traffic_routing_config = True
   _support_user_workloads_service_accounts = False
+  _support_airflow_rbac_config = True
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
@@ -925,6 +940,7 @@ class CreateBeta(Create):
         storage_bucket=args.storage_bucket,
         airflow_database_retention_days=args.airflow_database_retention_days,
         enable_development_mode=args.enable_development_mode,
+        airflow_rbac_config=self.airflow_rbac_config,
     )
 
     return environments_api_util.Create(self.env_ref, create_flags,
@@ -999,11 +1015,13 @@ def AddComposer3Flags(parser, release_track):
     flags.CLOUD_RUN_FUNCTIONS_ROUTING_BETA.choice_arg.AddToParser(
         traffic_routing_group
     )
+    flags.AddAirflowRbacCreateFlags(parser)
   elif release_track == base.ReleaseTrack.ALPHA:
     flags.CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA.choice_arg.AddToParser(
         traffic_routing_group
     )
     flags.USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG.AddToParser(parser)
+    flags.AddAirflowRbacCreateFlags(parser)
 
 
 @base.UniverseCompatible
@@ -1019,6 +1037,7 @@ class CreateAlpha(CreateBeta):
 
   _support_traffic_routing_config = True
   _support_user_workloads_service_accounts = True
+  _support_airflow_rbac_config = True
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.ALPHA):
@@ -1141,6 +1160,7 @@ class CreateAlpha(CreateBeta):
         storage_bucket=args.storage_bucket,
         enable_development_mode=args.enable_development_mode,
         user_workloads_service_accounts=args.user_workloads_service_accounts,
+        airflow_rbac_config=self.airflow_rbac_config,
     )
 
     return environments_api_util.Create(self.env_ref, create_flags,

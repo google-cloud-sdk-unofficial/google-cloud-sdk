@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: Show details about a Database Migration Service connection profile.
     description: Show details about a connection profile.

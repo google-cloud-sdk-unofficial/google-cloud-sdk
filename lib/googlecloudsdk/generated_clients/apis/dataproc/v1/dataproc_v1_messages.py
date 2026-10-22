@@ -3350,7 +3350,7 @@ class DataprocProjectsLocationsKubernetesJobsCreateRequest(_messages.Message):
 
   Fields:
     kubernetesJob: A KubernetesJob resource to be passed as the request body.
-    kubernetesJobId: Required. The ID to use for the KubernetesJob, which will
+    kubernetesJobId: Optional. The ID to use for the KubernetesJob, which will
       become the final component of the KubernetesJob's resource name.
     parent: Required. Value for parent.
     requestId: Optional. An optional request ID to identify requests. Specify
@@ -6403,20 +6403,22 @@ class FlexibleInstanceGroupConfig(_messages.Message):
       STANDARD: Standard hardware class. Provides a balanced compute
         configuration with approximately 4GB of memory per vCPU and standard
         disk storage tiers.Candidate machine types include n4-standard,
-        n4d-standard, n2-standard, n2d-standard, c4-standard, and c4d-standard
-        (for requested core counts 2, 4, 8, 16, 32).Warning: The specific
-        machine families and types selected for this hardware class are
-        subject to change. Users should not take a dependency on the
-        underlying machine type selection.
+        n4d-standard, n2-standard, and n2d-standard (Rank 0), and c4-standard
+        and c4d-standard (Rank 1) (for requested core counts 2, 4, 8, 16,
+        32).Warning: The specific machine families and types selected for this
+        hardware class are subject to change. Users should not take a
+        dependency on the underlying machine type selection.
       PERFORMANCE: Performance hardware class. Provides a high-performance
         configuration with approximately 8GB of memory per vCPU (e.g. high-
         memory machine types) and higher-tier disk configurations (e.g. higher
         IOPS and throughput).Candidate machine types include n4-highmem,
-        n4d-highmem, n2-highmem, n2d-highmem, c4-highmem, and c4d-highmem (for
-        requested core counts 2, 4, 8, 16, 32) with provisioned
-        storage.Warning: The specific machine families and types selected for
-        this hardware class are subject to change. Users should not take a
-        dependency on the underlying machine type selection.
+        n4d-highmem, n2-highmem, and n2d-highmem (Rank 0), and c4-highmem and
+        c4d-highmem (Rank 1) (for requested core counts 2, 4, 8, 16, 32). n4,
+        n4d, c4, and c4d use Hyperdisk Balanced with provisioned storage,
+        whereas n2 and n2d use SSD persistent disks.Warning: The specific
+        machine families and types selected for this hardware class are
+        subject to change. Users should not take a dependency on the
+        underlying machine type selection.
     """
     HARDWARE_CLASS_UNSPECIFIED = 0
     STANDARD = 1
@@ -11682,6 +11684,7 @@ class SoftwareConfig(_messages.Message):
     Values:
       COMPONENT_UNSPECIFIED: Unspecified component. Specifying this will cause
         Cluster creation to fail.
+      ALLOYDB_CONNECTOR: The AlloyDB Connector.
       ANACONDA: The Anaconda component is no longer supported or applicable to
         supported Dataproc on Compute Engine image versions
         (https://cloud.google.com/dataproc/docs/concepts/versioning/dataproc-
@@ -11711,27 +11714,28 @@ class SoftwareConfig(_messages.Message):
       JUPYTER_KERNEL_GATEWAY: The Jupyter Kernel Gateway.
     """
     COMPONENT_UNSPECIFIED = 0
-    ANACONDA = 1
-    DELTA = 2
-    DOCKER = 3
-    DRUID = 4
-    FLINK = 5
-    HBASE = 6
-    HIVE_WEBHCAT = 7
-    HUDI = 8
-    ICEBERG = 9
-    JUPYTER = 10
-    KERBEROS = 11
-    PIG = 12
-    PRESTO = 13
-    TRINO = 14
-    RANGER = 15
-    SOLR = 16
-    ZEPPELIN = 17
-    ZOOKEEPER = 18
-    DASK = 19
-    GPU_DRIVER = 20
-    JUPYTER_KERNEL_GATEWAY = 21
+    ALLOYDB_CONNECTOR = 1
+    ANACONDA = 2
+    DELTA = 3
+    DOCKER = 4
+    DRUID = 5
+    FLINK = 6
+    HBASE = 7
+    HIVE_WEBHCAT = 8
+    HUDI = 9
+    ICEBERG = 10
+    JUPYTER = 11
+    KERBEROS = 12
+    PIG = 13
+    PRESTO = 14
+    TRINO = 15
+    RANGER = 16
+    SOLR = 17
+    ZEPPELIN = 18
+    ZOOKEEPER = 19
+    DASK = 20
+    GPU_DRIVER = 21
+    JUPYTER_KERNEL_GATEWAY = 22
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class PropertiesValue(_messages.Message):

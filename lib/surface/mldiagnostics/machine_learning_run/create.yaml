@@ -15,6 +15,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: false
+  hints:
+    read_only: false
   help_text:
     brief: Create a machine learning run
     description: Create a machine learning run.
@@ -150,10 +152,10 @@
       help_text: |-
         The orchestrator used for the run.
       choices:
-      - arg_value: gce
-        enum_value: GCE
+      - arg_value: custom
+        enum_value: CUSTOM
         help_text: |-
-          Google Compute Engine orchestrator.
+          Custom orchestrator with Single/Multiple Compute Engine instances.
       - arg_value: gke
         enum_value: GKE
         help_text: |-
@@ -168,7 +170,7 @@
         help_text: |-
           Workload details associated for the Machine Learning Run.
           Workload have different metadata based on the orchestrator like
-          GKE cluster, Slurm cluster, Google Compute Engine instance etc.
+          GKE cluster, Slurm cluster, Compute Engine instance etc.
         params:
         - group:
             mutex: true
@@ -214,6 +216,83 @@
                   help_text: |-
                     The create timestamp of the workload.
                     Example - 2026-02-20T06:00:00Z
+            - group:
+                api_field: machineLearningRun.workloadDetails.slurm
+                required: false
+                help_text: |-
+                  Workload details for the Slurm orchestrator.
+                params:
+                - arg_name: slurm-job-id
+                  api_field: machineLearningRun.workloadDetails.slurm.jobId
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The identifier of the slurm job. Example - 1234567890
+                - arg_name: slurm-cluster-name
+                  api_field: machineLearningRun.workloadDetails.slurm.cluster
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The cluster of the slurm job.
+                    Example - /projects/<project id>/locations/<location>/clusters/<cluster
+                    name>
+                - arg_name: slurm-job-name
+                  api_field: machineLearningRun.workloadDetails.slurm.displayName
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The display name of the slurm job (job_name). Example - training-workload
+                - arg_name: slurm-job-submit-time
+                  api_field: machineLearningRun.workloadDetails.slurm.submitTime
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The time when the slurm job was submitted. Example - 2026-02-20T06:00:00Z
+            - group:
+                api_field: machineLearningRun.workloadDetails.custom
+                required: false
+                help_text: |-
+                  Workload details for workload running on custom orchestrator.
+                params:
+                - arg_name: custom-workload-id
+                  api_field: machineLearningRun.workloadDetails.custom.id
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The identifier of the workload. Example - "1234567890"
+                - arg_name: custom-workload-display-name
+                  api_field: machineLearningRun.workloadDetails.custom.displayName
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The display name of the workload. Example - training-workload
+                - arg_name: custom-workload-create-time
+                  api_field: machineLearningRun.workloadDetails.custom.createTime
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The create timestamp of the workload. Example - 2026-02-20T06:00:00Z
+        - arg_name: workload-targets
+          api_field: machineLearningRun.workloadDetails.targets
+          required: false
+          repeated: true
+          help_text: |-
+            List of targets/hosts associated with the workload.
+          spec:
+          - api_field: displayName
+            json_name: display-name
+            help_text: |-
+              Display name of the target/host.
+          - api_field: instanceId
+            json_name: instance-id
+            help_text: |-
+              Target identifier of the VM.
+          - api_field: hostname
+            help_text: |-
+              Hostname of the VM.
+          - api_field: zone
+            help_text: |-
+              Zone of the target, e.g., `us-central1-a`.
     - arg_name: run-phase
       api_field: machineLearningRun.runPhase
       required: false

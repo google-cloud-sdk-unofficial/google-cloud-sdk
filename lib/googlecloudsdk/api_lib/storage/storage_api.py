@@ -349,6 +349,144 @@ class StorageClient(object):
       # Bucket doesn't exist, we'll try to create it.
       raise BucketNotFoundError('Bucket [{}] does not exist.'.format(bucket))
 
+  def _CreateBucketInsertRequest(
+      self,
+      project,
+      bucket,
+      location=None,
+      enable_uniform_level_access=None,
+      enable_public_access_prevention=None,
+      soft_delete_duration=None,
+      cors=None,
+      labels=None,
+  ):
+    """Helper to build a StorageBucketsInsertRequest."""
+    storage_buckets_insert_request = (
+        self.messages.StorageBucketsInsertRequest(
+            project=project,
+            bucket=self.messages.Bucket(name=bucket,
+                                        location=location)))
+    iam_configuration = self.messages.Bucket.IamConfigurationValue()
+    if enable_uniform_level_access is not None:
+      iam_configuration.uniformBucketLevelAccess = self.messages.Bucket.IamConfigurationValue.UniformBucketLevelAccessValue(
+          enabled=enable_uniform_level_access
+      )
+    if enable_public_access_prevention is not None:
+      if enable_public_access_prevention:
+        iam_configuration.publicAccessPrevention = 'enforced'
+      else:
+        iam_configuration.publicAccessPrevention = 'inherited'
+    # Only set iam_configuration on the new bucket if it has some data in it.
+    if iam_configuration != self.messages.Bucket.IamConfigurationValue():
+      storage_buckets_insert_request.bucket.iamConfiguration = (
+          iam_configuration
+      )
+    if cors is not None:
+      storage_buckets_insert_request.bucket.cors = cors
+    if soft_delete_duration is not None:
+      storage_buckets_insert_request.bucket.softDeletePolicy = (
+          self.messages.Bucket.SoftDeletePolicyValue(
+              retentionDurationSeconds=soft_delete_duration
+          )
+      )
+    if labels is not None:
+      label_values = []
+      for key, value in labels.items():
+        label_values.append(
+            self.messages.Bucket.LabelsValue.AdditionalProperty(
+                key=key, value=value
+            )
+        )
+      storage_buckets_insert_request.bucket.labels = (
+          self.messages.Bucket.LabelsValue(additionalProperties=label_values)
+      )
+    return storage_buckets_insert_request
+
+  def CreateBucketIfNotListed(
+      self,
+      bucket,
+      project=None,
+      location=None,
+      enable_uniform_level_access=None,
+      enable_public_access_prevention=None,
+      soft_delete_duration=None,
+      cors=None,
+      labels=None,
+  ):
+    """Create a bucket if it does not already exist in the project.
+
+    This always assumes check_ownership is True.
+
+    This is an alternative to CreateBucketIfNotExists that calls List upfront
+    to check bucket ownership. This avoids incurring an extra Get API call
+    when the bucket already exists. New code should prefer this method.
+
+    If it already exists and is accessible by the current user, this method
+    returns.
+
+    Args:
+      bucket: str, The storage bucket to be created.
+      project: str, The project to use for the API request. If None, current
+        Cloud SDK project is used.
+      location: str, The bucket location/region.
+      enable_uniform_level_access: bool, to enable uniform bucket level access.
+        If None, the uniformBucketLevelAccess field will be set to None in the
+        bucket creation request, which means that it will use the default
+        values.
+      enable_public_access_prevention: bool, to enable public access prevention.
+        If None, the publicAccessPrevention field will be set to None in the
+        bucket creation request, which means that it will use the default
+        values.
+      soft_delete_duration: int, the soft delete duration in seconds.
+      cors: list, A list of CorsValueListEntry objects. The bucket's
+        Cross-Origin Resource Sharing (CORS) configuration. If None, no CORS
+        configuration will be set.
+      labels: dict, A dictionary of labels to apply to the bucket.
+
+    Raises:
+      api_exceptions.HttpError: If the bucket is not able to be created or is
+        not accessible due to permissions.
+      BucketInWrongProjectError: If the bucket already exists in a different
+        project. This could belong to a malicious user squatting on the bucket
+        name.
+    """
+    project = project or properties.VALUES.core.project.Get(required=True)
+
+    bucket_list_req = self.messages.StorageBucketsListRequest(
+        project=project, prefix=bucket)
+    bucket_list = self.client.buckets.List(bucket_list_req)
+    if any(b.id == bucket for b in bucket_list.items):
+      return
+
+    # Bucket does not exist in the project, we'll try to create it.
+    storage_buckets_insert_request = self._CreateBucketInsertRequest(
+        project=project,
+        bucket=bucket,
+        location=location,
+        enable_uniform_level_access=enable_uniform_level_access,
+        enable_public_access_prevention=enable_public_access_prevention,
+        soft_delete_duration=soft_delete_duration,
+        cors=cors,
+        labels=labels,
+    )
+    try:
+      self.client.buckets.Insert(storage_buckets_insert_request)
+    except api_exceptions.HttpConflictError:
+      # There could be a race condition in bucket creation or could be the case
+      # of squatting.
+      pass
+    else:
+      # We just created the bucket ourselves; no need to check for ownership.
+      return
+
+    # Check that the bucket is in the user's project to prevent bucket squatting
+    # exploit (see b/33046325, b/169171543).
+    bucket_list = self.client.buckets.List(bucket_list_req)
+    if not any(b.id == bucket for b in bucket_list.items):
+      raise BucketInWrongProjectError(
+          'Unable to create bucket [{}] as it already exists in another '
+          'project.'.format(bucket))
+
   def CreateBucketIfNotExists(
       self,
       bucket,
@@ -410,45 +548,16 @@ class StorageClient(object):
       ))
     except api_exceptions.HttpNotFoundError:
       # Bucket doesn't exist, we'll try to create it.
-      storage_buckets_insert_request = (
-          self.messages.StorageBucketsInsertRequest(
-              project=project,
-              bucket=self.messages.Bucket(name=bucket,
-                                          location=location)))
-      iam_configuration = self.messages.Bucket.IamConfigurationValue()
-      if enable_uniform_level_access is not None:
-        iam_configuration.uniformBucketLevelAccess = self.messages.Bucket.IamConfigurationValue.UniformBucketLevelAccessValue(
-            enabled=enable_uniform_level_access
-        )
-      if enable_public_access_prevention is not None:
-        if enable_public_access_prevention:
-          iam_configuration.publicAccessPrevention = 'enforced'
-        else:
-          iam_configuration.publicAccessPrevention = 'inherited'
-      # Only set iam_configuration on the new bucket if it has some data in it.
-      if iam_configuration != self.messages.Bucket.IamConfigurationValue():
-        storage_buckets_insert_request.bucket.iamConfiguration = (
-            iam_configuration
-        )
-      if cors is not None:
-        storage_buckets_insert_request.bucket.cors = cors
-      if soft_delete_duration is not None:
-        storage_buckets_insert_request.bucket.softDeletePolicy = (
-            self.messages.Bucket.SoftDeletePolicyValue(
-                retentionDurationSeconds=soft_delete_duration
-            )
-        )
-      if labels is not None:
-        label_values = []
-        for key, value in labels.items():
-          label_values.append(
-              self.messages.Bucket.LabelsValue.AdditionalProperty(
-                  key=key, value=value
-              )
-          )
-        storage_buckets_insert_request.bucket.labels = (
-            self.messages.Bucket.LabelsValue(additionalProperties=label_values)
-        )
+      storage_buckets_insert_request = self._CreateBucketInsertRequest(
+          project=project,
+          bucket=bucket,
+          location=location,
+          enable_uniform_level_access=enable_uniform_level_access,
+          enable_public_access_prevention=enable_public_access_prevention,
+          soft_delete_duration=soft_delete_duration,
+          cors=cors,
+          labels=labels,
+      )
       try:
         self.client.buckets.Insert(storage_buckets_insert_request)
       except api_exceptions.HttpConflictError:

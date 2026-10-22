@@ -131,7 +131,6 @@ from .object_store import (
     PackBasedObjectStore,
     PackCapableObjectStore,
     find_shallow,
-    peel_sha,
 )
 from .objects import (
     Blob,
@@ -153,6 +152,7 @@ from .refs import (
     DiskRefsContainer,
     Ref,
     RefsContainer,
+    _set_branch_tracking,
     _set_default_branch,
     _set_head,
     _set_origin_head,
@@ -1214,7 +1214,7 @@ class BaseRepo:
         cached = self.refs.get_peeled(ref)
         if cached is not None:
             return cached
-        return peel_sha(self.object_store, self.refs[ref])[1].id
+        return self.object_store.peel(self.refs[ref])[1].id
 
     @property
     def notes(self) -> "Notes":
@@ -2158,6 +2158,8 @@ class Repo(BaseRepo):
                     # Update target head
                     if head_ref:
                         head = _set_head(target.refs, head_ref, ref_message)
+                        if not bare:
+                            _set_branch_tracking(target.get_config(), head_ref, origin)
                     else:
                         head = None
 

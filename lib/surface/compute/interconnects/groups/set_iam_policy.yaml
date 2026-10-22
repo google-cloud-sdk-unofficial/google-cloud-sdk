@@ -1,4 +1,6 @@
 release_tracks: [ALPHA, BETA, GA, PREVIEW]
+hints:
+  read_only: false
 
 help_text:
   brief: Set the IAM policy for a Compute Engine interconnect group.

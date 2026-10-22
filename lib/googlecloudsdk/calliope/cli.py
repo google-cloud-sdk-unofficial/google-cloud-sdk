@@ -141,8 +141,8 @@ def _AddFlagsFileFlags(inject, flags_file, parent_locations=None):
       inject.append(arg)
       if separate_value_arg:
         # Add the already lexed arg and with one swoop we sidestep all flag
-        # value and command line interpreter quoting issues. The ArgList and
-        # ArgDict arg parsers have been adjusted to handle this.
+        # value and command line interpreter quoting issues. The ArgList,
+        # ArgDict, and ArgObject arg parsers have been adjusted to handle this.
         inject.append(value)
 
 

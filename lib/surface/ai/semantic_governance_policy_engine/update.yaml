@@ -1,4 +1,6 @@
 release_tracks: [GA, BETA]
+hints:
+  read_only: false
 help_text:
   brief: Update the semantic governance policy engine config.
   description: Update the semantic governance policy engine config.

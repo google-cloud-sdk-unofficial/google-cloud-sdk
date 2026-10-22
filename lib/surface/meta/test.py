@@ -60,6 +60,22 @@ class Test(base.Command):
         metavar='ITEMS',
         help='ArgList flag value test.')
     scenarios.add_argument(
+        '--arg-object',
+        type=arg_parsers.ArgObject(
+            spec={
+                'foo': str,
+                'nested': arg_parsers.ArgObject(
+                    spec={'bar': int, 'baz': str},
+                ),
+                'map': arg_parsers.ArgObject(
+                    key_type=str,
+                    value_type=int,
+                ),
+            }
+        ),
+        metavar='OBJECT',
+        help='ArgObject flag value test.')
+    scenarios.add_argument(
         '--argumenterror-outside-argparse',
         action='store_true',
         help=('Trigger a calliope.parser_errors.ArgumentError exception '
@@ -167,6 +183,9 @@ class Test(base.Command):
 
   def _RunArgList(self, args):
     return args.arg_list
+
+  def _RunArgObject(self, args):
+    return args.arg_object
 
   def _RunArgumenterrorOutsideArgparse(self, args):
     raise parser_errors.RequiredError(argument='--some-flag')
@@ -313,6 +332,8 @@ class Test(base.Command):
       r = self._RunArgDict(args)
     elif args.arg_list:
       r = self._RunArgList(args)
+    elif args.arg_object:
+      r = self._RunArgObject(args)
     elif args.argumenterror_outside_argparse:
       r = self._RunArgumenterrorOutsideArgparse(args)
     elif args.core_exception:

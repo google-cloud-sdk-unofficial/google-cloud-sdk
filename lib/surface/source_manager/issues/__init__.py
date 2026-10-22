@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.RegionalEndpointsSupported
 class Issues(base.Group):
   """Manage Secure Source Manager issues."""

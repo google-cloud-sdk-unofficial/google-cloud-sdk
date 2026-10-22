@@ -1,4 +1,6 @@
 - release_tracks: [BETA]
+  hints:
+    read_only: false
   hidden: true
 
   help_text:

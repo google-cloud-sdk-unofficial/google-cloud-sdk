@@ -920,20 +920,24 @@ class PktLineParser:
         buf = self._readahead.getvalue()
         if len(buf) < 4:
             return
-        while len(buf) >= 4:
-            size = _parse_pkt_line_length(buf[:4])
+        # Track an offset rather than reslicing buf per pkt-line: slicing copies
+        # the remainder each time, which makes a single call quadratic in the
+        # number of lines it contains.
+        pos = 0
+        while len(buf) - pos >= 4:
+            size = _parse_pkt_line_length(buf[pos : pos + 4])
             if size == 0:
                 self.handle_pkt(None)
-                buf = buf[4:]
+                pos += 4
             elif size < 4:
                 raise GitProtocolError(f"Invalid pkt-line length: {size:04x}")
-            elif size <= len(buf):
-                self.handle_pkt(buf[4:size])
-                buf = buf[size:]
+            elif size <= len(buf) - pos:
+                self.handle_pkt(buf[pos + 4 : pos + size])
+                pos += size
             else:
                 break
         self._readahead = BytesIO()
-        self._readahead.write(buf)
+        self._readahead.write(buf[pos:])
 
     def get_tail(self) -> bytes:
         """Read back any unused data."""
@@ -1063,7 +1067,6 @@ def write_info_refs(
     Yields:
       Lines in info/refs format (sha + tab + refname)
     """
-    from .object_store import peel_sha
     from .refs import HEADREF
 
     for name, sha in sorted(refs.items()):
@@ -1075,7 +1078,7 @@ def write_info_refs(
             o = store[sha]
         except KeyError:
             continue
-        _unpeeled, peeled = peel_sha(store, sha)
+        _unpeeled, peeled = store.peel(sha)
         yield o.id + b"\t" + name + b"\n"
         if o.id != peeled.id:
             yield peeled.id + b"\t" + name + PEELED_TAG_SUFFIX + b"\n"
@@ -1098,12 +1101,10 @@ def serialize_refs(
     """
     import warnings
 
-    from .object_store import peel_sha
-
     ret: dict[bytes, ObjectID] = {}
     for ref, sha in refs.items():
         try:
-            unpeeled, peeled = peel_sha(store, ObjectID(sha))
+            unpeeled, peeled = store.peel(ObjectID(sha))
         except KeyError:
             warnings.warn(
                 "ref {} points at non-present sha {}".format(

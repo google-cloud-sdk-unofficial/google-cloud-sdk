@@ -74,6 +74,7 @@ class AlloyDbSettings(_messages.Message):
       POSTGRES_16: The database version is Postgres 16.
       POSTGRES_17: The database version is Postgres 17.
       POSTGRES_18: The database version is Postgres 18.
+      POSTGRES_19: The database version is Postgres 19.
     """
     DATABASE_VERSION_UNSPECIFIED = 0
     POSTGRES_14 = 1
@@ -81,6 +82,7 @@ class AlloyDbSettings(_messages.Message):
     POSTGRES_16 = 3
     POSTGRES_17 = 4
     POSTGRES_18 = 5
+    POSTGRES_19 = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -3132,7 +3134,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class EncryptionConfig(_messages.Message):
@@ -6510,10 +6511,14 @@ class PromoteMigrationJobRequest(_messages.Message):
   r"""Request message for 'PromoteMigrationJob' request.
 
   Fields:
+    failback: Optional. If true, the promote operation will perform a failback
+      promote from destination back to source (only supported when the
+      migration job is in FAILBACK phase).
     objectsFilter: Optional. The object filter to apply to the migration job.
   """
 
-  objectsFilter = _messages.MessageField('MigrationJobObjectsConfig', 1)
+  failback = _messages.BooleanField(1)
+  objectsFilter = _messages.MessageField('MigrationJobObjectsConfig', 2)
 
 
 class PscInterfaceConfig(_messages.Message):
@@ -7821,7 +7826,6 @@ class StaticIpConnectivity(_messages.Message):
   instance from the Cloud SQL console or using Cloud SQL APIs. No additional
   configuration is required.
   """
-
 
 
 class StaticServiceIpConnectivity(_messages.Message):

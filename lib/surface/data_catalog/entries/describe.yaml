@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: true
   help_text:
     brief: Describe a Data Catalog entry.
     description: Describe a Data Catalog entry.
@@ -24,6 +26,8 @@
       is_positional: true
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
   help_text:
     brief: Describe a Data Catalog entry.
     description: Describe a Data Catalog entry.

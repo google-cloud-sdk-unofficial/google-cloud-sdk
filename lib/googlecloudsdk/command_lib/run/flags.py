@@ -5913,9 +5913,9 @@ def DevSyncCleanupFlag(parser):
       action='store_true',
       default=False,
       help=(
-          'If set, the Cloud Run instance created for the dev sync session'
-          ' will not be automatically deleted when the session terminates. By'
-          ' default, the instance is deleted to clean up resources.'
+          'If set, the Cloud Run resource created for the dev sync session is'
+          ' deleted when the session terminates. Not supported when syncing to'
+          ' an existing resource.'
       ),
   )
 

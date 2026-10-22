@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: true
+  help_text:
     brief: List uptime check server ips.
     description: List uptime check egress ips.
     examples: |

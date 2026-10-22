@@ -21,6 +21,9 @@ class ApigatewayApi(_messages.Message):
     LabelsValue: Optional. Resource labels to represent user-provided
       metadata. Refer to cloud documentation on labels for more details.
       https://cloud.google.com/compute/docs/labeling-resources
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to the API resource. For example: `"123/environment"`: `"production"`,
+      `"123/costCenter"`: `"marketing"`
 
   Fields:
     apiController: Required. Immutable. The API Controller for this API.
@@ -36,6 +39,9 @@ class ApigatewayApi(_messages.Message):
     name: Output only. Resource name of the API. Format:
       projects/{project}/locations/global/apis/{api}
     state: Output only. State of the API.
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      the API resource. For example: `"123/environment"`: `"production"`,
+      `"123/costCenter"`: `"marketing"`
     uniqueId: Output only. The unique resource ID.
     updateTime: Output only. Updated time.
   """
@@ -84,6 +90,32 @@ class ApigatewayApi(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to the
+    API resource. For example: `"123/environment"`: `"production"`,
+    `"123/costCenter"`: `"marketing"`
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   apiController = _messages.MessageField('ApigatewayApiApiController', 1)
   createTime = _messages.StringField(2)
   displayName = _messages.StringField(3)
@@ -91,8 +123,9 @@ class ApigatewayApi(_messages.Message):
   managedService = _messages.StringField(5)
   name = _messages.StringField(6)
   state = _messages.EnumField('StateValueValuesEnum', 7)
-  uniqueId = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  tags = _messages.MessageField('TagsValue', 8)
+  uniqueId = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class ApigatewayApiApiController(_messages.Message):

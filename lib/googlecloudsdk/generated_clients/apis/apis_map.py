@@ -600,7 +600,7 @@ MAP = _ApiDefMap({
             True,
             True,
             '',
-            {'us-central1': 'https://auditmanager.us-central1.rep.googleapis.com/', 'europe-west1': 'https://auditmanager.europe-west1.rep.googleapis.com/', 'asia-south1': 'https://auditmanager.asia-south1.rep.googleapis.com/', 'me-central2': 'https://auditmanager.me-central2.rep.googleapis.com/'},
+            {'us-central1': 'https://auditmanager.us-central1.rep.googleapis.com/', 'me-central2': 'https://auditmanager.me-central2.rep.googleapis.com/', 'europe-west1': 'https://auditmanager.europe-west1.rep.googleapis.com/', 'asia-south1': 'https://auditmanager.asia-south1.rep.googleapis.com/'},
         ),
         'v1alpha': (
             ('googlecloudsdk.generated_clients.apis.auditmanager.v1alpha', 'auditmanager_v1alpha_client.AuditmanagerV1alpha', 'auditmanager_v1alpha_messages', 'https://auditmanager.googleapis.com/'),
@@ -608,7 +608,7 @@ MAP = _ApiDefMap({
             False,
             True,
             '',
-            {'us-central1': 'https://auditmanager.us-central1.rep.googleapis.com/', 'europe-west1': 'https://auditmanager.europe-west1.rep.googleapis.com/', 'asia-south1': 'https://auditmanager.asia-south1.rep.googleapis.com/', 'me-central2': 'https://auditmanager.me-central2.rep.googleapis.com/'},
+            {'us-central1': 'https://auditmanager.us-central1.rep.googleapis.com/', 'me-central2': 'https://auditmanager.me-central2.rep.googleapis.com/', 'europe-west1': 'https://auditmanager.europe-west1.rep.googleapis.com/', 'asia-south1': 'https://auditmanager.asia-south1.rep.googleapis.com/'},
         ),
     },
     'authztoolkit': {
@@ -876,6 +876,14 @@ MAP = _ApiDefMap({
             ('googlecloudsdk.generated_clients.apis.certificatemanager.v1', 'certificatemanager_v1_client.CertificatemanagerV1', 'certificatemanager_v1_messages', 'https://certificatemanager.googleapis.com/'),
             None,
             True,
+            True,
+            '',
+            {},
+        ),
+        'v2alpha': (
+            ('googlecloudsdk.generated_clients.apis.certificatemanager.v2alpha', 'certificatemanager_v2alpha_client.CertificatemanagerV2alpha', 'certificatemanager_v2alpha_messages', 'https://certificatemanager.googleapis.com/'),
+            None,
+            False,
             True,
             '',
             {},
@@ -1758,7 +1766,7 @@ MAP = _ApiDefMap({
             True,
             True,
             '',
-            {'us-central1': 'https://developerconnect.us-central1.rep.googleapis.com/', 'europe-west1': 'https://developerconnect.europe-west1.rep.googleapis.com/', 'asia-east1': 'https://developerconnect.asia-east1.rep.googleapis.com/', 'asia-east2': 'https://developerconnect.asia-east2.rep.googleapis.com/', 'europe-west4': 'https://developerconnect.europe-west4.rep.googleapis.com/', 'us-east4': 'https://developerconnect.us-east4.rep.googleapis.com/', 'us-east5': 'https://developerconnect.us-east5.rep.googleapis.com/', 'asia-southeast1': 'https://developerconnect.asia-southeast1.rep.googleapis.com/', 'us-west1': 'https://developerconnect.us-west1.rep.googleapis.com/', 'us-west2': 'https://developerconnect.us-west2.rep.googleapis.com/'},
+            {'asia-east1': 'https://developerconnect.asia-east1.rep.googleapis.com/', 'asia-east2': 'https://developerconnect.asia-east2.rep.googleapis.com/', 'asia-northeast1': 'https://developerconnect.asia-northeast1.rep.googleapis.com/', 'asia-northeast2': 'https://developerconnect.asia-northeast2.rep.googleapis.com/', 'asia-northeast3': 'https://developerconnect.asia-northeast3.rep.googleapis.com/', 'asia-south1': 'https://developerconnect.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://developerconnect.asia-south2.rep.googleapis.com/', 'asia-southeast1': 'https://developerconnect.asia-southeast1.rep.googleapis.com/', 'asia-southeast2': 'https://developerconnect.asia-southeast2.rep.googleapis.com/', 'asia-southeast3': 'https://developerconnect.asia-southeast3.rep.googleapis.com/', 'australia-southeast1': 'https://developerconnect.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://developerconnect.australia-southeast2.rep.googleapis.com/', 'europe-central2': 'https://developerconnect.europe-central2.rep.googleapis.com/', 'europe-north1': 'https://developerconnect.europe-north1.rep.googleapis.com/', 'europe-north2': 'https://developerconnect.europe-north2.rep.googleapis.com/', 'europe-southwest1': 'https://developerconnect.europe-southwest1.rep.googleapis.com/', 'europe-west1': 'https://developerconnect.europe-west1.rep.googleapis.com/', 'europe-west10': 'https://developerconnect.europe-west10.rep.googleapis.com/', 'europe-west12': 'https://developerconnect.europe-west12.rep.googleapis.com/', 'europe-west2': 'https://developerconnect.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://developerconnect.europe-west3.rep.googleapis.com/', 'europe-west4': 'https://developerconnect.europe-west4.rep.googleapis.com/', 'europe-west6': 'https://developerconnect.europe-west6.rep.googleapis.com/', 'europe-west8': 'https://developerconnect.europe-west8.rep.googleapis.com/', 'europe-west9': 'https://developerconnect.europe-west9.rep.googleapis.com/', 'me-central1': 'https://developerconnect.me-central1.rep.googleapis.com/', 'me-central2': 'https://developerconnect.me-central2.rep.googleapis.com/', 'me-west1': 'https://developerconnect.me-west1.rep.googleapis.com/', 'northamerica-northeast1': 'https://developerconnect.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://developerconnect.northamerica-northeast2.rep.googleapis.com/', 'southamerica-east1': 'https://developerconnect.southamerica-east1.rep.googleapis.com/', 'southamerica-west1': 'https://developerconnect.southamerica-west1.rep.googleapis.com/', 'us-central1': 'https://developerconnect.us-central1.rep.googleapis.com/', 'us-central2': 'https://developerconnect.us-central2.rep.googleapis.com/', 'us-east1': 'https://developerconnect.us-east1.rep.googleapis.com/', 'us-east4': 'https://developerconnect.us-east4.rep.googleapis.com/', 'us-east5': 'https://developerconnect.us-east5.rep.googleapis.com/', 'us-east7': 'https://developerconnect.us-east7.rep.googleapis.com/', 'us-south1': 'https://developerconnect.us-south1.rep.googleapis.com/', 'us-west1': 'https://developerconnect.us-west1.rep.googleapis.com/', 'us-west2': 'https://developerconnect.us-west2.rep.googleapis.com/', 'us-west3': 'https://developerconnect.us-west3.rep.googleapis.com/', 'us-west4': 'https://developerconnect.us-west4.rep.googleapis.com/'},
         ),
         'v1alpha': (
             ('googlecloudsdk.generated_clients.apis.developerconnect.v1alpha', 'developerconnect_v1alpha_client.DeveloperconnectV1alpha', 'developerconnect_v1alpha_messages', 'https://developerconnect.googleapis.com/'),
@@ -2024,6 +2032,14 @@ MAP = _ApiDefMap({
         ),
     },
     'firebase': {
+        'v1alpha': (
+            ('googlecloudsdk.generated_clients.apis.firebase.v1alpha', 'firebase_v1alpha_client.FirebaseV1alpha', 'firebase_v1alpha_messages', 'https://firebase.googleapis.com/'),
+            None,
+            False,
+            True,
+            '',
+            {},
+        ),
         'v1beta1': (
             ('googlecloudsdk.generated_clients.apis.firebase.v1beta1', 'firebase_v1beta1_client.FirebaseV1beta1', 'firebase_v1beta1_messages', 'https://firebase.googleapis.com/'),
             None,
@@ -2421,6 +2437,16 @@ MAP = _ApiDefMap({
             {},
         ),
     },
+    'identitytoolkit': {
+        'v2': (
+            ('googlecloudsdk.generated_clients.apis.identitytoolkit.v2', 'identitytoolkit_v2_client.IdentitytoolkitV2', 'identitytoolkit_v2_messages', 'https://identitytoolkit.googleapis.com/'),
+            None,
+            True,
+            True,
+            '',
+            {},
+        ),
+    },
     'ids': {
         'v1': (
             ('googlecloudsdk.generated_clients.apis.ids.v1', 'ids_v1_client.IdsV1', 'ids_v1_messages', 'https://ids.googleapis.com/'),
@@ -2686,7 +2712,7 @@ MAP = _ApiDefMap({
             True,
             True,
             '',
-            {'us-central1': 'https://modelarmor.us-central1.rep.googleapis.com/', 'us-east1': 'https://modelarmor.us-east1.rep.googleapis.com/', 'us-east7': 'https://modelarmor.us-east7.rep.googleapis.com/', 'us-west1': 'https://modelarmor.us-west1.rep.googleapis.com/', 'europe-west1': 'https://modelarmor.europe-west1.rep.googleapis.com/', 'europe-west4': 'https://modelarmor.europe-west4.rep.googleapis.com/', 'us-east4': 'https://modelarmor.us-east4.rep.googleapis.com/', 'asia-southeast1': 'https://modelarmor.asia-southeast1.rep.googleapis.com/', 'europe-west2': 'https://modelarmor.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://modelarmor.europe-west3.rep.googleapis.com/', 'asia-south1': 'https://modelarmor.asia-south1.rep.googleapis.com/', 'europe-southwest1': 'https://modelarmor.europe-southwest1.rep.googleapis.com/', 'asia-northeast1': 'https://modelarmor.asia-northeast1.rep.googleapis.com/', 'asia-northeast3': 'https://modelarmor.asia-northeast3.rep.googleapis.com/', 'australia-southeast1': 'https://modelarmor.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://modelarmor.australia-southeast2.rep.googleapis.com/', 'northamerica-northeast1': 'https://modelarmor.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://modelarmor.northamerica-northeast2.rep.googleapis.com/', 'europe-west9': 'https://modelarmor.europe-west9.rep.googleapis.com/', 'us': 'https://modelarmor.us.rep.googleapis.com/', 'eu': 'https://modelarmor.eu.rep.googleapis.com/'},
+            {'us-central1': 'https://modelarmor.us-central1.rep.googleapis.com/', 'us-east1': 'https://modelarmor.us-east1.rep.googleapis.com/', 'us-east7': 'https://modelarmor.us-east7.rep.googleapis.com/', 'us-west1': 'https://modelarmor.us-west1.rep.googleapis.com/', 'europe-west1': 'https://modelarmor.europe-west1.rep.googleapis.com/', 'europe-west4': 'https://modelarmor.europe-west4.rep.googleapis.com/', 'us-east4': 'https://modelarmor.us-east4.rep.googleapis.com/', 'asia-southeast1': 'https://modelarmor.asia-southeast1.rep.googleapis.com/', 'europe-west2': 'https://modelarmor.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://modelarmor.europe-west3.rep.googleapis.com/', 'asia-south1': 'https://modelarmor.asia-south1.rep.googleapis.com/', 'europe-southwest1': 'https://modelarmor.europe-southwest1.rep.googleapis.com/', 'asia-northeast1': 'https://modelarmor.asia-northeast1.rep.googleapis.com/', 'asia-northeast3': 'https://modelarmor.asia-northeast3.rep.googleapis.com/', 'australia-southeast1': 'https://modelarmor.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://modelarmor.australia-southeast2.rep.googleapis.com/', 'northamerica-northeast1': 'https://modelarmor.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://modelarmor.northamerica-northeast2.rep.googleapis.com/', 'europe-west9': 'https://modelarmor.europe-west9.rep.googleapis.com/', 'southamerica-east1': 'https://modelarmor.southamerica-east1.rep.googleapis.com/', 'us': 'https://modelarmor.us.rep.googleapis.com/', 'eu': 'https://modelarmor.eu.rep.googleapis.com/'},
         ),
         'v1alpha': (
             ('googlecloudsdk.generated_clients.apis.modelarmor.v1alpha', 'modelarmor_v1alpha_client.ModelarmorV1alpha', 'modelarmor_v1alpha_messages', 'https://modelarmor.us-central1.rep.googleapis.com/'),
@@ -2694,7 +2720,7 @@ MAP = _ApiDefMap({
             False,
             True,
             '',
-            {'us-central1': 'https://modelarmor.us-central1.rep.googleapis.com/', 'us-east1': 'https://modelarmor.us-east1.rep.googleapis.com/', 'us-east7': 'https://modelarmor.us-east7.rep.googleapis.com/', 'us-west1': 'https://modelarmor.us-west1.rep.googleapis.com/', 'europe-west1': 'https://modelarmor.europe-west1.rep.googleapis.com/', 'europe-west4': 'https://modelarmor.europe-west4.rep.googleapis.com/', 'us-east4': 'https://modelarmor.us-east4.rep.googleapis.com/', 'asia-southeast1': 'https://modelarmor.asia-southeast1.rep.googleapis.com/', 'europe-west2': 'https://modelarmor.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://modelarmor.europe-west3.rep.googleapis.com/', 'asia-south1': 'https://modelarmor.asia-south1.rep.googleapis.com/', 'europe-southwest1': 'https://modelarmor.europe-southwest1.rep.googleapis.com/', 'asia-northeast1': 'https://modelarmor.asia-northeast1.rep.googleapis.com/', 'asia-northeast3': 'https://modelarmor.asia-northeast3.rep.googleapis.com/', 'australia-southeast1': 'https://modelarmor.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://modelarmor.australia-southeast2.rep.googleapis.com/', 'northamerica-northeast1': 'https://modelarmor.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://modelarmor.northamerica-northeast2.rep.googleapis.com/', 'europe-west9': 'https://modelarmor.europe-west9.rep.googleapis.com/', 'us': 'https://modelarmor.us.rep.googleapis.com/', 'eu': 'https://modelarmor.eu.rep.googleapis.com/'},
+            {'us-central1': 'https://modelarmor.us-central1.rep.googleapis.com/', 'us-east1': 'https://modelarmor.us-east1.rep.googleapis.com/', 'us-east7': 'https://modelarmor.us-east7.rep.googleapis.com/', 'us-west1': 'https://modelarmor.us-west1.rep.googleapis.com/', 'europe-west1': 'https://modelarmor.europe-west1.rep.googleapis.com/', 'europe-west4': 'https://modelarmor.europe-west4.rep.googleapis.com/', 'us-east4': 'https://modelarmor.us-east4.rep.googleapis.com/', 'asia-southeast1': 'https://modelarmor.asia-southeast1.rep.googleapis.com/', 'europe-west2': 'https://modelarmor.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://modelarmor.europe-west3.rep.googleapis.com/', 'asia-south1': 'https://modelarmor.asia-south1.rep.googleapis.com/', 'europe-southwest1': 'https://modelarmor.europe-southwest1.rep.googleapis.com/', 'asia-northeast1': 'https://modelarmor.asia-northeast1.rep.googleapis.com/', 'asia-northeast3': 'https://modelarmor.asia-northeast3.rep.googleapis.com/', 'australia-southeast1': 'https://modelarmor.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://modelarmor.australia-southeast2.rep.googleapis.com/', 'northamerica-northeast1': 'https://modelarmor.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://modelarmor.northamerica-northeast2.rep.googleapis.com/', 'europe-west9': 'https://modelarmor.europe-west9.rep.googleapis.com/', 'southamerica-east1': 'https://modelarmor.southamerica-east1.rep.googleapis.com/', 'us': 'https://modelarmor.us.rep.googleapis.com/', 'eu': 'https://modelarmor.eu.rep.googleapis.com/'},
         ),
         'v1beta': (
             ('googlecloudsdk.generated_clients.apis.modelarmor.v1beta', 'modelarmor_v1beta_client.ModelarmorV1beta', 'modelarmor_v1beta_messages', 'https://modelarmor.us-central1.rep.googleapis.com/'),
@@ -2702,7 +2728,7 @@ MAP = _ApiDefMap({
             False,
             True,
             '',
-            {'us-central1': 'https://modelarmor.us-central1.rep.googleapis.com/', 'us-east1': 'https://modelarmor.us-east1.rep.googleapis.com/', 'us-east7': 'https://modelarmor.us-east7.rep.googleapis.com/', 'us-west1': 'https://modelarmor.us-west1.rep.googleapis.com/', 'europe-west1': 'https://modelarmor.europe-west1.rep.googleapis.com/', 'europe-west4': 'https://modelarmor.europe-west4.rep.googleapis.com/', 'us-east4': 'https://modelarmor.us-east4.rep.googleapis.com/', 'asia-southeast1': 'https://modelarmor.asia-southeast1.rep.googleapis.com/', 'europe-west2': 'https://modelarmor.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://modelarmor.europe-west3.rep.googleapis.com/', 'asia-south1': 'https://modelarmor.asia-south1.rep.googleapis.com/', 'europe-southwest1': 'https://modelarmor.europe-southwest1.rep.googleapis.com/', 'asia-northeast1': 'https://modelarmor.asia-northeast1.rep.googleapis.com/', 'asia-northeast3': 'https://modelarmor.asia-northeast3.rep.googleapis.com/', 'australia-southeast1': 'https://modelarmor.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://modelarmor.australia-southeast2.rep.googleapis.com/', 'northamerica-northeast1': 'https://modelarmor.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://modelarmor.northamerica-northeast2.rep.googleapis.com/', 'europe-west9': 'https://modelarmor.europe-west9.rep.googleapis.com/', 'us': 'https://modelarmor.us.rep.googleapis.com/', 'eu': 'https://modelarmor.eu.rep.googleapis.com/'},
+            {'us-central1': 'https://modelarmor.us-central1.rep.googleapis.com/', 'us-east1': 'https://modelarmor.us-east1.rep.googleapis.com/', 'us-east7': 'https://modelarmor.us-east7.rep.googleapis.com/', 'us-west1': 'https://modelarmor.us-west1.rep.googleapis.com/', 'europe-west1': 'https://modelarmor.europe-west1.rep.googleapis.com/', 'europe-west4': 'https://modelarmor.europe-west4.rep.googleapis.com/', 'us-east4': 'https://modelarmor.us-east4.rep.googleapis.com/', 'asia-southeast1': 'https://modelarmor.asia-southeast1.rep.googleapis.com/', 'europe-west2': 'https://modelarmor.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://modelarmor.europe-west3.rep.googleapis.com/', 'asia-south1': 'https://modelarmor.asia-south1.rep.googleapis.com/', 'europe-southwest1': 'https://modelarmor.europe-southwest1.rep.googleapis.com/', 'asia-northeast1': 'https://modelarmor.asia-northeast1.rep.googleapis.com/', 'asia-northeast3': 'https://modelarmor.asia-northeast3.rep.googleapis.com/', 'australia-southeast1': 'https://modelarmor.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://modelarmor.australia-southeast2.rep.googleapis.com/', 'northamerica-northeast1': 'https://modelarmor.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://modelarmor.northamerica-northeast2.rep.googleapis.com/', 'europe-west9': 'https://modelarmor.europe-west9.rep.googleapis.com/', 'southamerica-east1': 'https://modelarmor.southamerica-east1.rep.googleapis.com/', 'us': 'https://modelarmor.us.rep.googleapis.com/', 'eu': 'https://modelarmor.eu.rep.googleapis.com/'},
         ),
     },
     'monitoring': {

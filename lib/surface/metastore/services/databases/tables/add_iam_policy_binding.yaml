@@ -1,4 +1,6 @@
 release_tracks: [ALPHA, BETA]
+hints:
+  read_only: false
 help_text:
   brief: Add an IAM policy binding to a table.
   description: |

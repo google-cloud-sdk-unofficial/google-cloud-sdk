@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.command_lib.onboarding import exceptions as onboarding_exceptions
+from googlecloudsdk.command_lib.onboarding import telemetry
 from googlecloudsdk.command_lib.onboarding import user_inputs
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
@@ -48,6 +49,7 @@ def _ProcessPendingUserInput(
     session_id: str,
     pending_input: onboarding_messages.PendingUserInput,
     auto_accept_tos_ids: list[str] | None = None,
+    selected_region_name: str | None = None,
 ) -> onboarding_messages.Session:
   """Handles a single pending user input and patches the session.
 
@@ -58,6 +60,8 @@ def _ProcessPendingUserInput(
     pending_input: The PendingUserInput message to process.
     auto_accept_tos_ids: Optional list of TOS IDs to automatically accept
       without prompting.
+    selected_region_name: Optional name of the Google Cloud region to select
+      without prompting, if a region selection is required.
 
   Returns:
     The updated session object returned from the patch call.
@@ -68,8 +72,23 @@ def _ProcessPendingUserInput(
   """
   canonical_name = _CanonicalSessionName(session_id)
   if pending_input.tos:
+    telemetry.RecordEvent(
+        telemetry.PENDING_INPUT_KEY, telemetry.PENDING_INPUT_TOS
+    )
     tos_acceptances = pending_input.tos.requiredTosAcceptances or []
     tos_ids = [tos.id for tos in tos_acceptances if tos.id]
+    # Validate against the server's required ToS list (not just the local
+    # registry) so unknown IDs are attributed correctly: a required ID this
+    # gcloud does not recognize means gcloud is outdated, whereas an
+    # unrecognized `--auto-accept-tos-ids` value that the server does not
+    # require is an invalid flag value.
+    unsupported_ids = user_inputs.GetUnsupportedTosIds(tos_ids)
+    if unsupported_ids:
+      raise user_inputs.UnsupportedTosIdError(
+          user_inputs.FormatUnsupportedToSError(unsupported_ids)
+      )
+    if auto_accept_tos_ids:
+      user_inputs.ValidateTosIds(auto_accept_tos_ids)
     accepted_ids = set(
         user_inputs.HandleUserInputToS(
             tos_ids, auto_accept_tos_ids=auto_accept_tos_ids
@@ -80,7 +99,7 @@ def _ProcessPendingUserInput(
     ]
     if len(accepted_acceptances) != len(tos_ids):
       raise onboarding_exceptions.TermsOfServiceDeclinedError(
-          'Terms of Service declined. Onboarding cannot proceed.'
+          user_inputs.FormatDeclinedToSError(tos_ids)
       )
 
     updated_session = messages.Session(tosAcceptances=accepted_acceptances)
@@ -92,6 +111,9 @@ def _ProcessPendingUserInput(
     return client.sessions.Patch(patch_request)
 
   elif pending_input.project:
+    telemetry.RecordEvent(
+        telemetry.PENDING_INPUT_KEY, telemetry.PENDING_INPUT_PROJECT
+    )
     supported_projects = pending_input.project.supportedProjects or []
     if not supported_projects:
       raise onboarding_exceptions.SessionProtocolError(
@@ -115,6 +137,9 @@ def _ProcessPendingUserInput(
     return client.sessions.Patch(patch_request)
 
   elif pending_input.cloudRegion:
+    telemetry.RecordEvent(
+        telemetry.PENDING_INPUT_KEY, telemetry.PENDING_INPUT_CLOUD_REGION
+    )
     supported_regions = pending_input.cloudRegion.supportedRegions or []
     if not supported_regions:
       raise onboarding_exceptions.SessionProtocolError(
@@ -124,6 +149,7 @@ def _ProcessPendingUserInput(
     selected_region = user_inputs.HandleUserInputSelectCloudRegion(
         supported_regions,
         default_region=pending_input.cloudRegion.defaultRegion,
+        selected_region_name=selected_region_name,
     )
     if selected_region is None:
       raise onboarding_exceptions.CloudRegionNotSelectedError(
@@ -140,21 +166,49 @@ def _ProcessPendingUserInput(
 
   else:
     field_checks = [
-        (pending_input.billingAccount, 'billing account selection'),
-        (pending_input.paymentInfo, 'payment information submission'),
-        (pending_input.chargingStrategy, 'charging strategy selection'),
-        (pending_input.makePayment, 'prepayment submission'),
-        (pending_input.regionCode, 'region code selection'),
+        (
+            pending_input.billingAccount,
+            'billing account selection',
+            telemetry.PENDING_INPUT_BILLING_ACCOUNT,
+        ),
+        (
+            pending_input.paymentInfo,
+            'payment information submission',
+            telemetry.PENDING_INPUT_PAYMENT_INFO,
+        ),
+        (
+            pending_input.chargingStrategy,
+            'charging strategy selection',
+            telemetry.PENDING_INPUT_CHARGING_STRATEGY,
+        ),
+        (
+            pending_input.makePayment,
+            'prepayment submission',
+            telemetry.PENDING_INPUT_MAKE_PAYMENT,
+        ),
+        (
+            pending_input.regionCode,
+            'region code selection',
+            telemetry.PENDING_INPUT_REGION_CODE,
+        ),
     ]
-    unsupported = [label for condition, label in field_checks if condition]
+    unsupported = [
+        (label, event) for condition, label, event in field_checks if condition
+    ]
 
     if unsupported:
-      fields = ', '.join(unsupported)
+      for _, event in unsupported:
+        telemetry.RecordEvent(telemetry.UNSUPPORTED_PENDING_INPUT_KEY, event)
+      fields = ', '.join(label for label, _ in unsupported)
       raise onboarding_exceptions.UnsupportedUserInputError(
           f'The session requires {fields}, which is not supported in this'
           ' version of the CLI.'
       )
     else:
+      telemetry.RecordEvent(
+          telemetry.UNSUPPORTED_PENDING_INPUT_KEY,
+          telemetry.PENDING_INPUT_UNKNOWN,
+      )
       raise onboarding_exceptions.UnsupportedUserInputError(
           'Unsupported pending user input required.'
       )
@@ -176,7 +230,10 @@ def _WaitForProcessing(
     The session object once it transitions out of PROCESSING.
   """
   canonical_name = _CanonicalSessionName(session_id)
-  with progress_tracker.ProgressTracker('Processing onboarding step'):
+  with (
+      progress_tracker.ProgressTracker('Processing onboarding step'),
+      telemetry.RecordProcessingDuration(),
+  ):
     while True:
       time.sleep(_POLL_INTERVAL_SECONDS)
       get_request = messages.UseronboardingSessionsGetRequest(
@@ -215,6 +272,7 @@ def ResolveSession(
     response = client.sessions.ResolveSession(request)
     session = response.session
 
+  telemetry.RecordSessionResolved(session.name, intent.xpId)
   return session
 
 
@@ -223,6 +281,7 @@ def OrchestrateSession(
     client: onboarding_client.UseronboardingV1alpha | None = None,
     messages: types.ModuleType | None = None,
     auto_accept_tos_ids: list[str] | None = None,
+    selected_region_name: str | None = None,
 ) -> onboarding_messages.Session:
   """Orchestrates an onboarding session to completion.
 
@@ -232,6 +291,8 @@ def OrchestrateSession(
     messages: The useronboarding API messages module (optional).
     auto_accept_tos_ids: Optional list of TOS IDs to automatically accept
       without prompting.
+    selected_region_name: Optional name of the Google Cloud region to select
+      without prompting, if a region selection is required.
 
   Returns:
     The completed session object.
@@ -252,8 +313,15 @@ def OrchestrateSession(
         log.status.Print('Onboarding completed successfully!')
         return session
       case status_enum.FAILED:
+        error_detail = session.status.message
+        if (
+            not error_detail
+            and session.status.error
+            and session.status.error.reason
+        ):
+          error_detail = session.status.error.reason
         raise onboarding_exceptions.SessionFailedError(
-            f'Onboarding failed: {session.status.message}'
+            f'Onboarding failed: {error_detail or "Unknown error"}'
         )
       case status_enum.PROCESSING:
         session = _WaitForProcessing(client, messages, session.name)
@@ -270,6 +338,7 @@ def OrchestrateSession(
             session.name,
             pending_input,
             auto_accept_tos_ids=auto_accept_tos_ids,
+            selected_region_name=selected_region_name,
         )
       case unexpected_status:
         raise onboarding_exceptions.SessionProtocolError(
@@ -282,6 +351,7 @@ def ResolveAndOrchestrateSession(
     client: onboarding_client.UseronboardingV1alpha | None = None,
     messages: types.ModuleType | None = None,
     auto_accept_tos_ids: list[str] | None = None,
+    selected_region_name: str | None = None,
 ) -> onboarding_messages.Session:
   """Resolves and orchestrates an onboarding session to completion.
 
@@ -291,6 +361,8 @@ def ResolveAndOrchestrateSession(
     messages: The useronboarding API messages module (optional).
     auto_accept_tos_ids: Optional list of TOS IDs to automatically accept
       without prompting.
+    selected_region_name: Optional name of the Google Cloud region to select
+      without prompting, if a region selection is required.
 
   Returns:
     The completed session object.
@@ -306,4 +378,5 @@ def ResolveAndOrchestrateSession(
       client=client,
       messages=messages,
       auto_accept_tos_ids=auto_accept_tos_ids,
+      selected_region_name=selected_region_name,
   )

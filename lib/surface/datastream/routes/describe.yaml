@@ -1,4 +1,6 @@
 release_tracks: [BETA, GA]
+hints:
+  read_only: true
 BETA:
   deprecate:
     is_removed: false

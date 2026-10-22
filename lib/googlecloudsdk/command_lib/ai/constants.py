@@ -229,6 +229,9 @@ DEPLOYMENT_RESOURCE_POOLS_COLLECTION = 'aiplatform.projects.locations.deployment
 ENDPOINTS_COLLECTION = 'aiplatform.projects.locations.endpoints'
 
 AGENT_RUNTIMES_COLLECTION = 'aiplatform.projects.locations.reasoningEngines'
+AGENT_RUNTIME_REVISIONS_COLLECTION = (
+    'aiplatform.projects.locations.reasoningEngines.runtimeRevisions'
+)
 
 INDEX_ENDPOINTS_COLLECTION = 'aiplatform.projects.locations.indexEndpoints'
 INDEXES_COLLECTION = 'aiplatform.projects.locations.indexes'

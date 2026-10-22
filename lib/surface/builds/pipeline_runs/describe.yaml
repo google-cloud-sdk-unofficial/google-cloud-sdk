@@ -16,6 +16,10 @@
 
         $ {command} 12345678-abcd --region=us-central1
 
+  # TODO(b/571186109): `describe` currently uses the standard full-resource
+  # YAML output used by other gcloud services. Since `PipelineRun` is a
+  # multi-stage DAG execution (`stages`), improve the display to provide a
+  # structured per-stage status and duration breakdown.
   request:
     collection: cloudbuild.projects.locations.pipelineRuns
     api_version: v1

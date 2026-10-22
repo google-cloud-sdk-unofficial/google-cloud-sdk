@@ -7781,7 +7781,14 @@ class RestoreTemplate(_messages.Message):
   Messages:
     LabelsValue: Optional. User-defined labels.
     RestorePropertiesValue: Required. Defines target environments where the
-      resource will be restored.
+      resource will be restored. The target resource name in
+      `restore_properties` supports the `{EXECUTION_ID}` token to dynamically
+      generate unique resource names for each execution. During restore
+      execution, every occurrence of `{EXECUTION_ID}` in the target resource
+      name is replaced with the 8-character `RestoreTemplateExecution` ID (for
+      example, `"restored-resource-{EXECUTION_ID}"` or
+      `"restored-{EXECUTION_ID}-resource"` resolves to `"restored-
+      resource-5d437b06"` or `"restored-5d437b06-resource"`).
 
   Fields:
     backupSelectionConfig: Required. Backup selection configuration.
@@ -7797,7 +7804,14 @@ class RestoreTemplate(_messages.Message):
       restored. The format is "{service_name}/{resource_kind}", for example,
       "compute.googleapis.com/Instance".
     restoreProperties: Required. Defines target environments where the
-      resource will be restored.
+      resource will be restored. The target resource name in
+      `restore_properties` supports the `{EXECUTION_ID}` token to dynamically
+      generate unique resource names for each execution. During restore
+      execution, every occurrence of `{EXECUTION_ID}` in the target resource
+      name is replaced with the 8-character `RestoreTemplateExecution` ID (for
+      example, `"restored-resource-{EXECUTION_ID}"` or
+      `"restored-{EXECUTION_ID}-resource"` resolves to `"restored-
+      resource-5d437b06"` or `"restored-5d437b06-resource"`).
     state: Output only. The state of the restore template.
     updateTime: Output only. The time when the restore template was last
       updated.
@@ -7847,7 +7861,13 @@ class RestoreTemplate(_messages.Message):
   @encoding.MapUnrecognizedFields('additionalProperties')
   class RestorePropertiesValue(_messages.Message):
     r"""Required. Defines target environments where the resource will be
-    restored.
+    restored. The target resource name in `restore_properties` supports the
+    `{EXECUTION_ID}` token to dynamically generate unique resource names for
+    each execution. During restore execution, every occurrence of
+    `{EXECUTION_ID}` in the target resource name is replaced with the
+    8-character `RestoreTemplateExecution` ID (for example, `"restored-
+    resource-{EXECUTION_ID}"` or `"restored-{EXECUTION_ID}-resource"` resolves
+    to `"restored-resource-5d437b06"` or `"restored-5d437b06-resource"`).
 
     Messages:
       AdditionalProperty: An additional property for a RestorePropertiesValue
@@ -8866,13 +8886,18 @@ class TriggerSummary(_messages.Message):
       trigger.
     lastTriggerTime: Output only. The time of the most recent trigger
       initiation.
+    lastVerificationExecution: Output only. The resource name of the most
+      recent initiated RestoreTemplateExecution. Format: `projects/{project}/l
+      ocations/{location}/restoreTemplates/{restore_template}/executions/{exec
+      ution}`
     nextTriggerTime: Output only. The scheduled time of the next trigger
       initiation.
   """
 
   lastTriggerError = _messages.MessageField('Status', 1)
   lastTriggerTime = _messages.StringField(2)
-  nextTriggerTime = _messages.StringField(3)
+  lastVerificationExecution = _messages.StringField(3)
+  nextTriggerTime = _messages.StringField(4)
 
 
 class UnlinkDatasetRequest(_messages.Message):

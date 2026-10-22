@@ -40,7 +40,6 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.RegionalEndpointsSupported
 class Unresolve(base.Command):

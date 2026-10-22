@@ -207,7 +207,7 @@ def RestoreVerificationPlanAssociationAttributeConfig():
   )
 
 
-def GetRestoreVerificationPlanResourceSpec(api_version='v1alpha'):
+def GetRestoreVerificationPlanResourceSpec(api_version=None):
   return concepts.ResourceSpec(
       'backupdr.projects.locations.restoreVerificationPlans',
       api_version=api_version,
@@ -218,7 +218,7 @@ def GetRestoreVerificationPlanResourceSpec(api_version='v1alpha'):
   )
 
 
-def GetRestoreVerificationPlanAssociationResourceSpec(api_version='v1alpha'):
+def GetRestoreVerificationPlanAssociationResourceSpec(api_version=None):
   return concepts.ResourceSpec(
       'backupdr.projects.locations.restoreVerificationPlans.associations',
       api_version=api_version,
@@ -244,7 +244,7 @@ def RestoreTemplateExecutionAttributeConfig():
   )
 
 
-def GetRestoreTemplateResourceSpec(api_version='v1alpha'):
+def GetRestoreTemplateResourceSpec(api_version=None):
   return concepts.ResourceSpec(
       'backupdr.projects.locations.restoreTemplates',
       api_version=api_version,
@@ -255,7 +255,7 @@ def GetRestoreTemplateResourceSpec(api_version='v1alpha'):
   )
 
 
-def GetRestoreTemplateExecutionResourceSpec(api_version='v1alpha'):
+def GetRestoreTemplateExecutionResourceSpec(api_version=None):
   return concepts.ResourceSpec(
       'backupdr.projects.locations.restoreTemplates.executions',
       api_version=api_version,

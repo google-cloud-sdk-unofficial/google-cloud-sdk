@@ -329,6 +329,15 @@ class SourceCodeChange(ContainerConfigChanger):
 
 
 @dataclasses.dataclass(frozen=True)
+class ClearSourceCodeChange(ContainerConfigChanger):
+  """Clears source code and base image uri from a container."""
+
+  def AdjustContainer(self, container: k8s_min.Container):
+    container.base_image_uri = ''
+    container.source_code = None
+
+
+@dataclasses.dataclass(frozen=True)
 class AddDigestToImageChange(ContainerConfigChanger):
   """Add image digest that comes from source build.
 

@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import times
 
-
 help_text = textwrap.dedent("""\
     To update the description of a catalog `my-catalog`, run:
 
@@ -41,9 +40,7 @@ help_text = textwrap.dedent("""\
     To update the Cloud KMS key of a catalog `my-catalog`, run:
 
       $ {command} my-catalog --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-new-key
-    """)
 
-help_text_alpha = textwrap.dedent("""\
     To update the refresh interval and namespace filters for a federated catalog `my-federated-catalog`, run:
 
       $ {command} my-federated-catalog --refresh-interval=1h --namespace-filters=db1,db2
@@ -60,25 +57,25 @@ class UpdateCatalog(base.UpdateCommand):
   }
 
   _support_service_directory_name = True
-  _support_metadata_service_directory_name = False
+  _support_metadata_service_directory_name = True
   _support_federated_catalog = True
   _support_unity_service_principal_application_id = True
   _support_glue_catalog = True
   _support_snowflake_catalog = True
-  _support_identity_mode = False
+  _support_identity_mode = True
 
   @classmethod
   def Args(cls, parser):
     flags.AddCatalogResourceArg(parser, 'to update')
     arguments.AddDescriptionArg(parser)
     arguments.AddKmsKeyResourceArg(parser)
-    util.GetCredentialModeEnumMapper(
-        cls.ReleaseTrack()
-    ).choice_arg.AddToParser(parser)
+    util.GetCredentialModeEnumMapper(cls.ReleaseTrack()).choice_arg.AddToParser(
+        parser
+    )
     if cls._support_identity_mode:
-      util.GetIdentityModeEnumMapper(
-          cls.ReleaseTrack(), hidden=True
-      ).choice_arg.AddToParser(parser)
+      util.GetIdentityModeEnumMapper(cls.ReleaseTrack()).choice_arg.AddToParser(
+          parser
+      )
     util.GetUpdateCatalogTypeEnumMapper(
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
@@ -88,7 +85,7 @@ class UpdateCatalog(base.UpdateCommand):
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
     if cls._support_metadata_service_directory_name:
-      arguments.AddMetadataServiceDirectoryNameArg(parser, hidden=True)
+      arguments.AddMetadataServiceDirectoryNameArg(parser)
     if cls._support_unity_service_principal_application_id:
       arguments.AddUnityServicePrincipalApplicationIdArg(parser)
     if cls._support_glue_catalog:
@@ -294,18 +291,16 @@ class UpdateCatalog(base.UpdateCommand):
             'Cannot specify Glue Catalog arguments when updating a Snowflake'
             ' federated catalog.',
         )
-    if (
-        args.IsSpecified('catalog_type')
-        and args.catalog_type in ('biglake', 'lakehouse')
+    if args.IsSpecified('catalog_type') and args.catalog_type in (
+        'biglake',
+        'lakehouse',
     ):
       update_mask.append('catalog_type')
       catalog_type = util.GetUpdateCatalogTypeEnumMapper(
           self.ReleaseTrack()
       ).GetEnumForChoice(args.catalog_type)
     restricted_locations = []
-    if args.IsSpecified(
-        'restricted_locations'
-    ):
+    if args.IsSpecified('restricted_locations'):
       update_mask.append('restricted_locations_config.restricted_locations')
       restricted_locations = args.restricted_locations
 
@@ -337,9 +332,7 @@ class UpdateCatalog(base.UpdateCommand):
             args, catalog, messages, update_mask
         )
 
-    if args.IsSpecified(
-        'restricted_locations'
-    ):
+    if args.IsSpecified('restricted_locations'):
       catalog.restricted_locations_config = messages.RestrictedLocationsConfig(
           restricted_locations=restricted_locations
       )
@@ -371,24 +364,11 @@ class UpdateCatalog(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(UpdateCatalog):
   """Update a BigLake Iceberg REST catalog."""
-  detailed_help = {
-      'EXAMPLES': help_text + '\n\n' + help_text_alpha,
-  }
-  _support_service_directory_name = True
-  _support_metadata_service_directory_name = False
-  _support_federated_catalog = True
-  _support_unity_service_principal_application_id = True
-  _support_glue_catalog = True
-  _support_snowflake_catalog = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update a BigLake Iceberg REST catalog."""
 
-  _support_service_directory_name = True
   _support_metadata_service_directory_name = True
-  _support_unity_service_principal_application_id = True
-  _support_glue_catalog = True
-  _support_snowflake_catalog = True
   _support_identity_mode = True

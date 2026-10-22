@@ -1,4 +1,6 @@
 release_tracks: [GA]
+hints:
+  read_only: false
 help_text:
   brief: Start a backfill job for a Stream object.
   description: Start a backfill job for a Stream object.

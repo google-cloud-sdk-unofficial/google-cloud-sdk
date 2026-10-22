@@ -93,14 +93,21 @@
       help_text: |-
         How the policy is enforced.
       choices:
-      - arg_value: enforcement-mode-dry-run
-        enum_value: ENFORCEMENT_MODE_DRY_RUN
-        help_text: |-
-          Log violations but do not block operations.
       - arg_value: enforcement-mode-deny
         enum_value: ENFORCEMENT_MODE_DENY
         help_text: |-
           Actively block non-compliant operations.
+      - arg_value: enforcement-mode-log-only
+        enum_value: ENFORCEMENT_MODE_LOG_ONLY
+        help_text: |-
+          Log violations but do not block operations.
+    - arg_name: custom-gate
+      api_field: policyBinding.customGate
+      required: false
+      repeated: false
+      help_text: |-
+        Custom lifecycle gate for which this policy binding applies
+        (e.g., "staging-deploy", "prod-release").
   request:
     api_version: v1alpha
     collection:

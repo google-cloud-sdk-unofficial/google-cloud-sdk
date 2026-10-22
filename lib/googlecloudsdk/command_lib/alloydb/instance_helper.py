@@ -353,6 +353,12 @@ def _ConstructInstanceFromArgsBeta(client, alloydb_messages, args):
         ),
     )
 
+  enable_public_dns = getattr(args, 'enable_public_dns', None)
+  if enable_public_dns is not None:
+    if instance_resource.networkConfig is None:
+      instance_resource.networkConfig = alloydb_messages.InstanceNetworkConfig()
+    instance_resource.networkConfig.publicDnsEnabled = enable_public_dns
+
   return instance_resource
 
 
@@ -1643,6 +1649,13 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
   if observability_config_assistive_experiences_enabled is not None:
     instance_resource.observabilityConfig.assistiveExperiencesEnabled = (
         observability_config_assistive_experiences_enabled)
+
+  enable_public_dns = getattr(args, 'enable_public_dns', None)
+  if enable_public_dns is not None:
+    if instance_resource.networkConfig is None:
+      instance_resource.networkConfig = alloydb_messages.InstanceNetworkConfig()
+    instance_resource.networkConfig.publicDnsEnabled = enable_public_dns
+    paths.append('networkConfig.publicDnsEnabled')
 
   # We update the whole connection pool config if any of the connection pooling
   # flags are set because we want to preserve any existing flags. But to do so,

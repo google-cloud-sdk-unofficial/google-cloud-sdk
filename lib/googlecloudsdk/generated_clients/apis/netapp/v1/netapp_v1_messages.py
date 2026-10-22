@@ -4374,10 +4374,13 @@ class StoragePool(_messages.Message):
         type. Suitable for general purpose workloads.
       SCALE_TYPE_SCALEOUT: Represents higher capacity and performance scale-
         type. Suitable for more demanding workloads.
+      SCALE_TYPE_SCALEOUT_24: Represents higher capacity and performance
+        scale-type with 24 nodes. Suitable for extremely demanding workloads.
     """
     SCALE_TYPE_UNSPECIFIED = 0
     SCALE_TYPE_DEFAULT = 1
     SCALE_TYPE_SCALEOUT = 2
+    SCALE_TYPE_SCALEOUT_24 = 3
 
   class ServiceLevelValueValuesEnum(_messages.Enum):
     r"""Required. Service level of the storage pool

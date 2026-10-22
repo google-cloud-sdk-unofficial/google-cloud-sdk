@@ -20,6 +20,9 @@ from collections.abc import Sequence
 import dataclasses
 from typing import TYPE_CHECKING
 
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.onboarding import exceptions as onboarding_exceptions
+from googlecloudsdk.command_lib.onboarding import telemetry
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -36,6 +39,9 @@ GMP_DEMO_API_KEY_TOS_ID = 'gmp-demo-api-key'
 _TOS_HEADER = (
     'To provision resources on the starter tier, review and accept the terms of'
     ' service:'
+)
+_DECLINED_TOS_ERROR_HEADER = (
+    'Terms of Service declined. Onboarding cannot proceed.'
 )
 
 
@@ -72,6 +78,9 @@ _TOS_REGISTRY: dict[str, _ToSInfo] = {
 
 VALID_TOS_IDS = tuple(_TOS_REGISTRY)
 
+# Flag used to select a Google Cloud region without prompting.
+REGION_FLAG = '--region'
+
 
 def _FormatMessage(tos_list: list[_ToSInfo]) -> str:
   """Formats the terms of service message."""
@@ -82,6 +91,96 @@ def _FormatMessage(tos_list: list[_ToSInfo]) -> str:
         f'{i}. {tos.title} ({tos.url})' for i, tos in enumerate(tos_list, 1)
     ]
   return '\n'.join([_TOS_HEADER] + items)
+
+
+class InvalidTosIdError(onboarding_exceptions.OnboardingError, ValueError):
+  """Raised when one or more invalid Terms of Service IDs are provided."""
+
+
+class UnsupportedTosIdError(onboarding_exceptions.OnboardingError):
+  """Raised when the server requires ToS IDs unknown to this gcloud version."""
+
+
+def GetUnsupportedTosIds(tos_ids: Sequence[str]) -> list[str]:
+  """Returns the deduplicated `tos_ids` not recognized by this gcloud version."""
+  return list(
+      dict.fromkeys(tos_id for tos_id in tos_ids if tos_id not in _TOS_REGISTRY)
+  )
+
+
+def FormatUnsupportedToSError(unsupported_ids: Sequence[str]) -> str:
+  """Formats the error for server-required ToS IDs unknown to this gcloud."""
+  unsupported_str = ', '.join(unsupported_ids)
+  return (
+      'The server requires Terms of Service not supported by this gcloud'
+      f' version: [{unsupported_str}]. Run `gcloud components update` and'
+      ' retry.'
+  )
+
+
+def ValidateTosIds(tos_ids: Sequence[str]) -> None:
+  """Validates that all provided ToS IDs are recognized.
+
+  Args:
+    tos_ids: Sequence of ToS IDs to validate.
+
+  Raises:
+    InvalidTosIdError: If any ToS ID is not in `VALID_TOS_IDS`.
+  """
+  invalid_ids = GetUnsupportedTosIds(tos_ids)
+  if invalid_ids:
+    invalid_str = ', '.join(invalid_ids)
+    valid_str = ', '.join(VALID_TOS_IDS)
+    raise InvalidTosIdError(
+        f'Invalid Terms of Service ID(s): [{invalid_str}]. Update the command'
+        f' to use valid --auto-accept-tos-ids values: {valid_str}.'
+    )
+
+
+def FormatDeclinedToSError(tos_ids: Sequence[str]) -> str:
+  """Formats the error message when required Terms of Service are not accepted.
+
+  Includes the required Terms of Service titles, URLs, and IDs, along with the
+  `--auto-accept-tos-ids` flag needed to accept them non-interactively. If the
+  server requires a Terms of Service ID this gcloud version does not recognize,
+  acceptance cannot succeed, so the message instructs upgrading gcloud instead.
+
+  Args:
+    tos_ids: Sequence of required TOS IDs for the session.
+
+  Returns:
+    The formatted error message string.
+  """
+  unrecognized_ids = GetUnsupportedTosIds(tos_ids)
+  if unrecognized_ids:
+    return '\n'.join([
+        _DECLINED_TOS_ERROR_HEADER,
+        FormatUnsupportedToSError(unrecognized_ids),
+    ])
+
+  recognized_ids = [
+      tos_id for tos_id in VALID_TOS_IDS if tos_id in set(tos_ids)
+  ]
+  if not recognized_ids:
+    return _DECLINED_TOS_ERROR_HEADER
+
+  if len(recognized_ids) == 1:
+    tos_id = recognized_ids[0]
+    tos = _TOS_REGISTRY[tos_id]
+    items = [f'• {tos.title} ({tos.url}) [id: {tos_id}]']
+  else:
+    items = [
+        f'{i}. {_TOS_REGISTRY[tos_id].title} ({_TOS_REGISTRY[tos_id].url})'
+        f' [id: {tos_id}]'
+        for i, tos_id in enumerate(recognized_ids, 1)
+    ]
+
+  flag_value = ','.join(recognized_ids)
+  footer = (
+      'To accept these Terms of Service non-interactively, re-run with'
+      f' --auto-accept-tos-ids={flag_value}.'
+  )
+  return '\n'.join([_DECLINED_TOS_ERROR_HEADER, _TOS_HEADER] + items + [footer])
 
 
 def _FormatPromptString(titles: list[str]) -> str:
@@ -104,9 +203,18 @@ _REGION_MESSAGE = (
     ' associated with your project will be provisioned in:\n'
 )
 _SINGLE_CLOUD_REGION_MESSAGE = 'One region found and selected: [{region}].'
+_AVAILABLE_CLOUD_REGIONS_MESSAGE = 'Available regions:'
+_SUGGESTED_CLOUD_REGION_SUFFIX = ' [suggested]'
+_CLOUD_REGION_REQUIRED_MESSAGE = (
+    'A region must be selected to continue, but prompting is disabled. Rerun'
+    ' the command with [{flag}=REGION].\n{available_message}\n{available}'
+)
+_UNSUPPORTED_CLOUD_REGION_MESSAGE = (
+    'Region [{region}] is not supported. Supported regions are: {supported}.'
+)
 
 _PROJECT_MESSAGE = 'Please select the project to use:'
-_SINGLE_PROJECT_MESSAGE = 'One project found and selected: [{project}].'
+_SINGLE_PROJECT_MESSAGE = 'One project found and selected: {project}.'
 
 
 def HandleUserInputToS(
@@ -125,7 +233,14 @@ def HandleUserInputToS(
 
   Returns:
     List of TOS IDs accepted by the user.
+
+  Raises:
+    InvalidTosIdError: If any ToS ID in `auto_accept_tos_ids` is not in
+      `VALID_TOS_IDS`.
   """
+  if auto_accept_tos_ids:
+    ValidateTosIds(auto_accept_tos_ids)
+
   if not tos_ids:
     return []
 
@@ -137,11 +252,14 @@ def HandleUserInputToS(
       continue
     if tos_id not in _TOS_REGISTRY:
       log.warning(f'Unrecognized ToS ID: [{tos_id}]')
+      telemetry.RecordEvent(telemetry.UNRECOGNIZED_TOS_ID_KEY, tos_id)
       continue
     to_prompt_ids.add(tos_id)
 
   auto_accepted = [tos_id for tos_id in tos_ids if tos_id in auto_accept_set]
   if not to_prompt_ids:
+    if auto_accepted:
+      telemetry.RecordEvent(telemetry.TOS_DECISION_KEY, telemetry.DECISION_FLAG)
     return auto_accepted
 
   # Deduplicate ToS to display by (title, url), ordered by canonical order.
@@ -156,11 +274,22 @@ def HandleUserInputToS(
   message = _FormatMessage(tos_info_list)
   prompt_string = _FormatPromptString([info.title for info in tos_info_list])
 
+  can_prompt = console_io.CanPrompt()
   accepted = console_io.PromptContinue(
       message=message,
       prompt_string=prompt_string,
       default=False,
   )
+
+  if not can_prompt:
+    # Unattended runs fall back to the prompt default, so the result does not
+    # reflect an explicit user decision.
+    decision = telemetry.DECISION_UNATTENDED
+  elif accepted:
+    decision = telemetry.DECISION_CONFIRMED
+  else:
+    decision = telemetry.DECISION_DECLINED
+  telemetry.RecordEvent(telemetry.TOS_DECISION_KEY, decision)
 
   if not accepted:
     return auto_accepted
@@ -202,11 +331,11 @@ def HandleUserInputSelectRegion(
   return regions[idx] if idx is not None else default_region
 
 
-def _FormatProject(project: onboarding_messages.Project) -> str:
+def FormatProject(project: onboarding_messages.Project) -> str:
   """Formats a project for display to the user."""
   if project.displayName:
-    return f'{project.displayName} ({project.name})'
-  return project.name
+    return f'{project.displayName} [{project.name}]'
+  return f'[{project.name}]'
 
 
 def HandleUserInputSelectProject(
@@ -232,19 +361,31 @@ def HandleUserInputSelectProject(
   if len(projects) == 1:
     project = projects[0]
     log.status.Print(
-        _SINGLE_PROJECT_MESSAGE.format(project=_FormatProject(project))
+        _SINGLE_PROJECT_MESSAGE.format(project=FormatProject(project))
+    )
+    telemetry.RecordEvent(
+        telemetry.PROJECT_DECISION_KEY, telemetry.DECISION_AUTO_SELECTED
     )
     return project
 
+  can_prompt = console_io.CanPrompt()
   try:
     idx = console_io.PromptChoice(
-        [_FormatProject(p) for p in projects],
+        [FormatProject(p) for p in projects],
         default=0,
         message=_PROJECT_MESSAGE,
         cancel_option=True,
     )
   except console_io.OperationCancelledError:
-    return None
+    idx = None
+
+  if not can_prompt:
+    decision = telemetry.DECISION_UNATTENDED
+  elif idx is None:
+    decision = telemetry.DECISION_DECLINED
+  else:
+    decision = telemetry.DECISION_CONFIRMED
+  telemetry.RecordEvent(telemetry.PROJECT_DECISION_KEY, decision)
   return projects[idx] if idx is not None else None
 
 
@@ -258,38 +399,104 @@ def _FormatCloudRegion(region: onboarding_messages.CloudRegion) -> str:
 def HandleUserInputSelectCloudRegion(
     regions: Sequence[onboarding_messages.CloudRegion],
     default_region: onboarding_messages.CloudRegion | None = None,
+    selected_region_name: str | None = None,
 ) -> onboarding_messages.CloudRegion | None:
   """Prompts the user to select a Google Cloud region to use for onboarding.
 
   This handles Google Cloud regions (e.g. `us-west1`), not geographic region
   codes (e.g. `US`).
 
-  If exactly one region is available, it is selected automatically without
-  prompting, and the user is informed of the selection. Otherwise, the
-  suggested default region (matched by name) is pre-selected, and is chosen if
-  the user presses Enter without a value or if prompts are disabled.
+  If `selected_region_name` is provided (e.g. from the `--region` flag), the
+  matching region is used without prompting. If exactly one region is
+  available, it is selected automatically without prompting, and the user is
+  informed of the selection. Otherwise, the suggested default region (matched
+  by name) is pre-selected, and is chosen if the user presses Enter without a
+  value.
+
+  If prompts are disabled (e.g. `--quiet` or a non-interactive session) and a
+  choice is required, the available regions are printed and an error is
+  raised instead of silently falling back to the default region, so the user
+  can rerun the command with `--region`.
 
   Args:
     regions: Google Cloud regions the user can select from.
     default_region: Optional suggested region to pre-select. Ignored if it is
       not one of `regions`.
+    selected_region_name: Optional name of the region to select without
+      prompting (e.g. `us-east1`). Matched case-insensitively, ignoring
+      surrounding whitespace.
 
   Returns:
     The region selected by the user (or the only/default region), or None if
     there are no regions to select from, no region was selected, or the user
     chose to cancel.
+
+  Raises:
+    calliope_exceptions.InvalidArgumentException: If `selected_region_name`
+      is not one of `regions`.
+    onboarding_exceptions.CloudRegionNotSelectedError: If prompts are
+      disabled and the user must choose between multiple regions.
   """
   if not regions:
     return None
+
+  region_names = [r.name for r in regions]
+
+  if selected_region_name is not None:
+    normalized_name = selected_region_name.strip().lower()
+    for region in regions:
+      if region.name.lower() == normalized_name:
+        telemetry.RecordEvent(
+            telemetry.CLOUD_REGION_DECISION_KEY,
+            telemetry.DECISION_FLAG,
+        )
+        return region
+    telemetry.RecordEvent(
+        telemetry.CLOUD_REGION_DECISION_KEY,
+        telemetry.DECISION_FLAG_INVALID,
+    )
+    raise calliope_exceptions.InvalidArgumentException(
+        REGION_FLAG,
+        _UNSUPPORTED_CLOUD_REGION_MESSAGE.format(
+            region=selected_region_name,
+            supported=', '.join(region_names),
+        ),
+    )
 
   if len(regions) == 1:
     region = regions[0]
     log.status.Print(
         _SINGLE_CLOUD_REGION_MESSAGE.format(region=_FormatCloudRegion(region))
     )
+    telemetry.RecordEvent(
+        telemetry.CLOUD_REGION_DECISION_KEY,
+        telemetry.DECISION_AUTO_SELECTED,
+    )
     return region
 
-  region_names = [r.name for r in regions]
+  if not console_io.CanPrompt():
+    # Don't silently fall back to the default region when unattended. Instead,
+    # list the options in the error so the user can rerun with an explicit
+    # selection. The list is part of the error (rather than status output) so
+    # it is shown even if status output is suppressed (e.g.
+    # --no-user-output-enabled).
+    default_name = default_region.name if default_region else None
+    available = '\n'.join(
+        f' - {name}'
+        + (_SUGGESTED_CLOUD_REGION_SUFFIX if name == default_name else '')
+        for name in region_names
+    )
+    telemetry.RecordEvent(
+        telemetry.CLOUD_REGION_DECISION_KEY, telemetry.DECISION_UNATTENDED
+    )
+    raise onboarding_exceptions.CloudRegionNotSelectedError(
+        _CLOUD_REGION_REQUIRED_MESSAGE.format(
+            flag=REGION_FLAG,
+            available_message=_AVAILABLE_CLOUD_REGIONS_MESSAGE,
+            available=available,
+        )
+    )
+
   default_idx = (
       region_names.index(default_region.name)
       if default_region and default_region.name in region_names
@@ -304,5 +511,11 @@ def HandleUserInputSelectCloudRegion(
         cancel_option=True,
     )
   except console_io.OperationCancelledError:
-    return None
+    idx = None
+
+  if idx is None:
+    decision = telemetry.DECISION_DECLINED
+  else:
+    decision = telemetry.DECISION_CONFIRMED
+  telemetry.RecordEvent(telemetry.CLOUD_REGION_DECISION_KEY, decision)
   return regions[idx] if idx is not None else None

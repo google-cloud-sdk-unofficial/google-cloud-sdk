@@ -62,7 +62,9 @@ def _Insert(ha_controller, ha_controller_ref, holder):
   response = holder.client.apitools_client.haControllers.Insert(request)
   operation_ref = holder.resources.Parse(response.selfLink)
   return waiter.WaitFor(
-      poller.Poller(holder.client.apitools_client.haControllers),
+      poller.Poller(
+          holder.client.apitools_client.haControllers, ha_controller_ref
+      ),
       operation_ref,
       message=(
           'HA controller creation in progress for [{}]: {}'.format(
@@ -90,7 +92,9 @@ def _Patch(ha_controller, ha_controller_ref, holder):
   response = holder.client.apitools_client.haControllers.Patch(request)
   operation_ref = holder.resources.Parse(response.selfLink)
   return waiter.WaitFor(
-      poller.Poller(holder.client.apitools_client.haControllers),
+      poller.Poller(
+          holder.client.apitools_client.haControllers, ha_controller_ref
+      ),
       operation_ref,
       message=(
           'HA controller update in progress for [{}]: {}'.format(

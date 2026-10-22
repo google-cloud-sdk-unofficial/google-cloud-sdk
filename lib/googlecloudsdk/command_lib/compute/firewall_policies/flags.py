@@ -393,7 +393,8 @@ def AddDescription(parser, required=False):
 
 def AddRolloutPlan(parser):
   """Adds rollout plan for the firewall policy."""
-  parser.add_argument(
+  group = parser.add_group(mutex=True, hidden=True)
+  group.add_argument(
       '--rollout-plan',
       metavar='ROLLOUT_PLAN',
       required=False,
@@ -402,6 +403,14 @@ def AddRolloutPlan(parser):
           'Rollout plan for the firewall policy. If not provided, the default '
           'plan will be applied.'
       ),
+  )
+  group.add_argument(
+      '--predefined-rollout-plan',
+      choices=['DEFAULT_ROLLOUT_PLAN'],
+      type=lambda x: x.upper(),
+      required=False,
+      hidden=True,
+      help='Predefined rollout plan for the firewall policy.',
   )
 
 

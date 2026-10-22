@@ -1,5 +1,7 @@
 # Copyright 2026 Google LLC. All Rights Reserved.
 release_tracks: [ALPHA, BETA]
+hints:
+  read_only: false
 
 help_text:
   brief: |

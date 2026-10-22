@@ -1380,3 +1380,68 @@ def get_folder_resource_from_metadata(metadata):
       metageneration=metadata.metageneration,
       update_time=metadata.updateTime,
   )
+
+
+def get_rapid_cache_config_from_policies(messages, policies_by_cache_id):
+  """Builds a RapidCacheConfig message from a mapping of cache IDs to policies.
+
+  Args:
+    messages: The Apitools messages module for storage v1.
+    policies_by_cache_id (dict[str, bool]|None): Mapping from Anywhere Cache ID
+      (e.g., 'us-central1-a') to a boolean indicating whether ingest-on-write is
+      enabled (True -> 'enabled', False -> 'unspecified').
+
+  Returns:
+    messages.RapidCacheConfig: The configured RapidCacheConfig message,
+    or None if policies_by_cache_id is empty or None.
+  """
+  if not policies_by_cache_id:
+    return None
+
+  additional_properties = [
+      messages.RapidCacheConfig.PoliciesValue.AdditionalProperty(
+          key=cache_id,
+          value=messages.RapidCachePolicy(
+              ingestOnWrite=(
+                  messages.RapidCachePolicy.IngestOnWriteValueValuesEnum.enabled
+                  if is_enabled
+                  else messages.RapidCachePolicy.IngestOnWriteValueValuesEnum.unspecified
+              ),
+              rapidCacheId=cache_id,
+          ),
+      )
+      for cache_id, is_enabled in sorted(policies_by_cache_id.items())
+  ]
+  return messages.RapidCacheConfig(
+      policies=messages.RapidCacheConfig.PoliciesValue(
+          additionalProperties=additional_properties
+      )
+  )
+
+
+def get_rapid_cache_policies_dict(managed_folder_metadata):
+  """Extracts rapid cache policies mapping from managed folder metadata.
+
+  Args:
+    managed_folder_metadata: The managed folder metadata or resource reference
+      (messages.ManagedFolder or resource_reference.ManagedFolderResource).
+
+  Returns:
+    dict[str, bool]: Mapping from cache ID to boolean indicating whether
+    ingest-on-write is enabled (True if 'enabled', False otherwise).
+  """
+  metadata = getattr(
+      managed_folder_metadata, 'metadata', managed_folder_metadata
+  )
+  rc_config = getattr(metadata, 'rapidCacheConfig', None)
+  policies = getattr(rc_config, 'policies', None)
+  props = getattr(policies, 'additionalProperties', None) or []
+
+  return {
+      prop.key: (
+          getattr(prop.value.ingestOnWrite, 'name', None) == 'enabled'
+          or str(prop.value.ingestOnWrite) == 'enabled'
+      )
+      for prop in props
+      if prop.key and prop.value
+  }

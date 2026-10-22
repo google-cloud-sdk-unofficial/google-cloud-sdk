@@ -299,6 +299,41 @@ class Attempt(_messages.Message):
   scheduleTime = _messages.StringField(4)
 
 
+class BatchCreateTasksRequest(_messages.Message):
+  r"""Request message for [BatchCreateTasks].
+
+  Fields:
+    requestId: Optional. This field will be used to identify the long running
+      operation, avoiding duplication when user retries. If not provided, then
+      a UUID will be generated at server side.
+    requests: Required. The list of requests to create tasks. The queue
+      specified in parent field of each CreateTaskRequest will be the same.
+      This validation happens on the client side as well as in the handler.
+      BatchCreateTasksRequest.parent will also be the same value as the
+      individual `CreateTaskRequest.parent`. The maximum number of requests is
+      100.
+  """
+
+  requestId = _messages.StringField(1)
+  requests = _messages.MessageField('CreateTaskRequest', 2, repeated=True)
+
+
+class BatchDeleteTasksRequest(_messages.Message):
+  r"""Request message for deleting a batch of tasks using BatchDeleteTasks.
+
+  Fields:
+    names: Required. The names of the tasks to delete. A maximum of 1000 tasks
+      can be deleted in a batch. For example: Format: `projects/PROJECT_ID/loc
+      ations/LOCATION_ID/queues/QUEUE_ID/tasks/TASK_ID`
+    requestId: Optional. This field will be used to identify the long running
+      operation, avoiding duplication when user retries. If not provided, then
+      a UUID will be generated at server side.
+  """
+
+  names = _messages.StringField(1, repeated=True)
+  requestId = _messages.StringField(2)
+
+
 class Binding(_messages.Message):
   r"""Associates `members`, or principals, with a `role`.
 
@@ -412,7 +447,7 @@ class CloudtasksProjectsLocationsGetCmekConfigRequest(_messages.Message):
 
   Fields:
     name: Required. The config. For example:
-      projects/PROJECT_ID/locations/LOCATION_ID/CmekConfig`
+      `projects/PROJECT_ID/locations/LOCATION_ID/cmekConfig`
   """
 
   name = _messages.StringField(1, required=True)
@@ -628,6 +663,35 @@ class CloudtasksProjectsLocationsQueuesSetIamPolicyRequest(_messages.Message):
   setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
 
 
+class CloudtasksProjectsLocationsQueuesTasksBatchCreateRequest(_messages.Message):
+  r"""A CloudtasksProjectsLocationsQueuesTasksBatchCreateRequest object.
+
+  Fields:
+    batchCreateTasksRequest: A BatchCreateTasksRequest resource to be passed
+      as the request body.
+    parent: Required. The queue name. For example:
+      `projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID` The queue
+      must already exist.
+  """
+
+  batchCreateTasksRequest = _messages.MessageField('BatchCreateTasksRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class CloudtasksProjectsLocationsQueuesTasksBatchDeleteRequest(_messages.Message):
+  r"""A CloudtasksProjectsLocationsQueuesTasksBatchDeleteRequest object.
+
+  Fields:
+    batchDeleteTasksRequest: A BatchDeleteTasksRequest resource to be passed
+      as the request body.
+    parent: Required. The queue name. For example: Format:
+      `projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID`
+  """
+
+  batchDeleteTasksRequest = _messages.MessageField('BatchDeleteTasksRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class CloudtasksProjectsLocationsQueuesTasksBufferRequest(_messages.Message):
   r"""A CloudtasksProjectsLocationsQueuesTasksBufferRequest object.
 
@@ -827,7 +891,7 @@ class CloudtasksProjectsLocationsUpdateCmekConfigRequest(_messages.Message):
     cmekConfig: A CmekConfig resource to be passed as the request body.
     name: Output only. The config resource name which includes the project and
       location and must end in 'cmekConfig', in the format
-      projects/PROJECT_ID/locations/LOCATION_ID/cmekConfig`
+      `projects/PROJECT_ID/locations/LOCATION_ID/cmekConfig`
     updateMask: List of fields to be updated in this request.
   """
 
@@ -847,7 +911,7 @@ class CmekConfig(_messages.Message):
       as blank will turn off CMEK encryption.
     name: Output only. The config resource name which includes the project and
       location and must end in 'cmekConfig', in the format
-      projects/PROJECT_ID/locations/LOCATION_ID/cmekConfig`
+      `projects/PROJECT_ID/locations/LOCATION_ID/cmekConfig`
   """
 
   kmsKey = _messages.StringField(1)
@@ -867,6 +931,9 @@ class CreateTaskRequest(_messages.Message):
       IAM](https://cloud.google.com/iam/) permission on the Task resource.
 
   Fields:
+    parent: Required. The queue name. For example:
+      `projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID` The queue
+      must already exist.
     responseView: The response_view specifies which subset of the Task will be
       returned. By default response_view is BASIC; not all information is
       retrieved by default because some data, such as payloads, might be
@@ -920,8 +987,9 @@ class CreateTaskRequest(_messages.Message):
     BASIC = 1
     FULL = 2
 
-  responseView = _messages.EnumField('ResponseViewValueValuesEnum', 1)
-  task = _messages.MessageField('Task', 2)
+  parent = _messages.StringField(1)
+  responseView = _messages.EnumField('ResponseViewValueValuesEnum', 2)
+  task = _messages.MessageField('Task', 3)
 
 
 class Empty(_messages.Message):
@@ -1255,9 +1323,9 @@ class HttpTarget(_messages.Message):
       This will be computed by Cloud Tasks and derived from HttpRequest.url. *
       Content-Length: This will be computed by Cloud Tasks. `Content-Type`
       won't be set by Cloud Tasks. You can explicitly set `Content-Type` to a
-      media type when the task is created. For example,`Content-Type` can be
+      media type when the task is created. For example, `Content-Type` can be
       set to `"application/octet-stream"` or `"application/json"`. The default
-      value is set to "application/json"`. * User-Agent: This will be set to
+      value is set to `"application/json"`. * User-Agent: This will be set to
       `"Google-Cloud-Tasks"`. Headers which can have multiple values
       (according to RFC2616) can be specified using comma-separated values.
       The size of the headers must be less than 80KB. Queue-level headers to
@@ -2192,6 +2260,8 @@ class Task(_messages.Message):
       500 characters.
     responseCount: Output only. The number of attempts which have received a
       response.
+    retryConfig: Optional. Specifies the task-level RetryConfig. If present,
+      this overrides the Queue.retry_config for this task.
     scheduleTime: The time when the task is scheduled to be attempted or
       retried. `schedule_time` will be truncated to the nearest microsecond.
     view: Output only. The view specifies which subset of the Task has been
@@ -2226,8 +2296,9 @@ class Task(_messages.Message):
   lastAttempt = _messages.MessageField('Attempt', 7)
   name = _messages.StringField(8)
   responseCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  scheduleTime = _messages.StringField(10)
-  view = _messages.EnumField('ViewValueValuesEnum', 11)
+  retryConfig = _messages.MessageField('RetryConfig', 10)
+  scheduleTime = _messages.StringField(11)
+  view = _messages.EnumField('ViewValueValuesEnum', 12)
 
 
 class TestIamPermissionsRequest(_messages.Message):

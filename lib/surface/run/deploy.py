@@ -39,6 +39,7 @@ from googlecloudsdk.command_lib.run import build_util
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
+from googlecloudsdk.command_lib.run import deployment_type_switch
 from googlecloudsdk.command_lib.run import domain_mapping_util
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
@@ -51,6 +52,7 @@ from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_change_validators
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.run import unified_build
 from googlecloudsdk.command_lib.run import validators
 from googlecloudsdk.command_lib.run.sourcedeploys import source_container_context
 from googlecloudsdk.command_lib.run.sourcedeploys import sources
@@ -350,6 +352,7 @@ class Deploy(base.Command):
               upload_through_run_api=sources.ShouldUploadThroughRunApi(
                   container_args, self.ReleaseTrack()
               ),
+              is_source_build=validators.IsSourceBuild(container_args),
           )
       )
 
@@ -382,12 +385,9 @@ class Deploy(base.Command):
     if enable_unified_build:
       return None
 
-    legacy_build_source_container = []
-    for _, container in source_containers.items():
-      if not getattr(container, 'no_build', False) and not getattr(
-          container, 'local_build', False
-      ):
-        legacy_build_source_container.append(container)
+    legacy_build_source_container = [
+        c for c in source_containers.values() if validators.IsSourceBuild(c)
+    ]
 
     if len(legacy_build_source_container) > 1:
       raise c_exceptions.InvalidArgumentException(
@@ -724,7 +724,7 @@ class Deploy(base.Command):
     """
     if not service:
       return None
-    source_location_map = service.source_deploy_no_build_source_location_map
+    source_location_map = service.source_deploy_source_location_map
     logging.debug('source_location map: %s', source_location_map)
     if not source_location_map:
       return None
@@ -860,12 +860,7 @@ class Deploy(base.Command):
 
   def _RequireBuild(self, source_containers):
     """Returns whether the deployment requires a build."""
-    for _, container_args in source_containers.items():
-      if not getattr(container_args, 'local_build', False) and not getattr(
-          container_args, 'no_build', False
-      ):
-        return True
-    return False
+    return any(validators.IsSourceBuild(c) for c in source_containers.values())
 
   def _GetSourceContainersContextList(
       self, source_containers, legacy_build_container
@@ -982,8 +977,12 @@ class Deploy(base.Command):
     )
 
     containers = self._ValidateAndGetContainers(args)
+    # Alpha only, see validators.ValidateUnifiedBuildProperty.
+    enable_unified_build = properties.VALUES.run.enable_unified_build.GetBool()
     source_containers, legacy_build_container, local_build_container = (
-        self._ValidateAndGetSourceContainer(containers)
+        self._ValidateAndGetSourceContainer(
+            containers, enable_unified_build=enable_unified_build
+        )
     )
 
     service_ref = args.CONCEPTS.service.Parse()
@@ -1053,6 +1052,7 @@ class Deploy(base.Command):
     )
 
     local_build_changes = []
+    unified_build_changes = []
 
     service = None
     with serverless_operations.Connect(
@@ -1106,12 +1106,24 @@ class Deploy(base.Command):
       # Legacy build is mutually exclusive with new ways of source deployment.
       if source_containers and not legacy_build_container:
         for _, container_args in source_containers.items():
-          container_args.local_context.source_bucket = (
-              self._GetSourceBucketFromZipDeploySourceLocation(service)
-          )
-          if not container_args.local_context.base_image:
-            container_args.local_context.base_image = container_args.base_image
-          container_args.image = 'scratch'
+          if validators.IsSourceBuild(container_args) and enable_unified_build:
+            unified_build_changes.extend(
+                unified_build.GetUnifiedBuildChanges(
+                    service,
+                    container_args,
+                    skip_activation_prompt,
+                    service_ref,
+                )
+            )
+          else:
+            container_args.local_context.source_bucket = (
+                self._GetSourceBucketFromZipDeploySourceLocation(service)
+            )
+            if not container_args.local_context.base_image:
+              container_args.local_context.base_image = (
+                  container_args.base_image
+              )
+            container_args.image = 'scratch'
 
       # legacy submit build container processing
       elif legacy_build_container:
@@ -1136,12 +1148,21 @@ class Deploy(base.Command):
             enable_by_default=True,
         )
 
+      # Clear stale annotations left over from a previous deployment type.
+      # Must run before the changes below so they can re-set annotations for
+      # the new deployment type. Only the container build config cleanup
+      # applies in every release track; the rest is Alpha only.
+      changes = deployment_type_switch.GetDeploymentTypeSwitchChanges(
+          service, containers, self.ReleaseTrack()
+      )
       # Deploy a container with an image
-      changes = self._GetBaseChanges(args)
+      changes.extend(self._GetBaseChanges(args))
       # Add legacy submitBuild changes
       changes.extend(legacy_build_changes)
       # Add local build changes
       changes.extend(local_build_changes)
+      # Add unified build changes
+      changes.extend(unified_build_changes)
 
       allow_unauth = self.GetAllowUnauth(args, operations, service_ref, service)
       resource_change_validators.ValidateClearVpcConnector(service, args)
@@ -1304,6 +1325,8 @@ class BetaDeploy(Deploy):
     flags.IdentityCertificateFlag().AddToParser(parser)
     flags.IdentityTypeFlag(release_track=cls.ReleaseTrack()).AddToParser(parser)
     flags.FunctionalTypeFlag(resource='service').AddToParser(parser)
+    flags.AMBIENT_NETWORKING_FLAG.AddToParser(parser)
+    flags.AMBIENT_SCOPE_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

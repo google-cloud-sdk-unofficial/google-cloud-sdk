@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Create a Data Catalog entry tag.
@@ -52,6 +54,8 @@
         separate the column names: 'outer_column.inner_column'.
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Create a Data Catalog entry tag.

@@ -49,6 +49,11 @@ properties:
       Current amount of memory (in MB) available for VM. 0 or unset means
       default amount of memory of the current machine type.
     type: integer
+  exposeHostTopology:
+    description: |-
+      This optional flag exposes the hashed physical host ID in the
+      ResourceStatus resource of the VM.
+    type: boolean
   gracefulShutdown:
     description: A SchedulingGracefulShutdown attribute.
     $ref: SchedulingGracefulShutdown.yaml
@@ -141,7 +146,7 @@ properties:
   preemptionNoticeDuration:
     description: |-
       Specifies the Metadata Service preemption notice duration before the
-      GCE ACPI G2 Soft  Off signal is triggered for Spot VMs only. If not
+      GCE ACPI G2 Soft Off signal is triggered for Spot VMs only. If not
       specified, there will be no wait before the G2 Soft Off signal is
       triggered.
     $ref: Duration.yaml
@@ -174,6 +179,9 @@ properties:
       inRFC3339 text format. If specified, the instance termination action
       will be performed at the termination time.
     type: string
+  vsockMode:
+    description: The vsock mode of the instance.
+    $ref: SchedulingVsockMode.yaml
   windowsLicenseOptimizationMode:
     description: |-
       Represents the Windows Server License Optimization Mode of the VM. If

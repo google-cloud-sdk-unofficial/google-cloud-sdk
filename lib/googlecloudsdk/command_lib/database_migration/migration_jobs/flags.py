@@ -601,3 +601,16 @@ def AddMySqlHomogeneousConfigFlag(parser):
           'Whether the destination for the migration job is a primary instance.'
       ),
   )
+
+
+def AddFailbackFlag(parser):
+  """Adds failback flag to the given parser."""
+  parser.add_argument(
+      '--failback',
+      action='store_true',
+      default=False,
+      help=(
+          'If set, promotes the migration job from destination back to source'
+          ' during the FAILBACK phase.'
+      ),
+  )

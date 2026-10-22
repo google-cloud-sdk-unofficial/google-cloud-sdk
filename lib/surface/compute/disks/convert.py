@@ -35,7 +35,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
-
 CONTINUE_WITH_CONVERT_PROMPT = (
     'This command will permanently convert disk {0} to disk type: {1}. Please'
     ' detach the disk from all instances before continuing. Data written to the'
@@ -99,8 +98,7 @@ class Convert(base.RestoreCommand):
 
     if self.disk_ref.Collection() == 'compute.regionDisks':
       raise exceptions.InvalidArgumentException(
-          '--region',
-          'Regional disks are not supported for this command.'
+          '--region', 'Regional disks are not supported for this command.'
       )
 
     if args.target_disk_type == 'hyperdisk-ml':
@@ -112,7 +110,8 @@ class Convert(base.RestoreCommand):
 
     # make sure disk is not attached to any instances
     disk_info = disks_util.GetDiskInfo(
-        self.disk_ref, self.client, self.messages)
+        self.disk_ref, self.client, self.messages
+    )
     original_disk = disk_info.GetDiskResource()
     if original_disk.users:
       raise exceptions.ToolException(
@@ -131,7 +130,9 @@ class Convert(base.RestoreCommand):
     try:
       with self._CreateProgressTracker(self.disk_ref.Name()):
         result = self._ConvertDisk(
-            self.disk_ref, self.target_disk_type, original_disk.sizeGb,
+            self.disk_ref,
+            self.target_disk_type,
+            original_disk.sizeGb,
             disk_encryption_key=kms_utils.MaybeGetKmsKey(
                 args, self.messages, None
             ),
@@ -141,9 +142,11 @@ class Convert(base.RestoreCommand):
     finally:
       self._CleanUp()
       if self.user_messages:
-        if self.state in [_ConvertState.ORIGINAL_DISK_RECREATED,
-                          _ConvertState.RESTORED_DISK_DELETED,
-                          _ConvertState.SNAPSHOT_DELETED]:
+        if self.state in [
+            _ConvertState.ORIGINAL_DISK_RECREATED,
+            _ConvertState.RESTORED_DISK_DELETED,
+            _ConvertState.SNAPSHOT_DELETED,
+        ]:
           log.warning(self.user_messages)
         else:
           log.error(self.user_messages)
@@ -377,13 +380,13 @@ class Convert(base.RestoreCommand):
       # recreate original disk failed
       self.user_messages = (
           f'Recreating original disk {self.disk_ref.Name()} failed. Please run'
-          ' `gcloud compute disks create'
-          f' {self.disk_ref.Name()} --zone={self.disk_ref.zone} --type={self.target_disk_type} --source-disk={self.restored_disk_name}`'
-          ' to recreate the original disk. Please run `gcloud compute'
-          f' snapshots delete {self.snapshot_name}` to delete the temporary'
-          ' snapshot. Please run `gcloud compute disks delete'
-          f' {self.restored_disk_name} --zone={self.disk_ref.zone}` to delete'
-          ' the temporary disk.'
+          f' `gcloud compute disks create {self.disk_ref.Name()}'
+          f' --zone={self.disk_ref.zone} --type={self.target_disk_type}'
+          f' --source-disk={self.restored_disk_name}` to recreate the original'
+          ' disk. Please run `gcloud compute snapshots delete'
+          f' {self.snapshot_name}` to delete the temporary snapshot. Please run'
+          f' `gcloud compute disks delete {self.restored_disk_name}'
+          f' --zone={self.disk_ref.zone}` to delete the temporary disk.'
       )
     elif self.state == _ConvertState.ORIGINAL_DISK_RECREATED:
       # delete restored disk failed
@@ -426,14 +429,42 @@ class Convert(base.RestoreCommand):
 
 
 Convert.detailed_help = {
-    'DESCRIPTION': """\
+    'DESCRIPTION': (
+        """\
  Convert Compute Engine Persistent Disk volumes to Hyperdisk volumes.
 
- *{command}* converts a Compute Engine Persistent Disk volume to a Hyperdisk volume. For a comprehensive guide, refer to: https://cloud.google.com/sdk/gcloud/reference/compute/disks/convert.
-    """,
-    'EXAMPLES': """\
+ *{command}* converts a Compute Engine Persistent Disk volume to a Hyperdisk
+ volume. For a comprehensive guide, refer to:
+ https://cloud.google.com/sdk/gcloud/reference/compute/disks/convert.
+
+ This command performs a series of steps to convert the disk:
+
+ - Creates a temporary snapshot of the original disk.
+ - Creates a temporary disk of the target disk type from the snapshot.
+ - Deletes the original disk.
+ - Recreates the original disk with the target disk type using the temporary disk.
+ - Deletes the temporary disk and the temporary snapshot.
+
+ If the command fails or is interrupted during the conversion process,
+ it will attempt to clean up any temporary resources it had created. If the
+ command fails before the original disk is deleted (step 3), the original disk
+ is not converted and remains unchanged. You can safely rerun the command. If the
+ automatic cleanup fails, the command outputs instructions on how to manually
+ clean up any temporary snapshot or disk. If the command fails after the
+ original disk is deleted but before the original disk succeeds in recreation
+ (step 4), the command outputs manual instructions on how to recreate the original
+ disk from the temporary disk or snapshot. In this state, do not simply rerun the
+ command; follow the provided manual steps.
+
+ To monitor the progress of the underlying operations or check the status,
+ you can use the `gcloud compute operations list` command.
+    """
+    ),
+    'EXAMPLES': (
+        """\
 The following command converts a Persistent Disk volume to a Hyperdisk Balanced volume:
 
         $ {command} my-disk-1 --zone=ZONE --target-disk-type=hyperdisk-balanced
-        """,
+        """
+    ),
 }

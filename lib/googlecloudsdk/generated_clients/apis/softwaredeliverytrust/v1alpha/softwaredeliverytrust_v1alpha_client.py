@@ -645,6 +645,33 @@ class SoftwaredeliverytrustV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def VerifyPolicy(self, request, global_params=None):
+      r"""Evaluates active PolicyBindings for a target resource and artifact digest, mints and cryptographically signs a Verification Summary Attestation (VSA), and records the policy evaluation result.
+
+      Args:
+        request: (SoftwaredeliverytrustProjectsLocationsVerifyPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (VerifyPolicyResponse) The response message.
+      """
+      config = self.GetMethodConfig('VerifyPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    VerifyPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}:verifyPolicy',
+        http_method='POST',
+        method_id='softwaredeliverytrust.projects.locations.verifyPolicy',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha/{+parent}:verifyPolicy',
+        request_field='verifyPolicyRequest',
+        request_type_name='SoftwaredeliverytrustProjectsLocationsVerifyPolicyRequest',
+        response_type_name='VerifyPolicyResponse',
+        supports_download=False,
+    )
+
   class ProjectsService(base_api.BaseApiService):
     """Service class for the projects resource."""
 

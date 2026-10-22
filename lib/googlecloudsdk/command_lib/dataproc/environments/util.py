@@ -19,9 +19,11 @@ from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util as dataproc_util
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.generated_clients.apis.dataproc.v2 import dataproc_v2_messages
 
 
@@ -58,6 +60,12 @@ _PYTHON_PACKAGE_HELP = (
     'Python package to install, specified as a PEP 508 requirement string '
     '(for example, `pandas>=2.0,<3`). Repeat this flag to install multiple '
     'packages.'
+)
+
+_PYTHON_PACKAGES_REPOSITORY_HELP = (
+    'URI of a custom package repository to download the Python packages from '
+    '(for example, `https://us-python.pkg.dev/my-project/my-repo/simple/`). '
+    'If not specified, packages are downloaded from the public PyPI index.'
 )
 
 
@@ -105,6 +113,11 @@ def AddCreateEnvironmentFlags(
       metavar='PACKAGE',
       help=_PYTHON_PACKAGE_HELP,
   )
+  parser.add_argument(
+      '--python-packages-repository',
+      metavar='URI',
+      help=_PYTHON_PACKAGES_REPOSITORY_HELP,
+  )
   labels_util.AddCreateLabelsFlags(parser)
 
 
@@ -132,7 +145,41 @@ def AddUpdateEnvironmentFlags(
       action='store_true',
       help='Clear all Python packages from the environment.',
   )
+  repository_group = parser.add_mutually_exclusive_group()
+  repository_group.add_argument(
+      '--python-packages-repository',
+      metavar='URI',
+      help=(
+          _PYTHON_PACKAGES_REPOSITORY_HELP
+          + ' The specified repository replaces the existing one.'
+      ),
+  )
+  repository_group.add_argument(
+      '--clear-python-packages-repository',
+      action='store_true',
+      help=(
+          'Remove the custom package repository from the environment, so that '
+          'the Python packages are downloaded from the public PyPI index.'
+      ),
+  )
   labels_util.AddUpdateLabelsFlags(parser)
+
+
+def _GetOrCreatePythonPackagesConfig(
+    dataproc: dp.Dataproc, environment: dataproc_v2_messages.Environment
+) -> dataproc_v2_messages.PythonPackagesConfig:
+  """Returns the environment's `pythonPackagesConfig`, creating it if unset.
+
+  Args:
+    dataproc: The API wrapper, which must use the v2 API.
+    environment: The environment being built.
+
+  Returns:
+    The `pythonPackagesConfig` message set on the environment.
+  """
+  if environment.pythonPackagesConfig is None:
+    environment.pythonPackagesConfig = dataproc.messages.PythonPackagesConfig()
+  return environment.pythonPackagesConfig
 
 
 def BuildEnvironmentForCreate(
@@ -164,8 +211,12 @@ def BuildEnvironmentForCreate(
     )
 
   if args.IsSpecified('python_package'):
-    environment.pythonPackagesConfig = messages.PythonPackagesConfig(
-        packages=args.python_package
+    _GetOrCreatePythonPackagesConfig(dataproc, environment).packages = (
+        args.python_package
+    )
+  if args.IsSpecified('python_packages_repository'):
+    _GetOrCreatePythonPackagesConfig(dataproc, environment).repository = (
+        messages.PackageRepository(uri=args.python_packages_repository)
     )
 
   environment.labels = labels_util.ParseCreateArgs(
@@ -211,15 +262,23 @@ def BuildEnvironmentForUpdate(
     changed_fields.append('base_environment')
 
   if args.IsSpecified('python_package'):
-    environment.pythonPackagesConfig = messages.PythonPackagesConfig(
-        packages=args.python_package
+    _GetOrCreatePythonPackagesConfig(dataproc, environment).packages = (
+        args.python_package
     )
     changed_fields.append('python_packages_config.packages')
   elif args.clear_python_packages:
-    environment.pythonPackagesConfig = messages.PythonPackagesConfig(
-        packages=[]
-    )
+    _GetOrCreatePythonPackagesConfig(dataproc, environment).packages = []
     changed_fields.append('python_packages_config.packages')
+
+  if args.IsSpecified('python_packages_repository'):
+    _GetOrCreatePythonPackagesConfig(dataproc, environment).repository = (
+        messages.PackageRepository(uri=args.python_packages_repository)
+    )
+    changed_fields.append('python_packages_config.repository')
+  elif args.clear_python_packages_repository:
+    # The field path in the mask with no repository set clears the repository.
+    _GetOrCreatePythonPackagesConfig(dataproc, environment)
+    changed_fields.append('python_packages_config.repository')
 
   def _GetCurrentLabels():
     get_request = messages.DataprocProjectsLocationsEnvironmentsGetRequest(
@@ -244,6 +303,77 @@ def BuildEnvironmentForUpdate(
     )
 
   return environment, changed_fields
+
+
+def ReadEnvironment(
+    dataproc: dp.Dataproc,
+    source: str | None,
+    environment_ref: resources.Resource,
+) -> dataproc_v2_messages.Environment:
+  """Reads an Environment message from a YAML file or standard input.
+
+  A short `baseEnvironment` ID in the file is resolved to a full resource name
+  in the project and location of `environment_ref`, as for `--base-environment`
+  on `create` and `update`.
+
+  Args:
+    dataproc: The API wrapper, which must use the v2 API.
+    source: The path of the YAML file to read, or None to read from standard
+      input.
+    environment_ref: The resource reference of the environment being imported.
+
+  Returns:
+    The environment parsed from the YAML data.
+
+  Raises:
+    exceptions.ParseError: If the YAML data cannot be parsed as an
+      `Environment`.
+    exceptions.ArgumentError: If the file sets both `baseVersion` and
+      `baseEnvironment`.
+  """
+  data = console_io.ReadFromFileOrStdin(source or '-', binary=False)
+  environment = export_util.Import(
+      message_type=dataproc.messages.Environment, stream=data
+  )
+  if environment.baseVersion and environment.baseEnvironment:
+    raise exceptions.ArgumentError(
+        'Only one of `baseVersion` and `baseEnvironment` can be set in the'
+        ' imported environment.'
+    )
+  if environment.baseEnvironment:
+    environment.baseEnvironment = ResolveBaseEnvironmentName(
+        environment.baseEnvironment, environment_ref
+    )
+  return environment
+
+
+def GetImportUpdateMask(
+    environment: dataproc_v2_messages.Environment,
+) -> list[str]:
+  """Returns the update mask to use when import overwrites an environment.
+
+  The mask covers every user-settable field, so fields that are missing from
+  the imported file are cleared. Of the `base_version` and `base_environment`
+  oneof fields, only the one set in the file is included, because setting one
+  of them clears the other. If the file sets neither, the base is unchanged.
+
+  Args:
+    environment: The environment read from the imported file.
+
+  Returns:
+    The list of field paths to use as the update mask.
+  """
+  update_mask = ['description']
+  if environment.baseVersion:
+    update_mask.append('base_version')
+  elif environment.baseEnvironment:
+    update_mask.append('base_environment')
+  update_mask.extend([
+      'python_packages_config.packages',
+      'python_packages_config.repository',
+      'labels',
+  ])
+  return update_mask
 
 
 def WaitForEnvironmentOperation(
@@ -326,4 +456,53 @@ def CreateEnvironment(
       timeout_s=args.timeout,
   )
   log.CreatedResource(environment_ref.RelativeName())
+  return result
+
+
+def UpdateEnvironment(
+    dataproc: dp.Dataproc,
+    environment_ref: resources.Resource,
+    environment: dataproc_v2_messages.Environment,
+    update_mask: list[str],
+    args: parser_extensions.Namespace,
+) -> dataproc_v2_messages.Operation | dataproc_v2_messages.Environment:
+  """Updates an Environment and waits on the LRO unless `--async` is set.
+
+  Args:
+    dataproc: The API wrapper, which must use the v2 API.
+    environment_ref: The resource reference of the environment to update.
+    environment: The environment with the fields to update.
+    update_mask: The list of field paths to update.
+    args: The parsed command arguments; must have `async_` and `timeout`.
+
+  Returns:
+    The operation if `--async` is set, otherwise the updated environment.
+  """
+  environment.name = environment_ref.RelativeName()
+  request = (
+      dataproc.messages.DataprocProjectsLocationsEnvironmentsPatchRequest(
+          name=environment_ref.RelativeName(),
+          environment=environment,
+          updateMask=','.join(update_mask),
+          requestId=dataproc_util.GetUniqueId(),
+      )
+  )
+  operation = dataproc.client.projects_locations_environments.Patch(request)
+  if args.async_:
+    log.status.Print(
+        'Updating [{0}] with operation [{1}].'.format(
+            environment_ref.RelativeName(), operation.name
+        )
+    )
+    return operation
+  result = WaitForEnvironmentOperation(
+      dataproc,
+      operation,
+      environment_ref,
+      message="Waiting for environment '{0}' update operation".format(
+          environment_ref.Name()
+      ),
+      timeout_s=args.timeout,
+  )
+  log.UpdatedResource(environment_ref.RelativeName())
   return result

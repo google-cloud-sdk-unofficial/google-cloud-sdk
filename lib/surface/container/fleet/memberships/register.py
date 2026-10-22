@@ -43,7 +43,13 @@ DOCKER_CREDENTIAL_FILE_FLAG = '--docker-credential-file'
 
 def _ValidateConnectAgentCredentialFlags(args):
   enable_workload_identity = getattr(args, 'enable_workload_identity', False)
-  if not args.service_account_key_file and not enable_workload_identity:
+  skip_connect_agent = (args.IsSpecified('install_connect_agent') and
+                        not args.install_connect_agent)
+  if (
+      not skip_connect_agent
+      and not args.service_account_key_file
+      and not enable_workload_identity
+  ):
     raise exceptions.Error(
         '--enable-workload-identity --service-account-key-file',
         'One of (--enable-workload-identity | --service-account-key-file) ' +
@@ -200,7 +206,7 @@ class Register(base.CreateCommand):
         help=textwrap.dedent("""\
           If set to True for a GKE cluster, Connect agent will be installed in
           the cluster. No-op for Non-GKE clusters, where Connect agent will
-          always be installed.
+          always be installed unless --no-install-connect-agent is specified.
           """),
         default=False,
     )
@@ -582,7 +588,7 @@ class Register(base.CreateCommand):
             raise exceptions.Error(
                 'Error in updating the membership [{}]:{}'.format(
                     resource_name, e))
-        else:
+        elif not args.IsSpecified('install_connect_agent'):
           console_io.PromptContinue(
               message='A membership [{}] for the cluster [{}] already exists. '
               'Continuing will reinstall the Connect agent deployment to use a '
@@ -596,19 +602,29 @@ class Register(base.CreateCommand):
 
       # Attempt to update the existing agent deployment, or install a new agent
       # if necessary.
-      try:
-        agent_util.DeployConnectAgent(kube_client, args,
-                                      service_account_key_data,
-                                      docker_credential_data, resource_name,
-                                      self.ReleaseTrack())
-      except Exception as e:
-        log.status.Print('Error in installing the Connect agent: {}'.format(e))
-        # In case of a new membership, we need to clean up membership and
-        # resources if we failed to install the Connect agent.
-        if not already_exists:
-          api_util.DeleteMembership(resource_name, self.ReleaseTrack())
-          exclusivity_util.DeleteMembershipResources(kube_client)
-        raise
+      if (args.IsSpecified('install_connect_agent') and
+          not args.install_connect_agent):
+        pass
+      else:
+        try:
+          agent_util.DeployConnectAgent(
+              kube_client,
+              args,
+              service_account_key_data,
+              docker_credential_data,
+              resource_name,
+              self.ReleaseTrack(),
+          )
+        except Exception as e:
+          log.status.Print(
+              'Error in installing the Connect agent: {}'.format(e)
+          )
+          # In case of a new membership, we need to clean up membership and
+          # resources if we failed to install the Connect agent.
+          if not already_exists:
+            api_util.DeleteMembership(resource_name, self.ReleaseTrack())
+            exclusivity_util.DeleteMembershipResources(kube_client)
+          raise
       log.status.Print(
           'Finished registering the cluster [{}] with the fleet.'.format(
               args.MEMBERSHIP_NAME))

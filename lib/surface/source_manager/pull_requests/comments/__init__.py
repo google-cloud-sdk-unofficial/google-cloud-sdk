@@ -19,6 +19,5 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Comments(base.Group):
   """Manage Secure Source Manager pull request comments."""

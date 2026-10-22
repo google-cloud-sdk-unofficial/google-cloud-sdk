@@ -33,7 +33,7 @@ from googlecloudsdk.core import resources
 
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new restore verification plan association."""
 
@@ -72,6 +72,7 @@ class Create(base.CreateCommand):
           raw_plan,
           params={'projectsId': association.projectsId},
           collection='backupdr.projects.locations.restoreVerificationPlans',
+          api_version=api_version,
       )
       if association.locationsId != plan_ref.locationsId:
         raise calliope_exceptions.InvalidArgumentException(
@@ -90,6 +91,7 @@ class Create(base.CreateCommand):
           collection=(
               'backupdr.projects.locations.restoreVerificationPlans.associations'
           ),
+          api_version=api_version,
       )
     if (
         args.IsSpecified('location')

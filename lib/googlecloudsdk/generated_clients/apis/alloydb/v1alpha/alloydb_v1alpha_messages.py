@@ -3772,6 +3772,8 @@ class InstanceNetworkConfig(_messages.Message):
       Private IP. This will be the same value as the parent cluster's network.
       It is specified in the form: //
       `projects/{project_number}/global/networks/{network_id}`.
+    publicDnsEnabled: Optional. Whether Public DNS is enabled for the
+      instance.
   """
 
   allocatedIpRangeOverride = _messages.StringField(1)
@@ -3779,6 +3781,7 @@ class InstanceNetworkConfig(_messages.Message):
   enableOutboundPublicIp = _messages.BooleanField(3)
   enablePublicIp = _messages.BooleanField(4)
   network = _messages.StringField(5)
+  publicDnsEnabled = _messages.BooleanField(6)
 
 
 class InstanceUpgradeDetails(_messages.Message):

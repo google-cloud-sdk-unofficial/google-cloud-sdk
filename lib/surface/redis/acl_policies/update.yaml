@@ -2,6 +2,8 @@
   - ALPHA
   - BETA
   - GA
+  hints:
+    read_only: false
   help_text:
     brief: Update aclPolicies
     description: Update an aclPolicy

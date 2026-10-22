@@ -65,6 +65,40 @@ class AnalysisReport(_messages.Message):
   reportUri = _messages.StringField(1)
 
 
+class AnalyzerExecutionSpec(_messages.Message):
+  r"""Specification of a user-triggered on-demand analysis.
+
+  Enums:
+    AnalyzerTypeValueValuesEnum: Required. The top-level analyzer to run.
+      Exactly one analyzer can be requested per on-demand analysis. The
+      analysis runs against the current state of the workload at the time of
+      the request.
+
+  Fields:
+    analyzerType: Required. The top-level analyzer to run. Exactly one
+      analyzer can be requested per on-demand analysis. The analysis runs
+      against the current state of the workload at the time of the request.
+  """
+
+  class AnalyzerTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The top-level analyzer to run. Exactly one analyzer can be
+    requested per on-demand analysis. The analysis runs against the current
+    state of the workload at the time of the request.
+
+    Values:
+      ANALYZER_TYPE_UNSPECIFIED: Analyzer type is unspecified.
+      XMON: XMon analyzer suite, which runs the XMon root-cause sub-analyzers
+        to diagnose workload performance issues such as slow training steps.
+      SLICE_HEALTH: Slice health analyzer, which checks the TPU slices of the
+        workload for unhealthy partitions and nodes that aren't ready.
+    """
+    ANALYZER_TYPE_UNSPECIFIED = 0
+    XMON = 1
+    SLICE_HEALTH = 2
+
+  analyzerType = _messages.EnumField('AnalyzerTypeValueValuesEnum', 1)
+
+
 class AnalyzerReport(_messages.Message):
   r"""A detailed report from a specific analyzer.
 
@@ -1355,6 +1389,24 @@ class DiagnosticsAgent(_messages.Message):
   """
 
   summary = _messages.StringField(1)
+
+
+class Disk(_messages.Message):
+  r"""Additional disk for managed instance groups.
+
+  Fields:
+    image: Optional. Source image for the disk.
+    sizeGb: Required. Size of the disk in GB.
+    snapshot: Optional. Source snapshot for the disk.
+    type: Required. [Persistent disk
+      type](https://cloud.google.com/compute/docs/disks#disk-types), in the
+      format `projects/{project}/zones/{zone}/diskTypes/{disk_type}`.
+  """
+
+  image = _messages.StringField(1)
+  sizeGb = _messages.IntegerField(2)
+  snapshot = _messages.StringField(3)
+  type = _messages.StringField(4)
 
 
 class DynamicTierOptions(_messages.Message):
@@ -2815,12 +2867,27 @@ class ManagedInstanceGroup(_messages.Message):
   r"""A managed instance group based on a compute resource.
 
   Messages:
+    AdditionalDisksValue: Optional. Additional disks for the managed instance
+      group. Each VM of the MIG will have its own clone of each disk described
+      in the additional_disks map. The disks themselves live as long as the
+      MIG and if a VM is replaced by a new VM of the same name then the
+      replacement VM attaches to the same disks as the VM it replaced. Each
+      disk has a custom device name matching the key in the map.
+    LabelsValue: Optional.
+      [Labels](https://cloud.google.com/compute/docs/labeling-resources) that
+      should be applied to each VM instance in the managed instance group.
     MetadataValue: Optional. Custom
       [metadata](https://cloud.google.com/compute/docs/metadata/overview) key-
       value pairs to be applied to each VM instance in the managed instance
       group.
 
   Fields:
+    additionalDisks: Optional. Additional disks for the managed instance
+      group. Each VM of the MIG will have its own clone of each disk described
+      in the additional_disks map. The disks themselves live as long as the
+      MIG and if a VM is replaced by a new VM of the same name then the
+      replacement VM attaches to the same disks as the VM it replaced. Each
+      disk has a custom device name matching the key in the map.
     bootDisk: Optional. Boot disk for the managed instance group.
     computeId: Required. ID of the compute resource used to create this
       managed instance group.
@@ -2835,12 +2902,17 @@ class ManagedInstanceGroup(_messages.Message):
       upManagers/{instance_group_manager}`
     instanceTemplate: Output only. Instance template used to create instances
       in this group.
+    labels: Optional. [Labels](https://cloud.google.com/compute/docs/labeling-
+      resources) that should be applied to each VM instance in the managed
+      instance group.
     metadata: Optional. Custom
       [metadata](https://cloud.google.com/compute/docs/metadata/overview) key-
       value pairs to be applied to each VM instance in the managed instance
       group.
     resourcePolicyConfig: Optional. Resource policy configuration for this
       managed instance group.
+    serviceAccount: Optional. Immutable. Service account to be used by the
+      instances in the managed instance group.
     startupScript: Optional. Startup script to be run on each VM instance in
       the nodeset.
     startupScriptTimeout: Optional. The maximum time to wait for the startup
@@ -2853,6 +2925,62 @@ class ManagedInstanceGroup(_messages.Message):
     targetSize: Optional. Target number of running instances for this managed
       instance group.
   """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AdditionalDisksValue(_messages.Message):
+    r"""Optional. Additional disks for the managed instance group. Each VM of
+    the MIG will have its own clone of each disk described in the
+    additional_disks map. The disks themselves live as long as the MIG and if
+    a VM is replaced by a new VM of the same name then the replacement VM
+    attaches to the same disks as the VM it replaced. Each disk has a custom
+    device name matching the key in the map.
+
+    Messages:
+      AdditionalProperty: An additional property for a AdditionalDisksValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AdditionalDisksValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AdditionalDisksValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A Disk attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('Disk', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. [Labels](https://cloud.google.com/compute/docs/labeling-
+    resources) that should be applied to each VM instance in the managed
+    instance group.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class MetadataValue(_messages.Message):
@@ -2881,18 +3009,21 @@ class ManagedInstanceGroup(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  bootDisk = _messages.MessageField('BootDisk', 1)
-  computeId = _messages.StringField(2)
-  enableOsLogin = _messages.BooleanField(3)
-  enablePublicIps = _messages.BooleanField(4)
-  instanceGroupManager = _messages.StringField(5)
-  instanceTemplate = _messages.StringField(6)
-  metadata = _messages.MessageField('MetadataValue', 7)
-  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 8)
-  startupScript = _messages.StringField(9)
-  startupScriptTimeout = _messages.StringField(10)
-  storageConfigs = _messages.MessageField('StorageConfig', 11, repeated=True)
-  targetSize = _messages.IntegerField(12)
+  additionalDisks = _messages.MessageField('AdditionalDisksValue', 1)
+  bootDisk = _messages.MessageField('BootDisk', 2)
+  computeId = _messages.StringField(3)
+  enableOsLogin = _messages.BooleanField(4)
+  enablePublicIps = _messages.BooleanField(5)
+  instanceGroupManager = _messages.StringField(6)
+  instanceTemplate = _messages.StringField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  metadata = _messages.MessageField('MetadataValue', 9)
+  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 10)
+  serviceAccount = _messages.MessageField('ServiceAccount', 11)
+  startupScript = _messages.StringField(12)
+  startupScriptTimeout = _messages.StringField(13)
+  storageConfigs = _messages.MessageField('StorageConfig', 14, repeated=True)
+  targetSize = _messages.IntegerField(15)
 
 
 class Metrics(_messages.Message):
@@ -2926,19 +3057,35 @@ class MonitoredEvent(_messages.Message):
     TypeValueValuesEnum: Optional. High-level type of the event.
 
   Fields:
+    analysisExecution: Output only. Execution progress and status of the on-
+      demand analysis requested in `analyzer_spec`. The event is created even
+      if the analyzer fails or detects no issue; in that case the failure is
+      reported here. Unset for automatically detected events.
     analyzerInsightFound: Output only. Identifies if any of the analyzer found
       an insight for this event.
     analyzerReports: Optional. Detailed reports from one or more analyzers
       regarding this event.
+    analyzerSpec: Optional. Immutable. The on-demand analysis requested by the
+      user. Must be set if and only if `type` is `ON_DEMAND_ANALYSIS`. Records
+      the inputs that produced this event and its analyzer reports.
+      Automatically detected events leave this field unset.
     displayName: Optional. Display name of the event.
-    endTime: Optional. Exclusive timestamp when the event ended. If unset, the
-      event is ongoing.
+    endTime: Optional. Exclusive timestamp when the event ended. For
+      automatically detected events, if unset, the event is ongoing. For
+      `ON_DEMAND_ANALYSIS` events, must be equal to `start_time`, which
+      indicates a point-in-time analysis. The server doesn't set a default
+      value.
     etag: ETag for the monitored event. It must be provided for update
       operations and must match the server's etag.
     name: Identifier. Resource name of the monitored event. Format: projects/{
       project}/locations/{location}/machineLearningRuns/{machine_learning_run}
       /monitoredEvents/{monitored_event}
-    startTime: Optional. Inclusive timestamp when the event started.
+    startTime: Optional. Inclusive timestamp when the event started. For
+      automatically detected events, this is when the detected issue started.
+      For `ON_DEMAND_ANALYSIS` events, this is the point in time to analyze;
+      currently, only the time of the request is supported. The server doesn't
+      set a default value. When the analysis actually runs is reported in
+      `analysis_execution`.
     type: Optional. High-level type of the event.
   """
 
@@ -2952,6 +3099,10 @@ class MonitoredEvent(_messages.Message):
       HANG: Hang event.
       ORCHESTRATOR_INTERRUPTION: Orchestrator interruption event.
       TERMINATION: Termination event.
+      ON_DEMAND_ANALYSIS: On-demand analysis event, created when a user
+        triggers an analyzer run through `CreateMonitoredEvent`. The requested
+        analyzer is described by `analyzer_spec`, and the execution progress
+        is reported in `analysis_execution`.
     """
     EVENT_TYPE_UNSPECIFIED = 0
     PERFORMANCE_DEGRADATION = 1
@@ -2959,15 +3110,18 @@ class MonitoredEvent(_messages.Message):
     HANG = 3
     ORCHESTRATOR_INTERRUPTION = 4
     TERMINATION = 5
+    ON_DEMAND_ANALYSIS = 6
 
-  analyzerInsightFound = _messages.BooleanField(1)
-  analyzerReports = _messages.MessageField('AnalyzerReport', 2, repeated=True)
-  displayName = _messages.StringField(3)
-  endTime = _messages.StringField(4)
-  etag = _messages.StringField(5)
-  name = _messages.StringField(6)
-  startTime = _messages.StringField(7)
-  type = _messages.EnumField('TypeValueValuesEnum', 8)
+  analysisExecution = _messages.MessageField('AnalysisExecution', 1)
+  analyzerInsightFound = _messages.BooleanField(2)
+  analyzerReports = _messages.MessageField('AnalyzerReport', 3, repeated=True)
+  analyzerSpec = _messages.MessageField('AnalyzerExecutionSpec', 4)
+  displayName = _messages.StringField(5)
+  endTime = _messages.StringField(6)
+  etag = _messages.StringField(7)
+  name = _messages.StringField(8)
+  startTime = _messages.StringField(9)
+  type = _messages.EnumField('TypeValueValuesEnum', 10)
 
 
 class NetworkReference(_messages.Message):

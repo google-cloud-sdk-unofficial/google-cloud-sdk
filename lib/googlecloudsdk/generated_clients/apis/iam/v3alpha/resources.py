@@ -177,6 +177,52 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_POLICYPORTERS = (
+      'projects.locations.policyPorters',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/policyPorters/'
+              '{policyPortersId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_POLICYPORTERS_TRANSLATIONS = (
+      'projects.locations.policyPorters.translations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/policyPorters/'
+              '{policyPortersId}/translations/{translationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_POLICYPORTERS_TRANSLATIONS_SOURCEPOLICIES = (
+      'projects.locations.policyPorters.translations.sourcePolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/policyPorters/'
+              '{policyPortersId}/translations/{translationsId}/'
+              'sourcePolicies/{sourcePoliciesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_POLICYPORTERS_TRANSLATIONS_TRANSLATEDPOLICIES = (
+      'projects.locations.policyPorters.translations.translatedPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/policyPorters/'
+              '{policyPortersId}/translations/{translationsId}/'
+              'translatedPolicies/{translatedPoliciesId}',
+      },
+      ['name'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

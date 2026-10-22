@@ -1751,9 +1751,6 @@ class DnsArmorSecurityPolicyRuleBlockResponseOverrideData(_messages.Message):
 
 class DnsArmorSecurityPolicyRuleBlockResponseOverrideDataResourceRecordSet(_messages.Message):
   r"""A DNS Resource Record Set used when overriding a blocked DNS response.
-  (- Mimics a subset of the Cloud DNS ResourceRecordSet resource
-  https://docs.cloud.google.com/dns/docs/reference/rest/v1/resourceRecordSets
-  -)
 
   Fields:
     domainName: Required. The domain name for the record (e.g.,
@@ -4247,6 +4244,36 @@ class ListTlsInspectionPoliciesResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   tlsInspectionPolicies = _messages.MessageField('TlsInspectionPolicy', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListTokenAggregationPoliciesResponse(_messages.Message):
+  r"""Response message for ListTokenAggregationPolicies.
+
+  Fields:
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page.
+    tokenAggregationPolicies: The list of TokenAggregationPolicy instances.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  tokenAggregationPolicies = _messages.MessageField('TokenAggregationPolicy', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListTokenBudgetPoliciesResponse(_messages.Message):
+  r"""Response message for ListTokenBudgetPolicies.
+
+  Fields:
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page.
+    tokenBudgetPolicies: The list of TokenBudgetPolicy instances.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  tokenBudgetPolicies = _messages.MessageField('TokenBudgetPolicy', 2, repeated=True)
   unreachable = _messages.StringField(3, repeated=True)
 
 
@@ -10071,6 +10098,151 @@ class NetworksecurityProjectsLocationsTlsInspectionPoliciesPatchRequest(_message
   updateMask = _messages.StringField(3)
 
 
+class NetworksecurityProjectsLocationsTokenAggregationPoliciesCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsTokenAggregationPoliciesCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource name where this policy will be
+      created.
+    tokenAggregationPolicy: A TokenAggregationPolicy resource to be passed as
+      the request body.
+    tokenAggregationPolicyId: Required. The ID to use for the
+      TokenAggregationPolicy.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  tokenAggregationPolicy = _messages.MessageField('TokenAggregationPolicy', 2)
+  tokenAggregationPolicyId = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsTokenAggregationPoliciesDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsTokenAggregationPoliciesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the TokenAggregationPolicy to delete.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsTokenAggregationPoliciesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsTokenAggregationPoliciesGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of the TokenAggregationPolicy to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsTokenAggregationPoliciesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsTokenAggregationPoliciesListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. The maximum number of policies to return.
+    pageToken: Optional. A page token, received from a previous
+      `ListTokenAggregationPolicies` call.
+    parent: Required. The parent resource name.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworksecurityProjectsLocationsTokenAggregationPoliciesPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsTokenAggregationPoliciesPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The canonical resource name of the
+      TokenAggregationPolicy. Format: `projects/{project}/locations/{location}
+      /tokenAggregationPolicies/{token_aggregation_policy}`
+    tokenAggregationPolicy: A TokenAggregationPolicy resource to be passed as
+      the request body.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  tokenAggregationPolicy = _messages.MessageField('TokenAggregationPolicy', 2)
+  updateMask = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsTokenBudgetPoliciesCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsTokenBudgetPoliciesCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource name where this policy will be
+      created.
+    tokenBudgetPolicy: A TokenBudgetPolicy resource to be passed as the
+      request body.
+    tokenBudgetPolicyId: Required. The ID to use for the TokenBudgetPolicy.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  tokenBudgetPolicy = _messages.MessageField('TokenBudgetPolicy', 2)
+  tokenBudgetPolicyId = _messages.StringField(3)
+
+
+class NetworksecurityProjectsLocationsTokenBudgetPoliciesDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsTokenBudgetPoliciesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the TokenBudgetPolicy to delete.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsTokenBudgetPoliciesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsTokenBudgetPoliciesGetRequest object.
+
+  Fields:
+    name: Required. The name of the TokenBudgetPolicy to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsTokenBudgetPoliciesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsTokenBudgetPoliciesListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of policies to return.
+    pageToken: Optional. A page token, received from a previous
+      `ListTokenBudgetPolicies` call.
+    parent: Required. The parent resource name.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworksecurityProjectsLocationsTokenBudgetPoliciesPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsTokenBudgetPoliciesPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The canonical resource name of the TokenBudgetPolicy.
+      Format: `projects/{project}/locations/{location}/tokenBudgetPolicies/{to
+      ken_budget_policy}`
+    tokenBudgetPolicy: A TokenBudgetPolicy resource to be passed as the
+      request body.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  tokenBudgetPolicy = _messages.MessageField('TokenBudgetPolicy', 2)
+  updateMask = _messages.StringField(3)
+
+
 class NetworksecurityProjectsLocationsUllMirroringCollectorsCreateRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsUllMirroringCollectorsCreateRequest
   object.
@@ -12619,6 +12791,345 @@ class TlsInspectionPolicy(_messages.Message):
   updateTime = _messages.StringField(11)
 
 
+class TokenAggregationMatch(_messages.Message):
+  r"""Criteria for matching incoming traffic to a token group.
+
+  Fields:
+    from_: Optional. Match on source properties (e.g., Application IDs, Agent
+      URNs, User IDs).
+    to: Optional. Match on destination properties (e.g., HTTP request headers,
+      model provider endpoints).
+  """
+
+  from_ = _messages.MessageField('TokenAggregationMatchFrom', 1)
+  to = _messages.MessageField('TokenAggregationMatchTo', 2)
+
+
+class TokenAggregationMatchDestination(_messages.Message):
+  r"""Destination criteria including HTTP headers and model endpoints.
+
+  Fields:
+    headers: Optional. Header tags to match on the HTTP request.
+    modelEndpoints: Optional. List of model provider endpoints (e.g.,
+      aiplatform.googleapis.com).
+  """
+
+  headers = _messages.MessageField('TokenAggregationMatchHeaderMatch', 1, repeated=True)
+  modelEndpoints = _messages.MessageField('TokenAggregationMatchModelEndpoint', 2, repeated=True)
+
+
+class TokenAggregationMatchFrom(_messages.Message):
+  r"""Source properties to match against incoming requests.
+
+  Fields:
+    source: Optional. Request resource sources to match.
+  """
+
+  source = _messages.MessageField('TokenAggregationMatchRequestResource', 1)
+
+
+class TokenAggregationMatchHeaderMatch(_messages.Message):
+  r"""Matches an HTTP request header and value.
+
+  Fields:
+    headerField: Required. The HTTP request header name (case-insensitive).
+    value: Required. The exact HTTP request header value to match.
+  """
+
+  headerField = _messages.StringField(1)
+  value = _messages.StringField(2)
+
+
+class TokenAggregationMatchModelEndpoint(_messages.Message):
+  r"""Represents a model provider endpoint destination.
+
+  Fields:
+    modelProviderEndpoint: Required. Model provider service endpoint (e.g.,
+      "aiplatform.googleapis.com").
+  """
+
+  modelProviderEndpoint = _messages.StringField(1)
+
+
+class TokenAggregationMatchRequestResource(_messages.Message):
+  r"""Matches specific Application IDs, Agent URNs, or User IDs.
+
+  Fields:
+    agents: Optional. List of Agent URNs or SPIFFE IDs (e.g.,
+      agent:projects-123456789:...).
+    applications: Optional. List of Application IDs in App Registry (e.g.,
+      //apphub.googleapis.com/...).
+  """
+
+  agents = _messages.StringField(1, repeated=True)
+  applications = _messages.StringField(2, repeated=True)
+
+
+class TokenAggregationMatchTo(_messages.Message):
+  r"""Destination properties to match on outgoing requests.
+
+  Fields:
+    destination: Optional. Destination matching criteria.
+  """
+
+  destination = _messages.MessageField('TokenAggregationMatchDestination', 1)
+
+
+class TokenAggregationPolicy(_messages.Message):
+  r"""Defines how incoming LLM requests and agent calls are aggregated into
+  business-aligned token groups (e.g., Engineering, Finance, Marketing).
+
+  Messages:
+    LabelsValue: Optional. User-defined labels for the resource.
+
+  Fields:
+    createTime: Output only. The time when the policy was created.
+    description: Optional. Human-readable description of the policy.
+    labels: Optional. User-defined labels for the resource.
+    name: Identifier. The canonical resource name of the
+      TokenAggregationPolicy. Format: `projects/{project}/locations/{location}
+      /tokenAggregationPolicies/{token_aggregation_policy}`
+    rules: Required. Ordered list of aggregation rules. Evaluated in order;
+      first match wins.
+    target: Required. Full resource name of the project or AI App to which
+      this policy is attached.
+    updateTime: Output only. The time when the policy was last updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels for the resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  rules = _messages.MessageField('TokenAggregationRule', 5, repeated=True)
+  target = _messages.MessageField('TokenAggregationPolicyTarget', 6)
+  updateTime = _messages.StringField(7)
+
+
+class TokenAggregationPolicyTarget(_messages.Message):
+  r"""Specifies the data plane target to which this policy should attach.
+
+  Fields:
+    scope: Optional. Specifies the scope of resources to which this policy
+      should attach.
+  """
+
+  scope = _messages.MessageField('TokenAggregationPolicyTargetScope', 1)
+
+
+class TokenAggregationPolicyTargetScope(_messages.Message):
+  r"""Specifies the scope of resources to which this binding should attach.
+
+  Fields:
+    parent: Required. Parent resource name specification, in the format:
+      `projects/{project_number}`.
+  """
+
+  parent = _messages.StringField(1)
+
+
+class TokenAggregationRule(_messages.Message):
+  r"""Represents a single aggregation rule to match requests into a token
+  group.
+
+  Fields:
+    match: Optional. Selection criteria for matching requests into this token
+      group. If omitted or empty, acts as a catch-all rule matching any
+      request.
+    tokenGroup: Required. The target token group name to assign if this rule
+      matches. Examples: "Engineering", "Finance", "Marketing", "Default".
+  """
+
+  match = _messages.MessageField('TokenAggregationMatch', 1)
+  tokenGroup = _messages.StringField(2)
+
+
+class TokenBudgetPolicy(_messages.Message):
+  r"""Defines token pools, quotas, model targets, reset periods, and
+  enforcement modes.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels for the resource.
+
+  Fields:
+    createTime: Output only. The time when the policy was created.
+    description: Optional. Human-readable description of the policy.
+    labels: Optional. User-defined labels for the resource.
+    name: Identifier. The canonical resource name of the TokenBudgetPolicy.
+      Format: `projects/{project}/locations/{location}/tokenBudgetPolicies/{to
+      ken_budget_policy}`
+    target: Required. Full resource name of the project to which this budget
+      policy is attached.
+    tokenPools: Required. Token pools configured in this budget policy.
+    updateTime: Output only. The time when the policy was last updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels for the resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  target = _messages.MessageField('TokenBudgetPolicyTarget', 5)
+  tokenPools = _messages.MessageField('TokenBudgetPolicyTokenPool', 6, repeated=True)
+  updateTime = _messages.StringField(7)
+
+
+class TokenBudgetPolicyBudget(_messages.Message):
+  r"""Specifies the token quota, model endpoints, reset period, and alert
+  settings.
+
+  Enums:
+    EnforcementValueValuesEnum: Optional. Enforcement behavior when budget is
+      exhausted. Defaults to STRICT.
+    ResetPeriodValueValuesEnum: Required. Frequency at which the token budget
+      resets (e.g., DAILY).
+
+  Fields:
+    alertThreshold: Optional. Threshold percentage (0.0 to 1.0) to trigger
+      alert notifications (e.g. 0.6 for 60%).
+    enforcement: Optional. Enforcement behavior when budget is exhausted.
+      Defaults to STRICT.
+    maxTokens: Required. Maximum number of raw tokens allowed per reset
+      period.
+    models: Optional. Specify this list to enforce budgets on specific models.
+      Leave this empty to apply the budget to all models.
+    resetPeriod: Required. Frequency at which the token budget resets (e.g.,
+      DAILY).
+    validateOnly: Optional. Dry-run mode. If true, token limits are calculated
+      for observability without blocking requests (HTTP 429).
+  """
+
+  class EnforcementValueValuesEnum(_messages.Enum):
+    r"""Optional. Enforcement behavior when budget is exhausted. Defaults to
+    STRICT.
+
+    Values:
+      ENFORCEMENT_MODE_UNSPECIFIED: Default unspecified enforcement mode.
+      STRICT: Enforce strict quota limits and return HTTP 429 when max_tokens
+        is exceeded.
+      ALERT_ONLY: Log and alert only without blocking requests (Dry-run mode).
+    """
+    ENFORCEMENT_MODE_UNSPECIFIED = 0
+    STRICT = 1
+    ALERT_ONLY = 2
+
+  class ResetPeriodValueValuesEnum(_messages.Enum):
+    r"""Required. Frequency at which the token budget resets (e.g., DAILY).
+
+    Values:
+      RESET_PERIOD_UNSPECIFIED: Default unspecified reset period.
+      DAILY: Reset token count daily.
+    """
+    RESET_PERIOD_UNSPECIFIED = 0
+    DAILY = 1
+
+  alertThreshold = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  enforcement = _messages.EnumField('EnforcementValueValuesEnum', 2)
+  maxTokens = _messages.IntegerField(3)
+  models = _messages.MessageField('TokenBudgetPolicyModelConfig', 4, repeated=True)
+  resetPeriod = _messages.EnumField('ResetPeriodValueValuesEnum', 5)
+  validateOnly = _messages.BooleanField(6)
+
+
+class TokenBudgetPolicyModelConfig(_messages.Message):
+  r"""Model identifier and hosting provider endpoint.
+
+  Fields:
+    model: Required. Model name (e.g., "gemini-3.5-pro", "claude-3-5-sonnet").
+    modelProviderEndpoints: Required. Provider endpoint services (e.g.,
+      ["aiplatform.googleapis.com"]).
+  """
+
+  model = _messages.StringField(1)
+  modelProviderEndpoints = _messages.StringField(2, repeated=True)
+
+
+class TokenBudgetPolicyTarget(_messages.Message):
+  r"""Specifies the data plane target to which this budget policy should
+  attach.
+
+  Fields:
+    scope: Optional. Specifies the scope of resources to which this policy
+      should attach.
+  """
+
+  scope = _messages.MessageField('TokenBudgetPolicyTargetScope', 1)
+
+
+class TokenBudgetPolicyTargetScope(_messages.Message):
+  r"""Specifies the scope of resources to which this binding should attach.
+
+  Fields:
+    parent: Required. Parent resource name specification, in the format:
+      `projects/{project_number}`.
+  """
+
+  parent = _messages.StringField(1)
+
+
+class TokenBudgetPolicyTokenPool(_messages.Message):
+  r"""Represents a token pool with associated group memberships and token
+  budgets.
+
+  Fields:
+    budget: Required. Budget and quota definition for this pool.
+    id: Required. Identifier / Name of the token pool (e.g., "premium-pool",
+      "Default").
+    tokenGroupMemberships: Required. Token group names assigned to this pool
+      (e.g. ["Engineering", "Finance", "Marketing"]).
+  """
+
+  budget = _messages.MessageField('TokenBudgetPolicyBudget', 1)
+  id = _messages.StringField(2)
+  tokenGroupMemberships = _messages.StringField(3, repeated=True)
+
+
 class UllMirroringCollector(_messages.Message):
   r"""Message describing UllMirroringCollector object
 
@@ -13584,6 +14095,8 @@ encoding.AddCustomJsonFieldMapping(
     AuthzPolicyAuthzRule, 'from_', 'from')
 encoding.AddCustomJsonFieldMapping(
     RateLimitPolicyRateLimitRule, 'from_', 'from')
+encoding.AddCustomJsonFieldMapping(
+    TokenAggregationMatch, 'from_', 'from')
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(

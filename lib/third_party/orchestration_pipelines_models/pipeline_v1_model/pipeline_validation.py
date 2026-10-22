@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Validation logic for v1 orchestration pipeline models."""
 
 import re
 import warnings
@@ -114,7 +115,8 @@ class PipelineValidator:
                     current_field_path,
                 )
 
-        # 2. Validate the values of all fields that are actually set (non-default).
+        # 2. Validate the values of all fields that are actually set
+        # (non-default).
         for field, value in message.ListFields():
             current_field_path = (
                 f"{path_prefix}.{field.name}" if path_prefix else field.name
@@ -147,7 +149,7 @@ class PipelineValidator:
 
     @classmethod
     def _is_field_repeated(cls, field: FieldDescriptor) -> bool:
-        """Checks if a field is repeated, handling different protobuf backends."""
+        """Checks if field is repeated across different protobuf backends."""
         try:
             return field.cardinality == FieldDescriptor.CARDINALITY_REPEATED
         except AttributeError:
@@ -159,6 +161,14 @@ class PipelineValidator:
     def _validate_field_value(cls, field: FieldDescriptor, value, path: str):
         """Validates a single field's value based on its options."""
         options = field.GetOptions()
+
+        if options.deprecated:
+            warnings.warn(
+                f"Field '{path}' is deprecated and will be removed in a future "
+                "version.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         # Validations for non-default values.
         # Checks for min_items, min_value, min_len and disallow_zero_enum are
@@ -217,16 +227,16 @@ class PipelineValidator:
                     f"Error for field '{path}': field is required and cannot "
                     "be empty."
                 )
-        elif field.type == FieldDescriptor.TYPE_MESSAGE:
-            if not message.HasField(field.name):
-                raise ValueError(
-                    f"Error for field '{path}': field is required."
-                )
         elif field.cpp_type == FieldDescriptor.CPPTYPE_STRING:
             if not getattr(message, field.name):
                 raise ValueError(
                     f"Error for field '{path}': field is required and cannot "
                     "be an empty string."
+                )
+        elif field.type == FieldDescriptor.TYPE_MESSAGE or field.has_presence:
+            if not message.HasField(field.name):
+                raise ValueError(
+                    f"Error for field '{path}': field is required."
                 )
 
     @classmethod
@@ -328,9 +338,9 @@ class PipelineValidator:
 
     @classmethod
     def _check_quote_issues(cls, value: str):
-        """Detects if a value contains quotes, which are invalid for these fields."""
+        """Detects if a value contains quotes, invalid for these fields."""
         if '"' in value or "'" in value:
-            # Check if it looks like a quoting error (starts or ends with a quote)
+            # Check if it looks like a quoting error (starts/ends with quote)
             if value.startswith(('"', "'")) or value.endswith(('"', "'")):
                 if len(value) < 2 or value[0] != value[-1]:
                     raise ValueError("mismatched quote boundaries.")
@@ -381,14 +391,13 @@ class PipelineValidator:
 
     @classmethod
     def _validate_pipeline_level_rules(cls, pipeline: Message):
-        """Performs pipeline-level validation for action uniqueness and dependencies."""
+        """Validates action uniqueness and dependencies at pipeline level."""
         if not pipeline.actions:
             return
 
         action_name_map = {}  # Maps action name to its index in the pipeline.
-        all_dependencies = (
-            []
-        )  # Stores tuples of (dependency_name, action_index, action_type, action_name).
+        # Stores tuples of (dep_name, action_index, action_type, action_name).
+        all_dependencies = []
 
         for i, action_wrapper in enumerate(pipeline.actions):
             action_type = action_wrapper.WhichOneof("action")
@@ -406,7 +415,7 @@ class PipelineValidator:
                 )
             action_name_map[action_name] = i
 
-            # Collect all dependencies to check them after all action names are known.
+            # Collect all dependencies to check after action names are known.
             if hasattr(actual_action, "depends_on"):
                 for dep in actual_action.depends_on:
                     all_dependencies.append((dep, i, action_type, action_name))
@@ -422,9 +431,11 @@ class PipelineValidator:
         ) in all_dependencies:
             action_to_dependencies[action_name].append(dep_name)
             if dep_name not in action_names:
+                field_name = f"actions[{action_index}].{action_type}.depends_on"
                 raise ValueError(
-                    f"Error for field 'actions[{action_index}].{action_type}.depends_on': "
-                    f"Action '{action_name}' depends on undefined action '{dep_name}'."
+                    f"Error for field '{field_name}': "
+                    f"Action '{action_name}' depends on undefined action "
+                    f"'{dep_name}'."
                 )
 
         # 3. Check for cycle
@@ -433,7 +444,9 @@ class PipelineValidator:
             ts.prepare()
         except CycleError as e:
             cycle_path = " -> ".join(e.args[1])
-            raise ValueError(f"Circular dependency detected: {cycle_path}")
+            raise ValueError(
+                f"Circular dependency detected: {cycle_path}"
+            ) from e
 
     @staticmethod
     def _is_map_field(field: FieldDescriptor) -> bool:
@@ -449,7 +462,10 @@ class PipelineValidator:
         cls, field: FieldDescriptor, value, pattern: str, path: str
     ):
         """Validates the keys of a Protobuf map against a regex pattern."""
-        if not cls._is_map_field(field):
+        if (
+            field.message_type.full_name != "google.protobuf.Struct"
+            and not cls._is_map_field(field)
+        ):
             raise RuntimeError(
                 f"Internal Error: Map key regex validation called on field "
                 f"'{path}' which is not defined as a Protobuf map."

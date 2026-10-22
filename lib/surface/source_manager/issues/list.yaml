@@ -1,6 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
-
   help_text:
     brief: List Secure Source Manager issues under a repository.
     description: List Secure Source Manager issues under a repository.
@@ -32,3 +30,6 @@
         state:label=STATE,
         createTime.date()
       )
+
+  hints:
+    read_only: true

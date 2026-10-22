@@ -22,6 +22,7 @@ import textwrap
 from typing import Any, Mapping
 
 from googlecloudsdk.api_lib.app import appengine_api_client
+from googlecloudsdk.api_lib.app import util as app_util
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import gae_to_cr_migration_util
@@ -232,10 +233,15 @@ class AppEngineToCloudRun(replace.Replace):
     gae_to_cr_migration_util.GAEToCRMigrationUtil(self.api_client, args)
     self.release_track = self.ReleaseTrack()
 
-    # If region is not specified, default to us-central1.
-    region = flags.GetRegion(args) or 'us-central1'
+    # If region is not specified, default to the App Engine app's region,
+    # or us-central1 if it cannot be determined.
+    region = self._resolve_region(args)
     properties.VALUES.run.region.Set(region)
     if not getattr(args, 'region', None):
+      log.status.Print(
+          f'Using Cloud Run region [{region}]. To specify a different region,'
+          ' use the --region flag.'
+      )
       setattr(args, 'region', region)
 
     if not self._start_migration(args):
@@ -243,6 +249,39 @@ class AppEngineToCloudRun(replace.Replace):
 
     super().Run(args)
     self._print_migration_summary(args)
+
+  def _resolve_region(self, args) -> str:
+    """Resolves the Cloud Run region to use.
+
+    Resolution order:
+    1. --region flag
+    2. run/region property
+    3. App Engine app location mapped to Cloud Run region
+    4. 'us-central1' fallback if location cannot be determined
+
+    Args:
+      args: The argparse namespace.
+
+    Returns:
+      str: The resolved region name.
+    """
+    region = flags.GetRegion(args)
+    if region:
+      return region
+
+    try:
+      app = self.api_client.GetApplication()
+      location = getattr(app, 'locationId', None)
+      if location and isinstance(location, str):
+        return app_util.ConvertToCloudRegion(location)
+    except Exception as e:  # pylint: disable=broad-except
+      log.debug(
+          'Could not determine the App Engine app location, defaulting to'
+          ' us-central1: %s',
+          e,
+      )
+
+    return 'us-central1'
 
   def _flag_is_explicitly_set_wrapper(self, unused_args, flag) -> bool:
     """Wrapper function to check if a flag is explicitly set.
@@ -344,10 +383,7 @@ class AppEngineToCloudRun(replace.Replace):
     Raises:
       core_exceptions.Error: If the image build process fails.
     """
-    # For --export-only runs, region might not be provided/prompted, so we
-    # default to 'us-central1' to construct valid Artifact Registry repository
-    # paths.
-    region = flags.GetRegion(args) or 'us-central1'
+    region = self._resolve_region(args)
     source_path = translate.get_source_path(input_type, args.appyaml)
 
     service_ref = resources.REGISTRY.Parse(
@@ -467,7 +503,7 @@ class AppEngineToCloudRun(replace.Replace):
       ] = '<built-from-source>'
       if not getattr(args, 'from_image', False):
         runtime_base_image = util.determine_base_image(
-            input_data, flags.GetRegion(args)
+            input_data, self._resolve_region(args)
         )
     else:
       service_yaml['spec']['template']['spec']['containers'][0]['image'] = image

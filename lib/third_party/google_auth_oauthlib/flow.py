@@ -41,40 +41,38 @@ Here's an example of using :class:`InstalledAppFlow`::
     print(profile_info)
     # {'name': '...',  'email': '...', ...}
 
-.. _requests-oauthlib: http://requests-oauthlib.readthedocs.io/en/stable/
+.. _requests-oauthlib: http://requests-oauthlib.readthedocs.io/en/latest/
 .. _OAuth 2.0 Authorization Flow:
     https://tools.ietf.org/html/rfc6749#section-1.2
 .. _Using OAuth 2.0 to Access Google APIs:
     https://developers.google.com/identity/protocols/oauth2
 
 """
-from base64 import urlsafe_b64encode
+
+import errno
 import hashlib
 import json
 import logging
-import warnings
+from base64 import urlsafe_b64encode
 
 try:
     from secrets import SystemRandom
 except ImportError:  # pragma: NO COVER
     from random import SystemRandom
-from string import ascii_letters, digits
+
+import socket
+import sys
 import webbrowser
 import wsgiref.simple_server
 import wsgiref.util
+from string import ascii_letters, digits
 
 import google.auth.transport.requests
 import google.oauth2.credentials
 
 import google_auth_oauthlib.helpers
 
-
 _LOGGER = logging.getLogger(__name__)
-_OOB_REDIRECT_URIS = [
-    "urn:ietf:wg:oauth:2.0:oob",
-    "urn:ietf:wg:oauth:2.0:oob:auto",
-    "oob",
-]
 
 
 class Flow(object):
@@ -103,7 +101,7 @@ class Flow(object):
         client_config,
         redirect_uri=None,
         code_verifier=None,
-        autogenerate_code_verifier=False,
+        autogenerate_code_verifier=True,
     ):
         """
         Args:
@@ -166,7 +164,7 @@ class Flow(object):
 
         # these args cannot be passed to requests_oauthlib.OAuth2Session
         code_verifier = kwargs.pop("code_verifier", None)
-        autogenerate_code_verifier = kwargs.pop("autogenerate_code_verifier", None)
+        autogenerate_code_verifier = kwargs.pop("autogenerate_code_verifier", True)
 
         (
             session,
@@ -214,17 +212,8 @@ class Flow(object):
 
     @redirect_uri.setter
     def redirect_uri(self, value):
-        if value in _OOB_REDIRECT_URIS:
-            warnings.warn(
-                "'{}' is an OOB redirect URI. The OAuth out-of-band (OOB) flow is deprecated. "
-                "New clients will be unable to use this flow starting on Feb 28, 2022. "
-                "This flow will be deprecated for all clients on Oct 3, 2022. "
-                "Migrate to an alternative flow. "
-                "See https://developers.googleblog.com/2022/02/making-oauth-flows-safer.html?m=1#disallowed-oob".format(
-                    value
-                ),
-                DeprecationWarning,
-            )
+        """The OAuth 2.0 redirect URI. Pass-through to
+        ``self.oauth2session.redirect_uri``."""
         self.oauth2session.redirect_uri = value
 
     def authorization_url(self, **kwargs):
@@ -252,7 +241,7 @@ class Flow(object):
                 specify the ``state`` when constructing the :class:`Flow`.
         """
         kwargs.setdefault("access_type", "offline")
-        if self.autogenerate_code_verifier:
+        if self.code_verifier is None and self.autogenerate_code_verifier:
             chars = ascii_letters + digits + "-._~"
             rnd = SystemRandom()
             random_verifier = [rnd.choice(chars) for _ in range(0, 128)]
@@ -291,7 +280,7 @@ class Flow(object):
 
         Returns:
             Mapping[str, str]: The obtained tokens. Typically, you will not use
-                return value of this function and instead and use
+                return value of this function and instead use
                 :meth:`credentials` to obtain a
                 :class:`~google.auth.credentials.Credentials` instance.
         """
@@ -370,8 +359,6 @@ class InstalledAppFlow(Flow):
         https://github.com/googleapis/google-api-python-client/blob/main/docs/oauth-installed.md
     """
 
-    _OOB_REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
-
     _DEFAULT_AUTH_PROMPT_MESSAGE = (
         "Please visit this URL to authorize this application: {url}"
     )
@@ -385,61 +372,6 @@ class InstalledAppFlow(Flow):
         "The authentication flow has completed. You may close this window."
     )
 
-    def run_console(
-        self,
-        authorization_prompt_message=_DEFAULT_AUTH_PROMPT_MESSAGE,
-        authorization_code_message=_DEFAULT_AUTH_CODE_MESSAGE,
-        **kwargs
-    ):
-        """Run the flow using the console strategy.
-
-        .. deprecated:: 0.5.0
-          Use :meth:`run_local_server` instead.
-
-          The OAuth out-of-band (OOB) flow is deprecated. New clients will be unable to
-          use this flow starting on Feb 28, 2022. This flow will be deprecated
-          for all clients on Oct 3, 2022. Migrate to an alternative flow.
-
-          See https://developers.googleblog.com/2022/02/making-oauth-flows-safer.html?m=1#disallowed-oob"
-
-        The console strategy instructs the user to open the authorization URL
-        in their browser. Once the authorization is complete the authorization
-        server will give the user a code. The user then must copy & paste this
-        code into the application. The code is then exchanged for a token.
-
-        Args:
-            authorization_prompt_message (str): The message to display to tell
-                the user to navigate to the authorization URL.
-            authorization_code_message (str): The message to display when
-                prompting the user for the authorization code.
-            kwargs: Additional keyword arguments passed through to
-                :meth:`authorization_url`.
-
-        Returns:
-            google.oauth2.credentials.Credentials: The OAuth 2.0 credentials
-                for the user.
-        """
-        kwargs.setdefault("prompt", "consent")
-        warnings.warn(
-            "New clients will be unable to use `InstalledAppFlow.run_console` "
-            "starting on Feb 28, 2022. All clients will be unable to use this method starting on Oct 3, 2022. "
-            "Use `InstalledAppFlow.run_local_server` instead. For details on the OOB flow deprecation, "
-            "see https://developers.googleblog.com/2022/02/making-oauth-flows-safer.html?m=1#disallowed-oob",
-            DeprecationWarning,
-        )
-
-        self.redirect_uri = self._OOB_REDIRECT_URI
-
-        auth_url, _ = self.authorization_url(**kwargs)
-
-        print(authorization_prompt_message.format(url=auth_url))
-
-        code = input(authorization_code_message)
-
-        self.fetch_token(code=code)
-
-        return self.credentials
-
     def run_local_server(
         self,
         host="localhost",
@@ -450,7 +382,9 @@ class InstalledAppFlow(Flow):
         open_browser=True,
         redirect_uri_trailing_slash=True,
         timeout_seconds=None,
-        **kwargs
+        token_audience=None,
+        browser=None,
+        **kwargs,
     ):
         """Run the flow using the server strategy.
 
@@ -471,55 +405,154 @@ class InstalledAppFlow(Flow):
                 which means that the redirect server will listen
                 on the ip address specified in the host parameter.
             port (int): The port for the local redirect server.
-            authorization_prompt_message (str): The message to display to tell
-                the user to navigate to the authorization URL.
+            authorization_prompt_message (str | None): The message to display to tell
+                the user to navigate to the authorization URL. If None or empty,
+                don't display anything.
             success_message (str): The message to display in the web browser
                 the authorization flow is complete.
             open_browser (bool): Whether or not to open the authorization URL
                 in the user's browser.
             redirect_uri_trailing_slash (bool): whether or not to add trailing
                 slash when constructing the redirect_uri. Default value is True.
-            timeout_seconds (int): It will raise an error after the timeout timing
-                if there are no credentials response. The value is in seconds.
+            timeout_seconds (int): It will raise a WSGITimeoutError exception after the
+                timeout timing if there are no credentials response. The value is in
+                seconds.
                 When set to None there is no timeout.
                 Default value is None.
+            token_audience (str): Passed along with the request for an access
+                token. Determines the endpoints with which the token can be
+                used. Optional.
+            browser (str): specify which browser to open for authentication. If not
+                specified this defaults to default browser.
             kwargs: Additional keyword arguments passed through to
                 :meth:`authorization_url`.
 
         Returns:
             google.oauth2.credentials.Credentials: The OAuth 2.0 credentials
                 for the user.
+
+        Raises:
+            WSGITimeoutError: If there is a timeout when waiting for the response from the
+                authorization server.
         """
         wsgi_app = _RedirectWSGIApp(success_message)
-        # Fail fast if the address is occupied
-        wsgiref.simple_server.WSGIServer.allow_reuse_address = False
+        # Use _ExclusiveWSGIServer to fail fast if the address/port is occupied,
+        # and to prevent other apps from binding to it on Windows.
         local_server = wsgiref.simple_server.make_server(
-            bind_addr or host, port, wsgi_app, handler_class=_WSGIRequestHandler
+            bind_addr or host,
+            port,
+            wsgi_app,
+            server_class=_ExclusiveWSGIServer,
+            handler_class=_WSGIRequestHandler,
         )
 
-        redirect_uri_format = (
-            "http://{}:{}/" if redirect_uri_trailing_slash else "http://{}:{}"
-        )
-        self.redirect_uri = redirect_uri_format.format(host, local_server.server_port)
-        auth_url, _ = self.authorization_url(**kwargs)
+        try:
+            redirect_uri_format = (
+                "http://{}:{}/" if redirect_uri_trailing_slash else "http://{}:{}"
+            )
+            self.redirect_uri = redirect_uri_format.format(
+                host, local_server.server_port
+            )
+            auth_url, _ = self.authorization_url(**kwargs)
 
-        if open_browser:
-            webbrowser.open(auth_url, new=1, autoraise=True)
+            if open_browser:
+                # if browser is None it defaults to default browser
+                webbrowser.get(browser).open(auth_url, new=1, autoraise=True)
 
-        print(authorization_prompt_message.format(url=auth_url))
+            if authorization_prompt_message:
+                _LOGGER.info(authorization_prompt_message.format(url=auth_url))
+                print(authorization_prompt_message.format(url=auth_url))
 
-        local_server.timeout = timeout_seconds
-        local_server.handle_request()
+            local_server.timeout = timeout_seconds
+            local_server.handle_request()
 
-        # Note: using https here because oauthlib is very picky that
-        # OAuth 2.0 should only occur over https.
-        authorization_response = wsgi_app.last_request_uri.replace("http", "https")
-        self.fetch_token(authorization_response=authorization_response)
+            # Note: using https here because oauthlib is very picky that
+            # OAuth 2.0 should only occur over https.
+            try:
+                authorization_response = wsgi_app.last_request_uri.replace(
+                    "http", "https"
+                )
+            except AttributeError as e:
+                raise WSGITimeoutError(
+                    "Timed out waiting for response from authorization server"
+                ) from e
 
-        # This closes the socket
-        local_server.server_close()
+            self.fetch_token(
+                authorization_response=authorization_response, audience=token_audience
+            )
+        finally:
+            local_server.server_close()
 
         return self.credentials
+
+
+class _ExclusiveWSGIServer(wsgiref.simple_server.WSGIServer):
+    """Custom WSGIServer.
+
+    Enforces exclusive address binding on Windows.
+    Setting `WSGIServer.allow_reuse_address` is not enough, since it sets `SO_REUSEADDR`
+    and not `SO_EXCLUSIVEADDRUSE`. `SO_REUSEADDR` alone allows other processes to bind
+    to the same address and port on Windows.
+
+    When bound to `localhost`, also reserves the IPv6 loopback (`::1`) so
+    another process listening on `::1` cannot intercept the OAuth callback.
+    """
+
+    allow_reuse_address = False
+    _PROBE_TIMEOUT_SECONDS = 0.1
+
+    def __init__(self, *args, **kwargs):
+        self._ipv6_socket = None
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def is_listener_present(family: int, addr: str, port: int) -> bool:
+        """Check if another process is already listening on (addr, port) by
+        attempting a test connection.
+
+        This is needed because on Windows, `bind()` on `::1` succeeds even when
+        another process from the same user is already listening on all
+        interfaces (`[::]`).
+        """
+        try:
+            with socket.socket(family, socket.SOCK_STREAM) as probe:
+                probe.settimeout(_ExclusiveWSGIServer._PROBE_TIMEOUT_SECONDS)
+                return probe.connect_ex((addr, port)) == 0
+        except OSError:
+            return False
+
+    @staticmethod
+    def _set_exclusive_addr_use(sock: socket.socket) -> None:
+        if sys.platform == "win32" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+
+    def _close_ipv6_socket(self):
+        if self._ipv6_socket is not None:
+            self._ipv6_socket.close()
+            self._ipv6_socket = None
+
+    def server_bind(self):
+        host = self.server_address[0]
+        self._set_exclusive_addr_use(self.socket)
+        super().server_bind()
+        port = self.server_address[1]
+        # Reserve IPv6 loopback (::1) so another process cannot intercept localhost callbacks.
+        if host == "localhost" and port and hasattr(socket, "AF_INET6"):
+            # base class (TCPServer) calls server_close on error
+            if self.is_listener_present(socket.AF_INET6, "::1", port):
+                raise OSError(errno.EADDRINUSE, "Address already in use")
+            # Hold `::1` without calling `listen()` so no other process can claim
+            # the port while the browser falls back from `::1` to `127.0.0.1`.
+            try:
+                self._ipv6_socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+                self._set_exclusive_addr_use(self._ipv6_socket)
+                self._ipv6_socket.bind(("::1", port))
+            except OSError:
+                self._close_ipv6_socket()
+
+    def server_close(self):
+        self._close_ipv6_socket()
+        super().server_close()
 
 
 class _WSGIRequestHandler(wsgiref.simple_server.WSGIRequestHandler):
@@ -563,3 +596,7 @@ class _RedirectWSGIApp(object):
         start_response("200 OK", [("Content-type", "text/plain; charset=utf-8")])
         self.last_request_uri = wsgiref.util.request_uri(environ)
         return [self._success_message.encode("utf-8")]
+
+
+class WSGITimeoutError(AttributeError):
+    """Raised when the WSGI server times out waiting for a response."""

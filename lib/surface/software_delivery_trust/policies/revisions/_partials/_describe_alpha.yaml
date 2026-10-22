@@ -30,7 +30,7 @@
     - help_text: |-
         Resource name of the policy revision to retrieve.
         Example:
-        "projects/123456789/locations/global/policies/require-slsa-build/revisions/a1b2c3d4".
+        "projects/123456789/locations/us-central1/policies/require-slsa-build/revisions/a1b2c3d4".
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.software_delivery_trust.v1alpha_resources:projects_locations_policies_revisions

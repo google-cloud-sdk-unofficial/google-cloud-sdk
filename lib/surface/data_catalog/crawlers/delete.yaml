@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Delete a Data Catalog crawler.
     description: Delete a Data Catalog crawler.
