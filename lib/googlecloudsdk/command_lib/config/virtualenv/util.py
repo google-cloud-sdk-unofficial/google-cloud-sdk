@@ -32,7 +32,7 @@ _NOT_INTEL_MAC = 'sys_platform != "darwin" or platform_machine != "x86_64"'
 # Python modules to install into virtual env environment
 MODULES = [
     'crcmod',
-    'grpcio==1.84.0',
+    'grpcio==1.84.1',
     # pyOpenSSL pins an upper bound on cryptography, so the two move together.
     'pyopenssl==26.4.0; ' + _NOT_INTEL_MAC,
     'cryptography==50.0.1; ' + _NOT_INTEL_MAC,

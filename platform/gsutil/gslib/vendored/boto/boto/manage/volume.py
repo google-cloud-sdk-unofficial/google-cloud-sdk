@@ -312,7 +312,7 @@ class Volume(Model):
             boto.log.info(traceback.format_exc())
         finally:
             status = self.unfreeze()
-            return status
+        return status
 
     def get_snapshot_range(self, snaps, start_date=None, end_date=None):
         l = []

@@ -5,6 +5,41 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 590.0.1 (2026-10-22)
+
+### Google Cloud CLI
+
+*   Updated bundled `certifi` to `2026.10.19` and removed distrusted CA root
+    certificates from bundled certificate stores.
+*   Rebuilt bundled Python on Linux and Windows, and in the Alpine-based Docker
+    images, with `grpcio` 1.84.1 and `pip` 26.2.2.
+*   Updated `enterprise-certificate-proxy` component to version `0.3.24`.
+
+### App Engine
+
+*   Updated Cloud CLI Python component (`app-engine-python`) to `1.9.119` to
+    remove distrusted CA root certificates from bundled certificate stores.
+
+### BigQuery
+
+*   Updated the bundled `certifi` package to version `2026.10.19` and removed
+    the distrusted `AAA Certificate Services` root certificate from bundled
+    `httplib2`.
+
+### Cloud SQL
+
+*   Updated 'cloud-sql-proxy' packaged component to use 2.26.3 of the Cloud SQL
+    Proxy.
+
+### Cloud Storage
+
+*   Updated `gsutil` component to `5.38` to remove distrusted CA root
+    certificates from bundled certificate stores.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 590.0.0 (2026-10-20)
 
 ### Breaking Changes
