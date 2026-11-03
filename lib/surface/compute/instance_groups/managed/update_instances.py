@@ -25,10 +25,9 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as 
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.GA,
-    base.ReleaseTrack.BETA,
-    base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.PREVIEW,
 )
 class UpdateInstances(base.Command):
@@ -168,3 +167,62 @@ UpdateInstances.detailed_help = {
                   --most-disruptive-allowed-action=restart
         """
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateInstancesBeta(UpdateInstances):
+  r"""Immediately update selected instances in a Compute Engine managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""
+        table(project(),
+              zone(),
+              instanceName:label=INSTANCE,
+              status)""")
+    instance_groups_managed_flags.AddUpdateInstancesArgs(
+        parser=parser, support_allowed_actions=True
+    )
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser
+    )
+
+  def Run(self, args):
+    self._allowed_actions = args.allowed_actions
+    return super().Run(args)
+
+  def _SetAllowedActions(self, apply_updates_request):
+    if self._allowed_actions:
+      apply_updates_request.minimalAction = None
+      apply_updates_request.mostDisruptiveAllowedAction = None
+      apply_updates_request.allowedActions = [
+          update_instances_utils.ParseInstanceActionFlag(
+              '--allowed-actions',
+              action,
+              apply_updates_request.AllowedActionsValueListEntryValuesEnum,
+          )
+          for action in self._allowed_actions
+      ]
+
+  def _CreateZonalApplyUpdatesRequest(
+      self, igm_ref, minimal_action, most_disruptive_allowed_action, client
+  ):
+    request = super()._CreateZonalApplyUpdatesRequest(
+        igm_ref, minimal_action, most_disruptive_allowed_action, client
+    )
+    self._SetAllowedActions(request.instanceGroupManagersApplyUpdatesRequest)
+    return request
+
+  def _CreateRegionalApplyUpdatesRequest(
+      self, igm_ref, minimal_action, most_disruptive_allowed_action, client
+  ):
+    request = super()._CreateRegionalApplyUpdatesRequest(
+        igm_ref, minimal_action, most_disruptive_allowed_action, client
+    )
+    self._SetAllowedActions(
+        request.regionInstanceGroupManagersApplyUpdatesRequest
+    )
+    return request
+
+
+UpdateInstancesBeta.detailed_help = UpdateInstances.detailed_help

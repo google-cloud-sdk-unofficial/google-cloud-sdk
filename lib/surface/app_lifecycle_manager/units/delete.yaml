@@ -1,21 +1,41 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Delete a Unit
-    description: Delete a Unit
-    examples: |-
-      To delete the Unit, run:
+    brief: Delete a unit.
+    description: |-
+      Delete an App Lifecycle Manager unit.
 
-      $ {command}
+      The command prompts for confirmation before the unit is deleted.
+    examples: |-
+      To delete the unit named `my-unit` in location `us-central1`, run:
+
+        $ {command} my-unit --location=us-central1
+
+      To delete the unit named `my-unit` in location `us-central1` without a
+      confirmation prompt, run:
+
+        $ {command} my-unit --location=us-central1 --quiet
+  ALPHA:
+    help_text:
+      brief: Delete a Unit
+      description: Delete a Unit
+      examples: |-
+        To delete the Unit, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        Unit to delete.
+      ALPHA:
+        help_text: Name of the resource
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:unit
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.units

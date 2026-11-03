@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.resource_manager.semantic_tags import utils
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
@@ -129,6 +128,7 @@ class Create(base.CreateCommand):
         log.status.Print('Request is valid. No resources were created.')
         return op
       if args.async_:
+        log.CreatedResource(value_id, kind='semanticTagValue', is_async=True)
         return op
 
       result = operations.WaitForOperation(

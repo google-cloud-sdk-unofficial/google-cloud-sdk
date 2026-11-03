@@ -139,32 +139,25 @@ class Client:
       block_partial_http=None,
   ):
     """Returns FirewallEndpointEndpointSettings message."""
-    if self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
-      if all(
-          arg is None
-          for arg in [
-              enable_jumbo_frames,
-              content_cloud_region,
-              block_partial_http,
-          ]
-      ):
-        return None
-      region_enum = None
-      if content_cloud_region:
-        region_enum = self.messages.FirewallEndpointEndpointSettings.ContentCloudRegionValueValuesEnum(
-            content_cloud_region
-        )
-      return self.messages.FirewallEndpointEndpointSettings(
-          jumboFramesEnabled=enable_jumbo_frames,
-          contentCloudRegion=region_enum,
-          httpPartialResponseBlocked=block_partial_http,
+    if all(
+        arg is None
+        for arg in [
+            enable_jumbo_frames,
+            content_cloud_region,
+            block_partial_http,
+        ]
+    ):
+      return None
+    region_enum = None
+    if content_cloud_region:
+      region_enum = self.messages.FirewallEndpointEndpointSettings.ContentCloudRegionValueValuesEnum(
+          content_cloud_region
       )
-    else:
-      if enable_jumbo_frames is None:
-        return None
-      return self.messages.FirewallEndpointEndpointSettings(
-          jumboFramesEnabled=enable_jumbo_frames,
-      )
+    return self.messages.FirewallEndpointEndpointSettings(
+        jumboFramesEnabled=enable_jumbo_frames,
+        contentCloudRegion=region_enum,
+        httpPartialResponseBlocked=block_partial_http,
+    )
 
   def _ParseWildfireSettings(
       self,
@@ -177,71 +170,44 @@ class Client:
       enable_wildfire_analysis_logging=None,
   ):
     """Returns a WildfireSettings message."""
-    if self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
-      rt_action_enum = (
-          self.messages.FirewallEndpointWildfireSettings.WildfireRealtimeLookupTimeoutActionValueValuesEnum
-      )
-      ica_action_enum = (
-          self.messages.FirewallEndpointWildfireSettingsWildfireInlineCloudAnalysisSettings.TimeoutActionValueValuesEnum
-      )
-      ws_region_enum = (
-          self.messages.FirewallEndpointWildfireSettings.WildfireRegionValueValuesEnum
-      )
-      lookup_action = None
-      if wildfire_lookup_action_str:
-        lookup_action = rt_action_enum(wildfire_lookup_action_str)
-      analysis_action = None
-      if wildfire_analysis_action_str:
-        analysis_action = ica_action_enum(wildfire_analysis_action_str)
-      region = None
-      if wildfire_region:
-        region = ws_region_enum(wildfire_region)
-      submission_timeout_logging_disabled = None
-      if enable_wildfire_analysis_logging is not None:
-        submission_timeout_logging_disabled = (
-            not enable_wildfire_analysis_logging
-        )
-      lookup_duration = None
-      if wildfire_lookup_timeout:
-        lookup_duration = '{}s'.format(wildfire_lookup_timeout / 1000)
-      analysis_duration = None
-      if wildfire_analysis_timeout:
-        analysis_duration = '{}s'.format(wildfire_analysis_timeout / 1000)
-      return self.messages.FirewallEndpointWildfireSettings(
-          enabled=enabled,
-          wildfireRegion=region,
-          wildfireRealtimeLookupDuration=lookup_duration,
-          wildfireRealtimeLookupTimeoutAction=lookup_action,
-          wildfireInlineCloudAnalysisSettings=self.messages.FirewallEndpointWildfireSettingsWildfireInlineCloudAnalysisSettings(
-              maxAnalysisDuration=analysis_duration,
-              timeoutAction=analysis_action,
-              submissionTimeoutLoggingDisabled=submission_timeout_logging_disabled,
-          ),
-      )
-    else:
-      rt_action_enum = (
-          self.messages.WildfireSettings.WildfireRealtimeLookupTimeoutActionValueValuesEnum
-      )
-      ica_action_enum = (
-          self.messages.WildfireInlineCloudAnalysisSettings.TimeoutActionValueValuesEnum
-      )
-      lookup_action = None
-      if wildfire_lookup_action_str:
-        lookup_action = rt_action_enum(wildfire_lookup_action_str)
-      analysis_action = None
-      if wildfire_analysis_action_str:
-        analysis_action = ica_action_enum(wildfire_analysis_action_str)
-      return self.messages.WildfireSettings(
-          enabled=enabled,
-          wildfireRegion=wildfire_region,
-          wildfireRealtimeLookupDuration=wildfire_lookup_timeout,
-          wildfireRealtimeLookupTimeoutAction=lookup_action,
-          wildfireInlineCloudAnalysisSettings=self.messages.WildfireInlineCloudAnalysisSettings(
-              maxAnalysisDuration=wildfire_analysis_timeout,
-              timeoutAction=analysis_action,
-              timeoutLoggingDisabled=enable_wildfire_analysis_logging,
-          ),
-      )
+    rt_action_enum = (
+        self.messages.FirewallEndpointWildfireSettings.WildfireRealtimeLookupTimeoutActionValueValuesEnum
+    )
+    ica_action_enum = (
+        self.messages.FirewallEndpointWildfireSettingsWildfireInlineCloudAnalysisSettings.TimeoutActionValueValuesEnum
+    )
+    ws_region_enum = (
+        self.messages.FirewallEndpointWildfireSettings.WildfireRegionValueValuesEnum
+    )
+    lookup_action = None
+    if wildfire_lookup_action_str:
+      lookup_action = rt_action_enum(wildfire_lookup_action_str)
+    analysis_action = None
+    if wildfire_analysis_action_str:
+      analysis_action = ica_action_enum(wildfire_analysis_action_str)
+    region = None
+    if wildfire_region:
+      region = ws_region_enum(wildfire_region)
+    submission_timeout_logging_disabled = None
+    if enable_wildfire_analysis_logging is not None:
+      submission_timeout_logging_disabled = not enable_wildfire_analysis_logging
+    lookup_duration = None
+    if wildfire_lookup_timeout:
+      lookup_duration = '{}s'.format(wildfire_lookup_timeout / 1000)
+    analysis_duration = None
+    if wildfire_analysis_timeout:
+      analysis_duration = '{}s'.format(wildfire_analysis_timeout / 1000)
+    return self.messages.FirewallEndpointWildfireSettings(
+        enabled=enabled,
+        wildfireRegion=region,
+        wildfireRealtimeLookupDuration=lookup_duration,
+        wildfireRealtimeLookupTimeoutAction=lookup_action,
+        wildfireInlineCloudAnalysisSettings=self.messages.FirewallEndpointWildfireSettingsWildfireInlineCloudAnalysisSettings(
+            maxAnalysisDuration=analysis_duration,
+            timeoutAction=analysis_action,
+            submissionTimeoutLoggingDisabled=submission_timeout_logging_disabled,
+        ),
+    )
 
   def CreateEndpoint(
       self,
@@ -329,10 +295,7 @@ class Client:
     )
     if endpoint_settings:
       endpoint.endpointSettings = endpoint_settings
-    if (
-        self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-        and enable_wildfire is not None
-    ):
+    if enable_wildfire is not None:
       endpoint.wildfireSettings = self._ParseWildfireSettings(
           enabled=enable_wildfire,
           wildfire_region=wildfire_region,
@@ -404,11 +367,7 @@ class Client:
       if endpoint_settings:
         endpoint.endpointSettings = endpoint_settings
 
-    is_preview = self.release_track in (
-        base.ReleaseTrack.ALPHA,
-        base.ReleaseTrack.BETA,
-    )
-    if is_preview and (
+    if (
         enable_wildfire is not None
         or wildfire_region is not None
         or wildfire_lookup_timeout is not None

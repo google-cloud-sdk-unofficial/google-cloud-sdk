@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: true
+  help_text:
     brief: Describe a Tensorflow version available for Cloud TPUs.
     description: |
       Get details on a Tensorflow version.

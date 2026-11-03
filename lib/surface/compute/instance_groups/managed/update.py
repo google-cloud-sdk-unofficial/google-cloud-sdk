@@ -55,6 +55,7 @@ class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine managed instance group."""
 
   support_update_policy_min_ready_flag = False
+  support_update_policy_allowed_actions = False
   support_multi_mig_flag = False
   support_instance_selection_min_cpu_platform = True
   support_flex_policy_flag_with_mincpu_and_disks = True
@@ -82,7 +83,10 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     INSTANCE_TEMPLATE_ARG.AddArgument(parser)
     managed_flags.AddMigUpdatePolicyFlags(
-        parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag
+        parser,
+        support_min_ready_flag=cls.support_update_policy_min_ready_flag,
+        support_allowed_actions=cls.support_update_policy_allowed_actions,
+        for_update=True,
     )
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
@@ -532,6 +536,7 @@ class UpdateBeta(UpdateGA):
   """Update a Compute Engine managed instance group."""
 
   support_update_policy_min_ready_flag = True
+  support_update_policy_allowed_actions = True
   support_multi_mig_flag = True
 
   def _CreateInstanceGroupManagerPatch(
@@ -542,6 +547,23 @@ class UpdateBeta(UpdateGA):
     )._CreateInstanceGroupManagerPatch(
         args, igm_ref, igm_resource, client, holder
     )
+    if patch_instance_group_manager.updatePolicy is not None:
+      if args.IsSpecified('update_policy_allowed_actions'):
+        if args.update_policy_allowed_actions:
+          # Clear minimalAction and mostDisruptiveAllowedAction on patch.
+          include_fields.extend([
+              'updatePolicy.minimalAction',
+              'updatePolicy.mostDisruptiveAllowedAction',
+          ])
+        else:
+          # Clear allowedActions on patch when empty value is passed.
+          include_fields.append('updatePolicy.allowedActions')
+      elif args.IsSpecified('update_policy_minimal_action') or args.IsSpecified(
+          'update_policy_most_disruptive_action'
+      ):
+        # Clear allowedActions on patch when minimal or most disruptive action
+        # is set.
+        include_fields.append('updatePolicy.allowedActions')
     return patch_instance_group_manager, include_fields
 
 

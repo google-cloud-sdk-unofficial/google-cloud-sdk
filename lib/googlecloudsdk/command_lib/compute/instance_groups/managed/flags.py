@@ -179,9 +179,9 @@ def InstanceTemplateArg(
   )
 
 
-def InstanceActionChoicesWithoutNone(flag_prefix=''):
+def InstanceActionChoicesWithoutNone(flag_prefix='', for_allowed_actions=False):
   """Return possible instance action choices without NONE value."""
-  return collections.OrderedDict([
+  choices = [
       (
           'refresh',
           (
@@ -190,28 +190,53 @@ def InstanceActionChoicesWithoutNone(flag_prefix=''):
               ' metadata or additional disks.'
           ),
       ),
+  ]
+  if for_allowed_actions:
+    choices.extend([
+        (
+            'restart-in-place',
+            (
+                'Restart VMs using the same capacity and preserving local SSDs,'
+                ' if possible.'
+            ),
+        ),
+        (
+            'restart',
+            (
+                'Apply the new configuration without replacing VMs, if'
+                ' possible. For example, stopping VMs and starting them again'
+                ' is sufficient to apply changes to machine type. Local SSDs'
+                ' are replaced.'
+            ),
+        ),
+    ])
+  else:
+    choices.append((
+        'restart',
+        (
+            'Apply the new configuration without replacing VMs, if possible.'
+            ' For example, stopping VMs and starting them again is sufficient'
+            ' to apply changes to machine type.'
+        ),
+    ))
+  choices.append((
+      'replace',
       (
-          'restart',
-          (
-              'Apply the new configuration without replacing VMs, if possible.'
-              ' For example, stopping VMs and starting them again is sufficient'
-              ' to apply changes to machine type.'
-          ),
-      ),
-      (
-          'replace',
-          (
-              'Replace old VMs according to the '
-              '--{flag_prefix}replacement-method flag.'
-          ).format(flag_prefix=flag_prefix),
-      ),
-  ])
+          'Replace old VMs according to the '
+          '--{flag_prefix}replacement-method flag.'
+      ).format(flag_prefix=flag_prefix),
+  ))
+  return collections.OrderedDict(choices)
 
 
-def InstanceActionChoicesWithNone(flag_prefix=''):
+def InstanceActionChoicesWithNone(flag_prefix='', for_allowed_actions=False):
   """Return possible instance action choices with NONE value."""
   return _CombineOrderedChoices(
-      {'none': 'No action'}, InstanceActionChoicesWithoutNone(flag_prefix)
+      {'none': 'No action'},
+      InstanceActionChoicesWithoutNone(
+          flag_prefix=flag_prefix,
+          for_allowed_actions=for_allowed_actions,
+      ),
   )
 
 
@@ -264,7 +289,22 @@ def AddMostDisruptiveActionArg(parser, choices_with_none=True, default=None):
   )
 
 
-def AddUpdateInstancesArgs(parser):
+def AddAllowedActionsArg(parser):
+  """Adds --allowed-actions flag to the parser."""
+  choices = InstanceActionChoicesWithNone(for_allowed_actions=True)
+  parser.add_argument(
+      '--allowed-actions',
+      type=arg_parsers.ArgList(choices=choices, min_length=1),
+      metavar='ACTION',
+      help="""Use this flag to specify a list of actions that are allowed to be
+        performed on each instance while updating. The MIG performs the least
+        disruptive action from the allowed actions that is sufficient to apply
+        the update. If the update requires a more disruptive action than any of
+        the allowed actions, then the update fails and no changes are made.""",
+  )
+
+
+def AddUpdateInstancesArgs(parser, support_allowed_actions=False):
   """Add args for the update-instances command."""
   instance_selector_group = parser.add_group(required=True, mutex=True)
   instance_selector_group.add_argument(
@@ -280,8 +320,15 @@ def AddUpdateInstancesArgs(parser):
       action='store_true',
       help='Update all instances in the group.',
   )
-  AddMinimalActionArg(parser, True, 'none')
-  AddMostDisruptiveActionArg(parser, True, 'replace')
+  if support_allowed_actions:
+    action_group = parser.add_mutually_exclusive_group()
+    AddAllowedActionsArg(action_group)
+    min_max_action_group = action_group.add_group()
+    AddMinimalActionArg(min_max_action_group, True, 'none')
+    AddMostDisruptiveActionArg(min_max_action_group, True, 'replace')
+  else:
+    AddMinimalActionArg(parser, True, 'none')
+    AddMostDisruptiveActionArg(parser, True, 'replace')
 
 
 def AddGracefulValidationArg(parser):
@@ -318,7 +365,12 @@ def GetCommonPerInstanceCommandOutputFormat(with_validation_error=False):
 INSTANCE_REDISTRIBUTION_TYPES = ['NONE', 'PROACTIVE']
 
 
-def AddMigUpdatePolicyFlags(parser, support_min_ready_flag=False):
+def AddMigUpdatePolicyFlags(
+    parser,
+    support_min_ready_flag=False,
+    support_allowed_actions=False,
+    for_update=False,
+):
   """Add flags required for setting update policy attributes."""
   group = parser.add_group(
       required=False,
@@ -331,8 +383,15 @@ def AddMigUpdatePolicyFlags(parser, support_min_ready_flag=False):
   _AddUpdatePolicyTypeFlag(group)
   _AddUpdatePolicyMaxUnavailableFlag(group)
   _AddUpdatePolicyMaxSurgeFlag(group)
-  _AddUpdatePolicyMinimalActionFlag(group)
-  _AddUpdatePolicyMostDisruptiveActionFlag(group)
+  if support_allowed_actions:
+    action_group = group.add_mutually_exclusive_group()
+    _AddUpdatePolicyAllowedActionsFlag(action_group, for_update=for_update)
+    min_max_action_group = action_group.add_group()
+    _AddUpdatePolicyMinimalActionFlag(min_max_action_group)
+    _AddUpdatePolicyMostDisruptiveActionFlag(min_max_action_group)
+  else:
+    _AddUpdatePolicyMinimalActionFlag(group)
+    _AddUpdatePolicyMostDisruptiveActionFlag(group)
   _AddUpdatePolicyReplacementMethodFlag(group)
   if support_min_ready_flag:
     _AddUpdatePolicyMinReadyFlag(group)
@@ -402,6 +461,33 @@ def _AddUpdatePolicyMinReadyFlag(group):
           'considered available. For example `10s` for 10 seconds. See '
           '$ gcloud topic datetimes for information on duration formats.'
       ),
+  )
+
+
+def _AddUpdatePolicyAllowedActionsFlag(group, for_update=False):
+  """Adds --update-policy-allowed-actions flag to the group."""
+  help_text = (
+      'Use this flag to specify a list of actions that are allowed to be '
+      'performed on each VM while updating. The MIG performs the least '
+      'disruptive action from the allowed actions that is sufficient to apply '
+      'the update. If the update requires a more disruptive action than any of '
+      'the allowed actions, then the update fails and no changes are made.'
+  )
+  if for_update:
+    help_text += (
+        ' Set to an empty string (`--update-policy-allowed-actions=""`) to '
+        'clear allowed actions.'
+    )
+  group.add_argument(
+      '--update-policy-allowed-actions',
+      type=arg_parsers.ArgList(
+          choices=InstanceActionChoicesWithNone(
+              flag_prefix='update-policy-', for_allowed_actions=True
+          ),
+          min_length=0 if for_update else 1,
+      ),
+      metavar='ACTION',
+      help=help_text,
   )
 
 

@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Get the IAM policy for a project.
@@ -26,3 +28,8 @@
   iam:
     policy_version: 3
     get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
+
+- release_tracks: [BETA, GA]
+  is_python_command: true
+  hints:
+    read_only: true

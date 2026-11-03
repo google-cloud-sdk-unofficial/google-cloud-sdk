@@ -26,6 +26,7 @@ class SourceContainerContext:
   base_image: str = None  # base image to be used for deploy/build
   source: str = None  # local source code location
   source_bucket: str = None  # GCS bucket to use for upload
+  image_repo_to_create: Any = None  # Default AR image repo to create
   upload_through_run_api: bool = False  # whether to upload through Run API
   is_source_build: bool = False  # whether the source is built
 

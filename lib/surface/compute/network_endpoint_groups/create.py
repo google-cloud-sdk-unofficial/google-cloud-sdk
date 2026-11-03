@@ -77,6 +77,10 @@ class Create(base.CreateCommand):
   support_dedicated_backend = True
 
   @classmethod
+  def _SupportNetworkAttachment(cls):
+    return cls.ReleaseTrack() == base.ReleaseTrack.PREVIEW
+
+  @classmethod
   def Args(cls, parser):
     flags.MakeNetworkEndpointGroupsArg().AddArgument(parser)
     flags.AddCreateNegArgsToParser(
@@ -84,6 +88,7 @@ class Create(base.CreateCommand):
         support_neg_type=cls.support_neg_type,
         support_serverless_deployment=cls.support_serverless_deployment,
         support_dedicated_backend=cls.support_dedicated_backend,
+        support_network_attachment=cls._SupportNetworkAttachment(),
     )
 
   def Run(self, args):
@@ -103,6 +108,17 @@ class Create(base.CreateCommand):
     )
 
     self._ValidateNEG(args, neg_ref)
+
+    network_attachment = (
+        args.network_attachment
+        if args.IsKnownAndSpecified('network_attachment')
+        else None
+    )
+    service_class_id = (
+        args.service_class_id
+        if args.IsKnownAndSpecified('service_class_id')
+        else None
+    )
 
     if args.producer_port:
       result = neg_client.Create(
@@ -155,6 +171,8 @@ class Create(base.CreateCommand):
           cloud_function_name=args.cloud_function_name,
           cloud_function_url_mask=args.cloud_function_url_mask,
           psc_target_service=args.psc_target_service,
+          network_attachment=network_attachment,
+          service_class_id=service_class_id,
       )
 
     log.CreatedResource(neg_ref.Name(), 'network endpoint group')
@@ -239,6 +257,57 @@ class Create(base.CreateCommand):
             ),
         )
 
+    network_attachment = (
+        args.network_attachment
+        if args.IsKnownAndSpecified('network_attachment')
+        else None
+    )
+    service_class_id = (
+        args.service_class_id
+        if args.IsKnownAndSpecified('service_class_id')
+        else None
+    )
+
+    if network_attachment:
+      if not is_zonal:
+        raise exceptions.InvalidArgumentException(
+            '--network-attachment',
+            '--network-attachment can only be specified for zonal network'
+            ' endpoint groups.',
+        )
+      if network_endpoint_type != 'gce-vm-ip':
+        raise exceptions.InvalidArgumentException(
+            '--network-attachment',
+            '--network-attachment can only be specified for network endpoint'
+            ' groups of type `gce-vm-ip`.',
+        )
+      if args.network or args.subnet:
+        raise exceptions.InvalidArgumentException(
+            '--network-attachment',
+            '--network and --subnet cannot be specified when'
+            ' --network-attachment is specified.',
+        )
+
+    if service_class_id:
+      if not is_zonal:
+        raise exceptions.InvalidArgumentException(
+            '--service-class-id',
+            '--service-class-id can only be specified for zonal network'
+            ' endpoint groups.',
+        )
+      if network_endpoint_type != 'gce-vm-ip':
+        raise exceptions.InvalidArgumentException(
+            '--service-class-id',
+            '--service-class-id can only be specified for network endpoint'
+            ' groups of type `gce-vm-ip`.',
+        )
+      if not network_attachment:
+        raise exceptions.InvalidArgumentException(
+            '--service-class-id',
+            '--service-class-id can only be specified when --network-attachment'
+            ' is specified.',
+        )
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
@@ -254,6 +323,7 @@ class CreateBeta(Create):
         support_neg_type=cls.support_neg_type,
         support_serverless_deployment=cls.support_serverless_deployment,
         support_dedicated_backend=cls.support_dedicated_backend,
+        support_network_attachment=cls._SupportNetworkAttachment(),
     )
 
 
@@ -272,4 +342,5 @@ class CreateAlpha(CreateBeta):
         support_neg_type=cls.support_neg_type,
         support_serverless_deployment=cls.support_serverless_deployment,
         support_dedicated_backend=cls.support_dedicated_backend,
+        support_network_attachment=cls._SupportNetworkAttachment(),
     )

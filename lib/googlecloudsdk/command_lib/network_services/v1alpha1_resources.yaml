@@ -66,3 +66,15 @@ projects_locations_mcp_transcoders:
     attribute_name: mcp_transcoder
     help: The mcpTranscoder id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_registered_clusters:
+  name: registeredCluster
+  plural_name: registeredClusters
+  collection: networkservices.projects.locations.registeredClusters
+  attributes:
+  - *project
+  - *location
+  - &registeredCluster
+    parameter_name: registeredClustersId
+    attribute_name: registered_cluster
+    help: The registeredCluster id of the {resource} resource.
+  disable_auto_completers: false

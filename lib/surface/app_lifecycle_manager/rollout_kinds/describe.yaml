@@ -1,21 +1,40 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
-    brief: Describe Rollout Kind
-    description: Describe a Rollout Kind
+    brief: Describe a rollout kind.
+    description: |-
+      Display the details of an App Lifecycle Manager rollout kind.
     examples: |-
-      To describe the Rollout Kind, run:
+      To describe the rollout kind named `my-rollout-kind` in location
+      `us-central1`, run:
 
-      $ {command}
+        $ {command} my-rollout-kind --location=us-central1
+
+      To display only the unit kind and orchestration strategy of the rollout
+      kind named `my-rollout-kind` in location `us-central1`, run:
+
+        $ {command} my-rollout-kind --location=us-central1 --format="yaml(unitKind,rolloutOrchestrationStrategy)"
+  ALPHA:
+    help_text:
+      brief: Describe Rollout Kind
+      description: Describe a Rollout Kind
+      examples: |-
+        To describe the Rollout Kind, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        Rollout kind to describe.
+      ALPHA:
+        help_text: Name of the resource
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:rollout_kind
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.rolloutKinds

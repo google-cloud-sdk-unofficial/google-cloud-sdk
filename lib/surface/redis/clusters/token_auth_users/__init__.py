@@ -17,7 +17,8 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class TokenAuthUsers(base.Group):
   """Manage token auth users of Memorystore for Redis Cluster instances."""

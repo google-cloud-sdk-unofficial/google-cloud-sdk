@@ -17,6 +17,7 @@
 import enum
 import textwrap
 
+from googlecloudsdk.core.properties.completers import COMPLETERS
 from googlecloudsdk.core.properties.exceptions import InvalidProjectError
 from googlecloudsdk.core.properties.exceptions import InvalidValueError
 from googlecloudsdk.core.properties.exceptions import UnknownFormatError
@@ -27,7 +28,6 @@ from googlecloudsdk.core.properties.validators import _VALID_ASSERTIONS
 from googlecloudsdk.core.properties.validators import _VALID_PROJECT_REGEX
 from googlecloudsdk.core.properties.validators import ExistingAbsoluteFilepathValidator
 from googlecloudsdk.core.resource import resource_printer_types as formats
-
 import six
 
 
@@ -54,7 +54,9 @@ class _SectionCore(_Section):
         choices=list(_VALID_ASSERTIONS),
         validator=_AssertValidator,
         help_text=(
-            'Assertions required for command execution, such as `readonly`.'
+            '*(EXPERIMENTAL)* This property is experimental and '
+            'not for production use. Assertions required for command '
+            'execution, such as `readonly`.'
         ),
     )
     self.disable_collection_path_deprecation_warning = self._AddBool(
@@ -459,10 +461,7 @@ class _SectionCore(_Section):
             '  This can be overridden by using the global `--project` flag.'
         ),
         validator=ProjectValidator,
-        completer=(
-            'googlecloudsdk.command_lib.resource_manager.completers:'
-            'ProjectCompleter'
-        ),
+        completer=COMPLETERS['ProjectCompleter'],
         default_flag='--project',
     )
     self.project_number = self._Add(

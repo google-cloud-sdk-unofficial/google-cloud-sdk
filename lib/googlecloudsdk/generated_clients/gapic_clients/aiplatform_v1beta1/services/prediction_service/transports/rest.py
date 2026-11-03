@@ -79,6 +79,14 @@ class PredictionServiceRestInterceptor:
 
     .. code-block:: python
         class MyCustomPredictionServiceInterceptor(PredictionServiceRestInterceptor):
+            def pre_batch_embed_contents(self, request, metadata):
+                logging.log(f"Received request: {request}")
+                return request, metadata
+
+            def post_batch_embed_contents(self, response):
+                logging.log(f"Received response: {response}")
+                return response
+
             def pre_chat_completions(self, request, metadata):
                 logging.log(f"Received request: {request}")
                 return request, metadata
@@ -220,6 +228,42 @@ class PredictionServiceRestInterceptor:
 
 
     """
+    def pre_batch_embed_contents(self, request: prediction_service.BatchEmbedContentsRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[prediction_service.BatchEmbedContentsRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Pre-rpc interceptor for batch_embed_contents
+
+        Override in a subclass to manipulate the request or metadata
+        before they are sent to the PredictionService server.
+        """
+        return request, metadata
+
+    def post_batch_embed_contents(self, response: prediction_service.BatchEmbedContentsResponse) -> prediction_service.BatchEmbedContentsResponse:
+        """Post-rpc interceptor for batch_embed_contents
+
+        DEPRECATED. Please use the `post_batch_embed_contents_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
+        after it is returned by the PredictionService server but before
+        it is returned to user code. This `post_batch_embed_contents` interceptor runs
+        before the `post_batch_embed_contents_with_metadata` interceptor.
+        """
+        return response
+
+    def post_batch_embed_contents_with_metadata(self, response: prediction_service.BatchEmbedContentsResponse, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[prediction_service.BatchEmbedContentsResponse, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for batch_embed_contents
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the PredictionService server but before it is returned to user code.
+
+        We recommend only using this `post_batch_embed_contents_with_metadata`
+        interceptor in new development instead of the `post_batch_embed_contents` interceptor.
+        When both interceptors are used, this `post_batch_embed_contents_with_metadata` interceptor runs after the
+        `post_batch_embed_contents` interceptor. The (possibly modified) response returned by
+        `post_batch_embed_contents` will be passed to
+        `post_batch_embed_contents_with_metadata`.
+        """
+        return response, metadata
+
     def pre_chat_completions(self, request: prediction_service.ChatCompletionsRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[prediction_service.ChatCompletionsRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for chat_completions
 
@@ -921,6 +965,131 @@ class PredictionServiceRestTransport(_BasePredictionServiceRestTransport):
             self._session.configure_mtls_channel(client_cert_source_for_mtls)
         self._interceptor = interceptor or PredictionServiceRestInterceptor()
         self._prep_wrapped_messages(client_info)
+
+    class _BatchEmbedContents(_BasePredictionServiceRestTransport._BaseBatchEmbedContents, PredictionServiceRestStub):
+        def __hash__(self):
+            return hash("PredictionServiceRestTransport.BatchEmbedContents")
+
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
+
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
+
+        def __call__(self,
+                request: prediction_service.BatchEmbedContentsRequest, *,
+                retry: OptionalRetry=gapic_v1.method.DEFAULT,
+                timeout: Optional[float]=None,
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
+                ) -> prediction_service.BatchEmbedContentsResponse:
+            r"""Call the batch embed contents method over HTTP.
+
+            Args:
+                request (~.prediction_service.BatchEmbedContentsRequest):
+                    The request object. Request message for
+                [PredictionService.BatchEmbedContents][google.cloud.aiplatform.v1beta1.PredictionService.BatchEmbedContents].
+                retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                    should be retried.
+                timeout (float): The timeout for this request.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
+
+            Returns:
+                ~.prediction_service.BatchEmbedContentsResponse:
+                    Response message for
+                [PredictionService.BatchEmbedContents][google.cloud.aiplatform.v1beta1.PredictionService.BatchEmbedContents].
+
+            """
+
+            http_options = _BasePredictionServiceRestTransport._BaseBatchEmbedContents._get_http_options()
+
+            request, metadata = self._interceptor.pre_batch_embed_contents(request, metadata)
+            transcoded_request = _BasePredictionServiceRestTransport._BaseBatchEmbedContents._get_transcoded_request(http_options, request)
+
+            body = _BasePredictionServiceRestTransport._BaseBatchEmbedContents._get_request_body_json(transcoded_request)
+
+            # Jsonify the query params
+            query_params = _BasePredictionServiceRestTransport._BaseBatchEmbedContents._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.cloud.aiplatform_v1beta1.PredictionServiceClient.BatchEmbedContents",
+                    extra = {
+                        "serviceName": "google.cloud.aiplatform.v1beta1.PredictionService",
+                        "rpcName": "BatchEmbedContents",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
+
+            # Send the request
+            response = PredictionServiceRestTransport._BatchEmbedContents._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
+
+            # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
+            # subclass.
+            if response.status_code >= 400:
+                raise core_exceptions.from_http_response(response)
+
+            # Return the response
+            resp = prediction_service.BatchEmbedContentsResponse()
+            pb_resp = prediction_service.BatchEmbedContentsResponse.pb(resp)
+
+            json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
+            resp = self._interceptor.post_batch_embed_contents(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_batch_embed_contents_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = prediction_service.BatchEmbedContentsResponse.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.cloud.aiplatform_v1beta1.PredictionServiceClient.batch_embed_contents",
+                    extra = {
+                        "serviceName": "google.cloud.aiplatform.v1beta1.PredictionService",
+                        "rpcName": "BatchEmbedContents",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
+            return resp
 
     class _ChatCompletions(_BasePredictionServiceRestTransport._BaseChatCompletions, PredictionServiceRestStub):
         def __hash__(self):
@@ -3179,6 +3348,19 @@ class PredictionServiceRestTransport(_BasePredictionServiceRestTransport):
             raise NotImplementedError(
                 "Method StreamingRawPredict is not available over REST transport"
             )
+    class _StreamPublisherInvoke(_BasePredictionServiceRestTransport._BaseStreamPublisherInvoke, PredictionServiceRestStub):
+        def __hash__(self):
+            return hash("PredictionServiceRestTransport.StreamPublisherInvoke")
+
+        def __call__(self,
+                request: prediction_service.StreamPublisherInvokeRequest, *,
+                retry: OptionalRetry=gapic_v1.method.DEFAULT,
+                timeout: Optional[float]=None,
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
+                ) -> rest_streaming.ResponseIterator:
+            raise NotImplementedError(
+                "Method StreamPublisherInvoke is not available over REST transport"
+            )
     class _StreamRawPredict(_BasePredictionServiceRestTransport._BaseStreamRawPredict, PredictionServiceRestStub):
         def __hash__(self):
             return hash("PredictionServiceRestTransport.StreamRawPredict")
@@ -3345,6 +3527,14 @@ class PredictionServiceRestTransport(_BasePredictionServiceRestTransport):
             return resp
 
     @property
+    def batch_embed_contents(self) -> Callable[
+            [prediction_service.BatchEmbedContentsRequest],
+            prediction_service.BatchEmbedContentsResponse]:
+        # The return type is fine, but mypy isn't sophisticated enough to determine what's going on here.
+        # In C++ this would require a dynamic_cast
+        return self._BatchEmbedContents(self._session, self._host, self._interceptor) # type: ignore
+
+    @property
     def chat_completions(self) -> Callable[
             [prediction_service.ChatCompletionsRequest],
             httpbody_pb2.HttpBody]:
@@ -3503,6 +3693,14 @@ class PredictionServiceRestTransport(_BasePredictionServiceRestTransport):
         # The return type is fine, but mypy isn't sophisticated enough to determine what's going on here.
         # In C++ this would require a dynamic_cast
         return self._StreamingRawPredict(self._session, self._host, self._interceptor) # type: ignore
+
+    @property
+    def stream_publisher_invoke(self) -> Callable[
+            [prediction_service.StreamPublisherInvokeRequest],
+            httpbody_pb2.HttpBody]:
+        # The return type is fine, but mypy isn't sophisticated enough to determine what's going on here.
+        # In C++ this would require a dynamic_cast
+        return self._StreamPublisherInvoke(self._session, self._host, self._interceptor) # type: ignore
 
     @property
     def stream_raw_predict(self) -> Callable[

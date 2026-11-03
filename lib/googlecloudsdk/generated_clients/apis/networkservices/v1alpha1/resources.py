@@ -525,6 +525,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_REGISTEREDCLUSTERS = (
+      'projects.locations.registeredClusters',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'registeredClusters/{registeredClustersId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SERVICEBINDINGS = (
       'projects.locations.serviceBindings',
       '{+name}',

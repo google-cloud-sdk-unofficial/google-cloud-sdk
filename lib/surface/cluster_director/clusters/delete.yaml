@@ -16,6 +16,8 @@
   - ALPHA
   - BETA
   - GA
+  hints:
+    read_only: false
   help_text:
     brief: Deletes a Cluster Director resource
     description: |

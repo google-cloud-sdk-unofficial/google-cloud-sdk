@@ -1,21 +1,40 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
-    brief: Describe a SaaS
-    description: Describe a SaaS
+    brief: Describe a SaaS offering.
+    description: |-
+      Display the details of an App Lifecycle Manager SaaS offering.
     examples: |-
-      To describe the SaaS, run:
+      To describe the SaaS offering named `my-saas` in location `us-central1`,
+      run:
 
-      $ {command}
+        $ {command} my-saas --location=us-central1
+
+      To display only the name, labels, and last update time of the SaaS
+      offering named `my-saas` in location `us-central1`, run:
+
+        $ {command} my-saas --location=us-central1 --format="yaml(name,labels,updateTime)"
+  ALPHA:
+    help_text:
+      brief: Describe a SaaS
+      description: Describe a SaaS
+      examples: |-
+        To describe the SaaS, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        The resource name of the resource within a service.
+        SaaS offering to describe.
+      ALPHA:
+        help_text: The resource name of the resource within a service.
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:saas
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.saas

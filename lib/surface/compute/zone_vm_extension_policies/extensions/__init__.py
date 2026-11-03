@@ -19,7 +19,7 @@ import textwrap
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.PREVIEW)
 @base.DefaultUniverseOnly
 class ZoneVmExtensionPolicies(base.Group):
   """Read only commands for Vm Extensions used in Zone Vm Ext Policies."""

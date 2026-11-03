@@ -178,6 +178,8 @@ class OperationData(object):
       operation. If the operation type is not delete, this service is used to
       fetch the mutated object after the operation is done.
     project: str, The project to which the resource belong.
+    folder: str, The folder to which the resource belongs.
+    organization: str, The organization to which the resource belongs.
     resize_request_name: str, Name of the resize request being created.
     no_followup: str, If True, do not send followup GET request.
     followup_override: str, Overrides the target resource name when it is
@@ -200,11 +202,15 @@ class OperationData(object):
       no_followup=False,
       followup_override=None,
       always_return_operation=False,
+      folder=None,
+      organization=None,
   ):
     self.operation = operation
     self.operation_service = operation_service
     self.resource_service = resource_service
     self.project = project
+    self.folder = folder
+    self.organization = organization
     self.resize_request_name = resize_request_name
     self.no_followup = no_followup
     self.followup_override = followup_override
@@ -217,6 +223,7 @@ class OperationData(object):
     if not isinstance(o, OperationData):
       return False
     return (self.operation == o.operation and self.project == o.project and
+            self.folder == o.folder and self.organization == o.organization and
             self.operation_service == o.operation_service and
             self.resource_service == o.resource_service and
             self.no_followup == o.no_followup and
@@ -224,6 +231,7 @@ class OperationData(object):
 
   def __hash__(self):
     return (hash(self.operation.selfLink) ^ hash(self.project)
+            ^ hash(self.folder) ^ hash(self.organization)
             ^ hash(self.operation_service) ^ hash(self.resource_service)
             ^ hash(self.no_followup) ^ hash(self.followup_override))
 
@@ -251,7 +259,7 @@ class OperationData(object):
     done = operation_type.StatusValueValuesEnum.DONE
     return self.operation.status == done
 
-  def _SupportOperationWait(self):
+  def SupportOperationWait(self):
     return 'Wait' in self.operation_service.GetMethodsList()
 
   def ResourceGetRequest(self):
@@ -262,6 +270,12 @@ class OperationData(object):
     if self.project:
       request = self.resource_service.GetRequestType('Get')(
           project=self.project)
+    elif self.folder:
+      request = self.resource_service.GetRequestType('Get')(
+          folder=self.folder)
+    elif self.organization:
+      request = self.resource_service.GetRequestType('Get')(
+          organization=self.organization)
     else:
       # Gets the flexible resource ID.
       if target_link is None:
@@ -336,10 +350,19 @@ class OperationData(object):
     if self.project:
       request = self.operation_service.GetRequestType(verb)(
           operation=self.operation.name, project=self.project)
+    elif self.folder:
+      request = self.operation_service.GetRequestType(verb)(
+          operation=self.operation.name, folder=self.folder)
+    elif self.organization and not self.IsGlobalOrganizationOperation():
+      request = self.operation_service.GetRequestType(verb)(
+          operation=self.operation.name, organization=self.organization)
     else:
       # Fetches the parent ID from the operation name.
-      token_list = self.operation.name.split('-')
-      parent_id = 'organizations/' + token_list[1]
+      if self.organization:
+        parent_id = self.organization
+      else:
+        token_list = self.operation.name.split('-')
+        parent_id = 'organizations/' + token_list[1]
       request = self.operation_service.GetRequestType(verb)(
           operation=self.operation.name, parentId=parent_id)
     if self.operation.zone:
@@ -415,7 +438,7 @@ class OperationData(object):
     if self.IsDone():
       return
 
-    if self._SupportOperationWait():
+    if self.SupportOperationWait():
       self._PollUntilDoneUsingOperationWait(timeout_sec)
     else:
       self._PollUntilDoneUsingOperationGet(timeout_sec)
@@ -551,7 +574,10 @@ def WaitForOperations(
         # The operation has not reached the DONE state, so we add a request
         # to poll the operation.
         # TODO(b/129413862): Global org operation service supports wait API.
-        if data.IsGlobalOrganizationOperation():
+        if (
+            data.IsGlobalOrganizationOperation()
+            or not data.SupportOperationWait()
+        ):
           request = data.OperationGetRequest()
           operation_requests.append((operation_service, 'Get', request))
         else:

@@ -1,0 +1,58 @@
+- release_tracks: [ALPHA]
+  hints:
+    read_only: false
+
+  # Keeps the command out of help text, tab-completion and the public
+  # reference documentation while Cloud Build Pipelines is in preview.
+  hidden: true
+  universe_compatible: true
+
+  help_text:
+    brief: Delete a Cloud Build pipeline trigger.
+    description: |
+      Delete a Cloud Build pipeline trigger.
+
+      Pipeline runs that the trigger already started are kept. For a Pub/Sub
+      trigger, the subscription that Cloud Build manages for it is removed as
+      well.
+    examples: |
+      To delete the trigger `pr-presubmit` of pipeline `payments-pipeline` in
+      region `us-central1`:
+
+        $ {command} pr-presubmit --pipeline=payments-pipeline \
+            --region=us-central1
+
+      To delete it only if it still has the etag shown by `describe`:
+
+        $ {command} pr-presubmit --pipeline=payments-pipeline \
+            --region=us-central1 --etag=abc123
+
+  request:
+    collection: cloudbuild.projects.locations.pipelines.triggers
+    api_version: v1
+    regional_endpoint_compatibility: SUPPORTED
+    display_resource_type: pipeline trigger
+
+  # Adds --async. When it is omitted the generator polls the returned
+  # operation to completion instead of returning it directly.
+  async:
+    collection: cloudbuild.projects.locations.operations
+    api_version: v1
+
+  input:
+    confirmation_prompt: |-
+      You are about to delete pipeline trigger [{__name__}].
+      Pipeline runs already started by this trigger will be kept.
+
+  arguments:
+    resource:
+      help_text: The Cloud Build pipeline trigger to delete.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:pipeline_trigger
+      is_positional: true
+    params:
+    - arg_name: etag
+      api_field: etag
+      help_text: |
+        Etag that the stored trigger must have for the deletion to proceed, as
+        shown by `describe`. Use it to avoid deleting a trigger that changed
+        since you last read it.

@@ -1,21 +1,41 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Delete a Release
-    description: Delete a Release
-    examples: |-
-      To delete the release, run:
+    brief: Delete a release.
+    description: |-
+      Delete an App Lifecycle Manager release.
 
-      $ {command}
+      The command prompts for confirmation before the release is deleted.
+    examples: |-
+      To delete the release named `my-release` in location `us-central1`, run:
+
+        $ {command} my-release --location=us-central1
+
+      To delete the release named `my-release` in location `us-central1` without
+      a confirmation prompt, run:
+
+        $ {command} my-release --location=us-central1 --quiet
+  ALPHA:
+    help_text:
+      brief: Delete a Release
+      description: Delete a Release
+      examples: |-
+        To delete the release, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        Release to delete.
+      ALPHA:
+        help_text: Name of the resource
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:release
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.releases

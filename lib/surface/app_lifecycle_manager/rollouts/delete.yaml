@@ -1,21 +1,41 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Delete a Rollout
-    description: Delete a Rollout
-    examples: |-
-      To delete the Rollout, run:
+    brief: Delete a rollout.
+    description: |-
+      Delete an App Lifecycle Manager rollout.
 
-      $ {command}
+      The command prompts for confirmation before the rollout is deleted.
+    examples: |-
+      To delete the rollout named `my-rollout` in location `us-central1`, run:
+
+        $ {command} my-rollout --location=us-central1
+
+      To delete the rollout named `my-rollout` in location `us-central1` without
+      a confirmation prompt, run:
+
+        $ {command} my-rollout --location=us-central1 --quiet
+  ALPHA:
+    help_text:
+      brief: Delete a Rollout
+      description: Delete a Rollout
+      examples: |-
+        To delete the Rollout, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        Rollout to delete.
+      ALPHA:
+        help_text: Name of the resource
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:rollout
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.rollouts

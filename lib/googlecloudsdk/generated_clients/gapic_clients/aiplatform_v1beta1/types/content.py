@@ -33,6 +33,7 @@ __protobuf__ = proto.module(
         'HarmCategory',
         'Modality',
         'Content',
+        'SpeechMetadata',
         'Part',
         'AudioTranscription',
         'AudioTranscriptionConfig',
@@ -183,13 +184,34 @@ class Content(proto.Message):
     )
 
 
+class SpeechMetadata(proto.Message):
+    r"""Structured Metadata Sub-Message for Part
+
+    Attributes:
+        speaker (str):
+            Optional. Identifies which speaker is
+            speaking this turn.
+        style (str):
+            Optional. Natural language description of the
+            vocal style (e.g., "cheerful").
+    """
+
+    speaker: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    style: str = proto.Field(
+        proto.STRING,
+        number=2,
+    )
+
+
 class Part(proto.Message):
     r"""A datatype containing media that is part of a multi-part
     [Content][google.cloud.aiplatform.master.Content] message.
 
     A ``Part`` consists of data which has an associated datatype. A
-    ``Part`` can only contain one of the accepted types in
-    ``Part.data``.
+    ``Part`` must contain one of the accepted types in ``Part.data``.
 
     For media types that are not text, ``Part`` must have a fixed IANA
     MIME type identifying the type and subtype of the media if
@@ -252,6 +274,12 @@ class Part(proto.Message):
             or file_data.
 
             This field is a member of `oneof`_ ``metadata``.
+        speech_metadata (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.SpeechMetadata):
+            Optional. Turn-level metadata for speech generation (e.g.
+            Daikon speaker/style). May be set alongside ``text`` to
+            attach speaker and style information to a text part.
+
+            This field is a member of `oneof`_ ``_speech_metadata``.
         thought (bool):
             Optional. Indicates whether the ``part`` represents the
             model's thought process or reasoning.
@@ -376,6 +404,12 @@ class Part(proto.Message):
         number=4,
         oneof='metadata',
         message='VideoMetadata',
+    )
+    speech_metadata: 'SpeechMetadata' = proto.Field(
+        proto.MESSAGE,
+        number=21,
+        optional=True,
+        message='SpeechMetadata',
     )
     thought: bool = proto.Field(
         proto.BOOL,
@@ -791,6 +825,16 @@ class VoiceConfig(proto.Message):
             from an audio sample.
 
             This field is a member of `oneof`_ ``voice_config``.
+        voice (str):
+            Optional. The speaker identifier for synthesis. Supported
+            formats:
+
+            - Speaker name for prebuilt voices (for example, ``Orus`` or
+              ``Kore``).
+            - Voice ID for stored voices (for example, ``voice_xxx``).
+            - Voice replication key (for example, ``voicekey_xxx``).
+
+            This field is a member of `oneof`_ ``voice_config``.
     """
 
     prebuilt_voice_config: 'PrebuiltVoiceConfig' = proto.Field(
@@ -804,6 +848,11 @@ class VoiceConfig(proto.Message):
         number=3,
         oneof='voice_config',
         message='ReplicatedVoiceConfig',
+    )
+    voice: str = proto.Field(
+        proto.STRING,
+        number=4,
+        oneof='voice_config',
     )
 
 
@@ -2354,6 +2403,11 @@ class Candidate(proto.Message):
             Output only. Metadata returned when the model uses the
             ``url_context`` tool to get information from a user-provided
             URL.
+        continuation_token (bytes):
+            Output only. An optional opaque continuation token returned
+            when ``finish_reason`` is ``CONTINUATION``. Clients can pass
+            this token in a subsequent ``GenerateContentRequest`` to
+            continue generation.
     """
     class FinishReason(proto.Enum):
         r"""The reason why the model stopped generating tokens. If this
@@ -2417,6 +2471,19 @@ class Candidate(proto.Message):
             NO_IMAGE (16):
                 The model was expected to generate an image,
                 but didn't.
+            MALFORMED_RESPONSE (17):
+                Finishes due to malformed response.
+            CONTINUATION (18):
+                Token generation was stopped because the response reached
+                the per-request token limit, but generation is not yet
+                complete. The model response can be continued via a
+                subsequent request using the returned
+                ``continuation_token``.
+            TOO_MANY_TOOL_CALLS (19):
+                The model made too many tool calls in a
+                single request, so the server-side tool loop
+                stopped before the model returned a final
+                answer.
         """
         FINISH_REASON_UNSPECIFIED = 0
         STOP = 1
@@ -2435,6 +2502,9 @@ class Candidate(proto.Message):
         IMAGE_OTHER = 14
         UNEXPECTED_TOOL_CALL = 15
         NO_IMAGE = 16
+        MALFORMED_RESPONSE = 17
+        CONTINUATION = 18
+        TOO_MANY_TOOL_CALLS = 19
 
     index: int = proto.Field(
         proto.INT32,
@@ -2483,6 +2553,10 @@ class Candidate(proto.Message):
         proto.MESSAGE,
         number=13,
         message='UrlContextMetadata',
+    )
+    continuation_token: bytes = proto.Field(
+        proto.BYTES,
+        number=15,
     )
 
 

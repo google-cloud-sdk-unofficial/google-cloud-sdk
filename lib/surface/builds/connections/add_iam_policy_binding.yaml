@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: false
+  help_text:
     brief: Add IAM policy binding to a Cloud Build connection.
     description: |
       Add IAM policy binding to a Cloud Build connection.

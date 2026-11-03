@@ -1008,6 +1008,21 @@ class DataformProjectsLocationsRepositoriesCommitRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
 
 
+class DataformProjectsLocationsRepositoriesCompilationResultsCreateLongRunningRequest(_messages.Message):
+  r"""A DataformProjectsLocationsRepositoriesCompilationResultsCreateLongRunni
+  ngRequest object.
+
+  Fields:
+    compilationResult: A CompilationResult resource to be passed as the
+      request body.
+    parent: Required. The repository in which to create the compilation
+      result. Must be in the format `projects/*/locations/*/repositories/*`.
+  """
+
+  compilationResult = _messages.MessageField('CompilationResult', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class DataformProjectsLocationsRepositoriesCompilationResultsCreateRequest(_messages.Message):
   r"""A DataformProjectsLocationsRepositoriesCompilationResultsCreateRequest
   object.
@@ -1757,6 +1772,27 @@ class DataformProjectsLocationsRepositoriesWorkspacesFetchGitAheadBehindRequest(
 
   name = _messages.StringField(1, required=True)
   remoteBranch = _messages.StringField(2)
+
+
+class DataformProjectsLocationsRepositoriesWorkspacesFetchHistoryRequest(_messages.Message):
+  r"""A DataformProjectsLocationsRepositoriesWorkspacesFetchHistoryRequest
+  object.
+
+  Fields:
+    name: Required. The workspace's name.
+    pageSize: Optional. Maximum number of commits to return. The server may
+      return fewer items than requested. If unspecified, the server will pick
+      an appropriate default.
+    pageToken: Optional. Page token received from a previous
+      `FetchWorkspaceHistory` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `FetchWorkspaceHistory`, with the exception of `page_size`, must match
+      the call that provided the page token.
+  """
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
 
 
 class DataformProjectsLocationsRepositoriesWorkspacesGetIamPolicyRequest(_messages.Message):
@@ -2574,6 +2610,23 @@ class FetchWorkspaceBranchesResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class FetchWorkspaceHistoryResponse(_messages.Message):
+  r"""`FetchWorkspaceHistory` response message.
+
+  Fields:
+    commits: A list of commit logs, ordered by 'git log' default order.
+    nextPageToken: Optional. A token, which can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
+    reachesShallowBoundary: Whether this response reaches the shallow boundary
+      of the repository.
+  """
+
+  commits = _messages.MessageField('CommitLogEntry', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  reachesShallowBoundary = _messages.BooleanField(3)
+
+
 class FileOperation(_messages.Message):
   r"""Represents a single file operation to the repository.
 
@@ -2699,6 +2752,9 @@ class GitRemoteSettings(_messages.Message):
       teAccessTokenStatus
 
   Fields:
+    accountConnector: Optional. Resource name for the Account Connector used
+      for personal authentication. Must be in the format
+      `projects/*/locations/*/accountConnectors/*`
     authenticationTokenSecretVersion: Optional. The name of the Secret Manager
       secret version to use as an authentication token for Git operations.
       Must be in the format `projects/*/secrets/*/versions/*`.
@@ -2738,13 +2794,14 @@ class GitRemoteSettings(_messages.Message):
     INVALID = 2
     VALID = 3
 
-  authenticationTokenSecretVersion = _messages.StringField(1)
-  defaultBranch = _messages.StringField(2)
-  effectiveDefaultBranch = _messages.StringField(3)
-  gitRepositoryLink = _messages.StringField(4)
-  sshAuthenticationConfig = _messages.MessageField('SshAuthenticationConfig', 5)
-  tokenStatus = _messages.EnumField('TokenStatusValueValuesEnum', 6)
-  url = _messages.StringField(7)
+  accountConnector = _messages.StringField(1)
+  authenticationTokenSecretVersion = _messages.StringField(2)
+  defaultBranch = _messages.StringField(3)
+  effectiveDefaultBranch = _messages.StringField(4)
+  gitRepositoryLink = _messages.StringField(5)
+  sshAuthenticationConfig = _messages.MessageField('SshAuthenticationConfig', 6)
+  tokenStatus = _messages.EnumField('TokenStatusValueValuesEnum', 7)
+  url = _messages.StringField(8)
 
 
 class IamPolicyOverrideView(_messages.Message):

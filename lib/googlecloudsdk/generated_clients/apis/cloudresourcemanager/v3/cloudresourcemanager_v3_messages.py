@@ -975,6 +975,38 @@ class CloudresourcemanagerLiensListRequest(_messages.Message):
   parent = _messages.StringField(3)
 
 
+class CloudresourcemanagerLocationsEffectiveSemanticTagsListRequest(_messages.Message):
+  r"""A CloudresourcemanagerLocationsEffectiveSemanticTagsListRequest object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      For example, `semantic_tag_key = "projects/gcp-semantic-tags-
+      catalog/locations/us-central1/semanticTagKeys/network.security-tier"`.
+    pageSize: Optional. The maximum number of `EffectiveSemanticTag` results
+      to return. The service may return fewer than this value. If unspecified,
+      at most 50 effective semantic tags will be returned. The maximum value
+      is 500; values above 500 will be coerced to 500.
+    pageToken: Optional. A page token, received from a previous
+      `ListEffectiveSemanticTags` call. Provide this to retrieve the
+      subsequent page. When paginating, all other parameters provided to
+      `ListEffectiveSemanticTags` must match the call that provided the page
+      token.
+    parent: Required. The parent location for which effective semantic tags
+      are being listed. Format: `locations/{location}`. Example:
+      `locations/us-central1`
+    targetResource: Required. Full resource name of the target Google Cloud
+      resource whose effective semantic tags are being listed. Example:
+      `//compute.googleapis.com/projects/my-proj/zones/us-
+      central1-a/instances/vm-1`
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  targetResource = _messages.StringField(5)
+
+
 class CloudresourcemanagerLocationsEffectiveTagBindingCollectionsGetRequest(_messages.Message):
   r"""A CloudresourcemanagerLocationsEffectiveTagBindingCollectionsGetRequest
   object.
@@ -1868,6 +1900,84 @@ class CloudresourcemanagerProjectsLocationsSemanticTagBindingsListRequest(_messa
   targetResource = _messages.StringField(5)
 
 
+class CloudresourcemanagerProjectsLocationsSemanticTagKeysGetRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagKeysGetRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. Level of detail to return.
+
+  Fields:
+    name: Required. Resource name of the `SemanticTagKey`. Format:
+      `projects/gcp-semantic-tags-
+      catalog/locations/{location}/semanticTagKeys/{semantic_tag_key}`
+    view: Optional. Level of detail to return.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Level of detail to return.
+
+    Values:
+      SEMANTIC_TAG_KEY_VIEW_UNSPECIFIED: Default view, equivalent to
+        `SEMANTIC_TAG_KEY_VIEW_BASIC`.
+      SEMANTIC_TAG_KEY_VIEW_BASIC: Returns standard node attributes without
+        child keys.
+      SEMANTIC_TAG_KEY_VIEW_FULL: Returns standard node attributes plus direct
+        child keys.
+    """
+    SEMANTIC_TAG_KEY_VIEW_UNSPECIFIED = 0
+    SEMANTIC_TAG_KEY_VIEW_BASIC = 1
+    SEMANTIC_TAG_KEY_VIEW_FULL = 2
+
+  name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
+
+
+class CloudresourcemanagerProjectsLocationsSemanticTagKeysListRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsLocationsSemanticTagKeysListRequest
+  object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. Level of detail to return.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      For example, `key_type = "SCALAR"` or `parent_semantic_tag_key =
+      "projects/gcp-semantic-tags-catalog/locations/us-
+      central1/semanticTagKeys/costcenter"`.
+    pageSize: Optional. The maximum number of `SemanticTagKey` resources to
+      return. The service may return fewer than this value. If unspecified, at
+      most 50 keys will be returned. The maximum value is 500; values above
+      500 will be coerced to 500.
+    pageToken: Optional. A page token received from a previous
+      `ListSemanticTagKeys` call. Provide this to retrieve the subsequent
+      page.
+    parent: Required. Parent location whose keys are being listed. Format:
+      `projects/gcp-semantic-tags-catalog/locations/{location}`
+    view: Optional. Level of detail to return.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Level of detail to return.
+
+    Values:
+      SEMANTIC_TAG_KEY_VIEW_UNSPECIFIED: Default view, equivalent to
+        `SEMANTIC_TAG_KEY_VIEW_BASIC`.
+      SEMANTIC_TAG_KEY_VIEW_BASIC: Returns standard node attributes without
+        child keys.
+      SEMANTIC_TAG_KEY_VIEW_FULL: Returns standard node attributes plus direct
+        child keys.
+    """
+    SEMANTIC_TAG_KEY_VIEW_UNSPECIFIED = 0
+    SEMANTIC_TAG_KEY_VIEW_BASIC = 1
+    SEMANTIC_TAG_KEY_VIEW_FULL = 2
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 5)
+
+
 class CloudresourcemanagerProjectsLocationsSemanticTagValuesCreateRequest(_messages.Message):
   r"""A CloudresourcemanagerProjectsLocationsSemanticTagValuesCreateRequest
   object.
@@ -2601,6 +2711,44 @@ class CompositeValue(_messages.Message):
   fields = _messages.MessageField('FieldsValue', 1)
 
 
+class CompositeValueConstraint(_messages.Message):
+  r"""Constraints on a composite value (map of field names to values).
+  Undeclared fields are rejected.
+
+  Messages:
+    FieldsValue: Optional. Map of allowed field names to their constraints.
+
+  Fields:
+    fields: Optional. Map of allowed field names to their constraints.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class FieldsValue(_messages.Message):
+    r"""Optional. Map of allowed field names to their constraints.
+
+    Messages:
+      AdditionalProperty: An additional property for a FieldsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type FieldsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a FieldsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A FieldConstraint attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('FieldConstraint', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  fields = _messages.MessageField('FieldsValue', 1)
+
+
 class CreateBoundaryMetadata(_messages.Message):
   r"""A status object which is used as the `metadata` field for the Operation
   returned by CreateBoundary. Currently empty.
@@ -2719,6 +2867,45 @@ class DeleteTagKeyMetadata(_messages.Message):
 
 class DeleteTagValueMetadata(_messages.Message):
   r"""Runtime operation information for deleting a TagValue."""
+
+
+class EffectiveSemanticTag(_messages.Message):
+  r"""Represents an effective semantic tag that applies to a Google Cloud
+  resource. Semantic tags can be either directly bound to a resource or
+  inherited from an ancestor resource.
+
+  Fields:
+    inherited: Indicates whether the semantic tag is inherited from an
+      ancestor resource. If `true`, the semantic tag is inherited from one of
+      the resource's ancestors. If `false`, the semantic tag is directly bound
+      to the target resource.
+    semanticTagBinding: Resource name of the `SemanticTagBinding`. Format: `pr
+      ojects/{project}/locations/{location}/semanticTagBindings/{semantic_tag_
+      binding_id}` or `organizations/{organization}/locations/{location}/seman
+      ticTagBindings/{semantic_tag_binding_id}`. Example: `projects/my-
+      proj/locations/us-central1/semanticTagBindings/b-8f3a1c2e`
+    semanticTagKey: Resource name of the `SemanticTagKey` this effective tag
+      is for. Example: `projects/gcp-semantic-tags-catalog/locations/us-
+      central1/semanticTagKeys/network.security-tier`
+    semanticTagValue: Resource name of the regional `SemanticTagValue` applied
+      to the target resource. Example: - System-managed predefined value:
+      `projects/gcp-semantic-tags-catalog/locations/us-
+      central1/semanticTagValues/prod` - Customer-managed, org-parented value:
+      `organizations/1001/locations/us-central1/semanticTagValues/us-only` -
+      Customer-managed, project-parented value: `projects/my-
+      project/locations/us-central1/semanticTagValues/us-only`
+    sourceResource: Full resource name of the Google Cloud resource to which
+      the `semantic_tag_binding` is directly attached. Example:
+      `//compute.googleapis.com/projects/my-proj/zones/us-
+      central1-a/instances/vm-1` or
+      `//cloudresourcemanager.googleapis.com/organizations/1001`
+  """
+
+  inherited = _messages.BooleanField(1)
+  semanticTagBinding = _messages.StringField(2)
+  semanticTagKey = _messages.StringField(3)
+  semanticTagValue = _messages.StringField(4)
+  sourceResource = _messages.StringField(5)
 
 
 class EffectiveSetting(_messages.Message):
@@ -2922,6 +3109,25 @@ class FetchResourceSemanticsResponse(_messages.Message):
 
   fullResourceName = _messages.StringField(1)
   semantics = _messages.MessageField('SemanticsValue', 2)
+
+
+class FieldConstraint(_messages.Message):
+  r"""Constraints on a declared field within a composite value.
+
+  Fields:
+    defaultValue: Optional. Value of this field when a composite value omits
+      it. If set, it must satisfy `string_constraint`, and `required` must be
+      `false`.
+    description: Optional. Description of this field.
+    required: Optional. Whether this field is required. Defaults to `false`.
+    stringConstraint: Constraints that the string value of this field must
+      satisfy.
+  """
+
+  defaultValue = _messages.StringField(1)
+  description = _messages.StringField(2)
+  required = _messages.BooleanField(3)
+  stringConstraint = _messages.MessageField('StringConstraint', 4)
 
 
 class FieldValue(_messages.Message):
@@ -3236,6 +3442,20 @@ class ListCapabilityConfigsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListEffectiveSemanticTagsResponse(_messages.Message):
+  r"""Response message for `ListEffectiveSemanticTags`.
+
+  Fields:
+    effectiveSemanticTags: The list of `EffectiveSemanticTag` results for the
+      specified target resource.
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  effectiveSemanticTags = _messages.MessageField('EffectiveSemanticTag', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class ListEffectiveTagsResponse(_messages.Message):
   r"""The response of ListEffectiveTags.
 
@@ -3316,6 +3536,19 @@ class ListSemanticTagBindingsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   semanticTagBindings = _messages.MessageField('SemanticTagBinding', 2, repeated=True)
+
+
+class ListSemanticTagKeysResponse(_messages.Message):
+  r"""Response message for `ListSemanticTagKeys`.
+
+  Fields:
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    semanticTagKeys: The list of `SemanticTagKey` resources.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  semanticTagKeys = _messages.MessageField('SemanticTagKey', 2, repeated=True)
 
 
 class ListSemanticTagValuesResponse(_messages.Message):
@@ -3963,6 +4196,69 @@ class SemanticTagBinding(_messages.Message):
   targetResource = _messages.StringField(5)
 
 
+class SemanticTagKey(_messages.Message):
+  r"""Represents a key in the regional `SemanticTagKey` catalog. System-owned
+  keys are maintained in `projects/gcp-semantic-tags-catalog`.
+
+  Enums:
+    KeyTypeValueValuesEnum: Output only. Structural `COMPOSITE` branch or
+      bindable `SCALAR` key.
+
+  Fields:
+    childSemanticTagKeys: Output only. Direct child keys under this key when
+      requested with the `SEMANTIC_TAG_KEY_VIEW_FULL` view.
+    compositeValueConstraint: Constraints on a composite value.
+    createTime: Output only. Creation timestamp.
+    description: Optional. Description of the semantic tag key. Maximum length
+      is 1024 characters.
+    displayName: Optional. User-friendly display name. Maximum length is 63
+      characters.
+    keyType: Output only. Structural `COMPOSITE` branch or bindable `SCALAR`
+      key.
+    multipleValuesAllowed: Optional. Whether multiple values can be bound to
+      this key on a single resource. Applicable to `SCALAR` nodes. Defaults to
+      `false`.
+    name: Identifier. Resource name of the `SemanticTagKey`. Format:
+      `projects/gcp-semantic-tags-
+      catalog/locations/{location}/semanticTagKeys/{semantic_tag_key}`
+      Example: `projects/gcp-semantic-tags-catalog/locations/us-
+      central1/semanticTagKeys/costcenter.allocation.sre`
+    parentSemanticTagKey: Output only. Parent `SemanticTagKey` resource name:
+      - Root keys: empty string. - Child keys: `projects/gcp-semantic-tags-cat
+      alog/locations/{location}/semanticTagKeys/{parent_semantic_tag_key_id}`
+    shortId: Output only. Short name of this key excluding parent key prefix.
+      For example: "sre".
+    stringConstraint: Constraints on a primitive string value.
+    updateTime: Output only. Last update timestamp.
+  """
+
+  class KeyTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. Structural `COMPOSITE` branch or bindable `SCALAR` key.
+
+    Values:
+      KEY_TYPE_UNSPECIFIED: Unspecified key type.
+      COMPOSITE: Structural key that organizes child keys. Cannot be bound to
+        a value.
+      SCALAR: Scalar key that defines value constraints for SemanticTagValues.
+    """
+    KEY_TYPE_UNSPECIFIED = 0
+    COMPOSITE = 1
+    SCALAR = 2
+
+  childSemanticTagKeys = _messages.StringField(1, repeated=True)
+  compositeValueConstraint = _messages.MessageField('CompositeValueConstraint', 2)
+  createTime = _messages.StringField(3)
+  description = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  keyType = _messages.EnumField('KeyTypeValueValuesEnum', 6)
+  multipleValuesAllowed = _messages.BooleanField(7)
+  name = _messages.StringField(8)
+  parentSemanticTagKey = _messages.StringField(9)
+  shortId = _messages.StringField(10)
+  stringConstraint = _messages.MessageField('StringConstraint', 11)
+  updateTime = _messages.StringField(12)
+
+
 class SemanticTagValue(_messages.Message):
   r"""Represents a concrete `SemanticTagValue` that can be bound to resources.
 
@@ -4150,6 +4446,23 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
+
+
+class StringConstraint(_messages.Message):
+  r"""Constraints applicable to string semantic tag values.
+
+  Fields:
+    allowedValues: Optional. Allowed string values. If set, values must match
+      one of these entries.
+    maxLength: Optional. Maximum length in characters.
+    minLength: Optional. Minimum length in characters.
+    regexPattern: Optional. RE2 regular expression that values must match.
+  """
+
+  allowedValues = _messages.StringField(1, repeated=True)
+  maxLength = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  minLength = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  regexPattern = _messages.StringField(4)
 
 
 class StringMap(_messages.Message):

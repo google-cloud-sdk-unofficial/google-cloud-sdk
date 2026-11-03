@@ -97,6 +97,8 @@ class EnvironmentModel:
   pipelines: list[PipelineModel] | None = None
   variables: dict[str, str] | None = None
   secrets: dict[str, str] = dataclasses.field(default_factory=dict)
+  # Email of the service account pipelines run as (Serverless Orchestration).
+  service_account: str | None = None
 
 
 def _build_metadata(
@@ -183,6 +185,7 @@ def _build_environment(env_def: Mapping[str, Any]) -> EnvironmentModel:
       pipelines=pipelines,
       variables=env_def.get('variables'),
       secrets=env_def.get('secrets') or {},
+      service_account=env_def.get('service_account'),
   )
 
 

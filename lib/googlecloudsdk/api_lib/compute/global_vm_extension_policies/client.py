@@ -85,8 +85,9 @@ class GlobalVmExtensionPolicy(object):
     """Sends `method` to the service that matches this client's scope.
 
     The request messages are named rather than passed, because the folder and
-    organization ones only exist in the alpha API: resolving all three up front
-    would break the project path on the tracks that do not have them yet.
+    organization ones only exist in the alpha and preview APIs: resolving all
+    three up front would break the project path on the tracks that do not have
+    them yet.
 
     Args:
       method: the name of the method to call on the service.

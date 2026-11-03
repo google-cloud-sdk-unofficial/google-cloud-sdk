@@ -1,0 +1,26 @@
+location:
+  name: location
+  collection: workloadmanager.projects.locations
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      The Google Cloud project ID.
+    property: core/project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      The Cloud location for the {resource}.
+
+evaluation:
+  name: evaluation
+  collection: workloadmanager.projects.locations.evaluations
+  attributes:
+  - *project
+  - *location
+  - parameter_name: evaluationsId
+    attribute_name: evaluation
+    help: |
+      The evaluation ID.

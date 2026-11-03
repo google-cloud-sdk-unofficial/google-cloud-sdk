@@ -44,6 +44,7 @@ class ListInstances(base.ListCommand):
         instance_groups_utils.UriFuncForListInstanceRelatedObjects)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
+    color_utils.AddNoColorFlag(parser)
 
   def Run(self, args):
     managed_instances = self.GetManagedInstances(args)
@@ -168,6 +169,7 @@ class ListInstancesBeta(ListInstances):
         instance_groups_utils.UriFuncForListInstanceRelatedObjects)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
+    color_utils.AddNoColorFlag(parser)
 
 
 ListInstancesBeta.detailed_help = ListInstances.detailed_help

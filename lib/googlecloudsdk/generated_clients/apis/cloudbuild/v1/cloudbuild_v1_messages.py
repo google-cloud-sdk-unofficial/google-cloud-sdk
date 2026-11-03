@@ -783,6 +783,7 @@ class BuildOptions(_messages.Message):
       determines if and where build logs are stored.
     MachineTypeValueValuesEnum: Compute Engine machine type on which to run
       the build.
+    RankedMachineSeriesValueListEntryValuesEnum:
     RequestedVerifyOptionValueValuesEnum: Requested verifiability options.
     SourceProvenanceHashValueListEntryValuesEnum:
     SubstitutionOptionValueValuesEnum: Option to specify behavior when there
@@ -843,6 +844,11 @@ class BuildOptions(_messages.Message):
       private-pool) for more information.
     pubsubTopic: Optional. Option to specify the Pub/Sub topic to receive
       build status updates.
+    rankedMachineSeries: Optional. Ranked list (earlier items have higher
+      priority) of Machine Series to consider when provisioning Worker VMs. A
+      concrete machine type will be selected based on machine availability in
+      the given region. This field must be empty for the Build to be eligible
+      to be paired with a pre-provisioned worker VM.
     requestedVerifyOption: Requested verifiability options.
     resolvedWorkerRelease: Output only. Worker release resolved from the
       release channel.
@@ -961,6 +967,20 @@ class BuildOptions(_messages.Message):
     E2_MEDIUM = 5
     E2_STANDARD_2 = 6
 
+  class RankedMachineSeriesValueListEntryValuesEnum(_messages.Enum):
+    r"""RankedMachineSeriesValueListEntryValuesEnum enum type.
+
+    Values:
+      MACHINE_SERIES_UNSPECIFIED: Should not be used.
+      MACHINE_SERIES_E: Cost-optimized machines such as E2.
+      MACHINE_SERIES_N: General-purpose machines such as N4.
+      MACHINE_SERIES_C: Performance-optimized machines such as C4.
+    """
+    MACHINE_SERIES_UNSPECIFIED = 0
+    MACHINE_SERIES_E = 1
+    MACHINE_SERIES_N = 2
+    MACHINE_SERIES_C = 3
+
   class RequestedVerifyOptionValueValuesEnum(_messages.Enum):
     r"""Requested verifiability options.
 
@@ -1022,14 +1042,15 @@ class BuildOptions(_messages.Message):
   machineType = _messages.EnumField('MachineTypeValueValuesEnum', 14)
   pool = _messages.MessageField('PoolOption', 15)
   pubsubTopic = _messages.StringField(16)
-  requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 17)
-  resolvedWorkerRelease = _messages.StringField(18)
-  secretEnv = _messages.StringField(19, repeated=True)
-  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 20, repeated=True)
-  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 21)
-  volumes = _messages.MessageField('Volume', 22, repeated=True)
-  workerPool = _messages.StringField(23)
-  workerRelease = _messages.StringField(24)
+  rankedMachineSeries = _messages.EnumField('RankedMachineSeriesValueListEntryValuesEnum', 17, repeated=True)
+  requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 18)
+  resolvedWorkerRelease = _messages.StringField(19)
+  secretEnv = _messages.StringField(20, repeated=True)
+  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 21, repeated=True)
+  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 22)
+  volumes = _messages.MessageField('Volume', 23, repeated=True)
+  workerPool = _messages.StringField(24)
+  workerRelease = _messages.StringField(25)
 
 
 class BuildResourceUsage(_messages.Message):
@@ -2638,8 +2659,11 @@ class CloudbuildProjectsLocationsPipelineRunsListRequest(_messages.Message):
   r"""A CloudbuildProjectsLocationsPipelineRunsListRequest object.
 
   Fields:
-    filter: Optional. Filter for the results.
-    orderBy: Optional. The order to sort results by.
+    filter: Optional. Filter for the results. Supports AIP-160 expressions
+      over `pipeline`, `state`, `uid`, `name`, `pipeline_uid`, `trigger`,
+      `service_account`, `create_time`, and `update_time`.
+    orderBy: Optional. The order to sort results by. Currently only
+      `"create_time desc"` is supported.
     pageSize: Optional. Number of results to return in the list.
     pageToken: Optional. Page start.
     parent: Required. Format: `projects/{project}/locations/{location}`
@@ -5068,8 +5092,8 @@ class PipelineRun(_messages.Message):
     name: Output only. Identifier. The resource name of the PipelineRun.
       Format:
       `projects/{project}/locations/{location}/pipelineRuns/{pipeline_run}`
-    pipeline: Optional. Output only. Immutable. The authoritative reference to
-      the parent Pipeline. Format:
+    pipeline: Optional. Immutable. The authoritative reference to the parent
+      Pipeline. Format:
       `projects/{project}/locations/{location}/pipelines/{pipeline}`
     pipelineInfo: Output only. If the pipeline used remote_config, this
       records the audit trail.
@@ -6660,6 +6684,9 @@ class TrustedPoolMachineConfig(_messages.Message):
   r"""This section is used to configure the machine config for Trusted Pools
   in TBI.
 
+  Enums:
+    RankedMachineSeriesValueListEntryValuesEnum:
+
   Fields:
     acceleratorConfig: Optional. Accelerator configuration for a VM instance.
     machineType: Required. Machine type of a VM such as `e2-standard-4`. See
@@ -6672,11 +6699,30 @@ class TrustedPoolMachineConfig(_messages.Message):
       used. For more information, see
       https://cloud.google.com/compute/docs/instances/specify-min-cpu-
       platform.
+    rankedMachineSeries: Optional. Ranked list (earlier items have higher
+      priority) of Machine Series to consider when provisioning Worker VMs. A
+      concrete machine type will be selected based on machine availability in
+      the given region.
   """
+
+  class RankedMachineSeriesValueListEntryValuesEnum(_messages.Enum):
+    r"""RankedMachineSeriesValueListEntryValuesEnum enum type.
+
+    Values:
+      MACHINE_SERIES_UNSPECIFIED: Should not be used.
+      MACHINE_SERIES_E: Cost-optimized machines such as E2.
+      MACHINE_SERIES_N: General-purpose machines such as N4.
+      MACHINE_SERIES_C: Performance-optimized machines such as C4.
+    """
+    MACHINE_SERIES_UNSPECIFIED = 0
+    MACHINE_SERIES_E = 1
+    MACHINE_SERIES_N = 2
+    MACHINE_SERIES_C = 3
 
   acceleratorConfig = _messages.MessageField('AcceleratorConfig', 1)
   machineType = _messages.StringField(2)
   minCpuPlatform = _messages.StringField(3)
+  rankedMachineSeries = _messages.EnumField('RankedMachineSeriesValueListEntryValuesEnum', 4, repeated=True)
 
 
 class TrustedPoolMetadata(_messages.Message):
@@ -7038,6 +7084,9 @@ class WindowsPool(_messages.Message):
 class WorkerConfig(_messages.Message):
   r"""Defines the configuration to be used for creating workers in the pool.
 
+  Enums:
+    RankedMachineSeriesValueListEntryValuesEnum:
+
   Fields:
     diskSizeGb: Size of the disk attached to the worker, in GB. See [Worker
       pool config file](https://cloud.google.com/build/docs/private-
@@ -7050,14 +7099,33 @@ class WorkerConfig(_messages.Message):
       [Worker pool config file](https://cloud.google.com/build/docs/private-
       pools/worker-pool-config-file-schema). If left blank, Cloud Build will
       use a sensible default.
+    rankedMachineSeries: Optional. Ranked list (earlier items have higher
+      priority) of Machine Series to consider when provisioning Worker VMs. A
+      concrete machine type will be selected based on machine availability in
+      the given region.
     workerRelease: Optional. Option to specify which release or release
       channel (rapid|regular|stable) to use to run this build.
   """
 
+  class RankedMachineSeriesValueListEntryValuesEnum(_messages.Enum):
+    r"""RankedMachineSeriesValueListEntryValuesEnum enum type.
+
+    Values:
+      MACHINE_SERIES_UNSPECIFIED: Should not be used.
+      MACHINE_SERIES_E: Cost-optimized machines such as E2.
+      MACHINE_SERIES_N: General-purpose machines such as N4.
+      MACHINE_SERIES_C: Performance-optimized machines such as C4.
+    """
+    MACHINE_SERIES_UNSPECIFIED = 0
+    MACHINE_SERIES_E = 1
+    MACHINE_SERIES_N = 2
+    MACHINE_SERIES_C = 3
+
   diskSizeGb = _messages.IntegerField(1)
   enableNestedVirtualization = _messages.BooleanField(2)
   machineType = _messages.StringField(3)
-  workerRelease = _messages.StringField(4)
+  rankedMachineSeries = _messages.EnumField('RankedMachineSeriesValueListEntryValuesEnum', 4, repeated=True)
+  workerRelease = _messages.StringField(5)
 
 
 class WorkerCount(_messages.Message):

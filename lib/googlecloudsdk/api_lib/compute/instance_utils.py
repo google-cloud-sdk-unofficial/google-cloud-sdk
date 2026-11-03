@@ -209,7 +209,7 @@ def CreateServiceAccountMessages(messages, scopes, service_account):
 
 
 def CreateWorkloadIdentityConfigMessage(
-    args, messages, support_workload_identity_config, support_identity_type
+    args, messages, support_workload_identity_config
 ):
   """Create workloadIdentityConfig message for VM."""
   if not support_workload_identity_config:
@@ -217,10 +217,7 @@ def CreateWorkloadIdentityConfigMessage(
   if (
       not args.IsKnownAndSpecified('identity')
       and not args.IsKnownAndSpecified('identity_certificate')
-      and (
-          not support_identity_type
-          or not args.IsKnownAndSpecified('identity_type')
-      )
+      and not args.IsKnownAndSpecified('identity_type')
   ):
     return None
   kwargs = {}
@@ -228,12 +225,8 @@ def CreateWorkloadIdentityConfigMessage(
     kwargs['identity'] = args.identity
   if args.IsKnownAndSpecified('identity_certificate'):
     kwargs['identityCertificateEnabled'] = args.identity_certificate
-  if (
-      support_identity_type
-      and args.IsKnownAndSpecified('identity_type')
-      and hasattr(
-          messages.WorkloadIdentityConfig, 'IdentityTypeValueValuesEnum'
-      )
+  if args.IsKnownAndSpecified('identity_type') and hasattr(
+      messages.WorkloadIdentityConfig, 'IdentityTypeValueValuesEnum'
   ):
     kwargs['identityType'] = (
         messages.WorkloadIdentityConfig.IdentityTypeValueValuesEnum(

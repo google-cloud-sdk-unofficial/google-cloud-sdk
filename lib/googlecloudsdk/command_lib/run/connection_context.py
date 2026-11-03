@@ -472,8 +472,8 @@ class RegionalConnectionContext(ConnectionInfo):
     )
     endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
     if endpoint_compatibility and (
-        endpoint_mode == properties.VALUES.regional.REGIONAL
-        or endpoint_mode == properties.VALUES.regional.REGIONAL_PREFERRED
+        endpoint_mode == properties.constants.regional.REGIONAL
+        or endpoint_mode == properties.constants.regional.REGIONAL_PREFERRED
     ):
       yield self
     else:

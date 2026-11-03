@@ -67,11 +67,17 @@ class Delete(base.DeleteCommand):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(Delete):
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
+class DeletePreview(Delete):
   """Delete a Compute Engine zone VM extension policy."""
 
   @classmethod
   def Args(cls, parser):
-    super(DeleteAlpha, cls).Args(parser)
+    super(DeletePreview, cls).Args(parser)
     vm_extension_policies_flags.AddScopeFlags(parser)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeletePreview):
+  """Delete a Compute Engine zone VM extension policy."""

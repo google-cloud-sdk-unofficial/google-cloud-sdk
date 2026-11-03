@@ -297,7 +297,7 @@ def AddValidationGroup(parser, verb):
 
 
 def AddBackfillStrategyGroup(parser, required=True):
-  """Adds a --backfiill-all or --backfill-none flag to the given parser."""
+  """Adds a --backfill-all or --backfill-none flag to the given parser."""
   backfill_group = parser.add_group(required=required, mutex=True)
   backfill_group.add_argument(
       '--backfill-none',

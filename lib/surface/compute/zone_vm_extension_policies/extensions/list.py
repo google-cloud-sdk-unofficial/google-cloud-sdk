@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.zone_vm_extension_policies import extens
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.PREVIEW)
 class List(base.ListCommand):
   """List Vm Extensions in a zone."""
 

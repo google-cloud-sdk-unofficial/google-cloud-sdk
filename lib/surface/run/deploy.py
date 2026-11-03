@@ -334,8 +334,8 @@ class Deploy(base.Command):
         )
     }
     validators.ValidateImplicitSourceContainers(source_containers)
-    validators.ValidateUnifiedBuildProperty(
-        source_containers, containers, self.ReleaseTrack()
+    validators.ValidateUnifiedBuildContainers(
+        source_containers, containers, enable_unified_build
     )
     validators.ValidateNoAutomaticUpdatesForContainers(
         source_containers, containers, self.ReleaseTrack()
@@ -798,7 +798,7 @@ class Deploy(base.Command):
       service,
       changes,
       source_containers,
-      repo_to_create,
+      legacy_repo_to_create,
       allow_unauth,
       has_latest,
       iap,
@@ -811,7 +811,13 @@ class Deploy(base.Command):
         include_validate_service=requires_build,
         include_upload_source=bool(source_containers),
         include_build=requires_build,
-        include_create_repo=repo_to_create is not None,
+        include_create_repo=(
+            legacy_repo_to_create is not None
+            or any(
+                c.local_context.image_repo_to_create is not None
+                for c in source_containers.values()
+            )
+        ),
         # Include IAP stage if enabling IAP, or if disabling IAP on an existing
         # service (to clean up IAM bindings).
         include_iap=(iap or (iap is not None and service is not None)),
@@ -848,6 +854,11 @@ class Deploy(base.Command):
         failure_message=failure_message,
         suppress_output=args.async_ or dry_run,
     )
+
+  def _CheckSourceBucketViaList(self):
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      return True
+    return False
 
   def _GetRequiredApis(self, require_build):
     apis = []
@@ -977,8 +988,8 @@ class Deploy(base.Command):
     )
 
     containers = self._ValidateAndGetContainers(args)
-    # Alpha only, see validators.ValidateUnifiedBuildProperty.
-    enable_unified_build = properties.VALUES.run.enable_unified_build.GetBool()
+    # Gate Unified Build to Alpha only
+    enable_unified_build = self.ReleaseTrack() == base.ReleaseTrack.ALPHA
     source_containers, legacy_build_container, local_build_container = (
         self._ValidateAndGetSourceContainer(
             containers, enable_unified_build=enable_unified_build
@@ -996,8 +1007,8 @@ class Deploy(base.Command):
         )
       endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
       if endpoint_mode in (
-          properties.VALUES.regional.REGIONAL,
-          properties.VALUES.regional.REGIONAL_PREFERRED,
+          properties.constants.regional.REGIONAL,
+          properties.constants.regional.REGIONAL_PREFERRED,
       ):
         raise exceptions.ArgumentError(
             'The `--domain` flag is not supported when regional endpoints are'
@@ -1009,6 +1020,7 @@ class Deploy(base.Command):
 
     require_build = self._RequireBuild(source_containers)
     required_apis = self._GetRequiredApis(require_build)
+    check_source_bucket_via_list = self._CheckSourceBucketViaList()
     custom_check_response = None
     skip_activation_prompt = False
     # For source-based deployments, optimize deployment latency by avoiding
@@ -1113,6 +1125,7 @@ class Deploy(base.Command):
                     container_args,
                     skip_activation_prompt,
                     service_ref,
+                    ar_region=artifact_registry.RepoRegion(args),
                 )
             )
           else:
@@ -1153,7 +1166,7 @@ class Deploy(base.Command):
       # the new deployment type. Only the container build config cleanup
       # applies in every release track; the rest is Alpha only.
       changes = deployment_type_switch.GetDeploymentTypeSwitchChanges(
-          service, containers, self.ReleaseTrack()
+          service, containers, enable_unified_build
       )
       # Deploy a container with an image
       changes.extend(self._GetBaseChanges(args))
@@ -1242,7 +1255,7 @@ class Deploy(base.Command):
               build_pack=legacy_build_context.build_pack,
               build_region=flags.GetFirstRegion(args),
               build_source=legacy_build_context.build_source,
-              repo_to_create=legacy_build_context.repo_to_create,
+              legacy_repo_to_create=legacy_build_context.repo_to_create,
               skip_activation_prompt=skip_activation_prompt,
               generate_name=(
                   flags.FlagIsExplicitlySet(args, 'revision_suffix')
@@ -1263,6 +1276,7 @@ class Deploy(base.Command):
               source_containers_context=self._GetSourceContainersContextList(
                   source_containers, legacy_build_container
               ),
+              check_source_bucket_via_list=check_source_bucket_via_list,
               **kwargs,
           )
           records = []

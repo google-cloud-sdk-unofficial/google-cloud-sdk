@@ -17,10 +17,14 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute.operations import flags
+from googlecloudsdk.command_lib.compute.operations import util
 from googlecloudsdk.core import properties
 
 
@@ -65,7 +69,7 @@ def AddFlags(parser, is_ga):
         default=False)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class List(base.ListCommand):
   """List Compute Engine operations."""
@@ -80,6 +84,84 @@ class List(base.ListCommand):
                        not getattr(args, 'global'))
     return no_compute_args
 
+  def _GetFolderRequests(self, args, compute_client, request_data):
+    if args.regions is not None:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--regions',
+          'Regional operations are not supported for folders or organizations.',
+      )
+    if args.zones is not None and not args.zones:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--zones',
+          'Zone names must be specified when listing zonal operations for a'
+          ' folder or organization.',
+      )
+    folder_id = util.FormatFolderId(args.folder)
+    requests = []
+    if args.zones:
+      for zone in args.zones:
+        zone_name = path_simplifier.Name(zone)
+        requests.append((
+            compute_client.apitools_client.zoneFolderOperations,
+            'List',
+            compute_client.messages.ComputeZoneFolderOperationsListRequest(
+                filter=request_data.filter,
+                maxResults=request_data.max_results,
+                folder=folder_id,
+                zone=zone_name,
+            ),
+        ))
+    if getattr(args, 'global', False) or not args.zones:
+      requests.append((
+          compute_client.apitools_client.globalFolderOperations,
+          'List',
+          compute_client.messages.ComputeGlobalFolderOperationsListRequest(
+              filter=request_data.filter,
+              maxResults=request_data.max_results,
+              folder=folder_id,
+          ),
+      ))
+    return requests
+
+  def _GetOrganizationRequests(self, args, compute_client, request_data):
+    if args.regions is not None:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--regions',
+          'Regional operations are not supported for folders or organizations.',
+      )
+    if args.zones is not None and not args.zones:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--zones',
+          'Zone names must be specified when listing zonal operations for an'
+          ' organization.',
+      )
+    org_id = util.FormatOrganizationId(args.organization)
+    requests = []
+    if args.zones:
+      for zone in args.zones:
+        zone_name = path_simplifier.Name(zone)
+        requests.append((
+            compute_client.apitools_client.zoneOrganizationOperations,
+            'List',
+            compute_client.messages.ComputeZoneOrganizationOperationsListRequest(
+                filter=request_data.filter,
+                maxResults=request_data.max_results,
+                organization=org_id,
+                zone=zone_name,
+            ),
+        ))
+    if getattr(args, 'global', False) or not args.zones:
+      requests.append((
+          compute_client.apitools_client.globalOrganizationOperations,
+          'List',
+          compute_client.messages.ComputeGlobalOrganizationOperationsListRequest(
+              filter=request_data.filter,
+              maxResults=request_data.max_results,
+              parentId=org_id,
+          ),
+      ))
+    return requests
+
   def Run(self, args):
     """Yields zonal, regional, and/or global resources."""
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -92,9 +174,15 @@ class List(base.ListCommand):
     request_data = lister.ParseNamesAndRegexpFlags(args,
                                                    compute_holder.resources)
 
-    # TODO(b/36050874): Start using aggregatedList for zones and regions when
-    # the operations list API supports them.
-    if no_scope_flags:
+    if getattr(args, 'folder', None):
+      requests = self._GetFolderRequests(args, compute_client, request_data)
+    elif getattr(args, 'organization', None):
+      requests = self._GetOrganizationRequests(
+          args, compute_client, request_data
+      )
+    elif no_scope_flags:
+      # TODO(b/36050874): Start using aggregatedList for zones and regions when
+      # the operations list API supports them.
       request = compute_client.apitools_client.globalOperations.GetRequestType(
           'AggregatedList'
       )(
@@ -199,7 +287,19 @@ class List(base.ListCommand):
     return results
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
+@base.UniverseCompatible
+class ListPreview(List):
+  """List Compute Engine operations."""
+
+  @staticmethod
+  def Args(parser):
+    AddFlags(parser, True)
+    flags.AddScopeFlags(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class ListBeta(List):
   """List Compute Engine operations."""
 
@@ -207,7 +307,20 @@ class ListBeta(List):
   def Args(parser):
     AddFlags(parser, False)
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+class ListAlpha(ListBeta):
+  """List Compute Engine operations."""
+
+  @staticmethod
+  def Args(parser):
+    AddFlags(parser, False)
+    flags.AddScopeFlags(parser)
+
+
 List.detailed_help = base_classes.GetGlobalRegionalListerHelp('operations')
+ListPreview.detailed_help = List.detailed_help
 ListBeta.detailed_help = {
     'brief': 'List Compute Engine operations',
     'DESCRIPTION': """
@@ -260,3 +373,5 @@ ListBeta.detailed_help = {
            $ {command} --filter="targetLink.scope():default-12345abc"
         """,
 }
+ListAlpha.detailed_help = ListBeta.detailed_help
+

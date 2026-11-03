@@ -3631,7 +3631,7 @@ class GoogleIdentityAccesscontextmanagerV1AccessLevel(_messages.Message):
       `access_level` component must begin with a letter, followed by
       alphanumeric characters or `_`. Its maximum length is 50 characters.
       After you create an `AccessLevel`, you cannot change its `name`.
-    title: Human readable title. Must be unique within the Policy.
+    title: Human-readable title. Must be unique within the policy.
   """
 
   basic = _messages.MessageField('GoogleIdentityAccesscontextmanagerV1BasicLevel', 1)
@@ -3651,7 +3651,7 @@ class GoogleIdentityAccesscontextmanagerV1AccessPolicy(_messages.Message):
   Fields:
     etag: Output only. An opaque identifier for the current version of the
       `AccessPolicy`. This will always be a strongly validated etag, meaning
-      that two Access Policies will be identical if and only if their etags
+      that two access policies will be identical if and only if their etags
       are identical. Clients should not expect this to be in any specific
       format.
     name: Output only. Identifier. Resource name of the `AccessPolicy`.
@@ -3665,13 +3665,13 @@ class GoogleIdentityAccesscontextmanagerV1AccessPolicy(_messages.Message):
       behavior: - ServicePerimeter can only restrict projects within
       `folders/123`. - ServicePerimeter within policy A can only reference
       access levels defined within policy A. - Only one policy can include a
-      given scope; thus, attempting to create a second policy which includes
+      given scope; thus, attempting to create a second policy that includes
       `folders/123` will result in an error. If no scopes are provided, then
       any resource within the organization can be restricted. Scopes cannot be
       modified after a policy is created. Policies can only have a single
       scope. Format: list of `folders/{folder_number}` or
       `projects/{project_number}`
-    title: Required. Human readable title. Does not affect behavior.
+    title: Required. Human-readable title. Does not affect behavior.
   """
 
   etag = _messages.StringField(1)
@@ -3717,29 +3717,29 @@ class GoogleIdentityAccesscontextmanagerV1BasicLevel(_messages.Message):
 
   Enums:
     CombiningFunctionValueValuesEnum: How the `conditions` list should be
-      combined to determine if a request is granted this `AccessLevel`. If AND
-      is used, each `Condition` in `conditions` must be satisfied for the
-      `AccessLevel` to be applied. If OR is used, at least one `Condition` in
-      `conditions` must be satisfied for the `AccessLevel` to be applied.
-      Default behavior is AND.
+      combined to determine if a request is granted this `AccessLevel`. If
+      `AND` is used, each `Condition` in `conditions` must be satisfied for
+      the `AccessLevel` to be applied. If `OR` is used, at least one
+      `Condition` in `conditions` must be satisfied for the `AccessLevel` to
+      be applied. Default behavior is `AND`.
 
   Fields:
     combiningFunction: How the `conditions` list should be combined to
-      determine if a request is granted this `AccessLevel`. If AND is used,
+      determine if a request is granted this `AccessLevel`. If `AND` is used,
       each `Condition` in `conditions` must be satisfied for the `AccessLevel`
-      to be applied. If OR is used, at least one `Condition` in `conditions`
+      to be applied. If `OR` is used, at least one `Condition` in `conditions`
       must be satisfied for the `AccessLevel` to be applied. Default behavior
-      is AND.
+      is `AND`.
     conditions: Required. A list of requirements for the `AccessLevel` to be
       granted.
   """
 
   class CombiningFunctionValueValuesEnum(_messages.Enum):
     r"""How the `conditions` list should be combined to determine if a request
-    is granted this `AccessLevel`. If AND is used, each `Condition` in
-    `conditions` must be satisfied for the `AccessLevel` to be applied. If OR
-    is used, at least one `Condition` in `conditions` must be satisfied for
-    the `AccessLevel` to be applied. Default behavior is AND.
+    is granted this `AccessLevel`. If `AND` is used, each `Condition` in
+    `conditions` must be satisfied for the `AccessLevel` to be applied. If
+    `OR` is used, at least one `Condition` in `conditions` must be satisfied
+    for the `AccessLevel` to be applied. Default behavior is `AND`.
 
     Values:
       AND: All `Conditions` must be true for the `BasicLevel` to be true.
@@ -3753,38 +3753,40 @@ class GoogleIdentityAccesscontextmanagerV1BasicLevel(_messages.Message):
 
 
 class GoogleIdentityAccesscontextmanagerV1Condition(_messages.Message):
-  r"""A condition necessary for an `AccessLevel` to be granted. The Condition
-  is an AND over its fields. So a Condition is true if: 1) the request IP is
-  from one of the listed subnetworks AND 2) the originating device complies
-  with the listed device policy AND 3) all listed access levels are granted
-  AND 4) the request was sent at a time allowed by the DateTimeRestriction.
+  r"""A condition necessary for an `AccessLevel` to be granted. The
+  `Condition` is an AND over its fields. A `Condition` is true if: 1) the
+  request IP is from one of the listed subnetworks, AND 2) the originating
+  device complies with the listed device policy, AND 3) all listed access
+  levels are granted, AND 4) the request was sent at a time allowed by the
+  `DateTimeRestriction`.
 
   Fields:
-    devicePolicy: Device specific restrictions, all restrictions must hold for
-      the Condition to be true. If not specified, all devices are allowed.
+    devicePolicy: Device-specific restrictions. All restrictions must hold for
+      the `Condition` to be true. If not specified, all devices are allowed.
     ipSubnetworks: CIDR block IP subnetwork specification. May be IPv4 or
       IPv6. Note that for a CIDR IP address block, the specified IP address
-      portion must be properly truncated (i.e. all the host bits must be zero)
-      or the input is considered malformed. For example, "192.0.2.0/24" is
-      accepted but "192.0.2.1/24" is not. Similarly, for IPv6, "2001:db8::/32"
-      is accepted whereas "2001:db8::1/32" is not. The originating IP of a
-      request must be in one of the listed subnets in order for this Condition
-      to be true. If empty, all IP addresses are allowed.
+      portion must be properly truncated (that is, all the host bits must be
+      zero) or the input is considered malformed. For example,
+      `"192.0.2.0/24"` is accepted, but `"192.0.2.1/24"` is not. Similarly,
+      for IPv6, `"2001:db8::/32"` is accepted, whereas `"2001:db8::1/32"` is
+      not. The originating IP of a request must be in one of the listed
+      subnets in order for this `Condition` to be true. If empty, all IP
+      addresses are allowed.
     members: The request must be made by one of the provided user or service
       accounts. Groups are not supported. Syntax: `user:{emailid}`
       `serviceAccount:{emailid}` If not specified, a request may come from any
       user.
-    negate: Whether to negate the Condition. If true, the Condition becomes a
-      NAND over its non-empty fields. Any non-empty field criteria evaluating
-      to false will result in the Condition to be satisfied. Defaults to
-      false.
+    negate: Whether to negate the `Condition`. If `true`, the `Condition`
+      becomes a NAND over its non-empty fields. Any non-empty field criteria
+      evaluating to `false` will result in the `Condition` being satisfied.
+      Defaults to `false`.
     regions: The request must originate from one of the provided
       countries/regions. Must be valid ISO 3166-1 alpha-2 codes.
     requiredAccessLevels: A list of other access levels defined in the same
-      `Policy`, referenced by resource name. Referencing an `AccessLevel`
-      which does not exist is an error. All access levels listed must be
-      granted for the Condition to be true. Example:
-      "`accessPolicies/MY_POLICY/accessLevels/LEVEL_NAME"`
+      `Policy`, referenced by resource name. Referencing an `AccessLevel` that
+      does not exist is an error. All access levels listed must be granted for
+      the `Condition` to be true. Example:
+      `"accessPolicies/MY_POLICY/accessLevels/LEVEL_NAME"`
     vpcNetworkSources: The request must originate from one of the provided VPC
       networks in Google Cloud. Cannot specify this field together with
       `ip_subnetworks`.
@@ -3812,14 +3814,14 @@ class GoogleIdentityAccesscontextmanagerV1CustomLevel(_messages.Message):
 
 
 class GoogleIdentityAccesscontextmanagerV1DevicePolicy(_messages.Message):
-  r"""`DevicePolicy` specifies device specific restrictions necessary to
+  r"""`DevicePolicy` specifies device-specific restrictions necessary to
   acquire a given access level. A `DevicePolicy` specifies requirements for
-  requests from devices to be granted access levels, it does not do any
+  requests from devices to be granted access levels; it does not do any
   enforcement on the device. `DevicePolicy` acts as an AND over all specified
   fields, and each repeated field is an OR over its elements. Any unset fields
-  are ignored. For example, if the proto is { os_type : DESKTOP_WINDOWS,
-  os_type : DESKTOP_LINUX, encryption_status: ENCRYPTED}, then the
-  DevicePolicy will be true for requests originating from encrypted Linux
+  are ignored. For example, if the proto is `{ os_type : DESKTOP_WINDOWS,
+  os_type : DESKTOP_LINUX, encryption_status: ENCRYPTED}`, then the
+  `DevicePolicy` will be true for requests originating from encrypted Linux
   desktops and encrypted Windows desktops.
 
   Enums:
@@ -3827,17 +3829,17 @@ class GoogleIdentityAccesscontextmanagerV1DevicePolicy(_messages.Message):
     AllowedEncryptionStatusesValueListEntryValuesEnum:
 
   Fields:
-    allowedDeviceManagementLevels: Allowed device management levels, an empty
+    allowedDeviceManagementLevels: Allowed device management levels. An empty
       list allows all management levels.
-    allowedEncryptionStatuses: Allowed encryptions statuses, an empty list
+    allowedEncryptionStatuses: Allowed encryption statuses. An empty list
       allows all statuses.
-    osConstraints: Allowed OS versions, an empty list allows all types and all
+    osConstraints: Allowed OS versions. An empty list allows all types and all
       versions.
     requireAdminApproval: Whether the device needs to be approved by the
       customer admin.
-    requireCorpOwned: Whether the device needs to be corp owned.
+    requireCorpOwned: Whether the device needs to be corp-owned.
     requireScreenlock: Whether or not screenlock is required for the
-      DevicePolicy to be true. Defaults to `false`.
+      `DevicePolicy` to be true. Defaults to `false`.
   """
 
   class AllowedDeviceManagementLevelsValueListEntryValuesEnum(_messages.Enum):
@@ -3885,18 +3887,18 @@ class GoogleIdentityAccesscontextmanagerV1DevicePolicy(_messages.Message):
 
 class GoogleIdentityAccesscontextmanagerV1EgressFrom(_messages.Message):
   r"""Defines the conditions under which an EgressPolicy matches a request.
-  Conditions based on information about the source of the request. Note that
-  if the destination of the request is also protected by a ServicePerimeter,
-  then that ServicePerimeter must have an IngressPolicy which allows access in
-  order for this request to succeed.
+  Conditions are based on information about the source of the request. Note
+  that if the destination of the request is also protected by a
+  ServicePerimeter, then that ServicePerimeter must have an IngressPolicy
+  which allows access in order for this request to succeed.
 
   Enums:
     IdentityTypeValueValuesEnum: Specifies the type of identities that are
       allowed access to outside the perimeter. If left unspecified, then
       members of `identities` field will be allowed access.
     SourceRestrictionValueValuesEnum: Whether to enforce traffic restrictions
-      based on `sources` field. If the `sources` fields is non-empty, then
-      this field must be set to `SOURCE_RESTRICTION_ENABLED`.
+      based on `sources` field. If the `sources` field is not empty, then this
+      field must be set to `SOURCE_RESTRICTION_ENABLED`.
 
   Fields:
     identities: A list of identities that are allowed access through
@@ -3908,7 +3910,7 @@ class GoogleIdentityAccesscontextmanagerV1EgressFrom(_messages.Message):
       outside the perimeter. If left unspecified, then members of `identities`
       field will be allowed access.
     sourceRestriction: Whether to enforce traffic restrictions based on
-      `sources` field. If the `sources` fields is non-empty, then this field
+      `sources` field. If the `sources` field is not empty, then this field
       must be set to `SOURCE_RESTRICTION_ENABLED`.
     sources: Sources that this EgressPolicy authorizes access from. If this
       field is not empty, then `source_restriction` must be set to
@@ -3936,7 +3938,7 @@ class GoogleIdentityAccesscontextmanagerV1EgressFrom(_messages.Message):
 
   class SourceRestrictionValueValuesEnum(_messages.Enum):
     r"""Whether to enforce traffic restrictions based on `sources` field. If
-    the `sources` fields is non-empty, then this field must be set to
+    the `sources` field is not empty, then this field must be set to
     `SOURCE_RESTRICTION_ENABLED`.
 
     Values:
@@ -3966,8 +3968,8 @@ class GoogleIdentityAccesscontextmanagerV1EgressPolicy(_messages.Message):
   within the ServicePerimeter to access a defined set of projects outside the
   perimeter in certain contexts (e.g. to read data from a Cloud Storage bucket
   or query against a BigQuery dataset). EgressPolicies are concerned with the
-  *resources* that a request relates as well as the API services and API
-  actions being used. They do not related to the direction of data movement.
+  *resources* that a request relates to, as well as the API services and API
+  actions being used. They do not relate to the direction of data movement.
   More detailed documentation for this concept can be found in the
   descriptions of EgressFrom and EgressTo.
 
@@ -3977,7 +3979,7 @@ class GoogleIdentityAccesscontextmanagerV1EgressPolicy(_messages.Message):
     egressTo: Defines the conditions on the ApiOperation and destination
       resources that cause this EgressPolicy to apply.
     title: Optional. Human-readable title for the egress rule. The title must
-      be unique within the perimeter and can not exceed 100 characters. Within
+      be unique within the perimeter and cannot exceed 100 characters. Within
       the access policy, the combined length of all rule titles must not
       exceed 240,000 characters.
   """
@@ -4007,8 +4009,9 @@ class GoogleIdentityAccesscontextmanagerV1EgressSource(_messages.Message):
       defined in.
     resource: A Google Cloud resource from the service perimeter that you want
       to allow to access data outside the perimeter. This field supports
-      projects, folders, and organizations in the form `projects/`,
-      `folders/`, and `organizations/`. You can't use `*` in this field to
+      projects, folders, and organizations in the form
+      `projects/{project_number}`, `folders/{folder_id}`, and
+      `organizations/{organization_id}`. You can't use `*` in this field to
       allow all Google Cloud resources.
   """
 
@@ -4029,23 +4032,24 @@ class GoogleIdentityAccesscontextmanagerV1EgressTo(_messages.Message):
   Fields:
     externalResources: A list of external resources that are allowed to be
       accessed. Only AWS and Azure resources are supported. For Amazon S3, the
-      supported formats are s3://BUCKET_NAME, s3a://BUCKET_NAME, and
-      s3n://BUCKET_NAME. For Azure Storage, the supported format is
-      azure://myaccount.blob.core.windows.net/CONTAINER_NAME. A request
+      supported formats are `s3://BUCKET_NAME`, `s3a://BUCKET_NAME`, and
+      `s3n://BUCKET_NAME`. For Azure Storage, the supported format is
+      `azure://myaccount.blob.core.windows.net/CONTAINER_NAME`. A request
       matches if it contains an external resource in this list (Example:
-      s3://bucket/path). Currently '*' is not allowed.
+      `s3://bucket/path`). Currently `'*'` is not allowed.
     operations: A list of ApiOperations allowed to be performed by the sources
       specified in the corresponding EgressFrom. A request matches if it uses
       an operation/service in this list.
     resources: A list of resources, currently projects, folders, and
-      organizations in the form `projects/`, `folders/`, and `organizations/`,
-      that are allowed to be accessed by sources defined in the corresponding
+      organizations in the form `projects/{project_number}`,
+      `folders/{folder_id}`, and `organizations/{organization_id}`, that are
+      allowed to be accessed by sources defined in the corresponding
       EgressFrom. A request matches if it contains a resource in this list. If
       `*` is specified for `resources`, then this EgressTo rule will authorize
       access to all resources outside the perimeter.
     roles: IAM roles that represent the set of operations that the sources
-      specified in the corresponding EgressFrom. are allowed to perform in
-      this ServicePerimeter.
+      specified in the corresponding EgressFrom are allowed to perform in this
+      ServicePerimeter.
   """
 
   externalResources = _messages.StringField(1, repeated=True)
@@ -4119,7 +4123,7 @@ class GoogleIdentityAccesscontextmanagerV1IngressPolicy(_messages.Message):
     ingressTo: Defines the conditions on the ApiOperation and request
       destination that cause this IngressPolicy to apply.
     title: Optional. Human-readable title for the ingress rule. The title must
-      be unique within the perimeter and can not exceed 100 characters. Within
+      be unique within the perimeter and cannot exceed 100 characters. Within
       the access policy, the combined length of all rule titles must not
       exceed 240,000 characters.
   """
@@ -4133,7 +4137,7 @@ class GoogleIdentityAccesscontextmanagerV1IngressSource(_messages.Message):
   r"""The source that IngressPolicy authorizes access from.
 
   Fields:
-    accessLevel: An AccessLevel resource name that allow resources within the
+    accessLevel: An AccessLevel resource name that allows resources within the
       ServicePerimeters to be accessed from the internet. AccessLevels listed
       must be in the same policy as this ServicePerimeter. Referencing a
       nonexistent AccessLevel will cause an error. If no AccessLevel names are
@@ -4176,7 +4180,7 @@ class GoogleIdentityAccesscontextmanagerV1IngressTo(_messages.Message):
       `folders/{folder_id}`, and `organizations/{organization_id}`, protected
       by this ServicePerimeter that are allowed to be accessed by sources
       defined in the corresponding IngressFrom. If a single `*` is specified,
-      then access to all resources inside the perimeter are allowed.
+      then access to all resources inside the perimeter is allowed.
     roles: IAM roles that represent the set of operations that the sources
       specified in the corresponding IngressFrom are allowed to perform in
       this ServicePerimeter.
@@ -4224,8 +4228,8 @@ class GoogleIdentityAccesscontextmanagerV1OsConstraint(_messages.Message):
       Examples: `"10.5.301"`, `"9.2.1"`.
     osType: Required. The allowed OS type.
     requireVerifiedChromeOs: Only allows requests from devices with a verified
-      Chrome OS. Verifications includes requirements that the device is
-      enterprise-managed, conformant to domain policies, and the caller has
+      Chrome OS. Verification includes requirements that the device is
+      enterprise-managed, conforms to domain policies, and the caller has
       permission to call the API targeted by the request.
   """
 
@@ -4276,9 +4280,9 @@ class GoogleIdentityAccesscontextmanagerV1ServicePattern(_messages.Message):
 
   Fields:
     modifiers: Modifiers to apply to the requests that match the URL pattern.
-    pattern: URL pattern to allow. Only patterns of ".googleapis.com/*",
-      "www.googleapis.com//*" and "*.appspot.com/* forms are supported, where
-      should be an alphanumeric name.
+    pattern: URL pattern to allow. Only patterns of `".googleapis.com/*"`,
+      `"www.googleapis.com//*"`, and `"*.appspot.com/*"` forms are supported,
+      where `` should be an alphanumeric name.
     service: Supported service to allow.
   """
 
@@ -4301,9 +4305,9 @@ class GoogleIdentityAccesscontextmanagerV1ServicePerimeter(_messages.Message):
 
   Enums:
     PerimeterTypeValueValuesEnum: Perimeter type indicator. A single project
-      or VPC network is allowed to be a member of single regular perimeter,
-      but multiple service perimeter bridges. A project cannot be a included
-      in a perimeter bridge without being included in regular perimeter. For
+      or VPC network is allowed to be a member of a single regular perimeter,
+      but multiple service perimeter bridges. A project cannot be included in
+      a perimeter bridge without being included in a regular perimeter. For
       perimeter bridges, the restricted service list as well as access level
       lists must be empty.
 
@@ -4320,17 +4324,17 @@ class GoogleIdentityAccesscontextmanagerV1ServicePerimeter(_messages.Message):
       alphanumeric characters or `_`. After you create a `ServicePerimeter`,
       you cannot change its `name`.
     perimeterType: Perimeter type indicator. A single project or VPC network
-      is allowed to be a member of single regular perimeter, but multiple
-      service perimeter bridges. A project cannot be a included in a perimeter
-      bridge without being included in regular perimeter. For perimeter
+      is allowed to be a member of a single regular perimeter, but multiple
+      service perimeter bridges. A project cannot be included in a perimeter
+      bridge without being included in a regular perimeter. For perimeter
       bridges, the restricted service list as well as access level lists must
       be empty.
     spec: Proposed (or dry run) ServicePerimeter configuration. This
-      configuration allows to specify and test ServicePerimeter configuration
-      without enforcing actual access restrictions. Only allowed to be set
-      when the "use_explicit_dry_run_spec" flag is set.
+      configuration allows you to specify and test ServicePerimeter
+      configuration without enforcing actual access restrictions. Only allowed
+      to be set when the `use_explicit_dry_run_spec` flag is set.
     status: Current ServicePerimeter configuration. Specifies sets of
-      resources, restricted services and access levels that determine
+      resources, restricted services, and access levels that determine
       perimeter content and boundaries.
     title: Human readable title. Must be unique within the Policy.
     useExplicitDryRunSpec: Use explicit dry run spec flag. Ordinarily, a dry-
@@ -4341,17 +4345,17 @@ class GoogleIdentityAccesscontextmanagerV1ServicePerimeter(_messages.Message):
       run version of the Service Perimeter. This allows the user to test
       changes to the enforced config ("status") without actually enforcing
       them. This testing is done through analyzing the differences between
-      currently enforced and suggested restrictions. use_explicit_dry_run_spec
-      must bet set to True if any of the fields in the spec are set to non-
-      default values.
+      currently enforced and suggested restrictions.
+      `use_explicit_dry_run_spec` must be set to `true` if any of the fields
+      in the spec are set to non-default values.
   """
 
   class PerimeterTypeValueValuesEnum(_messages.Enum):
     r"""Perimeter type indicator. A single project or VPC network is allowed
-    to be a member of single regular perimeter, but multiple service perimeter
-    bridges. A project cannot be a included in a perimeter bridge without
-    being included in regular perimeter. For perimeter bridges, the restricted
-    service list as well as access level lists must be empty.
+    to be a member of a single regular perimeter, but multiple service
+    perimeter bridges. A project cannot be included in a perimeter bridge
+    without being included in a regular perimeter. For perimeter bridges, the
+    restricted service list as well as access level lists must be empty.
 
     Values:
       PERIMETER_TYPE_REGULAR: Regular Perimeter. When no value is specified,
@@ -4424,12 +4428,12 @@ class GoogleIdentityAccesscontextmanagerV1VpcAccessibleServices(_messages.Messag
     allowedServicePatterns: Specifies which Google services are allowed to be
       accessed from VPC networks in the service perimeter.
     allowedServices: The list of APIs usable within the Service Perimeter.
-      Must be empty unless 'enable_restriction' is True. You can specify a
-      list of individual services, as well as include the 'RESTRICTED-
-      SERVICES' value, which automatically includes all of the services
+      Must be empty unless `enable_restriction` is `true`. You can specify a
+      list of individual services, as well as include the `'RESTRICTED-
+      SERVICES'` value, which automatically includes all of the services
       protected by the perimeter.
     enableRestriction: Whether to restrict API calls within the Service
-      Perimeter to the list of APIs specified in 'allowed_services'.
+      Perimeter to the list of APIs specified in `allowed_services`.
     servicePatternsEnforcementScopes: Defines the enforcement scopes of
       service patterns.
   """
@@ -4443,7 +4447,7 @@ class GoogleIdentityAccesscontextmanagerV1VpcAccessibleServices(_messages.Messag
       GOOGLE_APIS_VIA_PRIVATE_PATH: Enables VPC Accessible Services
         enforcement for all APIs (including unsupported APIs) for Private
         Google Access configured with Private VIP and Private Service Connect
-        Endpoint for Global Google APIs that uses 'all-apis' bundle.
+        Endpoint for Global Google APIs that use the `'all-apis'` bundle.
     """
     SERVICE_PATTERNS_ENFORCEMENT_SCOPE_UNSPECIFIED = 0
     GOOGLE_APIS_VIA_PRIVATE_PATH = 1
@@ -4465,7 +4469,7 @@ class GoogleIdentityAccesscontextmanagerV1VpcNetworkSource(_messages.Message):
 
 
 class GoogleIdentityAccesscontextmanagerV1VpcSubNetwork(_messages.Message):
-  r"""Sub-segment ranges inside of a VPC Network.
+  r"""Sub-segment ranges inside of a VPC network.
 
   Fields:
     network: Required. Network name. If the network is not part of the
@@ -4476,9 +4480,10 @@ class GoogleIdentityAccesscontextmanagerV1VpcSubNetwork(_messages.Message):
     vpcIpSubnetworks: CIDR block IP subnetwork specification. The IP address
       must be an IPv4 address and can be a public or private IP address. Note
       that for a CIDR IP address block, the specified IP address portion must
-      be properly truncated (i.e. all the host bits must be zero) or the input
-      is considered malformed. For example, "192.0.2.0/24" is accepted but
-      "192.0.2.1/24" is not. If empty, all IP addresses are allowed.
+      be properly truncated (that is, all the host bits must be zero) or the
+      input is considered malformed. For example, `"192.0.2.0/24"` is
+      accepted, but `"192.0.2.1/24"` is not. If empty, all IP addresses are
+      allowed.
   """
 
   network = _messages.StringField(1)

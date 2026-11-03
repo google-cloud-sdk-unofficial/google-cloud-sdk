@@ -17,7 +17,6 @@
 
 import argparse
 import collections
-import json
 import os
 import re
 import sys
@@ -1027,14 +1026,14 @@ class CLI(object):
 
   def ExecutePayload(self, payload):
     """Execute the CLI tool with a parsed JSON payload from Go."""
-    if isinstance(payload, (str, bytes)):
-      payload = json.loads(payload)
+    # pylint: disable=g-import-not-at-top
+    from googlecloudsdk.calliope import namespace_hydrator
 
-    cmd_path = payload.get('command_path', [])
-    if not cmd_path:
+    parsed_payload = namespace_hydrator.Payload.FromJson(payload)
+    if not parsed_payload.command_path:
       raise ValueError('Payload missing command_path')
 
-    lookup_path = list(cmd_path)
+    lookup_path = list(parsed_payload.command_path)
     if lookup_path and (
         lookup_path[0] == self.__name or lookup_path[0] == 'gcloud'
     ):
@@ -1042,7 +1041,9 @@ class CLI(object):
 
     calliope_command = self.__top_element.LoadSubElementByPath(lookup_path)
     if calliope_command is None:
-      raise ValueError('Command not found: {}'.format('.'.join(cmd_path)))
+      raise ValueError(
+          'Command not found: {}'.format('.'.join(parsed_payload.command_path))
+      )
 
     named_configs.FLAG_OVERRIDE_STACK.PushFromArgs([])
     properties.VALUES.PushInvocationValues()
@@ -1051,10 +1052,8 @@ class CLI(object):
     specified_arg_names = []
 
     try:
-      # pylint: disable=g-import-not-at-top
-      from googlecloudsdk.calliope import namespace_hydrator
       hydrated_ns = namespace_hydrator.HydrateNamespace(
-          calliope_command, payload
+          calliope_command, parsed_payload
       )
       specified_arg_names = hydrated_ns.GetSpecifiedArgNames()
 
@@ -1230,6 +1229,9 @@ class CLI(object):
   def _ValidateAssertions(self, calliope_command):
     """Validates execution assertions specified via --assert or property.
 
+    NOTE: The `--assert` flag (including `--assert=readonly`) is experimental
+    and not for production use.
+
     Args:
       calliope_command: backend.CommandCommon, The command being executed.
 
@@ -1250,7 +1252,7 @@ class CLI(object):
       self._ValidateReadOnlyAssertion(calliope_command)
 
   def _ValidateReadOnlyAssertion(self, calliope_command):
-    """Validates the readonly assertion against command metadata.
+    """Validates the experimental readonly assertion (not for production use).
 
     Args:
       calliope_command: backend.CommandCommon, The command being executed.

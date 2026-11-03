@@ -313,6 +313,9 @@ class Revision(proto.Message):
         client_version (str):
             Output only. Arbitrary version identifier for
             the API client.
+        ambient_networking (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.AmbientNetworking):
+            Output only. The ambient networking
+            configuration for this revision.
         etag (str):
             Output only. A system-generated fingerprint
             for this version of the resource. May be used to
@@ -493,6 +496,11 @@ class Revision(proto.Message):
     client_version: str = proto.Field(
         proto.STRING,
         number=54,
+    )
+    ambient_networking: vendor_settings.AmbientNetworking = proto.Field(
+        proto.MESSAGE,
+        number=59,
+        message=vendor_settings.AmbientNetworking,
     )
     etag: str = proto.Field(
         proto.STRING,

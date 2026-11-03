@@ -411,11 +411,34 @@ def _AddL7pscRoutingInfo(parser):
   parser.add_argument('--psc-target-service', help=psc_target_service_help)
 
 
+def _AddNetworkAttachment(parser):
+  """Adds network attachment argument for creating network endpoint groups."""
+  help_text = """\
+      URL of the network attachment that this network endpoint group belongs to.
+      Must be specified in the format:
+      `projects/{project}/regions/{region}/networkAttachments/{network_attachment_name}`.
+
+      This flag is only supported for zonal NEGs with endpoint type `gce-vm-ip`.
+  """
+  parser.add_argument('--network-attachment', help=help_text)
+
+
+def _AddServiceClassId(parser):
+  """Adds service class ID argument for creating network endpoint groups."""
+  help_text = """\
+      Service class ID associated with this network endpoint group.
+
+      This flag is only supported for zonal NEGs with endpoint type `gce-vm-ip`.
+  """
+  parser.add_argument('--service-class-id', help=help_text)
+
+
 def AddCreateNegArgsToParser(
     parser,
     support_neg_type=False,
     support_serverless_deployment=False,
     support_dedicated_backend=False,
+    support_network_attachment=False,
 ):
   """Adds flags for creating a network endpoint group to the parser."""
 
@@ -428,6 +451,9 @@ def AddCreateNegArgsToParser(
   _AddProducerPort(parser)
   _AddServerlessRoutingInfo(parser, support_serverless_deployment)
   _AddL7pscRoutingInfo(parser)
+  if support_network_attachment:
+    _AddNetworkAttachment(parser)
+    _AddServiceClassId(parser)
 
 
 def _AddAddEndpoint(endpoint_group, endpoint_spec):

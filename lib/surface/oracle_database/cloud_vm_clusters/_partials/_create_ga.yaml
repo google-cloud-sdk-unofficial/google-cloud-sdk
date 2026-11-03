@@ -45,6 +45,19 @@
        --properties-gi-version=xx.0.0.0  --properties-hostname-prefix=hostname1 \
        --properties-cpu-core-count=4
 
+      To use a custom domain name for the CloudVmCluster, create an OdbDnsZone
+      under the same OdbNetwork and pass it with `--odb-dns-zone`:
+
+        $ {command} my-instance --location=us-east4 --display-name="my instance" \
+       --odb-network=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork \
+       --odb-subnet=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-odbsubnet \
+       --backup-odb-subnet=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-backup-odbsubnet \
+       --odb-dns-zone=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbDnsZones/my-odb-dns-zone \
+       --properties-license-type=LICENSE_INCLUDED \
+       --properties-ssh-public-keys="VtTxzlPJtIivthmLOmWdRDFy5l27pKUTwLp02" \
+       --properties-gi-version=xx.0.0.0  --properties-hostname-prefix=hostname1 \
+       --properties-cpu-core-count=4
+
       Network and CIDR based configuration:
 
         $ {command} my-instance --location=us-east4 --display-name="my instance" \
@@ -367,6 +380,17 @@
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_odb_networks_odb_subnets
       resource_method_params:
         cloudVmCluster.backupOdbSubnet: '{__relative_name__}'
+      required: false
+    - arg_name: odb-dns-zone
+      help_text: |-
+        The name of the OdbDnsZone for using custom domain name for the VM Cluster.
+        Format:
+        projects/{project}/locations/{location}/odbNetworks/{odb_network}/odbDnsZones/{odb_dns_zone}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_odb_networks_odb_dns_zones
+      resource_method_params:
+        cloudVmCluster.odbDnsZone: '{__relative_name__}'
       required: false
     - arg_name: exascale-db-storage-vault
       help_text: |-

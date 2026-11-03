@@ -44,6 +44,7 @@ auto_flags = [
     'enableFleet',
     'enableSecurityPosture',
     'autoprovisioningEnableKubeletReadonlyPort',
+    'dataplaneebpfhostrouting',
     'dataplanev2obs',
     'enableAmbientNetworking',
     'enableK8sBetaApis',

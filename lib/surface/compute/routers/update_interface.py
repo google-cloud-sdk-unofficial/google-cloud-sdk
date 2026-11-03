@@ -32,6 +32,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
+@base.UniverseCompatible
 class UpdateInterface(base.UpdateCommand):
   """Update an interface on a Compute Engine router.
 
@@ -103,12 +104,10 @@ class UpdateInterface(base.UpdateCommand):
     if iface is None:
       raise router_utils.InterfaceNotFoundError(args.interface_name)
 
-    # Flags --ip-address and --mask-length must be specified together.
-    # TODO(b/65850105): Use an argument group for these flags.
-    if (args.ip_address is not None) and (args.mask_length is not None):
+    # Flags --ip-address and --mask-length are in an argument group that
+    # requires them to be specified together.
+    if args.ip_address is not None:
       iface.ipRange = '{0}/{1}'.format(args.ip_address, args.mask_length)
-    elif (args.ip_address is not None) or (args.mask_length is not None):
-      raise router_utils.RequireIpAddressAndMaskLengthError()
 
     if args.ip_version is not None:
       iface.ipVersion = (

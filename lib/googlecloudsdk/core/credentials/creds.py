@@ -1603,8 +1603,9 @@ def _GetSqliteStore(sqlite_credential_file=None):
 
 def _QuotaProjectIsCurrentProject(quota_project):
   return quota_project in (
-      properties.VALUES.billing.CURRENT_PROJECT,
-      properties.VALUES.billing.CURRENT_PROJECT_WITH_FALLBACK)
+      properties.constants.billing.CURRENT_PROJECT,
+      properties.constants.billing.CURRENT_PROJECT_WITH_FALLBACK,
+  )
 
 
 def GetQuotaProject(credentials, force_resource_quota=False):
@@ -1630,7 +1631,7 @@ def GetQuotaProject(credentials, force_resource_quota=False):
     else:
       # for service account, don't return if flag or property are not set
       return None
-  elif quota_project == properties.VALUES.billing.LEGACY:
+  elif quota_project == properties.constants.billing.LEGACY:
     if force_resource_quota:
       return properties.VALUES.core.project.Get()
     return None

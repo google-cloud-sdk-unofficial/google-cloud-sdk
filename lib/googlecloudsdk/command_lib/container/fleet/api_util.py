@@ -195,7 +195,8 @@ def CreateMembership(project,
                      release_track=None,
                      issuer_url=None,
                      oidc_jwks=None,
-                     api_server_version=None):
+                     api_server_version=None,
+                     membership_type=None):
   """Creates a Membership resource in the GKE Hub API.
 
   Args:
@@ -214,6 +215,7 @@ def CreateMembership(project,
       service account tokens. Set to None if the issuer_url is
       publicly-routable. Still requires issuer_url to be set.
     api_server_version: api server version of the cluster for CRD
+    membership_type: the type of the membership.
 
   Returns:
     the created Membership resource.
@@ -246,6 +248,9 @@ def CreateMembership(project,
       request.membership.endpoint = endpoint
   if external_id:
     request.membership.externalId = external_id
+  if membership_type:
+    request.membership.membershipType = getattr(
+        messages.Membership.MembershipTypeValueValuesEnum, membership_type)
   if issuer_url:
     request.membership.authority = messages.Authority(issuer=issuer_url)
     if oidc_jwks:

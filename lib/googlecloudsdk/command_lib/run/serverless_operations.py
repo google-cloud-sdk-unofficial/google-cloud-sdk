@@ -53,6 +53,7 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run import domain_mapping_util
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
@@ -885,7 +886,7 @@ class ServerlessOperations(object):
       build_pack=None,
       build_region=None,
       build_source=None,
-      repo_to_create=None,
+      legacy_repo_to_create=None,
       base_image=None,
       build_service_account=None,
       deploy_from_source_container_name='',
@@ -903,6 +904,7 @@ class ServerlessOperations(object):
       kms_key=None,
       iap_enabled=None,
       source_containers_context=None,
+      check_source_bucket_via_list=False,
   ):
     """Change the given service in prod using the given config_changes.
 
@@ -929,7 +931,7 @@ class ServerlessOperations(object):
       build_pack: The build pack reference to the build.
       build_region: The region to use for the build, in case of multi-region.
       build_source: The build source reference to the build.
-      repo_to_create: Optional
+      legacy_repo_to_create: Optional
         googlecloudsdk.command_lib.artifacts.docker_util.DockerRepo defining a
         repository to be created.
       base_image: The build base image to opt-in automatic build image updates.
@@ -960,6 +962,8 @@ class ServerlessOperations(object):
       source_containers_context: List[SourceContainerContext], the list of local
         context of source containers to use for the deployment. Must not be used
         together with legacy build source.
+      check_source_bucket_via_list: If true, check source bucket existence in
+        the project via List before creating it.
 
     Returns:
       service.Service, the service as returned by the server on the POST/PUT
@@ -967,6 +971,14 @@ class ServerlessOperations(object):
     """
     source_containers_context = source_containers_context or []
     has_new_source_containers = len(source_containers_context) > 0
+    source_deploy_repo_to_create = next(
+        (
+            c.image_repo_to_create
+            for c in source_containers_context
+            if c.image_repo_to_create is not None
+        ),
+        None,
+    )
     # Invalid case that should be caught in argument parsing.
     # The code here is to prevent mixed usage of legacy and new source build.
     if build_source and has_new_source_containers:
@@ -999,7 +1011,10 @@ class ServerlessOperations(object):
               include_upload_source=build_source
               or has_new_source_containers,
               include_build=requires_legacy_build,
-              include_create_repo=repo_to_create is not None,
+              include_create_repo=(
+                  legacy_repo_to_create is not None
+                  or source_deploy_repo_to_create is not None
+              ),
               include_iap=iap_enabled is not None,
           ),
           interruptable=True,
@@ -1007,6 +1022,13 @@ class ServerlessOperations(object):
       )
 
     if has_new_source_containers:
+      if source_deploy_repo_to_create:
+        tracker.StartStage(stages.CREATE_REPO)
+        tracker.UpdateHeaderMessage('Creating Container Repository.')
+        artifact_registry.CreateRepository(
+            source_deploy_repo_to_create, skip_activation_prompt
+        )
+        tracker.CompleteStage(stages.CREATE_REPO)
       tracker.StartStage(stages.UPLOAD_SOURCE)
       try:
         for context in source_containers_context:
@@ -1055,6 +1077,7 @@ class ServerlessOperations(object):
                 context.source_bucket,
                 archive_type,
                 respect_gitignore=respect_gitignore,
+                check_source_bucket_via_list=check_source_bucket_via_list,
             )
             source_path = sources.GetGsutilUri(source)
           config_changes.append(
@@ -1091,7 +1114,7 @@ class ServerlessOperations(object):
             build_image,
             build_source,
             build_pack,
-            repo_to_create,
+            legacy_repo_to_create,
             release_track,
             skip_activation_prompt,
             region,
@@ -1105,6 +1128,7 @@ class ServerlessOperations(object):
             source_bucket,
             kms_key,
             upload_through_run_api=upload_through_run_api,
+            check_source_bucket_via_list=check_source_bucket_via_list,
         )
         if image_digest is None:
           return

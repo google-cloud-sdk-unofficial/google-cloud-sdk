@@ -99,6 +99,11 @@ class Update(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
             if args.IsSpecified('pattern_matching')
             else None
         ),
+        ai_processing_location=(
+            args.ai_processing_location
+            if args.IsSpecified('ai_processing_location')
+            else None
+        ),
     )
     return self.HandleOperationResult(
         conversion_workspace_ref=conversion_workspace_ref,

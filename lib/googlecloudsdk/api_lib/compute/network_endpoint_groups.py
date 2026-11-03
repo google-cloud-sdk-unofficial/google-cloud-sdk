@@ -62,6 +62,8 @@ class NetworkEndpointGroupsClient(object):
       serverless_deployment_version=None,
       serverless_deployment_url_mask=None,
       psc_target_service=None,
+      network_attachment=None,
+      service_class_id=None,
   ):
     """Creates a network endpoint group."""
     is_zonal = hasattr(neg_ref, 'zone')
@@ -93,6 +95,16 @@ class NetworkEndpointGroupsClient(object):
           collection='compute.subnetworks',
       )
       subnet_uri = subnet_ref.SelfLink()
+
+    network_attachment_uri = None
+    if network_attachment and is_zonal:
+      region = api_utils.ZoneNameToRegionName(neg_ref.zone)
+      network_attachment_ref = self.resources.Parse(
+          network_attachment,
+          {'project': neg_ref.project, 'region': region},
+          collection='compute.networkAttachments',
+      )
+      network_attachment_uri = network_attachment_ref.SelfLink()
 
     cloud_run = None
     if cloud_run_service or cloud_run_tag or cloud_run_url_mask:
@@ -220,6 +232,10 @@ class NetworkEndpointGroupsClient(object):
           network=network_uri,
           subnetwork=subnet_uri,
       )
+      if network_attachment_uri:
+        network_endpoint_group.networkAttachment = network_attachment_uri
+      if service_class_id:
+        network_endpoint_group.serviceClassId = service_class_id
 
     if is_zonal:
       request = self.messages.ComputeNetworkEndpointGroupsInsertRequest(

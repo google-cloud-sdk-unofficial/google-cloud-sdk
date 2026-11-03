@@ -449,10 +449,27 @@ workload_identity_pool_provider:
     GA:
       api_field: workloadIdentityPoolProvider.oidc.discoveryUri
     arg_name: discovery-uri
-    hidden: true
     help_text: |-
-      URL to fetch the discovery document from, overriding the discovery document
-      URL derived from `issuer_uri`.
+      URL to fetch the OIDC discovery document from, overriding the default
+      URL derived from `--issuer-uri`. If not set, `--discovery-uri` defaults to
+      `--issuer-uri` with `/.well-known/openid-configuration` appended, according to
+      the OpenID Connect Discovery 1.0 specification.
+
+      If set, `--discovery-uri` must meet the following requirements:
+      - Start with `https://`.
+      - Not exceed 2000 characters.
+      - Match the scheme, host, and port of `--issuer-uri`.
+      - Contain a path with `/.well-known/<suffix>` (where `<suffix>` is not
+        empty, such as `custom-openid-configuration`) and conform to the
+        `--issuer-uri` topology:
+        - The well-known path segment is inserted before the issuer path (for
+          example,
+          `https://example.com/.well-known/custom-openid-configuration/tenant1`
+          for issuer `https://example.com/tenant1`), or
+        - The well-known path segment is appended under the issuer path (for
+          example,
+          `https://example.com/tenant1/.well-known/custom-openid-configuration`
+          for issuer `https://example.com/tenant1`).
 
   actor_providers:
     api_field: workloadIdentityPoolProvider.actorProviders
@@ -460,13 +477,17 @@ workload_identity_pool_provider:
       api_field: workloadIdentityPoolProvider.actorProviders
     type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
     arg_name: actor-providers
-    hidden: true
     help_text: |-
-      List of the resource names of
-      workload identity pool providers
+      List of the resource names of workload identity pool providers
       in the same pool that are authorized to issue actor tokens for this
-      provider.
+      provider. An actor token represents the identity of the acting party
+      to whom authority is delegated. At most three actor providers can be specified.
 
+      For example:
+
+      ```
+      projects/<project-number>/locations/global/workloadIdentityPools/<pool-id>/providers/<actor-provider-id-1>,projects/<project-number>/locations/global/workloadIdentityPools/<pool-id>/providers/<actor-provider-id-2>
+      ```
 
   saml_idp_metadata_path:
     api_field: workloadIdentityPoolProvider.saml.idpMetadataXml

@@ -1,4 +1,6 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
+hints:
+  read_only: true
 
 help_text:
   brief: |
@@ -22,6 +24,8 @@ request:
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
   collection: redis.projects.locations.clusters.tokenAuthUsers
 
 response:

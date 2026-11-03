@@ -150,6 +150,9 @@ class RevisionTemplate(proto.Message):
             Optional. Configured graceful termination
             period for this revision. This is the time
             between SIGTERM and SIGKILL when shutting down.
+        ambient_networking (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.AmbientNetworking):
+            Optional. The ambient networking
+            configuration for this revision.
     """
 
     revision: str = proto.Field(
@@ -263,6 +266,11 @@ class RevisionTemplate(proto.Message):
         proto.MESSAGE,
         number=32,
         message=duration_pb2.Duration,
+    )
+    ambient_networking: vendor_settings.AmbientNetworking = proto.Field(
+        proto.MESSAGE,
+        number=33,
+        message=vendor_settings.AmbientNetworking,
     )
 
 

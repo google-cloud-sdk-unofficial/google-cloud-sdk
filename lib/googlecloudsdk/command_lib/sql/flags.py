@@ -3155,6 +3155,56 @@ def AddClearAllowedPscProjects(parser):
   )
 
 
+def AddEnablePscEndpointAllowlisting(
+    parser, show_negated_in_help=False, hidden=True
+):
+  """Adds --enable-psc-endpoint-allowlisting argument."""
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--enable-psc-endpoint-allowlisting',
+      required=False,
+      help=(
+          'Enable multi-tenant Private Service Connect endpoint allowlisting'
+          ' for the Cloud SQL instance.'
+      ),
+      hidden=hidden,
+      **kwargs
+  )
+
+
+def AddAllowedConsumerEndpoints(parser, hidden=True):
+  """Adds --allowed-consumer-endpoints argument."""
+  parser.add_argument(
+      '--allowed-consumer-endpoints',
+      type=arg_parsers.ArgList(min_length=1),
+      required=False,
+      metavar='ENDPOINT',
+      help=(
+          'A comma-separated list of consumer Private Service Connect'
+          ' forwarding rule URIs allowlisted for the connection. Each endpoint'
+          ' can be a full HTTPS URL or a relative path in the format'
+          ' projects/{project}/regions/{region}/forwardingRules/{forwarding-rule}.'
+      ),
+      hidden=hidden,
+  )
+
+
+def AddClearAllowedConsumerEndpoints(parser, hidden=True):
+  """Adds --clear-allowed-consumer-endpoints argument."""
+  kwargs = _GetKwargsForBoolFlag(False)
+  parser.add_argument(
+      '--clear-allowed-consumer-endpoints',
+      required=False,
+      help=(
+          'Clear the allowed consumer endpoints list of Private Service'
+          ' Connect, disallowing all explicitly specified consumer endpoints'
+          ' from connecting to the instance.'
+      ),
+      hidden=hidden,
+      **kwargs
+  )
+
+
 def AddEnablePscAutoConnectionPolicy(
     parser: parser_extensions.Namespace, *, hidden: bool = False
 ) -> None:

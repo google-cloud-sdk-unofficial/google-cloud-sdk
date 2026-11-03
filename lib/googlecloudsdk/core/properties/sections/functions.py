@@ -14,6 +14,7 @@
 # limitations under the License.
 """Contains the properties for the 'functions' section."""
 
+from googlecloudsdk.core.properties.completers import COMPLETERS
 from googlecloudsdk.core.properties.types import _Section
 
 
@@ -31,9 +32,7 @@ class _SectionFunctions(_Section):
             ' will fall back to this value, if set. To see valid choices, run'
             ' `gcloud beta functions regions list`.'
         ),
-        completer=(
-            'googlecloudsdk.command_lib.functions.flags:LocationsCompleter'
-        ),
+        completer=COMPLETERS['FunctionsLocationsCompleter'],
     )
     self.gen2 = self._AddBool(
         'gen2',

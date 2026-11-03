@@ -51,6 +51,7 @@ __protobuf__ = proto.module(
         'PredictLongRunningRequest',
         'FetchPredictOperationRequest',
         'InvokeRequest',
+        'StreamPublisherInvokeRequest',
         'ExplainRequest',
         'ExplainResponse',
         'CountTokensRequest',
@@ -63,6 +64,8 @@ __protobuf__ = proto.module(
         'GenerateVideoResponse',
         'EmbedContentRequest',
         'EmbedContentResponse',
+        'BatchEmbedContentsRequest',
+        'BatchEmbedContentsResponse',
         'GetResponseRequest',
         'DeleteResponseRequest',
     },
@@ -717,6 +720,31 @@ class InvokeRequest(proto.Message):
     )
 
 
+class StreamPublisherInvokeRequest(proto.Message):
+    r"""Request message for
+    [PredictionService.StreamPublisherInvoke][google.cloud.aiplatform.v1beta1.PredictionService.StreamPublisherInvoke].
+
+    Attributes:
+        endpoint (str):
+            Required. The name of the Endpoint requested to serve the
+            prediction. Format:
+            ``projects/{project}/locations/{location}/publishers/{publisher}``
+        http_body (google.api.httpbody_pb2.HttpBody):
+            Required. The raw payload mapped from the
+            WebSocket frame.
+    """
+
+    endpoint: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    http_body: httpbody_pb2.HttpBody = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        message=httpbody_pb2.HttpBody,
+    )
+
+
 class ExplainRequest(proto.Message):
     r"""Request message for
     [PredictionService.Explain][google.cloud.aiplatform.v1beta1.PredictionService.Explain].
@@ -1044,7 +1072,34 @@ class GenerateContentRequest(proto.Message):
             must not be supplied.
         generation_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.GenerationConfig):
             Optional. Generation config.
+        continuation_token (bytes):
+            Optional. An opaque continuation token used to resume
+            generation from a previous ``GenerateContent`` or
+            ``StreamGenerateContent`` response that stopped with
+            ``finish_reason`` set to ``CONTINUATION``.
+        output_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.GenerateContentRequest.OutputConfig):
+            Optional. Configuration for persisting output
+            assets to external storage.
     """
+
+    class OutputConfig(proto.Message):
+        r"""Configuration for persisting output assets to external
+        storage.
+
+        Attributes:
+            output_uri_prefix (str):
+                Optional. The Cloud Storage URI prefix or directory where
+                generated media assets should be written (e.g.
+                ``gs://my-bucket/prefix/``). Supported URI schemes:
+                ``gs://``. When set, media bytes are written directly to
+                this location and returned as ``FileData`` with a
+                ``file_uri`` instead of raw inline bytes.
+        """
+
+        output_uri_prefix: str = proto.Field(
+            proto.STRING,
+            number=1,
+        )
 
     model: str = proto.Field(
         proto.STRING,
@@ -1094,6 +1149,15 @@ class GenerateContentRequest(proto.Message):
         proto.MESSAGE,
         number=4,
         message=gca_content.GenerationConfig,
+    )
+    continuation_token: bytes = proto.Field(
+        proto.BYTES,
+        number=21,
+    )
+    output_config: OutputConfig = proto.Field(
+        proto.MESSAGE,
+        number=22,
+        message=OutputConfig,
     )
 
 
@@ -1728,6 +1792,71 @@ class EmbedContentResponse(proto.Message):
     truncated: bool = proto.Field(
         proto.BOOL,
         number=4,
+    )
+
+
+class BatchEmbedContentsRequest(proto.Message):
+    r"""Request message for
+    [PredictionService.BatchEmbedContents][google.cloud.aiplatform.v1beta1.PredictionService.BatchEmbedContents].
+
+    Attributes:
+        model (str):
+            Required. The name of the publisher model requested to serve
+            the prediction. Format:
+            ``projects/{project}/locations/{location}/publishers/{publisher}/models/{model}``
+        requests (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.EmbedContentRequest]):
+            Required. Embed requests for the batch. The model in each of
+            these requests must either be empty or match the model
+            specified in ``BatchEmbedContentsRequest.model``. All the
+            requests in a batch must have the same output dimensionality
+            and auto truncation parameters.
+    """
+
+    model: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    requests: MutableSequence['EmbedContentRequest'] = proto.RepeatedField(
+        proto.MESSAGE,
+        number=2,
+        message='EmbedContentRequest',
+    )
+
+
+class BatchEmbedContentsResponse(proto.Message):
+    r"""Response message for
+    [PredictionService.BatchEmbedContents][google.cloud.aiplatform.v1beta1.PredictionService.BatchEmbedContents].
+
+    Attributes:
+        embeddings (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.BatchEmbedContentsResponse.Embedding]):
+            The embeddings for each request, in the same
+            order as provided in the batch request.
+        usage_metadata (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.UsageMetadata):
+            Usage metadata about the response(s).
+    """
+
+    class Embedding(proto.Message):
+        r"""A list of floats representing an embedding.
+
+        Attributes:
+            values (MutableSequence[float]):
+                Embedding vector values.
+        """
+
+        values: MutableSequence[float] = proto.RepeatedField(
+            proto.FLOAT,
+            number=1,
+        )
+
+    embeddings: MutableSequence[Embedding] = proto.RepeatedField(
+        proto.MESSAGE,
+        number=1,
+        message=Embedding,
+    )
+    usage_metadata: gca_usage_metadata.UsageMetadata = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        message=gca_usage_metadata.UsageMetadata,
     )
 
 

@@ -194,8 +194,8 @@ class Replace(base.Command):
       namespace = new_worker_pool.metadata.namespace
       endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
       if properties.VALUES.regional.endpoint_compatibility.Get() and (
-          endpoint_mode == properties.VALUES.regional.REGIONAL
-          or endpoint_mode == properties.VALUES.regional.REGIONAL_PREFERRED
+          endpoint_mode == properties.constants.regional.REGIONAL
+          or endpoint_mode == properties.constants.regional.REGIONAL_PREFERRED
       ):
         if namespace != project:
           raise exceptions.ConfigurationError(

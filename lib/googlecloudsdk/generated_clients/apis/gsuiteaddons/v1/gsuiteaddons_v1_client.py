@@ -37,8 +37,73 @@ class GsuiteaddonsV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_chatAppConfig = self.ProjectsChatAppConfigService(self)
     self.projects_deployments = self.ProjectsDeploymentsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsChatAppConfigService(base_api.BaseApiService):
+    """Service class for the projects_chatAppConfig resource."""
+
+    _NAME = 'projects_chatAppConfig'
+
+    def __init__(self, client):
+      super(GsuiteaddonsV1.ProjectsChatAppConfigService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""[Developer Preview](https://developers.google.com/workspace/preview): Gets the Chat app configuration of a project. Only Chat apps built as Google Workspace add-ons are supported. Each Google Cloud project has exactly one Chat app configuration. Requires the `gsuiteaddons.chatAppConfigs.get` and `chat.bots.get` IAM permissions on the project.
+
+      Args:
+        request: (GsuiteaddonsProjectsChatAppConfigGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudGsuiteaddonsV1ChatAppConfig) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/chatAppConfig',
+        http_method='GET',
+        method_id='gsuiteaddons.projects.chatAppConfig.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['view'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='GsuiteaddonsProjectsChatAppConfigGetRequest',
+        response_type_name='GoogleCloudGsuiteaddonsV1ChatAppConfig',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""[Developer Preview](https://developers.google.com/workspace/preview): Updates the Chat app configuration of a project. Only Chat apps built as Google Workspace add-ons are supported. Each Google Cloud project has exactly one Chat app configuration. Requires the `gsuiteaddons.chatAppConfigs.update` and `chat.bots.update` IAM permissions on the project.
+
+      Args:
+        request: (GsuiteaddonsProjectsChatAppConfigPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudGsuiteaddonsV1ChatAppConfig) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/chatAppConfig',
+        http_method='PATCH',
+        method_id='gsuiteaddons.projects.chatAppConfig.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='googleCloudGsuiteaddonsV1ChatAppConfig',
+        request_type_name='GsuiteaddonsProjectsChatAppConfigPatchRequest',
+        response_type_name='GoogleCloudGsuiteaddonsV1ChatAppConfig',
+        supports_download=False,
+    )
 
   class ProjectsDeploymentsService(base_api.BaseApiService):
     """Service class for the projects_deployments resource."""
@@ -300,59 +365,5 @@ class GsuiteaddonsV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='GsuiteaddonsProjectsGetAuthorizationRequest',
         response_type_name='GoogleCloudGsuiteaddonsV1Authorization',
-        supports_download=False,
-    )
-
-    def GetChatAppConfig(self, request, global_params=None):
-      r"""Gets a Chat app configuration. [Developer Preview](https://developers.google.com/workspace/preview).
-
-      Args:
-        request: (GsuiteaddonsProjectsGetChatAppConfigRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleCloudGsuiteaddonsV1ChatAppConfig) The response message.
-      """
-      config = self.GetMethodConfig('GetChatAppConfig')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    GetChatAppConfig.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1/projects/{projectsId}/chatAppConfig',
-        http_method='GET',
-        method_id='gsuiteaddons.projects.getChatAppConfig',
-        ordered_params=['name'],
-        path_params=['name'],
-        query_params=['view'],
-        relative_path='v1/{+name}',
-        request_field='',
-        request_type_name='GsuiteaddonsProjectsGetChatAppConfigRequest',
-        response_type_name='GoogleCloudGsuiteaddonsV1ChatAppConfig',
-        supports_download=False,
-    )
-
-    def UpdateChatAppConfig(self, request, global_params=None):
-      r"""Updates a Chat app configuration. [Developer Preview](https://developers.google.com/workspace/preview).
-
-      Args:
-        request: (GsuiteaddonsProjectsUpdateChatAppConfigRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleCloudGsuiteaddonsV1ChatAppConfig) The response message.
-      """
-      config = self.GetMethodConfig('UpdateChatAppConfig')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    UpdateChatAppConfig.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1/projects/{projectsId}/chatAppConfig',
-        http_method='PATCH',
-        method_id='gsuiteaddons.projects.updateChatAppConfig',
-        ordered_params=['name'],
-        path_params=['name'],
-        query_params=['updateMask'],
-        relative_path='v1/{+name}',
-        request_field='googleCloudGsuiteaddonsV1ChatAppConfig',
-        request_type_name='GsuiteaddonsProjectsUpdateChatAppConfigRequest',
-        response_type_name='GoogleCloudGsuiteaddonsV1ChatAppConfig',
         supports_download=False,
     )

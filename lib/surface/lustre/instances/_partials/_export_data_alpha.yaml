@@ -18,6 +18,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: false
   help_text:
     brief: Exports data from a Managed Lustre instance to Cloud Storage
     description: |

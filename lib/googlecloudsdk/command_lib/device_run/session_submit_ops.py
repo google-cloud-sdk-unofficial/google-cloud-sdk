@@ -21,9 +21,149 @@ import uuid
 
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.api_lib.storage import storage_util
+from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.device_run import reports
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+
+
+def AddShardingFlags(parser: Any) -> None:
+  """Adds common uniform and smart sharding flags to the command parser."""
+  parser.add_argument(
+      '--sharding-option',
+      type=str,
+      choices=['uniform', 'smart'],
+      help=(
+          'Specify the sharding strategy to partition the test execution'
+          ' across multiple device allocations. Accepted values are `uniform`'
+          ' or `smart`.'
+      ),
+  )
+  parser.add_argument(
+      '--uniform-sharding-count',
+      type=int,
+      help=(
+          'Specify the total number of shards to create for uniform'
+          ' sharding. Required when `--sharding-option=uniform`. The valid'
+          ' range is `1` to `20` for physical devices and `1` to `200` for'
+          ' virtual devices.'
+      ),
+  )
+  parser.add_argument(
+      '--smart-sharding-target-duration',
+      type=arg_parsers.Duration(lower_bound='2m', upper_bound='1h'),
+      help=(
+          'Specify the targeted execution time (e.g., `2m`, `10m`, `1h`)'
+          ' per shard for smart sharding. The valid range is `2m` to `1h`.'
+          ' Required when `--sharding-option=smart`.'
+      ),
+  )
+  parser.add_argument(
+      '--smart-sharding-record-name',
+      type=str,
+      help=(
+          'Specify the name of the smart sharding record file, excluding'
+          ' the file extension. Required when `--sharding-option=smart`. This'
+          ' file is located in the Google Cloud Storage bucket specified by'
+          ' `--bucket-name` under the `automation/smart-sharding/` directory'
+          ' with a `.yaml` extension. If the file does not exist, it will be'
+          ' created automatically; otherwise, its contents will be updated'
+          ' upon session completion.'
+      ),
+  )
+  parser.add_argument(
+      '--smart-sharding-max-shard-count',
+      type=int,
+      help=(
+          'Specify the maximum number of shards to create for smart'
+          ' sharding. If unset or set to 0, system-defined max limits are'
+          ' used. The valid range is `0` to `20` for physical devices and'
+          ' `0` to `200` for virtual devices.'
+      ),
+  )
+
+
+def ValidateShardingArgs(args: Any) -> None:
+  """Validates cross-flag dependencies for uniform and smart sharding flags."""
+  if args.sharding_option == 'uniform' and args.uniform_sharding_count is None:
+    raise calliope_exceptions.RequiredArgumentException(
+        '--uniform-sharding-count',
+        'Required when --sharding-option is uniform.',
+    )
+  if (
+      args.uniform_sharding_count is not None
+      and args.sharding_option != 'uniform'
+  ):
+    raise calliope_exceptions.InvalidArgumentException(
+        '--uniform-sharding-count',
+        'Can only be specified when --sharding-option is uniform.',
+    )
+  if (
+      args.sharding_option == 'smart'
+      and args.smart_sharding_target_duration is None
+  ):
+    raise calliope_exceptions.RequiredArgumentException(
+        '--smart-sharding-target-duration',
+        'Required when --sharding-option is smart.',
+    )
+  if (
+      args.smart_sharding_target_duration is not None
+      and args.sharding_option != 'smart'
+  ):
+    raise calliope_exceptions.InvalidArgumentException(
+        '--smart-sharding-target-duration',
+        'Can only be specified when --sharding-option is smart.',
+    )
+  if (
+      args.sharding_option == 'smart'
+      and args.smart_sharding_record_name is None
+  ):
+    raise calliope_exceptions.RequiredArgumentException(
+        '--smart-sharding-record-name',
+        'Required when --sharding-option is smart.',
+    )
+  if (
+      args.smart_sharding_record_name is not None
+      and args.sharding_option != 'smart'
+  ):
+    raise calliope_exceptions.InvalidArgumentException(
+        '--smart-sharding-record-name',
+        'Can only be specified when --sharding-option is smart.',
+    )
+  if (
+      args.smart_sharding_max_shard_count is not None
+      and args.sharding_option != 'smart'
+  ):
+    raise calliope_exceptions.InvalidArgumentException(
+        '--smart-sharding-max-shard-count',
+        'Can only be specified when --sharding-option is smart.',
+    )
+
+
+def BuildShardingOptions(
+    args: Any, bucket_name: str, messages: Any
+) -> Tuple[Any, Any]:
+  """Builds (uniform_sharding, smart_sharding) proto messages from CLI args."""
+  uniform_sharding = None
+  smart_sharding = None
+  if args.sharding_option == 'uniform':
+    uniform_sharding = messages.UniformSharding(
+        shardCount=args.uniform_sharding_count
+    )
+  elif args.sharding_option == 'smart':
+    record_path = (
+        f'gs://{bucket_name}/automation/smart-sharding/'
+        f'{args.smart_sharding_record_name}.yaml'
+    )
+    smart_sharding = messages.SmartSharding(
+        targetedShardDuration=f'{args.smart_sharding_target_duration}s',
+        timingRecord=messages.InputFile(
+            gcsInputFile=messages.GcsPath(path=record_path)
+        ),
+        maxShardCount=args.smart_sharding_max_shard_count,
+    )
+  return uniform_sharding, smart_sharding
 
 
 def GetRunId() -> str:

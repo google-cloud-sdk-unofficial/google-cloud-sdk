@@ -29,6 +29,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.cluster_director.clusters import _validator
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
 from googlecloudsdk.command_lib.cluster_director.clusters import slurm_parser
+from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core.util import files
 
 ClusterDirectorError = errors.ClusterDirectorError
@@ -606,10 +607,6 @@ def MakeClusterSlurmOrchestrator(
     slurm.taskPrologBashScripts = args.slurm_task_prolog_scripts
   if args.IsKnownAndSpecified("slurm_task_epilog_scripts"):
     slurm.taskEpilogBashScripts = args.slurm_task_epilog_scripts
-  _validator.ValidateSlurmConfigExclusiveFlags(
-      has_slurm_config=args.IsKnownAndSpecified("slurm_config"),
-      has_slurm_conf_file=args.IsKnownAndSpecified("slurm_conf_file"),
-  )
   if args.IsKnownAndSpecified("slurm_config"):
     parsed_slurm_config = slurm_parser.ParseSlurmConfigDict(args.slurm_config)
     known_fields = {f.name for f in message_module.SlurmConfig.all_fields()}
@@ -619,43 +616,6 @@ def MakeClusterSlurmOrchestrator(
     slurm.config = messages_util.DictToMessageWithErrorCheck(
         direct_fields, message_module.SlurmConfig
     )
-  elif args.IsKnownAndSpecified("slurm_conf_file"):
-    parsed_conf_data = slurm_parser.ParseSlurmConfFile(
-        args.slurm_conf_file
-    )
-    if parsed_conf_data.get("config"):
-      known_fields = {f.name for f in message_module.SlurmConfig.all_fields()}
-      direct_fields = {
-          k: v
-          for k, v in parsed_conf_data["config"].items()
-          if k in known_fields
-      }
-      slurm.config = messages_util.DictToMessageWithErrorCheck(
-          direct_fields, message_module.SlurmConfig
-      )
-    else:
-      slurm.config = None
-    if hasattr(message_module, "SlurmNodeConfig"):
-      conf_node_sets = parsed_conf_data.get("nodeSets", {})
-      for node_set in slurm.nodeSets:
-        if node_set.id in conf_node_sets:
-          conf_node_cfg = conf_node_sets[node_set.id]
-          _validator.ValidateSlurmNodeConfig(conf_node_cfg)
-          node_set.config = messages_util.DictToMessageWithErrorCheck(
-              conf_node_cfg, message_module.SlurmNodeConfig
-          )
-        else:
-          node_set.config = None
-    if hasattr(message_module, "SlurmPartitionConfig"):
-      conf_partitions = parsed_conf_data.get("partitions", {})
-      for partition in slurm.partitions:
-        if partition.id in conf_partitions:
-          conf_part_cfg = conf_partitions[partition.id]
-          partition.config = messages_util.DictToMessageWithErrorCheck(
-              conf_part_cfg, message_module.SlurmPartitionConfig
-          )
-        else:
-          partition.config = None
   if args.IsKnownAndSpecified("enable_slurm_health_check"):
     slurm.disableHealthCheckProgram = not args.enable_slurm_health_check
   if args.IsKnownAndSpecified("controller_version"):
@@ -886,24 +846,6 @@ def MakeClusterSlurmOrchestratorPatch(
 
       slurm_node_sets[node_set_id] = existing_node_set
       is_node_sets_updated = True
-  if args.IsKnownAndSpecified("slurm_conf_file"):
-    parsed_conf_data = slurm_parser.ParseSlurmConfFile(
-        args.slurm_conf_file
-    )
-    conf_node_sets = parsed_conf_data.get("nodeSets", {})
-    if hasattr(message_module, "SlurmNodeConfig"):
-      for node_set_id, existing_node_set in slurm_node_sets.items():
-        if node_set_id in conf_node_sets:
-          conf_node_cfg = conf_node_sets[node_set_id]
-          _validator.ValidateSlurmNodeConfig(conf_node_cfg)
-          existing_node_set.config = messages_util.DictToMessageWithErrorCheck(
-              conf_node_cfg, message_module.SlurmNodeConfig
-          )
-        else:
-          existing_node_set.config = None
-        slurm_node_sets[node_set_id] = existing_node_set
-      if slurm_node_sets:
-        is_node_sets_updated = True
   if args.IsSpecified("add_slurm_node_sets"):
     for node_set in args.add_slurm_node_sets:
       storage_configs_source = existing_cluster
@@ -1003,23 +945,6 @@ def MakeClusterSlurmOrchestratorPatch(
           exception_message=_SLURM_PARTITION_ALREADY_EXISTS_ERROR,
       )
       is_partitions_updated = True
-  if args.IsKnownAndSpecified("slurm_conf_file"):
-    parsed_conf_data = slurm_parser.ParseSlurmConfFile(
-        args.slurm_conf_file
-    )
-    conf_partitions = parsed_conf_data.get("partitions", {})
-    if hasattr(message_module, "SlurmPartitionConfig"):
-      for partition_id, existing_partition in slurm_partitions.items():
-        if partition_id in conf_partitions:
-          conf_part_cfg = conf_partitions[partition_id]
-          existing_partition.config = messages_util.DictToMessageWithErrorCheck(
-              conf_part_cfg, message_module.SlurmPartitionConfig
-          )
-        else:
-          existing_partition.config = None
-        slurm_partitions[partition_id] = existing_partition
-      if slurm_partitions:
-        is_partitions_updated = True
   if is_partitions_updated:
     slurm.partitions = list(slurm_partitions.values())
     if not slurm.partitions:
@@ -1231,10 +1156,6 @@ def MakeClusterSlurmOrchestratorPatch(
       slurm.taskEpilogBashScripts = task_epilog_scripts
       update_mask.add("orchestrator.slurm.task_epilog_bash_scripts")
 
-  _validator.ValidateSlurmConfigExclusiveFlags(
-      has_slurm_config=args.IsKnownAndSpecified("update_slurm_config"),
-      has_slurm_conf_file=args.IsKnownAndSpecified("slurm_conf_file"),
-  )
   if args.IsKnownAndSpecified("update_slurm_config"):
 
     if not args.update_slurm_config:
@@ -1282,25 +1203,6 @@ def MakeClusterSlurmOrchestratorPatch(
             direct_fields, message_module.SlurmConfig
         )
         update_mask.add("orchestrator.slurm.config")
-  if args.IsKnownAndSpecified("slurm_conf_file"):
-    if not args.slurm_conf_file:
-      slurm.config = None
-      update_mask.add("orchestrator.slurm.config")
-    else:
-      parsed_conf_data = slurm_parser.ParseSlurmConfFile(args.slurm_conf_file)
-      if parsed_conf_data.get("config"):
-        known_fields = {f.name for f in message_module.SlurmConfig.all_fields()}
-        direct_fields = {
-            k: v
-            for k, v in parsed_conf_data["config"].items()
-            if k in known_fields
-        }
-        slurm.config = messages_util.DictToMessageWithErrorCheck(
-            direct_fields, message_module.SlurmConfig
-        )
-      else:
-        slurm.config = None
-      update_mask.add("orchestrator.slurm.config")
   if args.IsKnownAndSpecified("enable_slurm_health_check"):
     slurm.disableHealthCheckProgram = (
         not args.enable_slurm_health_check
@@ -1342,6 +1244,25 @@ def MakeClusterSlurmOrchestratorPatch(
           )
 
   return slurm
+
+
+def _GetDefaultComputeServiceAccountEmail(cluster_ref: Any = None) -> str:
+  """Returns the default Compute Engine service account email for the project."""
+  project_id = None
+  if cluster_ref and getattr(cluster_ref, "Parent", None):
+    parent = cluster_ref.Parent()
+    project_id = getattr(parent, "projectsId", None)
+  if not project_id:
+    raise ClusterDirectorError(
+        "Cluster reference is required to resolve the default Compute Engine"
+        " service account. Please specify serviceAccount.email for Managed"
+        " Instance Groups."
+    )
+  if str(project_id).isdigit():
+    project_number = str(project_id)
+  else:
+    project_number = projects_util.GetProjectNumber(project_id)
+  return f"{project_number}-compute@developer.gserviceaccount.com"
 
 
 def _MakeManagedInstanceGroup(
@@ -1387,6 +1308,15 @@ def _MakeManagedInstanceGroup(
             _GetStoragePoolName(cluster_ref, p) for p in storage_pools
         ]
     mig_msg.bootDisk = boot_disk
+  sa_args = mig.get("serviceAccount") or {}
+  email = sa_args.get("email") or _GetDefaultComputeServiceAccountEmail(
+      cluster_ref
+  )
+  scopes = sa_args.get("scopes") or []
+  mig_msg.serviceAccount = message_module.ServiceAccount(
+      email=email,
+      scopes=scopes,
+  )
   return mig_msg
 
 
@@ -1641,4 +1571,3 @@ def MakeClusterComputeEngineOrchestratorPatch(
     update_mask.add("orchestrator.compute_engine.managed_instance_groups")
 
   return compute_engine
-

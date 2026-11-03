@@ -14,9 +14,7 @@
 # limitations under the License.
 """Contains the properties for the 'app' section."""
 
-import os
-
-from googlecloudsdk.core import config
+from googlecloudsdk.core.properties.providers import PROVIDERS
 from googlecloudsdk.core.properties.types import _Section
 from googlecloudsdk.core.properties.validators import _BuildTimeoutValidator
 
@@ -78,15 +76,8 @@ class _SectionApp(_Section):
         'num_file_upload_threads', default=None, hidden=True
     )
 
-    def GetRuntimeRoot():
-      sdk_root = config.Paths().sdk_root
-      if sdk_root is None:
-        return None
-      else:
-        return os.path.join(config.Paths().sdk_root, 'platform', 'ext-runtime')
-
     self.runtime_root = self._Add(
-        'runtime_root', callbacks=[GetRuntimeRoot], hidden=True
+        'runtime_root', callbacks=[PROVIDERS['GetRuntimeRoot']], hidden=True
     )
 
     # Whether or not to use the (currently under-development) Flex Runtime

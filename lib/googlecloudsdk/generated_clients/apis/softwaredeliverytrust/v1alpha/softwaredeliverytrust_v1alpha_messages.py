@@ -38,8 +38,7 @@ class Attestation(_messages.Message):
       "82a15998df9a8...fa9b"}.
     predicateType: Output only. Type of claim asserted. Example:
       "https://slsa.dev/provenance/v1".
-    signerConfig: Output only. Configuration identifying the signer used for
-      verification of this attestation.
+    signerConfig: Output only. Deprecated: Use `Authority` resources instead.
     subjects: Output only. The artifacts described by this attestation.
     verificationTime: Output only. Timestamp when the attestation DSSE
       envelope signature was cryptographically verified during ingestion. If
@@ -85,6 +84,96 @@ class Attestation(_messages.Message):
   verificationTime = _messages.StringField(9)
 
 
+class Attestor(_messages.Message):
+  r"""Configuration for signing attestations. A corresponding binauthz
+  Attestor will be created, with the key and note registered to it. Format:
+  projects/{project}/attestors/sd-trust-{location}-{gate}
+
+  Fields:
+    gate: Required. The lifecycle gate for which this Attestor is configured.
+      i.e. the "custom_gate" field in the PolicyBinding. A corresponding
+      Container Analysis note will be created (and registered to the
+      Attestor): Format: projects/{project}/notes/sd-trust-{location}-{gate}
+    signingCryptoKeyVersion: Required. The key used by SD Trust to sign
+      emitted attestations. The public key will be registered to the binauthz
+      Attestor. Resource name of a Cloud KMS CryptoKeyVersion, must be an
+      asymmetric key. Format: "projects/{project}/locations/{location}/keyRing
+      s/{key_ring}/cryptoKeys/{crypto_key}/cryptoKeyVersions/{version}"
+  """
+
+  gate = _messages.StringField(1)
+  signingCryptoKeyVersion = _messages.StringField(2)
+
+
+class Authority(_messages.Message):
+  r"""An Authority is a named set of asymmetric public verification keys.
+  During policy evaluation, SD Trust verifies Attestation signatures against
+  active Authorities and exposes matched canonical resource names in CEL.
+
+  Fields:
+    createTime: Output only. Creation timestamp.
+    description: Optional. Human-readable description of the authority.
+    etag: Optional. Checksum computed by the server based on the current value
+      of the Authority resource. May be sent on update and delete requests to
+      ensure the client has an up-to-date value before proceeding (AIP-154).
+    name: Identifier. Resource name of the authority. Format:
+      "projects/{project}/locations/{location}/authorities/{authority}"
+    publicKeys: Optional. Public verification keys trusted for this authority
+      (maximum 32 keys). When empty, no attestations match this Authority (for
+      example, when provisioning an Authority prior to key generation or
+      revoking all keys in an emergency while preserving the Authority
+      resource and its IAM bindings).
+    updateTime: Output only. Last update timestamp.
+  """
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  name = _messages.StringField(4)
+  publicKeys = _messages.MessageField('PublicKey', 5, repeated=True)
+  updateTime = _messages.StringField(6)
+
+
+class BinaryAuthorizationConfig(_messages.Message):
+  r"""Configuration for Binary Authorization integration.
+
+  Enums:
+    PublishDestinationValueValuesEnum: Optional. Setting publish_destination
+      to CONTAINER_ANALYSIS automatically enables background policy evaluation
+      and attestation publishing/revocation in Container Analysis. Setting it
+      back to PUBLISH_DESTINATION_UNSPECIFIED disables automatic publishing.
+
+  Fields:
+    attestors: Optional. Customer-configured attestors used by SD Trust to
+      sign emitted attestations. Only the gates in attestors will be
+      evaluated/published. This maps directly to the binauthz attestors and
+      Container Analysis Notes that will be created when settings are updated.
+    publishDestination: Optional. Setting publish_destination to
+      CONTAINER_ANALYSIS automatically enables background policy evaluation
+      and attestation publishing/revocation in Container Analysis. Setting it
+      back to PUBLISH_DESTINATION_UNSPECIFIED disables automatic publishing.
+  """
+
+  class PublishDestinationValueValuesEnum(_messages.Enum):
+    r"""Optional. Setting publish_destination to CONTAINER_ANALYSIS
+    automatically enables background policy evaluation and attestation
+    publishing/revocation in Container Analysis. Setting it back to
+    PUBLISH_DESTINATION_UNSPECIFIED disables automatic publishing.
+
+    Values:
+      PUBLISH_DESTINATION_UNSPECIFIED: Disables automatic publishing.
+      CONTAINER_ANALYSIS: Automatically evaluate gates on attestation/policy
+        changes and publish (on PASS) or revoke (on FAIL) signed attestations
+        in Container Analysis under: projects/{project}/notes/sd-
+        trust-{location}-{gate}
+    """
+    PUBLISH_DESTINATION_UNSPECIFIED = 0
+    CONTAINER_ANALYSIS = 1
+
+  attestors = _messages.MessageField('Attestor', 1, repeated=True)
+  publishDestination = _messages.EnumField('PublishDestinationValueValuesEnum', 2)
+
+
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
@@ -121,6 +210,18 @@ class ListAttestationsResponse(_messages.Message):
   """
 
   attestations = _messages.MessageField('Attestation', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListAuthoritiesResponse(_messages.Message):
+  r"""Response message for ListAuthorities.
+
+  Fields:
+    authorities: List of authorities matching the request.
+    nextPageToken: Token to retrieve the next page of results.
+  """
+
+  authorities = _messages.MessageField('Authority', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
 
 
@@ -406,6 +507,67 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
+class PkixPublicKey(_messages.Message):
+  r"""A public key in PKIX SubjectPublicKeyInfo format (https://www.rfc-
+  editor.org/info/rfc5280/#section-4.1.2.7).
+
+  Enums:
+    SignatureAlgorithmValueValuesEnum: Required. Algorithm used to verify
+      signatures with this key. Must match the key type and curve or modulus
+      bit length in `pem`.
+
+  Fields:
+    pem: Required. Required. PEM-encoded public key ("-----BEGIN PUBLIC
+      KEY-----..."). As described in https://www.rfc-
+      editor.org/info/rfc7468/#section-13.
+    signatureAlgorithm: Required. Algorithm used to verify signatures with
+      this key. Must match the key type and curve or modulus bit length in
+      `pem`.
+  """
+
+  class SignatureAlgorithmValueValuesEnum(_messages.Enum):
+    r"""Required. Algorithm used to verify signatures with this key. Must
+    match the key type and curve or modulus bit length in `pem`.
+
+    Values:
+      SIGNATURE_ALGORITHM_UNSPECIFIED: Unspecified signature algorithm.
+      EC_SIGN_P256_SHA256: ECDSA on the NIST P-256 curve with SHA-256 digest.
+      EC_SIGN_P384_SHA384: ECDSA on the NIST P-384 curve with SHA-384 digest.
+      EC_SIGN_P521_SHA512: ECDSA on the NIST P-521 curve with SHA-512 digest.
+      RSA_SIGN_PSS_2048_SHA256: RSASSA-PSS with a 2048-bit modulus and SHA-256
+        digest.
+      RSA_SIGN_PSS_3072_SHA256: RSASSA-PSS with a 3072-bit modulus and SHA-256
+        digest.
+      RSA_SIGN_PSS_4096_SHA256: RSASSA-PSS with a 4096-bit modulus and SHA-256
+        digest.
+      RSA_SIGN_PSS_4096_SHA512: RSASSA-PSS with a 4096-bit modulus and SHA-512
+        digest.
+      RSA_SIGN_PKCS1_2048_SHA256: RSASSA-PKCS1-v1_5 with a 2048-bit modulus
+        and SHA-256 digest.
+      RSA_SIGN_PKCS1_3072_SHA256: RSASSA-PKCS1-v1_5 with a 3072-bit modulus
+        and SHA-256 digest.
+      RSA_SIGN_PKCS1_4096_SHA256: RSASSA-PKCS1-v1_5 with a 4096-bit modulus
+        and SHA-256 digest.
+      RSA_SIGN_PKCS1_4096_SHA512: RSASSA-PKCS1-v1_5 with a 4096-bit modulus
+        and SHA-512 digest.
+    """
+    SIGNATURE_ALGORITHM_UNSPECIFIED = 0
+    EC_SIGN_P256_SHA256 = 1
+    EC_SIGN_P384_SHA384 = 2
+    EC_SIGN_P521_SHA512 = 3
+    RSA_SIGN_PSS_2048_SHA256 = 4
+    RSA_SIGN_PSS_3072_SHA256 = 5
+    RSA_SIGN_PSS_4096_SHA256 = 6
+    RSA_SIGN_PSS_4096_SHA512 = 7
+    RSA_SIGN_PKCS1_2048_SHA256 = 8
+    RSA_SIGN_PKCS1_3072_SHA256 = 9
+    RSA_SIGN_PKCS1_4096_SHA256 = 10
+    RSA_SIGN_PKCS1_4096_SHA512 = 11
+
+  pem = _messages.StringField(1)
+  signatureAlgorithm = _messages.EnumField('SignatureAlgorithmValueValuesEnum', 2)
+
+
 class Policy(_messages.Message):
   r"""Defines the security criteria that artifacts must meet.
 
@@ -571,6 +733,27 @@ class PolicyRevision(_messages.Message):
   policySnapshot = _messages.MessageField('Policy', 3)
 
 
+class PublicKey(_messages.Message):
+  r"""An asymmetric public key belonging to an Authority.
+
+  Fields:
+    fingerprint: Output only. RFC 6920 Named Information (`ni`) URI
+      identifying the SPKI SHA-256 digest of the public key, computed by the
+      server on write. Example:
+      "ni:///sha-256;f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk".
+    keyId: Optional. Optional. Human-readable key slot identifier or signer
+      key hint (max 512 characters). If set, must be unique within this
+      Authority. Used as an optional fast-path lookup hint during
+      verification; verification falls back to all project keys if the
+      signature's keyid is empty or does not match.
+    pkixPublicKey: Inline PEM-encoded PKIX public key.
+  """
+
+  fingerprint = _messages.StringField(1)
+  keyId = _messages.StringField(2)
+  pkixPublicKey = _messages.MessageField('PkixPublicKey', 3)
+
+
 class ResourceSelector(_messages.Message):
   r"""Defines a resource pattern to match.
 
@@ -604,9 +787,23 @@ class ResourceSelector(_messages.Message):
   path = _messages.StringField(2)
 
 
+class Settings(_messages.Message):
+  r"""Singleton settings resource for a project and location.
+
+  Fields:
+    binaryAuthorizationConfig: Optional. Binary Authorization configuration.
+    name: Identifier. Singleton resource name:
+      "projects/{project}/locations/{location}/settings"
+    updateTime: Output only. Last update timestamp.
+  """
+
+  binaryAuthorizationConfig = _messages.MessageField('BinaryAuthorizationConfig', 1)
+  name = _messages.StringField(2)
+  updateTime = _messages.StringField(3)
+
+
 class SignerConfig(_messages.Message):
-  r"""Configuration identifying the signer or verification authority used for
-  verification.
+  r"""Deprecated: Use `Authority` resources instead.
 
   Fields:
     kmsKeyId: Identifier of the KMS cryptographic key used for verification.
@@ -664,11 +861,103 @@ class SoftwaredeliverytrustProjectsLocationsAttestationsListRequest(_messages.Me
   parent = _messages.StringField(4, required=True)
 
 
+class SoftwaredeliverytrustProjectsLocationsAuthoritiesCreateRequest(_messages.Message):
+  r"""A SoftwaredeliverytrustProjectsLocationsAuthoritiesCreateRequest object.
+
+  Fields:
+    authority: A Authority resource to be passed as the request body.
+    authorityId: Required. ID to assign to the newly created authority. Must
+      match `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`. Example: "github-actions-
+      prod".
+    parent: Required. Parent location where the authority will be created.
+      Example: "projects/my-project/locations/us-central1".
+    requestId: Optional. Unique UUID4 request ID for idempotency.
+  """
+
+  authority = _messages.MessageField('Authority', 1)
+  authorityId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class SoftwaredeliverytrustProjectsLocationsAuthoritiesDeleteRequest(_messages.Message):
+  r"""A SoftwaredeliverytrustProjectsLocationsAuthoritiesDeleteRequest object.
+
+  Fields:
+    etag: Optional. Current etag of the authority. If specified and does not
+      match the stored etag, the request fails with ABORTED.
+    name: Required. Resource name of the authority to delete. Example:
+      "projects/my-project/locations/us-central1/authorities/github-actions-
+      prod".
+    requestId: Optional. Unique UUID4 request ID for idempotency.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class SoftwaredeliverytrustProjectsLocationsAuthoritiesGetRequest(_messages.Message):
+  r"""A SoftwaredeliverytrustProjectsLocationsAuthoritiesGetRequest object.
+
+  Fields:
+    name: Required. Resource name of the authority to retrieve. Example:
+      "projects/my-project/locations/us-central1/authorities/github-actions-
+      prod".
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class SoftwaredeliverytrustProjectsLocationsAuthoritiesListRequest(_messages.Message):
+  r"""A SoftwaredeliverytrustProjectsLocationsAuthoritiesListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of authorities to return per page.
+    pageToken: Optional. Page token retrieved from a previous list request.
+    parent: Required. Parent location to list authorities from. Example:
+      "projects/my-project/locations/us-central1".
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class SoftwaredeliverytrustProjectsLocationsAuthoritiesPatchRequest(_messages.Message):
+  r"""A SoftwaredeliverytrustProjectsLocationsAuthoritiesPatchRequest object.
+
+  Fields:
+    authority: A Authority resource to be passed as the request body.
+    name: Identifier. Resource name of the authority. Format:
+      "projects/{project}/locations/{location}/authorities/{authority}"
+    requestId: Optional. Unique UUID4 request ID for idempotency.
+    updateMask: Optional. Field mask indicating which fields to update.
+      Example: "description,public_keys".
+  """
+
+  authority = _messages.MessageField('Authority', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class SoftwaredeliverytrustProjectsLocationsGetRequest(_messages.Message):
   r"""A SoftwaredeliverytrustProjectsLocationsGetRequest object.
 
   Fields:
     name: Resource name for the location.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class SoftwaredeliverytrustProjectsLocationsGetSettingsRequest(_messages.Message):
+  r"""A SoftwaredeliverytrustProjectsLocationsGetSettingsRequest object.
+
+  Fields:
+    name: Required. Required. The name of the settings resource to retrieve.
+      Format: "projects/{project}/locations/{location}/settings"
   """
 
   name = _messages.StringField(1, required=True)
@@ -917,6 +1206,21 @@ class SoftwaredeliverytrustProjectsLocationsPolicyBindingsListRequest(_messages.
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class SoftwaredeliverytrustProjectsLocationsUpdateSettingsRequest(_messages.Message):
+  r"""A SoftwaredeliverytrustProjectsLocationsUpdateSettingsRequest object.
+
+  Fields:
+    name: Identifier. Singleton resource name:
+      "projects/{project}/locations/{location}/settings"
+    settings: A Settings resource to be passed as the request body.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  settings = _messages.MessageField('Settings', 2)
+  updateMask = _messages.StringField(3)
 
 
 class SoftwaredeliverytrustProjectsLocationsVerifyPolicyRequest(_messages.Message):

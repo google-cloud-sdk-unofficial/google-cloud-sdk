@@ -40,6 +40,8 @@ class VectorsearchV1beta(base_api.BaseApiClient):
     self.projects_locations_collections_dataObjects = self.ProjectsLocationsCollectionsDataObjectsService(self)
     self.projects_locations_collections_indexes = self.ProjectsLocationsCollectionsIndexesService(self)
     self.projects_locations_collections = self.ProjectsLocationsCollectionsService(self)
+    self.projects_locations_dataStores_documents = self.ProjectsLocationsDataStoresDocumentsService(self)
+    self.projects_locations_dataStores = self.ProjectsLocationsDataStoresService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
@@ -691,6 +693,296 @@ class VectorsearchV1beta(base_api.BaseApiClient):
         relative_path='v1beta/{+name}',
         request_field='googleCloudVectorsearchV1betaCollection',
         request_type_name='VectorsearchProjectsLocationsCollectionsPatchRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDataStoresDocumentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_dataStores_documents resource."""
+
+    _NAME = 'projects_locations_dataStores_documents'
+
+    def __init__(self, client):
+      super(VectorsearchV1beta.ProjectsLocationsDataStoresDocumentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets a Document.
+
+      Args:
+        request: (VectorsearchProjectsLocationsDataStoresDocumentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudVectorsearchV1betaDocument) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/dataStores/{dataStoresId}/documents/{documentsId}',
+        http_method='GET',
+        method_id='vectorsearch.projects.locations.dataStores.documents.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta/{+name}',
+        request_field='',
+        request_type_name='VectorsearchProjectsLocationsDataStoresDocumentsGetRequest',
+        response_type_name='GoogleCloudVectorsearchV1betaDocument',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Documents in a DataStore.
+
+      Args:
+        request: (VectorsearchProjectsLocationsDataStoresDocumentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudVectorsearchV1betaListDocumentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/dataStores/{dataStoresId}/documents',
+        http_method='GET',
+        method_id='vectorsearch.projects.locations.dataStores.documents.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1beta/{+parent}/documents',
+        request_field='',
+        request_type_name='VectorsearchProjectsLocationsDataStoresDocumentsListRequest',
+        response_type_name='GoogleCloudVectorsearchV1betaListDocumentsResponse',
+        supports_download=False,
+    )
+
+    def Search(self, request, global_params=None):
+      r"""Searches the Documents of a single DataStore. Returns ranked sub-document segments, each referring back to the Document it came from and carrying the provenance needed to cite it.
+
+      Args:
+        request: (VectorsearchProjectsLocationsDataStoresDocumentsSearchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudVectorsearchV1betaSearchDocumentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('Search')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Search.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/dataStores/{dataStoresId}/documents:search',
+        http_method='POST',
+        method_id='vectorsearch.projects.locations.dataStores.documents.search',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta/{+parent}/documents:search',
+        request_field='googleCloudVectorsearchV1betaSearchDocumentsRequest',
+        request_type_name='VectorsearchProjectsLocationsDataStoresDocumentsSearchRequest',
+        response_type_name='GoogleCloudVectorsearchV1betaSearchDocumentsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDataStoresService(base_api.BaseApiService):
+    """Service class for the projects_locations_dataStores resource."""
+
+    _NAME = 'projects_locations_dataStores'
+
+    def __init__(self, client):
+      super(VectorsearchV1beta.ProjectsLocationsDataStoresService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new DataStore in a given project and location.
+
+      Args:
+        request: (VectorsearchProjectsLocationsDataStoresCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/dataStores',
+        http_method='POST',
+        method_id='vectorsearch.projects.locations.dataStores.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['dataStoreId', 'requestId'],
+        relative_path='v1beta/{+parent}/dataStores',
+        request_field='googleCloudVectorsearchV1betaDataStore',
+        request_type_name='VectorsearchProjectsLocationsDataStoresCreateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single DataStore.
+
+      Args:
+        request: (VectorsearchProjectsLocationsDataStoresDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/dataStores/{dataStoresId}',
+        http_method='DELETE',
+        method_id='vectorsearch.projects.locations.dataStores.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['backingCollectionDeleted', 'force', 'requestId'],
+        relative_path='v1beta/{+name}',
+        request_field='',
+        request_type_name='VectorsearchProjectsLocationsDataStoresDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single DataStore.
+
+      Args:
+        request: (VectorsearchProjectsLocationsDataStoresGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudVectorsearchV1betaDataStore) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/dataStores/{dataStoresId}',
+        http_method='GET',
+        method_id='vectorsearch.projects.locations.dataStores.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta/{+name}',
+        request_field='',
+        request_type_name='VectorsearchProjectsLocationsDataStoresGetRequest',
+        response_type_name='GoogleCloudVectorsearchV1betaDataStore',
+        supports_download=False,
+    )
+
+    def ImportDocuments(self, request, global_params=None):
+      r"""Initiates a Long-Running Operation to import Documents into a DataStore. `ImportDocuments`, `PurgeDocuments` and `UpdateDataStore` run one at a time per DataStore. While one runs, one more can wait; any further request fails with `ABORTED` until the running operation finishes. To import many files, list them in one request's `gcs_source.input_uris` rather than sending parallel requests.
+
+      Args:
+        request: (VectorsearchProjectsLocationsDataStoresImportDocumentsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('ImportDocuments')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ImportDocuments.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/dataStores/{dataStoresId}:importDocuments',
+        http_method='POST',
+        method_id='vectorsearch.projects.locations.dataStores.importDocuments',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta/{+name}:importDocuments',
+        request_field='googleCloudVectorsearchV1betaImportDocumentsRequest',
+        request_type_name='VectorsearchProjectsLocationsDataStoresImportDocumentsRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DataStores in a given project and location.
+
+      Args:
+        request: (VectorsearchProjectsLocationsDataStoresListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudVectorsearchV1betaListDataStoresResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/dataStores',
+        http_method='GET',
+        method_id='vectorsearch.projects.locations.dataStores.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1beta/{+parent}/dataStores',
+        request_field='',
+        request_type_name='VectorsearchProjectsLocationsDataStoresListRequest',
+        response_type_name='GoogleCloudVectorsearchV1betaListDataStoresResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single DataStore. `UpdateDataStore`, `ImportDocuments` and `PurgeDocuments` run one at a time per DataStore. While one runs, one more can wait; any further request fails with `ABORTED` until the running operation finishes.
+
+      Args:
+        request: (VectorsearchProjectsLocationsDataStoresPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/dataStores/{dataStoresId}',
+        http_method='PATCH',
+        method_id='vectorsearch.projects.locations.dataStores.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1beta/{+name}',
+        request_field='googleCloudVectorsearchV1betaDataStore',
+        request_type_name='VectorsearchProjectsLocationsDataStoresPatchRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def PurgeDocuments(self, request, global_params=None):
+      r"""Initiates a Long-Running Operation to purge Documents from a DataStore. `PurgeDocuments`, `ImportDocuments` and `UpdateDataStore` run one at a time per DataStore. While one runs, one more can wait; any further request fails with `ABORTED` until the running operation finishes.
+
+      Args:
+        request: (VectorsearchProjectsLocationsDataStoresPurgeDocumentsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('PurgeDocuments')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PurgeDocuments.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/dataStores/{dataStoresId}:purgeDocuments',
+        http_method='POST',
+        method_id='vectorsearch.projects.locations.dataStores.purgeDocuments',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta/{+name}:purgeDocuments',
+        request_field='googleCloudVectorsearchV1betaPurgeDocumentsRequest',
+        request_type_name='VectorsearchProjectsLocationsDataStoresPurgeDocumentsRequest',
         response_type_name='GoogleLongrunningOperation',
         supports_download=False,
     )

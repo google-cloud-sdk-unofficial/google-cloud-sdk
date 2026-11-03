@@ -1,6 +1,4 @@
-- hints:
-    read_only: false
-  help_text:
+- help_text:
     brief: |
       Update a Filestore snapshot.
     description: |

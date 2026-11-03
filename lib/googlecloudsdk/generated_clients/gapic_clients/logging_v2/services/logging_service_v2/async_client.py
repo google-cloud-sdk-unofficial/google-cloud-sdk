@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging as std_logging
 from collections import OrderedDict
-import functools
 import re
 from typing import Dict, Callable, Mapping, MutableMapping, MutableSequence, Optional, AsyncIterable, Awaitable, AsyncIterator, Sequence, Tuple, Type, Union
 
@@ -26,6 +26,7 @@ from google.api_core import gapic_v1
 from google.api_core import retry_async as retries
 from google.auth import credentials as ga_credentials   # type: ignore
 from google.oauth2 import service_account              # type: ignore
+import cloudsdk.google.protobuf
 
 
 try:
@@ -41,6 +42,13 @@ from .transports.base import LoggingServiceV2Transport, DEFAULT_CLIENT_INFO
 from .transports.grpc_asyncio import LoggingServiceV2GrpcAsyncIOTransport
 from .client import LoggingServiceV2Client
 
+try:
+    from google.api_core import client_logging  # type: ignore
+    CLIENT_LOGGING_SUPPORTED = True  # pragma: NO COVER
+except ImportError:  # pragma: NO COVER
+    CLIENT_LOGGING_SUPPORTED = False
+
+_LOGGER = std_logging.getLogger(__name__)
 
 class LoggingServiceV2AsyncClient:
     """Service for storing and querying logs."""
@@ -164,7 +172,7 @@ class LoggingServiceV2AsyncClient:
         """
         return self._client._universe_domain
 
-    get_transport_class = functools.partial(type(LoggingServiceV2Client).get_transport_class, type(LoggingServiceV2Client))
+    get_transport_class = LoggingServiceV2Client.get_transport_class
 
     def __init__(self, *,
             credentials: Optional[ga_credentials.Credentials] = None,
@@ -232,13 +240,27 @@ class LoggingServiceV2AsyncClient:
 
         )
 
+        if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(std_logging.DEBUG):  # pragma: NO COVER
+            _LOGGER.debug(
+                "Created client `google.logging_v2.LoggingServiceV2AsyncClient`.",
+                extra = {
+                    "serviceName": "google.logging.v2.LoggingServiceV2",
+                    "universeDomain": getattr(self._client._transport._credentials, "universe_domain", ""),
+                    "credentialsType": f"{type(self._client._transport._credentials).__module__}.{type(self._client._transport._credentials).__qualname__}",
+                    "credentialsInfo": getattr(self.transport._credentials, "get_cred_info", lambda: None)(),
+                } if hasattr(self._client._transport, "_credentials") else {
+                    "serviceName": "google.logging.v2.LoggingServiceV2",
+                    "credentialsType": None,
+                }
+            )
+
     async def delete_log(self,
             request: Optional[Union[logging.DeleteLogRequest, dict]] = None,
             *,
             log_name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> None:
         r"""Deletes all the log entries in a log for the global \_Default
         Log Bucket. The log reappears if it receives new entries. Log
@@ -275,10 +297,10 @@ class LoggingServiceV2AsyncClient:
             log_name (:class:`str`):
                 Required. The resource name of the log to delete:
 
-                -  ``projects/[PROJECT_ID]/logs/[LOG_ID]``
-                -  ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
-                -  ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
-                -  ``folders/[FOLDER_ID]/logs/[LOG_ID]``
+                - ``projects/[PROJECT_ID]/logs/[LOG_ID]``
+                - ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
+                - ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
+                - ``folders/[FOLDER_ID]/logs/[LOG_ID]``
 
                 ``[LOG_ID]`` must be URL-encoded. For example,
                 ``"projects/my-project-id/logs/syslog"``,
@@ -293,13 +315,16 @@ class LoggingServiceV2AsyncClient:
             retry (google.api_core.retry_async.AsyncRetry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([log_name])
+        flattened_params = [log_name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError("If the `request` argument is set, then none of "
                              "the individual field arguments should be set.")
@@ -346,7 +371,7 @@ class LoggingServiceV2AsyncClient:
             entries: Optional[MutableSequence[log_entry.LogEntry]] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging.WriteLogEntriesResponse:
         r"""Writes log entries to Logging. This API method is the only way
         to send log entries to Logging. This method is used, directly or
@@ -394,10 +419,10 @@ class LoggingServiceV2AsyncClient:
                 to all log entries in ``entries`` that do not specify a
                 value for ``log_name``:
 
-                -  ``projects/[PROJECT_ID]/logs/[LOG_ID]``
-                -  ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
-                -  ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
-                -  ``folders/[FOLDER_ID]/logs/[LOG_ID]``
+                - ``projects/[PROJECT_ID]/logs/[LOG_ID]``
+                - ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
+                - ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
+                - ``folders/[FOLDER_ID]/logs/[LOG_ID]``
 
                 ``[LOG_ID]`` must be URL-encoded. For example:
 
@@ -411,6 +436,9 @@ class LoggingServiceV2AsyncClient:
                 folder that is receiving new log entries, whether the
                 resource is specified in ``logName`` or in an individual
                 log entry.
+
+                Only platform services can write logs to billing
+                accounts.
 
                 This corresponds to the ``log_name`` field
                 on the ``request`` instance; if ``request`` is provided, this
@@ -460,17 +488,17 @@ class LoggingServiceV2AsyncClient:
 
                 Log entries with timestamps that are more than the `logs
                 retention
-                period <https://cloud.google.com/logging/quotas>`__ in
-                the past or more than 24 hours in the future will not be
-                available when calling ``entries.list``. However, those
-                log entries can still be `exported with
-                LogSinks <https://cloud.google.com/logging/docs/api/tasks/exporting-logs>`__.
+                period <https://docs.cloud.google.com/logging/quotas>`__
+                in the past or more than 24 hours in the future will not
+                be available when calling ``entries.list``. However,
+                those log entries can still be `exported with
+                LogSinks <https://docs.cloud.google.com/logging/docs/routing/overview>`__.
 
                 To improve throughput and to avoid exceeding the `quota
-                limit <https://cloud.google.com/logging/quotas>`__ for
-                calls to ``entries.write``, you should try to include
-                several log entries in this list, rather than calling
-                this method for each individual log entry.
+                limit <https://docs.cloud.google.com/logging/quotas>`__
+                for calls to ``entries.write``, you should try to
+                include several log entries in this list, rather than
+                calling this method for each individual log entry.
 
                 This corresponds to the ``entries`` field
                 on the ``request`` instance; if ``request`` is provided, this
@@ -478,8 +506,10 @@ class LoggingServiceV2AsyncClient:
             retry (google.api_core.retry_async.AsyncRetry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.WriteLogEntriesResponse:
@@ -488,7 +518,8 @@ class LoggingServiceV2AsyncClient:
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([log_name, resource, labels, entries])
+        flattened_params = [log_name, resource, labels, entries]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError("If the `request` argument is set, then none of "
                              "the individual field arguments should be set.")
@@ -536,12 +567,12 @@ class LoggingServiceV2AsyncClient:
             order_by: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListLogEntriesAsyncPager:
         r"""Lists log entries. Use this method to retrieve log entries that
         originated from a project/folder/organization/billing account.
-        For ways to export log entries, see `Exporting
-        Logs <https://cloud.google.com/logging/docs/export>`__.
+        For ways to export log entries, see `Routing
+        overview <https://docs.cloud.google.com/logging/docs/routing/overview>`__.
 
         .. code-block:: python
 
@@ -584,21 +615,21 @@ class LoggingServiceV2AsyncClient:
                 region unavailability, specify a specific set of
                 ``LogViews`` that do not include the unavailable region.
 
-                -  ``projects/[PROJECT_ID]``
+                - ``projects/[PROJECT_ID]``
 
-                -  ``organizations/[ORGANIZATION_ID]``
+                - ``organizations/[ORGANIZATION_ID]``
 
-                -  ``billingAccounts/[BILLING_ACCOUNT_ID]``
+                - ``billingAccounts/[BILLING_ACCOUNT_ID]``
 
-                -  ``folders/[FOLDER_ID]``
+                - ``folders/[FOLDER_ID]``
 
-                -  ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+                - ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
-                -  ``organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+                - ``organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
-                -  ``billingAccounts/[BILLING_ACCOUNT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+                - ``billingAccounts/[BILLING_ACCOUNT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
-                -  ``folders/[FOLDER_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+                - ``folders/[FOLDER_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
                 Projects listed in the ``project_ids`` field are added
                 to this list. A maximum of 100 resources may be
@@ -611,7 +642,7 @@ class LoggingServiceV2AsyncClient:
                 Optional. A filter that chooses which log entries to
                 return. For more information, see [Logging query
                 language]
-                (https://cloud.google.com/logging/docs/view/logging-query-language).
+                (https://docs.cloud.google.com/logging/docs/view/logging-query-language).
 
                 Only log entries that match the filter are returned. An
                 empty filter matches all log entries in the resources
@@ -622,7 +653,7 @@ class LoggingServiceV2AsyncClient:
 
                 To make queries faster, you can make the filter more
                 selective by using restrictions on [indexed fields]
-                (https://cloud.google.com/logging/docs/view/logging-query-language#indexed-fields)
+                (https://docs.cloud.google.com/logging/docs/view/logging-query-language#indexed-fields)
                 as well as limit the time range of the query by adding
                 range restrictions on the ``timestamp`` field.
 
@@ -651,8 +682,10 @@ class LoggingServiceV2AsyncClient:
             retry (google.api_core.retry_async.AsyncRetry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.logging_service_v2.pagers.ListLogEntriesAsyncPager:
@@ -665,7 +698,8 @@ class LoggingServiceV2AsyncClient:
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([resource_names, filter, order_by])
+        flattened_params = [resource_names, filter, order_by]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError("If the `request` argument is set, then none of "
                              "the individual field arguments should be set.")
@@ -705,6 +739,8 @@ class LoggingServiceV2AsyncClient:
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -716,7 +752,7 @@ class LoggingServiceV2AsyncClient:
             *,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListMonitoredResourceDescriptorsAsyncPager:
         r"""Lists the descriptors for monitored resource types
         used by Logging.
@@ -754,8 +790,10 @@ class LoggingServiceV2AsyncClient:
             retry (google.api_core.retry_async.AsyncRetry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.logging_service_v2.pagers.ListMonitoredResourceDescriptorsAsyncPager:
@@ -793,6 +831,8 @@ class LoggingServiceV2AsyncClient:
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -805,7 +845,7 @@ class LoggingServiceV2AsyncClient:
             parent: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListLogsAsyncPager:
         r"""Lists the logs in projects, organizations, folders,
         or billing accounts. Only logs that have entries are
@@ -844,10 +884,10 @@ class LoggingServiceV2AsyncClient:
             parent (:class:`str`):
                 Required. The resource name to list logs for:
 
-                -  ``projects/[PROJECT_ID]``
-                -  ``organizations/[ORGANIZATION_ID]``
-                -  ``billingAccounts/[BILLING_ACCOUNT_ID]``
-                -  ``folders/[FOLDER_ID]``
+                - ``projects/[PROJECT_ID]``
+                - ``organizations/[ORGANIZATION_ID]``
+                - ``billingAccounts/[BILLING_ACCOUNT_ID]``
+                - ``folders/[FOLDER_ID]``
 
                 This corresponds to the ``parent`` field
                 on the ``request`` instance; if ``request`` is provided, this
@@ -855,8 +895,10 @@ class LoggingServiceV2AsyncClient:
             retry (google.api_core.retry_async.AsyncRetry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.logging_service_v2.pagers.ListLogsAsyncPager:
@@ -870,7 +912,8 @@ class LoggingServiceV2AsyncClient:
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent])
+        flattened_params = [parent]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError("If the `request` argument is set, then none of "
                              "the individual field arguments should be set.")
@@ -914,6 +957,8 @@ class LoggingServiceV2AsyncClient:
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -925,7 +970,7 @@ class LoggingServiceV2AsyncClient:
             *,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> Awaitable[AsyncIterable[logging.TailLogEntriesResponse]]:
         r"""Streaming read of log entries as they are received.
         Until the stream is terminated, it will continue reading
@@ -974,8 +1019,10 @@ class LoggingServiceV2AsyncClient:
             retry (google.api_core.retry_async.AsyncRetry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             AsyncIterable[googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.TailLogEntriesResponse]:
@@ -1007,6 +1054,9 @@ class LoggingServiceV2AsyncClient:
         await self.transport.close()
 
 DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(gapic_version=package_version.__version__)
+
+if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"):   # pragma: NO COVER
+    DEFAULT_CLIENT_INFO.protobuf_runtime_version = cloudsdk.google.protobuf.__version__
 
 
 __all__ = (

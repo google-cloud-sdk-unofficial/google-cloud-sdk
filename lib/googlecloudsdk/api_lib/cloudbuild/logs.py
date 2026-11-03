@@ -486,12 +486,13 @@ class CloudBuildClient(object):
     """
     log.status.Print('Waiting for build to complete. Polling interval: ' +
                      str(self.polling_interval) + ' second(s).')
-    while build.status in working_statuses:
-      build = self.GetBuild(build_ref)
-      time.sleep(self.polling_interval)
-
-    if log_tailer:
-      log_tailer.Stop()
+    try:
+      while build.status in working_statuses:
+        build = self.GetBuild(build_ref)
+        time.sleep(self.polling_interval)
+    finally:
+      if log_tailer:
+        log_tailer.Stop()
 
     return build
 
@@ -541,12 +542,15 @@ class CloudBuildClient(object):
     if log_tailer:
       t = ThreadInterceptor(target=log_tailer.Tail)
       t.start()
-    build = self.ShouldStopTailer(build, build_ref, log_tailer,
-                                  working_statuses)
-    if t:
-      t.join()
-      if t.exception is not None:
-        raise t.exception
+    try:
+      build = self.ShouldStopTailer(
+          build, build_ref, log_tailer, working_statuses
+      )
+    finally:
+      if t:
+        t.join()
+        if t.exception is not None:
+          raise t.exception
 
     return build
 

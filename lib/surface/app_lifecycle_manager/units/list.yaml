@@ -1,20 +1,40 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
-    brief: List Units
-    description: List Units
-    examples: |-
-      To list all Units, run:
+    brief: List units.
+    description: |-
+      List App Lifecycle Manager units.
 
-      $ {command}
+      If `--location` is not specified, units in all locations are listed.
+    examples: |-
+      To list all units in location `us-central1`, run:
+
+        $ {command} --location=us-central1
+
+      To list only the names of units with the label `env=prod` in all
+      locations, run:
+
+        $ {command} --filter="labels.env=prod" --format="value(name)"
+  ALPHA:
+    help_text:
+      brief: List Units
+      description: List Units
+      examples: |-
+        To list all Units, run:
+
+        $ {command}
   arguments:
     resource:
       help_text: |-
-        Parent value for ListUnitsRequest
+        Location of the units to list.
+      ALPHA:
+        help_text: Parent value for ListUnitsRequest
       spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:project_location_with_default
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.units
   response:

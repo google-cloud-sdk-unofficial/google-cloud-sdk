@@ -277,6 +277,7 @@ class Create(base.Command):
   _support_traffic_routing_config = False
   _support_user_workloads_service_accounts = False
   _support_airflow_rbac_config = False
+  _support_operation_settings = False
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.GA):
@@ -585,6 +586,10 @@ class Create(base.Command):
           args.airflow_rbac_config_from_file
       )
       possible_args['airflow-rbac-binding'] = args.airflow_rbac_binding
+    if self._support_operation_settings:
+      possible_args['operation-settings-strategy'] = (
+          args.operation_settings_strategy
+      )
 
     for k, v in possible_args.items():
       if v is not None and not is_composer3:
@@ -827,6 +832,7 @@ class CreateBeta(Create):
   _support_traffic_routing_config = True
   _support_user_workloads_service_accounts = False
   _support_airflow_rbac_config = True
+  _support_operation_settings = True
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
@@ -941,6 +947,7 @@ class CreateBeta(Create):
         airflow_database_retention_days=args.airflow_database_retention_days,
         enable_development_mode=args.enable_development_mode,
         airflow_rbac_config=self.airflow_rbac_config,
+        operation_settings_strategy=args.operation_settings_strategy,
     )
 
     return environments_api_util.Create(self.env_ref, create_flags,
@@ -1016,12 +1023,14 @@ def AddComposer3Flags(parser, release_track):
         traffic_routing_group
     )
     flags.AddAirflowRbacCreateFlags(parser)
+    flags.OPERATION_SETTINGS_STRATEGY_BETA.choice_arg.AddToParser(parser)
   elif release_track == base.ReleaseTrack.ALPHA:
     flags.CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA.choice_arg.AddToParser(
         traffic_routing_group
     )
     flags.USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG.AddToParser(parser)
     flags.AddAirflowRbacCreateFlags(parser)
+    flags.OPERATION_SETTINGS_STRATEGY_ALPHA.choice_arg.AddToParser(parser)
 
 
 @base.UniverseCompatible
@@ -1038,6 +1047,7 @@ class CreateAlpha(CreateBeta):
   _support_traffic_routing_config = True
   _support_user_workloads_service_accounts = True
   _support_airflow_rbac_config = True
+  _support_operation_settings = True
 
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.ALPHA):
@@ -1161,6 +1171,7 @@ class CreateAlpha(CreateBeta):
         enable_development_mode=args.enable_development_mode,
         user_workloads_service_accounts=args.user_workloads_service_accounts,
         airflow_rbac_config=self.airflow_rbac_config,
+        operation_settings_strategy=args.operation_settings_strategy,
     )
 
     return environments_api_util.Create(self.env_ref, create_flags,

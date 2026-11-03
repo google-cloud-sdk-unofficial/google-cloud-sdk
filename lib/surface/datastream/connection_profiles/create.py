@@ -43,13 +43,13 @@ EXAMPLES = """\
 
     To create a connection profile for Salesforce using Username, Password and Security Token:
 
-        $ {command} CONNECTION_PROFILE --location=us-central1 --type=salesforce --salesforce-password=fakepassword --salesforce-username=fakeuser --salesforce-security-token=fakesecuritytoken --display-name=my-profile --salesforce-hostname=35.188.150.50 --salesforce-port=1433 --salesforce-database=db --static-ip-connectivity
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=salesforce --salesforce-password=fakepassword --salesforce-username=fakeuser --salesforce-security-token=fakesecuritytoken --display-name=my-profile --salesforce-domain=fakecompany.my.salesforce.com --static-ip-connectivity
 
     To create a connection profile for Salesforce using OAuth:
 
-        $ {command} CONNECTION_PROFILE --location=us-central1 --type=salesforce --salesforce-client-secret=fakesecret --salesforce-client-id=fake-client-id --display-name=my-profile --salesforce-domain=fakecompany.my.salesforce.com --static-ip-connectivity
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=salesforce --salesforce-oauth2-client-secret=fakesecret --salesforce-oauth2-client-id=fake-client-id --display-name=my-profile --salesforce-domain=fakecompany.my.salesforce.com --static-ip-connectivity
 
-        To create a connection profile for Spanner:
+    To create a connection profile for Spanner:
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=spanner --spanner-database=projects/fake-project/instances/fake-instance/databases/fake-database --display-name=my-profile
 

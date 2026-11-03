@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: List Google Cloud Platform services enabled on a Google Distributed Cloud zone.

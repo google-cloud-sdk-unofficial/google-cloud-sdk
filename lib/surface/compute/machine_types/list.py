@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List Compute Engine machine types.
 
@@ -31,7 +32,7 @@ class List(base.ListCommand):
   def Args(parser):
     List.detailed_help['DESCRIPTION'] += """
 *OBSOLETE* machine types are filtered out by default. Add *--verbosity=info*
-to display the default filter expression. Use *--filter=""* to list all images,
+to display the default filter expression. Use *--filter=""* to list all machine types,
 or specify your own *--filter* to override the default.
 """
     parser.display_info.AddFilter('deprecated.state!=OBSOLETE')

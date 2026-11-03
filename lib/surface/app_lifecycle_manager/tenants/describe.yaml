@@ -1,21 +1,39 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
-    brief: Describe a Tenant
-    description: Describe a Tenant
+    brief: Describe a tenant.
+    description: |-
+      Display the details of an App Lifecycle Manager tenant.
     examples: |-
-      To describe the Tenant, run:
+      To describe the tenant named `my-tenant` in location `us-central1`, run:
 
-      $ {command}
+        $ {command} my-tenant --location=us-central1
+
+      To display only the SaaS offering and consumer resource of the tenant
+      named `my-tenant` in location `us-central1`, run:
+
+        $ {command} my-tenant --location=us-central1 --format="yaml(saas,consumerResource)"
+  ALPHA:
+    help_text:
+      brief: Describe a Tenant
+      description: Describe a Tenant
+      examples: |-
+        To describe the Tenant, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        Tenant to describe.
+      ALPHA:
+        help_text: Name of the resource
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:tenant
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.tenants

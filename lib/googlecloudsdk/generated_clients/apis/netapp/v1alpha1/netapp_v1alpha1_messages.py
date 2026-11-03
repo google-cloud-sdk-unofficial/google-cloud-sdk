@@ -4504,6 +4504,10 @@ class StoragePool(_messages.Message):
     name: Identifier. Name of the storage pool
     network: Required. VPC Network name. Format:
       projects/{project}/global/networks/{network}
+    networkAttachment: Optional. Immutable. The resource name of the Compute
+      Engine Network Attachment in the consumer VPC. This field is mutually
+      exclusive with network. Format: `projects/{project}/regions/{region}/net
+      workAttachments/{network_attachment}`
     psaRange: Optional. This field is not implemented. The values provided in
       this field are ignored.
     qosType: Optional. QoS (Quality of Service) Type of the storage pool
@@ -4709,23 +4713,24 @@ class StoragePool(_messages.Message):
   mode = _messages.EnumField('ModeValueValuesEnum', 18)
   name = _messages.StringField(19)
   network = _messages.StringField(20)
-  psaRange = _messages.StringField(21)
-  qosType = _messages.EnumField('QosTypeValueValuesEnum', 22)
-  replicaZone = _messages.StringField(23)
-  satisfiesPzi = _messages.BooleanField(24)
-  satisfiesPzs = _messages.BooleanField(25)
-  scaleTier = _messages.EnumField('ScaleTierValueValuesEnum', 26)
-  scaleType = _messages.EnumField('ScaleTypeValueValuesEnum', 27)
-  serviceLevel = _messages.EnumField('ServiceLevelValueValuesEnum', 28)
-  state = _messages.EnumField('StateValueValuesEnum', 29)
-  stateDetails = _messages.StringField(30)
-  totalIops = _messages.IntegerField(31)
-  totalThroughputMibps = _messages.IntegerField(32)
-  type = _messages.EnumField('TypeValueValuesEnum', 33)
-  unifiedPool = _messages.BooleanField(34)
-  volumeCapacityGib = _messages.IntegerField(35)
-  volumeCount = _messages.IntegerField(36, variant=_messages.Variant.INT32)
-  zone = _messages.StringField(37)
+  networkAttachment = _messages.StringField(21)
+  psaRange = _messages.StringField(22)
+  qosType = _messages.EnumField('QosTypeValueValuesEnum', 23)
+  replicaZone = _messages.StringField(24)
+  satisfiesPzi = _messages.BooleanField(25)
+  satisfiesPzs = _messages.BooleanField(26)
+  scaleTier = _messages.EnumField('ScaleTierValueValuesEnum', 27)
+  scaleType = _messages.EnumField('ScaleTypeValueValuesEnum', 28)
+  serviceLevel = _messages.EnumField('ServiceLevelValueValuesEnum', 29)
+  state = _messages.EnumField('StateValueValuesEnum', 30)
+  stateDetails = _messages.StringField(31)
+  totalIops = _messages.IntegerField(32)
+  totalThroughputMibps = _messages.IntegerField(33)
+  type = _messages.EnumField('TypeValueValuesEnum', 34)
+  unifiedPool = _messages.BooleanField(35)
+  volumeCapacityGib = _messages.IntegerField(36)
+  volumeCount = _messages.IntegerField(37, variant=_messages.Variant.INT32)
+  zone = _messages.StringField(38)
 
 
 class SubscribeTrialRequest(_messages.Message):

@@ -1,3 +1,5 @@
+hints:
+  read_only: true
 help_text:
   brief: Retrieves information about a backup.
   description: Retrieves information about a backup.

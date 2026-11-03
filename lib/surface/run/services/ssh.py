@@ -26,14 +26,22 @@ class Ssh(ssh_command.BaseSshCommand):
   """SSH into a service instance."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           Starts a secure, interactive shell session with an instance of a Cloud Run service.
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To start an interactive shell session with a Cloud Run service:
 
-              $ {command} my-service --instance=my-instance-id
-          """,
+              $ {command} my-service
+
+          To connect to a specific instance of a specific revision:
+
+              $ {command} my-service --revision=my-revision --instance=my-instance-id
+          """
+      ),
   }
 
   _support_revision = True

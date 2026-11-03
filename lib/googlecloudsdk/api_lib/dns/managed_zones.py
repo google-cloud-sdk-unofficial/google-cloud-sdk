@@ -79,7 +79,7 @@ class Client(object):
       The PATCH response, if operation is not asynchronous.
     """
     zone = self.messages.ManagedZone(
-        name=zone_ref.Name(),
+        name=None if zone_ref.Name().isdigit() else zone_ref.Name(),
         dnssecConfig=dnssec_config,
         description=description,
         labels=labels)
@@ -131,16 +131,21 @@ class Client(object):
         self.location
     )
 
-  def UpdateLabels(self, zone_ref, labels):
+  def UpdateLabels(self, zone_ref, labels, zone=None):
     """Update labels using Managed Zones Update request."""
-    zone = self.Get(zone_ref)
+    if zone is None:
+      zone = self.Get(zone_ref)
     zone.labels = labels
 
-    operation = self._service.Update(
-        self.messages.DnsManagedZonesUpdateRequest(
-            managedZoneResource=zone,
-            project=zone_ref.project,
-            managedZone=zone_ref.Name()))
+    request = self.messages.DnsManagedZonesUpdateRequest(
+        managedZoneResource=zone,
+        project=zone_ref.project,
+        managedZone=zone_ref.Name())
+
+    if self.location:
+      request.location = self.location
+
+    operation = self._service.Update(request)
 
     operation_param = {
         'project': zone_ref.project,
@@ -155,5 +160,7 @@ class Client(object):
         collection='dns.managedZoneOperations')
 
     return operations.WaitFor(
-        self.version, operation_ref,
-        'Updating managed zone [{}]'.format(zone_ref.Name()))
+        self.version,
+        operation_ref,
+        'Updating managed zone [{}]'.format(zone_ref.Name()),
+        self.location)

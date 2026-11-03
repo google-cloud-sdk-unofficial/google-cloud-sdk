@@ -236,19 +236,6 @@ def ValidateSlurmNodeConfig(node_config: dict[str, Any]) -> None:
     )
 
 
-def ValidateSlurmConfigExclusiveFlags(
-    has_slurm_config: bool = False,
-    has_slurm_conf_file: bool = False,
-) -> None:
-  """Validates that at most one of --slurm-config or --slurm-conf-file is specified."""
-  count = sum([bool(has_slurm_config), bool(has_slurm_conf_file)])
-  if count > 1:
-    raise ClusterDirectorError(
-        "Cannot specify more than one of --slurm-config (or"
-        " --update-slurm-config) and --slurm-conf-file."
-    )
-
-
 def ValidateControllerVersion(version: str) -> None:
   """Validates that the controller version matches the format ab.cd."""
   if not version:

@@ -129,13 +129,35 @@ class GoogleCloudVectorsearchV1betaAggregateDataObjectsRequest(_messages.Message
       query.
 
   Messages:
-    FilterValue: Optional. A JSON filter expression, e.g. {"genre": {"$eq":
-      "sci-fi"}}, represented as a google.protobuf.Struct.
+    FilterValue: Optional. A JSON filter expression, e.g. `{"genre": {"$eq":
+      "sci-fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
 
   Fields:
     aggregate: Required. The aggregation method to apply to the query.
-    filter: Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-
-      fi"}}, represented as a google.protobuf.Struct.
+    filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+      fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
   """
 
   class AggregateValueValuesEnum(_messages.Enum):
@@ -150,8 +172,19 @@ class GoogleCloudVectorsearchV1betaAggregateDataObjectsRequest(_messages.Message
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterValue(_messages.Message):
-    r"""Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-fi"}},
-    represented as a google.protobuf.Struct.
+    r"""Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+    fi"}}`, represented as a `google.protobuf.Struct`. An empty filter (`{}`)
+    matches all data objects. Otherwise, each JSON object in the filter must
+    have exactly one key: either a field name mapped to one operator
+    (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or `$or` with a
+    list of filters, or `$not` with one filter. Field operators and their
+    values: `$eq` and `$ne` take a string, number or bool; `$lt`, `$lte`,
+    `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a list of
+    strings; `$exists` takes a bool. Several keys in one object (implicit AND)
+    and implicit equality (`{"genre": "sci-fi"}`) are rejected; use `$and` and
+    `$eq` instead. Logical operators can be nested at most 2 levels deep, e.g.
+    `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b": {"$eq": 2}}]}]}`. Deeper
+    filters are rejected with `INVALID_ARGUMENT`.
 
     Messages:
       AdditionalProperty: An additional property for a FilterValue object.
@@ -593,6 +626,130 @@ class GoogleCloudVectorsearchV1betaDataObject(_messages.Message):
   vectors = _messages.MessageField('VectorsValue', 7)
 
 
+class GoogleCloudVectorsearchV1betaDataStore(_messages.Message):
+  r"""Message describing a DataStore object. A DataStore is the top-level
+  ingestion resource of the ASP Ingestion Engine, owned directly by a Project.
+  It is a container for a set of related Documents that share a single,
+  immutable DocumentType.
+
+  Enums:
+    DocumentTypeValueValuesEnum: Required. Immutable. The immutable content
+      type of all Documents in this DataStore.
+    StateValueValuesEnum: Output only. [Output only] The state of the
+      DataStore.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs.
+
+  Fields:
+    collectionName: Output only. [Output only] The resource name of the
+      Collection backing this DataStore, e.g.
+      "projects/{project}/locations/{location}/collections/{collection_name}".
+      Populated once the backing Collection has been created.
+    createTime: Output only. [Output only] Create time stamp
+    description: Optional. User-specified description of the DataStore.
+    displayName: Optional. User-specified display name of the DataStore.
+    documentMetadataSchema: Optional. Schema for user-defined metadata on
+      Documents in this DataStore. The schema will be validated against [JSON
+      Schema Draft 7](https://json-schema.org/draft-07/schema).
+    documentType: Required. Immutable. The immutable content type of all
+      Documents in this DataStore.
+    labels: Optional. Labels as key value pairs.
+    name: Identifier. The fully qualified resource name of the DataStore.
+      Format:
+      `projects/{project}/locations/{location}/dataStores/{data_store_id}`
+    processingConfig: Optional. Configuration controlling how Documents in
+      this DataStore are ingested (parsed, chunked, enriched, and embedded).
+    state: Output only. [Output only] The state of the DataStore.
+    updateTime: Output only. [Output only] Update time stamp
+  """
+
+  class DocumentTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Immutable. The immutable content type of all Documents in
+    this DataStore.
+
+    Values:
+      DOCUMENT_TYPE_UNSPECIFIED: Default value, the document type is not
+        specified.
+      UNSTRUCTURED: Unstructured documents (the text pipeline), optionally
+        with metadata.
+      VIDEO: Video documents, optionally with metadata.
+    """
+    DOCUMENT_TYPE_UNSPECIFIED = 0
+    UNSTRUCTURED = 1
+    VIDEO = 2
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output only] The state of the DataStore.
+
+    Values:
+      STATE_UNSPECIFIED: The default value. This value is used if the state is
+        omitted.
+      CREATING: The DataStore is being created.
+      ACTIVE: The DataStore is ready for use.
+      DELETING: The DataStore is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  collectionName = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  documentMetadataSchema = _messages.MessageField('GoogleCloudVectorsearchV1betaDocumentMetadataSchema', 5)
+  documentType = _messages.EnumField('DocumentTypeValueValuesEnum', 6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  processingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaDataStoreProcessingConfig', 9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
+
+
+class GoogleCloudVectorsearchV1betaDataStoreProcessingConfig(_messages.Message):
+  r"""ProcessingConfig controls how Documents in a DataStore are parsed,
+  chunked, enriched, and embedded by the Ingestion Engine.
+
+  Fields:
+    unstructuredProcessingConfig: Optional. Configuration for the unstructured
+      document ingestion pipeline. Applies when the DataStore's
+      `document_type` is `UNSTRUCTURED`.
+    videoProcessingConfig: Optional. Configuration for the video ingestion
+      pipeline. Applies when the DataStore's `document_type` is `VIDEO`. If
+      unset for a `VIDEO` DataStore, the pipeline defaults to fixed-window
+      segmentation with a 30s window size, and audio disabled during per-
+      segment embedding generation.
+  """
+
+  unstructuredProcessingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfig', 1)
+  videoProcessingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaVideoProcessingConfig', 2)
+
+
 class GoogleCloudVectorsearchV1betaDedicatedInfrastructure(_messages.Message):
   r"""Represents dedicated infrastructure for the index.
 
@@ -703,6 +860,176 @@ class GoogleCloudVectorsearchV1betaDenseVectorField(_messages.Message):
   vertexEmbeddingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaVertexEmbeddingConfig', 2)
 
 
+class GoogleCloudVectorsearchV1betaDocument(_messages.Message):
+  r"""A Document is a single unit of content ingested into a DataStore. It is
+  a sub-resource of a DataStore. During ingestion a Document is parsed and
+  chunked into one or more Segments.
+
+  Enums:
+    StateValueValuesEnum: Output only. [Output only] The processing state of
+      the Document.
+
+  Fields:
+    content: Optional. The unstructured data linked to this Document. Content
+      can only be set and must be set if the parent DataStore has a
+      `document_type` that requires unstructured content (e.g. `UNSTRUCTURED`
+      or `VIDEO`).
+    createTime: Output only. [Output only] Timestamp the Document was created
+      at.
+    etag: Optional. The etag of the Document.
+    metadata: Optional. User-defined metadata for this Document. The metadata
+      values must conform to the `document_metadata_schema` defined on the
+      parent DataStore.
+    name: Identifier. The fully qualified resource name of the Document.
+      Format: `projects/{project}/locations/{location}/dataStores/{data_store_
+      id}/documents/{document_id}` The document_id must be 1-63 characters
+      long, and comply with [RFC1035](https://www.ietf.org/rfc/rfc1035.txt).
+    state: Output only. [Output only] The processing state of the Document.
+    updateTime: Output only. [Output only] Timestamp the Document was last
+      updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output only] The processing state of the Document.
+
+    Values:
+      STATE_UNSPECIFIED: The default value. This value is used if the state is
+        omitted.
+      PENDING: The Document has been received and is pending processing.
+      PROCESSING: The Document is being processed (parsed, chunked, enriched,
+        embedded).
+      SUCCEEDED: The Document has been successfully processed.
+      FAILED: The Document failed to be processed.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING = 1
+    PROCESSING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+
+  content = _messages.MessageField('GoogleCloudVectorsearchV1betaDocumentContent', 1)
+  createTime = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  metadata = _messages.MessageField('GoogleCloudVectorsearchV1betaDocumentMetadata', 4)
+  name = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  updateTime = _messages.StringField(7)
+
+
+class GoogleCloudVectorsearchV1betaDocumentContent(_messages.Message):
+  r"""Unstructured data linked to this Document.
+
+  Fields:
+    gcsUri: The Cloud Storage URI of the content. Only Cloud Storage URIs
+      (e.g. `gs://bucket-name/path/to/file`) are supported.
+  """
+
+  gcsUri = _messages.StringField(1)
+
+
+class GoogleCloudVectorsearchV1betaDocumentMetadata(_messages.Message):
+  r"""User-defined metadata associated with a Document.
+
+  Messages:
+    ValueValue: Optional. The metadata value, as a JSON object. The value must
+      conform to the `document_metadata_schema` defined on the parent
+      DataStore.
+
+  Fields:
+    value: Optional. The metadata value, as a JSON object. The value must
+      conform to the `document_metadata_schema` defined on the parent
+      DataStore.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ValueValue(_messages.Message):
+    r"""Optional. The metadata value, as a JSON object. The value must conform
+    to the `document_metadata_schema` defined on the parent DataStore.
+
+    Messages:
+      AdditionalProperty: An additional property for a ValueValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ValueValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  value = _messages.MessageField('ValueValue', 1)
+
+
+class GoogleCloudVectorsearchV1betaDocumentMetadataSchema(_messages.Message):
+  r"""Schema for user-defined metadata on Documents in a DataStore.
+
+  Messages:
+    SchemaValue: Optional. The JSON schema for Document metadata. The schema
+      will be validated against [JSON Schema Draft 7](https://json-
+      schema.org/draft-07/schema).
+
+  Fields:
+    schema: Optional. The JSON schema for Document metadata. The schema will
+      be validated against [JSON Schema Draft 7](https://json-
+      schema.org/draft-07/schema).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class SchemaValue(_messages.Message):
+    r"""Optional. The JSON schema for Document metadata. The schema will be
+    validated against [JSON Schema Draft 7](https://json-
+    schema.org/draft-07/schema).
+
+    Messages:
+      AdditionalProperty: An additional property for a SchemaValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a SchemaValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  schema = _messages.MessageField('SchemaValue', 1)
+
+
+class GoogleCloudVectorsearchV1betaDocumentSearchResult(_messages.Message):
+  r"""A single matching segment of a Document.
+
+  Fields:
+    document: Output only. The Document this segment came from, including its
+      resource name and the Cloud Storage location it was ingested from. Note
+      that not all Document fields are populated. For the full Document, call
+      GetDocument on the returned document name.
+    unstructuredDetails: Set when the parent DataStore's `document_type` is
+      `UNSTRUCTURED`.
+    videoDetails: Set when the parent DataStore's `document_type` is `VIDEO`.
+  """
+
+  document = _messages.MessageField('GoogleCloudVectorsearchV1betaDocument', 1)
+  unstructuredDetails = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredSegmentDetails', 2)
+  videoDetails = _messages.MessageField('GoogleCloudVectorsearchV1betaVideoSegmentDetails', 3)
+
+
 class GoogleCloudVectorsearchV1betaEncryptionSpec(_messages.Message):
   r"""Represents a customer-managed encryption key specification that can be
   applied to a Vector Search collection.
@@ -792,6 +1119,39 @@ class GoogleCloudVectorsearchV1betaExportDataObjectsRequestGcsExportDestination(
   format = _messages.EnumField('FormatValueValuesEnum', 2)
 
 
+class GoogleCloudVectorsearchV1betaGcsSource(_messages.Message):
+  r"""Cloud Storage location for the input content.
+
+  Enums:
+    SourceFormatValueValuesEnum: Optional. Format of the input files.
+
+  Fields:
+    inputUris: Required. Cloud Storage URIs to input files. The whole request,
+      including every URI, must not exceed 2,000,000 bytes. Split a larger set
+      of URIs across multiple requests.
+    sourceFormat: Optional. Format of the input files.
+  """
+
+  class SourceFormatValueValuesEnum(_messages.Enum):
+    r"""Optional. Format of the input files.
+
+    Values:
+      SOURCE_FORMAT_UNSPECIFIED: Default value. If unspecified, the service
+        will consider each input_uri to be unstructured content (PDF, HTML,
+        etc.). Each matched input_uri will be imported as a separate Document.
+      SOURCE_FORMAT_DOCUMENT_JSON: If specified, each input_uri is a JSON file
+        containing a list of documents. Each document in the JSON file needs
+        to follow the JSON format of the Document proto and will be imported
+        as a separate Document resource. The content of the Document is
+        defined in the content_source field.
+    """
+    SOURCE_FORMAT_UNSPECIFIED = 0
+    SOURCE_FORMAT_DOCUMENT_JSON = 1
+
+  inputUris = _messages.StringField(1, repeated=True)
+  sourceFormat = _messages.EnumField('SourceFormatValueValuesEnum', 2)
+
+
 class GoogleCloudVectorsearchV1betaImportDataObjectsRequest(_messages.Message):
   r"""Request message for VectorSearchService.ImportDataObjects.
 
@@ -820,6 +1180,31 @@ class GoogleCloudVectorsearchV1betaImportDataObjectsRequestGcsImportConfig(_mess
   contentsUri = _messages.StringField(1)
   errorUri = _messages.StringField(2)
   outputUri = _messages.StringField(3)
+
+
+class GoogleCloudVectorsearchV1betaImportDocumentsRequest(_messages.Message):
+  r"""Request message for DataStoreService.ImportDocuments.
+
+  Fields:
+    gcsSource: Cloud Storage location for the input content.
+    importOutputConfig: Optional. Configuration of destination for import
+      documents output.
+  """
+
+  gcsSource = _messages.MessageField('GoogleCloudVectorsearchV1betaGcsSource', 1)
+  importOutputConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaImportOutputConfig', 2)
+
+
+class GoogleCloudVectorsearchV1betaImportOutputConfig(_messages.Message):
+  r"""Configuration of destination for import documents related output.
+
+  Fields:
+    errorGcsPrefix: Optional. URI prefix of the Cloud Storage location to
+      write any errors encountered during the import. If this field is empty,
+      no error report is written.
+  """
+
+  errorGcsPrefix = _messages.StringField(1)
 
 
 class GoogleCloudVectorsearchV1betaIndex(_messages.Message):
@@ -917,6 +1302,34 @@ class GoogleCloudVectorsearchV1betaListCollectionsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class GoogleCloudVectorsearchV1betaListDataStoresResponse(_messages.Message):
+  r"""Message for response to listing DataStores.
+
+  Fields:
+    dataStores: The list of DataStore
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  dataStores = _messages.MessageField('GoogleCloudVectorsearchV1betaDataStore', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class GoogleCloudVectorsearchV1betaListDocumentsResponse(_messages.Message):
+  r"""Response message for DocumentService.ListDocuments.
+
+  Fields:
+    documents: The list of Documents.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  documents = _messages.MessageField('GoogleCloudVectorsearchV1betaDocument', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class GoogleCloudVectorsearchV1betaListIndexesResponse(_messages.Message):
   r"""Message for response to listing Indexes
 
@@ -958,15 +1371,24 @@ class GoogleCloudVectorsearchV1betaOperationMetadata(_messages.Message):
 
 
 class GoogleCloudVectorsearchV1betaOutputFields(_messages.Message):
-  r"""Defines a output fields struct for data in DataObject.
+  r"""Defines an output fields struct for data in DataObject. Output fields
+  are opt-in. A search or query result contains only the data object name and
+  ID, plus the fields listed here. If this message is unset or a list is
+  empty, the corresponding part of the data object (`data`, `vectors` or
+  metadata) is omitted from the result; it is not an indication that the
+  stored data object is empty. Use `"*"` in a list to return all fields of
+  that kind.
 
   Fields:
     dataFields: Optional. The fields from the data fields to include in the
-      output.
-    metadataFields: Optional. The fields from the DataObject metadata to
-      include in the output.
+      output. Use `"*"` to include all data fields. If empty, `data` is
+      omitted from results.
+    metadataFields: Optional. The DataObject metadata fields to include in the
+      output: `create_time`, `update_time` and `etag`. Use `"*"` to include
+      all metadata fields. If empty, these fields are omitted from results.
     vectorFields: Optional. The fields from the vector fields to include in
-      the output.
+      the output. Use `"*"` to include all vector fields. If empty, `vectors`
+      is omitted from results.
   """
 
   dataFields = _messages.StringField(1, repeated=True)
@@ -974,16 +1396,67 @@ class GoogleCloudVectorsearchV1betaOutputFields(_messages.Message):
   vectorFields = _messages.StringField(3, repeated=True)
 
 
+class GoogleCloudVectorsearchV1betaPurgeDocumentsRequest(_messages.Message):
+  r"""Request message for DataStoreService.PurgeDocuments.
+
+  Fields:
+    force: Optional. Actually performs the purge. If `force` is set to
+      `false`, return the expected purge count without deleting any Documents.
+    gcsSource: Cloud Storage location for the input content.
+    purgeOutputConfig: Optional. Configuration of destination for purge
+      documents output.
+  """
+
+  force = _messages.BooleanField(1)
+  gcsSource = _messages.MessageField('GoogleCloudVectorsearchV1betaGcsSource', 2)
+  purgeOutputConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaPurgeOutputConfig', 3)
+
+
+class GoogleCloudVectorsearchV1betaPurgeOutputConfig(_messages.Message):
+  r"""Configuration of destination for Purge related output.
+
+  Fields:
+    errorGcsPrefix: Optional. Google Cloud Storage prefix for purge errors.
+      This must be an empty, existing Cloud Storage directory. Purge errors
+      will be written to sharded files in this directory, one per line, as a
+      JSON-encoded `google.rpc.Status` message.
+  """
+
+  errorGcsPrefix = _messages.StringField(1)
+
+
 class GoogleCloudVectorsearchV1betaQueryDataObjectsRequest(_messages.Message):
   r"""Request message for DataObjectSearchService.QueryDataObjects.
 
   Messages:
-    FilterValue: Optional. A JSON filter expression, e.g. {"genre": {"$eq":
-      "sci-fi"}}, represented as a google.protobuf.Struct.
+    FilterValue: Optional. A JSON filter expression, e.g. `{"genre": {"$eq":
+      "sci-fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
 
   Fields:
-    filter: Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-
-      fi"}}, represented as a google.protobuf.Struct.
+    filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+      fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
     outputFields: Optional. Mask specifying which fields to return.
     pageSize: Optional. The standard list page size. Default is 100. The
       maximum value is 1000; values above 1000 will be coerced to 1000.
@@ -994,8 +1467,19 @@ class GoogleCloudVectorsearchV1betaQueryDataObjectsRequest(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterValue(_messages.Message):
-    r"""Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-fi"}},
-    represented as a google.protobuf.Struct.
+    r"""Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+    fi"}}`, represented as a `google.protobuf.Struct`. An empty filter (`{}`)
+    matches all data objects. Otherwise, each JSON object in the filter must
+    have exactly one key: either a field name mapped to one operator
+    (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or `$or` with a
+    list of filters, or `$not` with one filter. Field operators and their
+    values: `$eq` and `$ne` take a string, number or bool; `$lt`, `$lte`,
+    `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a list of
+    strings; `$exists` takes a bool. Several keys in one object (implicit AND)
+    and implicit equality (`{"genre": "sci-fi"}`) are rejected; use `$and` and
+    `$eq` instead. Logical operators can be nested at most 2 levels deep, e.g.
+    `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b": {"$eq": 2}}]}]}`. Deeper
+    filters are rejected with `INVALID_ARGUMENT`.
 
     Messages:
       AdditionalProperty: An additional property for a FilterValue object.
@@ -1064,6 +1548,39 @@ class GoogleCloudVectorsearchV1betaRanker(_messages.Message):
   vertexRanker = _messages.MessageField('GoogleCloudVectorsearchV1betaVertexRanker', 2)
 
 
+class GoogleCloudVectorsearchV1betaRankingSpec(_messages.Message):
+  r"""Controls how results are ranked.
+
+  Fields:
+    rerankingSpec: Optional. Controls the re-ranking stage.
+  """
+
+  rerankingSpec = _messages.MessageField('GoogleCloudVectorsearchV1betaRankingSpecRerankingSpec', 1)
+
+
+class GoogleCloudVectorsearchV1betaRankingSpecRerankingSpec(_messages.Message):
+  r"""Configuration for semantic re-ranking applied to candidate results after
+  hybrid retrieval and Reciprocal Rank Fusion (RRF).
+
+  Fields:
+    enabled: Optional. Whether to re-rank the fused results. Defaults to
+      false: results are returned in RRF-fused order unless the caller opts
+      in. When enabled, re-ranking uses `semantic-ranker-fast@latest` on the
+      Vertex Ranking Service, and requires the Discovery Engine API to be
+      enabled on the caller's project.
+    rankOversamplingFactor: Optional. The factor by which to oversample
+      candidates before re-ranking. The total number of candidates retrieved
+      for re-ranking is `min(rank_oversampling_factor * top_k, 200)`. After
+      re-ranking, results are trimmed to SearchDocumentsRequest.top_k. Ignored
+      unless `enabled` is true. When enabled, defaults to 5 (retrieving `min(5
+      * top_k, 200)` candidates, with a maximum of 200). To re-rank without
+      oversampling, set this field to 1.
+  """
+
+  enabled = _messages.BooleanField(1)
+  rankOversamplingFactor = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
 class GoogleCloudVectorsearchV1betaReciprocalRankFusion(_messages.Message):
   r"""Defines the Reciprocal Rank Fusion (RRF) algorithm for result ranking.
 
@@ -1126,6 +1643,125 @@ class GoogleCloudVectorsearchV1betaSearchDataObjectsResponse(_messages.Message):
   nextPageToken = _messages.StringField(1)
   results = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchResult', 2, repeated=True)
   searchResponseMetadata = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchResponseMetadata', 3)
+
+
+class GoogleCloudVectorsearchV1betaSearchDocumentsRequest(_messages.Message):
+  r"""Request message for DocumentSearchService.SearchDocuments.
+
+  Messages:
+    FilterValue: Optional. Restricts the search to segments that match this
+      filter, a JSON object over the field paths of a DocumentSearchResult: *
+      `metadata.`: a property declared in the DataStore's
+      `document_metadata_schema`, e.g. `metadata.category`. *
+      `unstructured_details.page_range.start_page` and `.end_page`: for an
+      `UNSTRUCTURED` DataStore. * `video_details.start_offset` and
+      `.end_offset`: in seconds, for a `VIDEO` DataStore. Comparisons: `$eq`,
+      `$ne`, `$lt`, `$lte`, `$gt`, `$gte`, `$in`, `$nin`, `$all`, and
+      `$exists`. Combine them with `$and`, `$or`, and `$not`, nested at most
+      two levels deep. For example: {"$and": [{"metadata.year": {"$gte":
+      2025}}, {"unstructured_details.page_range.start_page": {"$lte": 20}}]}
+
+  Fields:
+    documentIds: Optional. Restrict the search to these Document IDs. Max 100.
+      If empty, the whole DataStore is searched.
+    filter: Optional. Restricts the search to segments that match this filter,
+      a JSON object over the field paths of a DocumentSearchResult: *
+      `metadata.`: a property declared in the DataStore's
+      `document_metadata_schema`, e.g. `metadata.category`. *
+      `unstructured_details.page_range.start_page` and `.end_page`: for an
+      `UNSTRUCTURED` DataStore. * `video_details.start_offset` and
+      `.end_offset`: in seconds, for a `VIDEO` DataStore. Comparisons: `$eq`,
+      `$ne`, `$lt`, `$lte`, `$gt`, `$gte`, `$in`, `$nin`, `$all`, and
+      `$exists`. Combine them with `$and`, `$or`, and `$not`, nested at most
+      two levels deep. For example: {"$and": [{"metadata.year": {"$gte":
+      2025}}, {"unstructured_details.page_range.start_page": {"$lte": 20}}]}
+    outputFields: Optional. Fields to return on each result.
+    rankingSpec: Optional. Controls how results are ranked.
+    textQuery: A text query.
+    topK: Optional. Number of results to return. Defaults to 10. Values above
+      100 are coerced to 100.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class FilterValue(_messages.Message):
+    r"""Optional. Restricts the search to segments that match this filter, a
+    JSON object over the field paths of a DocumentSearchResult: * `metadata.`:
+    a property declared in the DataStore's `document_metadata_schema`, e.g.
+    `metadata.category`. * `unstructured_details.page_range.start_page` and
+    `.end_page`: for an `UNSTRUCTURED` DataStore. *
+    `video_details.start_offset` and `.end_offset`: in seconds, for a `VIDEO`
+    DataStore. Comparisons: `$eq`, `$ne`, `$lt`, `$lte`, `$gt`, `$gte`, `$in`,
+    `$nin`, `$all`, and `$exists`. Combine them with `$and`, `$or`, and
+    `$not`, nested at most two levels deep. For example: {"$and":
+    [{"metadata.year": {"$gte": 2025}},
+    {"unstructured_details.page_range.start_page": {"$lte": 20}}]}
+
+    Messages:
+      AdditionalProperty: An additional property for a FilterValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a FilterValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  documentIds = _messages.StringField(1, repeated=True)
+  filter = _messages.MessageField('FilterValue', 2)
+  outputFields = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchDocumentsRequestOutputFields', 3)
+  rankingSpec = _messages.MessageField('GoogleCloudVectorsearchV1betaRankingSpec', 4)
+  textQuery = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchDocumentsRequestTextQuery', 5)
+  topK = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudVectorsearchV1betaSearchDocumentsRequestOutputFields(_messages.Message):
+  r"""Fields to return on each DocumentSearchResult, beyond those every result
+  carries.
+
+  Fields:
+    metadata: Optional. Metadata properties to return in
+      DocumentSearchResult.document.metadata, named as declared in the
+      DataStore's `document_metadata_schema`. A nested property is named by
+      its dotted path, e.g. `address.city`, without the `metadata.` prefix
+      `filter` uses. `"*"` returns every declared property. Unset returns
+      none. A property the Document has no value for is omitted.
+  """
+
+  metadata = _messages.StringField(1, repeated=True)
+
+
+class GoogleCloudVectorsearchV1betaSearchDocumentsRequestTextQuery(_messages.Message):
+  r"""A text query.
+
+  Fields:
+    text: Required. The text to search for.
+  """
+
+  text = _messages.StringField(1)
+
+
+class GoogleCloudVectorsearchV1betaSearchDocumentsResponse(_messages.Message):
+  r"""Response message for DocumentSearchService.SearchDocuments.
+
+  Fields:
+    results: Output only. The matching document segments that match the search
+      criteria, ordered by relevance.
+    warnings: Output only. Warnings or non-fatal errors that occurred during
+      execution.
+  """
+
+  results = _messages.MessageField('GoogleCloudVectorsearchV1betaDocumentSearchResult', 1, repeated=True)
+  warnings = _messages.MessageField('GoogleRpcStatus', 2, repeated=True)
 
 
 class GoogleCloudVectorsearchV1betaSearchHint(_messages.Message):
@@ -1309,12 +1945,56 @@ class GoogleCloudVectorsearchV1betaSemanticSearch(_messages.Message):
       multi modal embedding models, see
 
   Messages:
-    FilterValue: Optional. A JSON filter expression, e.g. {"genre": {"$eq":
-      "sci-fi"}}, represented as a google.protobuf.Struct.
+    FilterValue: Optional. A JSON filter expression, e.g. `{"genre": {"$eq":
+      "sci-fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
+      Which filters are accepted depends on how the search is served. If it is
+      served by an approximate nearest neighbor (ANN) index (by default when a
+      ready index exists on `search_field`, or when one is selected via
+      `search_hint.index_hint`), every filtered field must be listed in
+      `Index.filter_fields` at index creation, `$or` and `$all` are accepted
+      only at the top level of the filter, and `$not` and `$exists` are not
+      supported. Not every unsupported filter is rejected: most produce
+      `INVALID_ARGUMENT`, but some are silently ignored, so do not rely on the
+      error. If no ready index exists on `search_field`, or if
+      `search_hint.knn_hint` is set, the search is served by K-Nearest
+      Neighbor (KNN) search, which has none of these filter restrictions.
 
   Fields:
-    filter: Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-
-      fi"}}, represented as a google.protobuf.Struct.
+    filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+      fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
+      Which filters are accepted depends on how the search is served. If it is
+      served by an approximate nearest neighbor (ANN) index (by default when a
+      ready index exists on `search_field`, or when one is selected via
+      `search_hint.index_hint`), every filtered field must be listed in
+      `Index.filter_fields` at index creation, `$or` and `$all` are accepted
+      only at the top level of the filter, and `$not` and `$exists` are not
+      supported. Not every unsupported filter is rejected: most produce
+      `INVALID_ARGUMENT`, but some are silently ignored, so do not rely on the
+      error. If no ready index exists on `search_field`, or if
+      `search_hint.knn_hint` is set, the search is served by K-Nearest
+      Neighbor (KNN) search, which has none of these filter restrictions.
     outputFields: Optional. The fields to return in the search results.
     searchField: Required. The vector field to search.
     searchHint: Optional. Sets the search hint. If no strategy is specified,
@@ -1362,8 +2042,30 @@ class GoogleCloudVectorsearchV1betaSemanticSearch(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterValue(_messages.Message):
-    r"""Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-fi"}},
-    represented as a google.protobuf.Struct.
+    r"""Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+    fi"}}`, represented as a `google.protobuf.Struct`. An empty filter (`{}`)
+    matches all data objects. Otherwise, each JSON object in the filter must
+    have exactly one key: either a field name mapped to one operator
+    (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or `$or` with a
+    list of filters, or `$not` with one filter. Field operators and their
+    values: `$eq` and `$ne` take a string, number or bool; `$lt`, `$lte`,
+    `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a list of
+    strings; `$exists` takes a bool. Several keys in one object (implicit AND)
+    and implicit equality (`{"genre": "sci-fi"}`) are rejected; use `$and` and
+    `$eq` instead. Logical operators can be nested at most 2 levels deep, e.g.
+    `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b": {"$eq": 2}}]}]}`. Deeper
+    filters are rejected with `INVALID_ARGUMENT`. Which filters are accepted
+    depends on how the search is served. If it is served by an approximate
+    nearest neighbor (ANN) index (by default when a ready index exists on
+    `search_field`, or when one is selected via `search_hint.index_hint`),
+    every filtered field must be listed in `Index.filter_fields` at index
+    creation, `$or` and `$all` are accepted only at the top level of the
+    filter, and `$not` and `$exists` are not supported. Not every unsupported
+    filter is rejected: most produce `INVALID_ARGUMENT`, but some are silently
+    ignored, so do not rely on the error. If no ready index exists on
+    `search_field`, or if `search_hint.knn_hint` is set, the search is served
+    by K-Nearest Neighbor (KNN) search, which has none of these filter
+    restrictions.
 
     Messages:
       AdditionalProperty: An additional property for a FilterValue object.
@@ -1440,12 +2142,12 @@ class GoogleCloudVectorsearchV1betaTextQuery(_messages.Message):
 
   Enums:
     MatchTypeValueValuesEnum: Optional. The matching strategy to apply for
-      this query. If unset, defaults to `STANDARD`.
+      this query. If unset, defaults to `TEXT`.
 
   Fields:
     fields: Required. The data fields to search against.
     matchType: Optional. The matching strategy to apply for this query. If
-      unset, defaults to `STANDARD`.
+      unset, defaults to `TEXT`.
     queryEnhancement: Optional. The query enhancement settings to apply for
       this query.
     text: Required. The text to search for.
@@ -1453,10 +2155,10 @@ class GoogleCloudVectorsearchV1betaTextQuery(_messages.Message):
 
   class MatchTypeValueValuesEnum(_messages.Enum):
     r"""Optional. The matching strategy to apply for this query. If unset,
-    defaults to `STANDARD`.
+    defaults to `TEXT`.
 
     Values:
-      MATCH_TYPE_UNSPECIFIED: Defaults to `STANDARD`.
+      MATCH_TYPE_UNSPECIFIED: Defaults to `TEXT`.
       TEXT: Treats `text` as individual search terms combined with an implicit
         AND: every term must appear in the field, in any order and any
         position. Case-insensitive.
@@ -1478,13 +2180,35 @@ class GoogleCloudVectorsearchV1betaTextSearch(_messages.Message):
 
   Messages:
     FilterValue: Optional. A JSON filter expression, e.g. `{"genre": {"$eq":
-      "sci-fi"}}`, represented as a `google.protobuf.Struct`.
+      "sci-fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
 
   Fields:
     dataFieldNames: Optional. The data field names to search. Required when
       using the default text search mode.
     filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
-      fi"}}`, represented as a `google.protobuf.Struct`.
+      fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
     outputFields: Optional. The fields to return in the search results.
     searchText: Optional. The query text. Required when using the default text
       search mode.
@@ -1499,7 +2223,18 @@ class GoogleCloudVectorsearchV1betaTextSearch(_messages.Message):
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterValue(_messages.Message):
     r"""Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
-    fi"}}`, represented as a `google.protobuf.Struct`.
+    fi"}}`, represented as a `google.protobuf.Struct`. An empty filter (`{}`)
+    matches all data objects. Otherwise, each JSON object in the filter must
+    have exactly one key: either a field name mapped to one operator
+    (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or `$or` with a
+    list of filters, or `$not` with one filter. Field operators and their
+    values: `$eq` and `$ne` take a string, number or bool; `$lt`, `$lte`,
+    `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a list of
+    strings; `$exists` takes a bool. Several keys in one object (implicit AND)
+    and implicit equality (`{"genre": "sci-fi"}`) are rejected; use `$and` and
+    `$eq` instead. Logical operators can be nested at most 2 levels deep, e.g.
+    `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b": {"$eq": 2}}]}]}`. Deeper
+    filters are rejected with `INVALID_ARGUMENT`.
 
     Messages:
       AdditionalProperty: An additional property for a FilterValue object.
@@ -1554,6 +2289,144 @@ class GoogleCloudVectorsearchV1betaUnaryQuery(_messages.Message):
   subQuery = _messages.MessageField('GoogleCloudVectorsearchV1betaStructuredQuery', 2)
 
 
+class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfig(_messages.Message):
+  r"""Configuration for the unstructured document ingestion pipeline applied
+  to Documents ingested into this DataStore. Segmentation and parsing settings
+  can evolve independently while remaining grouped in this message.
+
+  Fields:
+    defaultParsingConfig: Optional. The default parsing config, applied to all
+      file types for unstructured document parsing. If unset, defaults to
+      digital (native text extraction) parsing, or to layout-aware parsing
+      when `embedding_config.mode` is `MULTIMODAL`.
+    embeddingConfig: Optional. Controls how the per-segment embedding is
+      generated.
+    segmentationConfig: Required. Controls how unstructured documents are
+      split into segments prior to embedding.
+  """
+
+  defaultParsingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsingConfig', 1)
+  embeddingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredEmbeddingConfig', 2)
+  segmentationConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegmentationConfig', 3)
+
+
+class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredEmbeddingConfig(_messages.Message):
+  r"""Configures how per-segment embeddings are generated for the unstructured
+  document modality.
+
+  Enums:
+    ModeValueValuesEnum: Optional. Controls what a segment's embedding is
+      computed from. Defaults to `TEXT`.
+
+  Fields:
+    mode: Optional. Controls what a segment's embedding is computed from.
+      Defaults to `TEXT`.
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Controls what a segment's embedding is computed from.
+    Defaults to `TEXT`.
+
+    Values:
+      EMBEDDING_MODE_UNSPECIFIED: Unspecified. Treated as TEXT.
+      TEXT: Text only. Images extracted from the document do not contribute to
+        the embedding. Default.
+      MULTIMODAL: A segment's text and its images are embedded together into a
+        single multimodal vector, preserving the order they appear in the
+        document. Requires layout-aware parsing and chunk segmentation to
+        extract images; a config that sets digital parsing or page
+        segmentation with this mode is rejected.
+    """
+    EMBEDDING_MODE_UNSPECIFIED = 0
+    TEXT = 1
+    MULTIMODAL = 2
+
+  mode = _messages.EnumField('ModeValueValuesEnum', 1)
+
+
+class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsingConfig(_messages.Message):
+  r"""Related configurations applied to a specific type of unstructured
+  document parser.
+
+  Fields:
+    digitalParsingConfig: Digital (native text extraction) parsing.
+    layoutParsingConfig: Layout-aware parsing.
+  """
+
+  digitalParsingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsingConfigDigitalParsingConfig', 1)
+  layoutParsingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsingConfigLayoutParsingConfig', 2)
+
+
+class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsingConfigDigitalParsingConfig(_messages.Message):
+  r"""The digital parsing configurations for unstructured documents."""
+
+
+class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsingConfigLayoutParsingConfig(_messages.Message):
+  r"""The layout parsing configurations for unstructured documents."""
+
+
+class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegmentationConfig(_messages.Message):
+  r"""Configures how unstructured documents are broken down into segments
+  prior to embedding.
+
+  Fields:
+    chunkSegmentationConfig: Chunk-level segmentation.
+    pageSegmentationConfig: Page-level segmentation.
+  """
+
+  chunkSegmentationConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegmentationConfigChunkSegmentationConfig', 1)
+  pageSegmentationConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegmentationConfigPageSegmentationConfig', 2)
+
+
+class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegmentationConfigChunkSegmentationConfig(_messages.Message):
+  r"""The chunk segmentation configurations for unstructured documents.
+  Segments are produced as semantic chunks (e.g. by paragraph).
+
+  Fields:
+    chunkSize: Optional. The token size limit for each chunk. Supported
+      values: 100-500 (inclusive). If unset, defaults to 500.
+    includeAncestorHeadings: Optional. Whether to include appending different
+      levels of headings to chunks from the middle of the unstructured
+      document to prevent context loss. If unset, defaults to false.
+  """
+
+  chunkSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  includeAncestorHeadings = _messages.BooleanField(2)
+
+
+class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegmentationConfigPageSegmentationConfig(_messages.Message):
+  r"""The page segmentation configurations for unstructured documents.
+  Segments are produced at the page level.
+  """
+
+
+
+class GoogleCloudVectorsearchV1betaUnstructuredSegmentDetails(_messages.Message):
+  r"""Locates a segment within an unstructured Document, and carries its text.
+
+  Fields:
+    contentSnippet: Output only. Text content of the segment.
+    pageRange: Output only. Where the segment sits in the source document.
+      Unset for formats that do not have pages, e.g. plain text.
+  """
+
+  contentSnippet = _messages.StringField(1)
+  pageRange = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredSegmentDetailsPageRange', 2)
+
+
+class GoogleCloudVectorsearchV1betaUnstructuredSegmentDetailsPageRange(_messages.Message):
+  r"""A page range within the source document. Pages are 1-based and the range
+  is inclusive; a single page is represented as `start_page == end_page`.
+
+  Fields:
+    endPage: Output only. Last page of the range.
+    startPage: Output only. First page of the range.
+  """
+
+  endPage = _messages.IntegerField(1)
+  startPage = _messages.IntegerField(2)
+
+
 class GoogleCloudVectorsearchV1betaUpdateDataObjectRequest(_messages.Message):
   r"""Request message for DataObjectService.UpdateDataObject.
 
@@ -1603,14 +2476,58 @@ class GoogleCloudVectorsearchV1betaVectorSearch(_messages.Message):
       default.
 
   Messages:
-    FilterValue: Optional. A JSON filter expression, e.g. {"genre": {"$eq":
-      "sci-fi"}}, represented as a google.protobuf.Struct.
+    FilterValue: Optional. A JSON filter expression, e.g. `{"genre": {"$eq":
+      "sci-fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
+      Which filters are accepted depends on how the search is served. If it is
+      served by an approximate nearest neighbor (ANN) index (by default when a
+      ready index exists on `search_field`, or when one is selected via
+      `search_hint.index_hint`), every filtered field must be listed in
+      `Index.filter_fields` at index creation, `$or` and `$all` are accepted
+      only at the top level of the filter, and `$not` and `$exists` are not
+      supported. Not every unsupported filter is rejected: most produce
+      `INVALID_ARGUMENT`, but some are silently ignored, so do not rely on the
+      error. If no ready index exists on `search_field`, or if
+      `search_hint.knn_hint` is set, the search is served by K-Nearest
+      Neighbor (KNN) search, which has none of these filter restrictions.
 
   Fields:
     distanceMetric: Optional. The distance metric to use for the KNN search.
       If not specified, DOT_PRODUCT will be used as the default.
-    filter: Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-
-      fi"}}, represented as a google.protobuf.Struct.
+    filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+      fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
+      Which filters are accepted depends on how the search is served. If it is
+      served by an approximate nearest neighbor (ANN) index (by default when a
+      ready index exists on `search_field`, or when one is selected via
+      `search_hint.index_hint`), every filtered field must be listed in
+      `Index.filter_fields` at index creation, `$or` and `$all` are accepted
+      only at the top level of the filter, and `$not` and `$exists` are not
+      supported. Not every unsupported filter is rejected: most produce
+      `INVALID_ARGUMENT`, but some are silently ignored, so do not rely on the
+      error. If no ready index exists on `search_field`, or if
+      `search_hint.knn_hint` is set, the search is served by K-Nearest
+      Neighbor (KNN) search, which has none of these filter restrictions.
     outputFields: Optional. Mask specifying which fields to return.
     searchField: Required. The vector field to search.
     searchHint: Optional. Sets the search hint. If no strategy is specified,
@@ -1637,8 +2554,30 @@ class GoogleCloudVectorsearchV1betaVectorSearch(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterValue(_messages.Message):
-    r"""Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-fi"}},
-    represented as a google.protobuf.Struct.
+    r"""Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+    fi"}}`, represented as a `google.protobuf.Struct`. An empty filter (`{}`)
+    matches all data objects. Otherwise, each JSON object in the filter must
+    have exactly one key: either a field name mapped to one operator
+    (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or `$or` with a
+    list of filters, or `$not` with one filter. Field operators and their
+    values: `$eq` and `$ne` take a string, number or bool; `$lt`, `$lte`,
+    `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a list of
+    strings; `$exists` takes a bool. Several keys in one object (implicit AND)
+    and implicit equality (`{"genre": "sci-fi"}`) are rejected; use `$and` and
+    `$eq` instead. Logical operators can be nested at most 2 levels deep, e.g.
+    `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b": {"$eq": 2}}]}]}`. Deeper
+    filters are rejected with `INVALID_ARGUMENT`. Which filters are accepted
+    depends on how the search is served. If it is served by an approximate
+    nearest neighbor (ANN) index (by default when a ready index exists on
+    `search_field`, or when one is selected via `search_hint.index_hint`),
+    every filtered field must be listed in `Index.filter_fields` at index
+    creation, `$or` and `$all` are accepted only at the top level of the
+    filter, and `$not` and `$exists` are not supported. Not every unsupported
+    filter is rejected: most produce `INVALID_ARGUMENT`, but some are silently
+    ignored, so do not rely on the error. If no ready index exists on
+    `search_field`, or if `search_hint.knn_hint` is set, the search is served
+    by K-Nearest Neighbor (KNN) search, which has none of these filter
+    restrictions.
 
     Messages:
       AdditionalProperty: An additional property for a FilterValue object.
@@ -1768,6 +2707,96 @@ class GoogleCloudVectorsearchV1betaVertexRankerTextRecordSpec(_messages.Message)
   contentTemplate = _messages.StringField(1)
   query = _messages.StringField(2)
   titleTemplate = _messages.StringField(3)
+
+
+class GoogleCloudVectorsearchV1betaVideoProcessingConfig(_messages.Message):
+  r"""Configuration for the video ingestion pipeline applied to Documents
+  ingested into this DataStore. Segmentation and embedding settings can evolve
+  independently while remaining grouped in this message. All sub-
+  configurations are optional; any omitted sub-configuration falls back to the
+  platform default documented on that field.
+
+  Fields:
+    embeddingConfig: Optional. Controls how the per-segment multimodal
+      embedding is generated.
+    segmentationConfig: Optional. Controls how videos are split into segments
+      prior to embedding. If unset, defaults to fixed-window segmentation with
+      a 30s window. If set, `segmentation_mode` must select one of the
+      segmentation modes (an empty VideoSegmentationConfig is rejected).
+  """
+
+  embeddingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaVideoProcessingConfigVideoEmbeddingGenerationConfig', 1)
+  segmentationConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaVideoProcessingConfigVideoSegmentationConfig', 2)
+
+
+class GoogleCloudVectorsearchV1betaVideoProcessingConfigVideoEmbeddingGenerationConfig(_messages.Message):
+  r"""Configures how per-segment multimodal embeddings are generated for the
+  video modality.
+
+  Enums:
+    AudioModeValueValuesEnum: Optional. Controls whether the audio track
+      contributes to the embedding. Defaults to DISABLED.
+
+  Fields:
+    audioMode: Optional. Controls whether the audio track contributes to the
+      embedding. Defaults to DISABLED.
+  """
+
+  class AudioModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Controls whether the audio track contributes to the
+    embedding. Defaults to DISABLED.
+
+    Values:
+      AUDIO_MODE_UNSPECIFIED: Unspecified. Treated as DISABLED.
+      ENABLED: Multiplexes the audio track into the multimodal embedding
+        alongside video frames. Improves recall for queries that depend on
+        spoken content or ambient sound (e.g. dialog-driven news, sports
+        commentary), at the cost of a larger embedding-request token size.
+      DISABLED: Drops the audio track and generates embeddings from visual
+        frames only. Default.
+    """
+    AUDIO_MODE_UNSPECIFIED = 0
+    ENABLED = 1
+    DISABLED = 2
+
+  audioMode = _messages.EnumField('AudioModeValueValuesEnum', 1)
+
+
+class GoogleCloudVectorsearchV1betaVideoProcessingConfigVideoSegmentationConfig(_messages.Message):
+  r"""Configures how videos are broken down into segments prior to embedding.
+
+  Fields:
+    fixedWindowConfig: Fixed-window (deterministic) segmentation.
+  """
+
+  fixedWindowConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaVideoProcessingConfigVideoSegmentationConfigFixedWindowConfig', 1)
+
+
+class GoogleCloudVectorsearchV1betaVideoProcessingConfigVideoSegmentationConfigFixedWindowConfig(_messages.Message):
+  r"""Configuration for fixed-window segmentation. Segments are produced as
+  deterministic, non-overlapping windows of `segment_duration` each.
+
+  Fields:
+    segmentDuration: Optional. The fixed window size for each emitted segment.
+      If unset, defaults to 30s. When explicitly set, must be greater than 5s
+      and less than or equal to 80s.
+  """
+
+  segmentDuration = _messages.StringField(1)
+
+
+class GoogleCloudVectorsearchV1betaVideoSegmentDetails(_messages.Message):
+  r"""Locates a segment within a video Document.
+
+  Fields:
+    endOffset: Output only. Where this segment ends, relative to the start of
+      the source video.
+    startOffset: Output only. Where this segment begins, relative to the start
+      of the source video.
+  """
+
+  endOffset = _messages.StringField(1)
+  startOffset = _messages.StringField(2)
 
 
 class GoogleLongrunningCancelOperationRequest(_messages.Message):
@@ -2495,6 +3524,216 @@ class VectorsearchProjectsLocationsCollectionsPatchRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class VectorsearchProjectsLocationsDataStoresCreateRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsDataStoresCreateRequest object.
+
+  Fields:
+    dataStoreId: Required. ID of the DataStore to create. The id must be 1-63
+      characters long, and comply with
+      [RFC1035](https://www.ietf.org/rfc/rfc1035.txt). Specifically, it must
+      be 1-63 characters long and match the regular expression
+      `[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?`.
+    googleCloudVectorsearchV1betaDataStore: A
+      GoogleCloudVectorsearchV1betaDataStore resource to be passed as the
+      request body.
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  dataStoreId = _messages.StringField(1)
+  googleCloudVectorsearchV1betaDataStore = _messages.MessageField('GoogleCloudVectorsearchV1betaDataStore', 2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class VectorsearchProjectsLocationsDataStoresDeleteRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsDataStoresDeleteRequest object.
+
+  Fields:
+    backingCollectionDeleted: Optional. If set to true, the DataStore's auto-
+      created backing Collection is torn down alongside the DataStore, force-
+      deleting its DataObjects and Indexes. Defaults to false, retaining the
+      Collection so its DataObjects keep serving.
+    force: Optional. If set to true, any Documents from this DataStore will
+      also be deleted. (Otherwise, the request will only work if the DataStore
+      has no Documents.)
+    name: Required. Name of the resource
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  backingCollectionDeleted = _messages.BooleanField(1)
+  force = _messages.BooleanField(2)
+  name = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class VectorsearchProjectsLocationsDataStoresDocumentsGetRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsDataStoresDocumentsGetRequest object.
+
+  Fields:
+    name: Required. The name of the Document resource. Format: `projects/{proj
+      ect}/locations/{location}/dataStores/{data_store}/documents/{document}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class VectorsearchProjectsLocationsDataStoresDocumentsListRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsDataStoresDocumentsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The resource name of the DataStore to list Documents
+      from. Format:
+      `projects/{project}/locations/{location}/dataStores/{data_store}`
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class VectorsearchProjectsLocationsDataStoresDocumentsSearchRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsDataStoresDocumentsSearchRequest object.
+
+  Fields:
+    googleCloudVectorsearchV1betaSearchDocumentsRequest: A
+      GoogleCloudVectorsearchV1betaSearchDocumentsRequest resource to be
+      passed as the request body.
+    parent: Required. The DataStore to search. Format:
+      `projects/{project}/locations/{location}/dataStores/{data_store}`
+  """
+
+  googleCloudVectorsearchV1betaSearchDocumentsRequest = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchDocumentsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class VectorsearchProjectsLocationsDataStoresGetRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsDataStoresGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class VectorsearchProjectsLocationsDataStoresImportDocumentsRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsDataStoresImportDocumentsRequest object.
+
+  Fields:
+    googleCloudVectorsearchV1betaImportDocumentsRequest: A
+      GoogleCloudVectorsearchV1betaImportDocumentsRequest resource to be
+      passed as the request body.
+    name: Required. The resource name of the DataStore to import Documents
+      into. Format:
+      `projects/{project}/locations/{location}/dataStores/{data_store}`.
+  """
+
+  googleCloudVectorsearchV1betaImportDocumentsRequest = _messages.MessageField('GoogleCloudVectorsearchV1betaImportDocumentsRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class VectorsearchProjectsLocationsDataStoresListRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsDataStoresListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListDataStoresRequest.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class VectorsearchProjectsLocationsDataStoresPatchRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsDataStoresPatchRequest object.
+
+  Fields:
+    googleCloudVectorsearchV1betaDataStore: A
+      GoogleCloudVectorsearchV1betaDataStore resource to be passed as the
+      request body.
+    name: Identifier. The fully qualified resource name of the DataStore.
+      Format:
+      `projects/{project}/locations/{location}/dataStores/{data_store_id}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the DataStore resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields present in the request will be
+      overwritten. The following fields support update: `display_name`,
+      `description`, `labels`, `processing_config`. If `*` is provided in the
+      update_mask, full replacement will be performed.
+  """
+
+  googleCloudVectorsearchV1betaDataStore = _messages.MessageField('GoogleCloudVectorsearchV1betaDataStore', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class VectorsearchProjectsLocationsDataStoresPurgeDocumentsRequest(_messages.Message):
+  r"""A VectorsearchProjectsLocationsDataStoresPurgeDocumentsRequest object.
+
+  Fields:
+    googleCloudVectorsearchV1betaPurgeDocumentsRequest: A
+      GoogleCloudVectorsearchV1betaPurgeDocumentsRequest resource to be passed
+      as the request body.
+    name: Required. The resource name of the DataStore to purge Documents
+      from. Format:
+      `projects/{project}/locations/{location}/dataStores/{data_store}`.
+  """
+
+  googleCloudVectorsearchV1betaPurgeDocumentsRequest = _messages.MessageField('GoogleCloudVectorsearchV1betaPurgeDocumentsRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class VectorsearchProjectsLocationsGetRequest(_messages.Message):

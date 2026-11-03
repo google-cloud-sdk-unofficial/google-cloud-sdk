@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,12 @@ from .services.logging_service_v2 import LoggingServiceV2AsyncClient
 from .services.metrics_service_v2 import MetricsServiceV2Client
 from .services.metrics_service_v2 import MetricsServiceV2AsyncClient
 
+from .types.analytics_query_builder import FieldSource
+from .types.analytics_query_builder import FilterPredicate
+from .types.analytics_query_builder import ProjectedField
+from .types.analytics_query_builder import QueryBuilderConfig
+from .types.analytics_query_builder import SortOrderParameter
+from .types.analytics_query_builder import VirtualField
 from .types.log_entry import AppHub
 from .types.log_entry import AppHubApplication
 from .types.log_entry import AppHubService
@@ -159,6 +165,8 @@ __all__ = (
 'DeleteSavedQueryRequest',
 'DeleteSinkRequest',
 'DeleteViewRequest',
+'FieldSource',
+'FilterPredicate',
 'GetBucketRequest',
 'GetCmekSettingsRequest',
 'GetExclusionRequest',
@@ -215,9 +223,12 @@ __all__ = (
 'MetricsServiceV2Client',
 'OperationState',
 'OpsAnalyticsQuery',
+'ProjectedField',
+'QueryBuilderConfig',
 'RecentQuery',
 'SavedQuery',
 'Settings',
+'SortOrderParameter',
 'TailLogEntriesRequest',
 'TailLogEntriesResponse',
 'UndeleteBucketRequest',
@@ -230,6 +241,7 @@ __all__ = (
 'UpdateSettingsRequest',
 'UpdateSinkRequest',
 'UpdateViewRequest',
+'VirtualField',
 'WriteLogEntriesPartialErrors',
 'WriteLogEntriesRequest',
 'WriteLogEntriesResponse',

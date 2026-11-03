@@ -1392,29 +1392,29 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
-    def TestDatabaseConnection(self, request, global_params=None):
+    def Test(self, request, global_params=None):
       r"""Tests connectivity of a DatabaseConnection.
 
       Args:
-        request: (OracledatabaseProjectsLocationsDatabaseConnectionsTestDatabaseConnectionRequest) input message
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (TestDatabaseConnectionResponse) The response message.
       """
-      config = self.GetMethodConfig('TestDatabaseConnection')
+      config = self.GetMethodConfig('Test')
       return self._RunMethod(
           config, request, global_params=global_params)
 
-    TestDatabaseConnection.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}:testDatabaseConnection',
+    Test.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}:test',
         http_method='POST',
-        method_id='oracledatabase.projects.locations.databaseConnections.testDatabaseConnection',
-        ordered_params=['databaseConnection'],
-        path_params=['databaseConnection'],
+        method_id='oracledatabase.projects.locations.databaseConnections.test',
+        ordered_params=['name'],
+        path_params=['name'],
         query_params=[],
-        relative_path='v1alpha/{+databaseConnection}:testDatabaseConnection',
+        relative_path='v1alpha/{+name}:test',
         request_field='testDatabaseConnectionRequest',
-        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsTestDatabaseConnectionRequest',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest',
         response_type_name='TestDatabaseConnectionResponse',
         supports_download=False,
     )
@@ -3729,7 +3729,7 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the `labels` of a single OdbNetwork.
+      r"""Updates the `labels` and `service_connectivity_config` of a single OdbNetwork.
 
       Args:
         request: (OracledatabaseProjectsLocationsOdbNetworksPatchRequest) input message

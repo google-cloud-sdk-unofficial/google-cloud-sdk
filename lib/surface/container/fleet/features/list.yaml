@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: true
+  help_text:
     brief: List enabled features.
     description: List enabled fleet features in a project.
     examples: |

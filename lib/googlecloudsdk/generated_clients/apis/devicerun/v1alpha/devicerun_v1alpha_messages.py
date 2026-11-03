@@ -31,8 +31,8 @@ class AndroidBugreportDeviceAction(_messages.Message):
 
   Fields:
     collectOnPass: Optional. Whether to deliver the bugreport when the test
-      passes. If false, the bugreport is skipped on pass to save time (default
-      behavior). If true, the bugreport is always delivered.
+      passes. If `false`, the bugreport is skipped on pass to save time
+      (default behavior). If `true`, the bugreport is always delivered.
   """
 
   collectOnPass = _messages.BooleanField(1)
@@ -44,8 +44,8 @@ class AndroidDumpsysDeviceAction(_messages.Message):
 
   Fields:
     collectOnPass: Optional. Whether to deliver the dumpsys when the test
-      passes. If false, the dumpsys is skipped on pass to save time (default
-      behavior). If true, the dumpsys is always delivered.
+      passes. If `false`, the dumpsys is skipped on pass to save time (default
+      behavior). If `true`, the dumpsys is always delivered.
   """
 
   collectOnPass = _messages.BooleanField(1)
@@ -191,63 +191,11 @@ class AndroidInstrumentationTest(_messages.Message):
   enableCodeCoverage = _messages.BooleanField(2)
   instrumentationTimeout = _messages.StringField(3)
   orchestratorVersion = _messages.StringField(4)
-  smartSharding = _messages.MessageField('AndroidInstrumentationTestSmartSharding', 5)
+  smartSharding = _messages.MessageField('SmartSharding', 5)
   testInstallable = _messages.MessageField('AndroidInstallable', 6)
   testRunnerClass = _messages.StringField(7)
   testTargets = _messages.StringField(8, repeated=True)
-  uniformSharding = _messages.MessageField('AndroidInstrumentationTestUniformSharding', 9)
-
-
-class AndroidInstrumentationTestSmartSharding(_messages.Message):
-  r"""The smart sharding strategy to split the job into multiple shards based
-  on the test methods and their recorded execution time.
-
-  Fields:
-    maxShardCount: Optional. The maximum number of shards to create. If unset
-      or less than 1, system-defined max limits are used. This limit takes
-      precedence if the targeted_shard_duration cannot be satisfied. Limits: -
-      For physical devices, the number of shards must be <= 20. - For virtual
-      devices, the number of shards must be <= 200.
-    targetedShardDuration: Required. The targeted duration of each shard.
-      Limits: - Must be at least 2 minutes. - Must be at most 3 hours. Shard
-      duration is not guaranteed because smart sharding uses test case history
-      and default durations which may not be accurate. Durations are
-      calculated based on the following inputs: - Timing records from previous
-      runs of the same test case. - For new test cases, the average duration
-      of other known test cases. - A system-chosen, default duration if there
-      are no previous timing records available. Because the actual shard
-      duration can exceed the targeted shard duration, we recommend that you
-      set the targeted value at least 5 minutes less than the maximum allowed
-      instrumentation timeout. This approach avoids cancelling the shard
-      before all tests can finish.
-    timingRecord: Required. The timing record file to use for smart sharding.
-      If the file does not exist, smart sharding will use default test time
-      (30s) for each test method to shard the job into multiple shards. This
-      file will be overwritten with the latest timing record after the job is
-      completed.
-  """
-
-  maxShardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  targetedShardDuration = _messages.StringField(2)
-  timingRecord = _messages.MessageField('InputFile', 3)
-
-
-class AndroidInstrumentationTestUniformSharding(_messages.Message):
-  r"""Uniformly shards test cases given a total number of shards. It will be
-  translated to `-e numShard` and `-e shardIndex` AndroidJUnitRunner
-  arguments. With uniform sharding enabled, specifying either of these
-  sharding arguments via `environment_variables` is invalid. Based on the
-  sharding mechanism AndroidJUnitRunner uses, there is no guarantee that test
-  cases will be distributed uniformly across all shards.
-
-  Fields:
-    shardCount: Required. The total number of shards to create. This must
-      always be a positive number that is no greater than the total number of
-      test cases. Limits: - For physical devices, the number of shards must be
-      <= 20. - For virtual devices, the number of shards must be <= 200.
-  """
-
-  shardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  uniformSharding = _messages.MessageField('UniformSharding', 9)
 
 
 class AndroidLogcatDeviceAction(_messages.Message):
@@ -382,7 +330,7 @@ class AndroidRecordVideoDeviceAction(_messages.Message):
 
   Fields:
     discardOnPass: Optional. Whether to discard and not upload the recording
-      when the test passes. Default is false.
+      when the test passes. Default is `false`.
   """
 
   discardOnPass = _messages.BooleanField(1)
@@ -957,7 +905,8 @@ class DeviceAction(_messages.Message):
       the end of the run.
     iosPushFiles: Pushes files to the iOS device sandbox at the beginning of
       the run.
-    iosRecordVideo: Records a video of the iOS device screen during the run.
+    iosRecordVideo: Records videos of the iOS device screen, one per UI test
+      case.
     iosSwitchLocale: Switches the locale (language and region) of the iOS
       application.
   """
@@ -1651,12 +1600,16 @@ class IosPushFilesDeviceActionFileConfig(_messages.Message):
 
 
 class IosRecordVideoDeviceAction(_messages.Message):
-  r"""Records a video of the iOS device screen during the run. The video will
-  be written to a file named `video.mp4` in the execution output directory.
+  r"""Records videos of the iOS device screen, one per UI test case. Each
+  video covers only the execution of its test case, and will be written to
+  `testcases/{test_class}/{test_method}/video.mp4` in the execution output
+  directory. No video is recorded for unit tests, or on devices running a
+  version earlier than iOS 17.
 
   Fields:
-    discardOnPass: Optional. Whether to discard the video if the test passes.
-      If not specified, the default is false (always keep the video).
+    discardOnPass: Optional. Whether to discard the video of a test case when
+      it passes. If not specified, the default is `false` (videos of all test
+      cases are kept).
   """
 
   discardOnPass = _messages.BooleanField(1)
@@ -1678,8 +1631,12 @@ class IosXcTest(_messages.Message):
   r"""The configuration of an iOS XCTest.
 
   Fields:
+    smartSharding: Optional. Smart sharding strategy to split the job into
+      multiple shards based on the test methods and their execution time.
     testsZip: Required. The .zip containing the .xctestrun file and the
       contents of the DerivedData/Build/Products directory.
+    uniformSharding: Optional. Uniform sharding strategy to split the job into
+      multiple shards with equal number of test methods.
     xcTestTimeout: Optional. The timeout of the test. Default value: 5 min.
       Range: [1 min, 3 hours].
     xcodeVersion: Optional. The Xcode version that should be used for the
@@ -1689,10 +1646,12 @@ class IosXcTest(_messages.Message):
       file in the tests zip.
   """
 
-  testsZip = _messages.MessageField('InputFile', 1)
-  xcTestTimeout = _messages.StringField(2)
-  xcodeVersion = _messages.StringField(3)
-  xctestrun = _messages.MessageField('InputFile', 4)
+  smartSharding = _messages.MessageField('SmartSharding', 1)
+  testsZip = _messages.MessageField('InputFile', 2)
+  uniformSharding = _messages.MessageField('UniformSharding', 3)
+  xcTestTimeout = _messages.StringField(4)
+  xcodeVersion = _messages.StringField(5)
+  xctestrun = _messages.MessageField('InputFile', 6)
 
 
 class IssueSummary(_messages.Message):
@@ -2181,6 +2140,7 @@ class Session(_messages.Message):
   transitions it goes through, and the results.
 
   Fields:
+    createTime: Output only. The time when the session was created.
     name: Identifier. The resource name of the session. Format:
       `projects/{project}/locations/{location}/sessions/{session}`.
     sessionConfig: Required. Configuration used to create the session.
@@ -2188,9 +2148,10 @@ class Session(_messages.Message):
       the session.
   """
 
-  name = _messages.StringField(1)
-  sessionConfig = _messages.MessageField('SessionConfig', 2)
-  sessionReport = _messages.MessageField('SessionReport', 3)
+  createTime = _messages.StringField(1)
+  name = _messages.StringField(2)
+  sessionConfig = _messages.MessageField('SessionConfig', 3)
+  sessionReport = _messages.MessageField('SessionReport', 4)
 
 
 class SessionConfig(_messages.Message):
@@ -2268,6 +2229,40 @@ class SessionReport(_messages.Message):
   result = _messages.MessageField('Result', 4)
   startTime = _messages.StringField(5)
   status = _messages.MessageField('Status', 6)
+
+
+class SmartSharding(_messages.Message):
+  r"""The smart sharding strategy to split the job into multiple shards based
+  on the test methods and their recorded execution time.
+
+  Fields:
+    maxShardCount: Optional. The maximum number of shards to create. If unset
+      or less than 1, system-defined max limits are used. This limit takes
+      precedence if the targeted_shard_duration cannot be satisfied. Limits: -
+      For physical devices, the number of shards must be <= 20. - For virtual
+      devices, the number of shards must be <= 200.
+    targetedShardDuration: Required. The targeted duration of each shard.
+      Limits: - Must be at least 2 minutes. - Must be at most 3 hours. Shard
+      duration is not guaranteed because smart sharding uses test case history
+      and default durations which may not be accurate. Durations are
+      calculated based on the following inputs: - Timing records from previous
+      runs of the same test case. - For new test cases, the average duration
+      of other known test cases. - A system-chosen, default duration if there
+      are no previous timing records available. Because the actual shard
+      duration can exceed the targeted shard duration, we recommend that you
+      set the targeted value at least 5 minutes less than the maximum allowed
+      test timeout. This approach avoids cancelling the shard before all tests
+      can finish.
+    timingRecord: Required. The timing record file to use for smart sharding.
+      If the file does not exist, smart sharding will use default test time
+      (30s) for each test method to shard the job into multiple shards. This
+      file will be overwritten with the latest timing record after the job is
+      completed.
+  """
+
+  maxShardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  targetedShardDuration = _messages.StringField(2)
+  timingRecord = _messages.MessageField('InputFile', 3)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -2367,6 +2362,24 @@ class Status(_messages.Message):
 
   progressMessages = _messages.StringField(1, repeated=True)
   statusType = _messages.EnumField('StatusTypeValueValuesEnum', 2)
+
+
+class UniformSharding(_messages.Message):
+  r"""Uniformly shards test cases given a total number of shards. For Android
+  instrumentation tests, it will be translated to `-e numShard` and `-e
+  shardIndex` AndroidJUnitRunner arguments. With uniform sharding enabled,
+  specifying either of these sharding arguments via `environment_variables` is
+  invalid. There is no guarantee that test cases will be distributed uniformly
+  across all shards.
+
+  Fields:
+    shardCount: Required. The total number of shards to create. This must
+      always be a positive number that is no greater than the total number of
+      test cases. Limits: - For physical devices, the number of shards must be
+      <= 20. - For virtual devices, the number of shards must be <= 200.
+  """
+
+  shardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class Warning(_messages.Message):

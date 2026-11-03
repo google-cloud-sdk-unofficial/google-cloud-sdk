@@ -118,6 +118,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_FINDINGS = (
+      'projects.locations.findings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/findings/'
+              '{findingsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_MCPSERVERS = (
       'projects.locations.mcpServers',
       '{+name}',
@@ -140,6 +151,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_PUBLISHERS = (
+      'projects.locations.publishers',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/publishers/'
+              '{publishersId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SERVICES = (
       'projects.locations.services',
       '{+name}',
@@ -147,6 +169,28 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/services/'
               '{servicesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SKILLS = (
+      'projects.locations.skills',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/skills/'
+              '{skillsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SKILLS_REVISIONS = (
+      'projects.locations.skills.revisions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/skills/'
+              '{skillsId}/revisions/{revisionsId}',
       },
       ['name'],
       True

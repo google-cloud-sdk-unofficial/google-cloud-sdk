@@ -33,12 +33,25 @@ class Deploy(base.SilentCommand):
   updating an existing runtime (RUNTIME is provided), `--image` and `--source`
   are optional if updating other configuration settings.
 
+  For agents built with the Google Agent Development Kit (`google-adk`),
+  include `--agent-framework=google-adk`.
+
+  To enable Vertex AI model routing, set
+  `--env-vars="GOOGLE_GENAI_USE_VERTEXAI=true,GOOGLE_CLOUD_LOCATION=LOCATION"`
+  (e.g., `global`).
+
   ## EXAMPLES
 
   To deploy a new agent runtime from a container image, run:
 
     $ {command} --display-name="My agent"
     --image=us-docker.pkg.dev/example/my-agent:latest --region=us-central1
+
+  To deploy a new agent runtime from local source code containing a Dockerfile,
+  run:
+
+    $ {command} --display-name="My agent" --source=./my-agent
+    --region=us-central1
 
   To deploy a new agent runtime from local source code, run:
 
@@ -49,6 +62,16 @@ class Deploy(base.SilentCommand):
 
     $ {command} 123456789 --region=us-central1
     --image=us-docker.pkg.dev/example/my-agent:v2
+
+  To update an existing agent runtime from local source code containing a
+  Dockerfile, run:
+
+    $ {command} 123456789 --region=us-central1 --source=./my-agent
+
+  To update an existing agent runtime from local source code, run:
+
+    $ {command} 123456789 --region=us-central1 --source=./my-agent
+    --entrypoint-module=my_agent.agent
   """
 
   @staticmethod
@@ -68,7 +91,7 @@ class Deploy(base.SilentCommand):
         region_ref,
         args,
         self.ReleaseTrack(),
-        asynchronous=False,
+        asynchronous=args.async_,
         for_deploy=True,
     )
 
@@ -78,7 +101,6 @@ class Deploy(base.SilentCommand):
         runtime_ref,
         args,
         self.ReleaseTrack(),
-        asynchronous=False,
+        asynchronous=args.async_,
         for_deploy=True,
     )
-

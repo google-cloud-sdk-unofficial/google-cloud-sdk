@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 class Runtimes(base.Group):
   """Manage Agent Runtimes in Vertex AI."""
 

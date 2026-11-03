@@ -4555,7 +4555,7 @@ def AddRequestValidForDurationArgs(parser):
   )
 
 
-def AddWorkloadIdentityConfigArgs(parser, support_identity_type=False):
+def AddWorkloadIdentityConfigArgs(parser):
   """Adds arguments for configuring workload identity on instances.
   """
   parser.add_argument(
@@ -4572,19 +4572,18 @@ def AddWorkloadIdentityConfigArgs(parser, support_identity_type=False):
       Enables or disables managed workload identity certificates on a VM.
       """,
   )
-  if support_identity_type:
-    parser.add_argument(
-        '--identity-type',
-        choices={
-            'AGENT_IDENTITY': 'Use an agent identity.',
-            'SERVICE_ACCOUNT': 'Use a service account.',
-            'IDENTITY_TYPE_UNSPECIFIED': 'Use an unspecified identity type.'
-        },
-        type=arg_utils.ChoiceToEnumName,
-        help="""\
-        Configures the identity type to use for the instance.
-        """,
-    )
+  parser.add_argument(
+      '--identity-type',
+      choices={
+          'AGENT_IDENTITY': 'Use an agent identity.',
+          'SERVICE_ACCOUNT': 'Use a service account.',
+          'IDENTITY_TYPE_UNSPECIFIED': 'Use an unspecified identity type.'
+      },
+      type=arg_utils.ChoiceToEnumName,
+      help="""\
+      Configures the identity type to use for the instance.
+      """,
+  )
 
 
 def AddMostDisruptiveAllowedActionArgs(parser):

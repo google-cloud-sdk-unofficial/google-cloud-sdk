@@ -20,12 +20,19 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Create databaseConnections
-    description: Create a databaseConnection
+    brief: Create a new DatabaseConnection.
+    description: Create a new DatabaseConnection.
     examples: |-
-      To create the databaseConnection, run:
+      To create a DatabaseConnection with id `my-connection` in the location `us-east4`
+      with display-name `my connection`, connection-string `my-db-host.example.com:1521/my-service`,
+      username `admin`, password-secret-version `projects/my-project/secrets/my-secret/versions/1`,
+      and odb-network `projects/my-project/locations/us-east4/odbNetworks/my-odbnetwork`, run:
 
-          $ {command}
+        $ {command} my-connection --location=us-east4 --display-name="my connection" \
+        --connection-string="my-db-host.example.com:1521/my-service" \
+        --username="admin" \
+        --password-secret-version=projects/my-project/secrets/my-secret/versions/1 \
+        --odb-network=projects/my-project/locations/us-east4/odbNetworks/my-odbnetwork
   arguments:
     params:
     - group:

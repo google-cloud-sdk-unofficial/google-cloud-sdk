@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List databaseConnections
-    description: List databaseConnections
+    brief: List all DatabaseConnections.
+    description: List all DatabaseConnections.
     examples: |-
-      To list all databaseConnections, run:
+      To list all DatabaseConnections in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} --location=us-east4
   arguments:
     params:
     - help_text: |-

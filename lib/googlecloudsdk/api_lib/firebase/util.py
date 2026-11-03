@@ -36,6 +36,9 @@ RULES_DEFAULT_API_VERSION = 'v1'
 SQL_API_NAME = 'firebasedataconnect'
 SQL_DEFAULT_API_VERSION = 'v1'
 
+CLOUD_SQL_API_NAME = 'sql'
+CLOUD_SQL_DEFAULT_API_VERSION = 'v1beta4'
+
 IDENTITY_TOOLKIT_API_NAME = 'identitytoolkit'
 IDENTITY_TOOLKIT_DEFAULT_API_VERSION = 'v2'
 
@@ -86,6 +89,25 @@ def GetSqlClientInstance(api_version=SQL_DEFAULT_API_VERSION, no_http=False):
 def GetSqlMessagesModule(api_version=SQL_DEFAULT_API_VERSION):
   """Returns the message module for the Firebase SQL Connect API."""
   return apis.GetMessagesModule(SQL_API_NAME, api_version)
+
+
+def GetCloudSqlClientInstance(
+    api_version=CLOUD_SQL_DEFAULT_API_VERSION, no_http=False
+):
+  """Returns a client instance for the Cloud SQL Admin API."""
+  return apis.GetClientInstance(
+      CLOUD_SQL_API_NAME, api_version, no_http=no_http
+  )
+
+
+def GetCloudSqlMessagesModule(api_version=CLOUD_SQL_DEFAULT_API_VERSION):
+  """Returns the message module for the Cloud SQL Admin API."""
+  return apis.GetMessagesModule(CLOUD_SQL_API_NAME, api_version)
+
+
+def GetCloudSqlClientClass(api_version=CLOUD_SQL_DEFAULT_API_VERSION):
+  """Returns the client class for the Cloud SQL Admin API."""
+  return apis.GetClientClass(CLOUD_SQL_API_NAME, api_version)
 
 
 def GetIdentityToolkitClientInstance(

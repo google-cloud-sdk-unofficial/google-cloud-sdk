@@ -328,43 +328,82 @@ class Tool(proto.Message):
         """
 
     class ComputerUse(proto.Message):
-        r"""Tool to support computer use.
+        r"""A tool that enables the model to interact directly with a
+        computer environment.
 
         Attributes:
             environment (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.Tool.ComputerUse.Environment):
-                Required. The environment being operated.
+                Required. The target environment where the
+                computer use tool operates.
             excluded_predefined_functions (MutableSequence[str]):
-                Optional. By default, `predefined
+                Optional. A list of predefined functions to explicitly
+                exclude from the model call. By default, `predefined
                 functions <https://cloud.google.com/vertex-ai/generative-ai/docs/computer-use#supported-actions>`__
-                are included in the final model call. Some of them can be
-                explicitly excluded from being automatically included. This
-                can serve two purposes:
-
-                1. Using a more restricted / different action space.
-                2. Improving the definitions / instructions of predefined
-                   functions.
+                are included. Excluding functions allows for a more
+                restricted action space or custom definitions for predefined
+                functions.
             enable_prompt_injection_detection (bool):
-                Optional. Enables the prompt injection
-                detection check on computer-use request.
+                Optional. Whether to enable the prompt
+                injection detection check on the computer use
+                request.
+            disabled_safety_policies (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.Tool.ComputerUse.SafetyPolicy]):
+                Optional. A list of safety policies to
+                disable for the computer use tool.
         """
         class Environment(proto.Enum):
-            r"""Represents the environment being operated, such as a web
-            browser.
+            r"""The environment in which the computer use tool operates.
 
             Values:
                 ENVIRONMENT_UNSPECIFIED (0):
-                    Defaults to browser.
+                    The environment is unspecified.
                 ENVIRONMENT_BROWSER (1):
-                    Operates in a web browser.
+                    The tool operates in a web browser.
                 ENVIRONMENT_MOBILE (2):
-                    Operates in a mobile environment.
+                    The tool operates in a mobile environment.
                 ENVIRONMENT_DESKTOP (3):
-                    Operates in a desktop environment.
+                    The tool operates in a desktop environment.
             """
             ENVIRONMENT_UNSPECIFIED = 0
             ENVIRONMENT_BROWSER = 1
             ENVIRONMENT_MOBILE = 2
             ENVIRONMENT_DESKTOP = 3
+
+        class SafetyPolicy(proto.Enum):
+            r"""Safety policies that can be applied to restrict computer use
+            operations.
+
+            Values:
+                SAFETY_POLICY_UNSPECIFIED (0):
+                    The safety policy is unspecified.
+                FINANCIAL_TRANSACTIONS (1):
+                    Policy that restricts financial transactions.
+                SENSITIVE_DATA_MODIFICATION (2):
+                    Policy that restricts modification of
+                    sensitive data.
+                COMMUNICATION_TOOL (3):
+                    Policy that restricts the use of
+                    communication tools.
+                ACCOUNT_CREATION (4):
+                    Policy that restricts the creation of
+                    accounts.
+                DATA_MODIFICATION (5):
+                    Policy that restricts general data
+                    modification.
+                USER_CONSENT_MANAGEMENT (6):
+                    Policy that restricts user consent
+                    management.
+                LEGAL_TERMS_AND_AGREEMENTS (7):
+                    Policy that restricts interaction with legal
+                    terms and agreements.
+            """
+            SAFETY_POLICY_UNSPECIFIED = 0
+            FINANCIAL_TRANSACTIONS = 1
+            SENSITIVE_DATA_MODIFICATION = 2
+            COMMUNICATION_TOOL = 3
+            ACCOUNT_CREATION = 4
+            DATA_MODIFICATION = 5
+            USER_CONSENT_MANAGEMENT = 6
+            LEGAL_TERMS_AND_AGREEMENTS = 7
 
         environment: 'Tool.ComputerUse.Environment' = proto.Field(
             proto.ENUM,
@@ -378,6 +417,11 @@ class Tool(proto.Message):
         enable_prompt_injection_detection: bool = proto.Field(
             proto.BOOL,
             number=3,
+        )
+        disabled_safety_policies: MutableSequence['Tool.ComputerUse.SafetyPolicy'] = proto.RepeatedField(
+            proto.ENUM,
+            number=5,
+            enum='Tool.ComputerUse.SafetyPolicy',
         )
 
     function_declarations: MutableSequence['FunctionDeclaration'] = proto.RepeatedField(

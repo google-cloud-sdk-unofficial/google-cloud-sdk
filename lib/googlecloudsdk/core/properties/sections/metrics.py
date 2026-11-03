@@ -14,6 +14,7 @@
 # limitations under the License.
 """Contains the properties for the 'metrics' section."""
 
+from googlecloudsdk.core.properties.providers import PROVIDERS
 from googlecloudsdk.core.properties.types import _Section
 from googlecloudsdk.core.properties.validators import _UserAgentHeaderValueValidator
 
@@ -31,13 +32,8 @@ class _SectionMetrics(_Section):
     self.environment_version = self._Add('environment_version', hidden=True)
     self.command_name = self._Add('command_name', internal=True)
 
-    def GetAgentName():
-      from googlecloudsdk.core.util import agents  # pylint: disable=g-import-not-at-top
-
-      return agents.DetectAIAgent()
-
     self.agent_name = self._Add(
-        'agent_name', hidden=True, callbacks=[GetAgentName]
+        'agent_name', hidden=True, callbacks=[PROVIDERS['GetAgentName']]
     )
     self.request_attribution = self._Add(
         'request_attribution',

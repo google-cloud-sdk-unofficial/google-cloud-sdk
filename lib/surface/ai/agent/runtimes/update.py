@@ -37,6 +37,16 @@ class Update(base.UpdateCommand):
 
     $ {command} 123456789 --region=us-central1
     --image=us-docker.pkg.dev/example/my-agent:v2
+
+  To deploy local source code containing a Dockerfile to an existing agent
+  runtime, run:
+
+    $ {command} 123456789 --region=us-central1 --source=./my-agent
+
+  To deploy local source code to an existing agent runtime, run:
+
+    $ {command} 123456789 --region=us-central1 --source=./my-agent
+    --entrypoint-module=my_agent.agent
   """
 
   @staticmethod
@@ -46,5 +56,5 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     runtime_ref = args.CONCEPTS.runtime.Parse()
     return agent_runtimes_util.UpdateRuntime(
-        runtime_ref, args, self.ReleaseTrack(), asynchronous=False
+        runtime_ref, args, self.ReleaseTrack(), asynchronous=args.async_
     )

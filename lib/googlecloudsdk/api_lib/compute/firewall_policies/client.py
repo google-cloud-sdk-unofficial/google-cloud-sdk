@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.core import log
 
 OP_COLLECTION_NAME = 'compute.globalOrganizationOperations'
 API_COLLECTION_NAME = 'compute.firewallPolicies'
@@ -216,6 +217,7 @@ class OrgFirewallPolicy(object):
     return self.WaitOperation(
         op_res,
         message='Adding an association for the organization firewall policy.',
+        fp_id=firewall_policy_id,
     )
 
   def DeleteAssociation(
@@ -247,6 +249,7 @@ class OrgFirewallPolicy(object):
         message=(
             'Deleting the association for the organization firewall policy.'
         ),
+        fp_id=firewall_policy_id,
     )
 
   def ListAssociations(
@@ -283,7 +286,107 @@ class OrgFirewallPolicy(object):
         message='Deleting the organization firewall policy.',
     )
 
-  def WaitOperation(self, operation, operation_poller=None, message=None):
+  def _ExtractOrgId(
+      self, rollout_status=None, firewall_policy=None, operation=None
+  ):
+    """Extracts the organization ID from rollout status, policy, or operation."""
+    if (
+        rollout_status
+        and rollout_status.nextRollout
+        and rollout_status.nextRollout.rolloutPlan
+        and rollout_status.nextRollout.rolloutPlan.startswith('organizations/')
+    ):
+      return rollout_status.nextRollout.rolloutPlan.split('/')[1]
+    if rollout_status and rollout_status.ongoingRollouts:
+      for ongoing in rollout_status.ongoingRollouts:
+        if ongoing.rollout and ongoing.rollout.startswith('organizations/'):
+          return ongoing.rollout.split('/')[1]
+        if ongoing.rolloutPlan and ongoing.rolloutPlan.startswith(
+            'organizations/'
+        ):
+          return ongoing.rolloutPlan.split('/')[1]
+    if (
+        firewall_policy
+        and firewall_policy.parent
+        and firewall_policy.parent.startswith('organizations/')
+    ):
+      return firewall_policy.parent.split('/')[1]
+    if operation and operation.name and operation.name.startswith('org-'):
+      parts = operation.name.split('-')
+      if len(parts) > 1 and parts[1]:
+        return parts[1]
+    return None
+
+  def _FormatRolloutName(
+      self,
+      rollout_id,
+      rollout_status=None,
+      firewall_policy=None,
+      operation=None,
+  ):
+    """Formats a rollout ID as a full organization rollout resource name."""
+    if rollout_id.startswith('organizations/'):
+      return rollout_id
+    org_id = self._ExtractOrgId(
+        rollout_status=rollout_status,
+        firewall_policy=firewall_policy,
+        operation=operation,
+    )
+    if org_id:
+      return 'organizations/{}/locations/global/rollouts/{}'.format(
+          org_id, rollout_id
+      )
+    return rollout_id
+
+  def _PrintRolloutInfo(self, fp_id, operation=None):
+    """Fetches the firewall policy and prints progressive rollout info if present."""
+    firewall_policy = self._service.Get(
+        self._MakeDescribeRequestTuple(fp_id=fp_id)[2]
+    )
+    if (
+        not firewall_policy
+        or not getattr(firewall_policy, 'rolloutOperation', None)
+        or not firewall_policy.rolloutOperation.rolloutStatus
+    ):
+      return
+
+    rollout_status = firewall_policy.rolloutOperation.rolloutStatus
+    current_rollout = None
+    if (
+        rollout_status.ongoingRollouts
+        and rollout_status.ongoingRollouts[0].rollout
+    ):
+      current_rollout = self._FormatRolloutName(
+          rollout_status.ongoingRollouts[0].rollout,
+          rollout_status=rollout_status,
+          firewall_policy=firewall_policy,
+          operation=operation,
+      )
+
+    next_rollout = None
+    if rollout_status.nextRollout and rollout_status.nextRollout.rolloutId:
+      next_rollout = self._FormatRolloutName(
+          rollout_status.nextRollout.rolloutId,
+          rollout_status=rollout_status,
+          firewall_policy=firewall_policy,
+          operation=operation,
+      )
+
+    if next_rollout:
+      log.status.Print(
+          'Progressive rollout: waiting for the previous rollout to complete'
+      )
+      if current_rollout:
+        log.status.Print('Current rollout {}'.format(current_rollout))
+      log.status.Print('Next rollout {}'.format(next_rollout))
+    elif current_rollout:
+      log.status.Print(
+          'Progressive rollout: started {}'.format(current_rollout)
+      )
+
+  def WaitOperation(
+      self, operation, operation_poller=None, message=None, fp_id=None
+  ):
     """Waits for operation to finish."""
 
     if not operation_poller:
@@ -297,7 +400,10 @@ class OrgFirewallPolicy(object):
     operation_ref = self._resources.Parse(
         operation.selfLink, collection=OP_COLLECTION_NAME
     )
-    return waiter.WaitFor(operation_poller, operation_ref, message)
+    result = waiter.WaitFor(operation_poller, operation_ref, message)
+    if self._version == 'alpha' and fp_id:
+      self._PrintRolloutInfo(fp_id, operation)
+    return result
 
   def Update(
       self,
@@ -324,7 +430,9 @@ class OrgFirewallPolicy(object):
         )[2]
     )
     return self.WaitOperation(
-        op_res, message='Updating the organization firewall policy.'
+        op_res,
+        message='Updating the organization firewall policy.',
+        fp_id=fp_id or self.ref.Name(),
     )
 
   def Move(
@@ -345,7 +453,9 @@ class OrgFirewallPolicy(object):
         self._MakeMoveRequestTuple(fp_id=fp_id, parent_id=parent_id)[2]
     )
     return self.WaitOperation(
-        op_res, message='Moving the organization firewall policy.'
+        op_res,
+        message='Moving the organization firewall policy.',
+        fp_id=fp_id,
     )
 
   def CloneRules(
@@ -374,7 +484,9 @@ class OrgFirewallPolicy(object):
         )[2]
     )
     return self.WaitOperation(
-        op_res, message='Cloning rules to the organization firewall policy.'
+        op_res,
+        message='Cloning rules to the organization firewall policy.',
+        fp_id=dest_fp_id,
     )
 
   def Describe(self, fp_id=None, batch_mode=False, only_generate_request=False):
@@ -511,7 +623,9 @@ class OrgFirewallPolicy(object):
         self._MakeForceStartProgressiveRolloutRequestTuple(firewall_policy)[2]
     )
     return self.WaitOperation(
-        op_res, message='Starting rollout of the organization firewall policy.'
+        op_res,
+        message='Starting rollout of the organization firewall policy.',
+        fp_id=firewall_policy,
     )
 
 
@@ -598,7 +712,9 @@ class OrgFirewallPolicyRule(OrgFirewallPolicy):
         )[2]
     )
     return self.WaitOperation(
-        op_res, message='Adding a rule to the organization firewall policy.'
+        op_res,
+        message='Adding a rule to the organization firewall policy.',
+        fp_id=firewall_policy,
     )
 
   def DeleteRule(
@@ -626,7 +742,9 @@ class OrgFirewallPolicyRule(OrgFirewallPolicy):
         )[2]
     )
     return self.WaitOperation(
-        op_res, message='Deleting a rule from the organization firewall policy.'
+        op_res,
+        message='Deleting a rule from the organization firewall policy.',
+        fp_id=firewall_policy_id,
     )
 
   def DescribeRule(
@@ -684,7 +802,9 @@ class OrgFirewallPolicyRule(OrgFirewallPolicy):
         )[2]
     )
     return self.WaitOperation(
-        op_res, message='Updating a rule in the organization firewall policy.'
+        op_res,
+        message='Updating a rule in the organization firewall policy.',
+        fp_id=firewall_policy,
     )
 
 
@@ -771,7 +891,9 @@ class OrgFirewallPolicyPacketMirroringRule(OrgFirewallPolicy):
         )[2]
     )
     return self.WaitOperation(
-        op_res, message='Adding a rule to the organization firewall policy.'
+        op_res,
+        message='Adding a rule to the organization firewall policy.',
+        fp_id=firewall_policy,
     )
 
   def DeleteRule(
@@ -799,7 +921,9 @@ class OrgFirewallPolicyPacketMirroringRule(OrgFirewallPolicy):
         )[2]
     )
     return self.WaitOperation(
-        op_res, message='Deleting a rule from the organization firewall policy.'
+        op_res,
+        message='Deleting a rule from the organization firewall policy.',
+        fp_id=firewall_policy_id,
     )
 
   def DescribeRule(
@@ -857,5 +981,7 @@ class OrgFirewallPolicyPacketMirroringRule(OrgFirewallPolicy):
         )[2]
     )
     return self.WaitOperation(
-        op_res, message='Updating a rule in the organization firewall policy.'
+        op_res,
+        message='Updating a rule in the organization firewall policy.',
+        fp_id=firewall_policy,
     )

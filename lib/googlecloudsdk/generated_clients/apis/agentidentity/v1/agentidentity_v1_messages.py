@@ -498,6 +498,22 @@ class AgentidentityProjectsLocationsAuthProvidersQueryWorkloadsRequest(_messages
   pageToken = _messages.StringField(3)
 
 
+class AgentidentityProjectsLocationsAuthProvidersResolveAuthorizationRequest(_messages.Message):
+  r"""A AgentidentityProjectsLocationsAuthProvidersResolveAuthorizationRequest
+  object.
+
+  Fields:
+    name: Required. The name of the auth provider to resolve authorization
+      for. Format:
+      projects/{project}/locations/{location}/authProviders/{auth_provider}
+    resolveAuthorizationRequest: A ResolveAuthorizationRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  resolveAuthorizationRequest = _messages.MessageField('ResolveAuthorizationRequest', 2)
+
+
 class AgentidentityProjectsLocationsAuthProvidersRevokeAuthorizationRequest(_messages.Message):
   r"""A AgentidentityProjectsLocationsAuthProvidersRevokeAuthorizationRequest
   object.
@@ -1418,6 +1434,29 @@ class QueryWorkloadsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   workloadIds = _messages.StringField(2, repeated=True)
+
+
+class ResolveAuthorizationRequest(_messages.Message):
+  r"""Request message for `ResolveAuthorization`.
+
+  Fields:
+    clientUserId: Required. The user ID of the client for whom the
+      authorization is resolved.
+  """
+
+  clientUserId = _messages.StringField(1)
+
+
+class ResolveAuthorizationResponse(_messages.Message):
+  r"""Response message for `ResolveAuthorization`.
+
+  Fields:
+    authorization: The resource name of the resolved authorization. Format: pr
+      ojects/{project}/locations/{location}/authProviders/{auth_provider}/auth
+      orizations/{authorization}
+  """
+
+  authorization = _messages.StringField(1)
 
 
 class RevokeAuthorizationRequest(_messages.Message):

@@ -1583,6 +1583,7 @@ class Templates:
               else None
           ),
           buildpack=None,
+          arg_worker_release='stable',
       )
       log.status.Print('Pushing flex template container image to GCR...')
 

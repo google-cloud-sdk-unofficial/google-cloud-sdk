@@ -44,9 +44,13 @@ class AgentregistryV1(base_api.BaseApiClient):
     self.projects_locations_aiApplications = self.ProjectsLocationsAiApplicationsService(self)
     self.projects_locations_bindings = self.ProjectsLocationsBindingsService(self)
     self.projects_locations_endpoints = self.ProjectsLocationsEndpointsService(self)
+    self.projects_locations_findings = self.ProjectsLocationsFindingsService(self)
     self.projects_locations_mcpServers = self.ProjectsLocationsMcpServersService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_publishers = self.ProjectsLocationsPublishersService(self)
     self.projects_locations_services = self.ProjectsLocationsServicesService(self)
+    self.projects_locations_skills_revisions = self.ProjectsLocationsSkillsRevisionsService(self)
+    self.projects_locations_skills = self.ProjectsLocationsSkillsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -1011,6 +1015,70 @@ class AgentregistryV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsFindingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_findings resource."""
+
+    _NAME = 'projects_locations_findings'
+
+    def __init__(self, client):
+      super(AgentregistryV1.ProjectsLocationsFindingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single Finding.
+
+      Args:
+        request: (AgentregistryProjectsLocationsFindingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Finding) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/findings/{findingsId}',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.findings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsFindingsGetRequest',
+        response_type_name='Finding',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Findings in a given project and location.
+
+      Args:
+        request: (AgentregistryProjectsLocationsFindingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListFindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/findings',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.findings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/findings',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsFindingsListRequest',
+        response_type_name='ListFindingsResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsMcpServersService(base_api.BaseApiService):
     """Service class for the projects_locations_mcpServers resource."""
 
@@ -1247,6 +1315,70 @@ class AgentregistryV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsPublishersService(base_api.BaseApiService):
+    """Service class for the projects_locations_publishers resource."""
+
+    _NAME = 'projects_locations_publishers'
+
+    def __init__(self, client):
+      super(AgentregistryV1.ProjectsLocationsPublishersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Fetches details of a specific Publisher.
+
+      Args:
+        request: (AgentregistryProjectsLocationsPublishersGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Publisher) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/publishers/{publishersId}',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.publishers.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsPublishersGetRequest',
+        response_type_name='Publisher',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all Publishers in a location.
+
+      Args:
+        request: (AgentregistryProjectsLocationsPublishersListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPublishersResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/publishers',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.publishers.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/publishers',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsPublishersListRequest',
+        response_type_name='ListPublishersResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsServicesService(base_api.BaseApiService):
     """Service class for the projects_locations_services resource."""
 
@@ -1389,6 +1521,383 @@ class AgentregistryV1(base_api.BaseApiClient):
         request_field='service',
         request_type_name='AgentregistryProjectsLocationsServicesPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSkillsRevisionsService(base_api.BaseApiService):
+    """Service class for the projects_locations_skills_revisions resource."""
+
+    _NAME = 'projects_locations_skills_revisions'
+
+    def __init__(self, client):
+      super(AgentregistryV1.ProjectsLocationsSkillsRevisionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new immutable revision and triggers validation pipelines.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsRevisionsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/revisions',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.skills.revisions.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'skillRevisionId'],
+        relative_path='v1/{+parent}/revisions',
+        request_field='skillRevision',
+        request_type_name='AgentregistryProjectsLocationsSkillsRevisionsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a specific revision (restricted to admins to purge accidentally committed secrets).
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsRevisionsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/revisions/{revisionsId}',
+        http_method='DELETE',
+        method_id='agentregistry.projects.locations.skills.revisions.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsSkillsRevisionsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None, download=None):
+      r"""Gets details of a single immutable Revision.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsRevisionsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+        download: (Download, default: None) If present, download
+            data from the request via this stream.
+      Returns:
+        (SkillRevision) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params,
+          download=download)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/revisions/{revisionsId}',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.skills.revisions.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsSkillsRevisionsGetRequest',
+        response_type_name='SkillRevision',
+        supports_download=True,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all revisions belonging to a parent Skill.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsRevisionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSkillRevisionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/revisions',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.skills.revisions.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/revisions',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsSkillsRevisionsListRequest',
+        response_type_name='ListSkillRevisionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSkillsService(base_api.BaseApiService):
+    """Service class for the projects_locations_skills resource."""
+
+    _NAME = 'projects_locations_skills'
+
+    def __init__(self, client):
+      super(AgentregistryV1.ProjectsLocationsSkillsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""========================================================================= # Skills Collection APIs Creates a Skill resource container, optionally publishing the initial SkillRevision inline in a single, atomic CRUD roundtrip.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.skills.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'skillId'],
+        relative_path='v1/{+parent}/skills',
+        request_field='skill',
+        request_type_name='AgentregistryProjectsLocationsSkillsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a Skill container along with all its revisions.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills/{skillsId}',
+        http_method='DELETE',
+        method_id='agentregistry.projects.locations.skills.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['force', 'requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsSkillsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None, download=None):
+      r"""Fetches the active configuration and metadata of a Skill.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+        download: (Download, default: None) If present, download
+            data from the request via this stream.
+      Returns:
+        (Skill) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params,
+          download=download)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills/{skillsId}',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.skills.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsSkillsGetRequest',
+        response_type_name='Skill',
+        supports_download=True,
+    )
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills/{skillsId}:getIamPolicy',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.skills.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['options_requestedPolicyVersion'],
+        relative_path='v1/{+resource}:getIamPolicy',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsSkillsGetIamPolicyRequest',
+        response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists logical Skills available in a project.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSkillsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.skills.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/skills',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsSkillsListRequest',
+        response_type_name='ListSkillsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates Skill metadata or overrides active pointers/state using REST standard PATCH.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills/{skillsId}',
+        http_method='PATCH',
+        method_id='agentregistry.projects.locations.skills.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='skill',
+        request_type_name='AgentregistryProjectsLocationsSkillsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Search(self, request, global_params=None):
+      r"""Custom deep-search method to filter by frontmatter or query SKILL.md text blobs.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsSearchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SearchSkillsResponse) The response message.
+      """
+      config = self.GetMethodConfig('Search')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Search.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills:search',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.skills.search',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'searchString', 'searchType'],
+        relative_path='v1/{+parent}/skills:search',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsSkillsSearchRequest',
+        response_type_name='SearchSkillsResponse',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills/{skillsId}:setIamPolicy',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.skills.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:setIamPolicy',
+        request_field='googleIamV1SetIamPolicyRequest',
+        request_type_name='AgentregistryProjectsLocationsSkillsSetIamPolicyRequest',
+        response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may "fail open" without warning.
+
+      Args:
+        request: (AgentregistryProjectsLocationsSkillsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/skills/{skillsId}:testIamPermissions',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.skills.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:testIamPermissions',
+        request_field='googleIamV1TestIamPermissionsRequest',
+        request_type_name='AgentregistryProjectsLocationsSkillsTestIamPermissionsRequest',
+        response_type_name='GoogleIamV1TestIamPermissionsResponse',
         supports_download=False,
     )
 

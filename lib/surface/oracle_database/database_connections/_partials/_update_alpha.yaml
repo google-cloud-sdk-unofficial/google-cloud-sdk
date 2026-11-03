@@ -20,12 +20,24 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Update databaseConnections
-    description: Update a databaseConnection
+    brief: Update a DatabaseConnection.
+    description: Update a DatabaseConnection.
     examples: |-
-      To update the databaseConnection, run:
+      To update the password secret version of a DatabaseConnection with id `my-connection` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-connection --location=us-east4 --password-secret-version=projects/my-project/secrets/my-secret/versions/2
+
+      To add or update labels on a DatabaseConnection with id `my-connection` in the location `us-east4`, run:
+
+        $ {command} my-connection --location=us-east4 --update-labels=env=prod,team=oasis
+
+      To remove the label `team` from the DatabaseConnection, run:
+
+        $ {command} my-connection --location=us-east4 --remove-labels=team
+
+      To clear all labels from the DatabaseConnection, run:
+
+        $ {command} my-connection --location=us-east4 --clear-labels
   arguments:
     params:
     - group:
@@ -69,7 +81,6 @@
       resource_method_params:
         databaseConnection.passwordSecretVersion: '{__relative_name__}'
       required: false
-      clearable: true
     - arg_name: labels
       api_field: databaseConnection.labels
       required: false

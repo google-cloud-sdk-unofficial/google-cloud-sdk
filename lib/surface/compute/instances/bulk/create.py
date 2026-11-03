@@ -163,7 +163,6 @@ class Create(base.Command):
   _support_preemption_notice_duration = True
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
-  _support_identity_type = False
   _support_instance_selection_min_cpu_platform = True
   _support_flex_policy_flag_with_mincpu_and_disks = True
   _support_vsock_mode = False
@@ -192,7 +191,6 @@ class Create(base.Command):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
-        support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
         support_flex_policy_flag_with_mincpu_and_disks=cls._support_flex_policy_flag_with_mincpu_and_disks,
         support_vsock_mode=cls._support_vsock_mode,
@@ -243,7 +241,6 @@ class Create(base.Command):
         self._support_preemption_notice_duration,
         self._support_instance_flexibility_policy,
         self._support_workload_identity_config,
-        self._support_identity_type,
         self._support_instance_selection_min_cpu_platform,
         support_vsock_mode=self._support_vsock_mode,
         support_expose_host_topology=self._support_expose_host_topology,
@@ -393,7 +390,6 @@ class CreateBeta(Create):
   _support_preemption_notice_duration = True
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
-  _support_identity_type = False
   _support_instance_selection_min_cpu_platform = True
   _support_flex_policy_flag_with_mincpu_and_disks = True
 
@@ -418,7 +414,6 @@ class CreateBeta(Create):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
-        support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
         support_flex_policy_flag_with_mincpu_and_disks=cls._support_flex_policy_flag_with_mincpu_and_disks,
         support_vsock_mode=cls._support_vsock_mode,
@@ -452,7 +447,6 @@ class CreateAlpha(Create):
   _support_preemption_notice_duration = True
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
-  _support_identity_type = True
   _support_instance_selection_min_cpu_platform = True
   _support_flex_policy_flag_with_mincpu_and_disks = True
   _support_vsock_mode = True
@@ -479,7 +473,6 @@ class CreateAlpha(Create):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
-        support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
         support_flex_policy_flag_with_mincpu_and_disks=cls._support_flex_policy_flag_with_mincpu_and_disks,
         support_vsock_mode=cls._support_vsock_mode,

@@ -21,6 +21,7 @@ from googlecloudsdk.command_lib.ai.agent_runtimes import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 class Create(base.CreateCommand):
   """Create a new agent runtime.
 
@@ -31,6 +32,13 @@ class Create(base.CreateCommand):
   deploys a prebuilt container, `--source` with a `Dockerfile` at its root
   builds that container, and `--source` without one deploys the Python
   application found in the source directory.
+
+  For agents built with the Google Agent Development Kit (`google-adk`),
+  include `--agent-framework=google-adk`.
+
+  To enable Vertex AI model routing, set
+  `--env-vars="GOOGLE_GENAI_USE_VERTEXAI=true,GOOGLE_CLOUD_LOCATION=LOCATION"`
+  (e.g., `global`).
 
   ## EXAMPLES
 
@@ -44,6 +52,12 @@ class Create(base.CreateCommand):
 
     $ {command} --display-name="My agent"
     --image=us-docker.pkg.dev/example/my-agent:latest --region=us-central1
+
+  To create an agent runtime from local source code containing a Dockerfile,
+  run:
+
+    $ {command} --display-name="My agent" --source=./my-agent
+    --region=us-central1
 
   To create an agent runtime from local source code, run:
 

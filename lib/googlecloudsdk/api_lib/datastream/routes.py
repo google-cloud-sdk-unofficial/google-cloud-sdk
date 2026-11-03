@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Cloud Datastream private connections API."""
-
+"""Cloud Datastream private connections routes API."""
 
 from googlecloudsdk.api_lib.datastream import util
 
@@ -28,7 +27,7 @@ class RoutesClient:
     self._resource_parser = util.GetResourceParser()
 
   def _GetRoute(self, route_id, args):
-    """Returns a route object."""
+    """Returns a private connection route object."""
     route_obj = self._messages.Route(
         name=route_id, labels={}, displayName=args.display_name,
         destinationAddress=args.destination_address,
@@ -36,17 +35,17 @@ class RoutesClient:
     return route_obj
 
   def Create(self, parent_ref, route_id, args=None):
-    """Creates a route.
+    """Creates a private connection route.
 
     Args:
       parent_ref: a Resource reference to a parent datastream.projects.
-      locations.privateConnections resource for this route.
+        locations.privateConnections resource for this route.
       route_id: str, the name of the resource to create.
       args: argparse.Namespace, The arguments that this command was invoked
         with.
 
     Returns:
-      Operation: the operation for creating the private connection.
+      Operation: the operation for creating the private connection route.
     """
 
     route = self._GetRoute(route_id, args)
@@ -60,5 +59,3 @@ class RoutesClient:
         requestId=request_id)
 
     return self._service.Create(create_req)
-
-

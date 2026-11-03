@@ -1410,9 +1410,9 @@ class GoogleCloudBigqueryMigrationV2MigrationTask(_messages.Message):
       `Assessment_Teradata_v2` - Assessment for Teradata. -
       `Assessment_Oracle` - Assessment for Oracle. - `Assessment_Hadoop` -
       Assessment for Hadoop. - `Assessment_Informatica` - Assessment for
-      Informatica. Translation: See [Supported Task
-      Types](https://docs.cloud.google.com/bigquery/docs/api-sql-
-      translator#supported_task_types) for a list of supported task types.
+      Informatica. Translation: See [Supported SQL
+      dialects](https://docs.cloud.google.com/bigquery/docs/enable-sql-
+      translations#supported_sql_dialects) for a list of supported task types.
   """
 
   class StateValueValuesEnum(_messages.Enum):

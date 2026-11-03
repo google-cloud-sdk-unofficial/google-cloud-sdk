@@ -419,7 +419,7 @@ class CloudbuildV1(base_api.BaseApiClient):
           }
 
     def Approve(self, request, global_params=None):
-      r"""Approves or rejects a pending build. If approved, the returned long-running operation (LRO) will be analogous to the LRO returned from a CreateBuild call. If rejected, the returned LRO will be immediately done.
+      r"""Approves or rejects a pending build. If approved, the returned long-running operation (LRO) will be analogous to the LRO returned from a CreateBuild call. If rejected, the returned LRO will be immediately done. Note: This method only approves or rejects builds in the "global" region when using the legacy resource path projects/{project_id}/builds/{id}:approve. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}:approve`.
 
       Args:
         request: (CloudbuildProjectsBuildsApproveRequest) input message
@@ -1242,7 +1242,7 @@ class CloudbuildV1(base_api.BaseApiClient):
           }
 
     def Approve(self, request, global_params=None):
-      r"""Approves or rejects a pending build. If approved, the returned long-running operation (LRO) will be analogous to the LRO returned from a CreateBuild call. If rejected, the returned LRO will be immediately done.
+      r"""Approves or rejects a pending build. If approved, the returned long-running operation (LRO) will be analogous to the LRO returned from a CreateBuild call. If rejected, the returned LRO will be immediately done. Note: This method only approves or rejects builds in the "global" region when using the legacy resource path projects/{project_id}/builds/{id}:approve. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}:approve`.
 
       Args:
         request: (CloudbuildProjectsLocationsBuildsApproveRequest) input message
@@ -2304,7 +2304,7 @@ class CloudbuildV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a new `BuildTrigger`.
+      r"""Creates a new `BuildTrigger`. Note: This method only creates triggers in the "global" region when using the legacy resource path projects/{project_id}/triggers. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/triggers`.
 
       Args:
         request: (CloudbuildProjectsLocationsTriggersCreateRequest) input message
@@ -2331,7 +2331,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a `BuildTrigger` by its project ID and trigger ID.
+      r"""Deletes a `BuildTrigger` by its project ID and trigger ID. Note: This method only deletes triggers in the "global" region when using the legacy resource path projects/{project_id}/triggers/{trigger_id}. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/triggers/{trigger_id}`.
 
       Args:
         request: (CloudbuildProjectsLocationsTriggersDeleteRequest) input message
@@ -2358,7 +2358,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Returns information about a `BuildTrigger`.
+      r"""Returns information about a `BuildTrigger`. Note: This method only gets triggers in the "global" region when using the legacy resource path projects/{project_id}/triggers/{trigger_id}. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/triggers/{trigger_id}`.
 
       Args:
         request: (CloudbuildProjectsLocationsTriggersGetRequest) input message
@@ -2385,7 +2385,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists existing `BuildTrigger`s.
+      r"""Lists existing `BuildTrigger`s. Note: This method only lists triggers in the "global" region when using the legacy resource path projects/{project_id}/triggers. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/triggers`.
 
       Args:
         request: (CloudbuildProjectsLocationsTriggersListRequest) input message
@@ -2412,7 +2412,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a `BuildTrigger` by its project ID and trigger ID.
+      r"""Updates a `BuildTrigger` by its project ID and trigger ID. Note: This method only updates triggers in the "global" region when using the legacy resource path projects/{project_id}/triggers/{trigger_id}. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/triggers/{trigger_id}`.
 
       Args:
         request: (CloudbuildProjectsLocationsTriggersPatchRequest) input message
@@ -2685,7 +2685,7 @@ class CloudbuildV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a new `BuildTrigger`.
+      r"""Creates a new `BuildTrigger`. Note: This method only creates triggers in the "global" region when using the legacy resource path projects/{project_id}/triggers. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/triggers`.
 
       Args:
         request: (CloudbuildProjectsTriggersCreateRequest) input message
@@ -2711,7 +2711,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a `BuildTrigger` by its project ID and trigger ID.
+      r"""Deletes a `BuildTrigger` by its project ID and trigger ID. Note: This method only deletes triggers in the "global" region when using the legacy resource path projects/{project_id}/triggers/{trigger_id}. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/triggers/{trigger_id}`.
 
       Args:
         request: (CloudbuildProjectsTriggersDeleteRequest) input message
@@ -2737,7 +2737,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Returns information about a `BuildTrigger`.
+      r"""Returns information about a `BuildTrigger`. Note: This method only gets triggers in the "global" region when using the legacy resource path projects/{project_id}/triggers/{trigger_id}. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/triggers/{trigger_id}`.
 
       Args:
         request: (CloudbuildProjectsTriggersGetRequest) input message
@@ -2763,7 +2763,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists existing `BuildTrigger`s.
+      r"""Lists existing `BuildTrigger`s. Note: This method only lists triggers in the "global" region when using the legacy resource path projects/{project_id}/triggers. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/triggers`.
 
       Args:
         request: (CloudbuildProjectsTriggersListRequest) input message
@@ -2789,7 +2789,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a `BuildTrigger` by its project ID and trigger ID.
+      r"""Updates a `BuildTrigger` by its project ID and trigger ID. Note: This method only updates triggers in the "global" region when using the legacy resource path projects/{project_id}/triggers/{trigger_id}. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/triggers/{trigger_id}`.
 
       Args:
         request: (CloudbuildProjectsTriggersPatchRequest) input message

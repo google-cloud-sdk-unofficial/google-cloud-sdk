@@ -31,6 +31,16 @@ class Collections(enum.Enum):
       ['projectsId'],
       True
   )
+  PROJECTS_CHATAPPCONFIG = (
+      'projects.chatAppConfig',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/chatAppConfig',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_DEPLOYMENTS = (
       'projects.deployments',
       '{+name}',

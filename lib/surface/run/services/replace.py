@@ -205,7 +205,7 @@ class Replace(base.Command):
         endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
         if (
             properties.VALUES.regional.endpoint_compatibility
-            and endpoint_mode == properties.VALUES.regional.REGIONAL
+            and endpoint_mode == properties.constants.regional.REGIONAL
         ):
           if namespace != project:
             raise exceptions.ConfigurationError(

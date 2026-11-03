@@ -1724,6 +1724,19 @@ class BackupSource(_messages.Message):
   backupUid = _messages.StringField(2)
 
 
+class CertificateAuthorityInfo(_messages.Message):
+  r"""Certificate Authority (CA) information for the cluster.
+
+  Fields:
+    rootCaCert: Output only. The PEM-encoded root CA certificate of the
+      cluster. Save this to a file (conventionally `root.crt`) and point the
+      PostgreSQL client at it to authenticate by connecting with
+      `sslmode=verify-full` or `sslmode=verify-ca`.
+  """
+
+  rootCaCert = _messages.StringField(1)
+
+
 class ClientConnectionConfig(_messages.Message):
   r"""Client connection configuration
 
@@ -1876,6 +1889,8 @@ class Cluster(_messages.Message):
     backupdrBackupSource: Output only. Cluster created from a BackupDR backup.
     backupdrInfo: Output only. Output only information about BackupDR
       protection for this cluster.
+    certificateAuthorityInfo: Output only. Certificate Authority (CA)
+      information for the cluster.
     cloudsqlBackupRunSource: Output only. Cluster created from CloudSQL
       snapshot.
     clusterType: Output only. The type of the cluster. This is an output-only
@@ -2175,46 +2190,47 @@ class Cluster(_messages.Message):
   backupSource = _messages.MessageField('BackupSource', 5)
   backupdrBackupSource = _messages.MessageField('BackupDrBackupSource', 6)
   backupdrInfo = _messages.MessageField('BackupDrInfo', 7)
-  cloudsqlBackupRunSource = _messages.MessageField('CloudSQLBackupRunSource', 8)
-  clusterType = _messages.EnumField('ClusterTypeValueValuesEnum', 9)
-  continuousBackupConfig = _messages.MessageField('ContinuousBackupConfig', 10)
-  continuousBackupInfo = _messages.MessageField('ContinuousBackupInfo', 11)
-  createTime = _messages.StringField(12)
-  databaseVersion = _messages.EnumField('DatabaseVersionValueValuesEnum', 13)
-  dataplexConfig = _messages.MessageField('DataplexConfig', 14)
-  deleteTime = _messages.StringField(15)
-  displayName = _messages.StringField(16)
-  edition = _messages.EnumField('EditionValueValuesEnum', 17)
-  encryptionConfig = _messages.MessageField('EncryptionConfig', 18)
-  encryptionInfo = _messages.MessageField('EncryptionInfo', 19)
-  etag = _messages.StringField(20)
-  expressConfig = _messages.MessageField('ExpressConfig', 21)
-  externalReplicaConfig = _messages.MessageField('ExternalReplicaConfig', 22)
-  externalReplicaInfo = _messages.MessageField('ExternalReplicaInfo', 23)
-  geminiConfig = _messages.MessageField('GeminiClusterConfig', 24)
-  initialUser = _messages.MessageField('UserPassword', 25)
-  labels = _messages.MessageField('LabelsValue', 26)
-  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 27)
-  maintenanceUpdatePolicy = _messages.MessageField('MaintenanceUpdatePolicy', 28)
-  maintenanceVersionSelectionPolicy = _messages.EnumField('MaintenanceVersionSelectionPolicyValueValuesEnum', 29)
-  migrationSource = _messages.MessageField('MigrationSource', 30)
-  name = _messages.StringField(31)
-  network = _messages.StringField(32)
-  networkConfig = _messages.MessageField('NetworkConfig', 33)
-  primaryConfig = _messages.MessageField('PrimaryConfig', 34)
-  pscConfig = _messages.MessageField('PscConfig', 35)
-  reconciling = _messages.BooleanField(36)
-  satisfiesPzs = _messages.BooleanField(37)
-  secondaryConfig = _messages.MessageField('SecondaryConfig', 38)
-  secondaryInfo = _messages.MessageField('SecondaryInfo', 39)
-  serviceAccountEmail = _messages.StringField(40)
-  sslConfig = _messages.MessageField('SslConfig', 41)
-  state = _messages.EnumField('StateValueValuesEnum', 42)
-  subscriptionType = _messages.EnumField('SubscriptionTypeValueValuesEnum', 43)
-  tags = _messages.MessageField('TagsValue', 44)
-  trialMetadata = _messages.MessageField('TrialMetadata', 45)
-  uid = _messages.StringField(46)
-  updateTime = _messages.StringField(47)
+  certificateAuthorityInfo = _messages.MessageField('CertificateAuthorityInfo', 8)
+  cloudsqlBackupRunSource = _messages.MessageField('CloudSQLBackupRunSource', 9)
+  clusterType = _messages.EnumField('ClusterTypeValueValuesEnum', 10)
+  continuousBackupConfig = _messages.MessageField('ContinuousBackupConfig', 11)
+  continuousBackupInfo = _messages.MessageField('ContinuousBackupInfo', 12)
+  createTime = _messages.StringField(13)
+  databaseVersion = _messages.EnumField('DatabaseVersionValueValuesEnum', 14)
+  dataplexConfig = _messages.MessageField('DataplexConfig', 15)
+  deleteTime = _messages.StringField(16)
+  displayName = _messages.StringField(17)
+  edition = _messages.EnumField('EditionValueValuesEnum', 18)
+  encryptionConfig = _messages.MessageField('EncryptionConfig', 19)
+  encryptionInfo = _messages.MessageField('EncryptionInfo', 20)
+  etag = _messages.StringField(21)
+  expressConfig = _messages.MessageField('ExpressConfig', 22)
+  externalReplicaConfig = _messages.MessageField('ExternalReplicaConfig', 23)
+  externalReplicaInfo = _messages.MessageField('ExternalReplicaInfo', 24)
+  geminiConfig = _messages.MessageField('GeminiClusterConfig', 25)
+  initialUser = _messages.MessageField('UserPassword', 26)
+  labels = _messages.MessageField('LabelsValue', 27)
+  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 28)
+  maintenanceUpdatePolicy = _messages.MessageField('MaintenanceUpdatePolicy', 29)
+  maintenanceVersionSelectionPolicy = _messages.EnumField('MaintenanceVersionSelectionPolicyValueValuesEnum', 30)
+  migrationSource = _messages.MessageField('MigrationSource', 31)
+  name = _messages.StringField(32)
+  network = _messages.StringField(33)
+  networkConfig = _messages.MessageField('NetworkConfig', 34)
+  primaryConfig = _messages.MessageField('PrimaryConfig', 35)
+  pscConfig = _messages.MessageField('PscConfig', 36)
+  reconciling = _messages.BooleanField(37)
+  satisfiesPzs = _messages.BooleanField(38)
+  secondaryConfig = _messages.MessageField('SecondaryConfig', 39)
+  secondaryInfo = _messages.MessageField('SecondaryInfo', 40)
+  serviceAccountEmail = _messages.StringField(41)
+  sslConfig = _messages.MessageField('SslConfig', 42)
+  state = _messages.EnumField('StateValueValuesEnum', 43)
+  subscriptionType = _messages.EnumField('SubscriptionTypeValueValuesEnum', 44)
+  tags = _messages.MessageField('TagsValue', 45)
+  trialMetadata = _messages.MessageField('TrialMetadata', 46)
+  uid = _messages.StringField(47)
+  updateTime = _messages.StringField(48)
 
 
 class ClusterUpgradeDetails(_messages.Message):

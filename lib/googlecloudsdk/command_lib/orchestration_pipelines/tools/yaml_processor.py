@@ -827,24 +827,14 @@ def validate_environment(
     raise BadFileError(
         f"Environment '{env}' is not a valid object in deployment file."
     )
+  _validate_non_empty_string_field(environment.project, "project", env)
+  _validate_non_empty_string_field(environment.region, "region", env)
+  if environment.service_account is not None:
+    _validate_non_empty_string_field(
+        environment.service_account, "service_account", env
+    )
   if environment.artifact_storage:
-    if not isinstance(
-        environment.artifact_storage,
-        deployment_model.ArtifactStorageModel,
-    ):
-      raise BadFileError(
-          f"Environment '{env}' has invalid artifact_storage in deployment"
-          " file."
-      )
-    if (
-        environment.artifact_storage.bucket
-        and environment.artifact_storage.bucket.startswith("gs:")
-    ):
-      raise BadFileError(textwrap.dedent(f"""\
-              Environment '{env}' has an invalid bucket format in
-              artifact_storage in the deployment file.
-              Expected only the bucket name (e.g. 'my-bucket'),
-              without the 'gs://' prefix."""))
+    _validate_artifact_storage(environment.artifact_storage, env)
   if not environment.variables:
     log.info(f"Environment '{env}' has no variables in deployment file.")
   else:
@@ -1256,6 +1246,45 @@ def _load_environment_from_pre_parsed(
   )
 
   return environments[env]
+
+
+def _validate_non_empty_string_field(
+    value: Any, field_name: str, env: str
+) -> None:
+  """Validates that `value` is a non-empty string in `deployment.yaml`."""
+  if not isinstance(value, str) or not value.strip():
+    raise BadFileError(
+        f"Environment '{env}' must specify '{field_name}' as a non-empty"
+        " string in deployment file."
+    )
+
+
+def _validate_artifact_storage(artifact_storage: Any, env: str) -> None:
+  """Validates `artifact_storage` in `deployment.yaml`."""
+  if not isinstance(
+      artifact_storage,
+      deployment_model.ArtifactStorageModel,
+  ):
+    raise BadFileError(
+        f"Environment '{env}' has invalid artifact_storage in deployment"
+        " file."
+    )
+  _validate_non_empty_string_field(
+      artifact_storage.bucket, "artifact_storage.bucket", env
+  )
+  if artifact_storage.bucket.startswith("gs:"):
+    raise BadFileError(textwrap.dedent(f"""\
+            Environment '{env}' has an invalid bucket format in
+            artifact_storage in the deployment file.
+            Expected only the bucket name (e.g. 'my-bucket'),
+            without the 'gs://' prefix."""))
+  if artifact_storage.path_prefix is not None and not isinstance(
+      artifact_storage.path_prefix, str
+  ):
+    raise BadFileError(
+        f"Environment '{env}' must specify 'artifact_storage.path_prefix' as"
+        " a string in deployment file."
+    )
 
 
 def _validate_single_pipeline(

@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: true
+  help_text:
     brief: List available accelerator types for Cloud TPUs.
     description: List available accelerator types for for Cloud TPUs.
     examples: |

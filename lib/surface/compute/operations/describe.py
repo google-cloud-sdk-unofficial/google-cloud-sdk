@@ -16,13 +16,18 @@
 
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.operations import flags
+from googlecloudsdk.command_lib.compute.operations import util
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine operation."""
 
@@ -74,8 +79,48 @@ class Describe(base.DescribeCommand):
     elif ref.Collection() == 'compute.zoneOperations':
       request.zone = ref.zone
 
+  def _RunFolderOrOrganization(self, args, compute_holder):
+    if getattr(args, 'region', None):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--region',
+          'Regional operations are not supported for folders or organizations.',
+      )
+    op_name = path_simplifier.Name(args.name)
+    client = compute_holder.client
+    messages = client.messages
+
+    if getattr(args, 'folder', None):
+      folder_id = util.FormatFolderId(args.folder)
+      if getattr(args, 'zone', None):
+        self._service = client.apitools_client.zoneFolderOperations
+        request = messages.ComputeZoneFolderOperationsGetRequest(
+            folder=folder_id, zone=args.zone, operation=op_name
+        )
+      else:
+        self._service = client.apitools_client.globalFolderOperations
+        request = messages.ComputeGlobalFolderOperationsGetRequest(
+            folder=folder_id, operation=op_name
+        )
+    else:
+      org_id = util.FormatOrganizationId(args.organization)
+      if getattr(args, 'zone', None):
+        self._service = client.apitools_client.zoneOrganizationOperations
+        request = messages.ComputeZoneOrganizationOperationsGetRequest(
+            organization=org_id, zone=args.zone, operation=op_name
+        )
+      else:
+        self._service = client.apitools_client.globalOrganizationOperations
+        request = messages.ComputeGlobalOrganizationOperationsGetRequest(
+            parentId=org_id, operation=op_name
+        )
+
+    return self.service.Get(request)
+
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+
+    if getattr(args, 'folder', None) or getattr(args, 'organization', None):
+      return self._RunFolderOrOrganization(args, compute_holder)
 
     operation_ref = self.CreateReference(args, compute_holder)
 
@@ -84,6 +129,17 @@ class Describe(base.DescribeCommand):
 
     return compute_holder.client.MakeRequests([(self.service, 'Get',
                                                 request)])[0]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.PREVIEW)
+@base.UniverseCompatible
+class DescribeAlphaPreview(Describe):
+  """Describe a Compute Engine operation."""
+
+  @staticmethod
+  def Args(parser):
+    Describe.Args(parser)
+    flags.AddScopeFlags(parser)
 
 
 def DetailedHelp():
@@ -111,3 +167,5 @@ def DetailedHelp():
   return detailed_help
 
 Describe.detailed_help = DetailedHelp()
+DescribeAlphaPreview.detailed_help = DetailedHelp()
+

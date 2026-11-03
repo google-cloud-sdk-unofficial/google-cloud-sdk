@@ -18,6 +18,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: false
   help_text:
     brief: Create an MCP Transcoder.
     description: Creates a new McpTranscoder in a given project and location.

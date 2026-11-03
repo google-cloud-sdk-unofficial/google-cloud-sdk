@@ -1240,12 +1240,14 @@ def GetOutboundEndpointSubnetworkArg(required=True):
   )
 
 
-def GetOutboundEndpointIpArg(required=True):
+def GetOutboundEndpointIpArg(required=False):
   return base.Argument(
       '--endpoint-ip',
       required=required,
       help=(
           'IPv4 address for the outbound endpoint on the specified subnetwork.'
+          ' If omitted, an IPv4 address is automatically allocated from the'
+          ' specified subnetwork.'
       ),
   )
 

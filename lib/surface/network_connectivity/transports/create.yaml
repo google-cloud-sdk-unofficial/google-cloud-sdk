@@ -98,6 +98,10 @@
               GA:
                 api_field: transport.pscRoutingEnabled
               help_text: Whether a VPC spoke is created for PSC routing over the transport.
+            - arg_name: group
+              api_field: googleCloudNetworkconnectivityV1betaTransport.group
+              help_text: The group of the NCC hub that the spokes created for this transport should be attached to.
+              release_tracks: [BETA]
     - arg_name: advertised-routes
       BETA:
         api_field: googleCloudNetworkconnectivityV1betaTransport.advertisedRoutes

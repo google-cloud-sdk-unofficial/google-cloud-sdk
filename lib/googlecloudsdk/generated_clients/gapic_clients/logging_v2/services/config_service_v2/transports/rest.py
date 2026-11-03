@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,45 +13,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
+import json  # type: ignore
 
 from google.auth.transport.requests import AuthorizedSession  # type: ignore
-import json  # type: ignore
-import grpc  # type: ignore
-from google.auth.transport.grpc import SslCredentials  # type: ignore
 from google.auth import credentials as ga_credentials  # type: ignore
 from google.api_core import exceptions as core_exceptions
 from google.api_core import retry as retries
 from google.api_core import rest_helpers
 from google.api_core import rest_streaming
-from google.api_core import path_template
 from google.api_core import gapic_v1
+import cloudsdk.google.protobuf
 
 from cloudsdk.google.protobuf import json_format
 from google.api_core import operations_v1
+
 from requests import __version__ as requests_version
 import dataclasses
-import re
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 import warnings
-
-try:
-    OptionalRetry = Union[retries.Retry, gapic_v1.method._MethodDefault, None]
-except AttributeError:  # pragma: NO COVER
-    OptionalRetry = Union[retries.Retry, object, None]  # type: ignore
 
 
 from cloudsdk.google.protobuf import empty_pb2  # type: ignore
 from googlecloudsdk.generated_clients.gapic_clients.logging_v2.types import logging_config
 from google.longrunning import operations_pb2  # type: ignore
 
-from .base import ConfigServiceV2Transport, DEFAULT_CLIENT_INFO as BASE_DEFAULT_CLIENT_INFO
 
+from .rest_base import _BaseConfigServiceV2RestTransport
+from .base import DEFAULT_CLIENT_INFO as BASE_DEFAULT_CLIENT_INFO
+
+try:
+    OptionalRetry = Union[retries.Retry, gapic_v1.method._MethodDefault, None]
+except AttributeError:  # pragma: NO COVER
+    OptionalRetry = Union[retries.Retry, object, None]  # type: ignore
+
+try:
+    from google.api_core import client_logging  # type: ignore
+    CLIENT_LOGGING_SUPPORTED = True  # pragma: NO COVER
+except ImportError:  # pragma: NO COVER
+    CLIENT_LOGGING_SUPPORTED = False
+
+_LOGGER = logging.getLogger(__name__)
 
 DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(
     gapic_version=BASE_DEFAULT_CLIENT_INFO.gapic_version,
     grpc_version=None,
-    rest_version=requests_version,
+    rest_version=f"requests@{requests_version}",
 )
+
+if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"):  # pragma: NO COVER
+    DEFAULT_CLIENT_INFO.protobuf_runtime_version = cloudsdk.google.protobuf.__version__
 
 
 class ConfigServiceV2RestInterceptor:
@@ -390,7 +401,7 @@ class ConfigServiceV2RestInterceptor:
 
 
     """
-    def pre_copy_log_entries(self, request: logging_config.CopyLogEntriesRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.CopyLogEntriesRequest, Sequence[Tuple[str, str]]]:
+    def pre_copy_log_entries(self, request: logging_config.CopyLogEntriesRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CopyLogEntriesRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for copy_log_entries
 
         Override in a subclass to manipulate the request or metadata
@@ -401,12 +412,32 @@ class ConfigServiceV2RestInterceptor:
     def post_copy_log_entries(self, response: operations_pb2.Operation) -> operations_pb2.Operation:
         """Post-rpc interceptor for copy_log_entries
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_copy_log_entries_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_copy_log_entries` interceptor runs
+        before the `post_copy_log_entries_with_metadata` interceptor.
         """
         return response
-    def pre_create_bucket(self, request: logging_config.CreateBucketRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.CreateBucketRequest, Sequence[Tuple[str, str]]]:
+
+    def post_copy_log_entries_with_metadata(self, response: operations_pb2.Operation, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[operations_pb2.Operation, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for copy_log_entries
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_copy_log_entries_with_metadata`
+        interceptor in new development instead of the `post_copy_log_entries` interceptor.
+        When both interceptors are used, this `post_copy_log_entries_with_metadata` interceptor runs after the
+        `post_copy_log_entries` interceptor. The (possibly modified) response returned by
+        `post_copy_log_entries` will be passed to
+        `post_copy_log_entries_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_create_bucket(self, request: logging_config.CreateBucketRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CreateBucketRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for create_bucket
 
         Override in a subclass to manipulate the request or metadata
@@ -417,12 +448,32 @@ class ConfigServiceV2RestInterceptor:
     def post_create_bucket(self, response: logging_config.LogBucket) -> logging_config.LogBucket:
         """Post-rpc interceptor for create_bucket
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_create_bucket_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_create_bucket` interceptor runs
+        before the `post_create_bucket_with_metadata` interceptor.
         """
         return response
-    def pre_create_bucket_async(self, request: logging_config.CreateBucketRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.CreateBucketRequest, Sequence[Tuple[str, str]]]:
+
+    def post_create_bucket_with_metadata(self, response: logging_config.LogBucket, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogBucket, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for create_bucket
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_create_bucket_with_metadata`
+        interceptor in new development instead of the `post_create_bucket` interceptor.
+        When both interceptors are used, this `post_create_bucket_with_metadata` interceptor runs after the
+        `post_create_bucket` interceptor. The (possibly modified) response returned by
+        `post_create_bucket` will be passed to
+        `post_create_bucket_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_create_bucket_async(self, request: logging_config.CreateBucketRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CreateBucketRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for create_bucket_async
 
         Override in a subclass to manipulate the request or metadata
@@ -433,12 +484,32 @@ class ConfigServiceV2RestInterceptor:
     def post_create_bucket_async(self, response: operations_pb2.Operation) -> operations_pb2.Operation:
         """Post-rpc interceptor for create_bucket_async
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_create_bucket_async_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_create_bucket_async` interceptor runs
+        before the `post_create_bucket_async_with_metadata` interceptor.
         """
         return response
-    def pre_create_exclusion(self, request: logging_config.CreateExclusionRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.CreateExclusionRequest, Sequence[Tuple[str, str]]]:
+
+    def post_create_bucket_async_with_metadata(self, response: operations_pb2.Operation, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[operations_pb2.Operation, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for create_bucket_async
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_create_bucket_async_with_metadata`
+        interceptor in new development instead of the `post_create_bucket_async` interceptor.
+        When both interceptors are used, this `post_create_bucket_async_with_metadata` interceptor runs after the
+        `post_create_bucket_async` interceptor. The (possibly modified) response returned by
+        `post_create_bucket_async` will be passed to
+        `post_create_bucket_async_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_create_exclusion(self, request: logging_config.CreateExclusionRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CreateExclusionRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for create_exclusion
 
         Override in a subclass to manipulate the request or metadata
@@ -449,12 +520,32 @@ class ConfigServiceV2RestInterceptor:
     def post_create_exclusion(self, response: logging_config.LogExclusion) -> logging_config.LogExclusion:
         """Post-rpc interceptor for create_exclusion
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_create_exclusion_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_create_exclusion` interceptor runs
+        before the `post_create_exclusion_with_metadata` interceptor.
         """
         return response
-    def pre_create_link(self, request: logging_config.CreateLinkRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.CreateLinkRequest, Sequence[Tuple[str, str]]]:
+
+    def post_create_exclusion_with_metadata(self, response: logging_config.LogExclusion, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogExclusion, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for create_exclusion
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_create_exclusion_with_metadata`
+        interceptor in new development instead of the `post_create_exclusion` interceptor.
+        When both interceptors are used, this `post_create_exclusion_with_metadata` interceptor runs after the
+        `post_create_exclusion` interceptor. The (possibly modified) response returned by
+        `post_create_exclusion` will be passed to
+        `post_create_exclusion_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_create_link(self, request: logging_config.CreateLinkRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CreateLinkRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for create_link
 
         Override in a subclass to manipulate the request or metadata
@@ -465,12 +556,32 @@ class ConfigServiceV2RestInterceptor:
     def post_create_link(self, response: operations_pb2.Operation) -> operations_pb2.Operation:
         """Post-rpc interceptor for create_link
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_create_link_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_create_link` interceptor runs
+        before the `post_create_link_with_metadata` interceptor.
         """
         return response
-    def pre_create_log_scope(self, request: logging_config.CreateLogScopeRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.CreateLogScopeRequest, Sequence[Tuple[str, str]]]:
+
+    def post_create_link_with_metadata(self, response: operations_pb2.Operation, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[operations_pb2.Operation, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for create_link
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_create_link_with_metadata`
+        interceptor in new development instead of the `post_create_link` interceptor.
+        When both interceptors are used, this `post_create_link_with_metadata` interceptor runs after the
+        `post_create_link` interceptor. The (possibly modified) response returned by
+        `post_create_link` will be passed to
+        `post_create_link_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_create_log_scope(self, request: logging_config.CreateLogScopeRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CreateLogScopeRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for create_log_scope
 
         Override in a subclass to manipulate the request or metadata
@@ -481,12 +592,32 @@ class ConfigServiceV2RestInterceptor:
     def post_create_log_scope(self, response: logging_config.LogScope) -> logging_config.LogScope:
         """Post-rpc interceptor for create_log_scope
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_create_log_scope_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_create_log_scope` interceptor runs
+        before the `post_create_log_scope_with_metadata` interceptor.
         """
         return response
-    def pre_create_saved_query(self, request: logging_config.CreateSavedQueryRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.CreateSavedQueryRequest, Sequence[Tuple[str, str]]]:
+
+    def post_create_log_scope_with_metadata(self, response: logging_config.LogScope, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogScope, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for create_log_scope
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_create_log_scope_with_metadata`
+        interceptor in new development instead of the `post_create_log_scope` interceptor.
+        When both interceptors are used, this `post_create_log_scope_with_metadata` interceptor runs after the
+        `post_create_log_scope` interceptor. The (possibly modified) response returned by
+        `post_create_log_scope` will be passed to
+        `post_create_log_scope_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_create_saved_query(self, request: logging_config.CreateSavedQueryRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CreateSavedQueryRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for create_saved_query
 
         Override in a subclass to manipulate the request or metadata
@@ -497,12 +628,32 @@ class ConfigServiceV2RestInterceptor:
     def post_create_saved_query(self, response: logging_config.SavedQuery) -> logging_config.SavedQuery:
         """Post-rpc interceptor for create_saved_query
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_create_saved_query_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_create_saved_query` interceptor runs
+        before the `post_create_saved_query_with_metadata` interceptor.
         """
         return response
-    def pre_create_sink(self, request: logging_config.CreateSinkRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.CreateSinkRequest, Sequence[Tuple[str, str]]]:
+
+    def post_create_saved_query_with_metadata(self, response: logging_config.SavedQuery, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.SavedQuery, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for create_saved_query
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_create_saved_query_with_metadata`
+        interceptor in new development instead of the `post_create_saved_query` interceptor.
+        When both interceptors are used, this `post_create_saved_query_with_metadata` interceptor runs after the
+        `post_create_saved_query` interceptor. The (possibly modified) response returned by
+        `post_create_saved_query` will be passed to
+        `post_create_saved_query_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_create_sink(self, request: logging_config.CreateSinkRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CreateSinkRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for create_sink
 
         Override in a subclass to manipulate the request or metadata
@@ -513,12 +664,32 @@ class ConfigServiceV2RestInterceptor:
     def post_create_sink(self, response: logging_config.LogSink) -> logging_config.LogSink:
         """Post-rpc interceptor for create_sink
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_create_sink_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_create_sink` interceptor runs
+        before the `post_create_sink_with_metadata` interceptor.
         """
         return response
-    def pre_create_view(self, request: logging_config.CreateViewRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.CreateViewRequest, Sequence[Tuple[str, str]]]:
+
+    def post_create_sink_with_metadata(self, response: logging_config.LogSink, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogSink, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for create_sink
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_create_sink_with_metadata`
+        interceptor in new development instead of the `post_create_sink` interceptor.
+        When both interceptors are used, this `post_create_sink_with_metadata` interceptor runs after the
+        `post_create_sink` interceptor. The (possibly modified) response returned by
+        `post_create_sink` will be passed to
+        `post_create_sink_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_create_view(self, request: logging_config.CreateViewRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CreateViewRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for create_view
 
         Override in a subclass to manipulate the request or metadata
@@ -529,12 +700,32 @@ class ConfigServiceV2RestInterceptor:
     def post_create_view(self, response: logging_config.LogView) -> logging_config.LogView:
         """Post-rpc interceptor for create_view
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_create_view_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_create_view` interceptor runs
+        before the `post_create_view_with_metadata` interceptor.
         """
         return response
-    def pre_delete_bucket(self, request: logging_config.DeleteBucketRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.DeleteBucketRequest, Sequence[Tuple[str, str]]]:
+
+    def post_create_view_with_metadata(self, response: logging_config.LogView, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogView, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for create_view
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_create_view_with_metadata`
+        interceptor in new development instead of the `post_create_view` interceptor.
+        When both interceptors are used, this `post_create_view_with_metadata` interceptor runs after the
+        `post_create_view` interceptor. The (possibly modified) response returned by
+        `post_create_view` will be passed to
+        `post_create_view_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_delete_bucket(self, request: logging_config.DeleteBucketRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.DeleteBucketRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for delete_bucket
 
         Override in a subclass to manipulate the request or metadata
@@ -542,7 +733,7 @@ class ConfigServiceV2RestInterceptor:
         """
         return request, metadata
 
-    def pre_delete_exclusion(self, request: logging_config.DeleteExclusionRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.DeleteExclusionRequest, Sequence[Tuple[str, str]]]:
+    def pre_delete_exclusion(self, request: logging_config.DeleteExclusionRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.DeleteExclusionRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for delete_exclusion
 
         Override in a subclass to manipulate the request or metadata
@@ -550,7 +741,7 @@ class ConfigServiceV2RestInterceptor:
         """
         return request, metadata
 
-    def pre_delete_link(self, request: logging_config.DeleteLinkRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.DeleteLinkRequest, Sequence[Tuple[str, str]]]:
+    def pre_delete_link(self, request: logging_config.DeleteLinkRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.DeleteLinkRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for delete_link
 
         Override in a subclass to manipulate the request or metadata
@@ -561,12 +752,32 @@ class ConfigServiceV2RestInterceptor:
     def post_delete_link(self, response: operations_pb2.Operation) -> operations_pb2.Operation:
         """Post-rpc interceptor for delete_link
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_delete_link_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_delete_link` interceptor runs
+        before the `post_delete_link_with_metadata` interceptor.
         """
         return response
-    def pre_delete_log_scope(self, request: logging_config.DeleteLogScopeRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.DeleteLogScopeRequest, Sequence[Tuple[str, str]]]:
+
+    def post_delete_link_with_metadata(self, response: operations_pb2.Operation, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[operations_pb2.Operation, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for delete_link
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_delete_link_with_metadata`
+        interceptor in new development instead of the `post_delete_link` interceptor.
+        When both interceptors are used, this `post_delete_link_with_metadata` interceptor runs after the
+        `post_delete_link` interceptor. The (possibly modified) response returned by
+        `post_delete_link` will be passed to
+        `post_delete_link_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_delete_log_scope(self, request: logging_config.DeleteLogScopeRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.DeleteLogScopeRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for delete_log_scope
 
         Override in a subclass to manipulate the request or metadata
@@ -574,7 +785,7 @@ class ConfigServiceV2RestInterceptor:
         """
         return request, metadata
 
-    def pre_delete_saved_query(self, request: logging_config.DeleteSavedQueryRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.DeleteSavedQueryRequest, Sequence[Tuple[str, str]]]:
+    def pre_delete_saved_query(self, request: logging_config.DeleteSavedQueryRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.DeleteSavedQueryRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for delete_saved_query
 
         Override in a subclass to manipulate the request or metadata
@@ -582,7 +793,7 @@ class ConfigServiceV2RestInterceptor:
         """
         return request, metadata
 
-    def pre_delete_sink(self, request: logging_config.DeleteSinkRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.DeleteSinkRequest, Sequence[Tuple[str, str]]]:
+    def pre_delete_sink(self, request: logging_config.DeleteSinkRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.DeleteSinkRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for delete_sink
 
         Override in a subclass to manipulate the request or metadata
@@ -590,7 +801,7 @@ class ConfigServiceV2RestInterceptor:
         """
         return request, metadata
 
-    def pre_delete_view(self, request: logging_config.DeleteViewRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.DeleteViewRequest, Sequence[Tuple[str, str]]]:
+    def pre_delete_view(self, request: logging_config.DeleteViewRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.DeleteViewRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for delete_view
 
         Override in a subclass to manipulate the request or metadata
@@ -598,7 +809,7 @@ class ConfigServiceV2RestInterceptor:
         """
         return request, metadata
 
-    def pre_get_bucket(self, request: logging_config.GetBucketRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.GetBucketRequest, Sequence[Tuple[str, str]]]:
+    def pre_get_bucket(self, request: logging_config.GetBucketRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.GetBucketRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for get_bucket
 
         Override in a subclass to manipulate the request or metadata
@@ -609,12 +820,32 @@ class ConfigServiceV2RestInterceptor:
     def post_get_bucket(self, response: logging_config.LogBucket) -> logging_config.LogBucket:
         """Post-rpc interceptor for get_bucket
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_get_bucket_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_get_bucket` interceptor runs
+        before the `post_get_bucket_with_metadata` interceptor.
         """
         return response
-    def pre_get_cmek_settings(self, request: logging_config.GetCmekSettingsRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.GetCmekSettingsRequest, Sequence[Tuple[str, str]]]:
+
+    def post_get_bucket_with_metadata(self, response: logging_config.LogBucket, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogBucket, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for get_bucket
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_get_bucket_with_metadata`
+        interceptor in new development instead of the `post_get_bucket` interceptor.
+        When both interceptors are used, this `post_get_bucket_with_metadata` interceptor runs after the
+        `post_get_bucket` interceptor. The (possibly modified) response returned by
+        `post_get_bucket` will be passed to
+        `post_get_bucket_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_get_cmek_settings(self, request: logging_config.GetCmekSettingsRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.GetCmekSettingsRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for get_cmek_settings
 
         Override in a subclass to manipulate the request or metadata
@@ -625,12 +856,32 @@ class ConfigServiceV2RestInterceptor:
     def post_get_cmek_settings(self, response: logging_config.CmekSettings) -> logging_config.CmekSettings:
         """Post-rpc interceptor for get_cmek_settings
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_get_cmek_settings_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_get_cmek_settings` interceptor runs
+        before the `post_get_cmek_settings_with_metadata` interceptor.
         """
         return response
-    def pre_get_exclusion(self, request: logging_config.GetExclusionRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.GetExclusionRequest, Sequence[Tuple[str, str]]]:
+
+    def post_get_cmek_settings_with_metadata(self, response: logging_config.CmekSettings, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CmekSettings, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for get_cmek_settings
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_get_cmek_settings_with_metadata`
+        interceptor in new development instead of the `post_get_cmek_settings` interceptor.
+        When both interceptors are used, this `post_get_cmek_settings_with_metadata` interceptor runs after the
+        `post_get_cmek_settings` interceptor. The (possibly modified) response returned by
+        `post_get_cmek_settings` will be passed to
+        `post_get_cmek_settings_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_get_exclusion(self, request: logging_config.GetExclusionRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.GetExclusionRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for get_exclusion
 
         Override in a subclass to manipulate the request or metadata
@@ -641,12 +892,32 @@ class ConfigServiceV2RestInterceptor:
     def post_get_exclusion(self, response: logging_config.LogExclusion) -> logging_config.LogExclusion:
         """Post-rpc interceptor for get_exclusion
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_get_exclusion_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_get_exclusion` interceptor runs
+        before the `post_get_exclusion_with_metadata` interceptor.
         """
         return response
-    def pre_get_link(self, request: logging_config.GetLinkRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.GetLinkRequest, Sequence[Tuple[str, str]]]:
+
+    def post_get_exclusion_with_metadata(self, response: logging_config.LogExclusion, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogExclusion, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for get_exclusion
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_get_exclusion_with_metadata`
+        interceptor in new development instead of the `post_get_exclusion` interceptor.
+        When both interceptors are used, this `post_get_exclusion_with_metadata` interceptor runs after the
+        `post_get_exclusion` interceptor. The (possibly modified) response returned by
+        `post_get_exclusion` will be passed to
+        `post_get_exclusion_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_get_link(self, request: logging_config.GetLinkRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.GetLinkRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for get_link
 
         Override in a subclass to manipulate the request or metadata
@@ -657,12 +928,32 @@ class ConfigServiceV2RestInterceptor:
     def post_get_link(self, response: logging_config.Link) -> logging_config.Link:
         """Post-rpc interceptor for get_link
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_get_link_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_get_link` interceptor runs
+        before the `post_get_link_with_metadata` interceptor.
         """
         return response
-    def pre_get_log_scope(self, request: logging_config.GetLogScopeRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.GetLogScopeRequest, Sequence[Tuple[str, str]]]:
+
+    def post_get_link_with_metadata(self, response: logging_config.Link, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.Link, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for get_link
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_get_link_with_metadata`
+        interceptor in new development instead of the `post_get_link` interceptor.
+        When both interceptors are used, this `post_get_link_with_metadata` interceptor runs after the
+        `post_get_link` interceptor. The (possibly modified) response returned by
+        `post_get_link` will be passed to
+        `post_get_link_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_get_log_scope(self, request: logging_config.GetLogScopeRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.GetLogScopeRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for get_log_scope
 
         Override in a subclass to manipulate the request or metadata
@@ -673,12 +964,32 @@ class ConfigServiceV2RestInterceptor:
     def post_get_log_scope(self, response: logging_config.LogScope) -> logging_config.LogScope:
         """Post-rpc interceptor for get_log_scope
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_get_log_scope_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_get_log_scope` interceptor runs
+        before the `post_get_log_scope_with_metadata` interceptor.
         """
         return response
-    def pre_get_saved_query(self, request: logging_config.GetSavedQueryRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.GetSavedQueryRequest, Sequence[Tuple[str, str]]]:
+
+    def post_get_log_scope_with_metadata(self, response: logging_config.LogScope, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogScope, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for get_log_scope
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_get_log_scope_with_metadata`
+        interceptor in new development instead of the `post_get_log_scope` interceptor.
+        When both interceptors are used, this `post_get_log_scope_with_metadata` interceptor runs after the
+        `post_get_log_scope` interceptor. The (possibly modified) response returned by
+        `post_get_log_scope` will be passed to
+        `post_get_log_scope_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_get_saved_query(self, request: logging_config.GetSavedQueryRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.GetSavedQueryRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for get_saved_query
 
         Override in a subclass to manipulate the request or metadata
@@ -689,12 +1000,32 @@ class ConfigServiceV2RestInterceptor:
     def post_get_saved_query(self, response: logging_config.SavedQuery) -> logging_config.SavedQuery:
         """Post-rpc interceptor for get_saved_query
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_get_saved_query_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_get_saved_query` interceptor runs
+        before the `post_get_saved_query_with_metadata` interceptor.
         """
         return response
-    def pre_get_settings(self, request: logging_config.GetSettingsRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.GetSettingsRequest, Sequence[Tuple[str, str]]]:
+
+    def post_get_saved_query_with_metadata(self, response: logging_config.SavedQuery, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.SavedQuery, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for get_saved_query
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_get_saved_query_with_metadata`
+        interceptor in new development instead of the `post_get_saved_query` interceptor.
+        When both interceptors are used, this `post_get_saved_query_with_metadata` interceptor runs after the
+        `post_get_saved_query` interceptor. The (possibly modified) response returned by
+        `post_get_saved_query` will be passed to
+        `post_get_saved_query_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_get_settings(self, request: logging_config.GetSettingsRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.GetSettingsRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for get_settings
 
         Override in a subclass to manipulate the request or metadata
@@ -705,12 +1036,32 @@ class ConfigServiceV2RestInterceptor:
     def post_get_settings(self, response: logging_config.Settings) -> logging_config.Settings:
         """Post-rpc interceptor for get_settings
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_get_settings_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_get_settings` interceptor runs
+        before the `post_get_settings_with_metadata` interceptor.
         """
         return response
-    def pre_get_sink(self, request: logging_config.GetSinkRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.GetSinkRequest, Sequence[Tuple[str, str]]]:
+
+    def post_get_settings_with_metadata(self, response: logging_config.Settings, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.Settings, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for get_settings
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_get_settings_with_metadata`
+        interceptor in new development instead of the `post_get_settings` interceptor.
+        When both interceptors are used, this `post_get_settings_with_metadata` interceptor runs after the
+        `post_get_settings` interceptor. The (possibly modified) response returned by
+        `post_get_settings` will be passed to
+        `post_get_settings_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_get_sink(self, request: logging_config.GetSinkRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.GetSinkRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for get_sink
 
         Override in a subclass to manipulate the request or metadata
@@ -721,12 +1072,32 @@ class ConfigServiceV2RestInterceptor:
     def post_get_sink(self, response: logging_config.LogSink) -> logging_config.LogSink:
         """Post-rpc interceptor for get_sink
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_get_sink_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_get_sink` interceptor runs
+        before the `post_get_sink_with_metadata` interceptor.
         """
         return response
-    def pre_get_view(self, request: logging_config.GetViewRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.GetViewRequest, Sequence[Tuple[str, str]]]:
+
+    def post_get_sink_with_metadata(self, response: logging_config.LogSink, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogSink, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for get_sink
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_get_sink_with_metadata`
+        interceptor in new development instead of the `post_get_sink` interceptor.
+        When both interceptors are used, this `post_get_sink_with_metadata` interceptor runs after the
+        `post_get_sink` interceptor. The (possibly modified) response returned by
+        `post_get_sink` will be passed to
+        `post_get_sink_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_get_view(self, request: logging_config.GetViewRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.GetViewRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for get_view
 
         Override in a subclass to manipulate the request or metadata
@@ -737,12 +1108,32 @@ class ConfigServiceV2RestInterceptor:
     def post_get_view(self, response: logging_config.LogView) -> logging_config.LogView:
         """Post-rpc interceptor for get_view
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_get_view_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_get_view` interceptor runs
+        before the `post_get_view_with_metadata` interceptor.
         """
         return response
-    def pre_list_buckets(self, request: logging_config.ListBucketsRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.ListBucketsRequest, Sequence[Tuple[str, str]]]:
+
+    def post_get_view_with_metadata(self, response: logging_config.LogView, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogView, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for get_view
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_get_view_with_metadata`
+        interceptor in new development instead of the `post_get_view` interceptor.
+        When both interceptors are used, this `post_get_view_with_metadata` interceptor runs after the
+        `post_get_view` interceptor. The (possibly modified) response returned by
+        `post_get_view` will be passed to
+        `post_get_view_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_list_buckets(self, request: logging_config.ListBucketsRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListBucketsRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for list_buckets
 
         Override in a subclass to manipulate the request or metadata
@@ -753,12 +1144,32 @@ class ConfigServiceV2RestInterceptor:
     def post_list_buckets(self, response: logging_config.ListBucketsResponse) -> logging_config.ListBucketsResponse:
         """Post-rpc interceptor for list_buckets
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_list_buckets_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_list_buckets` interceptor runs
+        before the `post_list_buckets_with_metadata` interceptor.
         """
         return response
-    def pre_list_exclusions(self, request: logging_config.ListExclusionsRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.ListExclusionsRequest, Sequence[Tuple[str, str]]]:
+
+    def post_list_buckets_with_metadata(self, response: logging_config.ListBucketsResponse, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListBucketsResponse, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for list_buckets
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_list_buckets_with_metadata`
+        interceptor in new development instead of the `post_list_buckets` interceptor.
+        When both interceptors are used, this `post_list_buckets_with_metadata` interceptor runs after the
+        `post_list_buckets` interceptor. The (possibly modified) response returned by
+        `post_list_buckets` will be passed to
+        `post_list_buckets_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_list_exclusions(self, request: logging_config.ListExclusionsRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListExclusionsRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for list_exclusions
 
         Override in a subclass to manipulate the request or metadata
@@ -769,12 +1180,32 @@ class ConfigServiceV2RestInterceptor:
     def post_list_exclusions(self, response: logging_config.ListExclusionsResponse) -> logging_config.ListExclusionsResponse:
         """Post-rpc interceptor for list_exclusions
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_list_exclusions_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_list_exclusions` interceptor runs
+        before the `post_list_exclusions_with_metadata` interceptor.
         """
         return response
-    def pre_list_links(self, request: logging_config.ListLinksRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.ListLinksRequest, Sequence[Tuple[str, str]]]:
+
+    def post_list_exclusions_with_metadata(self, response: logging_config.ListExclusionsResponse, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListExclusionsResponse, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for list_exclusions
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_list_exclusions_with_metadata`
+        interceptor in new development instead of the `post_list_exclusions` interceptor.
+        When both interceptors are used, this `post_list_exclusions_with_metadata` interceptor runs after the
+        `post_list_exclusions` interceptor. The (possibly modified) response returned by
+        `post_list_exclusions` will be passed to
+        `post_list_exclusions_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_list_links(self, request: logging_config.ListLinksRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListLinksRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for list_links
 
         Override in a subclass to manipulate the request or metadata
@@ -785,12 +1216,32 @@ class ConfigServiceV2RestInterceptor:
     def post_list_links(self, response: logging_config.ListLinksResponse) -> logging_config.ListLinksResponse:
         """Post-rpc interceptor for list_links
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_list_links_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_list_links` interceptor runs
+        before the `post_list_links_with_metadata` interceptor.
         """
         return response
-    def pre_list_log_scopes(self, request: logging_config.ListLogScopesRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.ListLogScopesRequest, Sequence[Tuple[str, str]]]:
+
+    def post_list_links_with_metadata(self, response: logging_config.ListLinksResponse, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListLinksResponse, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for list_links
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_list_links_with_metadata`
+        interceptor in new development instead of the `post_list_links` interceptor.
+        When both interceptors are used, this `post_list_links_with_metadata` interceptor runs after the
+        `post_list_links` interceptor. The (possibly modified) response returned by
+        `post_list_links` will be passed to
+        `post_list_links_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_list_log_scopes(self, request: logging_config.ListLogScopesRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListLogScopesRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for list_log_scopes
 
         Override in a subclass to manipulate the request or metadata
@@ -801,12 +1252,32 @@ class ConfigServiceV2RestInterceptor:
     def post_list_log_scopes(self, response: logging_config.ListLogScopesResponse) -> logging_config.ListLogScopesResponse:
         """Post-rpc interceptor for list_log_scopes
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_list_log_scopes_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_list_log_scopes` interceptor runs
+        before the `post_list_log_scopes_with_metadata` interceptor.
         """
         return response
-    def pre_list_recent_queries(self, request: logging_config.ListRecentQueriesRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.ListRecentQueriesRequest, Sequence[Tuple[str, str]]]:
+
+    def post_list_log_scopes_with_metadata(self, response: logging_config.ListLogScopesResponse, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListLogScopesResponse, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for list_log_scopes
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_list_log_scopes_with_metadata`
+        interceptor in new development instead of the `post_list_log_scopes` interceptor.
+        When both interceptors are used, this `post_list_log_scopes_with_metadata` interceptor runs after the
+        `post_list_log_scopes` interceptor. The (possibly modified) response returned by
+        `post_list_log_scopes` will be passed to
+        `post_list_log_scopes_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_list_recent_queries(self, request: logging_config.ListRecentQueriesRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListRecentQueriesRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for list_recent_queries
 
         Override in a subclass to manipulate the request or metadata
@@ -817,12 +1288,32 @@ class ConfigServiceV2RestInterceptor:
     def post_list_recent_queries(self, response: logging_config.ListRecentQueriesResponse) -> logging_config.ListRecentQueriesResponse:
         """Post-rpc interceptor for list_recent_queries
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_list_recent_queries_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_list_recent_queries` interceptor runs
+        before the `post_list_recent_queries_with_metadata` interceptor.
         """
         return response
-    def pre_list_saved_queries(self, request: logging_config.ListSavedQueriesRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.ListSavedQueriesRequest, Sequence[Tuple[str, str]]]:
+
+    def post_list_recent_queries_with_metadata(self, response: logging_config.ListRecentQueriesResponse, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListRecentQueriesResponse, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for list_recent_queries
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_list_recent_queries_with_metadata`
+        interceptor in new development instead of the `post_list_recent_queries` interceptor.
+        When both interceptors are used, this `post_list_recent_queries_with_metadata` interceptor runs after the
+        `post_list_recent_queries` interceptor. The (possibly modified) response returned by
+        `post_list_recent_queries` will be passed to
+        `post_list_recent_queries_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_list_saved_queries(self, request: logging_config.ListSavedQueriesRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListSavedQueriesRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for list_saved_queries
 
         Override in a subclass to manipulate the request or metadata
@@ -833,12 +1324,32 @@ class ConfigServiceV2RestInterceptor:
     def post_list_saved_queries(self, response: logging_config.ListSavedQueriesResponse) -> logging_config.ListSavedQueriesResponse:
         """Post-rpc interceptor for list_saved_queries
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_list_saved_queries_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_list_saved_queries` interceptor runs
+        before the `post_list_saved_queries_with_metadata` interceptor.
         """
         return response
-    def pre_list_sinks(self, request: logging_config.ListSinksRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.ListSinksRequest, Sequence[Tuple[str, str]]]:
+
+    def post_list_saved_queries_with_metadata(self, response: logging_config.ListSavedQueriesResponse, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListSavedQueriesResponse, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for list_saved_queries
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_list_saved_queries_with_metadata`
+        interceptor in new development instead of the `post_list_saved_queries` interceptor.
+        When both interceptors are used, this `post_list_saved_queries_with_metadata` interceptor runs after the
+        `post_list_saved_queries` interceptor. The (possibly modified) response returned by
+        `post_list_saved_queries` will be passed to
+        `post_list_saved_queries_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_list_sinks(self, request: logging_config.ListSinksRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListSinksRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for list_sinks
 
         Override in a subclass to manipulate the request or metadata
@@ -849,12 +1360,32 @@ class ConfigServiceV2RestInterceptor:
     def post_list_sinks(self, response: logging_config.ListSinksResponse) -> logging_config.ListSinksResponse:
         """Post-rpc interceptor for list_sinks
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_list_sinks_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_list_sinks` interceptor runs
+        before the `post_list_sinks_with_metadata` interceptor.
         """
         return response
-    def pre_list_views(self, request: logging_config.ListViewsRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.ListViewsRequest, Sequence[Tuple[str, str]]]:
+
+    def post_list_sinks_with_metadata(self, response: logging_config.ListSinksResponse, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListSinksResponse, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for list_sinks
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_list_sinks_with_metadata`
+        interceptor in new development instead of the `post_list_sinks` interceptor.
+        When both interceptors are used, this `post_list_sinks_with_metadata` interceptor runs after the
+        `post_list_sinks` interceptor. The (possibly modified) response returned by
+        `post_list_sinks` will be passed to
+        `post_list_sinks_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_list_views(self, request: logging_config.ListViewsRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListViewsRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for list_views
 
         Override in a subclass to manipulate the request or metadata
@@ -865,12 +1396,32 @@ class ConfigServiceV2RestInterceptor:
     def post_list_views(self, response: logging_config.ListViewsResponse) -> logging_config.ListViewsResponse:
         """Post-rpc interceptor for list_views
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_list_views_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_list_views` interceptor runs
+        before the `post_list_views_with_metadata` interceptor.
         """
         return response
-    def pre_undelete_bucket(self, request: logging_config.UndeleteBucketRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.UndeleteBucketRequest, Sequence[Tuple[str, str]]]:
+
+    def post_list_views_with_metadata(self, response: logging_config.ListViewsResponse, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.ListViewsResponse, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for list_views
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_list_views_with_metadata`
+        interceptor in new development instead of the `post_list_views` interceptor.
+        When both interceptors are used, this `post_list_views_with_metadata` interceptor runs after the
+        `post_list_views` interceptor. The (possibly modified) response returned by
+        `post_list_views` will be passed to
+        `post_list_views_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_undelete_bucket(self, request: logging_config.UndeleteBucketRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.UndeleteBucketRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for undelete_bucket
 
         Override in a subclass to manipulate the request or metadata
@@ -878,7 +1429,7 @@ class ConfigServiceV2RestInterceptor:
         """
         return request, metadata
 
-    def pre_update_bucket(self, request: logging_config.UpdateBucketRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.UpdateBucketRequest, Sequence[Tuple[str, str]]]:
+    def pre_update_bucket(self, request: logging_config.UpdateBucketRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.UpdateBucketRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for update_bucket
 
         Override in a subclass to manipulate the request or metadata
@@ -889,12 +1440,32 @@ class ConfigServiceV2RestInterceptor:
     def post_update_bucket(self, response: logging_config.LogBucket) -> logging_config.LogBucket:
         """Post-rpc interceptor for update_bucket
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_update_bucket_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_update_bucket` interceptor runs
+        before the `post_update_bucket_with_metadata` interceptor.
         """
         return response
-    def pre_update_bucket_async(self, request: logging_config.UpdateBucketRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.UpdateBucketRequest, Sequence[Tuple[str, str]]]:
+
+    def post_update_bucket_with_metadata(self, response: logging_config.LogBucket, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogBucket, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for update_bucket
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_update_bucket_with_metadata`
+        interceptor in new development instead of the `post_update_bucket` interceptor.
+        When both interceptors are used, this `post_update_bucket_with_metadata` interceptor runs after the
+        `post_update_bucket` interceptor. The (possibly modified) response returned by
+        `post_update_bucket` will be passed to
+        `post_update_bucket_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_update_bucket_async(self, request: logging_config.UpdateBucketRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.UpdateBucketRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for update_bucket_async
 
         Override in a subclass to manipulate the request or metadata
@@ -905,12 +1476,32 @@ class ConfigServiceV2RestInterceptor:
     def post_update_bucket_async(self, response: operations_pb2.Operation) -> operations_pb2.Operation:
         """Post-rpc interceptor for update_bucket_async
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_update_bucket_async_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_update_bucket_async` interceptor runs
+        before the `post_update_bucket_async_with_metadata` interceptor.
         """
         return response
-    def pre_update_cmek_settings(self, request: logging_config.UpdateCmekSettingsRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.UpdateCmekSettingsRequest, Sequence[Tuple[str, str]]]:
+
+    def post_update_bucket_async_with_metadata(self, response: operations_pb2.Operation, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[operations_pb2.Operation, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for update_bucket_async
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_update_bucket_async_with_metadata`
+        interceptor in new development instead of the `post_update_bucket_async` interceptor.
+        When both interceptors are used, this `post_update_bucket_async_with_metadata` interceptor runs after the
+        `post_update_bucket_async` interceptor. The (possibly modified) response returned by
+        `post_update_bucket_async` will be passed to
+        `post_update_bucket_async_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_update_cmek_settings(self, request: logging_config.UpdateCmekSettingsRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.UpdateCmekSettingsRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for update_cmek_settings
 
         Override in a subclass to manipulate the request or metadata
@@ -921,12 +1512,32 @@ class ConfigServiceV2RestInterceptor:
     def post_update_cmek_settings(self, response: logging_config.CmekSettings) -> logging_config.CmekSettings:
         """Post-rpc interceptor for update_cmek_settings
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_update_cmek_settings_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_update_cmek_settings` interceptor runs
+        before the `post_update_cmek_settings_with_metadata` interceptor.
         """
         return response
-    def pre_update_exclusion(self, request: logging_config.UpdateExclusionRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.UpdateExclusionRequest, Sequence[Tuple[str, str]]]:
+
+    def post_update_cmek_settings_with_metadata(self, response: logging_config.CmekSettings, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.CmekSettings, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for update_cmek_settings
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_update_cmek_settings_with_metadata`
+        interceptor in new development instead of the `post_update_cmek_settings` interceptor.
+        When both interceptors are used, this `post_update_cmek_settings_with_metadata` interceptor runs after the
+        `post_update_cmek_settings` interceptor. The (possibly modified) response returned by
+        `post_update_cmek_settings` will be passed to
+        `post_update_cmek_settings_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_update_exclusion(self, request: logging_config.UpdateExclusionRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.UpdateExclusionRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for update_exclusion
 
         Override in a subclass to manipulate the request or metadata
@@ -937,12 +1548,32 @@ class ConfigServiceV2RestInterceptor:
     def post_update_exclusion(self, response: logging_config.LogExclusion) -> logging_config.LogExclusion:
         """Post-rpc interceptor for update_exclusion
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_update_exclusion_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_update_exclusion` interceptor runs
+        before the `post_update_exclusion_with_metadata` interceptor.
         """
         return response
-    def pre_update_log_scope(self, request: logging_config.UpdateLogScopeRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.UpdateLogScopeRequest, Sequence[Tuple[str, str]]]:
+
+    def post_update_exclusion_with_metadata(self, response: logging_config.LogExclusion, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogExclusion, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for update_exclusion
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_update_exclusion_with_metadata`
+        interceptor in new development instead of the `post_update_exclusion` interceptor.
+        When both interceptors are used, this `post_update_exclusion_with_metadata` interceptor runs after the
+        `post_update_exclusion` interceptor. The (possibly modified) response returned by
+        `post_update_exclusion` will be passed to
+        `post_update_exclusion_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_update_log_scope(self, request: logging_config.UpdateLogScopeRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.UpdateLogScopeRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for update_log_scope
 
         Override in a subclass to manipulate the request or metadata
@@ -953,12 +1584,32 @@ class ConfigServiceV2RestInterceptor:
     def post_update_log_scope(self, response: logging_config.LogScope) -> logging_config.LogScope:
         """Post-rpc interceptor for update_log_scope
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_update_log_scope_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_update_log_scope` interceptor runs
+        before the `post_update_log_scope_with_metadata` interceptor.
         """
         return response
-    def pre_update_saved_query(self, request: logging_config.UpdateSavedQueryRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.UpdateSavedQueryRequest, Sequence[Tuple[str, str]]]:
+
+    def post_update_log_scope_with_metadata(self, response: logging_config.LogScope, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogScope, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for update_log_scope
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_update_log_scope_with_metadata`
+        interceptor in new development instead of the `post_update_log_scope` interceptor.
+        When both interceptors are used, this `post_update_log_scope_with_metadata` interceptor runs after the
+        `post_update_log_scope` interceptor. The (possibly modified) response returned by
+        `post_update_log_scope` will be passed to
+        `post_update_log_scope_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_update_saved_query(self, request: logging_config.UpdateSavedQueryRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.UpdateSavedQueryRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for update_saved_query
 
         Override in a subclass to manipulate the request or metadata
@@ -969,12 +1620,32 @@ class ConfigServiceV2RestInterceptor:
     def post_update_saved_query(self, response: logging_config.SavedQuery) -> logging_config.SavedQuery:
         """Post-rpc interceptor for update_saved_query
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_update_saved_query_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_update_saved_query` interceptor runs
+        before the `post_update_saved_query_with_metadata` interceptor.
         """
         return response
-    def pre_update_settings(self, request: logging_config.UpdateSettingsRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.UpdateSettingsRequest, Sequence[Tuple[str, str]]]:
+
+    def post_update_saved_query_with_metadata(self, response: logging_config.SavedQuery, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.SavedQuery, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for update_saved_query
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_update_saved_query_with_metadata`
+        interceptor in new development instead of the `post_update_saved_query` interceptor.
+        When both interceptors are used, this `post_update_saved_query_with_metadata` interceptor runs after the
+        `post_update_saved_query` interceptor. The (possibly modified) response returned by
+        `post_update_saved_query` will be passed to
+        `post_update_saved_query_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_update_settings(self, request: logging_config.UpdateSettingsRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.UpdateSettingsRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for update_settings
 
         Override in a subclass to manipulate the request or metadata
@@ -985,12 +1656,32 @@ class ConfigServiceV2RestInterceptor:
     def post_update_settings(self, response: logging_config.Settings) -> logging_config.Settings:
         """Post-rpc interceptor for update_settings
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_update_settings_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_update_settings` interceptor runs
+        before the `post_update_settings_with_metadata` interceptor.
         """
         return response
-    def pre_update_sink(self, request: logging_config.UpdateSinkRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.UpdateSinkRequest, Sequence[Tuple[str, str]]]:
+
+    def post_update_settings_with_metadata(self, response: logging_config.Settings, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.Settings, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for update_settings
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_update_settings_with_metadata`
+        interceptor in new development instead of the `post_update_settings` interceptor.
+        When both interceptors are used, this `post_update_settings_with_metadata` interceptor runs after the
+        `post_update_settings` interceptor. The (possibly modified) response returned by
+        `post_update_settings` will be passed to
+        `post_update_settings_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_update_sink(self, request: logging_config.UpdateSinkRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.UpdateSinkRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for update_sink
 
         Override in a subclass to manipulate the request or metadata
@@ -1001,12 +1692,32 @@ class ConfigServiceV2RestInterceptor:
     def post_update_sink(self, response: logging_config.LogSink) -> logging_config.LogSink:
         """Post-rpc interceptor for update_sink
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_update_sink_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_update_sink` interceptor runs
+        before the `post_update_sink_with_metadata` interceptor.
         """
         return response
-    def pre_update_view(self, request: logging_config.UpdateViewRequest, metadata: Sequence[Tuple[str, str]]) -> Tuple[logging_config.UpdateViewRequest, Sequence[Tuple[str, str]]]:
+
+    def post_update_sink_with_metadata(self, response: logging_config.LogSink, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogSink, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for update_sink
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_update_sink_with_metadata`
+        interceptor in new development instead of the `post_update_sink` interceptor.
+        When both interceptors are used, this `post_update_sink_with_metadata` interceptor runs after the
+        `post_update_sink` interceptor. The (possibly modified) response returned by
+        `post_update_sink` will be passed to
+        `post_update_sink_with_metadata`.
+        """
+        return response, metadata
+
+    def pre_update_view(self, request: logging_config.UpdateViewRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.UpdateViewRequest, Sequence[Tuple[str, Union[str, bytes]]]]:
         """Pre-rpc interceptor for update_view
 
         Override in a subclass to manipulate the request or metadata
@@ -1017,11 +1728,30 @@ class ConfigServiceV2RestInterceptor:
     def post_update_view(self, response: logging_config.LogView) -> logging_config.LogView:
         """Post-rpc interceptor for update_view
 
-        Override in a subclass to manipulate the response
+        DEPRECATED. Please use the `post_update_view_with_metadata`
+        interceptor instead.
+
+        Override in a subclass to read or manipulate the response
         after it is returned by the ConfigServiceV2 server but before
-        it is returned to user code.
+        it is returned to user code. This `post_update_view` interceptor runs
+        before the `post_update_view_with_metadata` interceptor.
         """
         return response
+
+    def post_update_view_with_metadata(self, response: logging_config.LogView, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[logging_config.LogView, Sequence[Tuple[str, Union[str, bytes]]]]:
+        """Post-rpc interceptor for update_view
+
+        Override in a subclass to read or manipulate the response or metadata after it
+        is returned by the ConfigServiceV2 server but before it is returned to user code.
+
+        We recommend only using this `post_update_view_with_metadata`
+        interceptor in new development instead of the `post_update_view` interceptor.
+        When both interceptors are used, this `post_update_view_with_metadata` interceptor runs after the
+        `post_update_view` interceptor. The (possibly modified) response returned by
+        `post_update_view` will be passed to
+        `post_update_view_with_metadata`.
+        """
+        return response, metadata
 
 
 @dataclasses.dataclass
@@ -1031,8 +1761,8 @@ class ConfigServiceV2RestStub:
     _interceptor: ConfigServiceV2RestInterceptor
 
 
-class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
-    """REST backend transport for ConfigServiceV2.
+class ConfigServiceV2RestTransport(_BaseConfigServiceV2RestTransport):
+    """REST backend synchronous transport for ConfigServiceV2.
 
     Service for configuring sinks used to route log entries.
 
@@ -1041,10 +1771,6 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
     and call it.
 
     It sends JSON representations of protocol buffers over HTTP/1.1
-
-    NOTE: This REST transport functionality is currently in a beta
-    state (preview). We welcome your feedback via an issue in this
-    library's source repository. Thank you!
     """
 
     def __init__(self, *,
@@ -1076,9 +1802,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 are specified, the client will attempt to ascertain the
                 credentials from the environment.
 
-            credentials_file (Optional[str]): A file with credentials that can
+            credentials_file (Optional[str]): Deprecated. A file with credentials that can
                 be loaded with :func:`google.auth.load_credentials_from_file`.
-                This argument is ignored if ``channel`` is provided.
+                This argument is ignored if ``channel`` is provided. This argument will be
+                removed in the next major version of this library.
             scopes (Optional(Sequence[str])): A list of scopes. This argument is
                 ignored if ``channel`` is provided.
             client_cert_source_for_mtls (Callable[[], Tuple[bytes, bytes]]): Client
@@ -1101,19 +1828,12 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
         # TODO(yon-mg): resolve other ctor params i.e. scopes, quota, etc.
         # TODO: When custom host (api_endpoint) is set, `scopes` must *also* be set on the
         # credentials object
-        maybe_url_match = re.match("^(?P<scheme>http(?:s)?://)?(?P<host>.*)$", host)
-        if maybe_url_match is None:
-            raise ValueError(f"Unexpected hostname structure: {host}")  # pragma: NO COVER
-
-        url_match_items = maybe_url_match.groupdict()
-
-        host = f"{url_scheme}://{host}" if not url_match_items["scheme"] else host
-
         super().__init__(
             host=host,
             credentials=credentials,
             client_info=client_info,
             always_use_jwt_access=always_use_jwt_access,
+            url_scheme=url_scheme,
             api_audience=api_audience
         )
         self._session = AuthorizedSession(
@@ -1149,22 +1869,38 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
         # Return the client from cache.
         return self._operations_client
 
-    class _CopyLogEntries(ConfigServiceV2RestStub):
+    class _CopyLogEntries(_BaseConfigServiceV2RestTransport._BaseCopyLogEntries, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("CopyLogEntries")
+            return hash("ConfigServiceV2RestTransport.CopyLogEntries")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.CopyLogEntriesRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> operations_pb2.Operation:
             r"""Call the copy log entries method over HTTP.
 
@@ -1174,8 +1910,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.operations_pb2.Operation:
@@ -1185,42 +1923,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/entries:copy',
-                'body': '*',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseCopyLogEntries._get_http_options()
+
             request, metadata = self._interceptor.pre_copy_log_entries(request, metadata)
-            pb_request = logging_config.CopyLogEntriesRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseCopyLogEntries._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseCopyLogEntries._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseCopyLogEntries._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.CopyLogEntries",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CopyLogEntries",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._CopyLogEntries._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -1230,25 +1967,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             # Return the response
             resp = operations_pb2.Operation()
             json_format.Parse(response.content, resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_copy_log_entries(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_copy_log_entries_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = json_format.MessageToJson(resp)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.copy_log_entries",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CopyLogEntries",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _CreateBucket(ConfigServiceV2RestStub):
+    class _CreateBucket(_BaseConfigServiceV2RestTransport._BaseCreateBucket, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("CreateBucket")
+            return hash("ConfigServiceV2RestTransport.CreateBucket")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-            "bucketId" : "",        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.CreateBucketRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogBucket:
             r"""Call the create bucket method over HTTP.
 
@@ -1258,8 +2033,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogBucket:
@@ -1268,62 +2045,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/{parent=*/*/locations/*}/buckets',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=projects/*/locations/*}/buckets',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=organizations/*/locations/*}/buckets',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=folders/*/locations/*}/buckets',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=billingAccounts/*/locations/*}/buckets',
-                'body': 'bucket',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseCreateBucket._get_http_options()
+
             request, metadata = self._interceptor.pre_create_bucket(request, metadata)
-            pb_request = logging_config.CreateBucketRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseCreateBucket._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseCreateBucket._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseCreateBucket._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.CreateBucket",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateBucket",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._CreateBucket._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -1335,25 +2091,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogBucket.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_create_bucket(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_create_bucket_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogBucket.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.create_bucket",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateBucket",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _CreateBucketAsync(ConfigServiceV2RestStub):
+    class _CreateBucketAsync(_BaseConfigServiceV2RestTransport._BaseCreateBucketAsync, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("CreateBucketAsync")
+            return hash("ConfigServiceV2RestTransport.CreateBucketAsync")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-            "bucketId" : "",        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.CreateBucketRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> operations_pb2.Operation:
             r"""Call the create bucket async method over HTTP.
 
@@ -1363,8 +2157,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.operations_pb2.Operation:
@@ -1374,62 +2170,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/{parent=*/*/locations/*}/buckets:createAsync',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=projects/*/locations/*}/buckets:createAsync',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=organizations/*/locations/*}/buckets:createAsync',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=folders/*/locations/*}/buckets:createAsync',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=billingAccounts/*/locations/*}/buckets:createAsync',
-                'body': 'bucket',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseCreateBucketAsync._get_http_options()
+
             request, metadata = self._interceptor.pre_create_bucket_async(request, metadata)
-            pb_request = logging_config.CreateBucketRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseCreateBucketAsync._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseCreateBucketAsync._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseCreateBucketAsync._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.CreateBucketAsync",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateBucketAsync",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._CreateBucketAsync._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -1439,25 +2214,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             # Return the response
             resp = operations_pb2.Operation()
             json_format.Parse(response.content, resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_create_bucket_async(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_create_bucket_async_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = json_format.MessageToJson(resp)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.create_bucket_async",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateBucketAsync",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _CreateExclusion(ConfigServiceV2RestStub):
+    class _CreateExclusion(_BaseConfigServiceV2RestTransport._BaseCreateExclusion, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("CreateExclusion")
+            return hash("ConfigServiceV2RestTransport.CreateExclusion")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.CreateExclusionRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogExclusion:
             r"""Call the create exclusion method over HTTP.
 
@@ -1467,8 +2280,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogExclusion:
@@ -1482,62 +2297,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/{parent=*/*}/exclusions',
-                'body': 'exclusion',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=projects/*}/exclusions',
-                'body': 'exclusion',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=organizations/*}/exclusions',
-                'body': 'exclusion',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=folders/*}/exclusions',
-                'body': 'exclusion',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=billingAccounts/*}/exclusions',
-                'body': 'exclusion',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseCreateExclusion._get_http_options()
+
             request, metadata = self._interceptor.pre_create_exclusion(request, metadata)
-            pb_request = logging_config.CreateExclusionRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseCreateExclusion._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseCreateExclusion._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseCreateExclusion._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.CreateExclusion",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateExclusion",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._CreateExclusion._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -1549,25 +2343,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogExclusion.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_create_exclusion(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_create_exclusion_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogExclusion.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.create_exclusion",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateExclusion",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _CreateLink(ConfigServiceV2RestStub):
+    class _CreateLink(_BaseConfigServiceV2RestTransport._BaseCreateLink, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("CreateLink")
+            return hash("ConfigServiceV2RestTransport.CreateLink")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-            "linkId" : "",        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.CreateLinkRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> operations_pb2.Operation:
             r"""Call the create link method over HTTP.
 
@@ -1577,8 +2409,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.operations_pb2.Operation:
@@ -1588,62 +2422,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/{parent=*/*/locations/*/buckets/*}/links',
-                'body': 'link',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=projects/*/locations/*/buckets/*}/links',
-                'body': 'link',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=organizations/*/locations/*/buckets/*}/links',
-                'body': 'link',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=folders/*/locations/*/buckets/*}/links',
-                'body': 'link',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=billingAccounts/*/locations/*/buckets/*}/links',
-                'body': 'link',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseCreateLink._get_http_options()
+
             request, metadata = self._interceptor.pre_create_link(request, metadata)
-            pb_request = logging_config.CreateLinkRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseCreateLink._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseCreateLink._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseCreateLink._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.CreateLink",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateLink",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._CreateLink._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -1653,25 +2466,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             # Return the response
             resp = operations_pb2.Operation()
             json_format.Parse(response.content, resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_create_link(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_create_link_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = json_format.MessageToJson(resp)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.create_link",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateLink",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _CreateLogScope(ConfigServiceV2RestStub):
+    class _CreateLogScope(_BaseConfigServiceV2RestTransport._BaseCreateLogScope, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("CreateLogScope")
+            return hash("ConfigServiceV2RestTransport.CreateLogScope")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-            "logScopeId" : "",        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.CreateLogScopeRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogScope:
             r"""Call the create log scope method over HTTP.
 
@@ -1681,8 +2532,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogScope:
@@ -1691,52 +2544,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/{parent=projects/*/locations/*}/logScopes',
-                'body': 'log_scope',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=organizations/*/locations/*}/logScopes',
-                'body': 'log_scope',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=folders/*/locations/*}/logScopes',
-                'body': 'log_scope',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseCreateLogScope._get_http_options()
+
             request, metadata = self._interceptor.pre_create_log_scope(request, metadata)
-            pb_request = logging_config.CreateLogScopeRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseCreateLogScope._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseCreateLogScope._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseCreateLogScope._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.CreateLogScope",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateLogScope",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._CreateLogScope._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -1748,25 +2590,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogScope.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_create_log_scope(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_create_log_scope_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogScope.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.create_log_scope",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateLogScope",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _CreateSavedQuery(ConfigServiceV2RestStub):
+    class _CreateSavedQuery(_BaseConfigServiceV2RestTransport._BaseCreateSavedQuery, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("CreateSavedQuery")
+            return hash("ConfigServiceV2RestTransport.CreateSavedQuery")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.CreateSavedQueryRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.SavedQuery:
             r"""Call the create saved query method over HTTP.
 
@@ -1776,8 +2656,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.SavedQuery:
@@ -1786,57 +2668,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/{parent=projects/*/locations/*}/savedQueries',
-                'body': 'saved_query',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=folders/*/locations/*}/savedQueries',
-                'body': 'saved_query',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=organizations/*/locations/*}/savedQueries',
-                'body': 'saved_query',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=billingAccounts/*/locations/*}/savedQueries',
-                'body': 'saved_query',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseCreateSavedQuery._get_http_options()
+
             request, metadata = self._interceptor.pre_create_saved_query(request, metadata)
-            pb_request = logging_config.CreateSavedQueryRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseCreateSavedQuery._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseCreateSavedQuery._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseCreateSavedQuery._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.CreateSavedQuery",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateSavedQuery",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._CreateSavedQuery._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -1848,25 +2714,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.SavedQuery.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_create_saved_query(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_create_saved_query_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.SavedQuery.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.create_saved_query",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateSavedQuery",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _CreateSink(ConfigServiceV2RestStub):
+    class _CreateSink(_BaseConfigServiceV2RestTransport._BaseCreateSink, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("CreateSink")
+            return hash("ConfigServiceV2RestTransport.CreateSink")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.CreateSinkRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogSink:
             r"""Call the create sink method over HTTP.
 
@@ -1876,19 +2780,21 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogSink:
                     Describes a sink used to export log entries to one of
                 the following destinations:
 
-                -  a Cloud Logging log bucket,
-                -  a Cloud Storage bucket,
-                -  a BigQuery dataset,
-                -  a Pub/Sub topic,
-                -  a Cloud project.
+                - a Cloud Logging log bucket,
+                - a Cloud Storage bucket,
+                - a BigQuery dataset,
+                - a Pub/Sub topic,
+                - a Cloud project.
 
                 A logs filter controls which log entries are exported.
                 The sink must be created within a project, organization,
@@ -1896,67 +2802,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/{parent=*/*}/sinks',
-                'body': 'sink',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=projects/*}/sinks',
-                'body': 'sink',
-            },
-{
-                'method': 'post',
-                'uri': '/v2beta1/{parent=projects/*}/sinks',
-                'body': 'sink',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=organizations/*}/sinks',
-                'body': 'sink',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=folders/*}/sinks',
-                'body': 'sink',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=billingAccounts/*}/sinks',
-                'body': 'sink',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseCreateSink._get_http_options()
+
             request, metadata = self._interceptor.pre_create_sink(request, metadata)
-            pb_request = logging_config.CreateSinkRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseCreateSink._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseCreateSink._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseCreateSink._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.CreateSink",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateSink",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._CreateSink._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -1968,25 +2848,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogSink.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_create_sink(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_create_sink_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogSink.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.create_sink",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateSink",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _CreateView(ConfigServiceV2RestStub):
+    class _CreateView(_BaseConfigServiceV2RestTransport._BaseCreateView, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("CreateView")
+            return hash("ConfigServiceV2RestTransport.CreateView")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-            "viewId" : "",        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.CreateViewRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogView:
             r"""Call the create view method over HTTP.
 
@@ -1996,8 +2914,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogView:
@@ -2006,62 +2926,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/{parent=*/*/locations/*/buckets/*}/views',
-                'body': 'view',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=projects/*/locations/*/buckets/*}/views',
-                'body': 'view',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=organizations/*/locations/*/buckets/*}/views',
-                'body': 'view',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=folders/*/locations/*/buckets/*}/views',
-                'body': 'view',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{parent=billingAccounts/*/locations/*/buckets/*}/views',
-                'body': 'view',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseCreateView._get_http_options()
+
             request, metadata = self._interceptor.pre_create_view(request, metadata)
-            pb_request = logging_config.CreateViewRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseCreateView._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseCreateView._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseCreateView._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.CreateView",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateView",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._CreateView._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -2073,25 +2972,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogView.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_create_view(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_create_view_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogView.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.create_view",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "CreateView",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _DeleteBucket(ConfigServiceV2RestStub):
+    class _DeleteBucket(_BaseConfigServiceV2RestTransport._BaseDeleteBucket, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("DeleteBucket")
+            return hash("ConfigServiceV2RestTransport.DeleteBucket")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.DeleteBucketRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ):
             r"""Call the delete bucket method over HTTP.
 
@@ -2101,76 +3037,82 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'delete',
-                'uri': '/v2/{name=*/*/locations/*/buckets/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=projects/*/locations/*/buckets/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=organizations/*/locations/*/buckets/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=folders/*/locations/*/buckets/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/buckets/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_delete_bucket(request, metadata)
-            pb_request = logging_config.DeleteBucketRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseDeleteBucket._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_delete_bucket(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseDeleteBucket._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseDeleteBucket._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.DeleteBucket",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "DeleteBucket",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._DeleteBucket._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
             if response.status_code >= 400:
                 raise core_exceptions.from_http_response(response)
 
-    class _DeleteExclusion(ConfigServiceV2RestStub):
+    class _DeleteExclusion(_BaseConfigServiceV2RestTransport._BaseDeleteExclusion, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("DeleteExclusion")
+            return hash("ConfigServiceV2RestTransport.DeleteExclusion")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.DeleteExclusionRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ):
             r"""Call the delete exclusion method over HTTP.
 
@@ -2180,76 +3122,82 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'delete',
-                'uri': '/v2/{name=*/*/exclusions/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=projects/*/exclusions/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=organizations/*/exclusions/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=folders/*/exclusions/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=billingAccounts/*/exclusions/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_delete_exclusion(request, metadata)
-            pb_request = logging_config.DeleteExclusionRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseDeleteExclusion._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_delete_exclusion(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseDeleteExclusion._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseDeleteExclusion._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.DeleteExclusion",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "DeleteExclusion",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._DeleteExclusion._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
             if response.status_code >= 400:
                 raise core_exceptions.from_http_response(response)
 
-    class _DeleteLink(ConfigServiceV2RestStub):
+    class _DeleteLink(_BaseConfigServiceV2RestTransport._BaseDeleteLink, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("DeleteLink")
+            return hash("ConfigServiceV2RestTransport.DeleteLink")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.DeleteLinkRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> operations_pb2.Operation:
             r"""Call the delete link method over HTTP.
 
@@ -2259,8 +3207,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.operations_pb2.Operation:
@@ -2270,50 +3220,39 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'delete',
-                'uri': '/v2/{name=*/*/locations/*/buckets/*/links/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=projects/*/locations/*/buckets/*/links/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=organizations/*/locations/*/buckets/*/links/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=folders/*/locations/*/buckets/*/links/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/buckets/*/links/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_delete_link(request, metadata)
-            pb_request = logging_config.DeleteLinkRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseDeleteLink._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_delete_link(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseDeleteLink._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseDeleteLink._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.DeleteLink",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "DeleteLink",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._DeleteLink._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -2323,25 +3262,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             # Return the response
             resp = operations_pb2.Operation()
             json_format.Parse(response.content, resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_delete_link(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_delete_link_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = json_format.MessageToJson(resp)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.delete_link",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "DeleteLink",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _DeleteLogScope(ConfigServiceV2RestStub):
+    class _DeleteLogScope(_BaseConfigServiceV2RestTransport._BaseDeleteLogScope, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("DeleteLogScope")
+            return hash("ConfigServiceV2RestTransport.DeleteLogScope")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.DeleteLogScopeRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ):
             r"""Call the delete log scope method over HTTP.
 
@@ -2352,68 +3328,82 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'delete',
-                'uri': '/v2/{name=projects/*/locations/*/logScopes/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=organizations/*/locations/*/logScopes/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=folders/*/locations/*/logScopes/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_delete_log_scope(request, metadata)
-            pb_request = logging_config.DeleteLogScopeRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseDeleteLogScope._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_delete_log_scope(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseDeleteLogScope._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseDeleteLogScope._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.DeleteLogScope",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "DeleteLogScope",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._DeleteLogScope._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
             if response.status_code >= 400:
                 raise core_exceptions.from_http_response(response)
 
-    class _DeleteSavedQuery(ConfigServiceV2RestStub):
+    class _DeleteSavedQuery(_BaseConfigServiceV2RestTransport._BaseDeleteSavedQuery, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("DeleteSavedQuery")
+            return hash("ConfigServiceV2RestTransport.DeleteSavedQuery")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.DeleteSavedQueryRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ):
             r"""Call the delete saved query method over HTTP.
 
@@ -2423,72 +3413,82 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'delete',
-                'uri': '/v2/{name=projects/*/locations/*/savedQueries/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=folders/*/locations/*/savedQueries/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=organizations/*/locations/*/savedQueries/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/savedQueries/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_delete_saved_query(request, metadata)
-            pb_request = logging_config.DeleteSavedQueryRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseDeleteSavedQuery._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_delete_saved_query(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseDeleteSavedQuery._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseDeleteSavedQuery._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.DeleteSavedQuery",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "DeleteSavedQuery",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._DeleteSavedQuery._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
             if response.status_code >= 400:
                 raise core_exceptions.from_http_response(response)
 
-    class _DeleteSink(ConfigServiceV2RestStub):
+    class _DeleteSink(_BaseConfigServiceV2RestTransport._BaseDeleteSink, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("DeleteSink")
+            return hash("ConfigServiceV2RestTransport.DeleteSink")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.DeleteSinkRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ):
             r"""Call the delete sink method over HTTP.
 
@@ -2498,80 +3498,82 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'delete',
-                'uri': '/v2/{sink_name=*/*/sinks/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{sink_name=projects/*/sinks/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2beta1/{sink_name=projects/*/sinks/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{sink_name=organizations/*/sinks/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{sink_name=folders/*/sinks/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{sink_name=billingAccounts/*/sinks/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_delete_sink(request, metadata)
-            pb_request = logging_config.DeleteSinkRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseDeleteSink._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_delete_sink(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseDeleteSink._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseDeleteSink._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.DeleteSink",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "DeleteSink",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._DeleteSink._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
             if response.status_code >= 400:
                 raise core_exceptions.from_http_response(response)
 
-    class _DeleteView(ConfigServiceV2RestStub):
+    class _DeleteView(_BaseConfigServiceV2RestTransport._BaseDeleteView, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("DeleteView")
+            return hash("ConfigServiceV2RestTransport.DeleteView")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.DeleteViewRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ):
             r"""Call the delete view method over HTTP.
 
@@ -2581,76 +3583,82 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'delete',
-                'uri': '/v2/{name=*/*/locations/*/buckets/*/views/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=projects/*/locations/*/buckets/*/views/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=organizations/*/locations/*/buckets/*/views/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=folders/*/locations/*/buckets/*/views/*}',
-            },
-{
-                'method': 'delete',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/buckets/*/views/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_delete_view(request, metadata)
-            pb_request = logging_config.DeleteViewRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseDeleteView._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_delete_view(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseDeleteView._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseDeleteView._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.DeleteView",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "DeleteView",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._DeleteView._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
             if response.status_code >= 400:
                 raise core_exceptions.from_http_response(response)
 
-    class _GetBucket(ConfigServiceV2RestStub):
+    class _GetBucket(_BaseConfigServiceV2RestTransport._BaseGetBucket, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("GetBucket")
+            return hash("ConfigServiceV2RestTransport.GetBucket")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.GetBucketRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogBucket:
             r"""Call the get bucket method over HTTP.
 
@@ -2660,8 +3668,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogBucket:
@@ -2670,50 +3680,39 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{name=*/*/locations/*/buckets/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=projects/*/locations/*/buckets/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=organizations/*/locations/*/buckets/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=folders/*/locations/*/buckets/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/buckets/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_get_bucket(request, metadata)
-            pb_request = logging_config.GetBucketRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseGetBucket._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_get_bucket(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseGetBucket._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseGetBucket._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.GetBucket",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetBucket",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._GetBucket._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -2725,25 +3724,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogBucket.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_get_bucket(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_get_bucket_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogBucket.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.get_bucket",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetBucket",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _GetCmekSettings(ConfigServiceV2RestStub):
+    class _GetCmekSettings(_BaseConfigServiceV2RestTransport._BaseGetCmekSettings, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("GetCmekSettings")
+            return hash("ConfigServiceV2RestTransport.GetCmekSettings")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.GetCmekSettingsRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.CmekSettings:
             r"""Call the get cmek settings method over HTTP.
 
@@ -2752,14 +3788,16 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                     The request object. The parameters to
                 [GetCmekSettings][google.logging.v2.ConfigServiceV2.GetCmekSettings].
 
-                See `Enabling CMEK for Log
-                Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+                See `Configure CMEK for Cloud
+                Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
                 for more information.
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.CmekSettings:
@@ -2772,56 +3810,45 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 configured, it applies to all projects and folders in
                 the Google Cloud organization.
 
-                See `Enabling CMEK for Log
-                Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+                See `Configure CMEK for Cloud
+                Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
                 for more information.
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{name=*/*}/cmekSettings',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=projects/*}/cmekSettings',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=organizations/*}/cmekSettings',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=folders/*}/cmekSettings',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=billingAccounts/*}/cmekSettings',
-            },
-            ]
-            request, metadata = self._interceptor.pre_get_cmek_settings(request, metadata)
-            pb_request = logging_config.GetCmekSettingsRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseGetCmekSettings._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_get_cmek_settings(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseGetCmekSettings._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseGetCmekSettings._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.GetCmekSettings",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetCmekSettings",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._GetCmekSettings._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -2833,25 +3860,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.CmekSettings.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_get_cmek_settings(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_get_cmek_settings_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.CmekSettings.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.get_cmek_settings",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetCmekSettings",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _GetExclusion(ConfigServiceV2RestStub):
+    class _GetExclusion(_BaseConfigServiceV2RestTransport._BaseGetExclusion, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("GetExclusion")
+            return hash("ConfigServiceV2RestTransport.GetExclusion")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.GetExclusionRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogExclusion:
             r"""Call the get exclusion method over HTTP.
 
@@ -2861,8 +3925,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogExclusion:
@@ -2876,50 +3942,39 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{name=*/*/exclusions/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=projects/*/exclusions/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=organizations/*/exclusions/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=folders/*/exclusions/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=billingAccounts/*/exclusions/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_get_exclusion(request, metadata)
-            pb_request = logging_config.GetExclusionRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseGetExclusion._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_get_exclusion(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseGetExclusion._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseGetExclusion._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.GetExclusion",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetExclusion",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._GetExclusion._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -2931,25 +3986,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogExclusion.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_get_exclusion(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_get_exclusion_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogExclusion.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.get_exclusion",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetExclusion",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _GetLink(ConfigServiceV2RestStub):
+    class _GetLink(_BaseConfigServiceV2RestTransport._BaseGetLink, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("GetLink")
+            return hash("ConfigServiceV2RestTransport.GetLink")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.GetLinkRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.Link:
             r"""Call the get link method over HTTP.
 
@@ -2959,8 +4051,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.Link:
@@ -2969,50 +4063,39 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{name=*/*/locations/*/buckets/*/links/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=projects/*/locations/*/buckets/*/links/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=organizations/*/locations/*/buckets/*/links/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=folders/*/locations/*/buckets/*/links/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/buckets/*/links/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_get_link(request, metadata)
-            pb_request = logging_config.GetLinkRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseGetLink._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_get_link(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseGetLink._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseGetLink._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.GetLink",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetLink",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._GetLink._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3024,25 +4107,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.Link.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_get_link(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_get_link_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.Link.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.get_link",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetLink",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _GetLogScope(ConfigServiceV2RestStub):
+    class _GetLogScope(_BaseConfigServiceV2RestTransport._BaseGetLogScope, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("GetLogScope")
+            return hash("ConfigServiceV2RestTransport.GetLogScope")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.GetLogScopeRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogScope:
             r"""Call the get log scope method over HTTP.
 
@@ -3052,8 +4172,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogScope:
@@ -3062,42 +4184,39 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{name=projects/*/locations/*/logScopes/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=organizations/*/locations/*/logScopes/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=folders/*/locations/*/logScopes/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_get_log_scope(request, metadata)
-            pb_request = logging_config.GetLogScopeRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseGetLogScope._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_get_log_scope(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseGetLogScope._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseGetLogScope._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.GetLogScope",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetLogScope",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._GetLogScope._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3109,25 +4228,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogScope.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_get_log_scope(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_get_log_scope_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogScope.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.get_log_scope",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetLogScope",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _GetSavedQuery(ConfigServiceV2RestStub):
+    class _GetSavedQuery(_BaseConfigServiceV2RestTransport._BaseGetSavedQuery, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("GetSavedQuery")
+            return hash("ConfigServiceV2RestTransport.GetSavedQuery")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.GetSavedQueryRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.SavedQuery:
             r"""Call the get saved query method over HTTP.
 
@@ -3137,8 +4293,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.SavedQuery:
@@ -3147,46 +4305,39 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{name=projects/*/locations/*/savedQueries/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=folders/*/locations/*/savedQueries/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=organizations/*/locations/*/savedQueries/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/savedQueries/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_get_saved_query(request, metadata)
-            pb_request = logging_config.GetSavedQueryRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseGetSavedQuery._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_get_saved_query(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseGetSavedQuery._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseGetSavedQuery._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.GetSavedQuery",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetSavedQuery",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._GetSavedQuery._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3198,25 +4349,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.SavedQuery.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_get_saved_query(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_get_saved_query_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.SavedQuery.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.get_saved_query",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetSavedQuery",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _GetSettings(ConfigServiceV2RestStub):
+    class _GetSettings(_BaseConfigServiceV2RestTransport._BaseGetSettings, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("GetSettings")
+            return hash("ConfigServiceV2RestTransport.GetSettings")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.GetSettingsRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.Settings:
             r"""Call the get settings method over HTTP.
 
@@ -3226,13 +4414,15 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 [GetSettings][google.logging.v2.ConfigServiceV2.GetSettings].
 
                 See [View default resource settings for Logging]
-                (https://cloud.google.com/logging/docs/default-settings#view-org-settings)
+                (https://docs.cloud.google.com/logging/docs/default-settings#view-org-settings)
                 for more information.
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.Settings:
@@ -3242,50 +4432,39 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{name=*/*}/settings',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=projects/*}/settings',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=organizations/*}/settings',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=folders/*}/settings',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=billingAccounts/*}/settings',
-            },
-            ]
-            request, metadata = self._interceptor.pre_get_settings(request, metadata)
-            pb_request = logging_config.GetSettingsRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseGetSettings._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_get_settings(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseGetSettings._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseGetSettings._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.GetSettings",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetSettings",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._GetSettings._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3297,25 +4476,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.Settings.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_get_settings(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_get_settings_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.Settings.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.get_settings",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetSettings",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _GetSink(ConfigServiceV2RestStub):
+    class _GetSink(_BaseConfigServiceV2RestTransport._BaseGetSink, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("GetSink")
+            return hash("ConfigServiceV2RestTransport.GetSink")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.GetSinkRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogSink:
             r"""Call the get sink method over HTTP.
 
@@ -3325,19 +4541,21 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogSink:
                     Describes a sink used to export log entries to one of
                 the following destinations:
 
-                -  a Cloud Logging log bucket,
-                -  a Cloud Storage bucket,
-                -  a BigQuery dataset,
-                -  a Pub/Sub topic,
-                -  a Cloud project.
+                - a Cloud Logging log bucket,
+                - a Cloud Storage bucket,
+                - a BigQuery dataset,
+                - a Pub/Sub topic,
+                - a Cloud project.
 
                 A logs filter controls which log entries are exported.
                 The sink must be created within a project, organization,
@@ -3345,50 +4563,39 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{sink_name=*/*/sinks/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{sink_name=projects/*/sinks/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{sink_name=organizations/*/sinks/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{sink_name=folders/*/sinks/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{sink_name=billingAccounts/*/sinks/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_get_sink(request, metadata)
-            pb_request = logging_config.GetSinkRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseGetSink._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_get_sink(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseGetSink._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseGetSink._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.GetSink",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetSink",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._GetSink._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3400,25 +4607,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogSink.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_get_sink(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_get_sink_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogSink.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.get_sink",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetSink",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _GetView(ConfigServiceV2RestStub):
+    class _GetView(_BaseConfigServiceV2RestTransport._BaseGetView, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("GetView")
+            return hash("ConfigServiceV2RestTransport.GetView")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.GetViewRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogView:
             r"""Call the get view method over HTTP.
 
@@ -3428,8 +4672,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogView:
@@ -3438,50 +4684,39 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{name=*/*/locations/*/buckets/*/views/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=projects/*/locations/*/buckets/*/views/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=organizations/*/locations/*/buckets/*/views/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=folders/*/locations/*/buckets/*/views/*}',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/buckets/*/views/*}',
-            },
-            ]
-            request, metadata = self._interceptor.pre_get_view(request, metadata)
-            pb_request = logging_config.GetViewRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseGetView._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_get_view(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseGetView._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseGetView._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.GetView",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetView",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._GetView._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3493,25 +4728,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogView.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_get_view(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_get_view_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogView.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.get_view",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "GetView",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _ListBuckets(ConfigServiceV2RestStub):
+    class _ListBuckets(_BaseConfigServiceV2RestTransport._BaseListBuckets, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("ListBuckets")
+            return hash("ConfigServiceV2RestTransport.ListBuckets")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.ListBucketsRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.ListBucketsResponse:
             r"""Call the list buckets method over HTTP.
 
@@ -3521,58 +4793,49 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.ListBucketsResponse:
                     The response from ListBuckets.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{parent=*/*/locations/*}/buckets',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=projects/*/locations/*}/buckets',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=organizations/*/locations/*}/buckets',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=folders/*/locations/*}/buckets',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=billingAccounts/*/locations/*}/buckets',
-            },
-            ]
-            request, metadata = self._interceptor.pre_list_buckets(request, metadata)
-            pb_request = logging_config.ListBucketsRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseListBuckets._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_list_buckets(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseListBuckets._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseListBuckets._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.ListBuckets",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListBuckets",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._ListBuckets._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3584,25 +4847,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.ListBucketsResponse.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_list_buckets(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_list_buckets_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.ListBucketsResponse.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.list_buckets",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListBuckets",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _ListExclusions(ConfigServiceV2RestStub):
+    class _ListExclusions(_BaseConfigServiceV2RestTransport._BaseListExclusions, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("ListExclusions")
+            return hash("ConfigServiceV2RestTransport.ListExclusions")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.ListExclusionsRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.ListExclusionsResponse:
             r"""Call the list exclusions method over HTTP.
 
@@ -3612,58 +4912,49 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.ListExclusionsResponse:
                     Result returned from ``ListExclusions``.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{parent=*/*}/exclusions',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=projects/*}/exclusions',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=organizations/*}/exclusions',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=folders/*}/exclusions',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=billingAccounts/*}/exclusions',
-            },
-            ]
-            request, metadata = self._interceptor.pre_list_exclusions(request, metadata)
-            pb_request = logging_config.ListExclusionsRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseListExclusions._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_list_exclusions(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseListExclusions._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseListExclusions._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.ListExclusions",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListExclusions",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._ListExclusions._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3675,25 +4966,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.ListExclusionsResponse.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_list_exclusions(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_list_exclusions_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.ListExclusionsResponse.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.list_exclusions",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListExclusions",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _ListLinks(ConfigServiceV2RestStub):
+    class _ListLinks(_BaseConfigServiceV2RestTransport._BaseListLinks, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("ListLinks")
+            return hash("ConfigServiceV2RestTransport.ListLinks")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.ListLinksRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.ListLinksResponse:
             r"""Call the list links method over HTTP.
 
@@ -3703,58 +5031,49 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.ListLinksResponse:
                     The response from ListLinks.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{parent=*/*/locations/*/buckets/*}/links',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=projects/*/locations/*/buckets/*}/links',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=organizations/*/locations/*/buckets/*}/links',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=folders/*/locations/*/buckets/*}/links',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=billingAccounts/*/locations/*/buckets/*}/links',
-            },
-            ]
-            request, metadata = self._interceptor.pre_list_links(request, metadata)
-            pb_request = logging_config.ListLinksRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseListLinks._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_list_links(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseListLinks._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseListLinks._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.ListLinks",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListLinks",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._ListLinks._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3766,25 +5085,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.ListLinksResponse.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_list_links(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_list_links_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.ListLinksResponse.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.list_links",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListLinks",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _ListLogScopes(ConfigServiceV2RestStub):
+    class _ListLogScopes(_BaseConfigServiceV2RestTransport._BaseListLogScopes, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("ListLogScopes")
+            return hash("ConfigServiceV2RestTransport.ListLogScopes")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.ListLogScopesRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.ListLogScopesResponse:
             r"""Call the list log scopes method over HTTP.
 
@@ -3794,8 +5150,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.ListLogScopesResponse:
@@ -3805,42 +5163,39 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{parent=projects/*/locations/*}/logScopes',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=organizations/*/locations/*}/logScopes',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=folders/*/locations/*}/logScopes',
-            },
-            ]
-            request, metadata = self._interceptor.pre_list_log_scopes(request, metadata)
-            pb_request = logging_config.ListLogScopesRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseListLogScopes._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_list_log_scopes(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseListLogScopes._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseListLogScopes._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.ListLogScopes",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListLogScopes",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._ListLogScopes._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3852,25 +5207,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.ListLogScopesResponse.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_list_log_scopes(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_list_log_scopes_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.ListLogScopesResponse.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.list_log_scopes",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListLogScopes",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _ListRecentQueries(ConfigServiceV2RestStub):
+    class _ListRecentQueries(_BaseConfigServiceV2RestTransport._BaseListRecentQueries, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("ListRecentQueries")
+            return hash("ConfigServiceV2RestTransport.ListRecentQueries")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.ListRecentQueriesRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.ListRecentQueriesResponse:
             r"""Call the list recent queries method over HTTP.
 
@@ -3881,54 +5273,49 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.ListRecentQueriesResponse:
                     The response from ListRecentQueries.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{parent=projects/*/locations/*}/recentQueries',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=folders/*/locations/*}/recentQueries',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=organizations/*/locations/*}/recentQueries',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=billingAccounts/*/locations/*}/recentQueries',
-            },
-            ]
-            request, metadata = self._interceptor.pre_list_recent_queries(request, metadata)
-            pb_request = logging_config.ListRecentQueriesRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseListRecentQueries._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_list_recent_queries(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseListRecentQueries._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseListRecentQueries._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.ListRecentQueries",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListRecentQueries",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._ListRecentQueries._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -3940,25 +5327,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.ListRecentQueriesResponse.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_list_recent_queries(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_list_recent_queries_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.ListRecentQueriesResponse.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.list_recent_queries",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListRecentQueries",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _ListSavedQueries(ConfigServiceV2RestStub):
+    class _ListSavedQueries(_BaseConfigServiceV2RestTransport._BaseListSavedQueries, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("ListSavedQueries")
+            return hash("ConfigServiceV2RestTransport.ListSavedQueries")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.ListSavedQueriesRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.ListSavedQueriesResponse:
             r"""Call the list saved queries method over HTTP.
 
@@ -3968,54 +5392,49 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.ListSavedQueriesResponse:
                     The response from ListSavedQueries.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{parent=projects/*/locations/*}/savedQueries',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=folders/*/locations/*}/savedQueries',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=organizations/*/locations/*}/savedQueries',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=billingAccounts/*/locations/*}/savedQueries',
-            },
-            ]
-            request, metadata = self._interceptor.pre_list_saved_queries(request, metadata)
-            pb_request = logging_config.ListSavedQueriesRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseListSavedQueries._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_list_saved_queries(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseListSavedQueries._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseListSavedQueries._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.ListSavedQueries",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListSavedQueries",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._ListSavedQueries._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -4027,25 +5446,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.ListSavedQueriesResponse.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_list_saved_queries(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_list_saved_queries_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.ListSavedQueriesResponse.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.list_saved_queries",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListSavedQueries",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _ListSinks(ConfigServiceV2RestStub):
+    class _ListSinks(_BaseConfigServiceV2RestTransport._BaseListSinks, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("ListSinks")
+            return hash("ConfigServiceV2RestTransport.ListSinks")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.ListSinksRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.ListSinksResponse:
             r"""Call the list sinks method over HTTP.
 
@@ -4055,62 +5511,49 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.ListSinksResponse:
                     Result returned from ``ListSinks``.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{parent=*/*}/sinks',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=projects/*}/sinks',
-            },
-{
-                'method': 'get',
-                'uri': '/v2beta1/{parent=projects/*}/sinks',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=organizations/*}/sinks',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=folders/*}/sinks',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=billingAccounts/*}/sinks',
-            },
-            ]
-            request, metadata = self._interceptor.pre_list_sinks(request, metadata)
-            pb_request = logging_config.ListSinksRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseListSinks._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_list_sinks(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseListSinks._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseListSinks._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.ListSinks",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListSinks",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._ListSinks._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -4122,25 +5565,62 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.ListSinksResponse.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_list_sinks(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_list_sinks_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.ListSinksResponse.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.list_sinks",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListSinks",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _ListViews(ConfigServiceV2RestStub):
+    class _ListViews(_BaseConfigServiceV2RestTransport._BaseListViews, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("ListViews")
+            return hash("ConfigServiceV2RestTransport.ListViews")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.ListViewsRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.ListViewsResponse:
             r"""Call the list views method over HTTP.
 
@@ -4150,58 +5630,49 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.ListViewsResponse:
                     The response from ListViews.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'get',
-                'uri': '/v2/{parent=*/*/locations/*/buckets/*}/views',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=projects/*/locations/*/buckets/*}/views',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=organizations/*/locations/*/buckets/*}/views',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=folders/*/locations/*/buckets/*}/views',
-            },
-{
-                'method': 'get',
-                'uri': '/v2/{parent=billingAccounts/*/locations/*/buckets/*}/views',
-            },
-            ]
-            request, metadata = self._interceptor.pre_list_views(request, metadata)
-            pb_request = logging_config.ListViewsRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            http_options = _BaseConfigServiceV2RestTransport._BaseListViews._get_http_options()
 
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            request, metadata = self._interceptor.pre_list_views(request, metadata)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseListViews._get_transcoded_request(http_options, request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseListViews._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.ListViews",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListViews",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                )
+            response = ConfigServiceV2RestTransport._ListViews._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -4213,25 +5684,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.ListViewsResponse.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_list_views(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_list_views_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.ListViewsResponse.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.list_views",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "ListViews",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _UndeleteBucket(ConfigServiceV2RestStub):
+    class _UndeleteBucket(_BaseConfigServiceV2RestTransport._BaseUndeleteBucket, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("UndeleteBucket")
+            return hash("ConfigServiceV2RestTransport.UndeleteBucket")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.UndeleteBucketRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ):
             r"""Call the undelete bucket method over HTTP.
 
@@ -4241,88 +5750,85 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/{name=*/*/locations/*/buckets/*}:undelete',
-                'body': '*',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{name=projects/*/locations/*/buckets/*}:undelete',
-                'body': '*',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{name=organizations/*/locations/*/buckets/*}:undelete',
-                'body': '*',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{name=folders/*/locations/*/buckets/*}:undelete',
-                'body': '*',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/buckets/*}:undelete',
-                'body': '*',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseUndeleteBucket._get_http_options()
+
             request, metadata = self._interceptor.pre_undelete_bucket(request, metadata)
-            pb_request = logging_config.UndeleteBucketRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseUndeleteBucket._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseUndeleteBucket._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseUndeleteBucket._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.UndeleteBucket",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UndeleteBucket",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._UndeleteBucket._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
             if response.status_code >= 400:
                 raise core_exceptions.from_http_response(response)
 
-    class _UpdateBucket(ConfigServiceV2RestStub):
+    class _UpdateBucket(_BaseConfigServiceV2RestTransport._BaseUpdateBucket, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("UpdateBucket")
+            return hash("ConfigServiceV2RestTransport.UpdateBucket")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-            "updateMask" : {},        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.UpdateBucketRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogBucket:
             r"""Call the update bucket method over HTTP.
 
@@ -4332,8 +5838,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogBucket:
@@ -4342,62 +5850,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'patch',
-                'uri': '/v2/{name=*/*/locations/*/buckets/*}',
-                'body': 'bucket',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=projects/*/locations/*/buckets/*}',
-                'body': 'bucket',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=organizations/*/locations/*/buckets/*}',
-                'body': 'bucket',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=folders/*/locations/*/buckets/*}',
-                'body': 'bucket',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/buckets/*}',
-                'body': 'bucket',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseUpdateBucket._get_http_options()
+
             request, metadata = self._interceptor.pre_update_bucket(request, metadata)
-            pb_request = logging_config.UpdateBucketRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseUpdateBucket._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseUpdateBucket._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseUpdateBucket._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.UpdateBucket",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateBucket",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._UpdateBucket._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -4409,25 +5896,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogBucket.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_update_bucket(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_update_bucket_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogBucket.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.update_bucket",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateBucket",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _UpdateBucketAsync(ConfigServiceV2RestStub):
+    class _UpdateBucketAsync(_BaseConfigServiceV2RestTransport._BaseUpdateBucketAsync, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("UpdateBucketAsync")
+            return hash("ConfigServiceV2RestTransport.UpdateBucketAsync")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-            "updateMask" : {},        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.UpdateBucketRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> operations_pb2.Operation:
             r"""Call the update bucket async method over HTTP.
 
@@ -4437,8 +5962,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.operations_pb2.Operation:
@@ -4448,62 +5975,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'post',
-                'uri': '/v2/{name=*/*/locations/*/buckets/*}:updateAsync',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{name=projects/*/locations/*/buckets/*}:updateAsync',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{name=organizations/*/locations/*/buckets/*}:updateAsync',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{name=folders/*/locations/*/buckets/*}:updateAsync',
-                'body': 'bucket',
-            },
-{
-                'method': 'post',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/buckets/*}:updateAsync',
-                'body': 'bucket',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseUpdateBucketAsync._get_http_options()
+
             request, metadata = self._interceptor.pre_update_bucket_async(request, metadata)
-            pb_request = logging_config.UpdateBucketRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseUpdateBucketAsync._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseUpdateBucketAsync._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseUpdateBucketAsync._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = json_format.MessageToJson(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.UpdateBucketAsync",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateBucketAsync",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._UpdateBucketAsync._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -4513,25 +6019,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             # Return the response
             resp = operations_pb2.Operation()
             json_format.Parse(response.content, resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_update_bucket_async(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_update_bucket_async_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = json_format.MessageToJson(resp)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.update_bucket_async",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateBucketAsync",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _UpdateCmekSettings(ConfigServiceV2RestStub):
+    class _UpdateCmekSettings(_BaseConfigServiceV2RestTransport._BaseUpdateCmekSettings, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("UpdateCmekSettings")
+            return hash("ConfigServiceV2RestTransport.UpdateCmekSettings")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.UpdateCmekSettingsRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.CmekSettings:
             r"""Call the update cmek settings method over HTTP.
 
@@ -4540,14 +6084,16 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                     The request object. The parameters to
                 [UpdateCmekSettings][google.logging.v2.ConfigServiceV2.UpdateCmekSettings].
 
-                See `Enabling CMEK for Log
-                Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+                See `Configure CMEK for Cloud
+                Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
                 for more information.
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.CmekSettings:
@@ -4560,53 +6106,47 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 configured, it applies to all projects and folders in
                 the Google Cloud organization.
 
-                See `Enabling CMEK for Log
-                Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+                See `Configure CMEK for Cloud
+                Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
                 for more information.
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'patch',
-                'uri': '/v2/{name=*/*}/cmekSettings',
-                'body': 'cmek_settings',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=organizations/*}/cmekSettings',
-                'body': 'cmek_settings',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseUpdateCmekSettings._get_http_options()
+
             request, metadata = self._interceptor.pre_update_cmek_settings(request, metadata)
-            pb_request = logging_config.UpdateCmekSettingsRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseUpdateCmekSettings._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseUpdateCmekSettings._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseUpdateCmekSettings._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.UpdateCmekSettings",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateCmekSettings",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._UpdateCmekSettings._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -4618,25 +6158,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.CmekSettings.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_update_cmek_settings(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_update_cmek_settings_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.CmekSettings.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.update_cmek_settings",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateCmekSettings",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _UpdateExclusion(ConfigServiceV2RestStub):
+    class _UpdateExclusion(_BaseConfigServiceV2RestTransport._BaseUpdateExclusion, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("UpdateExclusion")
+            return hash("ConfigServiceV2RestTransport.UpdateExclusion")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-            "updateMask" : {},        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.UpdateExclusionRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogExclusion:
             r"""Call the update exclusion method over HTTP.
 
@@ -4646,8 +6224,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogExclusion:
@@ -4661,62 +6241,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'patch',
-                'uri': '/v2/{name=*/*/exclusions/*}',
-                'body': 'exclusion',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=projects/*/exclusions/*}',
-                'body': 'exclusion',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=organizations/*/exclusions/*}',
-                'body': 'exclusion',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=folders/*/exclusions/*}',
-                'body': 'exclusion',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=billingAccounts/*/exclusions/*}',
-                'body': 'exclusion',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseUpdateExclusion._get_http_options()
+
             request, metadata = self._interceptor.pre_update_exclusion(request, metadata)
-            pb_request = logging_config.UpdateExclusionRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseUpdateExclusion._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseUpdateExclusion._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseUpdateExclusion._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.UpdateExclusion",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateExclusion",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._UpdateExclusion._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -4728,25 +6287,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogExclusion.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_update_exclusion(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_update_exclusion_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogExclusion.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.update_exclusion",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateExclusion",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _UpdateLogScope(ConfigServiceV2RestStub):
+    class _UpdateLogScope(_BaseConfigServiceV2RestTransport._BaseUpdateLogScope, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("UpdateLogScope")
+            return hash("ConfigServiceV2RestTransport.UpdateLogScope")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.UpdateLogScopeRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogScope:
             r"""Call the update log scope method over HTTP.
 
@@ -4757,8 +6354,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogScope:
@@ -4767,52 +6366,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'patch',
-                'uri': '/v2/{log_scope.name=projects/*/locations/*/logScopes/*}',
-                'body': 'log_scope',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{log_scope.name=organizations/*/locations/*/logScopes/*}',
-                'body': 'log_scope',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{log_scope.name=folders/*/locations/*/logScopes/*}',
-                'body': 'log_scope',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseUpdateLogScope._get_http_options()
+
             request, metadata = self._interceptor.pre_update_log_scope(request, metadata)
-            pb_request = logging_config.UpdateLogScopeRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseUpdateLogScope._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseUpdateLogScope._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseUpdateLogScope._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.UpdateLogScope",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateLogScope",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._UpdateLogScope._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -4824,25 +6412,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogScope.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_update_log_scope(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_update_log_scope_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogScope.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.update_log_scope",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateLogScope",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _UpdateSavedQuery(ConfigServiceV2RestStub):
+    class _UpdateSavedQuery(_BaseConfigServiceV2RestTransport._BaseUpdateSavedQuery, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("UpdateSavedQuery")
+            return hash("ConfigServiceV2RestTransport.UpdateSavedQuery")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-            "updateMask" : {},        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.UpdateSavedQueryRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.SavedQuery:
             r"""Call the update saved query method over HTTP.
 
@@ -4852,8 +6478,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.SavedQuery:
@@ -4862,57 +6490,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'patch',
-                'uri': '/v2/{saved_query.name=projects/*/locations/*/savedQueries/*}',
-                'body': 'saved_query',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{saved_query.name=folders/*/locations/*/savedQueries/*}',
-                'body': 'saved_query',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{saved_query.name=organizations/*/locations/*/savedQueries/*}',
-                'body': 'saved_query',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{saved_query.name=billingAccounts/*/locations/*/savedQueries/*}',
-                'body': 'saved_query',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseUpdateSavedQuery._get_http_options()
+
             request, metadata = self._interceptor.pre_update_saved_query(request, metadata)
-            pb_request = logging_config.UpdateSavedQueryRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseUpdateSavedQuery._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseUpdateSavedQuery._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseUpdateSavedQuery._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.UpdateSavedQuery",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateSavedQuery",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._UpdateSavedQuery._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -4924,25 +6536,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.SavedQuery.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_update_saved_query(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_update_saved_query_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.SavedQuery.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.update_saved_query",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateSavedQuery",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _UpdateSettings(ConfigServiceV2RestStub):
+    class _UpdateSettings(_BaseConfigServiceV2RestTransport._BaseUpdateSettings, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("UpdateSettings")
+            return hash("ConfigServiceV2RestTransport.UpdateSettings")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.UpdateSettingsRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.Settings:
             r"""Call the update settings method over HTTP.
 
@@ -4953,13 +6603,15 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
                 See [Configure default settings for organizations and
                 folders]
-                (https://cloud.google.com/logging/docs/default-settings)
+                (https://docs.cloud.google.com/logging/docs/default-settings)
                 for more information.
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.Settings:
@@ -4969,52 +6621,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'patch',
-                'uri': '/v2/{name=*/*}/settings',
-                'body': 'settings',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=organizations/*}/settings',
-                'body': 'settings',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=folders/*}/settings',
-                'body': 'settings',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseUpdateSettings._get_http_options()
+
             request, metadata = self._interceptor.pre_update_settings(request, metadata)
-            pb_request = logging_config.UpdateSettingsRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseUpdateSettings._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseUpdateSettings._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseUpdateSettings._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.UpdateSettings",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateSettings",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._UpdateSettings._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -5026,25 +6667,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.Settings.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_update_settings(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_update_settings_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.Settings.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.update_settings",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateSettings",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _UpdateSink(ConfigServiceV2RestStub):
+    class _UpdateSink(_BaseConfigServiceV2RestTransport._BaseUpdateSink, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("UpdateSink")
+            return hash("ConfigServiceV2RestTransport.UpdateSink")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.UpdateSinkRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogSink:
             r"""Call the update sink method over HTTP.
 
@@ -5054,19 +6733,21 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogSink:
                     Describes a sink used to export log entries to one of
                 the following destinations:
 
-                -  a Cloud Logging log bucket,
-                -  a Cloud Storage bucket,
-                -  a BigQuery dataset,
-                -  a Pub/Sub topic,
-                -  a Cloud project.
+                - a Cloud Logging log bucket,
+                - a Cloud Storage bucket,
+                - a BigQuery dataset,
+                - a Pub/Sub topic,
+                - a Cloud project.
 
                 A logs filter controls which log entries are exported.
                 The sink must be created within a project, organization,
@@ -5074,82 +6755,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'put',
-                'uri': '/v2/{sink_name=*/*/sinks/*}',
-                'body': 'sink',
-            },
-{
-                'method': 'put',
-                'uri': '/v2/{sink_name=projects/*/sinks/*}',
-                'body': 'sink',
-            },
-{
-                'method': 'put',
-                'uri': '/v2/{sink_name=organizations/*/sinks/*}',
-                'body': 'sink',
-            },
-{
-                'method': 'put',
-                'uri': '/v2/{sink_name=folders/*/sinks/*}',
-                'body': 'sink',
-            },
-{
-                'method': 'put',
-                'uri': '/v2/{sink_name=billingAccounts/*/sinks/*}',
-                'body': 'sink',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{sink_name=projects/*/sinks/*}',
-                'body': 'sink',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{sink_name=organizations/*/sinks/*}',
-                'body': 'sink',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{sink_name=folders/*/sinks/*}',
-                'body': 'sink',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{sink_name=billingAccounts/*/sinks/*}',
-                'body': 'sink',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseUpdateSink._get_http_options()
+
             request, metadata = self._interceptor.pre_update_sink(request, metadata)
-            pb_request = logging_config.UpdateSinkRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseUpdateSink._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseUpdateSink._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseUpdateSink._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.UpdateSink",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateSink",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._UpdateSink._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -5161,25 +6801,63 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogSink.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_update_sink(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_update_sink_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogSink.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.update_sink",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateSink",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
-    class _UpdateView(ConfigServiceV2RestStub):
+    class _UpdateView(_BaseConfigServiceV2RestTransport._BaseUpdateView, ConfigServiceV2RestStub):
         def __hash__(self):
-            return hash("UpdateView")
+            return hash("ConfigServiceV2RestTransport.UpdateView")
 
-        __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] =  {
-        }
+        @staticmethod
+        def _get_response(
+            host,
+            metadata,
+            query_params,
+            session,
+            timeout,
+            transcoded_request,
+            body=None):
 
-        @classmethod
-        def _get_unset_required_fields(cls, message_dict):
-            return {k: v for k, v in cls.__REQUIRED_FIELDS_DEFAULT_VALUES.items() if k not in message_dict}
+            uri = transcoded_request['uri']
+            method = transcoded_request['method']
+            headers = dict(metadata)
+            headers['Content-Type'] = 'application/json'
+            response = getattr(session, method)(
+                "{host}{uri}".format(host=host, uri=uri),
+                timeout=timeout,
+                headers=headers,
+                params=rest_helpers.flatten_query_params(query_params, strict=True),
+                data=body,
+                )
+            return response
 
         def __call__(self,
                 request: logging_config.UpdateViewRequest, *,
                 retry: OptionalRetry=gapic_v1.method.DEFAULT,
                 timeout: Optional[float]=None,
-                metadata: Sequence[Tuple[str, str]]=(),
+                metadata: Sequence[Tuple[str, Union[str, bytes]]]=(),
                 ) -> logging_config.LogView:
             r"""Call the update view method over HTTP.
 
@@ -5189,8 +6867,10 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
                 retry (google.api_core.retry.Retry): Designation of what errors, if any,
                     should be retried.
                 timeout (float): The timeout for this request.
-                metadata (Sequence[Tuple[str, str]]): Strings which should be
-                    sent along with the request as metadata.
+                metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                    sent along with the request as metadata. Normally, each value must be of type `str`,
+                    but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                    be of type `bytes`.
 
             Returns:
                 ~.logging_config.LogView:
@@ -5199,62 +6879,41 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
 
             """
 
-            http_options: List[Dict[str, str]] = [{
-                'method': 'patch',
-                'uri': '/v2/{name=*/*/locations/*/buckets/*/views/*}',
-                'body': 'view',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=projects/*/locations/*/buckets/*/views/*}',
-                'body': 'view',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=organizations/*/locations/*/buckets/*/views/*}',
-                'body': 'view',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=folders/*/locations/*/buckets/*/views/*}',
-                'body': 'view',
-            },
-{
-                'method': 'patch',
-                'uri': '/v2/{name=billingAccounts/*/locations/*/buckets/*/views/*}',
-                'body': 'view',
-            },
-            ]
+            http_options = _BaseConfigServiceV2RestTransport._BaseUpdateView._get_http_options()
+
             request, metadata = self._interceptor.pre_update_view(request, metadata)
-            pb_request = logging_config.UpdateViewRequest.pb(request)
-            transcoded_request = path_template.transcode(http_options, pb_request)
+            transcoded_request = _BaseConfigServiceV2RestTransport._BaseUpdateView._get_transcoded_request(http_options, request)
 
-            # Jsonify the request body
-
-            body = json_format.MessageToJson(
-                transcoded_request['body'],
-                use_integers_for_enums=False
-            )
-            uri = transcoded_request['uri']
-            method = transcoded_request['method']
+            body = _BaseConfigServiceV2RestTransport._BaseUpdateView._get_request_body_json(transcoded_request)
 
             # Jsonify the query params
-            query_params = json.loads(json_format.MessageToJson(
-                transcoded_request['query_params'],
-                use_integers_for_enums=False,
-            ))
-            query_params.update(self._get_unset_required_fields(query_params))
+            query_params = _BaseConfigServiceV2RestTransport._BaseUpdateView._get_query_params_json(transcoded_request)
+
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                request_url = "{host}{uri}".format(host=self._host, uri=transcoded_request['uri'])
+                method = transcoded_request['method']
+                try:
+                    request_payload = type(request).to_json(request)
+                except:
+                    request_payload = None
+                http_request = {
+                  "payload": request_payload,
+                  "requestMethod": method,
+                  "requestUrl": request_url,
+                  "headers": dict(metadata),
+                }
+                _LOGGER.debug(
+                    f"Sending request for google.logging_v2.ConfigServiceV2Client.UpdateView",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateView",
+                        "httpRequest": http_request,
+                        "metadata": http_request["headers"],
+                    },
+                )
 
             # Send the request
-            headers = dict(metadata)
-            headers['Content-Type'] = 'application/json'
-            response = getattr(self._session, method)(
-                "{host}{uri}".format(host=self._host, uri=uri),
-                timeout=timeout,
-                headers=headers,
-                params=rest_helpers.flatten_query_params(query_params, strict=True),
-                data=body,
-                )
+            response = ConfigServiceV2RestTransport._UpdateView._get_response(self._host, metadata, query_params, self._session, timeout, transcoded_request, body)
 
             # In case of error, raise the appropriate core_exceptions.GoogleAPICallError exception
             # subclass.
@@ -5266,7 +6925,29 @@ class ConfigServiceV2RestTransport(ConfigServiceV2Transport):
             pb_resp = logging_config.LogView.pb(resp)
 
             json_format.Parse(response.content, pb_resp, ignore_unknown_fields=True)
+
             resp = self._interceptor.post_update_view(resp)
+            response_metadata = [(k, str(v)) for k, v in response.headers.items()]
+            resp, _ = self._interceptor.post_update_view_with_metadata(resp, response_metadata)
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(logging.DEBUG):  # pragma: NO COVER
+                try:
+                    response_payload = logging_config.LogView.to_json(response)
+                except:
+                    response_payload = None
+                http_response = {
+                "payload": response_payload,
+                "headers":  dict(response.headers),
+                "status": response.status_code,
+                }
+                _LOGGER.debug(
+                    "Received response for google.logging_v2.ConfigServiceV2Client.update_view",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "rpcName": "UpdateView",
+                        "metadata": http_response["headers"],
+                        "httpResponse": http_response,
+                    },
+                )
             return resp
 
     @property

@@ -193,6 +193,28 @@ class SourceUploadClient(metaclass=SourceUploadClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
+    def instance_path(project: str,location: str,instance: str,) -> str:
+        """Returns a fully-qualified instance string."""
+        return "projects/{project}/locations/{location}/instances/{instance}".format(project=project, location=location, instance=instance, )
+
+    @staticmethod
+    def parse_instance_path(path: str) -> Dict[str,str]:
+        """Parses a instance path into its component segments."""
+        m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/instances/(?P<instance>.+?)$", path)
+        return m.groupdict() if m else {}
+
+    @staticmethod
+    def job_path(project: str,location: str,job: str,) -> str:
+        """Returns a fully-qualified job string."""
+        return "projects/{project}/locations/{location}/jobs/{job}".format(project=project, location=location, job=job, )
+
+    @staticmethod
+    def parse_job_path(path: str) -> Dict[str,str]:
+        """Parses a job path into its component segments."""
+        m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/jobs/(?P<job>.+?)$", path)
+        return m.groupdict() if m else {}
+
+    @staticmethod
     def service_path(project: str,location: str,service: str,) -> str:
         """Returns a fully-qualified service string."""
         return "projects/{project}/locations/{location}/services/{service}".format(project=project, location=location, service=service, )
@@ -201,6 +223,17 @@ class SourceUploadClient(metaclass=SourceUploadClientMeta):
     def parse_service_path(path: str) -> Dict[str,str]:
         """Parses a service path into its component segments."""
         m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/services/(?P<service>.+?)$", path)
+        return m.groupdict() if m else {}
+
+    @staticmethod
+    def worker_pool_path(project: str,location: str,worker_pool: str,) -> str:
+        """Returns a fully-qualified worker_pool string."""
+        return "projects/{project}/locations/{location}/workerPools/{worker_pool}".format(project=project, location=location, worker_pool=worker_pool, )
+
+    @staticmethod
+    def parse_worker_pool_path(path: str) -> Dict[str,str]:
+        """Parses a worker_pool path into its component segments."""
+        m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/workerPools/(?P<worker_pool>.+?)$", path)
         return m.groupdict() if m else {}
 
     @staticmethod

@@ -1,4 +1,6 @@
 release_tracks: [GA, BETA]
+hints:
+  read_only: false
 help_text:
   brief: Adds IAM policy binding for a workbench instance.
   description: |

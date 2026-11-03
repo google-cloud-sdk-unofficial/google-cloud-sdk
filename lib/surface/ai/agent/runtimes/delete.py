@@ -14,19 +14,13 @@
 # limitations under the License.
 """Command to delete an agent runtime in Vertex AI."""
 
-from apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.api_lib.ai import operations
 from googlecloudsdk.api_lib.ai.agent_runtimes import client
-from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
-from googlecloudsdk.command_lib.ai import operations_util
-from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.command_lib.ai.agent_runtimes import agent_runtimes_util
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 _AGENT_RUNTIME_DELETE_DISPLAY_MESSAGE = """\
@@ -41,6 +35,7 @@ You may view the status of your agent runtime with the command
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 class Delete(base.DeleteCommand):
   """Delete an existing agent runtime.
 
@@ -69,10 +64,7 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     runtime_ref = args.CONCEPTS.runtime.Parse()
     region = runtime_ref.AsDict()['locationsId']
-    if properties.IsDefaultUniverse():
-      validation.ValidateRegion(
-          region, available_regions=constants.SUPPORTED_AP_REGIONS
-      )
+    agent_runtimes_util.ValidateRegion(region)
     console_io.PromptContinue(
         'This will delete agent runtime [{}]...'.format(runtime_ref.Name()),
         cancel_on_no=True,
@@ -81,21 +73,19 @@ class Delete(base.DeleteCommand):
         constants.BETA_VERSION, region=region
     ):
       resource_name = runtime_ref.RelativeName()
-      try:
-        operation = client.AgentRuntimesClient(
-            version=constants.BETA_VERSION
-        ).Delete(resource_name, force=args.force)
-      except apitools_exceptions.HttpError as error:
-        # Translates generic HTTP error into a user-friendly gcloud exception
-        raise api_exceptions.HttpException(
-            error,
-            'ResponseError: code={status_code}, message={status_message}',
-        )
-      response = operations_util.WaitForOpMaybe(
-          operations_client=operations.OperationsClient(),
-          op=operation,
-          op_ref=agent_runtimes_util.ParseOperation(operation.name),
+      runtimes_client = client.AgentRuntimesClient(
+          version=constants.BETA_VERSION
+      )
+      operation = agent_runtimes_util.ExecuteApiCall(
+          runtimes_client.Delete,
+          resource_name,
+          force=args.force,
+          cmd_args=args,
+      )
+      response, _ = agent_runtimes_util.WaitForOperation(
+          operation,
           asynchronous=args.async_,
+          cmd_args=args,
       )
       if args.async_:
         log.status.Print(

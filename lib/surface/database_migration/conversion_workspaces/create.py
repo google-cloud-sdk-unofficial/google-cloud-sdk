@@ -179,6 +179,13 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
         aiAssistant='true' if conversion_assistance else 'false',
         aiPatternApplier='true' if pattern_matching else 'false',
     )
+    if args.IsSpecified('ai_processing_location'):
+      if args.ai_processing_location:
+        args.global_settings['ai_processing_location'] = (
+            args.ai_processing_location
+        )
+      else:
+        args.global_settings.pop('ai_processing_location', None)
 
     return labels_util.ParseCreateArgs(
         args=args,

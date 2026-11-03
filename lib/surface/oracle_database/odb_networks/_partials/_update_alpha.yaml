@@ -20,12 +20,28 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Update odbNetworks
-    description: Update an odbNetwork
+    brief: Update an OdbNetwork.
+    description: Update an OdbNetwork. Only setting or clearing `service_connectivity_config` and updating `labels` are supported; an existing network attachment cannot be changed directly.
     examples: |-
-      To update the odbNetwork, run:
+      To set the Private Service Connect interface network attachment on an OdbNetwork with id `my-odbnetwork` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-odbnetwork --location=us-east4 --psc-interface-config-network-attachment=projects/my-project/regions/us-east4/networkAttachments/my-network-attachment
+
+      To remove the service connectivity configuration from an OdbNetwork with id `my-odbnetwork` in the location `us-east4`, run:
+
+        $ {command} my-odbnetwork --location=us-east4 --clear-service-connectivity-config
+
+      To add or update labels on an OdbNetwork with id `my-odbnetwork` in the location `us-east4`, run:
+
+        $ {command} my-odbnetwork --location=us-east4 --update-labels=env=prod,team=oasis
+
+      To remove the label `team` from the OdbNetwork, run:
+
+        $ {command} my-odbnetwork --location=us-east4 --remove-labels=team
+
+      To clear all labels from the OdbNetwork, run:
+
+        $ {command} my-odbnetwork --location=us-east4 --clear-labels
   arguments:
     params:
     - help_text: |-
@@ -35,16 +51,6 @@
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_odb_networks
       required: true
-    - arg_name: network
-      help_text: |-
-        The name of the VPC network in the following format:
-        projects/{project}/global/networks/{network}
-      is_positional: false
-      is_primary_resource: false
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_none_networks
-      resource_method_params:
-        odbNetwork.network: '{__relative_name__}'
-      required: false
     - arg_name: labels
       api_field: odbNetwork.labels
       required: false
@@ -55,14 +61,6 @@
       spec:
       - api_field: key
       - api_field: value
-    - arg_name: gcp-oracle-zone
-      api_field: odbNetwork.gcpOracleZone
-      required: false
-      repeated: false
-      help_text: |-
-        The GCP Oracle zone where OdbNetwork is hosted.
-        Example: us-east4-b-r2.
-        If not specified, the system will pick a zone based on availability.
     - group:
         api_field: odbNetwork.serviceConnectivityConfig
         arg_name: service-connectivity-config

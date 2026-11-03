@@ -24,17 +24,15 @@ must clear the state left behind by the previous type.
 from typing import Any, Dict
 
 from googlecloudsdk.api_lib.run import service as service_lib
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import validators
-from googlecloudsdk.core import properties
 
 
 def GetDeploymentTypeSwitchChanges(
     service: Any,
     containers: Dict[str, Any],
-    release_track: base.ReleaseTrack,
+    enable_unified_build: bool = False,
 ) -> list[config_changes.ConfigChanger]:
   """Generates deletion changers to clean up stale annotations.
 
@@ -42,9 +40,9 @@ def GetDeploymentTypeSwitchChanges(
     service: The existing service being updated, or None for a new service.
     containers: The container args being deployed, keyed by container name. An
       empty name targets the ingress container (--container not used).
-    release_track: The release track of the running command. Clearing a
+    enable_unified_build: Whether unified build is enabled. Clearing a
       container's stale build config applies in every track; the remaining
-      cleanup is Alpha only.
+      cleanup only applies when unified build is enabled.
 
   Returns:
     The config changes to apply before the deployment's own changes. Empty
@@ -57,7 +55,7 @@ def GetDeploymentTypeSwitchChanges(
   for name, container_args in containers.items():
     changes.extend(
         _GetContainerDeploymentTypeSwitchChanges(
-            service, name, container_args, release_track
+            service, name, container_args, enable_unified_build
         )
     )
   return changes
@@ -67,23 +65,21 @@ def _GetContainerDeploymentTypeSwitchChanges(
     service: Any,
     name: str,
     container_args: Any,
-    release_track: base.ReleaseTrack,
+    enable_unified_build: bool = False,
 ) -> list[config_changes.ConfigChanger]:
   """Generates switch changes for a container."""
   # Empty name (--container flag not used) targets the ingress container.
   ingress_name = service.template.container.name or ''
   name = name or ingress_name
   is_ingress = name == ingress_name
-  is_alpha = release_track == base.ReleaseTrack.ALPHA
 
   is_image = (
       not getattr(container_args, 'source', None)
       and getattr(container_args, 'image', None) is not None
   )
   is_source_build = validators.IsSourceBuild(container_args)
-  enable_unified = properties.VALUES.run.enable_unified_build.GetBool()
-  is_legacy_build = is_source_build and not enable_unified
-  is_unified_build = is_source_build and enable_unified
+  is_legacy_build = is_source_build and not enable_unified_build
+  is_unified_build = is_source_build and enable_unified_build
 
   changes = []
 
@@ -99,7 +95,7 @@ def _GetContainerDeploymentTypeSwitchChanges(
     )
 
   # The remaining cleanup is Alpha only.
-  if is_alpha:
+  if enable_unified_build:
     # 2. Clear template sources (only used by Unified, No-Build, Local-Build).
     if is_image or is_legacy_build:
       changes.append(config_changes.SourcesAnnotationChange(deletes=[name]))

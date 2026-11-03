@@ -7600,6 +7600,8 @@ class OdbNetwork(_messages.Message):
       format: projects/{project}/locations/{region}/odbNetworks/{odb_network}
     network: Required. The name of the VPC network in the following format:
       projects/{project}/global/networks/{network}
+    reconciling: Output only. Indicates whether the OdbNetwork is currently
+      reconciling changes.
     serviceConnectivityConfig: Optional. Configuration to enable the service
       (Oracledatabase@Google Cloud) to establish connectivity to the database.
       This should be specified if you intend to associate this OdbNetwork with
@@ -7655,8 +7657,9 @@ class OdbNetwork(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
   network = _messages.StringField(6)
-  serviceConnectivityConfig = _messages.MessageField('ServiceConnectivityConfig', 7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
+  reconciling = _messages.BooleanField(7)
+  serviceConnectivityConfig = _messages.MessageField('ServiceConnectivityConfig', 8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
 
 
 class OdbSubnet(_messages.Message):
@@ -8770,19 +8773,18 @@ class OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest(_messages.M
   updateMask = _messages.StringField(4)
 
 
-class OracledatabaseProjectsLocationsDatabaseConnectionsTestDatabaseConnectionRequest(_messages.Message):
-  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsTestDatabaseConnecti
-  onRequest object.
+class OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest object.
 
   Fields:
-    databaseConnection: Required. The DatabaseConnection to test. Format: proj
-      ects/{project}/locations/{location}/databaseConnections/{database_connec
-      tion}
+    name: Required. The name of the DatabaseConnection to test. Format: projec
+      ts/{project}/locations/{location}/databaseConnections/{database_connecti
+      on}
     testDatabaseConnectionRequest: A TestDatabaseConnectionRequest resource to
       be passed as the request body.
   """
 
-  databaseConnection = _messages.StringField(1, required=True)
+  name = _messages.StringField(1, required=True)
   testDatabaseConnectionRequest = _messages.MessageField('TestDatabaseConnectionRequest', 2)
 
 

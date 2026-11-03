@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.network_security import sp_flags
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -49,7 +48,9 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class UpdateOverride(base.UpdateCommand):
   """Update an override in a WildFire Analysis Profile."""
 
@@ -119,11 +120,6 @@ class UpdateOverride(base.UpdateCommand):
     )
     client = wildfire_api.Client(self.ReleaseTrack(), project_scoped)
     is_async = args.async_
-
-    if args.location != 'global':
-      raise core_exceptions.Error(
-          f'Only `global` location is supported, but got: {args.location}'
-      )
 
     if args.threat_ids and args.action not in ['DEFAULT', 'ALLOW']:
       raise exceptions.InvalidArgumentException(

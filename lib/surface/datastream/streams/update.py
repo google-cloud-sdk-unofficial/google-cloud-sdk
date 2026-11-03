@@ -90,15 +90,15 @@ class Update(base.Command):
     Update.CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
-    """Create a Datastream stream.
+    """Update a Datastream stream.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
         with.
 
     Returns:
-      A dict object representing the operations resource describing the create
-      operation if the create was successful.
+      A dict object representing the operations resource describing the update
+      operation if the update was successful.
     """
     stream_ref = args.CONCEPTS.stream.Parse()
 

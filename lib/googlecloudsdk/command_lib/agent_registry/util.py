@@ -14,80 +14,93 @@
 # limitations under the License.
 """Common utilities for Agent Registry commands."""
 
+from typing import Any
+
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files
-from googlecloudsdk.generated_clients.apis.agentregistry.v1alpha import agentregistry_v1alpha_messages as ar_messages
 
 
-def SetDisplayNameAndDefaultsInCreate(resource_ref, args, request_msg):
-  """Sets default values for displayName, type, and targetState if not provided.
+def SetDisplayNameAndDefaultsInCreate(api_version='v1alpha'):
+  """Returns a hook that sets default values for displayName, type, and targetState."""
 
-  Ensures the request body is never empty and fulfills backend requirements
-  even when optional flags are omitted.
+  def Process(resource_ref, args, request_msg):
+    """Sets default values for displayName, type, and targetState if not provided.
 
-  Args:
-    resource_ref: The resource reference.
-    args: The command line arguments.
-    request_msg: The request message to modify.
+    Ensures the request body is never empty and fulfills backend requirements
+    even when optional flags are omitted.
 
-  Returns:
-    The modified request message.
-  """
-  del args  # Unused
-  messages = apis.GetMessagesModule('agentregistry', 'v1alpha')
-  skill = request_msg.skill
-  if not skill:
+    Args:
+      resource_ref: The resource reference.
+      args: The command line arguments.
+      request_msg: The request message to modify.
+
+    Returns:
+      The modified request message.
+    """
+    del args  # Unused
+    messages = apis.GetMessagesModule('agentregistry', api_version)
+    skill = request_msg.skill
+    if not skill:
+      skill_class = getattr(messages, 'Skill')
+      skill = skill_class()
+      request_msg.skill = skill
+
+    if resource_ref:
+      if not request_msg.skillId:
+        request_msg.skillId = resource_ref.Name()
+      request_msg.parent = 'projects/{}/locations/{}'.format(
+          resource_ref.projectsId, resource_ref.locationsId
+      )
+
+    # Fallback displayName
+    if not skill.displayName:
+      skill_id = request_msg.skillId or (
+          resource_ref.skillsId if resource_ref else 'my-skill'
+      )
+      skill.displayName = skill_id
+
     skill_class = getattr(messages, 'Skill')
-    skill = skill_class()
-    request_msg.skill = skill
+    # Fallback type
+    if not skill.type:
+      skill.type = skill_class.TypeValueValuesEnum.SIMPLE
 
-  if resource_ref:
-    if not request_msg.skillId:
-      request_msg.skillId = resource_ref.Name()
-    request_msg.parent = 'projects/{}/locations/{}'.format(
-        resource_ref.projectsId, resource_ref.locationsId
-    )
+    # Fallback targetState
+    if not skill.targetState:
+      skill.targetState = (
+          skill_class.TargetStateValueValuesEnum.TARGET_STATE_DRAFT
+      )
 
-  # Fallback displayName
-  if not skill.displayName:
-    skill_id = request_msg.skillId or (
-        resource_ref.skillsId if resource_ref else 'my-skill'
-    )
-    skill.displayName = skill_id
+    return request_msg
 
-  skill_class = getattr(messages, 'Skill')
-  # Fallback type
-  if not skill.type:
-    skill.type = skill_class.TypeValueValuesEnum.SIMPLE
-
-  # Fallback targetState
-  if not skill.targetState:
-    skill.targetState = (
-        skill_class.TargetStateValueValuesEnum.TARGET_STATE_DRAFT
-    )
-
-  return request_msg
+  return Process
 
 
-def ReadPayloadFile(resource_ref, args, request_msg):
-  """Reads the binary payload file (ZIP) and attaches it to the request message."""
-  del resource_ref  # Unused
-  if getattr(args, 'payload', None):
-    content = files.ReadBinaryFileContents(args.payload)
+def ReadPayloadFile(api_version='v1alpha'):
+  """Returns a hook that attaches the binary payload file (ZIP) to the request."""
 
-    messages = apis.GetMessagesModule('agentregistry', 'v1alpha')
+  def Process(resource_ref, args, request_msg):
+    """Reads the binary payload file (ZIP) and attaches it to the request message."""
+    del resource_ref  # Unused
+    if getattr(args, 'payload', None):
+      content = files.ReadBinaryFileContents(args.payload)
 
-    if not request_msg.skillRevision:
-      skill_revision_class = getattr(messages, 'SkillRevision')
-      request_msg.skillRevision = skill_revision_class()
+      messages = apis.GetMessagesModule('agentregistry', api_version)
 
-    archive_upload_source_class = getattr(messages, 'ArchiveUploadSource')
-    archive_upload_source = archive_upload_source_class(archiveContent=content)
-    request_msg.skillRevision.archiveUploadSource = archive_upload_source
+      if not request_msg.skillRevision:
+        skill_revision_class = getattr(messages, 'SkillRevision')
+        request_msg.skillRevision = skill_revision_class()
 
-  return request_msg
+      archive_upload_source_class = getattr(messages, 'ArchiveUploadSource')
+      archive_upload_source = archive_upload_source_class(
+          archiveContent=content
+      )
+      request_msg.skillRevision.archiveUploadSource = archive_upload_source
+
+    return request_msg
+
+  return Process
 
 
 def SkillDisplayNameHook(resource_ref, args):
@@ -119,16 +132,11 @@ def SkillDisplayNameHook(resource_ref, args):
   return f'{prefix}-{name}'
 
 
-_SkillsPatchRequest = (
-    ar_messages.AgentregistryProjectsLocationsSkillsPatchRequest
-)
-
-
 def SetUpdateMaskInUpdate(
     resource_ref: resources.Resource | None,
     args: parser_extensions.Namespace,
-    request_msg: _SkillsPatchRequest,
-) -> _SkillsPatchRequest:
+    request_msg: Any,
+) -> Any:
   """Normalizes updateMask for skills update, replacing sub-field paths.
 
   Replaces sub-field paths like scanningConfig.policy with scanning_config or
@@ -164,22 +172,11 @@ def SetUpdateMaskInUpdate(
   return request_msg
 
 
-_GetSkillEncryptionSpecRequest = (
-    ar_messages.AgentregistryProjectsLocationsGetSkillEncryptionSpecRequest
-)
-_UpdateSkillEncryptionSpecRequest = (
-    ar_messages.AgentregistryProjectsLocationsUpdateSkillEncryptionSpecRequest
-)
-_SkillEncryptionSpecRequest = (
-    _GetSkillEncryptionSpecRequest | _UpdateSkillEncryptionSpecRequest
-)
-
-
 def SetSkillEncryptionSpecName(
     resource_ref: resources.Resource | None,
     args: parser_extensions.Namespace,
-    request_msg: _SkillEncryptionSpecRequest,
-) -> _SkillEncryptionSpecRequest:
+    request_msg: Any,
+) -> Any:
   """Points a location request at the location's SkillEncryptionSpec.
 
   SkillEncryptionSpec is a singleton resource, which declarative commands do

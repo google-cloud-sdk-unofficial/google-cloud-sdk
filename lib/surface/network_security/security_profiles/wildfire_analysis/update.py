@@ -161,11 +161,6 @@ class Update(base.UpdateCommand):
         ).labels,
     )
 
-    if args.location != 'global':
-      raise core_exceptions.Error(
-          'Only `global` location is supported, but got: %s' % args.location
-      )
-
     kwargs = {}
     update_fields = [
         'description',

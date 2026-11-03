@@ -20,7 +20,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class GoogleCloudLocationListLocationsResponse(_messages.Message):
   r"""The response message for Locations.ListLocations.
 
@@ -1589,6 +1588,8 @@ class GoogleCloudNetworkconnectivityV1betaMacsecKey(_messages.Message):
       64 character long hexadecimal string.
     name: Required. User-defined name for this key.
     startTime: Required. ISO 8601 timestamp of when this key will take effect.
+      Must be a whole number of seconds; non-zero fractional seconds are
+      rejected.
   """
 
   cak = _messages.StringField(1)
@@ -2611,12 +2612,16 @@ class GoogleCloudNetworkconnectivityV1betaRouterApplianceInstance(_messages.Mess
   VM's network interfaces.
 
   Fields:
+    customHardwareLinkAttachment: Optional. The URI of the custom hardware
+      link attachment. only one of the `custom_hardware_link_attachment` or
+      `virtual_machine` can be set.
     ipAddress: The IP address on the VM to use for peering.
     virtualMachine: The URI of the VM.
   """
 
-  ipAddress = _messages.StringField(1)
-  virtualMachine = _messages.StringField(2)
+  customHardwareLinkAttachment = _messages.StringField(1)
+  ipAddress = _messages.StringField(2)
+  virtualMachine = _messages.StringField(3)
 
 
 class GoogleCloudNetworkconnectivityV1betaRoutingVPC(_messages.Message):
@@ -3107,6 +3112,14 @@ class GoogleCloudNetworkconnectivityV1betaTransport(_messages.Message):
       Inputting this to the provider is only valid while the resource is in a
       PENDING_KEY state. Once the provider has accepted the key, the resource
       will move to the CONFIGURING state.
+    group: Optional. Immutable. The group of the NCC Hub that the spokes
+      created for this Transport should be attached to. This can only be set
+      when `hub` is provided, and the group must belong to that hub. If not
+      set, spokes are attached to the `default` group for hubs with the `MESH`
+      preset topology, and to the `center` group for hubs with the `STAR`
+      preset topology. This can only be set when the Transport is first
+      created. Format: `{group}` or
+      `projects/{project}/locations/global/hubs/{hub}/groups/{group}`
     hub: Optional. Immutable. The NCC Hub that the Transport should attach to.
       The hub must be in the same project as the Transport. Format: `{hub}` or
       `projects/{project}/locations/global/hubs/{hub}`
@@ -3253,19 +3266,20 @@ class GoogleCloudNetworkconnectivityV1betaTransport(_messages.Message):
   createTime = _messages.StringField(5)
   description = _messages.StringField(6)
   generatedActivationKey = _messages.StringField(7)
-  hub = _messages.StringField(8)
-  labels = _messages.MessageField('LabelsValue', 9)
-  mtuLimit = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  name = _messages.StringField(11)
-  network = _messages.StringField(12)
-  peeringNetwork = _messages.StringField(13)
-  providedActivationKey = _messages.StringField(14)
-  pscRoutingEnabled = _messages.BooleanField(15)
-  remoteAccountId = _messages.StringField(16)
-  remoteProfile = _messages.StringField(17)
-  stackType = _messages.EnumField('StackTypeValueValuesEnum', 18)
-  state = _messages.EnumField('StateValueValuesEnum', 19)
-  updateTime = _messages.StringField(20)
+  group = _messages.StringField(8)
+  hub = _messages.StringField(9)
+  labels = _messages.MessageField('LabelsValue', 10)
+  mtuLimit = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  name = _messages.StringField(12)
+  network = _messages.StringField(13)
+  peeringNetwork = _messages.StringField(14)
+  providedActivationKey = _messages.StringField(15)
+  pscRoutingEnabled = _messages.BooleanField(16)
+  remoteAccountId = _messages.StringField(17)
+  remoteProfile = _messages.StringField(18)
+  stackType = _messages.EnumField('StackTypeValueValuesEnum', 19)
+  state = _messages.EnumField('StateValueValuesEnum', 20)
+  updateTime = _messages.StringField(21)
 
 
 class GoogleCloudNetworkconnectivityV1betaVirtualMachine(_messages.Message):

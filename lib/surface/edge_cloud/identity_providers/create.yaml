@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Creates an identity provider for a Google Destributed Cloud zone.

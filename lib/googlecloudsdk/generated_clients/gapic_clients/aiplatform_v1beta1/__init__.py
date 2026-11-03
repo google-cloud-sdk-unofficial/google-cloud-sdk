@@ -60,6 +60,7 @@ from .types.content import SearchEntryPoint
 from .types.content import Segment
 from .types.content import SpeakerVoiceConfig
 from .types.content import SpeechConfig
+from .types.content import SpeechMetadata
 from .types.content import TextResponseFormat
 from .types.content import TranslationConfig
 from .types.content import UrlContextMetadata
@@ -109,6 +110,8 @@ from .types.openapi import Schema
 from .types.openapi import Type
 from .types.operation import DeleteOperationMetadata
 from .types.operation import GenericOperationMetadata
+from .types.prediction_service import BatchEmbedContentsRequest
+from .types.prediction_service import BatchEmbedContentsResponse
 from .types.prediction_service import ChatCompletionsRequest
 from .types.prediction_service import CountTokensRequest
 from .types.prediction_service import CountTokensResponse
@@ -141,6 +144,7 @@ from .types.prediction_service import StreamingPredictRequest
 from .types.prediction_service import StreamingPredictResponse
 from .types.prediction_service import StreamingRawPredictRequest
 from .types.prediction_service import StreamingRawPredictResponse
+from .types.prediction_service import StreamPublisherInvokeRequest
 from .types.prediction_service import StreamRawPredictRequest
 from .types.semantic_governance_policy_engine_service import DeprovisionSemanticGovernancePolicyEngineOperationMetadata
 from .types.semantic_governance_policy_engine_service import DeprovisionSemanticGovernancePolicyEngineRequest
@@ -226,6 +230,8 @@ __all__ = (
 'AuthConfig',
 'AuthType',
 'AvroSource',
+'BatchEmbedContentsRequest',
+'BatchEmbedContentsResponse',
 'BigQueryDestination',
 'BigQuerySource',
 'Blob',
@@ -370,10 +376,12 @@ __all__ = (
 'SmoothGradConfig',
 'SpeakerVoiceConfig',
 'SpeechConfig',
+'SpeechMetadata',
 'StreamDirectPredictRequest',
 'StreamDirectPredictResponse',
 'StreamDirectRawPredictRequest',
 'StreamDirectRawPredictResponse',
+'StreamPublisherInvokeRequest',
 'StreamRawPredictRequest',
 'StreamingPredictRequest',
 'StreamingPredictResponse',

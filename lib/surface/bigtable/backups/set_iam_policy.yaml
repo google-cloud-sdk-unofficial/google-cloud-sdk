@@ -1,3 +1,5 @@
+hints:
+  read_only: false
 help_text:
   brief: Set an IAM policy on a Cloud Bigtable Backup.
   description: |

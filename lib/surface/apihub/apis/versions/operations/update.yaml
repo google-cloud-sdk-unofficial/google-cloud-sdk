@@ -349,6 +349,21 @@
           - api_field: values
             help_text: |-
               The attribute values in case attribute data type is string or JSON.
+    - arg_name: deployments
+      help_text: |-
+        The deployments linked directly to this API operation.
+        For an operation generated from a spec, set the link on the parent spec
+        with `gcloud apihub apis versions specs update --deployments` instead.
+        Format is
+        `projects/{project}/locations/{location}/deployments/{deployment}`
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.apihub.v1_resources:projects_locations_deployments
+      resource_method_params:
+        googleCloudApihubV1ApiOperation.deployments: '{__relative_name__}'
+      required: false
+      repeated: true
+      clearable: true
   request:
     api_version: v1
     collection:

@@ -18,7 +18,41 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Saas(base.Group):
+  category = base.SAAS_CATEGORY
+  detailed_help = {
+      'brief': 'Manage App Lifecycle Manager unit operations.',
+      'DESCRIPTION': """
+          Manage App Lifecycle Manager unit operations. A unit operation
+          encapsulates the intent to change or interact with the service
+          component represented by a specific unit. For example, a unit
+          operation can provision, upgrade, or deprovision the unit. Multiple
+          unit operations can be requested and scheduled, but only one runs at
+          a time.
+      """,
+      'EXAMPLES': """
+          To create a unit operation named `my-unit-operation` in location
+          `us-central1` that provisions the unit `my-unit` with the release
+          `my-release`, run:
+
+            $ {command} create my-unit-operation --location=us-central1 --unit=my-unit --provision --provision-release=my-release
+
+          To list the names of all unit operations in location `us-central1`,
+          run:
+
+            $ {command} list --location=us-central1 --format="value(name)"
+
+          To describe the unit operation named `my-unit-operation` in location
+          `us-central1`, run:
+
+            $ {command} describe my-unit-operation --location=us-central1
+      """,
+  }
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SaasAlpha(base.Group):
   category = base.SAAS_CATEGORY
   detailed_help = {'brief': 'Manage App Lifecycle Manager unit-operations.'}

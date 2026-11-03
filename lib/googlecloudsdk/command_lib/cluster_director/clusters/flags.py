@@ -22,68 +22,6 @@ from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.cluster_director.clusters import flag_types
 
 
-def AddConfig(parser, api_version=None, required=False, hidden=False):
-  """Adds a config flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta", "v1"]:
-    raise ValueError(f"Unsupported API version for config: {api_version!r}")
-  parser.add_argument(
-      "--config",
-      help="Configuration of the cluster specs in the form of a JSON object.",
-      type=arg_parsers.ArgObject(
-          spec=flag_types.FlagTypes(api_version).GetClusterFlagType(),
-          enable_shorthand=True,
-          disable_key_description=True,
-          help_text=textwrap.dedent("""\
-            See example below:
-
-            --config='{
-              "networkResources": {
-                  "network0": {
-                      "config": {
-                          "newNetwork": {
-                              "network": "network0"
-                          }
-                      }
-                  }
-              },
-              "storageResources": {
-                  "lustre0": {
-                      "config": {
-                          "newLustre": {
-                              "capacityGb": 1200,
-                              "filesystem": "lustre-fs"
-                          }
-                      }
-                  }
-              },
-              "computeResources": {
-                  "compute0": {
-                      "config": {
-                          "newOnDemandInstances": {
-                              "machineType": "n2-standard-4",
-                              "zone": "us-central1-a"
-                          }
-                      }
-                  }
-              },
-              "orchestrator": {
-                  "slurm": {
-                      "nodeSets": [
-                          {
-                              "id": "nodeset0",
-                              "computeId": "compute0"
-                          }
-                      ]
-                  }
-              }
-          }' --format json
-          """),
-      ),
-      required=required,
-      hidden=hidden,
-  )
-
-
 def AddReferenceArchitecture(parser, api_version=None, hidden=False):
   """Adds a reference architecture flag for the given API version."""
   if api_version not in ["v1alpha", "v1beta", "v1"]:
@@ -99,6 +37,7 @@ def AddReferenceArchitecture(parser, api_version=None, hidden=False):
         - a4x-high: 18x reserved nodes (requires --reserved-instances), 1x login node (n2-standard-16), and 36TB Lustre storage.
         - g4-flex-start: 4x g4-standard-384 compute nodes (Flex Start), 1x login node (n2-standard-16), 36TB Lustre storage, and 10.2TB Filestore storage.
         - h4d-highmem-flex-start: 4x h4d-highmem-192 compute nodes (Flex Start), 1x login node (n2-standard-16), 18TB Lustre storage, and 1TB Filestore storage.
+        - quickstart: 2x a3-megagpu-8g compute nodes (Flex Start, max duration 7 days), 1x login node (n2-standard-16), and 36TB Lustre storage.
       """),
       choices=[
           "a3-ultra",
@@ -106,41 +45,8 @@ def AddReferenceArchitecture(parser, api_version=None, hidden=False):
           "a4x-high",
           "g4-flex-start",
           "h4d-highmem-flex-start",
+          "quickstart",
       ],
-      hidden=hidden,
-  )
-
-
-def AddQuickstartCluster(parser, hidden=False):
-  """Adds the --quickstart-cluster flag to the parser."""
-  parser.add_argument(
-      "--quickstart-cluster",
-      action="store_true",
-      help=textwrap.dedent("""
-        If specified, creates a cluster with sensible defaults:
-        - Compute: 2x a3-megagpu-8g nodes (Flex Start, max duration 7 days).
-        - Login: 1x n2-standard-16 node.
-        - Storage: 36TB Lustre storage (scratch disk).
-      """),
-      hidden=hidden,
-  )
-
-
-def AddUpdateMask(parser, api_version=None, required=False, hidden=False):
-  """Adds an update mask flag for the given API version."""
-  if api_version not in ["v1alpha", "v1beta", "v1"]:
-    raise ValueError(
-        f"Unsupported API version for update-mask: {api_version!r}"
-    )
-  parser.add_argument(
-      "--update-mask",
-      help=textwrap.dedent("""
-        Update mask to specify the fields to update.
-
-        For example --update-mask "description,labels"
-      """),
-      type=flag_types.UPDATE_MASK_OBJECT,
-      required=required,
       hidden=hidden,
   )
 
@@ -1263,59 +1169,6 @@ def AddSlurmConfig(
       f"--{flag_name}",
       help=textwrap.dedent(help_text),
       type=arg_parsers.ArgDict(),
-      hidden=hidden,
-  )
-
-
-def AddSlurmConfFile(
-    parser, api_version=None, hidden=False, include_update_flags=False
-):
-  """Adds a slurm conf file flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(
-        f"Unsupported API version for slurm-conf-file: {api_version!r}"
-    )
-  flag_name = "slurm-conf-file"
-  if include_update_flags:
-    help_text = f"""
-        Path to the slurm.conf file.
-
-        When updating, the provided configuration file declaratively replaces
-        the cluster's existing Slurm configuration across global settings, node
-        set configurations, and partition configurations:
-        - Global directives in the file replace the existing cluster Slurm global
-          configuration (omitted global settings or an empty file will clear
-          existing custom global config). Custom global directives not recognized
-          as first-class fields are passed through as additionalSettings.
-        - NodeName and PartitionName directives in the file replace the
-          configurations of matching existing node sets and partitions in the
-          cluster (node sets or partitions not present in the file have their
-          custom configurations cleared).
-
-        See https://slurm.schedmd.com/slurm.conf.html for more details.
-
-        For example --{flag_name}=path/to/slurm.conf
-    """
-  else:
-    help_text = f"""
-        Path to the slurm.conf file.
-
-        Global Slurm parameters, node set configurations (NodeName directives,
-        including bracket ranges like compute-[0-99]), and partition
-        configurations (PartitionName directives) defined in the file are
-        applied to the cluster, replacing any default or flag-provided
-        configurations. Custom global directives not recognized as first-class
-        fields are automatically passed through as additionalSettings. Any
-        configuration omitted from the file will remain unset.
-
-        See https://slurm.schedmd.com/slurm.conf.html for more details.
-
-        For example --{flag_name}=path/to/slurm.conf
-    """
-  parser.add_argument(
-      f"--{flag_name}",
-      help=textwrap.dedent(help_text),
-      type=str,
       hidden=hidden,
   )
 

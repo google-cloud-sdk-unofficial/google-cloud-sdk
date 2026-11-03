@@ -41,17 +41,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_BENCHMARKINGTRIALS = (
-      'projects.locations.benchmarkingTrials',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'benchmarkingTrials/{benchmarkingTrialsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_CLUSTERS = (
       'projects.locations.clusters',
       '{+name}',
@@ -140,6 +129,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/operations/'
               '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_PERFORMANCETRIALS = (
+      'projects.locations.performanceTrials',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'performanceTrials/{performanceTrialsId}',
       },
       ['name'],
       True

@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
 
   # Omitted from tab completion and the public reference docs. Listed only in
   # the help for the pipelines group, which is itself hidden. API access is

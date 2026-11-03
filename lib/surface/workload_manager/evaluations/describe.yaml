@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+  hints:
+    read_only: true
+
+  help_text:
+    brief: Describe a Workload Manager evaluation.
+    description: Describe a Workload Manager evaluation.
+    examples: |
+      To describe the evaluation ``my-evaluation'' in location ``us-central1'', run:
+
+        $ {command} my-evaluation --location=us-central1
+
+  request:
+    collection: workloadmanager.projects.locations.evaluations
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The evaluation to describe.
+      spec: !REF googlecloudsdk.command_lib.workload_manager.resources:evaluation

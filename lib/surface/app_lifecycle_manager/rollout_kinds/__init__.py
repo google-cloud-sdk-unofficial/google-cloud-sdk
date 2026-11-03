@@ -18,7 +18,36 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Saas(base.Group):
+  category = base.SAAS_CATEGORY
+  detailed_help = {
+      'brief': 'Manage App Lifecycle Manager rollout kinds.',
+      'DESCRIPTION': """
+          Manage App Lifecycle Manager rollout kinds. A rollout kind describes
+          the settings of rollout execution for the units of a unit kind,
+          such as the orchestration strategy and error budget.
+      """,
+      'EXAMPLES': """
+          To create a rollout kind named `my-rollout-kind` for the unit kind
+          `my-unit-kind` in location `us-central1`, run:
+
+            $ {command} create my-rollout-kind --location=us-central1 --unit-kind=my-unit-kind
+
+          To list the names of all rollout kinds in location `us-central1`, run:
+
+            $ {command} list --location=us-central1 --format="value(name)"
+
+          To describe the rollout kind named `my-rollout-kind` in location
+          `us-central1`, run:
+
+            $ {command} describe my-rollout-kind --location=us-central1
+      """,
+  }
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SaasAlpha(base.Group):
   category = base.SAAS_CATEGORY
   detailed_help = {'brief': 'Manage App Lifecycle Manager rollout-kinds.'}

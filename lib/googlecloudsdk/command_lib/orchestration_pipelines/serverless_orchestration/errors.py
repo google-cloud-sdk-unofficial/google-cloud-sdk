@@ -22,15 +22,15 @@ class ServerlessOrchestrationError(core_exceptions.Error):
 
 
 class NotImplementedYetError(ServerlessOrchestrationError):
-  """Raised by placeholder implementations that later CLs in this stack replace.
-
-  A `core_exceptions.Error` so that Calliope prints a formatted error instead
-  of a stack trace if a placeholder is reached.
-  """
+  """Raised by placeholder implementations in the CL stack."""
 
 
 class PipelineLoadError(ServerlessOrchestrationError):
   """Raised when a pipeline or deployment YAML is unreadable or invalid."""
+
+
+class AmbiguousPipelineError(PipelineLoadError):
+  """Raised when `deployment.yaml` lists multiple pipelines without `--pipeline`."""
 
 
 class PackagingError(ServerlessOrchestrationError):
@@ -39,3 +39,21 @@ class PackagingError(ServerlessOrchestrationError):
 
 class UploadError(ServerlessOrchestrationError):
   """Raised when an artifact upload fails or an existing object differs."""
+
+
+class OrchestrationApiError(ServerlessOrchestrationError):
+  """Raised when an Orchestration API call fails.
+
+  Attributes:
+    code: Canonical RPC or HTTP status code, or None if unavailable.
+  """
+
+  def __init__(self, message: str, code: str | None = None):
+    """Initializes the instance.
+
+    Args:
+      message: Human-readable error message.
+      code: Canonical RPC or HTTP status code, or None if unavailable.
+    """
+    super().__init__(message)
+    self.code = code

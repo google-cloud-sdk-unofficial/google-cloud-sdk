@@ -38,6 +38,14 @@ class Collections(enum.Enum):
       ['organizationsId', 'locationsId'],
       True
   )
+  ORGANIZATIONS_LOCATIONS_DBFRAMEWORKCOMPLIANCEREPORTS = (
+      'organizations.locations.dbFrameworkComplianceReports',
+      'organizations/{organizationsId}/locations/{locationsId}/'
+      'dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}',
+      {},
+      ['organizationsId', 'locationsId', 'dbFrameworkComplianceReportsId'],
+      True
+  )
   ORGANIZATIONS_LOCATIONS_OPERATIONS = (
       'organizations.locations.operations',
       '{+name}',

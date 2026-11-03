@@ -394,6 +394,9 @@ def get_user_request_args_from_command_args(args, metadata_type=None):
       )
       labels_file_path = _get_value_or_clear_from_flag(args, 'clear_labels',
                                                        'labels_file')
+      labels_to_append = getattr(args, 'labels', None) or getattr(
+          args, 'update_labels', None
+      )
       lifecycle_file_path = _get_value_or_clear_from_flag(
           args, 'clear_lifecycle', 'lifecycle_file')
       log_bucket = _get_value_or_clear_from_flag(args, 'clear_log_bucket',
@@ -442,7 +445,7 @@ def get_user_request_args_from_command_args(args, metadata_type=None):
           ),
           ip_filter_file_path=ip_filter_file_path,
           labels_file_path=labels_file_path,
-          labels_to_append=getattr(args, 'update_labels', None),
+          labels_to_append=labels_to_append,
           labels_to_remove=getattr(args, 'remove_labels', None),
           lifecycle_file_path=lifecycle_file_path,
           location=getattr(args, 'location', None),

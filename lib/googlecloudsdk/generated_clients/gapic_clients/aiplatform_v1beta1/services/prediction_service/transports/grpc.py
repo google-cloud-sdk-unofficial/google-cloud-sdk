@@ -672,6 +672,33 @@ class PredictionServiceGrpcTransport(PredictionServiceTransport):
         return self._stubs['invoke']
 
     @property
+    def stream_publisher_invoke(self) -> Callable[
+            [prediction_service.StreamPublisherInvokeRequest],
+            httpbody_pb2.HttpBody]:
+        r"""Return a callable for the stream publisher invoke method over gRPC.
+
+        Performs a bidirectional streaming invocation for
+        partner MaaS models with websocket support.
+
+        Returns:
+            Callable[[~.StreamPublisherInvokeRequest],
+                    ~.HttpBody]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if 'stream_publisher_invoke' not in self._stubs:
+            self._stubs['stream_publisher_invoke'] = self._logged_channel.stream_stream(
+                '/google.cloud.aiplatform.v1beta1.PredictionService/StreamPublisherInvoke',
+                request_serializer=prediction_service.StreamPublisherInvokeRequest.serialize,
+                response_deserializer=httpbody_pb2.HttpBody.FromString,
+            )
+        return self._stubs['stream_publisher_invoke']
+
+    @property
     def get_response(self) -> Callable[
             [prediction_service.GetResponseRequest],
             httpbody_pb2.HttpBody]:
@@ -890,6 +917,32 @@ class PredictionServiceGrpcTransport(PredictionServiceTransport):
                 response_deserializer=prediction_service.EmbedContentResponse.deserialize,
             )
         return self._stubs['embed_content']
+
+    @property
+    def batch_embed_contents(self) -> Callable[
+            [prediction_service.BatchEmbedContentsRequest],
+            prediction_service.BatchEmbedContentsResponse]:
+        r"""Return a callable for the batch embed contents method over gRPC.
+
+        Generates embeddings directly from multiple contents.
+
+        Returns:
+            Callable[[~.BatchEmbedContentsRequest],
+                    ~.BatchEmbedContentsResponse]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if 'batch_embed_contents' not in self._stubs:
+            self._stubs['batch_embed_contents'] = self._logged_channel.unary_unary(
+                '/google.cloud.aiplatform.v1beta1.PredictionService/BatchEmbedContents',
+                request_serializer=prediction_service.BatchEmbedContentsRequest.serialize,
+                response_deserializer=prediction_service.BatchEmbedContentsResponse.deserialize,
+            )
+        return self._stubs['batch_embed_contents']
 
     def close(self):
         self._logged_channel.close()

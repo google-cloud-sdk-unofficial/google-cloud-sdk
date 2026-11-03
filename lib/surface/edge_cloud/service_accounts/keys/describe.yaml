@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: Describe a service account key for a service account on a Google Distributed Cloud zone.
     description: Describe a service account key for a service account on a Google Distributed Cloud zone.

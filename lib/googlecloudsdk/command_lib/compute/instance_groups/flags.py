@@ -484,9 +484,10 @@ class DynamicField(str):
 _LIST_INSTANCES_FORMAT = """\
         table(name:label=NAME,
               instance.scope().segment(0):label=ZONE,
-              instanceStatus:label=STATUS,
-              instanceHealth[0].detailedHealthState:label=HEALTH_STATE,
-              currentAction:label=ACTION,
+              instanceStatus.colorizedStatus():label=STATUS,
+              instanceHealth[0].detailedHealthState.colorizedHealthState()
+                :label=HEALTH_STATE,
+              currentAction.colorizedAction():label=ACTION,
               version.instanceTemplate.basename():label=INSTANCE_TEMPLATE,
               version.name:label=VERSION_NAME,
               lastAttempt.errors.errors.map().format(
@@ -499,9 +500,10 @@ _LIST_INSTANCES_FORMAT = """\
 _LIST_INSTANCES_FORMAT_BETA = """\
         table(name:label=NAME,
               instance.scope().segment(0):label=ZONE,
-              instanceStatus:label=STATUS,
-              instanceHealth[0].detailedHealthState:label=HEALTH_STATE,
-              currentAction:label=ACTION,
+              instanceStatus.colorizedStatus():label=STATUS,
+              instanceHealth[0].detailedHealthState.colorizedHealthState()
+                :label=HEALTH_STATE,
+              currentAction.colorizedAction():label=ACTION,
               version.instanceTemplate.basename():label=INSTANCE_TEMPLATE,
               version.name:label=VERSION_NAME,
               lastAttempt.errors.errors.map().format(

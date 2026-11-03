@@ -18,7 +18,6 @@
 from googlecloudsdk.api_lib.network_security.security_profiles import wildfire_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -47,7 +46,9 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class DeleteInlineMlException(base.UpdateCommand):
   """Delete a WildFire inline machine learning exception from a WildFire Analysis Profile."""
 
@@ -86,11 +87,6 @@ class DeleteInlineMlException(base.UpdateCommand):
     )
     client = wildfire_api.Client(self.ReleaseTrack(), project_scoped)
     is_async = args.async_
-
-    if args.location != 'global':
-      raise core_exceptions.Error(
-          f'Only `global` location is supported, but got: {args.location}'
-      )
 
     response = client.DeleteInlineMlException(
         security_profile.RelativeName(),

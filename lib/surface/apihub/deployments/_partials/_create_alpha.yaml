@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -578,6 +578,15 @@
       help_text: |-
         The environment at source for the deployment.
         For example: prod, dev, staging, etc.
+    - arg_name: source-revision
+      api_field: googleCloudApihubV1Deployment.sourceRevision
+      required: false
+      repeated: false
+      help_text: |-
+        A revision identifier for the underlying gateway configuration that this
+        deployment serves. For Apigee gateway variants, this is typically the
+        proxy revision number populated automatically when the deployment is
+        discovered.
   request:
     api_version: v1
     collection:

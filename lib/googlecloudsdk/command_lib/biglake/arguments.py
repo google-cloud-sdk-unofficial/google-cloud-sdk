@@ -201,6 +201,20 @@ def AddTableCreateArgs(parser):
   )
 
 
+def AddViewCreateArgs(parser):
+  """Adds arguments for creating views."""
+  parser.add_argument(
+      '--create-from-file',
+      required=True,
+      help=(
+          'Path to a JSON file containing the view creation request. The'
+          ' format must follow the Apache Iceberg REST Catalog Open API'
+          ' specification for `CreateViewRequest`. The fields `name`,'
+          ' `schema`, and `view-version` must be specified.'
+      ),
+  )
+
+
 def AddFederatedCatalogArgs(
     parser, support_snowflake=False, support_workday=False
 ):

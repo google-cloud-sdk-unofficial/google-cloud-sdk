@@ -176,6 +176,10 @@ def ParseInstanceActionFlag(flag_name, instance_action_str,
       'restart': instance_action_enum.RESTART,
       'replace': instance_action_enum.REPLACE,
   }
+  if hasattr(instance_action_enum, 'RESTART_IN_PLACE'):
+    instance_actions_enum_map['restart-in-place'] = (
+        instance_action_enum.RESTART_IN_PLACE
+    )
   if instance_action_str not in instance_actions_enum_map:
     raise exceptions.InvalidArgumentException(
         flag_name,

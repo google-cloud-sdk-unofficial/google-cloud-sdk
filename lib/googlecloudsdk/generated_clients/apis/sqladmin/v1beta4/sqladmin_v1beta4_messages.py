@@ -5698,6 +5698,43 @@ class RestoreBackupContext(_messages.Message):
   project = _messages.StringField(4)
 
 
+class Result(_messages.Message):
+  r"""The result of a security finding, specific to its type.
+
+  Enums:
+    CredentialAuditFindingValueValuesEnum: Output only. The result of a
+      credential audit. Set when `finding_type` is `CREDENTIAL_AUDIT`.
+
+  Fields:
+    credentialAuditFinding: Output only. The result of a credential audit. Set
+      when `finding_type` is `CREDENTIAL_AUDIT`.
+  """
+
+  class CredentialAuditFindingValueValuesEnum(_messages.Enum):
+    r"""Output only. The result of a credential audit. Set when `finding_type`
+    is `CREDENTIAL_AUDIT`.
+
+    Values:
+      CREDENTIAL_AUDIT_FINDING_UNSPECIFIED: The credential audit result is
+        unknown or unspecified.
+      NO_ISSUE_DETECTED: The credential audit completed and no issue was
+        detected.
+      CREDENTIALS_LEAKED: The username and password combination was exposed in
+        a public data breach. Change the password as soon as possible.
+      AUDIT_SKIPPED: The credential audit was skipped, for example, because
+        the password is not eligible for the audit.
+      AUDIT_FAILED: The credential audit failed to complete due to an error.
+        You can change the password to trigger the audit again.
+    """
+    CREDENTIAL_AUDIT_FINDING_UNSPECIFIED = 0
+    NO_ISSUE_DETECTED = 1
+    CREDENTIALS_LEAKED = 2
+    AUDIT_SKIPPED = 3
+    AUDIT_FAILED = 4
+
+  credentialAuditFinding = _messages.EnumField('CredentialAuditFindingValueValuesEnum', 1)
+
+
 class RotateEntraIdCertificateContext(_messages.Message):
   r"""Instance rotate Entra ID certificate context.
 
@@ -5748,6 +5785,56 @@ class Row(_messages.Message):
   """
 
   values = _messages.MessageField('Value', 1, repeated=True)
+
+
+class SecurityFinding(_messages.Message):
+  r"""A security finding detected for a database user.
+
+  Enums:
+    FindingTypeValueValuesEnum: Output only. The type of the security finding.
+    StateValueValuesEnum: Output only. The state of the security finding.
+
+  Fields:
+    findingType: Output only. The type of the security finding.
+    firstDetectTime: Output only. The time when the finding was first
+      detected.
+    lastDetectTime: Output only. The time when the finding was most recently
+      detected.
+    result: Output only. The result of the security finding, specific to its
+      type.
+    state: Output only. The state of the security finding.
+  """
+
+  class FindingTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of the security finding.
+
+    Values:
+      TYPE_UNSPECIFIED: The finding type is unknown or unspecified.
+      CREDENTIAL_AUDIT: The finding is from a credential audit, which checks
+        whether the username and password combination of a database user has
+        been exposed in a public data breach.
+    """
+    TYPE_UNSPECIFIED = 0
+    CREDENTIAL_AUDIT = 1
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the security finding.
+
+    Values:
+      STATE_UNSPECIFIED: The finding state is unknown or unspecified.
+      ACTIVE: The finding is active and still applies to the user.
+      CLOSED: The finding is closed and no longer applies to the user, for
+        example, because the password was changed or the user was deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    CLOSED = 2
+
+  findingType = _messages.EnumField('FindingTypeValueValuesEnum', 1)
+  firstDetectTime = _messages.StringField(2)
+  lastDetectTime = _messages.StringField(3)
+  result = _messages.MessageField('Result', 4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
 
 
 class SelectedObjects(_messages.Message):
@@ -6802,7 +6889,8 @@ class SqlCustomerManagedCertificatesDeleteRequest(_messages.Message):
 
   Fields:
     certificateBundle: Required. Name tag of the customer managed certificate
-      bundle to delete.
+      bundle to delete. It must be alphanumeric and have a maximum length of
+      10 characters.
     instance: Required. Cloud SQL instance ID. This does not include the
       project ID.
     project: Required. Project ID of the project that contains the instance.
@@ -6831,7 +6919,8 @@ class SqlCustomerManagedCertificatesUpdateRequest(_messages.Message):
 
   Fields:
     certificateBundle: Required. Name tag of the customer managed certificate
-      bundle to update.
+      bundle to update. It must be alphanumeric and have a maximum length of
+      10 characters.
     instance: Required. Cloud SQL instance ID. This does not include the
       project ID.
     project: Required. Project ID of the project that contains the instance.
@@ -7901,12 +7990,16 @@ class SqlInstancesRotateEntraIdCertificateRequest(_messages.Message):
       request body.
     location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
+    verify: Optional. If true, pre-validates certificate permissions against
+      Azure before rotation. If validation fails, the rotation will not
+      proceed.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesRotateEntraIdCertificateRequest = _messages.MessageField('InstancesRotateEntraIdCertificateRequest', 2)
   location = _messages.StringField(3)
   project = _messages.StringField(4, required=True)
+  verify = _messages.BooleanField(5)
 
 
 class SqlInstancesRotateServerCaRequest(_messages.Message):
@@ -8762,19 +8855,54 @@ class SqlUsersDeleteRequest(_messages.Message):
 class SqlUsersGetRequest(_messages.Message):
   r"""A SqlUsersGetRequest object.
 
+  Enums:
+    ViewValueValuesEnum: Optional. Specifies which user fields to return.
+      Defaults to `USER_VIEW_BASIC`. Set to `USER_VIEW_FULL` to include
+      security findings, which requires the `cloudsql.users.viewSecurity` IAM
+      permission on the instance.
+
   Fields:
     host: Host of a user of the instance.
     instance: Database instance ID. This does not include the project ID.
     location: Optional. Region of the Cloud SQL instance.
     name: User of the instance.
     project: Project ID of the project that contains the instance.
+    view: Optional. Specifies which user fields to return. Defaults to
+      `USER_VIEW_BASIC`. Set to `USER_VIEW_FULL` to include security findings,
+      which requires the `cloudsql.users.viewSecurity` IAM permission on the
+      instance.
   """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies which user fields to return. Defaults to
+    `USER_VIEW_BASIC`. Set to `USER_VIEW_FULL` to include security findings,
+    which requires the `cloudsql.users.viewSecurity` IAM permission on the
+    instance.
+
+    Values:
+      USER_VIEW_UNSPECIFIED: The default / unset value, equivalent to
+        `USER_VIEW_BASIC`.
+      USER_VIEW_BASIC: Includes basic user metadata. Does not include security
+        findings. This is the default view, protecting backend performance and
+        avoiding additional authorization checks. Returns: all fields except
+        `security_findings`.
+      USER_VIEW_FULL: Includes full user metadata, including security
+        findings. Authorization: Requesting this view requires the caller to
+        have the `cloudsql.users.viewSecurity` IAM permission on the instance.
+        If the caller lacks this permission, the request will fail with a
+        `PERMISSION_DENIED` error. Returns: all fields, including
+        `security_findings`.
+    """
+    USER_VIEW_UNSPECIFIED = 0
+    USER_VIEW_BASIC = 1
+    USER_VIEW_FULL = 2
 
   host = _messages.StringField(1)
   instance = _messages.StringField(2, required=True)
   location = _messages.StringField(3)
   name = _messages.StringField(4, required=True)
   project = _messages.StringField(5, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 6)
 
 
 class SqlUsersInsertRequest(_messages.Message):
@@ -8796,15 +8924,50 @@ class SqlUsersInsertRequest(_messages.Message):
 class SqlUsersListRequest(_messages.Message):
   r"""A SqlUsersListRequest object.
 
+  Enums:
+    ViewValueValuesEnum: Optional. Specifies which user fields to return.
+      Defaults to `USER_VIEW_BASIC`. Set to `USER_VIEW_FULL` to include
+      security findings, which requires the `cloudsql.users.viewSecurity` IAM
+      permission on the instance.
+
   Fields:
     instance: Database instance ID. This does not include the project ID.
     location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
+    view: Optional. Specifies which user fields to return. Defaults to
+      `USER_VIEW_BASIC`. Set to `USER_VIEW_FULL` to include security findings,
+      which requires the `cloudsql.users.viewSecurity` IAM permission on the
+      instance.
   """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies which user fields to return. Defaults to
+    `USER_VIEW_BASIC`. Set to `USER_VIEW_FULL` to include security findings,
+    which requires the `cloudsql.users.viewSecurity` IAM permission on the
+    instance.
+
+    Values:
+      USER_VIEW_UNSPECIFIED: The default / unset value, equivalent to
+        `USER_VIEW_BASIC`.
+      USER_VIEW_BASIC: Includes basic user metadata. Does not include security
+        findings. This is the default view, protecting backend performance and
+        avoiding additional authorization checks. Returns: all fields except
+        `security_findings`.
+      USER_VIEW_FULL: Includes full user metadata, including security
+        findings. Authorization: Requesting this view requires the caller to
+        have the `cloudsql.users.viewSecurity` IAM permission on the instance.
+        If the caller lacks this permission, the request will fail with a
+        `PERMISSION_DENIED` error. Returns: all fields, including
+        `security_findings`.
+    """
+    USER_VIEW_UNSPECIFIED = 0
+    USER_VIEW_BASIC = 1
+    USER_VIEW_FULL = 2
 
   instance = _messages.StringField(1, required=True)
   location = _messages.StringField(2)
   project = _messages.StringField(3, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 4)
 
 
 class SqlUsersUpdateRequest(_messages.Message):
@@ -9698,6 +9861,9 @@ class User(_messages.Message):
     project: The project ID of the project containing the Cloud SQL database.
       The Google apps domain is prefixed if applicable. Can be omitted for
       *update* because it is already specified on the URL.
+    securityFindings: Output only. Security findings detected for the user,
+      such as credential audit results. Only populated when the request's
+      `view` is `USER_VIEW_FULL`.
     serverRoles: Optional. The server roles for the SQL Server login.
     sqlserverUserDetails: A SqlServerUserDetails attribute.
     type: The user type. It determines the method to authenticate the user
@@ -9778,9 +9944,10 @@ class User(_messages.Message):
   password = _messages.StringField(10)
   passwordPolicy = _messages.MessageField('UserPasswordValidationPolicy', 11)
   project = _messages.StringField(12)
-  serverRoles = _messages.StringField(13, repeated=True)
-  sqlserverUserDetails = _messages.MessageField('SqlServerUserDetails', 14)
-  type = _messages.EnumField('TypeValueValuesEnum', 15)
+  securityFindings = _messages.MessageField('SecurityFinding', 13, repeated=True)
+  serverRoles = _messages.StringField(14, repeated=True)
+  sqlserverUserDetails = _messages.MessageField('SqlServerUserDetails', 15)
+  type = _messages.EnumField('TypeValueValuesEnum', 16)
 
 
 class UserPasswordValidationPolicy(_messages.Message):

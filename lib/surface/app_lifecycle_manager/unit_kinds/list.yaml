@@ -1,20 +1,40 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
-    brief: List Unit Kinds
-    description: List Unit Kinds
-    examples: |-
-      To list all Unit Kinds, run:
+    brief: List unit kinds.
+    description: |-
+      List App Lifecycle Manager unit kinds.
 
-      $ {command}
+      If `--location` is not specified, unit kinds in all locations are listed.
+    examples: |-
+      To list all unit kinds in location `us-central1`, run:
+
+        $ {command} --location=us-central1
+
+      To list only the names of unit kinds with the label `env=prod` in all
+      locations, run:
+
+        $ {command} --filter="labels.env=prod" --format="value(name)"
+  ALPHA:
+    help_text:
+      brief: List Unit Kinds
+      description: List Unit Kinds
+      examples: |-
+        To list all Unit Kinds, run:
+
+        $ {command}
   arguments:
     resource:
       help_text: |-
-        Parent value for ListUnitKindsRequest
+        Location of the unit kinds to list.
+      ALPHA:
+        help_text: Parent value for ListUnitKindsRequest
       spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:project_location_with_default
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.unitKinds
   response:

@@ -121,6 +121,7 @@ from .types.task_template import TaskTemplate
 from .types.traffic_target import TrafficTarget
 from .types.traffic_target import TrafficTargetStatus
 from .types.traffic_target import TrafficTargetAllocationType
+from .types.vendor_settings import AmbientNetworking
 from .types.vendor_settings import BinaryAuthorization
 from .types.vendor_settings import BuildConfig
 from .types.vendor_settings import CpuScaling
@@ -132,6 +133,7 @@ from .types.vendor_settings import ServiceScaling
 from .types.vendor_settings import VpcAccess
 from .types.vendor_settings import WorkerPoolScaling
 from .types.vendor_settings import WorkloadIdentityConfig
+from .types.vendor_settings import AmbientScope
 from .types.vendor_settings import EncryptionKeyRevocationAction
 from .types.vendor_settings import ExecutionEnvironment
 from .types.vendor_settings import FunctionalType
@@ -156,6 +158,8 @@ __all__ = (
     'SourceUploadAsyncClient',
     'TasksAsyncClient',
     'WorkerPoolsAsyncClient',
+'AmbientNetworking',
+'AmbientScope',
 'BinaryAuthorization',
 'BuildConfig',
 'BuildConfiguration',

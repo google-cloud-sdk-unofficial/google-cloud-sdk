@@ -68,6 +68,24 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  COLLABORATIVEPROJECTS = (
+      'collaborativeProjects',
+      'collaborativeProjects/{collaborativeProjectsId}',
+      {},
+      ['collaborativeProjectsId'],
+      True
+  )
+  COLLABORATIVEPROJECTS_OPERATIONS = (
+      'collaborativeProjects.operations',
+      '{+name}',
+      {
+          '':
+              'collaborativeProjects/{collaborativeProjectsId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
   CUSTOMJOBS = (
       'customJobs',
       'customJobs/{customJobsId}',
@@ -323,23 +341,6 @@ class Collections(enum.Enum):
       {
           '':
               'evaluationSets/{evaluationSetsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  EVALUATIONTASKS = (
-      'evaluationTasks',
-      'evaluationTasks/{evaluationTasksId}',
-      {},
-      ['evaluationTasksId'],
-      True
-  )
-  EVALUATIONTASKS_OPERATIONS = (
-      'evaluationTasks.operations',
-      '{+name}',
-      {
-          '':
-              'evaluationTasks/{evaluationTasksId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -1007,6 +1008,26 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_COLLABORATIVEPROJECTS = (
+      'projects.locations.collaborativeProjects',
+      'projects/{projectsId}/locations/{locationsId}/collaborativeProjects/'
+      '{collaborativeProjectsId}',
+      {},
+      ['projectsId', 'locationsId', 'collaborativeProjectsId'],
+      True
+  )
+  PROJECTS_LOCATIONS_COLLABORATIVEPROJECTS_OPERATIONS = (
+      'projects.locations.collaborativeProjects.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'collaborativeProjects/{collaborativeProjectsId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_CUSTOMJOBS = (
       'projects.locations.customJobs',
       '{+name}',
@@ -1338,25 +1359,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/evaluationSets/'
               '{evaluationSetsId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_EVALUATIONTASKS = (
-      'projects.locations.evaluationTasks',
-      'projects/{projectsId}/locations/{locationsId}/evaluationTasks/'
-      '{evaluationTasksId}',
-      {},
-      ['projectsId', 'locationsId', 'evaluationTasksId'],
-      True
-  )
-  PROJECTS_LOCATIONS_EVALUATIONTASKS_OPERATIONS = (
-      'projects.locations.evaluationTasks.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/evaluationTasks/'
-              '{evaluationTasksId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -2211,6 +2213,17 @@ class Collections(enum.Enum):
       ['projectsId', 'locationsId', 'publishersId'],
       True
   )
+  PROJECTS_LOCATIONS_PUBLISHERS_FILES = (
+      'projects.locations.publishers.files',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/publishers/'
+              '{publishersId}/files/{filesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_PUBLISHERS_V1 = (
       'projects.locations.publishers.v1',
       'projects/{projectsId}/locations/{locationsId}/publishers/'
@@ -2747,10 +2760,13 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_TASKSTORES = (
       'projects.locations.taskStores',
-      'projects/{projectsId}/locations/{locationsId}/taskStores/'
-      '{taskStoresId}',
-      {},
-      ['projectsId', 'locationsId', 'taskStoresId'],
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/taskStores/'
+              '{taskStoresId}',
+      },
+      ['name'],
       True
   )
   PROJECTS_LOCATIONS_TASKSTORES_A2ATASKRECORDS = (

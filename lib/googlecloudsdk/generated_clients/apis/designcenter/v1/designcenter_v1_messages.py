@@ -1981,6 +1981,14 @@ class DesignCenterPolicy(_messages.Message):
     applyConditions: Optional. Conditions for applying the policy. Condition
       accepts the `criticality` and `environment` parameters from the
       application template.
+    cloudControlConfigs: Optional. Input only. Parameter values for the cloud
+      controls of the policy's framework, grouped by cloud control. Only
+      honored when framework parameter support is enabled for the project;
+      ignored otherwise. The values are saved with the application template
+      and are not returned on the policy. On update, they replace the saved
+      values. If they are empty, the saved values are cleared if
+      `cloud_control_configs` is named in the update mask. Otherwise, the
+      saved values are kept, unless the policy's framework changes.
     createTime: Output only. The policy creation timestamp.
     description: Optional. The policy description.
     displayName: Optional. The policy display name.
@@ -2006,14 +2014,15 @@ class DesignCenterPolicy(_messages.Message):
     COMPLIANCE_FRAMEWORK = 1
 
   applyConditions = _messages.MessageField('ApplyCondition', 1, repeated=True)
-  createTime = _messages.StringField(2)
-  description = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  name = _messages.StringField(5)
-  policyRevisionUri = _messages.StringField(6)
-  policyType = _messages.EnumField('PolicyTypeValueValuesEnum', 7)
-  policyUri = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  cloudControlConfigs = _messages.MessageField('CloudControlConfig', 2, repeated=True)
+  createTime = _messages.StringField(3)
+  description = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  name = _messages.StringField(6)
+  policyRevisionUri = _messages.StringField(7)
+  policyType = _messages.EnumField('PolicyTypeValueValuesEnum', 8)
+  policyUri = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class DesigncenterProjectsLocationsFetchFrameworksRequest(_messages.Message):

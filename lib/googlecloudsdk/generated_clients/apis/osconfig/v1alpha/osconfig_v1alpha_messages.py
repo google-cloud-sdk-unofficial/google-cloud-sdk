@@ -2108,9 +2108,9 @@ class OsconfigProjectsLocationsInstancesInventoriesGetRequest(_messages.Message)
   r"""A OsconfigProjectsLocationsInstancesInventoriesGetRequest object.
 
   Enums:
-    ViewValueValuesEnum: Inventory view indicating what information should be
-      included in the inventory resource. If unspecified, the default view is
-      BASIC.
+    ViewValueValuesEnum: Optional. Inventory view indicating what information
+      should be included in the inventory resource. If unspecified, the
+      default view is BASIC.
 
   Fields:
     name: Required. API resource name for inventory resource. Format:
@@ -2118,13 +2118,15 @@ class OsconfigProjectsLocationsInstancesInventoriesGetRequest(_messages.Message)
       For `{project}`, either `project-number` or `project-id` can be
       provided. For `{instance}`, either Compute Engine `instance-id` or
       `instance-name` can be provided.
-    view: Inventory view indicating what information should be included in the
-      inventory resource. If unspecified, the default view is BASIC.
+    view: Optional. Inventory view indicating what information should be
+      included in the inventory resource. If unspecified, the default view is
+      BASIC.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
-    r"""Inventory view indicating what information should be included in the
-    inventory resource. If unspecified, the default view is BASIC.
+    r"""Optional. Inventory view indicating what information should be
+    included in the inventory resource. If unspecified, the default view is
+    BASIC.
 
     Values:
       INVENTORY_VIEW_UNSPECIFIED: The default value. The API defaults to the
@@ -2144,27 +2146,29 @@ class OsconfigProjectsLocationsInstancesInventoriesListRequest(_messages.Message
   r"""A OsconfigProjectsLocationsInstancesInventoriesListRequest object.
 
   Enums:
-    ViewValueValuesEnum: Inventory view indicating what information should be
-      included in the inventory resource. If unspecified, the default view is
-      BASIC.
+    ViewValueValuesEnum: Optional. Inventory view indicating what information
+      should be included in the inventory resource. If unspecified, the
+      default view is BASIC.
 
   Fields:
-    filter: If provided, this field specifies the criteria that must be met by
-      a `Inventory` API resource to be included in the response.
-    pageSize: The maximum number of results to return.
-    pageToken: A pagination token returned from a previous call to
+    filter: Optional. If provided, this field specifies the criteria that must
+      be met by a `Inventory` API resource to be included in the response.
+    pageSize: Optional. The maximum number of results to return.
+    pageToken: Optional. A pagination token returned from a previous call to
       `ListInventories` that indicates where this listing should continue
       from.
     parent: Required. The parent resource name. Format:
       `projects/{project}/locations/{location}/instances/-` For `{project}`,
       either `project-number` or `project-id` can be provided.
-    view: Inventory view indicating what information should be included in the
-      inventory resource. If unspecified, the default view is BASIC.
+    view: Optional. Inventory view indicating what information should be
+      included in the inventory resource. If unspecified, the default view is
+      BASIC.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
-    r"""Inventory view indicating what information should be included in the
-    inventory resource. If unspecified, the default view is BASIC.
+    r"""Optional. Inventory view indicating what information should be
+    included in the inventory resource. If unspecified, the default view is
+    BASIC.
 
     Values:
       INVENTORY_VIEW_UNSPECIFIED: The default value. The API defaults to the

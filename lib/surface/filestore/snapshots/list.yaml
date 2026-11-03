@@ -1,6 +1,4 @@
-- hints:
-    read_only: true
-  help_text:
+- help_text:
     brief: |
       List Filestore snapshots.
     description: |

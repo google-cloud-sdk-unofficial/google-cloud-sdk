@@ -1,4 +1,6 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
+hints:
+  read_only: false
 
 help_text:
   brief: |
@@ -32,6 +34,8 @@ request:
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
   method: create
   modify_request_hooks:
   - googlecloudsdk.command_lib.network_security.util:SetServerTlsPolicyFields

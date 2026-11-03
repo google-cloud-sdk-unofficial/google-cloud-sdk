@@ -139,7 +139,7 @@ class VmwareengineV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists `CapacityAllocations` resources in a given project and location.
+      r"""Lists `CapacityAllocation` resources in a given project and location.
 
       Args:
         request: (VmwareengineProjectsLocationsCapacityAllocationsListRequest) input message

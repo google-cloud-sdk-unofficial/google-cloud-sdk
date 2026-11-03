@@ -24,7 +24,9 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List WildFire Verdict Change Requests."""
 
@@ -33,6 +35,10 @@ class List(base.ListCommand):
         To list WildFire Verdict Change Requests for endpoint with full resource name `organizations/1234/locations/us-central1-a/firewallEndpoints/my-endpoint`, run:
 
           $ {command} --endpoint=organizations/1234/locations/us-central1-a/firewallEndpoints/my-endpoint
+
+        To list WildFire Verdict Change Requests for a project-level endpoint with full resource name `projects/my-project/locations/us-central1-a/firewallEndpoints/my-endpoint`, run:
+
+          $ {command} --endpoint=projects/my-project/locations/us-central1-a/firewallEndpoints/my-endpoint
         """,
   }
 
@@ -56,8 +62,14 @@ class List(base.ListCommand):
     concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)
 
   def Run(self, args):
-    client = wildfire_verdict_change_requests_api.Client(self.ReleaseTrack())
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
+    project_scoped = (
+        endpoint_ref.concept_type.name
+        == activation_flags.PROJECT_ENDPOINT_RESOURCE_COLLECTION
+    )
+    client = wildfire_verdict_change_requests_api.Client(
+        self.ReleaseTrack(), project_scoped
+    )
     return client.ListVerdictChangeRequests(
         parent=endpoint_ref.result.RelativeName(),
         limit=args.limit,

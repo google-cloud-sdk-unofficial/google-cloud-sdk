@@ -1186,7 +1186,8 @@ class ConnectionProfilesClient:
       parent_ref: a Resource reference to a parent datastream.projects.locations
         resource for this connection profile.
       connection_profile_id: str, the name of the resource to create.
-      cp_type: str, the type of the connection profile ('MYSQL', ''
+      cp_type: str, the type of the connection profile (e.g. 'MYSQL', 'ORACLE',
+        'POSTGRESQL').
       release_track: Some arguments are added based on the command release
         track.
       args: argparse.Namespace, The arguments that this command was invoked

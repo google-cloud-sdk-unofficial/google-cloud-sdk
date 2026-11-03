@@ -18,6 +18,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: false
   hidden: true
   help_text:
     brief: Update a Workspace Key Access endpoint.
@@ -25,7 +27,7 @@
     examples: |-
       To set label `env=test` on endpoint `my-endpoint`, run:
 
-      $ {command} my-endpoint --location=us-central1 --labels=env=test
+      $ {command} my-endpoint --location=us-east1 --labels=env=test
   arguments:
     params:
     - help_text: |-

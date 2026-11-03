@@ -55,6 +55,7 @@ class Update(base.Command):
   _support_traffic_routing_config = False
   _support_user_workloads_service_accounts = False
   _support_airflow_rbac_config = False
+  _support_operation_settings = False
 
   @staticmethod
   def Args(parser, release_track=base.ReleaseTrack.GA):
@@ -431,6 +432,10 @@ class Update(base.Command):
       possible_args['update-airflow-rbac-config-from-file'] = (
           args.update_airflow_rbac_config_from_file
       )
+    if self._support_operation_settings:
+      possible_args['operation-settings-strategy'] = (
+          args.operation_settings_strategy
+      )
     for k, v in possible_args.items():
       if v is not None and not is_composer3:
         raise command_util.InvalidUserInputError(
@@ -507,6 +512,9 @@ class Update(base.Command):
       params['update_airflow_rbac_config_from_file'] = (
           args.update_airflow_rbac_config_from_file
       )
+    if self._support_operation_settings:
+      if args.operation_settings_strategy is not None:
+        params['operation_settings_strategy'] = args.operation_settings_strategy
     if args.enable_private_builds_only or args.disable_private_builds_only:
       params['support_private_builds_only'] = (
           True if args.enable_private_builds_only else False
@@ -614,6 +622,7 @@ class UpdateBeta(Update):
   _support_traffic_routing_config = True
   _support_user_workloads_service_accounts = False
   _support_airflow_rbac_config = True
+  _support_operation_settings = True
 
   @staticmethod
   def AlphaAndBetaArgs(parser, release_track=base.ReleaseTrack.BETA):
@@ -653,6 +662,7 @@ class UpdateAlpha(UpdateBeta):
   _support_traffic_routing_config = True
   _support_user_workloads_service_accounts = True
   _support_airflow_rbac_config = True
+  _support_operation_settings = True
 
   @staticmethod
   def Args(parser):

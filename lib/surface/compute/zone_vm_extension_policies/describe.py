@@ -67,11 +67,17 @@ class Describe(base.DescribeCommand):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
+class DescribePreview(Describe):
   """Describe a Compute Engine zone VM extension policy."""
 
   @classmethod
   def Args(cls, parser):
-    super(DescribeAlpha, cls).Args(parser)
+    super(DescribePreview, cls).Args(parser)
     vm_extension_policies_flags.AddScopeFlags(parser)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribePreview):
+  """Describe a Compute Engine zone VM extension policy."""

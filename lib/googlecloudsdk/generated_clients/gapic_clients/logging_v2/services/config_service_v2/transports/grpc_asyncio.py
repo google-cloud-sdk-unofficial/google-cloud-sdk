@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import inspect
+import json
+import pickle
+import logging as std_logging
 import warnings
 from typing import Awaitable, Callable, Dict, Optional, Sequence, Tuple, Union
 
@@ -23,8 +27,11 @@ from google.api_core import retry_async as retries
 from google.api_core import operations_v1
 from google.auth import credentials as ga_credentials   # type: ignore
 from google.auth.transport.grpc import SslCredentials  # type: ignore
+from cloudsdk.google.protobuf.json_format import MessageToJson
+import cloudsdk.google.protobuf.message
 
 import grpc                        # type: ignore
+import proto                       # type: ignore
 from grpc.experimental import aio  # type: ignore
 
 from google.longrunning import operations_pb2 # type: ignore
@@ -32,6 +39,73 @@ from cloudsdk.google.protobuf import empty_pb2  # type: ignore
 from googlecloudsdk.generated_clients.gapic_clients.logging_v2.types import logging_config
 from .base import ConfigServiceV2Transport, DEFAULT_CLIENT_INFO
 from .grpc import ConfigServiceV2GrpcTransport
+
+try:
+    from google.api_core import client_logging  # type: ignore
+    CLIENT_LOGGING_SUPPORTED = True  # pragma: NO COVER
+except ImportError:  # pragma: NO COVER
+    CLIENT_LOGGING_SUPPORTED = False
+
+_LOGGER = std_logging.getLogger(__name__)
+
+
+class _LoggingClientAIOInterceptor(grpc.aio.UnaryUnaryClientInterceptor):  # pragma: NO COVER
+    async def intercept_unary_unary(self, continuation, client_call_details, request):
+        logging_enabled = CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(std_logging.DEBUG)
+        if logging_enabled:  # pragma: NO COVER
+            request_metadata = client_call_details.metadata
+            if isinstance(request, proto.Message):
+                request_payload = type(request).to_json(request)
+            elif isinstance(request, cloudsdk.google.protobuf.message.Message):
+                request_payload = MessageToJson(request)
+            else:
+                request_payload = f"{type(request).__name__}: {pickle.dumps(request)}"
+
+            request_metadata = {
+                key: value.decode("utf-8") if isinstance(value, bytes) else value
+                for key, value in request_metadata
+            }
+            grpc_request = {
+                "payload": request_payload,
+                "requestMethod": "grpc",
+                "metadata": dict(request_metadata),
+            }
+            _LOGGER.debug(
+                f"Sending request for {client_call_details.method}",
+                extra = {
+                    "serviceName": "google.logging.v2.ConfigServiceV2",
+                    "rpcName": str(client_call_details.method),
+                    "request": grpc_request,
+                    "metadata": grpc_request["metadata"],
+                },
+            )
+        response = await continuation(client_call_details, request)
+        if logging_enabled:  # pragma: NO COVER
+            response_metadata = await response.trailing_metadata()
+            # Convert gRPC metadata `<class 'grpc.aio._metadata.Metadata'>` to list of tuples
+            metadata = dict([(k, str(v)) for k, v in response_metadata]) if response_metadata else None
+            result = await response
+            if isinstance(result, proto.Message):
+                response_payload = type(result).to_json(result)
+            elif isinstance(result, cloudsdk.google.protobuf.message.Message):
+                response_payload = MessageToJson(result)
+            else:
+                response_payload = f"{type(result).__name__}: {pickle.dumps(result)}"
+            grpc_response = {
+                "payload": response_payload,
+                "metadata": metadata,
+                "status": "OK",
+            }
+            _LOGGER.debug(
+                f"Received response to rpc {client_call_details.method}.",
+                extra = {
+                    "serviceName": "google.logging.v2.ConfigServiceV2",
+                    "rpcName": str(client_call_details.method),
+                    "response": grpc_response,
+                    "metadata": grpc_response["metadata"],
+                },
+            )
+        return response
 
 
 class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
@@ -66,8 +140,9 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
                 credentials identify this application to the service. If
                 none are specified, the client will attempt to ascertain
                 the credentials from the environment.
-            credentials_file (Optional[str]): A file with credentials that can
-                be loaded with :func:`google.auth.load_credentials_from_file`.
+            credentials_file (Optional[str]): Deprecated. A file with credentials that can
+                be loaded with :func:`google.auth.load_credentials_from_file`. This argument will be
+                removed in the next major version of this library.
             scopes (Optional[Sequence[str]]): A optional list of scopes needed for this
                 service. These are only used when credentials are not specified and
                 are passed to :func:`google.auth.default`.
@@ -116,9 +191,10 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
                 are specified, the client will attempt to ascertain the
                 credentials from the environment.
                 This argument is ignored if a ``channel`` instance is provided.
-            credentials_file (Optional[str]): A file with credentials that can
+            credentials_file (Optional[str]): Deprecated. A file with credentials that can
                 be loaded with :func:`google.auth.load_credentials_from_file`.
                 This argument is ignored if a ``channel`` instance is provided.
+                This argument will be removed in the next major version of this library.
             scopes (Optional[Sequence[str]]): A optional list of scopes needed for this
                 service. These are only used when credentials are not specified and
                 are passed to :func:`google.auth.default`.
@@ -169,7 +245,8 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
 
         if isinstance(channel, aio.Channel):
             # Ignore credentials if a channel was passed.
-            credentials = False
+            credentials = None
+            self._ignore_credentials = True
             # If a channel was explicitly provided, set it.
             self._grpc_channel = channel
             self._ssl_channel_credentials = None
@@ -225,7 +302,11 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
                 ],
             )
 
-        # Wrap messages. This must be done after self._grpc_channel exists
+        self._interceptor = _LoggingClientAIOInterceptor()
+        self._grpc_channel._unary_unary_interceptors.append(self._interceptor)
+        self._logged_channel = self._grpc_channel
+        self._wrap_with_kind = "kind" in inspect.signature(gapic_v1.method_async.wrap_method).parameters
+        # Wrap messages. This must be done after self._logged_channel exists
         self._prep_wrapped_messages(client_info)
 
     @property
@@ -248,7 +329,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # Quick check: Only create a new client if we do not already have one.
         if self._operations_client is None:
             self._operations_client = operations_v1.OperationsAsyncClient(
-                self.grpc_channel
+                self._logged_channel
             )
 
         # Return the client from cache.
@@ -273,7 +354,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'list_buckets' not in self._stubs:
-            self._stubs['list_buckets'] = self.grpc_channel.unary_unary(
+            self._stubs['list_buckets'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/ListBuckets',
                 request_serializer=logging_config.ListBucketsRequest.serialize,
                 response_deserializer=logging_config.ListBucketsResponse.deserialize,
@@ -299,7 +380,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'get_bucket' not in self._stubs:
-            self._stubs['get_bucket'] = self.grpc_channel.unary_unary(
+            self._stubs['get_bucket'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/GetBucket',
                 request_serializer=logging_config.GetBucketRequest.serialize,
                 response_deserializer=logging_config.LogBucket.deserialize,
@@ -328,7 +409,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'create_bucket_async' not in self._stubs:
-            self._stubs['create_bucket_async'] = self.grpc_channel.unary_unary(
+            self._stubs['create_bucket_async'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/CreateBucketAsync',
                 request_serializer=logging_config.CreateBucketRequest.serialize,
                 response_deserializer=operations_pb2.Operation.FromString,
@@ -360,7 +441,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'update_bucket_async' not in self._stubs:
-            self._stubs['update_bucket_async'] = self.grpc_channel.unary_unary(
+            self._stubs['update_bucket_async'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/UpdateBucketAsync',
                 request_serializer=logging_config.UpdateBucketRequest.serialize,
                 response_deserializer=operations_pb2.Operation.FromString,
@@ -388,7 +469,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'create_bucket' not in self._stubs:
-            self._stubs['create_bucket'] = self.grpc_channel.unary_unary(
+            self._stubs['create_bucket'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/CreateBucket',
                 request_serializer=logging_config.CreateBucketRequest.serialize,
                 response_deserializer=logging_config.LogBucket.deserialize,
@@ -420,7 +501,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'update_bucket' not in self._stubs:
-            self._stubs['update_bucket'] = self.grpc_channel.unary_unary(
+            self._stubs['update_bucket'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/UpdateBucket',
                 request_serializer=logging_config.UpdateBucketRequest.serialize,
                 response_deserializer=logging_config.LogBucket.deserialize,
@@ -451,7 +532,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'delete_bucket' not in self._stubs:
-            self._stubs['delete_bucket'] = self.grpc_channel.unary_unary(
+            self._stubs['delete_bucket'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/DeleteBucket',
                 request_serializer=logging_config.DeleteBucketRequest.serialize,
                 response_deserializer=empty_pb2.Empty.FromString,
@@ -479,7 +560,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'undelete_bucket' not in self._stubs:
-            self._stubs['undelete_bucket'] = self.grpc_channel.unary_unary(
+            self._stubs['undelete_bucket'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/UndeleteBucket',
                 request_serializer=logging_config.UndeleteBucketRequest.serialize,
                 response_deserializer=empty_pb2.Empty.FromString,
@@ -505,7 +586,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'list_views' not in self._stubs:
-            self._stubs['list_views'] = self.grpc_channel.unary_unary(
+            self._stubs['list_views'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/ListViews',
                 request_serializer=logging_config.ListViewsRequest.serialize,
                 response_deserializer=logging_config.ListViewsResponse.deserialize,
@@ -531,7 +612,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'get_view' not in self._stubs:
-            self._stubs['get_view'] = self.grpc_channel.unary_unary(
+            self._stubs['get_view'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/GetView',
                 request_serializer=logging_config.GetViewRequest.serialize,
                 response_deserializer=logging_config.LogView.deserialize,
@@ -558,7 +639,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'create_view' not in self._stubs:
-            self._stubs['create_view'] = self.grpc_channel.unary_unary(
+            self._stubs['create_view'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/CreateView',
                 request_serializer=logging_config.CreateViewRequest.serialize,
                 response_deserializer=logging_config.LogView.deserialize,
@@ -589,7 +670,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'update_view' not in self._stubs:
-            self._stubs['update_view'] = self.grpc_channel.unary_unary(
+            self._stubs['update_view'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/UpdateView',
                 request_serializer=logging_config.UpdateViewRequest.serialize,
                 response_deserializer=logging_config.LogView.deserialize,
@@ -618,7 +699,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'delete_view' not in self._stubs:
-            self._stubs['delete_view'] = self.grpc_channel.unary_unary(
+            self._stubs['delete_view'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/DeleteView',
                 request_serializer=logging_config.DeleteViewRequest.serialize,
                 response_deserializer=empty_pb2.Empty.FromString,
@@ -644,7 +725,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'list_log_scopes' not in self._stubs:
-            self._stubs['list_log_scopes'] = self.grpc_channel.unary_unary(
+            self._stubs['list_log_scopes'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/ListLogScopes',
                 request_serializer=logging_config.ListLogScopesRequest.serialize,
                 response_deserializer=logging_config.ListLogScopesResponse.deserialize,
@@ -670,7 +751,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'get_log_scope' not in self._stubs:
-            self._stubs['get_log_scope'] = self.grpc_channel.unary_unary(
+            self._stubs['get_log_scope'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/GetLogScope',
                 request_serializer=logging_config.GetLogScopeRequest.serialize,
                 response_deserializer=logging_config.LogScope.deserialize,
@@ -696,7 +777,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'create_log_scope' not in self._stubs:
-            self._stubs['create_log_scope'] = self.grpc_channel.unary_unary(
+            self._stubs['create_log_scope'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/CreateLogScope',
                 request_serializer=logging_config.CreateLogScopeRequest.serialize,
                 response_deserializer=logging_config.LogScope.deserialize,
@@ -722,7 +803,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'update_log_scope' not in self._stubs:
-            self._stubs['update_log_scope'] = self.grpc_channel.unary_unary(
+            self._stubs['update_log_scope'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/UpdateLogScope',
                 request_serializer=logging_config.UpdateLogScopeRequest.serialize,
                 response_deserializer=logging_config.LogScope.deserialize,
@@ -748,7 +829,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'delete_log_scope' not in self._stubs:
-            self._stubs['delete_log_scope'] = self.grpc_channel.unary_unary(
+            self._stubs['delete_log_scope'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/DeleteLogScope',
                 request_serializer=logging_config.DeleteLogScopeRequest.serialize,
                 response_deserializer=empty_pb2.Empty.FromString,
@@ -775,7 +856,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'list_exclusions' not in self._stubs:
-            self._stubs['list_exclusions'] = self.grpc_channel.unary_unary(
+            self._stubs['list_exclusions'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/ListExclusions',
                 request_serializer=logging_config.ListExclusionsRequest.serialize,
                 response_deserializer=logging_config.ListExclusionsResponse.deserialize,
@@ -801,7 +882,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'get_exclusion' not in self._stubs:
-            self._stubs['get_exclusion'] = self.grpc_channel.unary_unary(
+            self._stubs['get_exclusion'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/GetExclusion',
                 request_serializer=logging_config.GetExclusionRequest.serialize,
                 response_deserializer=logging_config.LogExclusion.deserialize,
@@ -829,7 +910,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'create_exclusion' not in self._stubs:
-            self._stubs['create_exclusion'] = self.grpc_channel.unary_unary(
+            self._stubs['create_exclusion'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/CreateExclusion',
                 request_serializer=logging_config.CreateExclusionRequest.serialize,
                 response_deserializer=logging_config.LogExclusion.deserialize,
@@ -856,7 +937,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'update_exclusion' not in self._stubs:
-            self._stubs['update_exclusion'] = self.grpc_channel.unary_unary(
+            self._stubs['update_exclusion'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/UpdateExclusion',
                 request_serializer=logging_config.UpdateExclusionRequest.serialize,
                 response_deserializer=logging_config.LogExclusion.deserialize,
@@ -882,7 +963,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'delete_exclusion' not in self._stubs:
-            self._stubs['delete_exclusion'] = self.grpc_channel.unary_unary(
+            self._stubs['delete_exclusion'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/DeleteExclusion',
                 request_serializer=logging_config.DeleteExclusionRequest.serialize,
                 response_deserializer=empty_pb2.Empty.FromString,
@@ -908,7 +989,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'list_sinks' not in self._stubs:
-            self._stubs['list_sinks'] = self.grpc_channel.unary_unary(
+            self._stubs['list_sinks'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/ListSinks',
                 request_serializer=logging_config.ListSinksRequest.serialize,
                 response_deserializer=logging_config.ListSinksResponse.deserialize,
@@ -934,7 +1015,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'get_sink' not in self._stubs:
-            self._stubs['get_sink'] = self.grpc_channel.unary_unary(
+            self._stubs['get_sink'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/GetSink',
                 request_serializer=logging_config.GetSinkRequest.serialize,
                 response_deserializer=logging_config.LogSink.deserialize,
@@ -964,7 +1045,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'create_sink' not in self._stubs:
-            self._stubs['create_sink'] = self.grpc_channel.unary_unary(
+            self._stubs['create_sink'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/CreateSink',
                 request_serializer=logging_config.CreateSinkRequest.serialize,
                 response_deserializer=logging_config.LogSink.deserialize,
@@ -995,7 +1076,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'update_sink' not in self._stubs:
-            self._stubs['update_sink'] = self.grpc_channel.unary_unary(
+            self._stubs['update_sink'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/UpdateSink',
                 request_serializer=logging_config.UpdateSinkRequest.serialize,
                 response_deserializer=logging_config.LogSink.deserialize,
@@ -1022,7 +1103,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'delete_sink' not in self._stubs:
-            self._stubs['delete_sink'] = self.grpc_channel.unary_unary(
+            self._stubs['delete_sink'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/DeleteSink',
                 request_serializer=logging_config.DeleteSinkRequest.serialize,
                 response_deserializer=empty_pb2.Empty.FromString,
@@ -1048,7 +1129,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'list_links' not in self._stubs:
-            self._stubs['list_links'] = self.grpc_channel.unary_unary(
+            self._stubs['list_links'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/ListLinks',
                 request_serializer=logging_config.ListLinksRequest.serialize,
                 response_deserializer=logging_config.ListLinksResponse.deserialize,
@@ -1074,7 +1155,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'get_link' not in self._stubs:
-            self._stubs['get_link'] = self.grpc_channel.unary_unary(
+            self._stubs['get_link'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/GetLink',
                 request_serializer=logging_config.GetLinkRequest.serialize,
                 response_deserializer=logging_config.Link.deserialize,
@@ -1103,7 +1184,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'create_link' not in self._stubs:
-            self._stubs['create_link'] = self.grpc_channel.unary_unary(
+            self._stubs['create_link'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/CreateLink',
                 request_serializer=logging_config.CreateLinkRequest.serialize,
                 response_deserializer=operations_pb2.Operation.FromString,
@@ -1130,7 +1211,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'delete_link' not in self._stubs:
-            self._stubs['delete_link'] = self.grpc_channel.unary_unary(
+            self._stubs['delete_link'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/DeleteLink',
                 request_serializer=logging_config.DeleteLinkRequest.serialize,
                 response_deserializer=operations_pb2.Operation.FromString,
@@ -1150,8 +1231,8 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         configured for an organization, it applies to all projects and
         folders in the Google Cloud organization.
 
-        See `Enabling CMEK for Log
-        Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+        See `Configure CMEK for Cloud
+        Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
         for more information.
 
         Returns:
@@ -1165,7 +1246,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'get_cmek_settings' not in self._stubs:
-            self._stubs['get_cmek_settings'] = self.grpc_channel.unary_unary(
+            self._stubs['get_cmek_settings'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/GetCmekSettings',
                 request_serializer=logging_config.GetCmekSettingsRequest.serialize,
                 response_deserializer=logging_config.CmekSettings.deserialize,
@@ -1187,14 +1268,14 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         [UpdateCmekSettings][google.logging.v2.ConfigServiceV2.UpdateCmekSettings]
         fails when any of the following are true:
 
-        -  The value of ``kms_key_name`` is invalid.
-        -  The associated service account doesn't have the required
-           ``roles/cloudkms.cryptoKeyEncrypterDecrypter`` role assigned
-           for the key.
-        -  Access to the key is disabled.
+        - The value of ``kms_key_name`` is invalid.
+        - The associated service account doesn't have the required
+          ``roles/cloudkms.cryptoKeyEncrypterDecrypter`` role assigned
+          for the key.
+        - Access to the key is disabled.
 
-        See `Enabling CMEK for Log
-        Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+        See `Configure CMEK for Cloud
+        Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
         for more information.
 
         Returns:
@@ -1208,7 +1289,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'update_cmek_settings' not in self._stubs:
-            self._stubs['update_cmek_settings'] = self.grpc_channel.unary_unary(
+            self._stubs['update_cmek_settings'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/UpdateCmekSettings',
                 request_serializer=logging_config.UpdateCmekSettingsRequest.serialize,
                 response_deserializer=logging_config.CmekSettings.deserialize,
@@ -1227,7 +1308,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         folders, organizations, and billing accounts.
 
         See [View default resource settings for Logging]
-        (https://cloud.google.com/logging/docs/default-settings#view-org-settings)
+        (https://docs.cloud.google.com/logging/docs/default-settings#view-org-settings)
         for more information.
 
         Returns:
@@ -1241,7 +1322,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'get_settings' not in self._stubs:
-            self._stubs['get_settings'] = self.grpc_channel.unary_unary(
+            self._stubs['get_settings'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/GetSettings',
                 request_serializer=logging_config.GetSettingsRequest.serialize,
                 response_deserializer=logging_config.Settings.deserialize,
@@ -1260,19 +1341,19 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         [UpdateSettings][google.logging.v2.ConfigServiceV2.UpdateSettings]
         fails when any of the following are true:
 
-        -  The value of ``storage_location`` either isn't supported by
-           Logging or violates the location OrgPolicy.
-        -  The ``default_sink_config`` field is set, but it has an
-           unspecified filter write mode.
-        -  The value of ``kms_key_name`` is invalid.
-        -  The associated service account doesn't have the required
-           ``roles/cloudkms.cryptoKeyEncrypterDecrypter`` role assigned
-           for the key.
-        -  Access to the key is disabled.
+        - The value of ``storage_location`` either isn't supported by
+          Logging or violates the location OrgPolicy.
+        - The ``default_sink_config`` field is set, but it has an
+          unspecified filter write mode.
+        - The value of ``kms_key_name`` is invalid.
+        - The associated service account doesn't have the required
+          ``roles/cloudkms.cryptoKeyEncrypterDecrypter`` role assigned
+          for the key.
+        - Access to the key is disabled.
 
         See [Configure default settings for organizations and folders]
-        (https://cloud.google.com/logging/docs/default-settings) for
-        more information.
+        (https://docs.cloud.google.com/logging/docs/default-settings)
+        for more information.
 
         Returns:
             Callable[[~.UpdateSettingsRequest],
@@ -1285,7 +1366,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'update_settings' not in self._stubs:
-            self._stubs['update_settings'] = self.grpc_channel.unary_unary(
+            self._stubs['update_settings'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/UpdateSettings',
                 request_serializer=logging_config.UpdateSettingsRequest.serialize,
                 response_deserializer=logging_config.Settings.deserialize,
@@ -1312,7 +1393,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'list_saved_queries' not in self._stubs:
-            self._stubs['list_saved_queries'] = self.grpc_channel.unary_unary(
+            self._stubs['list_saved_queries'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/ListSavedQueries',
                 request_serializer=logging_config.ListSavedQueriesRequest.serialize,
                 response_deserializer=logging_config.ListSavedQueriesResponse.deserialize,
@@ -1338,7 +1419,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'get_saved_query' not in self._stubs:
-            self._stubs['get_saved_query'] = self.grpc_channel.unary_unary(
+            self._stubs['get_saved_query'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/GetSavedQuery',
                 request_serializer=logging_config.GetSavedQueryRequest.serialize,
                 response_deserializer=logging_config.SavedQuery.deserialize,
@@ -1365,7 +1446,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'create_saved_query' not in self._stubs:
-            self._stubs['create_saved_query'] = self.grpc_channel.unary_unary(
+            self._stubs['create_saved_query'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/CreateSavedQuery',
                 request_serializer=logging_config.CreateSavedQueryRequest.serialize,
                 response_deserializer=logging_config.SavedQuery.deserialize,
@@ -1391,7 +1472,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'update_saved_query' not in self._stubs:
-            self._stubs['update_saved_query'] = self.grpc_channel.unary_unary(
+            self._stubs['update_saved_query'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/UpdateSavedQuery',
                 request_serializer=logging_config.UpdateSavedQueryRequest.serialize,
                 response_deserializer=logging_config.SavedQuery.deserialize,
@@ -1418,7 +1499,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'delete_saved_query' not in self._stubs:
-            self._stubs['delete_saved_query'] = self.grpc_channel.unary_unary(
+            self._stubs['delete_saved_query'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/DeleteSavedQuery',
                 request_serializer=logging_config.DeleteSavedQueryRequest.serialize,
                 response_deserializer=empty_pb2.Empty.FromString,
@@ -1445,7 +1526,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'list_recent_queries' not in self._stubs:
-            self._stubs['list_recent_queries'] = self.grpc_channel.unary_unary(
+            self._stubs['list_recent_queries'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/ListRecentQueries',
                 request_serializer=logging_config.ListRecentQueriesRequest.serialize,
                 response_deserializer=logging_config.ListRecentQueriesResponse.deserialize,
@@ -1472,7 +1553,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
         # gRPC handles serialization and deserialization, so we just need
         # to pass in the functions for each.
         if 'copy_log_entries' not in self._stubs:
-            self._stubs['copy_log_entries'] = self.grpc_channel.unary_unary(
+            self._stubs['copy_log_entries'] = self._logged_channel.unary_unary(
                 '/google.logging.v2.ConfigServiceV2/CopyLogEntries',
                 request_serializer=logging_config.CopyLogEntriesRequest.serialize,
                 response_deserializer=operations_pb2.Operation.FromString,
@@ -1482,97 +1563,97 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
     def _prep_wrapped_messages(self, client_info):
         """ Precompute the wrapped methods, overriding the base class method to use async wrappers."""
         self._wrapped_methods = {
-            self.list_buckets: gapic_v1.method_async.wrap_method(
+            self.list_buckets: self._wrap_method(
                 self.list_buckets,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.get_bucket: gapic_v1.method_async.wrap_method(
+            self.get_bucket: self._wrap_method(
                 self.get_bucket,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.create_bucket_async: gapic_v1.method_async.wrap_method(
+            self.create_bucket_async: self._wrap_method(
                 self.create_bucket_async,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.update_bucket_async: gapic_v1.method_async.wrap_method(
+            self.update_bucket_async: self._wrap_method(
                 self.update_bucket_async,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.create_bucket: gapic_v1.method_async.wrap_method(
+            self.create_bucket: self._wrap_method(
                 self.create_bucket,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.update_bucket: gapic_v1.method_async.wrap_method(
+            self.update_bucket: self._wrap_method(
                 self.update_bucket,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.delete_bucket: gapic_v1.method_async.wrap_method(
+            self.delete_bucket: self._wrap_method(
                 self.delete_bucket,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.undelete_bucket: gapic_v1.method_async.wrap_method(
+            self.undelete_bucket: self._wrap_method(
                 self.undelete_bucket,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.list_views: gapic_v1.method_async.wrap_method(
+            self.list_views: self._wrap_method(
                 self.list_views,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.get_view: gapic_v1.method_async.wrap_method(
+            self.get_view: self._wrap_method(
                 self.get_view,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.create_view: gapic_v1.method_async.wrap_method(
+            self.create_view: self._wrap_method(
                 self.create_view,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.update_view: gapic_v1.method_async.wrap_method(
+            self.update_view: self._wrap_method(
                 self.update_view,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.delete_view: gapic_v1.method_async.wrap_method(
+            self.delete_view: self._wrap_method(
                 self.delete_view,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.list_log_scopes: gapic_v1.method_async.wrap_method(
+            self.list_log_scopes: self._wrap_method(
                 self.list_log_scopes,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.get_log_scope: gapic_v1.method_async.wrap_method(
+            self.get_log_scope: self._wrap_method(
                 self.get_log_scope,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.create_log_scope: gapic_v1.method_async.wrap_method(
+            self.create_log_scope: self._wrap_method(
                 self.create_log_scope,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.update_log_scope: gapic_v1.method_async.wrap_method(
+            self.update_log_scope: self._wrap_method(
                 self.update_log_scope,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.delete_log_scope: gapic_v1.method_async.wrap_method(
+            self.delete_log_scope: self._wrap_method(
                 self.delete_log_scope,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.list_exclusions: gapic_v1.method_async.wrap_method(
+            self.list_exclusions: self._wrap_method(
                 self.list_exclusions,
                 default_retry=retries.AsyncRetry(
                     initial=0.1,
@@ -1588,7 +1669,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
                 default_timeout=60.0,
                 client_info=client_info,
             ),
-            self.get_exclusion: gapic_v1.method_async.wrap_method(
+            self.get_exclusion: self._wrap_method(
                 self.get_exclusion,
                 default_retry=retries.AsyncRetry(
                     initial=0.1,
@@ -1604,17 +1685,17 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
                 default_timeout=60.0,
                 client_info=client_info,
             ),
-            self.create_exclusion: gapic_v1.method_async.wrap_method(
+            self.create_exclusion: self._wrap_method(
                 self.create_exclusion,
                 default_timeout=120.0,
                 client_info=client_info,
             ),
-            self.update_exclusion: gapic_v1.method_async.wrap_method(
+            self.update_exclusion: self._wrap_method(
                 self.update_exclusion,
                 default_timeout=120.0,
                 client_info=client_info,
             ),
-            self.delete_exclusion: gapic_v1.method_async.wrap_method(
+            self.delete_exclusion: self._wrap_method(
                 self.delete_exclusion,
                 default_retry=retries.AsyncRetry(
                     initial=0.1,
@@ -1630,7 +1711,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
                 default_timeout=60.0,
                 client_info=client_info,
             ),
-            self.list_sinks: gapic_v1.method_async.wrap_method(
+            self.list_sinks: self._wrap_method(
                 self.list_sinks,
                 default_retry=retries.AsyncRetry(
                     initial=0.1,
@@ -1646,7 +1727,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
                 default_timeout=60.0,
                 client_info=client_info,
             ),
-            self.get_sink: gapic_v1.method_async.wrap_method(
+            self.get_sink: self._wrap_method(
                 self.get_sink,
                 default_retry=retries.AsyncRetry(
                     initial=0.1,
@@ -1662,12 +1743,12 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
                 default_timeout=60.0,
                 client_info=client_info,
             ),
-            self.create_sink: gapic_v1.method_async.wrap_method(
+            self.create_sink: self._wrap_method(
                 self.create_sink,
                 default_timeout=120.0,
                 client_info=client_info,
             ),
-            self.update_sink: gapic_v1.method_async.wrap_method(
+            self.update_sink: self._wrap_method(
                 self.update_sink,
                 default_retry=retries.AsyncRetry(
                     initial=0.1,
@@ -1683,7 +1764,7 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
                 default_timeout=60.0,
                 client_info=client_info,
             ),
-            self.delete_sink: gapic_v1.method_async.wrap_method(
+            self.delete_sink: self._wrap_method(
                 self.delete_sink,
                 default_retry=retries.AsyncRetry(
                     initial=0.1,
@@ -1699,85 +1780,94 @@ class ConfigServiceV2GrpcAsyncIOTransport(ConfigServiceV2Transport):
                 default_timeout=60.0,
                 client_info=client_info,
             ),
-            self.list_links: gapic_v1.method_async.wrap_method(
+            self.list_links: self._wrap_method(
                 self.list_links,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.get_link: gapic_v1.method_async.wrap_method(
+            self.get_link: self._wrap_method(
                 self.get_link,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.create_link: gapic_v1.method_async.wrap_method(
+            self.create_link: self._wrap_method(
                 self.create_link,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.delete_link: gapic_v1.method_async.wrap_method(
+            self.delete_link: self._wrap_method(
                 self.delete_link,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.get_cmek_settings: gapic_v1.method_async.wrap_method(
+            self.get_cmek_settings: self._wrap_method(
                 self.get_cmek_settings,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.update_cmek_settings: gapic_v1.method_async.wrap_method(
+            self.update_cmek_settings: self._wrap_method(
                 self.update_cmek_settings,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.get_settings: gapic_v1.method_async.wrap_method(
+            self.get_settings: self._wrap_method(
                 self.get_settings,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.update_settings: gapic_v1.method_async.wrap_method(
+            self.update_settings: self._wrap_method(
                 self.update_settings,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.list_saved_queries: gapic_v1.method_async.wrap_method(
+            self.list_saved_queries: self._wrap_method(
                 self.list_saved_queries,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.get_saved_query: gapic_v1.method_async.wrap_method(
+            self.get_saved_query: self._wrap_method(
                 self.get_saved_query,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.create_saved_query: gapic_v1.method_async.wrap_method(
+            self.create_saved_query: self._wrap_method(
                 self.create_saved_query,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.update_saved_query: gapic_v1.method_async.wrap_method(
+            self.update_saved_query: self._wrap_method(
                 self.update_saved_query,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.delete_saved_query: gapic_v1.method_async.wrap_method(
+            self.delete_saved_query: self._wrap_method(
                 self.delete_saved_query,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.list_recent_queries: gapic_v1.method_async.wrap_method(
+            self.list_recent_queries: self._wrap_method(
                 self.list_recent_queries,
                 default_timeout=None,
                 client_info=client_info,
             ),
-            self.copy_log_entries: gapic_v1.method_async.wrap_method(
+            self.copy_log_entries: self._wrap_method(
                 self.copy_log_entries,
                 default_timeout=None,
                 client_info=client_info,
             ),
-         }
+        }
+
+    def _wrap_method(self, func, *args, **kwargs):
+        if self._wrap_with_kind:  # pragma: NO COVER
+            kwargs["kind"] = self.kind
+        return gapic_v1.method_async.wrap_method(func, *args, **kwargs)
 
     def close(self):
-        return self.grpc_channel.close()
+        return self._logged_channel.close()
+
+    @property
+    def kind(self) -> str:
+        return "grpc_asyncio"
 
 
 __all__ = (

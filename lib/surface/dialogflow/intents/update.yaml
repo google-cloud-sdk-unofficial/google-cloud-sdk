@@ -1,6 +1,4 @@
 release_tracks: [ALPHA]
-hints:
-  read_only: false
 help_text:
   brief: Update a Dialogflow entity type for the agent of the current project.
   description: |

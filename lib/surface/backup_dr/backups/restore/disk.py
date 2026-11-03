@@ -82,12 +82,14 @@ class Disk(base.Command):
     disk_flags.AddClearEncryptionKeyArg(parser)
     flags.AddUseProjectServiceAccountFlag(parser)
 
-  def _ParseResourcePolicies(self, resource_policies, project, zone):
+  def _ParseResourcePolicies(
+      self, resource_policies, project, zone, target_region=None
+  ):
     """Parses the resource policies flag."""
     resource_policy_uris = []
     for policy in resource_policies:
       if not policy.startswith('projects/'):
-        region = zone.rsplit('-', 1)[0]
+        region = target_region or zone.rsplit('-', 1)[0]
         policy = 'projects/{}/regions/{}/resourcePolicies/{}'.format(
             project, region, policy
         )
@@ -151,7 +153,10 @@ class Disk(base.Command):
       restore_config['ConfidentialCompute'] = args.confidential_compute
     if args.resource_policies:
       restore_config['ResourcePolicies'] = self._ParseResourcePolicies(
-          args.resource_policies, args.target_project, args.target_zone
+          args.resource_policies,
+          args.target_project,
+          args.target_zone,
+          args.target_region,
       )
     if args.source_instance_boot_disk:
       restore_config['SourceInstanceBootDisk'] = args.source_instance_boot_disk

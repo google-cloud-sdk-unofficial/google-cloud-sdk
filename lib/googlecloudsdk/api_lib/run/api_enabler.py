@@ -48,7 +48,7 @@ def _check_preconditions():
   endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
   if (
       properties.VALUES.regional.endpoint_compatibility.Get()
-      and endpoint_mode == properties.VALUES.regional.REGIONAL
+      and endpoint_mode == properties.constants.regional.REGIONAL
   ):
     # Service usage API does not support regional endpoints.
     return False

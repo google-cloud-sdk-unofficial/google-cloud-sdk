@@ -300,7 +300,8 @@ class GoogleIamV3AccessPolicyRuleOperation(_messages.Message):
       this rule. Each permission uses the format
       `{service_fqdn}/{resource}.{verb}`, where `{service_fqdn}` is the fully
       qualified domain name for the service. Currently supported permissions
-      are as follows: * `eventarc.googleapis.com/messageBuses.publish`.
+      are as follows: * `eventarc.googleapis.com/messageBuses.publish`. An
+      empty list doesn't match any `permissions`.
   """
 
   excludedPermissions = _messages.StringField(1, repeated=True)

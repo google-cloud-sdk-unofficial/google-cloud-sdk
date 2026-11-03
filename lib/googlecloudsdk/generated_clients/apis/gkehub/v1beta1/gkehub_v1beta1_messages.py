@@ -1486,9 +1486,12 @@ class Membership(_messages.Message):
       MEMBERSHIP_TYPE_UNSPECIFIED: The MembershipType is not set.
       LIGHTWEIGHT: The membership supports only lightweight compatible
         features.
+      READ_ONLY: The membership supports only read-only features i.e. can view
+        cluster information but no mutating operations
     """
     MEMBERSHIP_TYPE_UNSPECIFIED = 0
     LIGHTWEIGHT = 1
+    READ_ONLY = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):

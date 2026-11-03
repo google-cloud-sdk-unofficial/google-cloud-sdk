@@ -18,7 +18,37 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Saas(base.Group):
+  category = base.SAAS_CATEGORY
+  detailed_help = {
+      'brief': 'Manage App Lifecycle Manager releases.',
+      'DESCRIPTION': """
+          Manage App Lifecycle Manager releases. A release is a new version to
+          be propagated and deployed to units. It includes a pointer to a
+          blueprint, which is an Open Container Initiative (OCI) image stored
+          in Artifact Registry or another OCI registry.
+      """,
+      'EXAMPLES': """
+          To create a release named `my-release` for the unit kind
+          `my-unit-kind` in location `us-central1`, run:
+
+            $ {command} create my-release --location=us-central1 --unit-kind=my-unit-kind --blueprint-package=us-central1-docker.pkg.dev/my-project/my-repo/my-blueprint:v2
+
+          To list the names of all releases in location `us-central1`, run:
+
+            $ {command} list --location=us-central1 --format="value(name)"
+
+          To describe the release named `my-release` in location `us-central1`,
+          run:
+
+            $ {command} describe my-release --location=us-central1
+      """,
+  }
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SaasAlpha(base.Group):
   category = base.SAAS_CATEGORY
   detailed_help = {'brief': 'Manage App Lifecycle Manager releases.'}

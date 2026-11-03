@@ -15,6 +15,8 @@
 # Implementation definition for gcloud iam workforce-pools providers scim-tenants get-iam-policy
 
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: Get the IAM policy for a SCIM tenant.
     description: Get the IAM policy for a SCIM tenant.

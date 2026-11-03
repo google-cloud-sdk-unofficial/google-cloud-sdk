@@ -35,6 +35,7 @@ STARTER_TIER_TOS_ID = 'starter-tier-additional-terms-of-service'
 PANTHEON_TOS_ID = 'pantheon'
 FREE_TRIAL_TOS_ID = 'cloud-free-trial'
 GMP_DEMO_API_KEY_TOS_ID = 'gmp-demo-api-key'
+FIREBASE_TOS_ID = 'firebase'
 
 _TOS_HEADER = (
     'To provision resources on the starter tier, review and accept the terms of'
@@ -42,6 +43,10 @@ _TOS_HEADER = (
 )
 _DECLINED_TOS_ERROR_HEADER = (
     'Terms of Service declined. Onboarding cannot proceed.'
+)
+_SOUTH_KOREA_COMMERCIAL_USE_NOTICE = (
+    'If you are located in South Korea, you certify that you are using Google'
+    ' Cloud Platform services solely for commercial purposes.'
 )
 
 
@@ -74,6 +79,10 @@ _TOS_REGISTRY: dict[str, _ToSInfo] = {
         title='Google Maps Platform Demo API Key Terms of Service',
         url='https://cloud.google.com/terms/maps-platform/demo-project-terms',
     ),
+    FIREBASE_TOS_ID: _ToSInfo(
+        title='Firebase Terms of Service',
+        url='https://firebase.google.com/terms',
+    ),
 }
 
 VALID_TOS_IDS = tuple(_TOS_REGISTRY)
@@ -90,7 +99,9 @@ def _FormatMessage(tos_list: list[_ToSInfo]) -> str:
     items = [
         f'{i}. {tos.title} ({tos.url})' for i, tos in enumerate(tos_list, 1)
     ]
-  return '\n'.join([_TOS_HEADER] + items)
+  return '\n'.join(
+      [_TOS_HEADER] + items + ['', _SOUTH_KOREA_COMMERCIAL_USE_NOTICE]
+  )
 
 
 class InvalidTosIdError(onboarding_exceptions.OnboardingError, ValueError):
@@ -180,7 +191,11 @@ def FormatDeclinedToSError(tos_ids: Sequence[str]) -> str:
       'To accept these Terms of Service non-interactively, re-run with'
       f' --auto-accept-tos-ids={flag_value}.'
   )
-  return '\n'.join([_DECLINED_TOS_ERROR_HEADER, _TOS_HEADER] + items + [footer])
+  return '\n'.join(
+      [_DECLINED_TOS_ERROR_HEADER, _TOS_HEADER]
+      + items
+      + ['', _SOUTH_KOREA_COMMERCIAL_USE_NOTICE, '', footer]
+  )
 
 
 def _FormatPromptString(titles: list[str]) -> str:

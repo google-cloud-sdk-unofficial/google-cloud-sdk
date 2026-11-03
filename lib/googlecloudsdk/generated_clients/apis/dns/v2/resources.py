@@ -42,12 +42,9 @@ class Collections(enum.Enum):
   )
   LOCATIONS = (
       'locations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}',
-      },
-      ['name'],
+      'projects/{projectsId}/locations/{locationsId}',
+      {},
+      ['projectsId', 'locationsId'],
       True
   )
   MANAGEDZONEOPERATIONS = (

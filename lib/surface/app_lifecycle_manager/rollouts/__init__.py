@@ -18,7 +18,38 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Saas(base.Group):
+  category = base.SAAS_CATEGORY
+  detailed_help = {
+      'brief': 'Manage App Lifecycle Manager rollouts.',
+      'DESCRIPTION': """
+          Manage App Lifecycle Manager rollouts. A rollout represents a single
+          execution of rolling out a release to the target units, including
+          its results. The rollout follows the settings of the rollout kind
+          that it stems from.
+      """,
+      'EXAMPLES': """
+          To create a rollout named `my-rollout` in location `us-central1` that
+          rolls out the release `my-release` according to the rollout kind
+          `my-rollout-kind`, run:
+
+            $ {command} create my-rollout --location=us-central1 --release=my-release --rollout-kind=my-rollout-kind
+
+          To list the names of all rollouts in location `us-central1`, run:
+
+            $ {command} list --location=us-central1 --format="value(name)"
+
+          To pause the rollout named `my-rollout` in location `us-central1`,
+          run:
+
+            $ {command} update my-rollout --location=us-central1 --control-action=pause
+      """,
+  }
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SaasAlpha(base.Group):
   category = base.SAAS_CATEGORY
   detailed_help = {'brief': 'Manage App Lifecycle Manager rollouts.'}

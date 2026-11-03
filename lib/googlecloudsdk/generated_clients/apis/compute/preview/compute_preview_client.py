@@ -53,6 +53,8 @@ class ComputePreview(base_api.BaseApiClient):
     self.firewallPolicies = self.FirewallPoliciesService(self)
     self.firewalls = self.FirewallsService(self)
     self.folderGlobalVmExtensionPolicies = self.FolderGlobalVmExtensionPoliciesService(self)
+    self.folderRolloutPlans = self.FolderRolloutPlansService(self)
+    self.folderRollouts = self.FolderRolloutsService(self)
     self.folderZoneVmExtensionPolicies = self.FolderZoneVmExtensionPoliciesService(self)
     self.forwardingRules = self.ForwardingRulesService(self)
     self.futureReservations = self.FutureReservationsService(self)
@@ -3988,6 +3990,334 @@ This is a read-only API.
         relative_path='{+folder}/global/vmExtensionPolicies/{globalVmExtensionPolicy}',
         request_field='globalVmExtensionPolicyResource',
         request_type_name='ComputeFolderGlobalVmExtensionPoliciesUpdateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class FolderRolloutPlansService(base_api.BaseApiService):
+    """Service class for the folderRolloutPlans resource."""
+
+    _NAME = 'folderRolloutPlans'
+
+    def __init__(self, client):
+      super(ComputePreview.FolderRolloutPlansService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a FolderRolloutPlan.
+
+      Args:
+        request: (ComputeFolderRolloutPlansDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rolloutPlans/{rolloutPlan}',
+        http_method='DELETE',
+        method_id='compute.folderRolloutPlans.delete',
+        ordered_params=['folder', 'rolloutPlan'],
+        path_params=['folder', 'rolloutPlan'],
+        query_params=['requestId'],
+        relative_path='{+folder}/global/rolloutPlans/{rolloutPlan}',
+        request_field='',
+        request_type_name='ComputeFolderRolloutPlansDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single folder-scoped RolloutPlan.
+
+      Args:
+        request: (ComputeFolderRolloutPlansGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RolloutPlan) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rolloutPlans/{rolloutPlan}',
+        http_method='GET',
+        method_id='compute.folderRolloutPlans.get',
+        ordered_params=['folder', 'rolloutPlan'],
+        path_params=['folder', 'rolloutPlan'],
+        query_params=[],
+        relative_path='{+folder}/global/rolloutPlans/{rolloutPlan}',
+        request_field='',
+        request_type_name='ComputeFolderRolloutPlansGetRequest',
+        response_type_name='RolloutPlan',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates a new RolloutPlan in a given folder and location.
+
+      Args:
+        request: (ComputeFolderRolloutPlansInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rolloutPlans',
+        http_method='POST',
+        method_id='compute.folderRolloutPlans.insert',
+        ordered_params=['folder'],
+        path_params=['folder'],
+        query_params=['requestId'],
+        relative_path='{+folder}/global/rolloutPlans',
+        request_field='rolloutPlan',
+        request_type_name='ComputeFolderRolloutPlansInsertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists FolderRolloutPlans in a given folder and location.
+
+      Args:
+        request: (ComputeFolderRolloutPlansListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RolloutPlansListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rolloutPlans',
+        http_method='GET',
+        method_id='compute.folderRolloutPlans.list',
+        ordered_params=['folder'],
+        path_params=['folder'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken'],
+        relative_path='{+folder}/global/rolloutPlans',
+        request_field='',
+        request_type_name='ComputeFolderRolloutPlansListRequest',
+        response_type_name='RolloutPlansListResponse',
+        supports_download=False,
+    )
+
+  class FolderRolloutsService(base_api.BaseApiService):
+    """Service class for the folderRollouts resource."""
+
+    _NAME = 'folderRollouts'
+
+    def __init__(self, client):
+      super(ComputePreview.FolderRolloutsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Advance(self, request, global_params=None):
+      r"""Advances a Rollout to the next wave, or completes it if no waves remain.
+
+      Args:
+        request: (ComputeFolderRolloutsAdvanceRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Advance')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Advance.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rollouts/{rollout}/advance',
+        http_method='POST',
+        method_id='compute.folderRollouts.advance',
+        ordered_params=['folder', 'rollout'],
+        path_params=['folder', 'rollout'],
+        query_params=['currentWaveNumber', 'requestId'],
+        relative_path='{+folder}/global/rollouts/{rollout}/advance',
+        request_field='',
+        request_type_name='ComputeFolderRolloutsAdvanceRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Cancel(self, request, global_params=None):
+      r"""Cancels a Rollout.
+
+      Args:
+        request: (ComputeFolderRolloutsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rollouts/{rollout}',
+        http_method='PATCH',
+        method_id='compute.folderRollouts.cancel',
+        ordered_params=['folder', 'rollout'],
+        path_params=['folder', 'rollout'],
+        query_params=['requestId', 'rollback'],
+        relative_path='{+folder}/global/rollouts/{rollout}',
+        request_field='',
+        request_type_name='ComputeFolderRolloutsCancelRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a Rollout.
+
+      Args:
+        request: (ComputeFolderRolloutsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rollouts/{rollout}',
+        http_method='DELETE',
+        method_id='compute.folderRollouts.delete',
+        ordered_params=['folder', 'rollout'],
+        path_params=['folder', 'rollout'],
+        query_params=['requestId'],
+        relative_path='{+folder}/global/rollouts/{rollout}',
+        request_field='',
+        request_type_name='ComputeFolderRolloutsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single folder-scoped Rollout.
+
+      Args:
+        request: (ComputeFolderRolloutsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Rollout) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rollouts/{rollout}',
+        http_method='GET',
+        method_id='compute.folderRollouts.get',
+        ordered_params=['folder', 'rollout'],
+        path_params=['folder', 'rollout'],
+        query_params=[],
+        relative_path='{+folder}/global/rollouts/{rollout}',
+        request_field='',
+        request_type_name='ComputeFolderRolloutsGetRequest',
+        response_type_name='Rollout',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Rollouts in a given folder and location.
+
+      Args:
+        request: (ComputeFolderRolloutsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FolderRolloutsListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rollouts',
+        http_method='GET',
+        method_id='compute.folderRollouts.list',
+        ordered_params=['folder'],
+        path_params=['folder'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken'],
+        relative_path='{+folder}/global/rollouts',
+        request_field='',
+        request_type_name='ComputeFolderRolloutsListRequest',
+        response_type_name='FolderRolloutsListResponse',
+        supports_download=False,
+    )
+
+    def Pause(self, request, global_params=None):
+      r"""Pauses a Rollout.
+
+      Args:
+        request: (ComputeFolderRolloutsPauseRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Pause')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Pause.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rollouts/{rollout}/pause',
+        http_method='POST',
+        method_id='compute.folderRollouts.pause',
+        ordered_params=['folder', 'rollout'],
+        path_params=['folder', 'rollout'],
+        query_params=['etag', 'requestId'],
+        relative_path='{+folder}/global/rollouts/{rollout}/pause',
+        request_field='',
+        request_type_name='ComputeFolderRolloutsPauseRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Resume(self, request, global_params=None):
+      r"""Resumes a Rollout.
+
+      Args:
+        request: (ComputeFolderRolloutsResumeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Resume')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resume.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        flat_path='folders/{foldersId}/global/rollouts/{rollout}/resume',
+        http_method='POST',
+        method_id='compute.folderRollouts.resume',
+        ordered_params=['folder', 'rollout'],
+        path_params=['folder', 'rollout'],
+        query_params=['etag', 'requestId'],
+        relative_path='{+folder}/global/rollouts/{rollout}/resume',
+        request_field='',
+        request_type_name='ComputeFolderRolloutsResumeRequest',
         response_type_name='Operation',
         supports_download=False,
     )

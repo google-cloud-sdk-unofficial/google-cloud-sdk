@@ -45,6 +45,7 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
     self.folders_settings = self.FoldersSettingsService(self)
     self.folders = self.FoldersService(self)
     self.liens = self.LiensService(self)
+    self.locations_effectiveSemanticTags = self.LocationsEffectiveSemanticTagsService(self)
     self.locations_effectiveTagBindingCollections = self.LocationsEffectiveTagBindingCollectionsService(self)
     self.locations_tagBindingCollections = self.LocationsTagBindingCollectionsService(self)
     self.locations = self.LocationsService(self)
@@ -60,6 +61,7 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
     self.projects_capabilityConfigs = self.ProjectsCapabilityConfigsService(self)
     self.projects_effectiveSettings = self.ProjectsEffectiveSettingsService(self)
     self.projects_locations_semanticTagBindings = self.ProjectsLocationsSemanticTagBindingsService(self)
+    self.projects_locations_semanticTagKeys = self.ProjectsLocationsSemanticTagKeysService(self)
     self.projects_locations_semanticTagValues = self.ProjectsLocationsSemanticTagValuesService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects_settings = self.ProjectsSettingsService(self)
@@ -1086,6 +1088,43 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         request_field='',
         request_type_name='CloudresourcemanagerLiensListRequest',
         response_type_name='ListLiensResponse',
+        supports_download=False,
+    )
+
+  class LocationsEffectiveSemanticTagsService(base_api.BaseApiService):
+    """Service class for the locations_effectiveSemanticTags resource."""
+
+    _NAME = 'locations_effectiveSemanticTags'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.LocationsEffectiveSemanticTagsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the effective semantic tags on a specific Google Cloud resource in a given location, including both directly bound and inherited semantic tags across the resource's ancestor hierarchy. The target resource name must be provided via the `target_resource` field.
+
+      Args:
+        request: (CloudresourcemanagerLocationsEffectiveSemanticTagsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListEffectiveSemanticTagsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/locations/{locationsId}/effectiveSemanticTags',
+        http_method='GET',
+        method_id='cloudresourcemanager.locations.effectiveSemanticTags.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'targetResource'],
+        relative_path='v3/{+parent}/effectiveSemanticTags',
+        request_field='',
+        request_type_name='CloudresourcemanagerLocationsEffectiveSemanticTagsListRequest',
+        response_type_name='ListEffectiveSemanticTagsResponse',
         supports_download=False,
     )
 
@@ -2504,6 +2543,70 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         request_field='',
         request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagBindingsListRequest',
         response_type_name='ListSemanticTagBindingsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSemanticTagKeysService(base_api.BaseApiService):
+    """Service class for the projects_locations_semanticTagKeys resource."""
+
+    _NAME = 'projects_locations_semanticTagKeys'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.ProjectsLocationsSemanticTagKeysService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a `SemanticTagKey` by its resource name. Example: `projects/gcp-semantic-tags-catalog/locations/us-central1/semanticTagKeys/costcenter.allocation.sre`.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagKeysGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SemanticTagKey) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagKeys/{semanticTagKeysId}',
+        http_method='GET',
+        method_id='cloudresourcemanager.projects.locations.semanticTagKeys.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['view'],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagKeysGetRequest',
+        response_type_name='SemanticTagKey',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists `SemanticTagKey` resources within a regional catalog.
+
+      Args:
+        request: (CloudresourcemanagerProjectsLocationsSemanticTagKeysListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSemanticTagKeysResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/locations/{locationsId}/semanticTagKeys',
+        http_method='GET',
+        method_id='cloudresourcemanager.projects.locations.semanticTagKeys.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'view'],
+        relative_path='v3/{+parent}/semanticTagKeys',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsLocationsSemanticTagKeysListRequest',
+        response_type_name='ListSemanticTagKeysResponse',
         supports_download=False,
     )
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 from collections import OrderedDict
+from http import HTTPStatus
+import json
+import logging as std_logging
 import os
 import re
 from typing import Dict, Callable, Mapping, MutableMapping, MutableSequence, Optional, Iterable, Iterator, Sequence, Tuple, Type, Union, cast
@@ -30,11 +33,20 @@ from google.auth.transport import mtls                            # type: ignore
 from google.auth.transport.grpc import SslCredentials             # type: ignore
 from google.auth.exceptions import MutualTLSChannelError          # type: ignore
 from google.oauth2 import service_account                         # type: ignore
+import cloudsdk.google.protobuf
 
 try:
     OptionalRetry = Union[retries.Retry, gapic_v1.method._MethodDefault, None]
 except AttributeError:  # pragma: NO COVER
     OptionalRetry = Union[retries.Retry, object, None]  # type: ignore
+
+try:
+    from google.api_core import client_logging  # type: ignore
+    CLIENT_LOGGING_SUPPORTED = True  # pragma: NO COVER
+except ImportError:  # pragma: NO COVER
+    CLIENT_LOGGING_SUPPORTED = False
+
+_LOGGER = std_logging.getLogger(__name__)
 
 from google.api import monitored_resource_pb2  # type: ignore
 from googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.logging_service_v2 import pagers
@@ -399,33 +411,6 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             raise ValueError("Universe Domain cannot be an empty string.")
         return universe_domain
 
-    @staticmethod
-    def _compare_universes(client_universe: str,
-                           credentials: ga_credentials.Credentials) -> bool:
-        """Returns True iff the universe domains used by the client and credentials match.
-
-        Args:
-            client_universe (str): The universe domain configured via the client options.
-            credentials (ga_credentials.Credentials): The credentials being used in the client.
-
-        Returns:
-            bool: True iff client_universe matches the universe in credentials.
-
-        Raises:
-            ValueError: when client_universe does not match the universe in credentials.
-        """
-
-        default_universe = LoggingServiceV2Client._DEFAULT_UNIVERSE
-        credentials_universe = getattr(credentials, "universe_domain", default_universe)
-
-        if client_universe != credentials_universe:
-            raise ValueError("The configured universe domain "
-                f"({client_universe}) does not match the universe domain "
-                f"found in the credentials ({credentials_universe}). "
-                "If you haven't configured the universe domain explicitly, "
-                f"`{default_universe}` is the default.")
-        return True
-
     def _validate_universe_domain(self):
         """Validates client's and credentials' universe domains are consistent.
 
@@ -435,9 +420,33 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
         Raises:
             ValueError: If the configured universe domain is not valid.
         """
-        self._is_universe_domain_valid = (self._is_universe_domain_valid or
-            LoggingServiceV2Client._compare_universes(self.universe_domain, self.transport._credentials))
-        return self._is_universe_domain_valid
+
+        # NOTE (b/349488459): universe validation is disabled until further notice.
+        return True
+
+    def _add_cred_info_for_auth_errors(
+        self,
+        error: core_exceptions.GoogleAPICallError
+    ) -> None:
+        """Adds credential info string to error details for 401/403/404 errors.
+
+        Args:
+            error (google.api_core.exceptions.GoogleAPICallError): The error to add the cred info.
+        """
+        if error.code not in [HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN, HTTPStatus.NOT_FOUND]:
+            return
+
+        cred = self._transport._credentials
+
+        # get_cred_info is only available in google-auth>=2.35.0
+        if not hasattr(cred, "get_cred_info"):
+            return
+
+        # ignore the type check since pypy test fails when get_cred_info
+        # is not available
+        cred_info = cred.get_cred_info()  # type: ignore
+        if cred_info and hasattr(error._details, "append"):
+            error._details.append(json.dumps(cred_info))
 
     @property
     def api_endpoint(self):
@@ -532,6 +541,10 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
         # Initialize the universe domain validation.
         self._is_universe_domain_valid = False
 
+        if CLIENT_LOGGING_SUPPORTED:  # pragma: NO COVER
+            # Setup logging.
+            client_logging.initialize_logging()
+
         api_key_value = getattr(self._client_options, "api_key", None)
         if api_key_value and credentials:
             raise ValueError("client_options.api_key and credentials are mutually exclusive")
@@ -567,7 +580,7 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
                 credentials = google.auth._default.get_api_key_credentials(api_key_value)
 
             transport_init: Union[Type[LoggingServiceV2Transport], Callable[..., LoggingServiceV2Transport]] = (
-                type(self).get_transport_class(transport)
+                LoggingServiceV2Client.get_transport_class(transport)
                 if isinstance(transport, str) or transport is None
                 else cast(Callable[..., LoggingServiceV2Transport], transport)
             )
@@ -584,13 +597,28 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
                 api_audience=self._client_options.api_audience,
             )
 
+        if "async" not in str(self._transport):
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(std_logging.DEBUG):  # pragma: NO COVER
+                _LOGGER.debug(
+                    "Created client `google.logging_v2.LoggingServiceV2Client`.",
+                    extra = {
+                        "serviceName": "google.logging.v2.LoggingServiceV2",
+                        "universeDomain": getattr(self._transport._credentials, "universe_domain", ""),
+                        "credentialsType": f"{type(self._transport._credentials).__module__}.{type(self._transport._credentials).__qualname__}",
+                        "credentialsInfo": getattr(self.transport._credentials, "get_cred_info", lambda: None)(),
+                    } if hasattr(self._transport, "_credentials") else {
+                        "serviceName": "google.logging.v2.LoggingServiceV2",
+                        "credentialsType": None,
+                    }
+                )
+
     def delete_log(self,
             request: Optional[Union[logging.DeleteLogRequest, dict]] = None,
             *,
             log_name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> None:
         r"""Deletes all the log entries in a log for the global \_Default
         Log Bucket. The log reappears if it receives new entries. Log
@@ -627,10 +655,10 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             log_name (str):
                 Required. The resource name of the log to delete:
 
-                -  ``projects/[PROJECT_ID]/logs/[LOG_ID]``
-                -  ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
-                -  ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
-                -  ``folders/[FOLDER_ID]/logs/[LOG_ID]``
+                - ``projects/[PROJECT_ID]/logs/[LOG_ID]``
+                - ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
+                - ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
+                - ``folders/[FOLDER_ID]/logs/[LOG_ID]``
 
                 ``[LOG_ID]`` must be URL-encoded. For example,
                 ``"projects/my-project-id/logs/syslog"``,
@@ -645,13 +673,16 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([log_name])
+        flattened_params = [log_name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -669,7 +700,7 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.delete_log]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -697,7 +728,7 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             entries: Optional[MutableSequence[log_entry.LogEntry]] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging.WriteLogEntriesResponse:
         r"""Writes log entries to Logging. This API method is the only way
         to send log entries to Logging. This method is used, directly or
@@ -745,10 +776,10 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
                 to all log entries in ``entries`` that do not specify a
                 value for ``log_name``:
 
-                -  ``projects/[PROJECT_ID]/logs/[LOG_ID]``
-                -  ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
-                -  ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
-                -  ``folders/[FOLDER_ID]/logs/[LOG_ID]``
+                - ``projects/[PROJECT_ID]/logs/[LOG_ID]``
+                - ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
+                - ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
+                - ``folders/[FOLDER_ID]/logs/[LOG_ID]``
 
                 ``[LOG_ID]`` must be URL-encoded. For example:
 
@@ -762,6 +793,9 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
                 folder that is receiving new log entries, whether the
                 resource is specified in ``logName`` or in an individual
                 log entry.
+
+                Only platform services can write logs to billing
+                accounts.
 
                 This corresponds to the ``log_name`` field
                 on the ``request`` instance; if ``request`` is provided, this
@@ -811,17 +845,17 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
 
                 Log entries with timestamps that are more than the `logs
                 retention
-                period <https://cloud.google.com/logging/quotas>`__ in
-                the past or more than 24 hours in the future will not be
-                available when calling ``entries.list``. However, those
-                log entries can still be `exported with
-                LogSinks <https://cloud.google.com/logging/docs/api/tasks/exporting-logs>`__.
+                period <https://docs.cloud.google.com/logging/quotas>`__
+                in the past or more than 24 hours in the future will not
+                be available when calling ``entries.list``. However,
+                those log entries can still be `exported with
+                LogSinks <https://docs.cloud.google.com/logging/docs/routing/overview>`__.
 
                 To improve throughput and to avoid exceeding the `quota
-                limit <https://cloud.google.com/logging/quotas>`__ for
-                calls to ``entries.write``, you should try to include
-                several log entries in this list, rather than calling
-                this method for each individual log entry.
+                limit <https://docs.cloud.google.com/logging/quotas>`__
+                for calls to ``entries.write``, you should try to
+                include several log entries in this list, rather than
+                calling this method for each individual log entry.
 
                 This corresponds to the ``entries`` field
                 on the ``request`` instance; if ``request`` is provided, this
@@ -829,8 +863,10 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.WriteLogEntriesResponse:
@@ -839,7 +875,8 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([log_name, resource, labels, entries])
+        flattened_params = [log_name, resource, labels, entries]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -885,12 +922,12 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             order_by: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListLogEntriesPager:
         r"""Lists log entries. Use this method to retrieve log entries that
         originated from a project/folder/organization/billing account.
-        For ways to export log entries, see `Exporting
-        Logs <https://cloud.google.com/logging/docs/export>`__.
+        For ways to export log entries, see `Routing
+        overview <https://docs.cloud.google.com/logging/docs/routing/overview>`__.
 
         .. code-block:: python
 
@@ -933,21 +970,21 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
                 region unavailability, specify a specific set of
                 ``LogViews`` that do not include the unavailable region.
 
-                -  ``projects/[PROJECT_ID]``
+                - ``projects/[PROJECT_ID]``
 
-                -  ``organizations/[ORGANIZATION_ID]``
+                - ``organizations/[ORGANIZATION_ID]``
 
-                -  ``billingAccounts/[BILLING_ACCOUNT_ID]``
+                - ``billingAccounts/[BILLING_ACCOUNT_ID]``
 
-                -  ``folders/[FOLDER_ID]``
+                - ``folders/[FOLDER_ID]``
 
-                -  ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+                - ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
-                -  ``organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+                - ``organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
-                -  ``billingAccounts/[BILLING_ACCOUNT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+                - ``billingAccounts/[BILLING_ACCOUNT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
-                -  ``folders/[FOLDER_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+                - ``folders/[FOLDER_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
                 Projects listed in the ``project_ids`` field are added
                 to this list. A maximum of 100 resources may be
@@ -960,7 +997,7 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
                 Optional. A filter that chooses which log entries to
                 return. For more information, see [Logging query
                 language]
-                (https://cloud.google.com/logging/docs/view/logging-query-language).
+                (https://docs.cloud.google.com/logging/docs/view/logging-query-language).
 
                 Only log entries that match the filter are returned. An
                 empty filter matches all log entries in the resources
@@ -971,7 +1008,7 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
 
                 To make queries faster, you can make the filter more
                 selective by using restrictions on [indexed fields]
-                (https://cloud.google.com/logging/docs/view/logging-query-language#indexed-fields)
+                (https://docs.cloud.google.com/logging/docs/view/logging-query-language#indexed-fields)
                 as well as limit the time range of the query by adding
                 range restrictions on the ``timestamp`` field.
 
@@ -1000,8 +1037,10 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.logging_service_v2.pagers.ListLogEntriesPager:
@@ -1014,7 +1053,8 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([resource_names, filter, order_by])
+        flattened_params = [resource_names, filter, order_by]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -1053,6 +1093,8 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -1064,7 +1106,7 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             *,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListMonitoredResourceDescriptorsPager:
         r"""Lists the descriptors for monitored resource types
         used by Logging.
@@ -1102,8 +1144,10 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.logging_service_v2.pagers.ListMonitoredResourceDescriptorsPager:
@@ -1141,6 +1185,8 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -1153,7 +1199,7 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             parent: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListLogsPager:
         r"""Lists the logs in projects, organizations, folders,
         or billing accounts. Only logs that have entries are
@@ -1192,10 +1238,10 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             parent (str):
                 Required. The resource name to list logs for:
 
-                -  ``projects/[PROJECT_ID]``
-                -  ``organizations/[ORGANIZATION_ID]``
-                -  ``billingAccounts/[BILLING_ACCOUNT_ID]``
-                -  ``folders/[FOLDER_ID]``
+                - ``projects/[PROJECT_ID]``
+                - ``organizations/[ORGANIZATION_ID]``
+                - ``billingAccounts/[BILLING_ACCOUNT_ID]``
+                - ``folders/[FOLDER_ID]``
 
                 This corresponds to the ``parent`` field
                 on the ``request`` instance; if ``request`` is provided, this
@@ -1203,8 +1249,10 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.logging_service_v2.pagers.ListLogsPager:
@@ -1218,7 +1266,8 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent])
+        flattened_params = [parent]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -1236,7 +1285,7 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.list_logs]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -1261,6 +1310,8 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -1272,7 +1323,7 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             *,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> Iterable[logging.TailLogEntriesResponse]:
         r"""Streaming read of log entries as they are received.
         Until the stream is terminated, it will continue reading
@@ -1321,8 +1372,10 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             Iterable[googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.TailLogEntriesResponse]:
@@ -1368,6 +1421,8 @@ class LoggingServiceV2Client(metaclass=LoggingServiceV2ClientMeta):
 
 DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(gapic_version=package_version.__version__)
 
+if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"):  # pragma: NO COVER
+    DEFAULT_CLIENT_INFO.protobuf_runtime_version = cloudsdk.google.protobuf.__version__
 
 __all__ = (
     "LoggingServiceV2Client",

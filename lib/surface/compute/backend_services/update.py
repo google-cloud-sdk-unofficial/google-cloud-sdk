@@ -158,6 +158,7 @@ class UpdateHelper(object):
       support_forward_proxy,
       support_allow_multinetwork,
       support_iap_alpha=False,
+      support_connect_timeout=False,
   ):
     """Add all arguments for updating a backend service."""
 
@@ -227,7 +228,6 @@ class UpdateHelper(object):
     flags.AddConnectionTrackingPolicy(parser)
     flags.AddConsistentHashHttpHeaderName(parser)
     flags.AddConsistentHashMinimumRingSize(parser)
-    flags.AddCircuitBreakersMaxRequests(parser)
     flags.AddOutlierDetectionFlags(parser, add_clear_argument=True)
     flags.AddCompressionMode(parser)
 
@@ -247,6 +247,11 @@ class UpdateHelper(object):
       flags.AddAllowMultinetwork(parser)
     flags.AddHaPolicyLeaderFlags(parser)
     flags.AddSecuritySettingsFlags(parser, add_clear_argument=True)
+    flags.AddCircuitBreakersFlags(
+        parser,
+        add_clear_argument=True,
+        support_connect_timeout=support_connect_timeout,
+    )
 
   def __init__(
       self,
@@ -345,9 +350,6 @@ class UpdateHelper(object):
           drainingTimeoutSec=args.connection_draining_timeout)
 
     backend_services_utils.ApplyConsistentHashSettings(
-        client, args, replacement
-    )
-    backend_services_utils.ApplyCircuitBreakersSettings(
         client, args, replacement
     )
     backend_services_utils.ApplyOutlierDetectionArgs(
@@ -471,6 +473,9 @@ class UpdateHelper(object):
         client, args, replacement, cleared_fields
     )
     _ApplyHaPolicyArgs(client.messages, args, replacement)
+    backend_services_utils.ApplyCircuitBreakersArgs(
+        client, args, replacement, cleared_fields
+    )
     return replacement, cleared_fields
 
   def ValidateArgs(self, args):
@@ -574,6 +579,8 @@ class UpdateHelper(object):
         args.IsSpecified('ha_policy_leader_instance'),
         args.IsSpecified('consistent_hash_http_header_name'),
         args.IsSpecified('consistent_hash_minimum_ring_size'),
+        args.IsSpecified('circuit_breakers_max_connections'),
+        args.IsSpecified('circuit_breakers_max_pending_requests'),
         args.IsSpecified('circuit_breakers_max_requests'),
         args.IsSpecified('security_settings_client_tls_policy'),
         args.IsSpecified('security_settings_subject_alt_names'),
@@ -596,6 +603,10 @@ class UpdateHelper(object):
         args.IsSpecified(
             'outlier_detection_enforcing_consecutive_gateway_failure'
         ),
+        args.IsSpecified('circuit_breakers_max_requests_per_connection'),
+        args.IsSpecified('circuit_breakers_max_retries'),
+        args.IsKnownAndSpecified('circuit_breakers_connect_timeout'),
+        args.IsSpecified('no_circuit_breakers'),
     ]):
       raise compute_exceptions.UpdatePropertyError(
           'At least one property must be modified.'
@@ -763,6 +774,7 @@ class UpdateGA(base.UpdateCommand):
   _support_forward_proxy = False
   _support_allow_multinetwork = False
   _support_iap_alpha = False
+  _support_connect_timeout = False
 
   @classmethod
   def Args(cls, parser):
@@ -773,6 +785,7 @@ class UpdateGA(base.UpdateCommand):
         support_forward_proxy=cls._support_forward_proxy,
         support_allow_multinetwork=cls._support_allow_multinetwork,
         support_iap_alpha=cls._support_iap_alpha,
+        support_connect_timeout=cls._support_connect_timeout,
     )
 
   def Run(self, args):
@@ -798,6 +811,7 @@ class UpdateBeta(UpdateGA):
   _support_ip_port_dynamic_forwarding = True
   _support_forward_proxy = True
   _support_allow_multinetwork = False
+  _support_connect_timeout = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

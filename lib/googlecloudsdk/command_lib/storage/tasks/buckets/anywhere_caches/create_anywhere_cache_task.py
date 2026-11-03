@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.command_lib.storage import progress_callbacks
 from googlecloudsdk.command_lib.storage.tasks import task
+from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import ensure_managed_folders_task
 from googlecloudsdk.core import log
 
 
@@ -31,6 +32,7 @@ class CreateAnywhereCacheTask(task.Task):
       admission_policy=None,
       ttl=None,
       enable_ingest_on_write=None,
+      ingest_on_write_prefixes=None,
   ):
     """Initializes task.
 
@@ -43,6 +45,8 @@ class CreateAnywhereCacheTask(task.Task):
         cache miss, that is whether to insert the missed block or not.
       ttl (str|None): Cache entry time-to-live in seconds
       enable_ingest_on_write (bool|None): Whether to enable ingest on write.
+      ingest_on_write_prefixes (list[str]|None): Normalized prefixes to enable
+        ingest-on-write on via Managed Folders after initiating cache creation.
     """
     super(CreateAnywhereCacheTask, self).__init__()
     self._bucket_url = bucket_url
@@ -50,6 +54,7 @@ class CreateAnywhereCacheTask(task.Task):
     self._admission_policy = admission_policy
     self._ttl = ttl
     self._enable_ingest_on_write = enable_ingest_on_write
+    self._ingest_on_write_prefixes = ingest_on_write_prefixes
     self.parallel_processing_key = '{}/{}'.format(bucket_url.bucket_name, zone)
 
   def execute(self, task_status_queue=None):
@@ -79,6 +84,21 @@ class CreateAnywhereCacheTask(task.Task):
     if task_status_queue:
       progress_callbacks.increment_count_callback(task_status_queue)
 
+    if self._ingest_on_write_prefixes:
+      folder_tasks = [
+          ensure_managed_folders_task.EnsureManagedFoldersTask(
+              self._bucket_url.bucket_name,
+              prefix,
+              self._zone,
+              enable_ingest_on_write=True,
+          )
+          for prefix in self._ingest_on_write_prefixes
+      ]
+      return task.Output(
+          additional_task_iterators=[folder_tasks],
+          messages=None,
+      )
+
   def __eq__(self, other):
     if not isinstance(other, CreateAnywhereCacheTask):
       return NotImplemented
@@ -88,4 +108,5 @@ class CreateAnywhereCacheTask(task.Task):
         and self._admission_policy == other._admission_policy
         and self._ttl == other._ttl
         and self._enable_ingest_on_write == other._enable_ingest_on_write
+        and self._ingest_on_write_prefixes == other._ingest_on_write_prefixes
     )

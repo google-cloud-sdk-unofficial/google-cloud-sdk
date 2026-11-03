@@ -235,7 +235,14 @@ class UpdateBeta(base.UpdateCommand):
     # Apply associations to patch payload.
     if associations_val is not None:
       kwargs['associations'] = associations_val
-      update_mask.append('associations')
+      if args.clear_associations:
+        update_mask.append('associations')
+      else:
+        for prop in associations_val.additionalProperties:
+          if prop.value.network:
+            update_mask.append(f'associations.{prop.key}.network')
+          else:
+            update_mask.append(f'associations.{prop.key}')
 
     # Apply description update or clear.
     if args.clear_description or args.description is not None:

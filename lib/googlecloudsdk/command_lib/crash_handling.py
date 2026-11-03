@@ -20,11 +20,7 @@ import functools
 import sys
 import traceback
 
-from apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.api_lib.error_reporting import util
-from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.calliope import command_loading
-from googlecloudsdk.command_lib import error_reporting_util
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
@@ -119,6 +115,11 @@ def _GetReportingClient(is_crash=True):
   Returns:
     An error reporting client that uses an API key for Cloud SDK crash reports.
   """
+  # pylint: disable=g-import-not-at-top
+  from googlecloudsdk.api_lib.error_reporting import util
+  from googlecloudsdk.api_lib.util import apis as core_apis
+  # pylint: enable=g-import-not-at-top
+
   client_class = core_apis.GetClientClass(util.API_NAME, util.API_VERSION)
   client_instance = client_class(get_credentials=False)
   if is_crash:
@@ -139,6 +140,12 @@ def ReportError(is_crash):
   if (not properties.IsDefaultUniverse() or
       properties.VALUES.core.disable_usage_reporting.GetBool()):
     return
+
+  # pylint: disable=g-import-not-at-top
+  from apitools.base.py import exceptions as apitools_exceptions
+  from googlecloudsdk.api_lib.error_reporting import util
+  from googlecloudsdk.command_lib import error_reporting_util
+  # pylint: enable=g-import-not-at-top
 
   # traceback prints the exception that is currently being handled
   stacktrace = traceback.format_exc()

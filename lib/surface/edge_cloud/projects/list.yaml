@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: List the Google Cloud Platform projects enabled on Google Distributed Cloud zone.

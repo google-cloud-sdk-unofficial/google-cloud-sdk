@@ -213,16 +213,30 @@ def AddInterfaceArgs(parser, for_update=False):
       help='The name of the interface being {0}.'.format(operation),
   )
 
-  parser.add_argument(
+  # On update, --ip-address and --mask-length must be specified together. On
+  # add, --ip-address alone is valid (e.g. with --subnetwork).
+  ip_range_parser = parser
+  if for_update:
+    ip_range_parser = parser.add_group(
+        help=(
+            'The IP range of the interface, such as 192.0.2.0/24 or'
+            ' 2001:db8::/32. If either flag is specified, both must be'
+            ' specified.'
+        )
+    )
+
+  ip_range_parser.add_argument(
       '--ip-address',
       type=utils.IPArgument,
+      required=for_update,
       help=(
           'The link local (IPv4) or ULA (IPv6) address of the router for this'
           ' interface.'
       ),
   )
-  parser.add_argument(
+  ip_range_parser.add_argument(
       '--mask-length',
+      required=for_update,
       type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=126),
       help=(
           'The subnet mask for the IP range of the interface. The interface'

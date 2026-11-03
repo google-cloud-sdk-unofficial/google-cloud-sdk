@@ -50,6 +50,7 @@ def _Args(parser):
   flags.AddNodePoolNameArg(parser, 'The name of the node pool.')
   flags.AddNodePoolClusterFlag(parser, 'The name of the cluster.')
   flags.AddAsyncFlag(parser)
+  flags.AddNodeConfigUpdateModeFlag(parser)
   # Timeout in seconds for operation
   parser.add_argument(
       '--timeout',
@@ -203,6 +204,7 @@ class Update(base.UpdateCommand):
         node_architecture_taint_behavior=args.node_architecture_taint_behavior,
         add_maintenance_exclusion_until_end_of_support=args.add_maintenance_exclusion_until_end_of_support,
         remove_maintenance_exclusion_until_end_of_support=args.remove_maintenance_exclusion_until_end_of_support,
+        node_config_update_mode=args.node_config_update_mode,
     )
 
   def Run(self, args):
@@ -425,6 +427,7 @@ class UpdateBeta(Update):
         node_architecture_taint_behavior=args.node_architecture_taint_behavior,
         add_maintenance_exclusion_until_end_of_support=args.add_maintenance_exclusion_until_end_of_support,
         remove_maintenance_exclusion_until_end_of_support=args.remove_maintenance_exclusion_until_end_of_support,
+        node_config_update_mode=args.node_config_update_mode,
     )
     return ops
 
@@ -597,6 +600,7 @@ class UpdateAlpha(Update):
         node_architecture_taint_behavior=args.node_architecture_taint_behavior,
         add_maintenance_exclusion_until_end_of_support=args.add_maintenance_exclusion_until_end_of_support,
         remove_maintenance_exclusion_until_end_of_support=args.remove_maintenance_exclusion_until_end_of_support,
+        node_config_update_mode=args.node_config_update_mode,
     )
     return ops
 

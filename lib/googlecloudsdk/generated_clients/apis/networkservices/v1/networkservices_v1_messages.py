@@ -11734,8 +11734,8 @@ class ServiceBindingSource(_messages.Message):
 
 
 class ServiceLbPolicy(_messages.Message):
-  r"""ServiceLbPolicy holds global load balancing and traffic distribution
-  configuration that can be applied to a BackendService.
+  r"""ServiceLbPolicy holds load balancing and traffic distribution
+  configuration that can be applied to a global or regional BackendService.
 
   Enums:
     LoadBalancingAlgorithmValueValuesEnum: Optional. The type of load
@@ -11774,16 +11774,24 @@ class ServiceLbPolicy(_messages.Message):
       LOAD_BALANCING_ALGORITHM_UNSPECIFIED: The type of the loadbalancing
         algorithm is unspecified.
       SPRAY_TO_WORLD: Balance traffic across all backends across the world
-        proportionally based on capacity.
+        proportionally based on capacity. Only supported for global
+        ServiceLbPolicy with Cloud Service Mesh, not supported for regional
+        ServiceLbPolicy.
       SPRAY_TO_REGION: Direct traffic to the nearest region with endpoints and
         capacity before spilling over to other regions and spread the traffic
-        from each client to all the MIGs/NEGs in a region.
+        from each client to all the MIGs/NEGs in a region. For regional
+        ServiceLbPolicy, traffic stays within the configured region and does
+        not spill over to other regions.
       WATERFALL_BY_REGION: Direct traffic to the nearest region with endpoints
         and capacity before spilling over to other regions. All MIGs/NEGs
         within a region are evenly loaded but each client might not spread the
-        traffic to all the MIGs/NEGs in the region.
+        traffic to all the MIGs/NEGs in the region. For regional
+        ServiceLbPolicy, traffic stays within the configured region and does
+        not spill over to other regions.
       WATERFALL_BY_ZONE: Attempt to keep traffic in a single zone closest to
-        the client, before spilling over to other zones.
+        the client, before spilling over to other zones. For regional
+        ServiceLbPolicy, traffic only spills over to other zones within the
+        same region.
     """
     LOAD_BALANCING_ALGORITHM_UNSPECIFIED = 0
     SPRAY_TO_WORLD = 1
@@ -11828,8 +11836,8 @@ class ServiceLbPolicy(_messages.Message):
 
 
 class ServiceLbPolicyAutoCapacityDrain(_messages.Message):
-  r"""Option to specify if an unhealthy IG/NEG should be considered for global
-  load balancing and traffic routing.
+  r"""Option to specify if an unhealthy IG/NEG should be considered for load
+  balancing and traffic routing.
 
   Fields:
     enable: Optional. If set to 'True', an unhealthy IG/NEG will be set as

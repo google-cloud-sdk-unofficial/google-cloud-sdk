@@ -16,6 +16,7 @@
 """The gcloud app migrate-to-run command."""
 
 import collections
+import copy
 import os
 import re
 import textwrap
@@ -85,6 +86,32 @@ def _parse_set_env_vars(
   return collections.OrderedDict(
       pair.split('=', 1) for pair in env_vars_str.split(',') if '=' in pair
   )
+
+
+_MASKED_ENV_VAR_VALUE = '*****'
+
+
+def _mask_env_var_values(service_yaml: Mapping[str, Any]) -> dict[str, Any]:
+  """Returns a copy of a service.yaml dict with env var values masked.
+
+  Environment variable values can hold secrets, so they are hidden in the
+  service.yaml that the command prints. The copy is only for display; the saved
+  file and the deployed service keep the real values.
+
+  Args:
+    service_yaml: The generated Cloud Run service.yaml dictionary.
+
+  Returns:
+    A deep copy of service_yaml with each literal environment variable value
+    replaced by a placeholder.
+  """
+  masked_yaml = copy.deepcopy(service_yaml)
+  template_spec = masked_yaml['spec']['template']['spec']
+  for container in template_spec.get('containers', []):
+    for env_var in container.get('env', []):
+      if 'value' in env_var:
+        env_var['value'] = _MASKED_ENV_VAR_VALUE
+  return masked_yaml
 
 
 class _HiddenParserProxy:
@@ -515,7 +542,9 @@ class AppEngineToCloudRun(replace.Replace):
 
     yaml_str = yaml.dump(service_yaml)
     log.status.Print('\n--- Generated service.yaml ---\n')
-    log.status.Print(yaml_str)
+    # Env var values can hold secrets and this output can end up in CI logs, so
+    # print a masked copy. yaml_str keeps the real values for the saved file.
+    log.status.Print(yaml.dump(_mask_env_var_values(service_yaml)))
 
     from_image = getattr(args, 'from_image', False)
     export_val = getattr(args, 'export_only', None)

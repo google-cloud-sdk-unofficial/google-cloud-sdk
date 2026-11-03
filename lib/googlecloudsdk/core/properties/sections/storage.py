@@ -15,10 +15,9 @@
 """Contains the properties for the 'storage' section."""
 
 import enum
-import os
 import textwrap
 
-from googlecloudsdk.core import config
+from googlecloudsdk.core.properties.providers import PROVIDERS
 from googlecloudsdk.core.properties.types import _Section
 from googlecloudsdk.core.properties.validators import _HumanReadableByteAmountValidator
 from googlecloudsdk.core.properties.validators import _IntegerValidator
@@ -528,12 +527,7 @@ class _SectionStorage(_Section):
 
     self.rsync_files_directory = self._Add(
         'rsync_files_directory',
-        default=os.path.join(
-            config.Paths().global_config_dir,
-            'surface_data',
-            'storage',
-            'rsync_files',
-        ),
+        default=PROVIDERS['StorageRsyncFilesDirectory'](),
         help_text='Directory path to intermediary files created by rsync.',
     )
 
@@ -601,24 +595,14 @@ class _SectionStorage(_Section):
 
     self.symlink_placeholder_directory = self._Add(
         'symlink_placeholder_directory',
-        default=os.path.join(
-            config.Paths().global_config_dir,
-            'surface_data',
-            'storage',
-            'symlink_placeholders',
-        ),
-        help_text='Directory path to temporary symlink placeholder files.',
+        default=PROVIDERS['StorageSymlinkPlaceholderDirectory'](),
         hidden=True,
+        help_text='Directory path to temporary symlink placeholder files.',
     )
 
     self.tracker_files_directory = self._Add(
         'tracker_files_directory',
-        default=os.path.join(
-            config.Paths().global_config_dir,
-            'surface_data',
-            'storage',
-            'tracker_files',
-        ),
+        default=PROVIDERS['StorageTrackerFilesDirectory'](),
         help_text='Directory path to tracker files for resumable operations.',
     )
 

@@ -1,20 +1,41 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
-    brief: List SaaS
-    description: List SaaS
-    examples: |-
-      To list all Saas Types, run:
+    brief: List SaaS offerings.
+    description: |-
+      List App Lifecycle Manager SaaS offerings.
 
-      $ {command}
+      If `--location` is not specified, SaaS offerings in all locations are
+      listed.
+    examples: |-
+      To list all SaaS offerings in location `us-central1`, run:
+
+        $ {command} --location=us-central1
+
+      To list only the names of SaaS offerings with the label `env=prod` in all
+      locations, run:
+
+        $ {command} --filter="labels.env=prod" --format="value(name)"
+  ALPHA:
+    help_text:
+      brief: List SaaS
+      description: List SaaS
+      examples: |-
+        To list all Saas Types, run:
+
+        $ {command}
   arguments:
     resource:
       help_text: |-
-        The parent of the saas type.
+        Location of the SaaS offerings to list.
+      ALPHA:
+        help_text: The parent of the saas type.
       spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:project_location_with_default
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.saas
   response:

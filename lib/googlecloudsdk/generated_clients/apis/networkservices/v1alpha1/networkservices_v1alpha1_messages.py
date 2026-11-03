@@ -69,6 +69,12 @@ class AgentConnectivityTemplate(_messages.Message):
       AgentConnectivityTemplate resource.
     name: Identifier. Name of the AgentConnectivityTemplate resource. It
       matches pattern `projects/*/locations/*/agentConnectivityTemplates/`.
+    registeredCluster: Optional. Immutable. The RegisteredCluster resource
+      that represents the external cluster where the AgentGateway will be
+      deployed. This field can only be set when `agent_compute` is `K8S` (for
+      hybrid self-managed AgentGateways deployed on external Kubernetes
+      clusters). Format: `projects/{project}/locations/{location}/registeredCl
+      usters/{registered_cluster}`
     updateTime: Output only. The timestamp when the resource was updated.
   """
 
@@ -109,12 +115,14 @@ class AgentConnectivityTemplate(_messages.Message):
       CLOUD_RUN: Google Cloud Run.
       BORG: Google Borg (for 1P producers).
       GCE_VM: Google Compute Engine VM.
+      K8S: Multicloud K8S.
     """
     AGENT_COMPUTE_UNSPECIFIED = 0
     GKE = 1
     CLOUD_RUN = 2
     BORG = 3
     GCE_VM = 4
+    K8S = 5
 
   class DeploymentModelValueValuesEnum(_messages.Enum):
     r"""Optional. The deployment model for the gateway.
@@ -163,7 +171,8 @@ class AgentConnectivityTemplate(_messages.Message):
   etag = _messages.StringField(8)
   labels = _messages.MessageField('LabelsValue', 9)
   name = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
+  registeredCluster = _messages.StringField(11)
+  updateTime = _messages.StringField(12)
 
 
 class AgentGateway(_messages.Message):
@@ -1755,7 +1764,7 @@ class EgressRouting(_messages.Message):
     labels: Optional. Set of label tags associated with the EgressRouting
       resource.
     name: Identifier. Name of the EgressRouting resource. It matches pattern
-      `projects/*/locations/*/egressRoutings/`.
+      `projects/*/locations/*/egressRoutings/{egress_routing}`.
     sources: Required. Specifies the source workloads to which this
       EgressRouting rule applies.
     updateTime: Output only. The timestamp when the resource was last updated.
@@ -1802,8 +1811,8 @@ class EgressRoutingSource(_messages.Message):
   Fields:
     workloadUri: Required. The resource URI representing the workload,
       project, or location. Examples:
-      "//cloudresourcemanager.googleapis.com/projects/{project_id}" "//run.goo
-      gleapis.com/projects/{project_id}/locations/{location}/services/*" "//co
+      "//run.googleapis.com/projects/{project_number}" "//run.googleapis.com/p
+      rojects/{project_id}/locations/{location}/services/{service_name}" "//co
       ntainer.googleapis.com/projects/{project_id}/locations/{location}/cluste
       rs/{cluster_name}" "//container.googleapis.com/projects/{project_id}/loc
       ations/{location}/clusters/{cluster_name}/k8s/namespaces/{namespace}"
@@ -1818,7 +1827,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class EndpointMatcher(_messages.Message):
@@ -5956,6 +5964,26 @@ class ListRegionalMulticastProducerAssociationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListRegisteredClustersResponse(_messages.Message):
+  r"""Response returned by the ListRegisteredClusters method.
+
+  Fields:
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    registeredClusters: List of RegisteredCluster resources.
+    unreachable: Unordered list. Unreachable locations. Populated when the
+      request opts into `return_partial_success` and reading across
+      collections e.g. when attempting to list all resources across all
+      supported locations.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  registeredClusters = _messages.MessageField('RegisteredCluster', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListServiceBindingsResponse(_messages.Message):
   r"""Response returned by the ListServiceBindings method.
 
@@ -6311,11 +6339,10 @@ class MatchRule(_messages.Message):
 
 
 class McpTranscoder(_messages.Message):
-  r"""Represents an McpTranscoder resource.
-
-  This resource configures the Model Context Protocol (MCP) to OpenAPI
-  transcoding capabilities, linking an AgentGateway to one or more Endpoints
-  that define the tools via OpenAPI specifications.
+  r"""Represents an McpTranscoder resource. This resource configures the Model
+  Context Protocol (MCP) to OpenAPI transcoding capabilities, linking an
+  AgentGateway to one or more Endpoints that define the tools via OpenAPI
+  specifications.
 
   Messages:
     LabelsValue: Optional. Set of labels associated with the McpTranscoder
@@ -6324,27 +6351,27 @@ class McpTranscoder(_messages.Message):
   Fields:
     agentGateway: Required. The resource name of the AgentGateway this
       McpTranscoder is associated with. Must be in the format
-      `projects/*/locations/*/agentGateways/{agent_gateway_id}`.
+      projects/*/locations/*/agentGateways/{agent_gateway_id}. The referenced
+      AgentGateway must have MCP listed in its protocols.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. An optional description of the McpTranscoder
       resource. Max length 1024 characters.
-    endpoints: Required. A list of resource URIs of Service resources (from
+    endpoints: Required. A list of resource names of Service resources (from
       Agent Registry) that contain the OpenAPI specifications. Must be in the
-      format `//agentregistry.googleapis.com/projects/*/locations/*/services/{
-      service}`. Note: For the MVP, each McpTranscoder is limited to a single
-      tool set.
+      format projects/*/locations/*/services/{service}. Note: For the MVP,
+      each McpTranscoder is limited to a single tool set.
     etag: Optional. Etag of the resource. If this is provided, it must match
       the server's etag. If the provided etag does not match the server's
       etag, the request will fail with a 409 ABORTED error.
     labels: Optional. Set of labels associated with the McpTranscoder
       resource.
     mcpServerUrl: Required. Specifies the MCP server URL used for the MCP
-      request calls. Must be a valid URL starting with `http://` or `https://`
-      (e.g., "https://api.example.com/v1/mcp").
+      request calls. This typically specifies the host and path (e.g.,
+      "api.example.com/v1/mcp").
     name: Identifier. Resource name of the McpTranscoder. It must be in the
-      format `projects/*/locations/*/mcpTranscoders/{mcp_transcoder}`.
-      `{mcp_transcoder}` must be 1-63 characters long and match the regex
-      `[a-z]([-a-z0-9]*[a-z0-9])?`.
+      format projects/*/locations/*/mcpTranscoders/{mcp_transcoder}.
+      {mcp_transcoder} must be 1-63 characters long and match the regex
+      [a-z]([-a-z0-9]*[a-z0-9])?.
     updateTime: Output only. The timestamp when the resource was last updated.
   """
 
@@ -8298,7 +8325,7 @@ class NetworkservicesProjectsLocationsEgressRoutingsPatchRequest(_messages.Messa
   Fields:
     egressRouting: A EgressRouting resource to be passed as the request body.
     name: Identifier. Name of the EgressRouting resource. It matches pattern
-      `projects/*/locations/*/egressRoutings/`.
+      `projects/*/locations/*/egressRoutings/{egress_routing}`.
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the EgressRouting resource by the update. The fields
       specified in the update_mask are relative to the resource, not the full
@@ -9799,9 +9826,9 @@ class NetworkservicesProjectsLocationsMcpTranscodersPatchRequest(_messages.Messa
   Fields:
     mcpTranscoder: A McpTranscoder resource to be passed as the request body.
     name: Identifier. Resource name of the McpTranscoder. It must be in the
-      format `projects/*/locations/*/mcpTranscoders/{mcp_transcoder}`.
-      `{mcp_transcoder}` must be 1-63 characters long and match the regex
-      `[a-z]([-a-z0-9]*[a-z0-9])?`.
+      format projects/*/locations/*/mcpTranscoders/{mcp_transcoder}.
+      {mcp_transcoder} must be 1-63 characters long and match the regex
+      [a-z]([-a-z0-9]*[a-z0-9])?.
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the McpTranscoder resource by the update.
   """
@@ -12194,6 +12221,98 @@ class NetworkservicesProjectsLocationsRegionalMulticastProducerAssociationsPatch
   updateMask = _messages.StringField(4)
 
 
+class NetworkservicesProjectsLocationsRegisteredClustersCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsRegisteredClustersCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource of the RegisteredCluster. Must be in
+      the format `projects/*/locations/*`.
+    registeredCluster: A RegisteredCluster resource to be passed as the
+      request body.
+    registeredClusterId: Required. Short name of the RegisteredCluster
+      resource to be created.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  registeredCluster = _messages.MessageField('RegisteredCluster', 2)
+  registeredClusterId = _messages.StringField(3)
+
+
+class NetworkservicesProjectsLocationsRegisteredClustersDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsRegisteredClustersDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. The etag of the RegisteredCluster to delete. If this is
+      provided, it must match the server's etag.
+    name: Required. A name of the RegisteredCluster to delete. Must be in the
+      format `projects/*/locations/*/registeredClusters/*`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsRegisteredClustersGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsRegisteredClustersGetRequest object.
+
+  Fields:
+    name: Required. A name of the RegisteredCluster to get. Must be in the
+      format `projects/*/locations/*/registeredClusters/*`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsRegisteredClustersListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsRegisteredClustersListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of RegisteredClusters to return per
+      call.
+    pageToken: Optional. The value returned by the last
+      `ListRegisteredClustersResponse` Indicates that this is a continuation
+      of a prior `ListRegisteredClusters` call, and that the system should
+      return the next page of data.
+    parent: Required. The project and location from which the
+      RegisteredClusters should be listed, specified in the format
+      `projects/*/locations/*`.
+    returnPartialSuccess: Optional. Bool to indicate whether to return
+      unreachable locations in the list response when listing across multiple
+      locations (e.g., `locations/-`). If true, unreachable locations are
+      returned in `unreachable` and reachable resources in
+      `registered_clusters`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  returnPartialSuccess = _messages.BooleanField(4)
+
+
+class NetworkservicesProjectsLocationsRegisteredClustersPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsRegisteredClustersPatchRequest object.
+
+  Fields:
+    name: Identifier. Name of the RegisteredCluster resource. It matches
+      pattern `projects/{project}/locations/{location}/registeredClusters/{reg
+      istered_cluster}`.
+    registeredCluster: A RegisteredCluster resource to be passed as the
+      request body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the RegisteredCluster resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask, all populated (non-empty) mutable fields will
+      be overwritten.
+  """
+
+  name = _messages.StringField(1, required=True)
+  registeredCluster = _messages.MessageField('RegisteredCluster', 2)
+  updateMask = _messages.StringField(3)
+
+
 class NetworkservicesProjectsLocationsServiceBindingsCreateRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsServiceBindingsCreateRequest object.
 
@@ -14076,6 +14195,68 @@ class RegionalMulticastProducerAssociation(_messages.Message):
   updateTime = _messages.StringField(10)
 
 
+class RegisteredCluster(_messages.Message):
+  r"""RegisteredCluster represents a registered hybrid cluster resource.
+
+  Messages:
+    LabelsValue: Optional. Set of label tags associated with the
+      RegisteredCluster resource.
+
+  Fields:
+    apiServerPublicKey: Required. PEM-encoded public key or JWKS of the
+      cluster API server. Maximum length is 8192 characters.
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A free-text description of the resource. Max length
+      1024 characters.
+    etag: An opaque token to make the request conditional (optimistic
+      concurrency control).
+    labels: Optional. Set of label tags associated with the RegisteredCluster
+      resource.
+    name: Identifier. Name of the RegisteredCluster resource. It matches
+      pattern `projects/{project}/locations/{location}/registeredClusters/{reg
+      istered_cluster}`.
+    oidcIssuerUrl: Required. OIDC issuer URL of the cluster. Must be a valid
+      HTTPS URL (starting with `https://`) with a maximum length of 2048
+      characters.
+    updateTime: Output only. The timestamp when the resource was last updated.
+      Initially equal to create_time.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of label tags associated with the RegisteredCluster
+    resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  apiServerPublicKey = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  oidcIssuerUrl = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
+
+
 class RetryFilterPerRouteConfig(_messages.Message):
   r"""A RetryFilterPerRouteConfig object.
 
@@ -14377,8 +14558,8 @@ class ServiceGraph(_messages.Message):
 
 
 class ServiceLbPolicy(_messages.Message):
-  r"""ServiceLbPolicy holds global load balancing and traffic distribution
-  configuration that can be applied to a BackendService.
+  r"""ServiceLbPolicy holds load balancing and traffic distribution
+  configuration that can be applied to a global or regional BackendService.
 
   Enums:
     LoadBalancingAlgorithmValueValuesEnum: Optional. The type of load
@@ -14417,16 +14598,24 @@ class ServiceLbPolicy(_messages.Message):
       LOAD_BALANCING_ALGORITHM_UNSPECIFIED: The type of the loadbalancing
         algorithm is unspecified.
       SPRAY_TO_WORLD: Balance traffic across all backends across the world
-        proportionally based on capacity.
+        proportionally based on capacity. Only supported for global
+        ServiceLbPolicy with Cloud Service Mesh, not supported for regional
+        ServiceLbPolicy.
       SPRAY_TO_REGION: Direct traffic to the nearest region with endpoints and
         capacity before spilling over to other regions and spread the traffic
-        from each client to all the MIGs/NEGs in a region.
+        from each client to all the MIGs/NEGs in a region. For regional
+        ServiceLbPolicy, traffic stays within the configured region and does
+        not spill over to other regions.
       WATERFALL_BY_REGION: Direct traffic to the nearest region with endpoints
         and capacity before spilling over to other regions. All MIGs/NEGs
         within a region are evenly loaded but each client might not spread the
-        traffic to all the MIGs/NEGs in the region.
+        traffic to all the MIGs/NEGs in the region. For regional
+        ServiceLbPolicy, traffic stays within the configured region and does
+        not spill over to other regions.
       WATERFALL_BY_ZONE: Attempt to keep traffic in a single zone closest to
-        the client, before spilling over to other zones.
+        the client, before spilling over to other zones. For regional
+        ServiceLbPolicy, traffic only spills over to other zones within the
+        same region.
     """
     LOAD_BALANCING_ALGORITHM_UNSPECIFIED = 0
     SPRAY_TO_WORLD = 1
@@ -14471,8 +14660,8 @@ class ServiceLbPolicy(_messages.Message):
 
 
 class ServiceLbPolicyAutoCapacityDrain(_messages.Message):
-  r"""Option to specify if an unhealthy IG/NEG should be considered for global
-  load balancing and traffic routing.
+  r"""Option to specify if an unhealthy IG/NEG should be considered for load
+  balancing and traffic routing.
 
   Fields:
     enable: Optional. If set to 'True', an unhealthy IG/NEG will be set as

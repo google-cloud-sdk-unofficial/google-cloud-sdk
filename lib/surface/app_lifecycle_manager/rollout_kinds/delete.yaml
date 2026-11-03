@@ -1,21 +1,42 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Delete a Rollout Kind
-    description: Delete a Rollout Kind
-    examples: |-
-      To delete the Rollout Kind, run:
+    brief: Delete a rollout kind.
+    description: |-
+      Delete an App Lifecycle Manager rollout kind.
 
-      $ {command}
+      The command prompts for confirmation before the rollout kind is deleted.
+    examples: |-
+      To delete the rollout kind named `my-rollout-kind` in location
+      `us-central1`, run:
+
+        $ {command} my-rollout-kind --location=us-central1
+
+      To delete the rollout kind named `my-rollout-kind` in location
+      `us-central1` without a confirmation prompt, run:
+
+        $ {command} my-rollout-kind --location=us-central1 --quiet
+  ALPHA:
+    help_text:
+      brief: Delete a Rollout Kind
+      description: Delete a Rollout Kind
+      examples: |-
+        To delete the Rollout Kind, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        Rollout kind to delete.
+      ALPHA:
+        help_text: Name of the resource
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:rollout_kind
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.rolloutKinds

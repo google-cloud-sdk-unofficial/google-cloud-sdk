@@ -527,6 +527,31 @@ class _BaseInstances(object):
         settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
       settings.ipConfiguration.pscConfig.allowedConsumerProjects = []
 
+    if args.IsKnownAndSpecified('enable_psc_endpoint_allowlisting'):
+      if not settings.ipConfiguration:
+        settings.ipConfiguration = sql_messages.IpConfiguration()
+      if not settings.ipConfiguration.pscConfig:
+        settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
+      settings.ipConfiguration.pscConfig.pscEndpointAllowlistingEnabled = (
+          args.enable_psc_endpoint_allowlisting
+      )
+
+    if args.IsKnownAndSpecified('allowed_consumer_endpoints'):
+      if not settings.ipConfiguration:
+        settings.ipConfiguration = sql_messages.IpConfiguration()
+      if not settings.ipConfiguration.pscConfig:
+        settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
+      settings.ipConfiguration.pscConfig.allowedConsumerEndpoints = (
+          args.allowed_consumer_endpoints
+      )
+
+    if args.IsKnownAndSpecified('clear_allowed_consumer_endpoints'):
+      if not settings.ipConfiguration:
+        settings.ipConfiguration = sql_messages.IpConfiguration()
+      if not settings.ipConfiguration.pscConfig:
+        settings.ipConfiguration.pscConfig = sql_messages.PscConfig()
+      settings.ipConfiguration.pscConfig.allowedConsumerEndpoints = []
+
     if args.IsKnownAndSpecified('psc_network_attachment_uri'):
       if not settings.ipConfiguration:
         settings.ipConfiguration = sql_messages.IpConfiguration()

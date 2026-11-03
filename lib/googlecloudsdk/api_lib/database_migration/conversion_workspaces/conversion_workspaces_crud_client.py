@@ -120,6 +120,7 @@ class ConversionWorkspacesCRUDClient(
       quality_assessment: Optional[bool] = None,
       conversion_assistance: Optional[bool] = None,
       pattern_matching: Optional[bool] = None,
+      ai_processing_location: Optional[str] = None,
   ):
     """Updates a conversion workspace.
 
@@ -133,6 +134,11 @@ class ConversionWorkspacesCRUDClient(
       quality_assessment: whether to enable quality assessment.
       conversion_assistance: whether to enable conversion assistance.
       pattern_matching: whether to enable pattern matching.
+      ai_processing_location: the location where Gemini requests are
+        processed. None leaves the current setting unchanged and an empty
+        string removes it. There is no client-side default: if the setting
+        is absent, the service chooses the location, or rejects Gemini
+        requests when explicit location consent is required.
 
     Returns:
       Operation: the operation for updating the conversion workspace.
@@ -146,6 +152,7 @@ class ConversionWorkspacesCRUDClient(
         quality_assessment=quality_assessment,
         conversion_assistance=conversion_assistance,
         pattern_matching=pattern_matching,
+        ai_processing_location=ai_processing_location,
     )
     return self.cw_service.Patch(
         self.messages.DatamigrationProjectsLocationsConversionWorkspacesPatchRequest(
@@ -182,6 +189,7 @@ class ConversionWorkspacesCRUDClient(
       quality_assessment: Optional[bool] = None,
       conversion_assistance: Optional[bool] = None,
       pattern_matching: Optional[bool] = None,
+      ai_processing_location: Optional[str] = None,
   ) -> tuple[messages.ConversionWorkspace, set[str]]:
     """Returns updated conversion workspace and list of updated fields.
 
@@ -195,6 +203,11 @@ class ConversionWorkspacesCRUDClient(
       quality_assessment: whether to enable quality assessment.
       conversion_assistance: whether to enable conversion assistance.
       pattern_matching: whether to enable pattern matching.
+      ai_processing_location: the location where Gemini requests are
+        processed. None leaves the current setting unchanged and an empty
+        string removes it. There is no client-side default: if the setting
+        is absent, the service chooses the location, or rejects Gemini
+        requests when explicit location consent is required.
 
     Returns:
       A tuple containing:
@@ -231,6 +244,10 @@ class ConversionWorkspacesCRUDClient(
       new_settings['aiAssistant'] = str(conversion_assistance).lower()
     if pattern_matching is not None:
       new_settings['aiPatternApplier'] = str(pattern_matching).lower()
+    if ai_processing_location:
+      new_settings['ai_processing_location'] = ai_processing_location
+    elif ai_processing_location is not None:
+      new_settings.pop('ai_processing_location', None)
 
     if (
         new_settings.get('autoAssessment') == 'true'

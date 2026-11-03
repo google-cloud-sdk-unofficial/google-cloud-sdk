@@ -19,12 +19,19 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 PD_STANDARD_DISK_SIZE = 200
 PD_SSD_OR_BALANCED_DISK_SIZE = 10
 HYPERDISK_BALANCED_HA_DISK_SIZE = 4
+
+LOCAL_SSD_ERROR_MESSAGE = (
+    'Local SSD disks are not supported for HA controllers. '
+    'To proceed, use an instance that does not have Local SSD disks attached, '
+    'or delete and recreate the current instance without Local SSD disks.'
+)
 
 
 def Insert(holder, ha_controller, ha_controller_ref, async_):
@@ -184,7 +191,7 @@ def GetZonalDisks(instance):
   """Returns the zonal disks for the given instance."""
   zonal_disks = []
   for disk in instance.disks:
-    if '/zones/' in disk.source:
+    if disk.source and '/zones/' in disk.source:
       zonal_disks.append(disk)
   return zonal_disks
 
@@ -193,7 +200,9 @@ def GetRegionalDisks(instance):
   """Returns the regional disks for the given instance."""
   regional_disks = []
   for disk in instance.disks:
-    if '/regions/' in disk.source:
+    if disk.type and disk.type == disk.type.SCRATCH:
+      raise calliope_exceptions.ToolException(LOCAL_SSD_ERROR_MESSAGE)
+    if disk.source and '/regions/' in disk.source:
       regional_disks.append(disk)
   return regional_disks
 

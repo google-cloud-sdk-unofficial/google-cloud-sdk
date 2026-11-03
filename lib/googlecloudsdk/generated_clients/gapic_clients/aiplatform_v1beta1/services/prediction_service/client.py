@@ -2186,6 +2186,134 @@ class PredictionServiceClient(metaclass=PredictionServiceClientMeta):
         # Done; return the response.
         return response
 
+    def stream_publisher_invoke(self,
+            requests: Optional[Iterator[prediction_service.StreamPublisherInvokeRequest]] = None,
+            *,
+            retry: OptionalRetry = gapic_v1.method.DEFAULT,
+            timeout: Union[float, object] = gapic_v1.method.DEFAULT,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
+            ) -> Iterable[httpbody_pb2.HttpBody]:
+        r"""Performs a bidirectional streaming invocation for
+        partner MaaS models with websocket support.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from googlecloudsdk.generated_clients.gapic_clients import aiplatform_v1beta1
+
+            def sample_stream_publisher_invoke():
+                # Create a client
+                client = aiplatform_v1beta1.PredictionServiceClient()
+
+                # Initialize request argument(s)
+                request = aiplatform_v1beta1.StreamPublisherInvokeRequest(
+                    endpoint="endpoint_value",
+                )
+
+                # This method expects an iterator which contains
+                # 'aiplatform_v1beta1.StreamPublisherInvokeRequest' objects
+                # Here we create a generator that yields a single `request` for
+                # demonstrative purposes.
+                requests = [request]
+
+                def request_generator():
+                    for request in requests:
+                        yield request
+
+                # Make the request
+                stream = client.stream_publisher_invoke(requests=request_generator())
+
+                # Handle the response
+                for response in stream:
+                    print(response)
+
+        Args:
+            requests (Iterator[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.StreamPublisherInvokeRequest]):
+                The request object iterator. Request message for
+                [PredictionService.StreamPublisherInvoke][google.cloud.aiplatform.v1beta1.PredictionService.StreamPublisherInvoke].
+            retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
+
+        Returns:
+            Iterable[google.api.httpbody_pb2.HttpBody]:
+                Message that represents an arbitrary HTTP body. It should only be used for
+                   payload formats that can't be represented as JSON,
+                   such as raw binary or an HTML page.
+
+                   This message can be used both in streaming and
+                   non-streaming API methods in the request as well as
+                   the response.
+
+                   It can be used as a top-level request field, which is
+                   convenient if one wants to extract parameters from
+                   either the URL or HTTP template into the request
+                   fields and also want access to the raw HTTP body.
+
+                   Example:
+
+                      message GetResourceRequest {
+                         // A unique request id. string request_id = 1;
+
+                         // The raw HTTP body is bound to this field.
+                         google.api.HttpBody http_body = 2;
+
+                      }
+
+                      service ResourceService {
+                         rpc GetResource(GetResourceRequest)
+                            returns (google.api.HttpBody);
+
+                         rpc UpdateResource(google.api.HttpBody)
+                            returns (google.protobuf.Empty);
+
+                      }
+
+                   Example with streaming methods:
+
+                      service CaldavService {
+                         rpc GetCalendar(stream google.api.HttpBody)
+                            returns (stream google.api.HttpBody);
+
+                         rpc UpdateCalendar(stream google.api.HttpBody)
+                            returns (stream google.api.HttpBody);
+
+                      }
+
+                   Use of this type only changes how the request and
+                   response bodies are handled, all other features will
+                   continue to work unchanged.
+
+        """
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._transport._wrapped_methods[self._transport.stream_publisher_invoke]
+
+        # Validate the universe domain.
+        self._validate_universe_domain()
+
+        # Send the request.
+        response = rpc(
+            requests,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
+
+        # Done; return the response.
+        return response
+
     def get_response(self,
             request: Optional[Union[prediction_service.GetResponseRequest, dict]] = None,
             *,
@@ -3278,6 +3406,125 @@ class PredictionServiceClient(metaclass=PredictionServiceClientMeta):
         # Wrap the RPC method; this adds retry and timeout information,
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.embed_content]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((
+                ("model", request.model),
+            )),
+        )
+
+        # Validate the universe domain.
+        self._validate_universe_domain()
+
+        # Send the request.
+        response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
+
+        # Done; return the response.
+        return response
+
+    def batch_embed_contents(self,
+            request: Optional[Union[prediction_service.BatchEmbedContentsRequest, dict]] = None,
+            *,
+            model: Optional[str] = None,
+            requests: Optional[MutableSequence[prediction_service.EmbedContentRequest]] = None,
+            retry: OptionalRetry = gapic_v1.method.DEFAULT,
+            timeout: Union[float, object] = gapic_v1.method.DEFAULT,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
+            ) -> prediction_service.BatchEmbedContentsResponse:
+        r"""Generates embeddings directly from multiple contents.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from googlecloudsdk.generated_clients.gapic_clients import aiplatform_v1beta1
+
+            def sample_batch_embed_contents():
+                # Create a client
+                client = aiplatform_v1beta1.PredictionServiceClient()
+
+                # Initialize request argument(s)
+                request = aiplatform_v1beta1.BatchEmbedContentsRequest(
+                    model="model_value",
+                )
+
+                # Make the request
+                response = client.batch_embed_contents(request=request)
+
+                # Handle the response
+                print(response)
+
+        Args:
+            request (Union[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.BatchEmbedContentsRequest, dict]):
+                The request object. Request message for
+                [PredictionService.BatchEmbedContents][google.cloud.aiplatform.v1beta1.PredictionService.BatchEmbedContents].
+            model (str):
+                Required. The name of the publisher model requested to
+                serve the prediction. Format:
+                ``projects/{project}/locations/{location}/publishers/{publisher}/models/{model}``
+
+                This corresponds to the ``model`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            requests (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.EmbedContentRequest]):
+                Required. Embed requests for the batch. The model in
+                each of these requests must either be empty or match the
+                model specified in ``BatchEmbedContentsRequest.model``.
+                All the requests in a batch must have the same output
+                dimensionality and auto truncation parameters.
+
+                This corresponds to the ``requests`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
+
+        Returns:
+            googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.BatchEmbedContentsResponse:
+                Response message for
+                   [PredictionService.BatchEmbedContents][google.cloud.aiplatform.v1beta1.PredictionService.BatchEmbedContents].
+
+        """
+        # Create or coerce a protobuf request object.
+        # - Quick check: If we got a request object, we should *not* have
+        #   gotten any keyword arguments that map to the request.
+        flattened_params = [model, requests]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
+        if request is not None and has_flattened_params:
+            raise ValueError('If the `request` argument is set, then none of '
+                             'the individual field arguments should be set.')
+
+        # - Use the request object if provided (there's no risk of modifying the input as
+        #   there are no flattened fields), or create one.
+        if not isinstance(request, prediction_service.BatchEmbedContentsRequest):
+            request = prediction_service.BatchEmbedContentsRequest(request)
+            # If we have keyword arguments corresponding to fields on the
+            # request, apply these.
+            if model is not None:
+                request.model = model
+            if requests is not None:
+                request.requests = requests
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._transport._wrapped_methods[self._transport.batch_embed_contents]
 
         # Certain fields should be provided within the metadata header;
         # add these here.

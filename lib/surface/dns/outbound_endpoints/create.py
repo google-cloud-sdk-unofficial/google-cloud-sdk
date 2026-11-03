@@ -64,7 +64,7 @@ class Create(base.CreateCommand):
     )
     flags.GetOutboundEndpointNetworkArg(required=True).AddToParser(parser)
     flags.GetOutboundEndpointSubnetworkArg(required=True).AddToParser(parser)
-    flags.GetOutboundEndpointIpArg(required=True).AddToParser(parser)
+    flags.GetOutboundEndpointIpArg(required=False).AddToParser(parser)
     flags.GetOutboundEndpointDescriptionArg(required=False).AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)

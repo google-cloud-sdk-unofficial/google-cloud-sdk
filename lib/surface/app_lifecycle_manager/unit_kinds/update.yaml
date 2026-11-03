@@ -1,30 +1,53 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Update a Unit Kind
-    description: Update a Unit Kind
+    brief: Update a unit kind.
+    description: |-
+      Update an App Lifecycle Manager unit kind.
     examples: |-
-      To update the Unit Kind, run:
+      To set the default release of the unit kind named `my-unit-kind` in
+      location `us-central1` to `my-release`, run:
 
-      $ {command}
+        $ {command} my-unit-kind --location=us-central1 --default-release=my-release
+
+      To add or update the label `env=prod` on the unit kind named
+      `my-unit-kind` and remove its default release, run:
+
+        $ {command} my-unit-kind --location=us-central1 --update-labels=env=prod --clear-default-release
+  ALPHA:
+    help_text:
+      brief: Update a Unit Kind
+      description: Update a Unit Kind
+      examples: |-
+        To update the Unit Kind, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Identifier. The resource name (full URI of the resource) following the standard naming
-        scheme:
+        Unit kind to update.
+      ALPHA:
+        help_text: |-
+          Identifier. The resource name (full URI of the resource) following the standard naming
+          scheme:
 
-          "projects/{project}/locations/{location}/unitKinds/{unitKind}"
+            "projects/{project}/locations/{location}/unitKinds/{unitKind}"
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:unit_kind
       required: true
     - arg_name: default-release
       help_text: |-
-        A reference to the Release object to use as default for creating new units
-        of this Unit Kind.
+        Release to use by default when creating new units of this unit kind.
+        If not specified, each new unit must explicitly reference the release
+        to use for its creation.
+      ALPHA:
+        help_text: |-
+          A reference to the Release object to use as default for creating new units
+          of this Unit Kind.
 
-        If not specified, a new unit must explicitly reference which release to use
-        for its creation.
+          If not specified, a new unit must explicitly reference which release to use
+          for its creation.
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:release
       resource_method_params:
@@ -33,8 +56,13 @@
       clearable: true
     - arg_name: saas
       help_text: |-
-        A reference to the Saas that defines the product (managed service) that
-        the producer wants to manage with App Lifecycle Manager. Immutable once set.
+        SaaS offering that defines the product (managed service) that the
+        service producer manages with App Lifecycle Manager. The SaaS offering
+        cannot be changed after it is set.
+      ALPHA:
+        help_text: |-
+          A reference to the Saas that defines the product (managed service) that
+          the producer wants to manage with App Lifecycle Manager. Immutable once set.
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:saas
       resource_method_params:
@@ -46,151 +74,245 @@
       required: false
       repeated: true
       help_text: |-
-        List of other unit kinds that this release will depend on. Dependencies
-        will be automatically provisioned if not found. Maximum 10.
+        Other unit kinds that this unit kind depends on. Dependencies are
+        automatically provisioned if not found. A maximum of 10 dependencies
+        can be specified. Dependencies cannot be changed after the unit kind is
+        created.
+      ALPHA:
+        help_text: |-
+          List of other unit kinds that this release will depend on. Dependencies
+          will be automatically provisioned if not found. Maximum 10.
       clearable: true
       spec:
       - api_field: unitKind
         resource_pattern: projects/{project}/locations/{location}/unitKinds/{unitKind}
         help_text: |-
-          The unit kind of the dependency.
+          Unit kind of the dependency.
+        ALPHA:
+          help_text: The unit kind of the dependency.
       - api_field: alias
         help_text: |-
-          An alias for the dependency. Used for input variable mapping.
+          Alias for the dependency, used for input variable mapping.
+        ALPHA:
+          help_text: |-
+            An alias for the dependency. Used for input variable mapping.
     - arg_name: input-variable-mappings
       api_field: unitKind.inputVariableMappings
       required: false
       repeated: true
       help_text: |-
-        List of inputVariables for this release that will either be retrieved from
-        a dependency's outputVariables, or will be passed on to a dependency's
-        inputVariables. Maximum 100.
+        Input variables of this unit kind that are either retrieved from the
+        output variables of a dependency or passed on to the input variables
+        of a dependency. A maximum of 100 mappings can be specified.
+      ALPHA:
+        help_text: |-
+          List of inputVariables for this release that will either be retrieved from
+          a dependency's outputVariables, or will be passed on to a dependency's
+          inputVariables. Maximum 100.
       clearable: true
       spec:
       - api_field: variable
         required: true
         help_text: |-
-          name of the variable
+          Name of the variable.
+        ALPHA:
+          help_text: name of the variable
       - json_name: from
         api_field: from_
         help_text: |-
-          Output variables which will get their values from dependencies
+          Output variable of a dependency from which the variable gets its
+          value.
+        ALPHA:
+          help_text: |-
+            Output variables which will get their values from dependencies
         spec:
         - api_field: dependency
           required: true
           help_text: |-
-            Alias of the dependency that the outputVariable will pass its value to
+            Alias of the dependency.
+          ALPHA:
+            help_text: |-
+              Alias of the dependency that the outputVariable will pass its value to
         - api_field: outputVariable
           required: true
           help_text: |-
-            Name of the outputVariable on the dependency
+            Name of the output variable on the dependency.
+          ALPHA:
+            help_text: Name of the outputVariable on the dependency
       - api_field: to
         help_text: |-
-          Input variables whose values will be passed on to dependencies.
+          Input variable of a dependency to which the value of the variable is
+          passed on.
+        ALPHA:
+          help_text: |-
+            Input variables whose values will be passed on to dependencies.
         spec:
         - api_field: dependency
           required: true
           help_text: |-
-            Alias of the dependency that the inputVariable will pass its value to
+            Alias of the dependency that the variable passes its value to.
+          ALPHA:
+            help_text: |-
+              Alias of the dependency that the inputVariable will pass its value to
         - api_field: inputVariable
           required: true
           help_text: |-
-            Name of the inputVariable on the dependency
+            Name of the input variable on the dependency.
+          ALPHA:
+            help_text: Name of the inputVariable on the dependency
         - api_field: ignoreForLookup
           help_text: |-
-            Tells App Lifecycle Manager if this mapping should be used during lookup or not
+            If true, App Lifecycle Manager does not use the input variable as
+            a lookup key when looking for an existing dependency unit.
+          ALPHA:
+            help_text: |-
+              Tells App Lifecycle Manager if this mapping should be used during lookup or not
     - arg_name: output-variable-mappings
       api_field: unitKind.outputVariableMappings
       required: false
       repeated: true
       help_text: |-
-        List of outputVariables for this unit kind will be passed to this unit's
-        outputVariables. Maximum 100.
+        Output variables of this unit kind that are passed to the output
+        variables of the unit. A maximum of 100 mappings can be specified.
+      ALPHA:
+        help_text: |-
+          List of outputVariables for this unit kind will be passed to this unit's
+          outputVariables. Maximum 100.
       clearable: true
       spec:
       - api_field: variable
         required: true
         help_text: |-
-          name of the variable
+          Name of the variable.
+        ALPHA:
+          help_text: name of the variable
       - json_name: from
         api_field: from_
         help_text: |-
-          Output variables which will get their values from dependencies
+          Output variable of a dependency from which the variable gets its
+          value.
+        ALPHA:
+          help_text: |-
+            Output variables which will get their values from dependencies
         spec:
         - api_field: dependency
           required: true
           help_text: |-
-            Alias of the dependency that the outputVariable will pass its value to
+            Alias of the dependency.
+          ALPHA:
+            help_text: |-
+              Alias of the dependency that the outputVariable will pass its value to
         - api_field: outputVariable
           required: true
           help_text: |-
-            Name of the outputVariable on the dependency
+            Name of the output variable on the dependency.
+          ALPHA:
+            help_text: Name of the outputVariable on the dependency
       - api_field: to
         help_text: |-
-          Input variables whose values will be passed on to dependencies.
+          Input variable of a dependency to which the value of the variable is
+          passed on.
+        ALPHA:
+          help_text: |-
+            Input variables whose values will be passed on to dependencies.
         spec:
         - api_field: dependency
           required: true
           help_text: |-
-            Alias of the dependency that the inputVariable will pass its value to
+            Alias of the dependency that the variable passes its value to.
+          ALPHA:
+            help_text: |-
+              Alias of the dependency that the inputVariable will pass its value to
         - api_field: inputVariable
           required: true
           help_text: |-
-            Name of the inputVariable on the dependency
+            Name of the input variable on the dependency.
+          ALPHA:
+            help_text: Name of the inputVariable on the dependency
         - api_field: ignoreForLookup
           help_text: |-
-            Tells App Lifecycle Manager if this mapping should be used during lookup or not
+            If true, App Lifecycle Manager does not use the input variable as
+            a lookup key when looking for an existing dependency unit.
+          ALPHA:
+            help_text: |-
+              Tells App Lifecycle Manager if this mapping should be used during lookup or not
     - group:
         api_field: unitKind.appParams
         arg_name: app-params
         clearable: true
         required: false
         help_text: |-
-          AppParams contains the parameters for creating an AppHub Application.
+          Parameters for creating an App Hub application.
+        ALPHA:
+          help_text: |-
+            AppParams contains the parameters for creating an AppHub Application.
         params:
         - arg_name: app-params-group
           api_field: unitKind.appParams.group
           required: false
           repeated: false
           help_text: |-
-            Grouping used to construct the name of the AppHub Application.
-            Multiple UnitKinds can specify the same group to use the same Application
-            across their respective units.
-            Corresponds to the app_boundary_id in the ADC composite
-            ApplicationTemplate. Defaults to UnitKind.name
+            Grouping used to construct the name of the App Hub application.
+            Multiple unit kinds can specify the same group to use the same
+            application across their respective units. Corresponds to
+            `app_boundary_id` in the Application Design Center composite
+            application template. Defaults to the name of the unit kind.
+          ALPHA:
+            help_text: |-
+              Grouping used to construct the name of the AppHub Application.
+              Multiple UnitKinds can specify the same group to use the same Application
+              across their respective units.
+              Corresponds to the app_boundary_id in the ADC composite
+              ApplicationTemplate. Defaults to UnitKind.name
         - group:
             api_field: unitKind.appParams.scope
             required: false
             help_text: |-
-              Scope of an application.
+              Scope of the application.
+            ALPHA:
+              help_text: Scope of an application.
             params:
             - arg_name: scope-type
               api_field: unitKind.appParams.scope.type
               required: false
               help_text: |-
-                Scope Type.
+                Scope type of the application. Corresponds to `scope` in the
+                Application Design Center composite application template.
+                Defaults to `type-regional`.
+              ALPHA:
+                help_text: Scope Type.
               choices:
               - arg_value: type-regional
                 enum_value: TYPE_REGIONAL
                 help_text: |-
-                  Regional type.
+                  Regional scope.
+                ALPHA:
+                  help_text: Regional type.
               - arg_value: type-global
                 enum_value: TYPE_GLOBAL
                 help_text: |-
-                  Global type.
+                  Global scope.
+                ALPHA:
+                  help_text: Global type.
     - arg_name: labels
       api_field: unitKind.labels
       required: false
       repeated: true
       help_text: |-
-        The labels on the resource, which can be used for categorization.
-        similar to Kubernetes resource labels.
+        Labels on the resource, which can be used for categorization, similar
+        to Kubernetes resource labels.
+      ALPHA:
+        help_text: |-
+          The labels on the resource, which can be used for categorization.
+          similar to Kubernetes resource labels.
       clearable: true
       spec:
       - api_field: key
       - api_field: value
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.unitKinds
     modify_request_hooks:

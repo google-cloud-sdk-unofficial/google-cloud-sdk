@@ -107,6 +107,23 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_EVALUATIONS_EXECUTIONS_RESULTS = (
+      'projects.locations.evaluations.executions.results',
+      'projects/{projectsId}/locations/{locationsId}/evaluations/'
+      '{evaluationsId}/executions/{executionsId}/results/{resultsId}',
+      {},
+      ['projectsId', 'locationsId', 'evaluationsId', 'executionsId', 'resultsId'],
+      True
+  )
+  PROJECTS_LOCATIONS_EVALUATIONS_EXECUTIONS_SCANNEDRESOURCES = (
+      'projects.locations.evaluations.executions.scannedResources',
+      'projects/{projectsId}/locations/{locationsId}/evaluations/'
+      '{evaluationsId}/executions/{executionsId}/scannedResources/'
+      '{scannedResourcesId}',
+      {},
+      ['projectsId', 'locationsId', 'evaluationsId', 'executionsId', 'scannedResourcesId'],
+      True
+  )
   PROJECTS_LOCATIONS_OPERATIONS = (
       'projects.locations.operations',
       '{+name}',
@@ -116,6 +133,13 @@ class Collections(enum.Enum):
               '{operationsId}',
       },
       ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_RULES = (
+      'projects.locations.rules',
+      'projects/{projectsId}/locations/{locationsId}/rules/{rulesId}',
+      {},
+      ['projectsId', 'locationsId', 'rulesId'],
       True
   )
 

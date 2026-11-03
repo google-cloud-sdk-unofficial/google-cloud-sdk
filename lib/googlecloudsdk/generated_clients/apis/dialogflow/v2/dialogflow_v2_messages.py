@@ -11692,15 +11692,33 @@ class GoogleCloudDialogflowV2AutomatedAgentReply(_messages.Message):
   Enums:
     AutomatedAgentReplyTypeValueValuesEnum: AutomatedAgentReply type.
 
+  Messages:
+    ParametersValue: The collection of current parameters at the time of this
+      response.
+
   Fields:
     allowCancellation: Indicates whether the partial automated agent reply is
       interruptible when a later reply message arrives. e.g. if the agent
       specified some music as partial response, it can be cancelled.
     automatedAgentReplyType: AutomatedAgentReply type.
+    callCompanionAuthCode: The auth code for accessing Call Companion UI.
     cxCurrentPage: The unique identifier of the current Dialogflow CX
       conversation page. Format: `projects//locations//agents//flows//pages/`.
     detectIntentResponse: Response of the Dialogflow Sessions.DetectIntent
       call.
+    event: Event name if an event is triggered for the query.
+    intent: Name of the intent if an intent is matched for the query. For a V2
+      query, the value format is `projects//locations/ /agent/intents/`. For a
+      V3 query, the value format is `projects//locations/ /agents//intents/`.
+    matchConfidence: The confidence of the match. Values range from 0.0
+      (completely uncertain) to 1.0 (completely certain). This value is for
+      informational purpose only and is only used to help match the best
+      intent within the classification threshold. This value may change for
+      the same end-user expression at any time due to a model retraining or
+      change in implementation.
+    parameters: The collection of current parameters at the time of this
+      response.
+    responseMessages: Response messages from the automated agent.
   """
 
   class AutomatedAgentReplyTypeValueValuesEnum(_messages.Enum):
@@ -11718,10 +11736,40 @@ class GoogleCloudDialogflowV2AutomatedAgentReply(_messages.Message):
     PARTIAL = 1
     FINAL = 2
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParametersValue(_messages.Message):
+    r"""The collection of current parameters at the time of this response.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParametersValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   allowCancellation = _messages.BooleanField(1)
   automatedAgentReplyType = _messages.EnumField('AutomatedAgentReplyTypeValueValuesEnum', 2)
-  cxCurrentPage = _messages.StringField(3)
-  detectIntentResponse = _messages.MessageField('GoogleCloudDialogflowV2DetectIntentResponse', 4)
+  callCompanionAuthCode = _messages.BytesField(3)
+  cxCurrentPage = _messages.StringField(4)
+  detectIntentResponse = _messages.MessageField('GoogleCloudDialogflowV2DetectIntentResponse', 5)
+  event = _messages.StringField(6)
+  intent = _messages.StringField(7)
+  matchConfidence = _messages.FloatField(8, variant=_messages.Variant.FLOAT)
+  parameters = _messages.MessageField('ParametersValue', 9)
+  responseMessages = _messages.MessageField('GoogleCloudDialogflowV2ResponseMessage', 10, repeated=True)
 
 
 class GoogleCloudDialogflowV2BatchCreateEntitiesRequest(_messages.Message):
@@ -17492,6 +17540,7 @@ class GoogleCloudDialogflowV2Message(_messages.Message):
       `projects//locations//conversations//messages/`.
     participant: Output only. The participant that sends this message.
     participantRole: Output only. The role of the participant.
+    responseMessages: Optional. Automated agent responses.
     sendTime: Optional. The time when the message was sent. For voice
       messages, this is the time when an utterance started.
     sentimentAnalysis: Output only. The sentiment analysis result for the
@@ -17521,8 +17570,9 @@ class GoogleCloudDialogflowV2Message(_messages.Message):
   name = _messages.StringField(5)
   participant = _messages.StringField(6)
   participantRole = _messages.EnumField('ParticipantRoleValueValuesEnum', 7)
-  sendTime = _messages.StringField(8)
-  sentimentAnalysis = _messages.MessageField('GoogleCloudDialogflowV2SentimentAnalysisResult', 9)
+  responseMessages = _messages.MessageField('GoogleCloudDialogflowV2ResponseMessage', 8, repeated=True)
+  sendTime = _messages.StringField(9)
+  sentimentAnalysis = _messages.MessageField('GoogleCloudDialogflowV2SentimentAnalysisResult', 10)
 
 
 class GoogleCloudDialogflowV2MessageAnnotation(_messages.Message):
@@ -18349,6 +18399,164 @@ class GoogleCloudDialogflowV2ReloadDocumentRequest(_messages.Message):
   smartMessagingPartialUpdate = _messages.BooleanField(3)
 
 
+class GoogleCloudDialogflowV2ResponseMessage(_messages.Message):
+  r"""Response messages from an automated agent.
+
+  Messages:
+    PayloadValue: Returns a response containing a custom, platform-specific
+      payload.
+
+  Fields:
+    endInteraction: A signal that indicates the interaction with the
+      Dialogflow agent has ended.
+    liveAgentHandoff: Hands off conversation to a live agent.
+    mixedAudio: An audio response message composed of both the synthesized
+      Dialogflow agent responses and the audios hosted in places known to the
+      client.
+    payload: Returns a response containing a custom, platform-specific
+      payload.
+    telephonyTransferCall: A signal that the client should transfer the phone
+      call connected to this agent to a third-party endpoint.
+    text: Returns a text response.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PayloadValue(_messages.Message):
+    r"""Returns a response containing a custom, platform-specific payload.
+
+    Messages:
+      AdditionalProperty: An additional property for a PayloadValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PayloadValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  endInteraction = _messages.MessageField('GoogleCloudDialogflowV2ResponseMessageEndInteraction', 1)
+  liveAgentHandoff = _messages.MessageField('GoogleCloudDialogflowV2ResponseMessageLiveAgentHandoff', 2)
+  mixedAudio = _messages.MessageField('GoogleCloudDialogflowV2ResponseMessageMixedAudio', 3)
+  payload = _messages.MessageField('PayloadValue', 4)
+  telephonyTransferCall = _messages.MessageField('GoogleCloudDialogflowV2ResponseMessageTelephonyTransferCall', 5)
+  text = _messages.MessageField('GoogleCloudDialogflowV2ResponseMessageText', 6)
+
+
+class GoogleCloudDialogflowV2ResponseMessageEndInteraction(_messages.Message):
+  r"""Indicates that interaction with the Dialogflow agent has ended."""
+
+
+class GoogleCloudDialogflowV2ResponseMessageLiveAgentHandoff(_messages.Message):
+  r"""Indicates that the conversation should be handed off to a human agent.
+  Dialogflow only uses this to determine which conversations were handed off
+  to a human agent for measurement purposes. What else to do with this signal
+  is up to you and your handoff procedures. You may set this, for example: *
+  In the entry fulfillment of a CX Page if entering the page indicates
+  something went extremely wrong in the conversation. * In a webhook response
+  when you determine that the customer issue can only be handled by a human.
+
+  Messages:
+    MetadataValue: Custom metadata for your handoff procedure. Dialogflow
+      doesn't impose any structure on this.
+
+  Fields:
+    metadata: Custom metadata for your handoff procedure. Dialogflow doesn't
+      impose any structure on this.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Custom metadata for your handoff procedure. Dialogflow doesn't impose
+    any structure on this.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  metadata = _messages.MessageField('MetadataValue', 1)
+
+
+class GoogleCloudDialogflowV2ResponseMessageMixedAudio(_messages.Message):
+  r"""Represents an audio message that is composed of both segments
+  synthesized from the Dialogflow agent prompts and ones hosted externally at
+  the specified URIs.
+
+  Fields:
+    segments: Segments this audio response is composed of.
+  """
+
+  segments = _messages.MessageField('GoogleCloudDialogflowV2ResponseMessageMixedAudioSegment', 1, repeated=True)
+
+
+class GoogleCloudDialogflowV2ResponseMessageMixedAudioSegment(_messages.Message):
+  r"""Represents one segment of audio.
+
+  Fields:
+    allowPlaybackInterruption: Whether the playback of this segment can be
+      interrupted by the end user's speech and the client should then start
+      the next Dialogflow request.
+    audio: Raw audio synthesized from the Dialogflow agent's response using
+      the output config specified in the request.
+    uri: Client-specific URI that points to an audio clip accessible to the
+      client.
+  """
+
+  allowPlaybackInterruption = _messages.BooleanField(1)
+  audio = _messages.BytesField(2)
+  uri = _messages.StringField(3)
+
+
+class GoogleCloudDialogflowV2ResponseMessageTelephonyTransferCall(_messages.Message):
+  r"""Represents the signal that telles the client to transfer the phone call
+  connected to the agent to a third-party endpoint.
+
+  Fields:
+    phoneNumber: Transfer the call to a phone number in [E.164
+      format](https://en.wikipedia.org/wiki/E.164).
+    sipUri: Transfer the call to a SIP endpoint.
+  """
+
+  phoneNumber = _messages.StringField(1)
+  sipUri = _messages.StringField(2)
+
+
+class GoogleCloudDialogflowV2ResponseMessageText(_messages.Message):
+  r"""The text response message.
+
+  Fields:
+    text: A collection of text response variants. If multiple variants are
+      defined, only one text response variant is returned at runtime.
+  """
+
+  text = _messages.StringField(1, repeated=True)
+
+
 class GoogleCloudDialogflowV2RestoreAgentRequest(_messages.Message):
   r"""The request message for Agents.RestoreAgent.
 
@@ -18944,9 +19152,13 @@ class GoogleCloudDialogflowV2SentimentAnalysisResult(_messages.Message):
 
   Fields:
     queryTextSentiment: The sentiment analysis result for `query_text`.
+    status: Output only. The status of the sentiment analysis operation. If
+      the operation failed, this field will contain the error details. For
+      example, it might indicate a quota issue (RESOURCE_EXHAUSTED).
   """
 
   queryTextSentiment = _messages.MessageField('GoogleCloudDialogflowV2Sentiment', 1)
+  status = _messages.MessageField('GoogleRpcStatus', 2)
 
 
 class GoogleCloudDialogflowV2ServiceLatency(_messages.Message):
@@ -25026,9 +25238,13 @@ class GoogleCloudDialogflowV2beta1SentimentAnalysisResult(_messages.Message):
 
   Fields:
     queryTextSentiment: The sentiment analysis result for `query_text`.
+    status: Output only. The status of the sentiment analysis operation. If
+      the operation failed, this field will contain the error details. For
+      example, it might indicate a quota issue (RESOURCE_EXHAUSTED).
   """
 
   queryTextSentiment = _messages.MessageField('GoogleCloudDialogflowV2beta1Sentiment', 1)
+  status = _messages.MessageField('GoogleRpcStatus', 2)
 
 
 class GoogleCloudDialogflowV2beta1ServiceLatency(_messages.Message):

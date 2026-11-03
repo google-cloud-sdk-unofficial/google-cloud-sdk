@@ -32,6 +32,11 @@
           - api_field: virtualMachine
             arg_name: instance
             type: str
+            required: false
+          - api_field: customHardwareLinkAttachment
+            arg_name: custom-hardware
+            type: googlecloudsdk.calliope.arg_parsers:ArgObject:hidden=True
+            required: false
           - api_field: ipAddress
             arg_name: ip
             type: str

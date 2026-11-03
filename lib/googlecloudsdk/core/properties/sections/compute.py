@@ -14,6 +14,7 @@
 # limitations under the License.
 """Contains the properties for the 'compute' section."""
 
+from googlecloudsdk.core.properties.completers import COMPLETERS
 from googlecloudsdk.core.properties.types import _Section
 
 
@@ -30,9 +31,7 @@ class _SectionCompute(_Section):
             ' command will fall back to this value, if set. To see valid'
             ' choices, run `gcloud compute zones list`.'
         ),
-        completer=(
-            'googlecloudsdk.command_lib.compute.completers:ZonesCompleter'
-        ),
+        completer=COMPLETERS['ZonesCompleter'],
     )
     self.region = self._Add(
         'region',
@@ -42,9 +41,7 @@ class _SectionCompute(_Section):
             ' the command will fall back to this value, if set. To see valid'
             ' choices, run `gcloud compute regions list`.'
         ),
-        completer=(
-            'googlecloudsdk.command_lib.compute.completers:RegionsCompleter'
-        ),
+        completer=COMPLETERS['RegionsCompleter'],
     )
     self.gce_metadata_read_timeout_sec = self._Add(
         'gce_metadata_read_timeout_sec',

@@ -67,8 +67,8 @@ def GetGapicClientInstance(region):
 
   endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
   if properties.VALUES.regional.endpoint_compatibility.Get() and (
-      endpoint_mode == properties.VALUES.regional.REGIONAL
-      or endpoint_mode == properties.VALUES.regional.REGIONAL_PREFERRED
+      endpoint_mode == properties.constants.regional.REGIONAL
+      or endpoint_mode == properties.constants.regional.REGIONAL_PREFERRED
   ):
     return apis.GetGapicClientInstance('run', 'v2', location=region)
 

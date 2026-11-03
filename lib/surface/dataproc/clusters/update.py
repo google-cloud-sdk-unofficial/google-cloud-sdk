@@ -74,17 +74,16 @@ class Update(base.UpdateCommand):
         '--num-workers',
         type=int,
         help='The new number of worker nodes in the cluster.')
-    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      parser.add_argument(
-          '--worker-flexible-config',
-          type=arg_parsers.ArgDict(spec={'num-instances': int}),
-          metavar='KEY=VALUE',
-          help=(
-              'The flexible instance group configuration for primary'
-              ' workers in High Obtainability (HO) clusters. Supported keys:'
-              ' num-instances (positive integer).'
-          ),
-      )
+    parser.add_argument(
+        '--worker-flexible-config',
+        type=arg_parsers.ArgDict(spec={'num-instances': int}),
+        metavar='KEY=VALUE',
+        help=(
+            'The flexible instance group configuration for primary'
+            ' workers in High Obtainability (HO) clusters. Supported keys:'
+            ' num-instances (positive integer).'
+        ),
+    )
     num_secondary_workers = parser.add_argument_group(mutex=True)
     num_secondary_workers.add_argument(
         '--num-preemptible-workers',
@@ -99,17 +98,16 @@ class Update(base.UpdateCommand):
         '--num-secondary-workers',
         type=int,
         help='The new number of secondary worker nodes in the cluster.')
-    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      parser.add_argument(
-          '--secondary-worker-flexible-config',
-          type=arg_parsers.ArgDict(spec={'num-instances': int}),
-          metavar='KEY=VALUE',
-          help=(
-              'The flexible instance group configuration for secondary'
-              ' workers in High Obtainability (HO) clusters. Supported keys:'
-              ' num-instances (non-negative integer).'
-          ),
-      )
+    parser.add_argument(
+        '--secondary-worker-flexible-config',
+        type=arg_parsers.ArgDict(spec={'num-instances': int}),
+        metavar='KEY=VALUE',
+        help=(
+            'The flexible instance group configuration for secondary'
+            ' workers in High Obtainability (HO) clusters. Supported keys:'
+            ' num-instances (non-negative integer).'
+        ),
+    )
 
     parser.add_argument(
         '--graceful-decommission-timeout',

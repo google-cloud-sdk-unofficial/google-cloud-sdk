@@ -14,19 +14,17 @@
 # limitations under the License.
 """Command to describe an agent runtime in Vertex AI."""
 
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai.agent_runtimes import client
-from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
-from googlecloudsdk.command_lib.ai import validation
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.ai.agent_runtimes import agent_runtimes_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 class Describe(base.DescribeCommand):
   """Get detailed information about an agent runtime with a given id.
 
@@ -46,20 +44,15 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     runtime_ref = args.CONCEPTS.runtime.Parse()
     region = runtime_ref.AsDict()['locationsId']
-    if properties.IsDefaultUniverse():
-      validation.ValidateRegion(
-          region, available_regions=constants.SUPPORTED_AP_REGIONS
-      )
+    agent_runtimes_util.ValidateRegion(region)
     with endpoint_util.AiplatformEndpointOverrides(
         constants.BETA_VERSION, region=region
     ):
-      try:
-        return client.AgentRuntimesClient(version=constants.BETA_VERSION).Get(
-            runtime_ref.RelativeName()
-        )
-      except apitools_exceptions.HttpError as error:
-        # Translates generic HTTP error into a user-friendly gcloud exception
-        raise api_exceptions.HttpException(
-            error,
-            'ResponseError: code={status_code}, message={status_message}',
-        )
+      runtimes_client = client.AgentRuntimesClient(
+          version=constants.BETA_VERSION
+      )
+      return agent_runtimes_util.ExecuteApiCall(
+          runtimes_client.Get,
+          runtime_ref.RelativeName(),
+          cmd_args=args,
+      )

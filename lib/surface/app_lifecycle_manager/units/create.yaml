@@ -1,28 +1,55 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Create a Unit
-    description: Create a Unit
-    examples: |-
-      To create the Unit, run:
+    brief: Create a unit.
+    description: |-
+      Create an App Lifecycle Manager unit.
 
-      $ {command}
+      A unit is an instance of a unit kind whose lifecycle is managed through
+      an actuation engine, for example, one based on Terraform. Units are the
+      building blocks of a tenant. Use unit operations to provision, upgrade,
+      or deprovision a unit.
+    examples: |-
+      To create a unit named `my-unit` of the unit kind `my-unit-kind` in
+      location `us-central1`, run:
+
+        $ {command} my-unit --location=us-central1 --unit-kind=my-unit-kind
+
+      To create a unit named `my-unit` that belongs to the tenant `my-tenant`,
+      is managed by the user, and has the label `env=prod`, run:
+
+        $ {command} my-unit --location=us-central1 --unit-kind=my-unit-kind --tenant=my-tenant --management-mode=user --labels=env=prod
+  ALPHA:
+    help_text:
+      brief: Create a Unit
+      description: Create a Unit
+      examples: |-
+        To create the Unit, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Identifier. The resource name (full URI of the resource) following the standard naming
-        scheme:
+        Unit to create.
+      ALPHA:
+        help_text: |-
+          Identifier. The resource name (full URI of the resource) following the standard naming
+          scheme:
 
-          "projects/{project}/locations/{location}/units/{unit}"
+            "projects/{project}/locations/{location}/units/{unit}"
       is_positional: true
       request_id_field: unitId
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:unit
       required: true
     - arg_name: unit-kind
       help_text: |-
-        Reference to the UnitKind this Unit belongs to (required and immutable once
-        created).
+        Unit kind that this unit belongs to. The unit kind cannot be changed
+        after it is set.
+      ALPHA:
+        help_text: |-
+          Reference to the UnitKind this Unit belongs to (required and immutable once
+          created).
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:unit_kind
       resource_method_params:
@@ -30,9 +57,14 @@
       required: false
     - arg_name: tenant
       help_text: |-
-        Reference to the Saas Tenant resource this unit belongs to. This for
-        example informs the maintenance policies to use for scheduling future
-        updates on a unit. (optional and immutable once created)
+        Tenant that this unit belongs to. For example, the tenant informs the
+        maintenance policies to use for scheduling future updates on the unit.
+        The tenant is optional and cannot be changed after the unit is created.
+      ALPHA:
+        help_text: |-
+          Reference to the Saas Tenant resource this unit belongs to. This for
+          example informs the maintenance policies to use for scheduling future
+          updates on a unit. (optional and immutable once created)
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:tenant
       resource_method_params:
@@ -41,10 +73,16 @@
     - group:
         required: false
         help_text: |-
-          Captures requested directives for performing future maintenance on the
-          unit. This includes a request for the unit to skip maintenance for a period
-          of time and remain pinned to its current release as well as controls for
-          postponing maintenance scheduled in future.
+          Requested directives for performing future maintenance on the unit.
+          These directives include a request for the unit to skip maintenance
+          for a period of time and remain pinned to its current release. They
+          also include controls for postponing scheduled maintenance.
+        ALPHA:
+          help_text: |-
+            Captures requested directives for performing future maintenance on the
+            unit. This includes a request for the unit to skip maintenance for a period
+            of time and remain pinned to its current release as well as controls for
+            postponing maintenance scheduled in future.
         params:
         - arg_name: maintenance-pinned-until-time
           api_field: unit.maintenance.pinnedUntilTime
@@ -53,29 +91,49 @@
           type: googlecloudsdk.core.util.times:ParseDateTime
           processor: googlecloudsdk.core.util.times:FormatDateTime
           help_text: |-
-            If present, it fixes the release on the unit until the given time; i.e.
-            changes to the release field will be rejected. Rollouts should and will
-            also respect this by not requesting an upgrade in the first place.
+            Time until which the release of the unit is pinned. Until this
+            time, changes to the release of the unit are rejected, and
+            rollouts do not request an upgrade of the unit.
+          ALPHA:
+            help_text: |-
+              If present, it fixes the release on the unit until the given time; i.e.
+              changes to the release field will be rejected. Rollouts should and will
+              also respect this by not requesting an upgrade in the first place.
     - arg_name: management-mode
       api_field: unit.managementMode
       required: false
       help_text: |-
-        Indicates whether the Unit life cycle is controlled
-        by the user or by the system.
-        Immutable once created.
+        Management mode of the unit, which indicates whether the lifecycle of
+        the unit is controlled by the user or by the system. The management
+        mode cannot be changed after the unit is created.
+      ALPHA:
+        help_text: |-
+          Indicates whether the Unit life cycle is controlled
+          by the user or by the system.
+          Immutable once created.
       choices:
       - arg_value: user
         enum_value: MANAGEMENT_MODE_USER
         help_text: |-
-          Unit's lifecycle is managed by the user.
+          The user manages the lifecycle of the unit.
+        ALPHA:
+          help_text: Unit's lifecycle is managed by the user.
       - arg_value: system
         enum_value: MANAGEMENT_MODE_SYSTEM
         help_text: |-
-          The system will decide when to deprovision and delete the unit.
-          User still can deprovision or delete the unit manually.
+          The system decides when to deprovision and delete the unit. The
+          unit can still be deprovisioned or deleted manually.
+        ALPHA:
+          help_text: |-
+            The system will decide when to deprovision and delete the unit.
+            User still can deprovision or delete the unit manually.
     - arg_name: flag-revisions
+      # The Flags API is not public in v1.
+      release_tracks: [ALPHA, BETA]
       help_text: |-
-        List of flag revisions used by this unit
+        Flag revisions used by this unit.
+      ALPHA:
+        help_text: List of flag revisions used by this unit
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_revision
       resource_method_params:
@@ -87,20 +145,30 @@
       required: false
       repeated: false
       help_text: |-
-        Reference to the AppHub Application this unit belongs to.
-        All resources deployed in this Unit will be associated with the specified
-        Application.
+        App Hub application that this unit belongs to. All resources deployed
+        in this unit are associated with the specified application.
+      ALPHA:
+        help_text: |-
+          Reference to the AppHub Application this unit belongs to.
+          All resources deployed in this Unit will be associated with the specified
+          Application.
     - arg_name: labels
       api_field: unit.labels
       required: false
       repeated: true
       help_text: |-
-        The labels on the resource, which can be used for categorization.
-        similar to Kubernetes resource labels.
+        Labels on the resource, which can be used for categorization, similar
+        to Kubernetes resource labels.
+      ALPHA:
+        help_text: |-
+          The labels on the resource, which can be used for categorization.
+          similar to Kubernetes resource labels.
       spec:
       - api_field: key
       - api_field: value
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.units

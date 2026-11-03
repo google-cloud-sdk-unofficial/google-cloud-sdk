@@ -28,6 +28,13 @@
       run:
 
         $ {command} my-odbnetwork --location=us-east4 --network=projects/my-project/locations/global/networks/default
+
+      To create an OdbNetwork with id `my-odbnetwork` with network
+      `projects/my-project/locations/global/networks/default` and network attachment
+      `projects/my-project/regions/us-east4/networkAttachments/my-network-attachment`
+      in the location `us-east4`, run:
+
+        $ {command} my-odbnetwork --location=us-east4 --network=projects/my-project/locations/global/networks/default --psc-interface-config-network-attachment=projects/my-project/regions/us-east4/networkAttachments/my-network-attachment
   arguments:
     params:
     - help_text: |-

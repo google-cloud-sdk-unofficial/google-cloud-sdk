@@ -291,12 +291,7 @@ def ConstructAirflowRbacPatch(
     return 'config.software_config.airflow_rbac_config', patch_env
 
   if has_clear and not has_binding_updates:
-    patch_env = messages.Environment(
-        config=messages.EnvironmentConfig(
-            softwareConfig=messages.SoftwareConfig(airflowRbacConfig=None)
-        )
-    )
-    return 'config.software_config.airflow_rbac_config', patch_env
+    return _ConstructClearAirflowRbacPatch(messages)
 
   if has_clear:
     existing_bindings = []
@@ -338,12 +333,25 @@ def ConstructAirflowRbacPatch(
           messages.AirflowRbacBinding(role=role, members=sorted_members)
       )
 
+  if not new_bindings:
+    return _ConstructClearAirflowRbacPatch(messages)
+
   rbac_config = messages.AirflowRbacConfig(
       bindings=new_bindings,
   )
   patch_env = messages.Environment(
       config=messages.EnvironmentConfig(
           softwareConfig=messages.SoftwareConfig(airflowRbacConfig=rbac_config)
+      )
+  )
+  return 'config.software_config.airflow_rbac_config', patch_env
+
+
+def _ConstructClearAirflowRbacPatch(messages):
+  """Returns an environment patch that clears the Airflow RBAC configuration."""
+  patch_env = messages.Environment(
+      config=messages.EnvironmentConfig(
+          softwareConfig=messages.SoftwareConfig(airflowRbacConfig=None)
       )
   )
   return 'config.software_config.airflow_rbac_config', patch_env

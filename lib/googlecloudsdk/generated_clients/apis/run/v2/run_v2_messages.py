@@ -15,6 +15,33 @@ from apitools.base.py import extra_types
 package = 'run'
 
 
+class GoogleCloudRunV2AmbientNetworking(_messages.Message):
+  r"""Configuration for Ambient Networking.
+
+  Enums:
+    AmbientScopeValueValuesEnum: The ambient networking scope of the instance.
+
+  Fields:
+    ambientScope: The ambient networking scope of the instance.
+    enabled: Optional. Whether ambient networking is enabled.
+  """
+
+  class AmbientScopeValueValuesEnum(_messages.Enum):
+    r"""The ambient networking scope of the instance.
+
+    Values:
+      AMBIENT_SCOPE_UNSPECIFIED: Unspecified.
+      AMBIENT_SCOPE_REGIONAL: Regional ambient networking.
+      AMBIENT_SCOPE_GLOBAL: Global ambient networking.
+    """
+    AMBIENT_SCOPE_UNSPECIFIED = 0
+    AMBIENT_SCOPE_REGIONAL = 1
+    AMBIENT_SCOPE_GLOBAL = 2
+
+  ambientScope = _messages.EnumField('AmbientScopeValueValuesEnum', 1)
+  enabled = _messages.BooleanField(2)
+
+
 class GoogleCloudRunV2BinaryAuthorization(_messages.Message):
   r"""Settings for Binary Authorization feature.
 
@@ -196,12 +223,12 @@ class GoogleCloudRunV2BuildStatus(_messages.Message):
   r"""BuildStatus holds the status of a build.
 
   Fields:
-    error: The error code of the build.
+    cloudBuildLogUrl: The log URL for the Cloud Build execution.
     message: The message details of the build.
     status: The status of the build.
   """
 
-  error = _messages.StringField(1)
+  cloudBuildLogUrl = _messages.StringField(1)
   message = _messages.StringField(2)
   status = _messages.StringField(3)
 
@@ -1375,6 +1402,8 @@ class GoogleCloudRunV2Instance(_messages.Message):
   Enums:
     EncryptionKeyRevocationActionValueValuesEnum: The action to take if the
       encryption key is revoked.
+    FunctionalTypeValueValuesEnum: Optional. The functional type of the
+      Instance.
     IngressValueValuesEnum: Optional. Provides the ingress settings for this
       Instance. On output, returns the currently observed ingress settings, or
       `INGRESS_TRAFFIC_UNSPECIFIED` if no revision is active.
@@ -1425,6 +1454,7 @@ class GoogleCloudRunV2Instance(_messages.Message):
       resource. May be used to detect modification conflict during updates.
     expireTime: Output only. For a deleted resource, the time after which it
       will be permamently deleted.
+    functionalType: Optional. The functional type of the Instance.
     generation: Output only. A number that monotonically increases every time
       the user modifies the desired state. Please note that unlike v1, this is
       an `int64` value. As with most Google APIs, its JSON representation will
@@ -1494,6 +1524,8 @@ class GoogleCloudRunV2Instance(_messages.Message):
     vpcAccess: Optional. VPC Access configuration to use for this Revision.
       For more information, visit
       https://cloud.google.com/run/docs/configuring/connecting-vpc.
+    workloadIdentityConfig: Optional. The Instance's workload identity
+      settings.
   """
 
   class EncryptionKeyRevocationActionValueValuesEnum(_messages.Enum):
@@ -1508,6 +1540,19 @@ class GoogleCloudRunV2Instance(_messages.Message):
     ENCRYPTION_KEY_REVOCATION_ACTION_UNSPECIFIED = 0
     PREVENT_NEW = 1
     SHUTDOWN = 2
+
+  class FunctionalTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The functional type of the Instance.
+
+    Values:
+      FUNCTIONAL_TYPE_UNSPECIFIED: Specifies that the functional type is
+        unspecified.
+      FUNCTIONAL_TYPE_AGENT: Represents an AGENT functional type.
+      FUNCTIONAL_TYPE_MCP_SERVER: Represents an MCP_SERVER functional type.
+    """
+    FUNCTIONAL_TYPE_UNSPECIFIED = 0
+    FUNCTIONAL_TYPE_AGENT = 1
+    FUNCTIONAL_TYPE_MCP_SERVER = 2
 
   class IngressValueValuesEnum(_messages.Enum):
     r"""Optional. Provides the ingress settings for this Instance. On output,
@@ -1659,31 +1704,33 @@ class GoogleCloudRunV2Instance(_messages.Message):
   encryptionKeyShutdownDuration = _messages.StringField(15)
   etag = _messages.StringField(16)
   expireTime = _messages.StringField(17)
-  generation = _messages.IntegerField(18)
-  gpuZonalRedundancyDisabled = _messages.BooleanField(19)
-  iapEnabled = _messages.BooleanField(20)
-  ingress = _messages.EnumField('IngressValueValuesEnum', 21)
-  invokerIamDisabled = _messages.BooleanField(22)
-  labels = _messages.MessageField('LabelsValue', 23)
-  lastModifier = _messages.StringField(24)
-  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 25)
-  logUri = _messages.StringField(26)
-  name = _messages.StringField(27)
-  nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 28)
-  observedGeneration = _messages.IntegerField(29)
-  reconciling = _messages.BooleanField(30)
-  restartPolicy = _messages.EnumField('RestartPolicyValueValuesEnum', 31)
-  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 32)
-  satisfiesPzs = _messages.BooleanField(33)
-  serviceAccount = _messages.StringField(34)
-  sshEnabled = _messages.BooleanField(35)
-  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 36)
-  terminationGracePeriod = _messages.StringField(37)
-  uid = _messages.StringField(38)
-  updateTime = _messages.StringField(39)
-  urls = _messages.StringField(40, repeated=True)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 41, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 42)
+  functionalType = _messages.EnumField('FunctionalTypeValueValuesEnum', 18)
+  generation = _messages.IntegerField(19)
+  gpuZonalRedundancyDisabled = _messages.BooleanField(20)
+  iapEnabled = _messages.BooleanField(21)
+  ingress = _messages.EnumField('IngressValueValuesEnum', 22)
+  invokerIamDisabled = _messages.BooleanField(23)
+  labels = _messages.MessageField('LabelsValue', 24)
+  lastModifier = _messages.StringField(25)
+  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 26)
+  logUri = _messages.StringField(27)
+  name = _messages.StringField(28)
+  nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 29)
+  observedGeneration = _messages.IntegerField(30)
+  reconciling = _messages.BooleanField(31)
+  restartPolicy = _messages.EnumField('RestartPolicyValueValuesEnum', 32)
+  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 33)
+  satisfiesPzs = _messages.BooleanField(34)
+  serviceAccount = _messages.StringField(35)
+  sshEnabled = _messages.BooleanField(36)
+  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 37)
+  terminationGracePeriod = _messages.StringField(38)
+  uid = _messages.StringField(39)
+  updateTime = _messages.StringField(40)
+  urls = _messages.StringField(41, repeated=True)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 42, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 43)
+  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 44)
 
 
 class GoogleCloudRunV2InstanceSplit(_messages.Message):
@@ -2417,6 +2464,8 @@ class GoogleCloudRunV2Revision(_messages.Message):
       https://cloud.google.com/run/docs/configuring/labels.
 
   Fields:
+    ambientNetworking: Output only. The ambient networking configuration for
+      this revision.
     annotations: Output only. Unstructured key value map that may be set by
       external tools to store and arbitrary metadata. They are not queryable
       and should be preserved when modifying objects.
@@ -2636,45 +2685,46 @@ class GoogleCloudRunV2Revision(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  annotations = _messages.MessageField('AnnotationsValue', 1)
-  client = _messages.StringField(2)
-  clientVersion = _messages.StringField(3)
-  conditions = _messages.MessageField('GoogleCloudRunV2Condition', 4, repeated=True)
-  containers = _messages.MessageField('GoogleCloudRunV2Container', 5, repeated=True)
-  createTime = _messages.StringField(6)
-  creator = _messages.StringField(7)
-  deleteTime = _messages.StringField(8)
-  encryptionKey = _messages.StringField(9)
-  encryptionKeyRevocationAction = _messages.EnumField('EncryptionKeyRevocationActionValueValuesEnum', 10)
-  encryptionKeyShutdownDuration = _messages.StringField(11)
-  etag = _messages.StringField(12)
-  executionEnvironment = _messages.EnumField('ExecutionEnvironmentValueValuesEnum', 13)
-  expireTime = _messages.StringField(14)
-  generation = _messages.IntegerField(15)
-  gpuZonalRedundancyDisabled = _messages.BooleanField(16)
-  labels = _messages.MessageField('LabelsValue', 17)
-  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 18)
-  logUri = _messages.StringField(19)
-  maxInstanceRequestConcurrency = _messages.IntegerField(20, variant=_messages.Variant.INT32)
-  name = _messages.StringField(21)
-  nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 22)
-  observedGeneration = _messages.IntegerField(23)
-  reconciling = _messages.BooleanField(24)
-  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 25)
-  satisfiesPzs = _messages.BooleanField(26)
-  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 27)
-  scalingStatus = _messages.MessageField('GoogleCloudRunV2RevisionScalingStatus', 28)
-  service = _messages.StringField(29)
-  serviceAccount = _messages.StringField(30)
-  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 31)
-  sessionAffinity = _messages.BooleanField(32)
-  terminationGracePeriod = _messages.StringField(33)
-  timeout = _messages.StringField(34)
-  uid = _messages.StringField(35)
-  updateTime = _messages.StringField(36)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 37, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 38)
-  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 39)
+  ambientNetworking = _messages.MessageField('GoogleCloudRunV2AmbientNetworking', 1)
+  annotations = _messages.MessageField('AnnotationsValue', 2)
+  client = _messages.StringField(3)
+  clientVersion = _messages.StringField(4)
+  conditions = _messages.MessageField('GoogleCloudRunV2Condition', 5, repeated=True)
+  containers = _messages.MessageField('GoogleCloudRunV2Container', 6, repeated=True)
+  createTime = _messages.StringField(7)
+  creator = _messages.StringField(8)
+  deleteTime = _messages.StringField(9)
+  encryptionKey = _messages.StringField(10)
+  encryptionKeyRevocationAction = _messages.EnumField('EncryptionKeyRevocationActionValueValuesEnum', 11)
+  encryptionKeyShutdownDuration = _messages.StringField(12)
+  etag = _messages.StringField(13)
+  executionEnvironment = _messages.EnumField('ExecutionEnvironmentValueValuesEnum', 14)
+  expireTime = _messages.StringField(15)
+  generation = _messages.IntegerField(16)
+  gpuZonalRedundancyDisabled = _messages.BooleanField(17)
+  labels = _messages.MessageField('LabelsValue', 18)
+  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 19)
+  logUri = _messages.StringField(20)
+  maxInstanceRequestConcurrency = _messages.IntegerField(21, variant=_messages.Variant.INT32)
+  name = _messages.StringField(22)
+  nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 23)
+  observedGeneration = _messages.IntegerField(24)
+  reconciling = _messages.BooleanField(25)
+  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 26)
+  satisfiesPzs = _messages.BooleanField(27)
+  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 28)
+  scalingStatus = _messages.MessageField('GoogleCloudRunV2RevisionScalingStatus', 29)
+  service = _messages.StringField(30)
+  serviceAccount = _messages.StringField(31)
+  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 32)
+  sessionAffinity = _messages.BooleanField(33)
+  terminationGracePeriod = _messages.StringField(34)
+  timeout = _messages.StringField(35)
+  uid = _messages.StringField(36)
+  updateTime = _messages.StringField(37)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 38, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 39)
+  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 40)
 
 
 class GoogleCloudRunV2RevisionScaling(_messages.Message):
@@ -2749,6 +2799,8 @@ class GoogleCloudRunV2RevisionTemplate(_messages.Message):
       RevisionTemplate.
 
   Fields:
+    ambientNetworking: Optional. The ambient networking configuration for this
+      revision.
     annotations: Optional. Unstructured key value map that may be set by
       external tools to store and arbitrary metadata. They are not queryable
       and should be preserved when modifying objects. Cloud Run API v2 does
@@ -2907,30 +2959,31 @@ class GoogleCloudRunV2RevisionTemplate(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  annotations = _messages.MessageField('AnnotationsValue', 1)
-  client = _messages.StringField(2)
-  clientVersion = _messages.StringField(3)
-  containers = _messages.MessageField('GoogleCloudRunV2Container', 4, repeated=True)
-  encryptionKey = _messages.StringField(5)
-  encryptionKeyRevocationAction = _messages.EnumField('EncryptionKeyRevocationActionValueValuesEnum', 6)
-  encryptionKeyShutdownDuration = _messages.StringField(7)
-  executionEnvironment = _messages.EnumField('ExecutionEnvironmentValueValuesEnum', 8)
-  gpuZonalRedundancyDisabled = _messages.BooleanField(9)
-  healthCheckDisabled = _messages.BooleanField(10)
-  labels = _messages.MessageField('LabelsValue', 11)
-  maxInstanceRequestConcurrency = _messages.IntegerField(12, variant=_messages.Variant.INT32)
-  nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 13)
-  revision = _messages.StringField(14)
-  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 15)
-  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 16)
-  serviceAccount = _messages.StringField(17)
-  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 18)
-  sessionAffinity = _messages.BooleanField(19)
-  terminationGracePeriod = _messages.StringField(20)
-  timeout = _messages.StringField(21)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 22, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 23)
-  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 24)
+  ambientNetworking = _messages.MessageField('GoogleCloudRunV2AmbientNetworking', 1)
+  annotations = _messages.MessageField('AnnotationsValue', 2)
+  client = _messages.StringField(3)
+  clientVersion = _messages.StringField(4)
+  containers = _messages.MessageField('GoogleCloudRunV2Container', 5, repeated=True)
+  encryptionKey = _messages.StringField(6)
+  encryptionKeyRevocationAction = _messages.EnumField('EncryptionKeyRevocationActionValueValuesEnum', 7)
+  encryptionKeyShutdownDuration = _messages.StringField(8)
+  executionEnvironment = _messages.EnumField('ExecutionEnvironmentValueValuesEnum', 9)
+  gpuZonalRedundancyDisabled = _messages.BooleanField(10)
+  healthCheckDisabled = _messages.BooleanField(11)
+  labels = _messages.MessageField('LabelsValue', 12)
+  maxInstanceRequestConcurrency = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 14)
+  revision = _messages.StringField(15)
+  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 16)
+  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 17)
+  serviceAccount = _messages.StringField(18)
+  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 19)
+  sessionAffinity = _messages.BooleanField(20)
+  terminationGracePeriod = _messages.StringField(21)
+  timeout = _messages.StringField(22)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 23, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 24)
+  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 25)
 
 
 class GoogleCloudRunV2RunJobRequest(_messages.Message):
@@ -4038,12 +4091,20 @@ class GoogleCloudRunV2UploadSourceRequest(_messages.Message):
   Fields:
     encryptionKey: Optional. A reference to a customer managed encryption key
       (CMEK) to use to encrypt the uploaded source archive in Cloud Storage.
+    instance: The name of Cloud Run Instance upload source archive will be
+      used for.
+    job: The name of Cloud Run Job upload source archive will be used for.
     service: The name of Cloud Run Service upload source archive will be used
       for.
+    workerPool: The name of Cloud Run Worker Pool upload source archive will
+      be used for.
   """
 
   encryptionKey = _messages.StringField(1)
-  service = _messages.StringField(2)
+  instance = _messages.StringField(2)
+  job = _messages.StringField(3)
+  service = _messages.StringField(4)
+  workerPool = _messages.StringField(5)
 
 
 class GoogleCloudRunV2UploadSourceResponse(_messages.Message):
@@ -4888,6 +4949,10 @@ class GoogleDevtoolsCloudbuildV1Build(_messages.Message):
     StatusValueValuesEnum: Output only. Status of the build.
 
   Messages:
+    ParamsValue: Optional. Parameters for the Build resource. Note: In the
+      MVP, this field is only supported for builds executing within a Cloud
+      Build Pipeline. Specifying `params` on a standalone build will result in
+      an INVALID_ARGUMENT error.
     SubstitutionsValue: Substitutions data for `Build` resource.
     TimingValue: Output only. Stores timing information for phases of the
       build. Valid keys are: * BUILD: time to execute all build steps. * PUSH:
@@ -4929,6 +4994,12 @@ class GoogleDevtoolsCloudbuildV1Build(_messages.Message):
       `projects/{project}/locations/{location}/builds/{build}`, where {build}
       is a unique identifier generated by the service.
     options: Special options for this build.
+    params: Optional. Parameters for the Build resource. Note: In the MVP,
+      this field is only supported for builds executing within a Cloud Build
+      Pipeline. Specifying `params` on a standalone build will result in an
+      INVALID_ARGUMENT error.
+    pipelineRunRef: Output only. Reference to the PipelineRun and Stage that
+      created this build.
     projectId: Output only. ID of the project.
     queueTtl: TTL in queue for this build. If provided and the build is
       enqueued longer than this value, the build will expire and the build
@@ -4992,6 +5063,33 @@ class GoogleDevtoolsCloudbuildV1Build(_messages.Message):
     TIMEOUT = 7
     CANCELLED = 8
     EXPIRED = 9
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParamsValue(_messages.Message):
+    r"""Optional. Parameters for the Build resource. Note: In the MVP, this
+    field is only supported for builds executing within a Cloud Build
+    Pipeline. Specifying `params` on a standalone build will result in an
+    INVALID_ARGUMENT error.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParamsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ParamsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParamsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class SubstitutionsValue(_messages.Message):
@@ -5062,22 +5160,24 @@ class GoogleDevtoolsCloudbuildV1Build(_messages.Message):
   logsBucket = _messages.StringField(13)
   name = _messages.StringField(14)
   options = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuildOptions', 15)
-  projectId = _messages.StringField(16)
-  queueTtl = _messages.StringField(17)
-  results = _messages.MessageField('GoogleDevtoolsCloudbuildV1Results', 18)
-  secrets = _messages.MessageField('GoogleDevtoolsCloudbuildV1Secret', 19, repeated=True)
-  serviceAccount = _messages.StringField(20)
-  source = _messages.MessageField('GoogleDevtoolsCloudbuildV1Source', 21)
-  sourceProvenance = _messages.MessageField('GoogleDevtoolsCloudbuildV1SourceProvenance', 22)
-  startTime = _messages.StringField(23)
-  status = _messages.EnumField('StatusValueValuesEnum', 24)
-  statusDetail = _messages.StringField(25)
-  steps = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuildStep', 26, repeated=True)
-  substitutions = _messages.MessageField('SubstitutionsValue', 27)
-  tags = _messages.StringField(28, repeated=True)
-  timeout = _messages.StringField(29)
-  timing = _messages.MessageField('TimingValue', 30)
-  warnings = _messages.MessageField('GoogleDevtoolsCloudbuildV1Warning', 31, repeated=True)
+  params = _messages.MessageField('ParamsValue', 16)
+  pipelineRunRef = _messages.MessageField('GoogleDevtoolsCloudbuildV1PipelineRunRef', 17)
+  projectId = _messages.StringField(18)
+  queueTtl = _messages.StringField(19)
+  results = _messages.MessageField('GoogleDevtoolsCloudbuildV1Results', 20)
+  secrets = _messages.MessageField('GoogleDevtoolsCloudbuildV1Secret', 21, repeated=True)
+  serviceAccount = _messages.StringField(22)
+  source = _messages.MessageField('GoogleDevtoolsCloudbuildV1Source', 23)
+  sourceProvenance = _messages.MessageField('GoogleDevtoolsCloudbuildV1SourceProvenance', 24)
+  startTime = _messages.StringField(25)
+  status = _messages.EnumField('StatusValueValuesEnum', 26)
+  statusDetail = _messages.StringField(27)
+  steps = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuildStep', 28, repeated=True)
+  substitutions = _messages.MessageField('SubstitutionsValue', 29)
+  tags = _messages.StringField(30, repeated=True)
+  timeout = _messages.StringField(31)
+  timing = _messages.MessageField('TimingValue', 32)
+  warnings = _messages.MessageField('GoogleDevtoolsCloudbuildV1Warning', 33, repeated=True)
 
 
 class GoogleDevtoolsCloudbuildV1BuildApproval(_messages.Message):
@@ -5136,6 +5236,7 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
       determines if and where build logs are stored.
     MachineTypeValueValuesEnum: Compute Engine machine type on which to run
       the build.
+    RankedMachineSeriesValueListEntryValuesEnum:
     RequestedVerifyOptionValueValuesEnum: Requested verifiability options.
     SourceProvenanceHashValueListEntryValuesEnum:
     SubstitutionOptionValueValuesEnum: Option to specify behavior when there
@@ -5167,6 +5268,9 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
       and in a build step, the variable will use the build step value. The
       elements are of the form "KEY=VALUE" for the environment variable "KEY"
       being given the value "VALUE".
+    kmsKeyName: Optional. Resource name of Cloud KMS crypto key used to
+      encrypt the worker disk. The expected format is
+      projects/*/locations/*/keyRings/*/cryptoKeys/*.
     logStreamingOption: Option to define build log streaming behavior to Cloud
       Storage.
     logging: Option to specify the logging mode, which determines if and where
@@ -5178,6 +5282,11 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
       private-pool) for more information.
     pubsubTopic: Optional. Option to specify the Pub/Sub topic to receive
       build status updates.
+    rankedMachineSeries: Optional. Ranked list (earlier items have higher
+      priority) of Machine Series to consider when provisioning Worker VMs. A
+      concrete machine type will be selected based on machine availability in
+      the given region. This field must be empty for the Build to be eligible
+      to be paired with a pre-provisioned worker VM.
     requestedVerifyOption: Requested verifiability options.
     resolvedWorkerRelease: Output only. Worker release resolved from the
       release channel.
@@ -5275,15 +5384,32 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
     E2_MEDIUM = 5
     E2_STANDARD_2 = 6
 
+  class RankedMachineSeriesValueListEntryValuesEnum(_messages.Enum):
+    r"""RankedMachineSeriesValueListEntryValuesEnum enum type.
+
+    Values:
+      MACHINE_SERIES_UNSPECIFIED: Should not be used.
+      MACHINE_SERIES_E: Cost-optimized machines such as E2.
+      MACHINE_SERIES_N: General-purpose machines such as N4.
+      MACHINE_SERIES_C: Performance-optimized machines such as C4.
+    """
+    MACHINE_SERIES_UNSPECIFIED = 0
+    MACHINE_SERIES_E = 1
+    MACHINE_SERIES_N = 2
+    MACHINE_SERIES_C = 3
+
   class RequestedVerifyOptionValueValuesEnum(_messages.Enum):
     r"""Requested verifiability options.
 
     Values:
       NOT_VERIFIED: Not a verifiable build (the default).
       VERIFIED: Build must be verified.
+      BEST_EFFORT: Build verification is best effort. If provenance generation
+        fails, the build will still succeed.
     """
     NOT_VERIFIED = 0
     VERIFIED = 1
+    BEST_EFFORT = 2
 
   class SourceProvenanceHashValueListEntryValuesEnum(_messages.Enum):
     r"""SourceProvenanceHashValueListEntryValuesEnum enum type.
@@ -5323,19 +5449,48 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
   dynamicSubstitutions = _messages.BooleanField(4)
   enableStructuredLogging = _messages.BooleanField(5)
   env = _messages.StringField(6, repeated=True)
-  logStreamingOption = _messages.EnumField('LogStreamingOptionValueValuesEnum', 7)
-  logging = _messages.EnumField('LoggingValueValuesEnum', 8)
-  machineType = _messages.EnumField('MachineTypeValueValuesEnum', 9)
-  pool = _messages.MessageField('GoogleDevtoolsCloudbuildV1PoolOption', 10)
-  pubsubTopic = _messages.StringField(11)
-  requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 12)
-  resolvedWorkerRelease = _messages.StringField(13)
-  secretEnv = _messages.StringField(14, repeated=True)
-  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 15, repeated=True)
-  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 16)
-  volumes = _messages.MessageField('GoogleDevtoolsCloudbuildV1Volume', 17, repeated=True)
-  workerPool = _messages.StringField(18)
-  workerRelease = _messages.StringField(19)
+  kmsKeyName = _messages.StringField(7)
+  logStreamingOption = _messages.EnumField('LogStreamingOptionValueValuesEnum', 8)
+  logging = _messages.EnumField('LoggingValueValuesEnum', 9)
+  machineType = _messages.EnumField('MachineTypeValueValuesEnum', 10)
+  pool = _messages.MessageField('GoogleDevtoolsCloudbuildV1PoolOption', 11)
+  pubsubTopic = _messages.StringField(12)
+  rankedMachineSeries = _messages.EnumField('RankedMachineSeriesValueListEntryValuesEnum', 13, repeated=True)
+  requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 14)
+  resolvedWorkerRelease = _messages.StringField(15)
+  secretEnv = _messages.StringField(16, repeated=True)
+  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 17, repeated=True)
+  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 18)
+  volumes = _messages.MessageField('GoogleDevtoolsCloudbuildV1Volume', 19, repeated=True)
+  workerPool = _messages.StringField(20)
+  workerRelease = _messages.StringField(21)
+
+
+class GoogleDevtoolsCloudbuildV1BuildResourceUsage(_messages.Message):
+  r"""Aggregated/summary metrics over the entire build lifecycle.
+
+  Fields:
+    averageCpuUtilization: Output only. The average CPU utilization ratio
+      across all vCPUs over the duration of the build, expressed as a fraction
+      in the range [0.0, 1.0].
+    averageMemoryUtilization: Output only. The average memory utilization
+      ratio over the duration of the build, expressed as a fraction in the
+      range [0.0, 1.0].
+    peakCpuUtilization: Output only. The highest CPU utilization ratio across
+      all vCPUs observed over the duration of the build, expressed as a
+      fraction in the range [0.0, 1.0].
+    peakMemoryUtilization: Output only. The highest memory utilization ratio
+      observed over the duration of the build, expressed as a fraction in the
+      range [0.0, 1.0].
+    totalCpuDuration: Output only. Total CPU execution time consumed across
+      all cores during build execution.
+  """
+
+  averageCpuUtilization = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  averageMemoryUtilization = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  peakCpuUtilization = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+  peakMemoryUtilization = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
+  totalCpuDuration = _messages.StringField(5)
 
 
 class GoogleDevtoolsCloudbuildV1BuildStep(_messages.Message):
@@ -5666,8 +5821,8 @@ class GoogleDevtoolsCloudbuildV1GenericArtifactDependency(_messages.Message):
   r"""Represents a generic artifact as a build dependency.
 
   Fields:
-    destPath: Required. Where the artifact files should be placed on the
-      worker.
+    destPath: Optional. Where the artifact files should be placed on the
+      worker. Required when specified in `Build.dependencies`.
     resource: Required. The location to download the artifact files from. Ex:
       projects/p1/locations/us/repositories/r1/packages/p1/versions/v1
   """
@@ -5951,6 +6106,20 @@ class GoogleDevtoolsCloudbuildV1Oci(_messages.Message):
   tags = _messages.StringField(3, repeated=True)
 
 
+class GoogleDevtoolsCloudbuildV1PipelineRunRef(_messages.Message):
+  r"""Reference to the originating PipelineRun and Stage.
+
+  Fields:
+    pipelineRun: Output only. The resource name of the PipelineRun. Format:
+      `projects/{project}/locations/{location}/pipelineRuns/{pipeline_run}`
+    stageId: Output only. The unique ID of the stage within the pipeline
+      configuration.
+  """
+
+  pipelineRun = _messages.StringField(1)
+  stageId = _messages.StringField(2)
+
+
 class GoogleDevtoolsCloudbuildV1PoolOption(_messages.Message):
   r"""Details about how a build should be executed on a `WorkerPool`. See
   [running builds in a private
@@ -6090,6 +6259,7 @@ class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
       Only populated when artifacts are uploaded to Cloud Storage.
     pythonPackages: Python artifacts uploaded to Artifact Registry at the end
       of the build.
+    resourceUsage: Output only. Aggregated metrics for the build.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -6130,6 +6300,7 @@ class GoogleDevtoolsCloudbuildV1Results(_messages.Message):
   npmPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedNpmPackage', 10, repeated=True)
   numArtifacts = _messages.IntegerField(11)
   pythonPackages = _messages.MessageField('GoogleDevtoolsCloudbuildV1UploadedPythonPackage', 12, repeated=True)
+  resourceUsage = _messages.MessageField('GoogleDevtoolsCloudbuildV1BuildResourceUsage', 13)
 
 
 class GoogleDevtoolsCloudbuildV1Secret(_messages.Message):

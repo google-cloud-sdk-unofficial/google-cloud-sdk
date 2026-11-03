@@ -33,9 +33,6 @@ DETAILED_HELP = {
           - Read the existing cluster specs through `get` cluster request.
           - Modify the cluster specs through granular flags.
           - Update the cluster specs through `patch` cluster request.
-        - Use --config with cluster specs and --update-mask flags, both in JSON format.
-          - Map and repeated fields update requires existing and new values.
-          - For example, to update a cluster to add a new nodeset, use the update mask "orchestrator.slurm.node_sets", and the patch cluster must include all existing nodesets as well as the new one.
 
         Please refer to the examples below for more details.
         """),
@@ -89,18 +86,6 @@ DETAILED_HELP = {
         $ {command} my-cluster --location=us-central1-a \
         --add-slurm-prolog-scripts=script1.sh \
         --remove-slurm-epilog-scripts=script2.sh
-
-        Or cluster `my-cluster` in location `us-central1-a` with config JSON run the following JSON example:
-
-        $ {command} my-cluster --location=us-central1-a --update-mask=labels --config='{"key": "value"}'
-
-        Or create a JSON file `my-cluster-config.json` with the cluster specs and run the following file example:
-
-        $ {command} my-cluster --location=us-central1-a --update-mask=labels --config=my-cluster-config.json
-
-        Or create a JSON file with the update mask and run the following file example:
-
-        $ {command} my-cluster --location=us-central1-a --update-mask=my-update-mask.json --config=my-cluster-config.json
         """),
 }
 
@@ -122,20 +107,9 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     api_version = api_utils.GetApiVersion(cls.ReleaseTrack())
     utils.AddClusterNameArgToParser(parser=parser, api_version=api_version)
-    group = parser.add_group(
-        help="Cluster configuration for provisioning with updates.",
-        mutex=True,
-        required=True,
-    )
-    config_group = group.add_group(
-        help="Cluster configuration for updates.",
-    )
-    flags.AddConfig(parser=config_group, api_version=api_version, required=True)
-    flags.AddUpdateMask(
-        parser=config_group, api_version=api_version, required=True
-    )
-    flag_group = group.add_group(
+    flag_group = parser.add_group(
         help="Flag Configurations to define cluster updates.",
+        required=True,
     )
     flags.AddDescription(parser=flag_group, api_version=api_version)
     flags.AddLabels(
@@ -205,14 +179,8 @@ class Update(base.UpdateCommand):
       flags.AddSlurmTaskEpilogBashScripts(
           parser=slurm_group, api_version=api_version, include_update_flags=True
       )
-      slurm_config_group = slurm_group.add_group(mutex=True)
       flags.AddSlurmConfig(
-          parser=slurm_config_group,
-          api_version=api_version,
-          include_update_flags=True,
-      )
-      flags.AddSlurmConfFile(
-          parser=slurm_config_group,
+          parser=slurm_group,
           api_version=api_version,
           include_update_flags=True,
       )
@@ -244,18 +212,13 @@ class Update(base.UpdateCommand):
     release_track = self.ReleaseTrack()
     client = api_utils.GetClientInstance(release_track)
     messages = api_utils.GetMessagesModule(release_track)
-    existing_cluster = None
-    if not args.IsSpecified("config"):
-      existing_cluster = api_utils.GetCluster(client, args, messages)
+    existing_cluster = api_utils.GetCluster(client, args, messages)
     cluster_util = utils.ClusterUtil(
         args=args, message_module=messages, existing_cluster=existing_cluster
     )
     cluster_ref = cluster_util.cluster_ref
 
-    if args.IsSpecified("config"):
-      cluster_patch, update_mask = cluster_util.MakeClusterPatchFromConfig()
-    else:
-      cluster_patch, update_mask = cluster_util.MakeClusterPatch()
+    cluster_patch, update_mask = cluster_util.MakeClusterPatch()
 
     operation = client.projects_locations_clusters.Patch(
         messages.HypercomputeclusterProjectsLocationsClustersPatchRequest(

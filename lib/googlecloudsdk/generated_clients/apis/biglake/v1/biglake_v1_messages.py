@@ -1869,11 +1869,14 @@ class IcebergCatalog(_messages.Message):
       CATALOG_TYPE_GCS_BUCKET: Google Cloud Storage bucket catalog type.
       CATALOG_TYPE_BIGLAKE: BigLake catalog type.
       CATALOG_TYPE_FEDERATED: Federated catalog type.
+      CATALOG_TYPE_ALLOYDB_AGENT_MODE: Catalog for querying AlloyDB tables in
+        agent mode.
     """
     CATALOG_TYPE_UNSPECIFIED = 0
     CATALOG_TYPE_GCS_BUCKET = 1
     CATALOG_TYPE_BIGLAKE = 2
     CATALOG_TYPE_FEDERATED = 3
+    CATALOG_TYPE_ALLOYDB_AGENT_MODE = 4
 
   class CredentialModeValueValuesEnum(_messages.Enum):
     r"""Optional. The credential mode for the catalog.

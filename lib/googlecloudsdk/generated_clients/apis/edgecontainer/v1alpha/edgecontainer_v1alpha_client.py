@@ -48,6 +48,11 @@ class EdgecontainerV1alpha(base_api.BaseApiClient):
     self.projects_locations_clusters = self.ProjectsLocationsClustersService(self)
     self.projects_locations_machines = self.ProjectsLocationsMachinesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_regionalRollouts_waves_units = self.ProjectsLocationsRegionalRolloutsWavesUnitsService(self)
+    self.projects_locations_regionalRollouts_waves = self.ProjectsLocationsRegionalRolloutsWavesService(self)
+    self.projects_locations_regionalRollouts = self.ProjectsLocationsRegionalRolloutsService(self)
+    self.projects_locations_rolloutTemplates = self.ProjectsLocationsRolloutTemplatesService(self)
+    self.projects_locations_rollouts = self.ProjectsLocationsRolloutsService(self)
     self.projects_locations_serviceAccounts = self.ProjectsLocationsServiceAccountsService(self)
     self.projects_locations_vpnConnections = self.ProjectsLocationsVpnConnectionsService(self)
     self.projects_locations_zonalServices = self.ProjectsLocationsZonalServicesService(self)
@@ -1215,6 +1220,542 @@ class EdgecontainerV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='EdgecontainerProjectsLocationsOperationsListRequest',
         response_type_name='ListOperationsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRegionalRolloutsWavesUnitsService(base_api.BaseApiService):
+    """Service class for the projects_locations_regionalRollouts_waves_units resource."""
+
+    _NAME = 'projects_locations_regionalRollouts_waves_units'
+
+    def __init__(self, client):
+      super(EdgecontainerV1alpha.ProjectsLocationsRegionalRolloutsWavesUnitsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets a RolloutWaveUnit.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRegionalRolloutsWavesUnitsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UiprRolloutWaveUnit) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/regionalRollouts/{regionalRolloutsId}/waves/{wavesId}/units/{unitsId}',
+        http_method='GET',
+        method_id='edgecontainer.projects.locations.regionalRollouts.waves.units.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='EdgecontainerProjectsLocationsRegionalRolloutsWavesUnitsGetRequest',
+        response_type_name='UiprRolloutWaveUnit',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists RolloutWaveUnits.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRegionalRolloutsWavesUnitsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UiprListRolloutWaveUnitsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/regionalRollouts/{regionalRolloutsId}/waves/{wavesId}/units',
+        http_method='GET',
+        method_id='edgecontainer.projects.locations.regionalRollouts.waves.units.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/units',
+        request_field='',
+        request_type_name='EdgecontainerProjectsLocationsRegionalRolloutsWavesUnitsListRequest',
+        response_type_name='UiprListRolloutWaveUnitsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRegionalRolloutsWavesService(base_api.BaseApiService):
+    """Service class for the projects_locations_regionalRollouts_waves resource."""
+
+    _NAME = 'projects_locations_regionalRollouts_waves'
+
+    def __init__(self, client):
+      super(EdgecontainerV1alpha.ProjectsLocationsRegionalRolloutsWavesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ProjectsLocationsRegionalRolloutsService(base_api.BaseApiService):
+    """Service class for the projects_locations_regionalRollouts resource."""
+
+    _NAME = 'projects_locations_regionalRollouts'
+
+    def __init__(self, client):
+      super(EdgecontainerV1alpha.ProjectsLocationsRegionalRolloutsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets a RegionalRollout.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRegionalRolloutsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UiprRegionalRollout) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/regionalRollouts/{regionalRolloutsId}',
+        http_method='GET',
+        method_id='edgecontainer.projects.locations.regionalRollouts.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='EdgecontainerProjectsLocationsRegionalRolloutsGetRequest',
+        response_type_name='UiprRegionalRollout',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists RegionalRollouts.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRegionalRolloutsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UiprListRegionalRolloutsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/regionalRollouts',
+        http_method='GET',
+        method_id='edgecontainer.projects.locations.regionalRollouts.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/regionalRollouts',
+        request_field='',
+        request_type_name='EdgecontainerProjectsLocationsRegionalRolloutsListRequest',
+        response_type_name='UiprListRegionalRolloutsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRolloutTemplatesService(base_api.BaseApiService):
+    """Service class for the projects_locations_rolloutTemplates resource."""
+
+    _NAME = 'projects_locations_rolloutTemplates'
+
+    def __init__(self, client):
+      super(EdgecontainerV1alpha.ProjectsLocationsRolloutTemplatesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a RolloutTemplate.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutTemplatesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rolloutTemplates',
+        http_method='POST',
+        method_id='edgecontainer.projects.locations.rolloutTemplates.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['rolloutTemplateId'],
+        relative_path='v1alpha/{+parent}/rolloutTemplates',
+        request_field='uiprRolloutTemplate',
+        request_type_name='EdgecontainerProjectsLocationsRolloutTemplatesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a RolloutTemplate.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutTemplatesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rolloutTemplates/{rolloutTemplatesId}',
+        http_method='DELETE',
+        method_id='edgecontainer.projects.locations.rolloutTemplates.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='EdgecontainerProjectsLocationsRolloutTemplatesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a RolloutTemplate.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutTemplatesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UiprRolloutTemplate) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rolloutTemplates/{rolloutTemplatesId}',
+        http_method='GET',
+        method_id='edgecontainer.projects.locations.rolloutTemplates.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='EdgecontainerProjectsLocationsRolloutTemplatesGetRequest',
+        response_type_name='UiprRolloutTemplate',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists RolloutTemplates.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutTemplatesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UiprListRolloutTemplatesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rolloutTemplates',
+        http_method='GET',
+        method_id='edgecontainer.projects.locations.rolloutTemplates.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/rolloutTemplates',
+        request_field='',
+        request_type_name='EdgecontainerProjectsLocationsRolloutTemplatesListRequest',
+        response_type_name='UiprListRolloutTemplatesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a RolloutTemplate.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutTemplatesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rolloutTemplates/{rolloutTemplatesId}',
+        http_method='PATCH',
+        method_id='edgecontainer.projects.locations.rolloutTemplates.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='uiprRolloutTemplate',
+        request_type_name='EdgecontainerProjectsLocationsRolloutTemplatesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Rollback(self, request, global_params=None):
+      r"""Rollback a RolloutTemplate to a previous revision.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutTemplatesRollbackRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Rollback')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Rollback.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rolloutTemplates/{rolloutTemplatesId}:rollback',
+        http_method='POST',
+        method_id='edgecontainer.projects.locations.rolloutTemplates.rollback',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:rollback',
+        request_field='uiprRollbackRolloutTemplateRequest',
+        request_type_name='EdgecontainerProjectsLocationsRolloutTemplatesRollbackRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRolloutsService(base_api.BaseApiService):
+    """Service class for the projects_locations_rollouts resource."""
+
+    _NAME = 'projects_locations_rollouts'
+
+    def __init__(self, client):
+      super(EdgecontainerV1alpha.ProjectsLocationsRolloutsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Approve(self, request, global_params=None):
+      r"""Approves a Rollout.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutsApproveRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Approve')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Approve.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}:approve',
+        http_method='POST',
+        method_id='edgecontainer.projects.locations.rollouts.approve',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:approve',
+        request_field='uiprApproveRolloutRequest',
+        request_type_name='EdgecontainerProjectsLocationsRolloutsApproveRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Cancel(self, request, global_params=None):
+      r"""Cancels a Rollout.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}:cancel',
+        http_method='POST',
+        method_id='edgecontainer.projects.locations.rollouts.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:cancel',
+        request_field='uiprCancelRolloutRequest',
+        request_type_name='EdgecontainerProjectsLocationsRolloutsCancelRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Create(self, request, global_params=None):
+      r"""Creates a Rollout.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rollouts',
+        http_method='POST',
+        method_id='edgecontainer.projects.locations.rollouts.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['rolloutId'],
+        relative_path='v1alpha/{+parent}/rollouts',
+        request_field='uiprRollout',
+        request_type_name='EdgecontainerProjectsLocationsRolloutsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a Rollout.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}',
+        http_method='DELETE',
+        method_id='edgecontainer.projects.locations.rollouts.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='EdgecontainerProjectsLocationsRolloutsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a Rollout.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UiprRollout) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}',
+        http_method='GET',
+        method_id='edgecontainer.projects.locations.rollouts.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='EdgecontainerProjectsLocationsRolloutsGetRequest',
+        response_type_name='UiprRollout',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Rollouts.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UiprListRolloutsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rollouts',
+        http_method='GET',
+        method_id='edgecontainer.projects.locations.rollouts.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/rollouts',
+        request_field='',
+        request_type_name='EdgecontainerProjectsLocationsRolloutsListRequest',
+        response_type_name='UiprListRolloutsResponse',
+        supports_download=False,
+    )
+
+    def Pause(self, request, global_params=None):
+      r"""Pauses a Rollout.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutsPauseRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Pause')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Pause.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}:pause',
+        http_method='POST',
+        method_id='edgecontainer.projects.locations.rollouts.pause',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:pause',
+        request_field='uiprPauseRolloutRequest',
+        request_type_name='EdgecontainerProjectsLocationsRolloutsPauseRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Resume(self, request, global_params=None):
+      r"""Resumes a Rollout.
+
+      Args:
+        request: (EdgecontainerProjectsLocationsRolloutsResumeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Resume')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resume.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/rollouts/{rolloutsId}:resume',
+        http_method='POST',
+        method_id='edgecontainer.projects.locations.rollouts.resume',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:resume',
+        request_field='uiprResumeRolloutRequest',
+        request_type_name='EdgecontainerProjectsLocationsRolloutsResumeRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: List Service Accounts in a given project and location on a Google Distributed Cloud zone.

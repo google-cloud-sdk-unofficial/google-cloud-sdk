@@ -2400,6 +2400,26 @@ def PatchUpdatePolicy(client, args, update_policy):
   ):
     update_policy.minReadySec = args.update_policy_min_ready
     result = update_policy
+  # allowed_actions is available in alpha and beta APIs only
+  if hasattr(args, 'update_policy_allowed_actions'):
+    if args.IsSpecified('update_policy_allowed_actions'):
+      update_policy.allowedActions = [
+          update_instances_utils.ParseInstanceActionFlag(
+              '--update-policy-allowed-actions',
+              action,
+              client.messages.InstanceGroupManagerUpdatePolicy.AllowedActionsValueListEntryValuesEnum,
+          )
+          for action in args.update_policy_allowed_actions
+      ]
+      if update_policy.allowedActions:
+        update_policy.minimalAction = None
+        update_policy.mostDisruptiveAllowedAction = None
+      result = update_policy
+    elif args.IsSpecified('update_policy_minimal_action') or args.IsSpecified(
+        'update_policy_most_disruptive_action'
+    ):
+      update_policy.allowedActions = []
+      result = update_policy
   return result
 
 

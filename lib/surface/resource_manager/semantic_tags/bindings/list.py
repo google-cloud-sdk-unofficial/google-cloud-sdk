@@ -19,10 +19,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import endpoint_utils as endpoints
 from googlecloudsdk.command_lib.resource_manager.semantic_tags import flags
 from googlecloudsdk.command_lib.resource_manager.semantic_tags import utils
+from googlecloudsdk.core.resource import resource_projection_spec
 
 
 # gcloud-disable-gdu-domain
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
@@ -60,6 +60,15 @@ class List(base.ListCommand):
     parent = utils.GetParent(args, default_to_catalog=False)
     location = args.location or 'global'
     parent_location = f'{parent}/locations/{location}'
+
+    display_info = args.GetDisplayInfo()
+    defaults = resource_projection_spec.ProjectionSpec(
+        symbols=display_info.transforms, aliases=display_info.aliases
+    )
+    # Expand short semanticTagKey IDs in --filter so client-side evaluation
+    # matches the full key names returned by the API.
+    rewriter = utils.SemanticTagBindingsFilterRewriter(location=location)
+    args.filter, _ = rewriter.Rewrite(args.filter, defaults=defaults)
 
     with endpoints.CrmEndpointOverrides(location):
       return semantic_tags.ListSemanticTagBindings(

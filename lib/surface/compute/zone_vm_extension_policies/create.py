@@ -91,11 +91,17 @@ class Create(base.CreateCommand):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
+class CreatePreview(Create):
   """Create a Compute Engine zone VM extension policy."""
 
   @classmethod
   def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
+    super(CreatePreview, cls).Args(parser)
     vm_extension_policies_flags.AddScopeFlags(parser)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreatePreview):
+  """Create a Compute Engine zone VM extension policy."""

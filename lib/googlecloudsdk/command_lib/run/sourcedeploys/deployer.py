@@ -68,6 +68,7 @@ def CreateImage(
     source_bucket=None,
     kms_key=None,
     upload_through_run_api=False,
+    check_source_bucket_via_list=False,
 ):
   """Creates an image from Source."""
   with metrics.RecordDuration(metric_names.CREATE_BUILD):
@@ -99,7 +100,13 @@ def CreateImage(
       )
     else:
       tracker.UpdateHeaderMessage('Uploading sources.')
-      source = sources.Upload(build_source, region, resource_ref, source_bucket)
+      source = sources.Upload(
+          build_source,
+          region,
+          resource_ref,
+          source_bucket,
+          check_source_bucket_via_list=check_source_bucket_via_list,
+      )
     tracker.CompleteStage(stages.UPLOAD_SOURCE)
     submit_build_request = _PrepareSubmitBuildRequest(
         build_image,

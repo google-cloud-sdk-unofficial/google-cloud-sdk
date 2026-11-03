@@ -6417,63 +6417,10 @@ class BackendServiceHAPolicy(_messages.Message):
       Gratuitous ARP (GARP) packet (IPv4) or an ICMPv6 Router
       Advertisement(RA) packet (IPv6).  Google Cloud immediately but
       temporarily associates the forwarding rule IP address with that VM, and
-      both new and in-flight packets are quickly delivered to that VM.    Note
-      the important properties of the Fast IP Move functionality:        - The
-      GARP/RA-initiated re-routing stays active for approximately 20
-      minutes. After triggering fast failover, you must also    appropriately
-      set the haPolicy.leader.    -  The new leader instance should continue
-      to send GARP/RA packets    periodically every 10 seconds until at least
-      10 minutes after updating    the haPolicy.leader (but stop immediately
-      if it is no longer the leader).    - After triggering a fast failover,
-      we recommend that you wait at least    3 seconds before sending another
-      GARP/RA packet from a different VM    instance to avoid race conditions.
-      - Don't send GARP/RA packets from different VM    instances at the same
-      time. If multiple instances continue to send    GARP/RA packets, traffic
-      might be routed to different destinations in an    alternating order.
-      This condition ceases when a single instance    issues a GARP/RA packet.
-      - The GARP/RA request always takes priority over the leader API.
-      Using the haPolicy.leader API to change the leader to a different
-      instance will have no effect until the GARP/RA request becomes
-      inactive.    - The GARP/RA packets should follow the GARP/RA    Packet
-      Specifications..    -  When multiple forwarding rules refer to a
-      regional backend service,    you need only send a GARP or RA packet for
-      a single forwarding rule    virtual IP. The virtual IPs for all
-      forwarding rules targeting the same    backend service will also be
-      moved to the sender of the GARP or RA    packet.     The following are
-      the Fast IP Move limitations (that is, when fastIPMove is not DISABLED):
-      - Multiple forwarding rules cannot use the same IP address if one of
-      them refers to a regional backend service with fastIPMove.    - The
-      regional backend service must set the network field, and all    NEGs
-      must belong to that network. However, individual    NEGs can belong to
-      different subnetworks of that network.     - The maximum number of
-      network endpoints across all backends of a    backend service with
-      fastIPMove is 32.    - The maximum number of backend services with
-      fastIPMove that can have    the same network endpoint attached to one of
-      its backends is 64.    - The maximum number of backend services with
-      fastIPMove in a VPC in a    region is 64.    - The network endpoints
-      that are attached to a backend of a backend    service with fastIPMove
-      cannot resolve to Gen3+ machines for IPv6.    - Traffic directed to the
-      leader by a static route next hop will not be    redirected to a new
-      leader by fast failover. Such traffic will only be    redirected once an
-      haPolicy.leader update has taken effect. Only traffic    to the
-      forwarding rule's virtual IP will be redirected to a new leader by
-      fast failover.   haPolicy.fastIPMove can be set only at backend service
-      creation time. Once set, it cannot be updated.  By default, fastIpMove
-      is set to DISABLED.
-
-  Fields:
-    fastIPMove: Specifies whether fast IP move is enabled, and if so, the
-      mechanism to achieve it.  Supported values are:        - DISABLED: Fast
-      IP Move is disabled. You can only use the    haPolicy.leader API to
-      update the leader.    - >GARP_RA: Provides a method to very quickly
-      define a new network    endpoint as the leader. This method is faster
-      than updating the leader    using the haPolicy.leader API. Fast IP move
-      works as follows: The VM    hosting the network endpoint that should
-      become the new leader sends    either a Gratuitous ARP (GARP) packet
-      (IPv4) or an ICMPv6 Router    Advertisement(RA) packet (IPv6).  Google
-      Cloud immediately but    temporarily associates the forwarding rule IP
-      address with that VM, and    both new and in-flight packets are quickly
-      delivered to that VM.    Note the important properties of the Fast IP
+      both new and in-flight packets are quickly delivered to that VM.    -
+      HA_CONTROLLER: The Backend Service is managed by a High Availability
+      Controller. Failover and leader election are exclusively managed by the
+      HA Controller service.    Note the important properties of the Fast IP
       Move functionality:        - The GARP/RA-initiated re-routing stays
       active for approximately 20    minutes. After triggering fast failover,
       you must also    appropriately set the haPolicy.leader.    -  The new
@@ -6515,6 +6462,64 @@ class BackendServiceHAPolicy(_messages.Message):
       redirected to a new leader by    fast failover.   haPolicy.fastIPMove
       can be set only at backend service creation time. Once set, it cannot be
       updated.  By default, fastIpMove is set to DISABLED.
+
+  Fields:
+    fastIPMove: Specifies whether fast IP move is enabled, and if so, the
+      mechanism to achieve it.  Supported values are:        - DISABLED: Fast
+      IP Move is disabled. You can only use the    haPolicy.leader API to
+      update the leader.    - >GARP_RA: Provides a method to very quickly
+      define a new network    endpoint as the leader. This method is faster
+      than updating the leader    using the haPolicy.leader API. Fast IP move
+      works as follows: The VM    hosting the network endpoint that should
+      become the new leader sends    either a Gratuitous ARP (GARP) packet
+      (IPv4) or an ICMPv6 Router    Advertisement(RA) packet (IPv6).  Google
+      Cloud immediately but    temporarily associates the forwarding rule IP
+      address with that VM, and    both new and in-flight packets are quickly
+      delivered to that VM.    - HA_CONTROLLER: The Backend Service is managed
+      by a High Availability    Controller. Failover and leader election are
+      exclusively managed by the    HA Controller service.    Note the
+      important properties of the Fast IP Move functionality:        - The
+      GARP/RA-initiated re-routing stays active for approximately 20
+      minutes. After triggering fast failover, you must also    appropriately
+      set the haPolicy.leader.    -  The new leader instance should continue
+      to send GARP/RA packets    periodically every 10 seconds until at least
+      10 minutes after updating    the haPolicy.leader (but stop immediately
+      if it is no longer the leader).    - After triggering a fast failover,
+      we recommend that you wait at least    3 seconds before sending another
+      GARP/RA packet from a different VM    instance to avoid race conditions.
+      - Don't send GARP/RA packets from different VM    instances at the same
+      time. If multiple instances continue to send    GARP/RA packets, traffic
+      might be routed to different destinations in an    alternating order.
+      This condition ceases when a single instance    issues a GARP/RA packet.
+      - The GARP/RA request always takes priority over the leader API.
+      Using the haPolicy.leader API to change the leader to a different
+      instance will have no effect until the GARP/RA request becomes
+      inactive.    - The GARP/RA packets should follow the GARP/RA    Packet
+      Specifications..    -  When multiple forwarding rules refer to a
+      regional backend service,    you need only send a GARP or RA packet for
+      a single forwarding rule    virtual IP. The virtual IPs for all
+      forwarding rules targeting the same    backend service will also be
+      moved to the sender of the GARP or RA    packet.     The following are
+      the Fast IP Move limitations (that is, when fastIPMove is not DISABLED):
+      - Multiple forwarding rules cannot use the same IP address if one of
+      them refers to a regional backend service with fastIPMove.    - The
+      regional backend service must set the network field, and all    NEGs
+      must belong to that network. However, individual    NEGs can belong to
+      different subnetworks of that network.     - The maximum number of
+      network endpoints across all backends of a    backend service with
+      fastIPMove is 32.    - The maximum number of backend services with
+      fastIPMove that can have    the same network endpoint attached to one of
+      its backends is 64.    - The maximum number of backend services with
+      fastIPMove in a VPC in a    region is 64.    - The network endpoints
+      that are attached to a backend of a backend    service with fastIPMove
+      cannot resolve to Gen3+ machines for IPv6.    - Traffic directed to the
+      leader by a static route next hop will not be    redirected to a new
+      leader by fast failover. Such traffic will only be    redirected once an
+      haPolicy.leader update has taken effect. Only traffic    to the
+      forwarding rule's virtual IP will be redirected to a new leader by
+      fast failover.   haPolicy.fastIPMove can be set only at backend service
+      creation time. Once set, it cannot be updated.  By default, fastIpMove
+      is set to DISABLED.
     leader: Selects one of the network endpoints attached to the backend NEGs
       of this service as the active endpoint (the leader) that receives all
       traffic.  When the leader changes, there is no connection draining to
@@ -6536,38 +6541,41 @@ class BackendServiceHAPolicy(_messages.Message):
     sends    either a Gratuitous ARP (GARP) packet (IPv4) or an ICMPv6 Router
     Advertisement(RA) packet (IPv6).  Google Cloud immediately but
     temporarily associates the forwarding rule IP address with that VM, and
-    both new and in-flight packets are quickly delivered to that VM.    Note
-    the important properties of the Fast IP Move functionality:        - The
-    GARP/RA-initiated re-routing stays active for approximately 20    minutes.
-    After triggering fast failover, you must also    appropriately set the
-    haPolicy.leader.    -  The new leader instance should continue to send
-    GARP/RA packets    periodically every 10 seconds until at least 10 minutes
-    after updating    the haPolicy.leader (but stop immediately if it is no
-    longer the leader).    - After triggering a fast failover, we recommend
-    that you wait at least    3 seconds before sending another GARP/RA packet
-    from a different VM    instance to avoid race conditions.    - Don't send
-    GARP/RA packets from different VM    instances at the same time. If
-    multiple instances continue to send    GARP/RA packets, traffic might be
-    routed to different destinations in an    alternating order. This
-    condition ceases when a single instance    issues a GARP/RA packet.    -
-    The GARP/RA request always takes priority over the leader API.    Using
-    the haPolicy.leader API to change the leader to a different    instance
-    will have no effect until the GARP/RA request becomes    inactive.    -
-    The GARP/RA packets should follow the GARP/RA    Packet Specifications..
-    -  When multiple forwarding rules refer to a regional backend service,
-    you need only send a GARP or RA packet for a single forwarding rule
-    virtual IP. The virtual IPs for all forwarding rules targeting the same
-    backend service will also be moved to the sender of the GARP or RA
-    packet.     The following are the Fast IP Move limitations (that is, when
-    fastIPMove is not DISABLED):        - Multiple forwarding rules cannot use
-    the same IP address if one of    them refers to a regional backend service
-    with fastIPMove.    - The regional backend service must set the network
-    field, and all    NEGs must belong to that network. However, individual
-    NEGs can belong to different subnetworks of that network.     - The
-    maximum number of network endpoints across all backends of a    backend
-    service with fastIPMove is 32.    - The maximum number of backend services
-    with fastIPMove that can have    the same network endpoint attached to one
-    of its backends is 64.    - The maximum number of backend services with
+    both new and in-flight packets are quickly delivered to that VM.    -
+    HA_CONTROLLER: The Backend Service is managed by a High Availability
+    Controller. Failover and leader election are exclusively managed by the
+    HA Controller service.    Note the important properties of the Fast IP
+    Move functionality:        - The GARP/RA-initiated re-routing stays active
+    for approximately 20    minutes. After triggering fast failover, you must
+    also    appropriately set the haPolicy.leader.    -  The new leader
+    instance should continue to send GARP/RA packets    periodically every 10
+    seconds until at least 10 minutes after updating    the haPolicy.leader
+    (but stop immediately if it is no longer the leader).    - After
+    triggering a fast failover, we recommend that you wait at least    3
+    seconds before sending another GARP/RA packet from a different VM
+    instance to avoid race conditions.    - Don't send GARP/RA packets from
+    different VM    instances at the same time. If multiple instances continue
+    to send    GARP/RA packets, traffic might be routed to different
+    destinations in an    alternating order. This condition ceases when a
+    single instance    issues a GARP/RA packet.    - The GARP/RA request
+    always takes priority over the leader API.    Using the haPolicy.leader
+    API to change the leader to a different    instance will have no effect
+    until the GARP/RA request becomes    inactive.    - The GARP/RA packets
+    should follow the GARP/RA    Packet Specifications..    -  When multiple
+    forwarding rules refer to a regional backend service,    you need only
+    send a GARP or RA packet for a single forwarding rule    virtual IP. The
+    virtual IPs for all forwarding rules targeting the same    backend service
+    will also be moved to the sender of the GARP or RA    packet.     The
+    following are the Fast IP Move limitations (that is, when fastIPMove is
+    not DISABLED):        - Multiple forwarding rules cannot use the same IP
+    address if one of    them refers to a regional backend service with
+    fastIPMove.    - The regional backend service must set the network field,
+    and all    NEGs must belong to that network. However, individual    NEGs
+    can belong to different subnetworks of that network.     - The maximum
+    number of network endpoints across all backends of a    backend service
+    with fastIPMove is 32.    - The maximum number of backend services with
+    fastIPMove that can have    the same network endpoint attached to one of
+    its backends is 64.    - The maximum number of backend services with
     fastIPMove in a VPC in a    region is 64.    - The network endpoints that
     are attached to a backend of a backend    service with fastIPMove cannot
     resolve to Gen3+ machines for IPv6.    - Traffic directed to the leader by
@@ -8032,8 +8040,12 @@ class BulkInsertInstanceResource(_messages.Message):
 
   Fields:
     count: The maximum number of instances to create.
-    instanceFlexibilityPolicy: A flexible specification of machine type of
-      instances to create.
+    instanceFlexibilityPolicy: A specification of alternative machine types to
+      use when creating instances. A single bulkInsert request can create
+      instances with multiple different machine types based on capacity and
+      quota availability. This field is supported only for regional bulkInsert
+      requests. For more information, see About instance flexibility for VMs
+      created in bulk.
     instanceProperties: The instance properties defining the VM instances to
       be created. Required if sourceInstanceTemplate is not provided.
     locationPolicy: Policy for choosing target zone. For more information,
@@ -42706,6 +42718,8 @@ class ConfidentialInstanceConfig(_messages.Message):
   Fields:
     confidentialInstanceType: Defines the type of technology used by the
       confidential instance.
+    confidentialParavisorConfig: Defines a set of Confidential Paravisor
+      (SVSM) options.
     enableConfidentialCompute: Defines whether the instance should have
       confidential compute enabled.
   """
@@ -42730,7 +42744,48 @@ class ConfidentialInstanceConfig(_messages.Message):
     TDX = 5
 
   confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
-  enableConfidentialCompute = _messages.BooleanField(2)
+  confidentialParavisorConfig = _messages.MessageField('ConfidentialParavisorConfig', 2)
+  enableConfidentialCompute = _messages.BooleanField(3)
+
+
+class ConfidentialParavisorConfig(_messages.Message):
+  r"""A set of Confidential Paravisor (SVSM) options.
+
+  Enums:
+    ConfidentialTpmTypeValueValuesEnum:
+    SevSnpIrqModeValueValuesEnum:
+
+  Fields:
+    confidentialTpmType: A ConfidentialTpmTypeValueValuesEnum attribute.
+    sevSnpIrqMode: A SevSnpIrqModeValueValuesEnum attribute.
+  """
+
+  class ConfidentialTpmTypeValueValuesEnum(_messages.Enum):
+    r"""ConfidentialTpmTypeValueValuesEnum enum type.
+
+    Values:
+      CONFIDENTIAL_TPM_TYPE_UNSPECIFIED: <no description>
+      EPHEMERAL: <no description>
+      NO_CC_TPM: <no description>
+    """
+    CONFIDENTIAL_TPM_TYPE_UNSPECIFIED = 0
+    EPHEMERAL = 1
+    NO_CC_TPM = 2
+
+  class SevSnpIrqModeValueValuesEnum(_messages.Enum):
+    r"""SevSnpIrqModeValueValuesEnum enum type.
+
+    Values:
+      RESTRICTED: <no description>
+      SEV_SNP_IRQ_MODE_UNSPECIFIED: <no description>
+      UNRESTRICTED: <no description>
+    """
+    RESTRICTED = 0
+    SEV_SNP_IRQ_MODE_UNSPECIFIED = 1
+    UNRESTRICTED = 2
+
+  confidentialTpmType = _messages.EnumField('ConfidentialTpmTypeValueValuesEnum', 1)
+  sevSnpIrqMode = _messages.EnumField('SevSnpIrqModeValueValuesEnum', 2)
 
 
 class ConnectionDraining(_messages.Message):
@@ -56792,30 +56847,21 @@ class InstanceFlexibilityPolicy(_messages.Message):
   r"""A flexible specification of machine types for instances to create.
 
   Messages:
-    InstanceSelectionsValue: Specification of alternative, flexible instance
-      subsets. One of them will be selected to create the instances based on
-      various criteria, like: - ranks, - location policy, - current capacity,
-      - available reservations (you can specify affinity in
-      InstanceProperties), - SWAN/GOOSE limitations. Key is an arbitrary,
-      unique RFC1035 string that identifies the instance selection.
+    InstanceSelectionsValue: Specifies named instance selections that define
+      properties for instances created in bulk. Key is an arbitrary, unique
+      RFC1035 string that identifies the instance selection.
 
   Fields:
-    instanceSelections: Specification of alternative, flexible instance
-      subsets. One of them will be selected to create the instances based on
-      various criteria, like: - ranks, - location policy, - current capacity,
-      - available reservations (you can specify affinity in
-      InstanceProperties), - SWAN/GOOSE limitations. Key is an arbitrary,
-      unique RFC1035 string that identifies the instance selection.
+    instanceSelections: Specifies named instance selections that define
+      properties for instances created in bulk. Key is an arbitrary, unique
+      RFC1035 string that identifies the instance selection.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class InstanceSelectionsValue(_messages.Message):
-    r"""Specification of alternative, flexible instance subsets. One of them
-    will be selected to create the instances based on various criteria, like:
-    - ranks, - location policy, - current capacity, - available reservations
-    (you can specify affinity in InstanceProperties), - SWAN/GOOSE
-    limitations. Key is an arbitrary, unique RFC1035 string that identifies
-    the instance selection.
+    r"""Specifies named instance selections that define properties for
+    instances created in bulk. Key is an arbitrary, unique RFC1035 string that
+    identifies the instance selection.
 
     Messages:
       AdditionalProperty: An additional property for a InstanceSelectionsValue
@@ -108862,8 +108908,8 @@ class VpnTunnelCipherSuite(_messages.Message):
   r"""A VpnTunnelCipherSuite object.
 
   Fields:
-    phase1: A VpnTunnelPhase1Algorithms attribute.
-    phase2: A VpnTunnelPhase2Algorithms attribute.
+    phase1: Cipher algorithms for IKE phase 1.
+    phase2: Cipher algorithms for IKE phase 2.
   """
 
   phase1 = _messages.MessageField('VpnTunnelPhase1Algorithms', 1)
@@ -109109,10 +109155,10 @@ class VpnTunnelPhase1Algorithms(_messages.Message):
   r"""A VpnTunnelPhase1Algorithms object.
 
   Fields:
-    dh: A string attribute.
-    encryption: A string attribute.
-    integrity: A string attribute.
-    prf: A string attribute.
+    dh: Diffie-Hellman groups for IKE phase 1.
+    encryption: Encryption algorithms for IKE phase 1.
+    integrity: Integrity algorithms for IKE phase 1.
+    prf: Pseudo-random functions (PRF) for IKE phase 1.
   """
 
   dh = _messages.StringField(1, repeated=True)
@@ -109125,9 +109171,9 @@ class VpnTunnelPhase2Algorithms(_messages.Message):
   r"""A VpnTunnelPhase2Algorithms object.
 
   Fields:
-    encryption: A string attribute.
-    integrity: A string attribute.
-    pfs: A string attribute.
+    encryption: Encryption algorithms for IKE phase 2.
+    integrity: Integrity algorithms for IKE phase 2.
+    pfs: Perfect Forward Secrecy (PFS) groups for IKE phase 2.
   """
 
   encryption = _messages.StringField(1, repeated=True)

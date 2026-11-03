@@ -9,6 +9,7 @@ anthos-auth: google-cloud-cli-anthos-auth
 beta: google-cloud-cli
 bigtable: google-cloud-cli-bigtable-emulator
 bq: google-cloud-cli
+bqms: google-cloud-cli-bqms
 cbt: google-cloud-cli-cbt
 cloud-run-proxy: google-cloud-cli-cloud-run-proxy
 cloud-sql-proxy: unavailable

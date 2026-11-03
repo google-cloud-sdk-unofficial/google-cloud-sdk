@@ -122,7 +122,6 @@ def _CommonArgs(
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
     support_workload_identity_config=False,
-    support_identity_type=False,
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
@@ -313,9 +312,7 @@ def _CommonArgs(
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
   if support_workload_identity_config:
-    instances_flags.AddWorkloadIdentityConfigArgs(
-        parser, support_identity_type=support_identity_type
-    )
+    instances_flags.AddWorkloadIdentityConfigArgs(parser)
   instances_flags.AddRequestValidForDurationArgs(parser)
 
 
@@ -376,7 +373,6 @@ class Create(base.CreateCommand):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
   _support_workload_identity_config = True
-  _support_identity_type = False
   _support_alias_ipv6_ranges = False
   _support_dns64_eligible = False
   _support_nat64_eligible = False
@@ -421,7 +417,6 @@ class Create(base.CreateCommand):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_workload_identity_config=cls._support_workload_identity_config,
-        support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
@@ -579,7 +574,6 @@ class Create(base.CreateCommand):
             args,
             compute_client.messages,
             self._support_workload_identity_config,
-            self._support_identity_type,
         )
     )
 
@@ -961,7 +955,6 @@ class CreateBeta(Create):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
   _support_workload_identity_config = True
-  _support_identity_type = False
   _support_alias_ipv6_ranges = True
   _support_dns64_eligible = False
   _support_nat64_eligible = False
@@ -1012,7 +1005,6 @@ class CreateBeta(Create):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_workload_identity_config=cls._support_workload_identity_config,
-        support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
@@ -1107,7 +1099,6 @@ class CreateAlpha(CreateBeta):
   _support_preemption_notice_duration = True
 
   _support_workload_identity_config = True
-  _support_identity_type = True
   _support_vsock_mode = True
   _support_dns64_eligible = True
   _support_nat64_eligible = True
@@ -1152,7 +1143,6 @@ class CreateAlpha(CreateBeta):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_workload_identity_config=cls._support_workload_identity_config,
-        support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,

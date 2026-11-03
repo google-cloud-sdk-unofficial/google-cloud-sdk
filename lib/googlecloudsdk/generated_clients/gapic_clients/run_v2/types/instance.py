@@ -450,6 +450,12 @@ class Instance(proto.Message):
             Optional. Configured graceful termination
             period for this instance. This is the time
             between SIGTERM and SIGKILL when shutting down.
+        workload_identity_config (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.WorkloadIdentityConfig):
+            Optional. The Instance's workload identity
+            settings.
+        functional_type (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.FunctionalType):
+            Optional. The functional type of the
+            Instance.
         observed_generation (int):
             Output only. The generation of this Instance currently
             serving traffic. See comments in ``reconciling`` for
@@ -673,6 +679,16 @@ class Instance(proto.Message):
         proto.MESSAGE,
         number=36,
         message=duration_pb2.Duration,
+    )
+    workload_identity_config: vendor_settings.WorkloadIdentityConfig = proto.Field(
+        proto.MESSAGE,
+        number=37,
+        message=vendor_settings.WorkloadIdentityConfig,
+    )
+    functional_type: vendor_settings.FunctionalType = proto.Field(
+        proto.ENUM,
+        number=38,
+        enum=vendor_settings.FunctionalType,
     )
     observed_generation: int = proto.Field(
         proto.INT64,

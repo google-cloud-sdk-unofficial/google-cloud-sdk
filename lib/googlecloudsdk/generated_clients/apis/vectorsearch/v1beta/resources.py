@@ -74,6 +74,28 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_DATASTORES = (
+      'projects.locations.dataStores',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/dataStores/'
+              '{dataStoresId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_DATASTORES_DOCUMENTS = (
+      'projects.locations.dataStores.documents',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/dataStores/'
+              '{dataStoresId}/documents/{documentsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_OPERATIONS = (
       'projects.locations.operations',
       '{+name}',

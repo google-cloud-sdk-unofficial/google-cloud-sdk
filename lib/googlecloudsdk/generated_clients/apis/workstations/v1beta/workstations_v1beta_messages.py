@@ -402,11 +402,20 @@ class GatewayConfig(_messages.Message):
   r"""Configuration options for Cluster HTTP Gateway.
 
   Fields:
+    directAccessPorts: Optional. Specifies VM ports that can be accessed using
+      the standard `$HOSTNAME:$PORT` format in addition to the service's
+      default `$PORT-$HOSTNAME` format. See [Access HTTP Servers Running on
+      Workstations] (https://docs.cloud.google.com/workstations/docs/access-
+      http-servers-running-on-workstations). Note: This only controls the
+      routing URL format. Network-level access is still controlled by
+      `allowed_ports` on WorkstationConfig. All `allowed_ports` remain
+      accessible via the default `$PORT-$HOSTNAME` format.
     http2Enabled: Optional. Whether HTTP/2 is enabled for this workstation
       cluster. Defaults to false.
   """
 
-  http2Enabled = _messages.BooleanField(1)
+  directAccessPorts = _messages.IntegerField(1, repeated=True, variant=_messages.Variant.INT32)
+  http2Enabled = _messages.BooleanField(2)
 
 
 class GceConfidentialInstanceConfig(_messages.Message):

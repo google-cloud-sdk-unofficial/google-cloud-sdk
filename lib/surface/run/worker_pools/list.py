@@ -86,7 +86,7 @@ class List(commands.List):
     project_ref = args.CONCEPTS.project.Parse()
     if not args.IsSpecified('region'):
       endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
-      if endpoint_mode == properties.VALUES.regional.REGIONAL:
+      if endpoint_mode == properties.constants.regional.REGIONAL:
         raise exceptions.ArgumentError(
             'You must specify a region using the `--region` flag when '
             'regional endpoints are enabled.'

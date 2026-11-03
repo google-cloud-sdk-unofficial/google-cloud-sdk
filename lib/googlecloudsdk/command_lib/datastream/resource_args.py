@@ -163,36 +163,9 @@ _POSTGRESQL_CREATE_SOURCE_CONFIG_HELP_TEXT = """\
   ```
 """
 
-_POSTGRESQL_UPDATE_SOURCE_CONFIG_HELP_TEXT = """\
-  Path to a YAML (or JSON) file containing the configuration for PostgreSQL Source Config.
-
-  The JSON file is formatted as follows, with camelCase field naming:
-
-  ```
-    {
-      "includeObjects": {},
-      "excludeObjects": {
-        "postgresqlSchemas": [
-          {
-            "schema": "SAMPLE",
-            "postgresqlTables": [
-              {
-                "table": "SAMPLE_TABLE",
-                "postgresqlColumns": [
-                  {
-                    "column": "COL",
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      "replicationSlot": "SAMPLE_REPLICATION_SLOT",
-      "publication": "SAMPLE_PUBLICATION"
-    }
-  ```
-"""
+_POSTGRESQL_UPDATE_SOURCE_CONFIG_HELP_TEXT = (
+    _POSTGRESQL_CREATE_SOURCE_CONFIG_HELP_TEXT
+)
 
 _SQLSERVER_CREATE_SOURCE_CONFIG_HELP_TEXT = """
   Path to a YAML (or JSON) file containing the configuration for SQL Server Source Config.
@@ -226,37 +199,9 @@ _SQLSERVER_CREATE_SOURCE_CONFIG_HELP_TEXT = """
   ```
 """
 
-_SQLSERVER_UPDATE_SOURCE_CONFIG_HELP_TEXT = """
-  Path to a YAML (or JSON) file containing the configuration for SQL Server Source Config.
-
-  The JSON file is formatted as follows, with camelCase field naming:
-
-  ```
-    {
-      "includeObjects": {},
-      "excludeObjects": {
-        "schemas": [
-          {
-            "schema": "SAMPLE",
-            "tables": [
-              {
-                "table": "SAMPLE_TABLE",
-                "columns": [
-                  {
-                    "column": "COL",
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      "maxConcurrentCdcTasks": 2,
-      "maxConcurrentBackfillTasks": 10,
-      "transactionLogs": {}  # Or changeTables
-    }
-  ```
-"""
+_SQLSERVER_UPDATE_SOURCE_CONFIG_HELP_TEXT = (
+    _SQLSERVER_CREATE_SOURCE_CONFIG_HELP_TEXT
+)
 
 _SALESFORCE_CREATE_SOURCE_CONFIG_HELP_TEXT = """
   Path to a YAML (or JSON) file containing the configuration for Salesforce Source Config.
@@ -283,30 +228,9 @@ _SALESFORCE_CREATE_SOURCE_CONFIG_HELP_TEXT = """
   ```
 """
 
-_SALESFORCE_UPDATE_SOURCE_CONFIG_HELP_TEXT = """
-  Path to a YAML (or JSON) file containing the configuration for Salesforce Source Config.
-
-  The JSON file is formatted as follows, with camelCase field naming:
-
-  ```
-    {
-      "pollingInterval": "3000s",
-      "includeObjects": {},
-      "excludeObjects": {
-        "objects": [
-          {
-            "objectName": "SAMPLE",
-            "fields": [
-              {
-                "fieldName": "SAMPLE_FIELD",
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ```
-"""
+_SALESFORCE_UPDATE_SOURCE_CONFIG_HELP_TEXT = (
+    _SALESFORCE_CREATE_SOURCE_CONFIG_HELP_TEXT
+)
 
 _SPANNER_CREATE_SOURCE_CONFIG_HELP_TEXT = """
   Path to a YAML (or JSON) file containing the configuration for Spanner Source Config.
@@ -314,8 +238,8 @@ _SPANNER_CREATE_SOURCE_CONFIG_HELP_TEXT = """
   The JSON file is formatted as follows, with camelCase field naming:
 
   ```
-    "changeStreamName": "SAMPLE_CHANGE_STREAM_NAME",
     {
+      "changeStreamName": "SAMPLE_CHANGE_STREAM_NAME",
       "includeObjects": {},
       "excludeObjects": {
         "schemas": [
@@ -380,7 +304,7 @@ _SPANNER_UPDATE_SOURCE_CONFIG_HELP_TEXT = """
 _MONGODB_SOURCE_CONFIG_HELP_TEXT = """\
   Path to a YAML (or JSON) file containing the configuration for MongoDB Source Config.
 
-  The JSON file is formatted as follows, with snake_case field naming:
+  The JSON file is formatted as follows, with camelCase field naming:
 
   ```
     {
@@ -637,7 +561,8 @@ def AddConnectionProfileResourceArg(parser,
           SSH password.
           """)
   password_group.add_argument(
-      '--forward-ssh-private-key', help='SSH private key..')
+      '--forward-ssh-private-key', help='SSH private key.'
+  )
 
   # TODO(b/207467120): deprecate BETA client.
   private_connection_flag_name = 'private-connection'

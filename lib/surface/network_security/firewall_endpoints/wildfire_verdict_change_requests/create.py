@@ -25,7 +25,9 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a WildFire Verdict Change Request."""
 
@@ -34,6 +36,10 @@ class Create(base.CreateCommand):
         To create a WildFire Verdict Change Request with hash `deadbeef`, verdict `malware` and comment `bad file`, using full resource name for endpoint:
 
           $ {command} --endpoint=organizations/1234/locations/us-central1-a/firewallEndpoints/my-endpoint --hash=deadbeef --verdict=malware --comment="bad file"
+
+        To create the same verdict change request for a project-level endpoint:
+
+          $ {command} --endpoint=projects/my-project/locations/us-central1-a/firewallEndpoints/my-endpoint --hash=deadbeef --verdict=malware --comment="bad file"
         """,
   }
 
@@ -73,30 +79,23 @@ class Create(base.CreateCommand):
         ),
     )
     concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)
-    base.ASYNC_FLAG.AddToParser(parser)
-    base.ASYNC_FLAG.SetDefault(parser, False)
 
   def Run(self, args):
-    client = wildfire_verdict_change_requests_api.Client(self.ReleaseTrack())
-    is_async = args.async_
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
+    project_scoped = (
+        endpoint_ref.concept_type.name
+        == activation_flags.PROJECT_ENDPOINT_RESOURCE_COLLECTION
+    )
+    client = wildfire_verdict_change_requests_api.Client(
+        self.ReleaseTrack(), project_scoped
+    )
+    # The API returns the created verdict change request directly rather than a
+    # long-running operation.
     result = client.CreateVerdictChangeRequest(
         parent=endpoint_ref.result.RelativeName(),
         hash_val=args.hash,
         verdict=args.verdict,
         comment=args.comment,
     )
-
-    # Return the in-progress operation if async is requested.
-    if is_async:
-      log.status.Print(
-          'Check for operation completion status using operation ID:',
-          result.name,
-      )
-      return result
-
-    return client.WaitForOperation(
-        operation_ref=client.GetOperationsRef(result),
-        message=f'Waiting for operation [{result.name}] to complete',
-        has_result=True,
-    )
+    log.CreatedResource(result.name, kind='WildFire verdict change request')
+    return result

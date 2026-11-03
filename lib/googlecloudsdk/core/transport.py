@@ -30,6 +30,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import agents
+from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import platforms
 import six
 from six.moves import urllib
@@ -665,7 +666,17 @@ def MakeUserAgentString(cmd_path=None):
       if request_attribution and request_attribution.strip()
       else ''
   )
+  go_lang_fragment = ''
+  if encoding.GetEncodedValue(os.environ, 'CLOUDSDK_FROM_GOCLOUD') == '1':
+    go_version = (
+        encoding.GetEncodedValue(os.environ, 'CLOUDSDK_GOCLOUD_GO_VERSION')
+        or '0'
+    )
+    go_lang_fragment = ' gl-go/{}'.format(go_version)
 
+  # Note: gl-go/ must appear before python/ so that Cloudmill extracts 'go'
+  # as the client_library_language (it uses the leftmost matching language
+  # prefix), while gcloud_usage continues to extract python_version anywhere.
   return (
       'gcloud/{version}'
       '{agent_fragment}'
@@ -678,6 +689,7 @@ def MakeUserAgentString(cmd_path=None):
       ' client-pltf-arch/{architecture}'
       ' interactive/{is_interactive}'
       ' from-script/{from_script}'
+      '{go_lang_fragment}'
       ' python/{py_version}'
       ' term/{term}'
       ' {gcloud_mcp_metrics}'
@@ -696,6 +708,7 @@ def MakeUserAgentString(cmd_path=None):
       else None,
       architecture=architecture,
       is_interactive=console_io.IsInteractive(error=True, heuristic=True),
+      go_lang_fragment=go_lang_fragment,
       py_version=platform.python_version(),
       ua_fragment=user_platform.UserAgentFragment(),
       from_script=console_io.IsRunFromShellScript(),

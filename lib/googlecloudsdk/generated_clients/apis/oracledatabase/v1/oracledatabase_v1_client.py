@@ -46,6 +46,7 @@ class OracledatabaseV1(base_api.BaseApiClient):
     self.projects_locations_cloudVmClusters_dbNodes = self.ProjectsLocationsCloudVmClustersDbNodesService(self)
     self.projects_locations_cloudVmClusters = self.ProjectsLocationsCloudVmClustersService(self)
     self.projects_locations_databaseCharacterSets = self.ProjectsLocationsDatabaseCharacterSetsService(self)
+    self.projects_locations_databaseConnections = self.ProjectsLocationsDatabaseConnectionsService(self)
     self.projects_locations_databases = self.ProjectsLocationsDatabasesService(self)
     self.projects_locations_dbSystemInitialStorageSizes = self.ProjectsLocationsDbSystemInitialStorageSizesService(self)
     self.projects_locations_dbSystemShapes = self.ProjectsLocationsDbSystemShapesService(self)
@@ -64,6 +65,7 @@ class OracledatabaseV1(base_api.BaseApiClient):
     self.projects_locations_goldengateDeploymentTypes = self.ProjectsLocationsGoldengateDeploymentTypesService(self)
     self.projects_locations_goldengateDeploymentVersions = self.ProjectsLocationsGoldengateDeploymentVersionsService(self)
     self.projects_locations_goldengateDeployments = self.ProjectsLocationsGoldengateDeploymentsService(self)
+    self.projects_locations_odbNetworks_odbDnsZones = self.ProjectsLocationsOdbNetworksOdbDnsZonesService(self)
     self.projects_locations_odbNetworks_odbSubnets = self.ProjectsLocationsOdbNetworksOdbSubnetsService(self)
     self.projects_locations_odbNetworks = self.ProjectsLocationsOdbNetworksService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
@@ -995,6 +997,205 @@ class OracledatabaseV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsDatabaseCharacterSetsListRequest',
         response_type_name='ListDatabaseCharacterSetsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDatabaseConnectionsService(base_api.BaseApiService):
+    """Service class for the projects_locations_databaseConnections resource."""
+
+    _NAME = 'projects_locations_databaseConnections'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsDatabaseConnectionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new DatabaseConnection in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/databaseConnections',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.databaseConnections.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['databaseConnectionId', 'requestId'],
+        relative_path='v1/{+parent}/databaseConnections',
+        request_field='databaseConnection',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single DatabaseConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}',
+        http_method='DELETE',
+        method_id='oracledatabase.projects.locations.databaseConnections.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def ExecuteSql(self, request, global_params=None):
+      r"""Executes a SQL statement on a DatabaseConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExecuteSqlResponse) The response message.
+      """
+      config = self.GetMethodConfig('ExecuteSql')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ExecuteSql.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}:executeSql',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.databaseConnections.executeSql',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:executeSql',
+        request_field='executeSqlRequest',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest',
+        response_type_name='ExecuteSqlResponse',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single DatabaseConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DatabaseConnection) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.databaseConnections.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest',
+        response_type_name='DatabaseConnection',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DatabaseConnections in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDatabaseConnectionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/databaseConnections',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.databaseConnections.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/databaseConnections',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsListRequest',
+        response_type_name='ListDatabaseConnectionsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single DatabaseConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.databaseConnections.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='databaseConnection',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Test(self, request, global_params=None):
+      r"""Tests connectivity of a DatabaseConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestDatabaseConnectionResponse) The response message.
+      """
+      config = self.GetMethodConfig('Test')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Test.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}:test',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.databaseConnections.test',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:test',
+        request_field='testDatabaseConnectionRequest',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest',
+        response_type_name='TestDatabaseConnectionResponse',
         supports_download=False,
     )
 
@@ -2447,6 +2648,124 @@ class OracledatabaseV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsOdbNetworksOdbDnsZonesService(base_api.BaseApiService):
+    """Service class for the projects_locations_odbNetworks_odbDnsZones resource."""
+
+    _NAME = 'projects_locations_odbNetworks_odbDnsZones'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsOdbNetworksOdbDnsZonesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new ODB DNS Zone in a given ODB Network.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbDnsZones',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbDnsZones.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['odbDnsZoneId', 'requestId'],
+        relative_path='v1/{+parent}/odbDnsZones',
+        request_field='odbDnsZone',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single ODB DNS Zone.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbDnsZones/{odbDnsZonesId}',
+        http_method='DELETE',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbDnsZones.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single ODB DNS Zone.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (OdbDnsZone) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbDnsZones/{odbDnsZonesId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbDnsZones.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesGetRequest',
+        response_type_name='OdbDnsZone',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all the ODB DNS Zones in a given ODB Network.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListOdbDnsZonesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbDnsZones',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbDnsZones.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/odbDnsZones',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesListRequest',
+        response_type_name='ListOdbDnsZonesResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsOdbNetworksOdbSubnetsService(base_api.BaseApiService):
     """Service class for the projects_locations_odbNetworks_odbSubnets resource."""
 
@@ -2707,6 +3026,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsOdbNetworksListRequest',
         response_type_name='ListOdbNetworksResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` and `service_connectivity_config` of a single OdbNetwork.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.odbNetworks.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='odbNetwork',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

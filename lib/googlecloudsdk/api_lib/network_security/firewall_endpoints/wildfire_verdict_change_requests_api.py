@@ -14,35 +14,51 @@
 # limitations under the License.
 """API wrapper for `gcloud network-security firewall-endpoints` commands."""
 
-import datetime
-
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import resources
 
 
 _API_VERSION_FOR_TRACK = {
     base.ReleaseTrack.ALPHA: 'v1alpha1',
     base.ReleaseTrack.BETA: 'v1beta1',
+    base.ReleaseTrack.GA: 'v1',
 }
-ORG_OPERATIONS_COLLECTION = 'networksecurity.organizations.locations.operations'
 
 
 class Client(object):
   """API client for firewall endpoints commands."""
 
-  def __init__(self, release_track=base.ReleaseTrack.ALPHA):
+  def __init__(self, release_track, project_scoped=False):
     self.api_version = _API_VERSION_FOR_TRACK.get(release_track)
     self._client = apis.GetClientInstance('networksecurity', self.api_version)
     self.messages = self._client.MESSAGES_MODULE
-    self._service = (
-        self._client.organizations_locations_firewallEndpoints_wildfireVerdictChangeRequests
-    )
-    self._operations_client = self._client.organizations_locations_operations
-    self._resource_parser = resources.Registry()
-    self._resource_parser.RegisterApiByName('networksecurity', self.api_version)
+    if project_scoped:
+      self._service = (
+          self._client.projects_locations_firewallEndpoints_wildfireVerdictChangeRequests
+      )
+      self._create_request = (
+          self.messages.NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsCreateRequest
+      )
+      self._list_request = (
+          self.messages.NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsListRequest
+      )
+      self._get_request = (
+          self.messages.NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsGetRequest
+      )
+    else:
+      self._service = (
+          self._client.organizations_locations_firewallEndpoints_wildfireVerdictChangeRequests
+      )
+      self._create_request = (
+          self.messages.NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsCreateRequest
+      )
+      self._list_request = (
+          self.messages.NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsListRequest
+      )
+      self._get_request = (
+          self.messages.NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsGetRequest
+      )
 
   def CreateVerdictChangeRequest(self, parent, hash_val, verdict, comment):
     """Calls the Create Verdict Change Request API."""
@@ -56,7 +72,7 @@ class Client(object):
         newVerdict=new_verdict_enum,
         comment=comment,
     )
-    request = self.messages.NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsCreateRequest(
+    request = self._create_request(
         parent=parent,
         wildfireVerdictChangeRequest=verdict_change_request,
     )
@@ -66,9 +82,7 @@ class Client(object):
       self, parent, limit=None, page_size=None
   ):
     """Calls the List Verdict Change Requests API."""
-    list_request = self.messages.NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsListRequest(
-        parent=parent,
-    )
+    list_request = self._list_request(parent=parent)
     return list_pager.YieldFromList(
         self._service,
         list_request,
@@ -77,35 +91,6 @@ class Client(object):
         field='wildfireVerdictChangeRequests',
         batch_size_attribute='pageSize',
     )
-
-  def GetOperationsRef(self, operation):
-    """Operations to Resource used for `waiter.WaitFor`."""
-    return self._resource_parser.ParseRelativeName(
-        operation.name,
-        ORG_OPERATIONS_COLLECTION,
-        False,
-        self.api_version,
-    )
-
-  def WaitForOperation(
-      self,
-      operation_ref,
-      message,
-      has_result=False,
-      max_wait=datetime.timedelta(seconds=600),
-  ):
-    """Waits for an operation to complete."""
-    if has_result:
-      poller = waiter.CloudOperationPoller(
-          self._service, self._operations_client
-      )
-    else:
-      poller = waiter.CloudOperationPollerNoResources(self._operations_client)
-
-    response = waiter.WaitFor(
-        poller, operation_ref, message, max_wait_ms=max_wait.seconds * 1000
-    )
-    return response
 
   def GetVerdictChangeRequest(self, name):
     """Calls the Get Verdict Change Request API.
@@ -116,7 +101,5 @@ class Client(object):
     Returns:
       The WildfireVerdictChangeRequest resource.
     """
-    request = self.messages.NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChangeRequestsGetRequest(
-        name=name,
-    )
+    request = self._get_request(name=name)
     return self._service.Get(request)

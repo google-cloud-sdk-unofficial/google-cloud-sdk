@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: Poll long-running Immersive Stream for XR operation until it completes.
     description: |

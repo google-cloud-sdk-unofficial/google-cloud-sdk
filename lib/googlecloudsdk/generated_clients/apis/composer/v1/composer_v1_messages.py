@@ -1272,6 +1272,8 @@ class ImageVersion(_messages.Message):
   Fields:
     creationDisabled: Whether it is impossible to create an environment with
       the image version.
+    devModeSupported: Whether it is possible to create an environment in the
+      `DEVELOPMENT` mode with the image version.
     imageVersionId: The string identifier of the ImageVersion, in the form:
       "composer-x.y.z-airflow-a.b.c"
     isDefault: Whether this is the default ImageVersion used by Composer
@@ -1283,11 +1285,12 @@ class ImageVersion(_messages.Message):
   """
 
   creationDisabled = _messages.BooleanField(1)
-  imageVersionId = _messages.StringField(2)
-  isDefault = _messages.BooleanField(3)
-  releaseDate = _messages.MessageField('Date', 4)
-  supportedPythonVersions = _messages.StringField(5, repeated=True)
-  upgradeDisabled = _messages.BooleanField(6)
+  devModeSupported = _messages.BooleanField(2)
+  imageVersionId = _messages.StringField(3)
+  isDefault = _messages.BooleanField(4)
+  releaseDate = _messages.MessageField('Date', 5)
+  supportedPythonVersions = _messages.StringField(6, repeated=True)
+  upgradeDisabled = _messages.BooleanField(7)
 
 
 class ImageVersionRollbackTarget(_messages.Message):

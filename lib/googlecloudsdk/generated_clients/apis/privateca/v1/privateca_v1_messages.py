@@ -1370,6 +1370,12 @@ class KeyVersionSpec(_messages.Message):
         CryptoKeyVersionAlgorithm.RSA_SIGN_PKCS1_4096_SHA256
       EC_P256_SHA256: maps to CryptoKeyVersionAlgorithm.EC_SIGN_P256_SHA256
       EC_P384_SHA384: maps to CryptoKeyVersionAlgorithm.EC_SIGN_P384_SHA384
+      PQ_ML_DSA_44_EXTERNAL_MU: maps to
+        CryptoKeyVersionAlgorithm.PQ_SIGN_ML_DSA_44_EXTERNAL_MU
+      PQ_ML_DSA_65_EXTERNAL_MU: maps to
+        CryptoKeyVersionAlgorithm.PQ_SIGN_ML_DSA_65_EXTERNAL_MU
+      PQ_ML_DSA_87_EXTERNAL_MU: maps to
+        CryptoKeyVersionAlgorithm.PQ_SIGN_ML_DSA_87_EXTERNAL_MU
     """
     SIGN_HASH_ALGORITHM_UNSPECIFIED = 0
     RSA_PSS_2048_SHA256 = 1
@@ -1380,6 +1386,9 @@ class KeyVersionSpec(_messages.Message):
     RSA_PKCS1_4096_SHA256 = 6
     EC_P256_SHA256 = 7
     EC_P384_SHA384 = 8
+    PQ_ML_DSA_44_EXTERNAL_MU = 9
+    PQ_ML_DSA_65_EXTERNAL_MU = 10
+    PQ_ML_DSA_87_EXTERNAL_MU = 11
 
   algorithm = _messages.EnumField('AlgorithmValueValuesEnum', 1)
   cloudKmsKeyVersion = _messages.StringField(2)

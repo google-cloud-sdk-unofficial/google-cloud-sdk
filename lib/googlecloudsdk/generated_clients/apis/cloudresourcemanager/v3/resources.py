@@ -262,6 +262,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_SEMANTICTAGKEYS = (
+      'projects.locations.semanticTagKeys',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/semanticTagKeys/'
+              '{semanticTagKeysId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SEMANTICTAGVALUES = (
       'projects.locations.semanticTagValues',
       '{+name}',

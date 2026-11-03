@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import local_build
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 _IMAGE_URI_REGEX = (
@@ -121,21 +120,19 @@ def ValidateImplicitSourceContainers(
       )
 
 
-def ValidateUnifiedBuildProperty(deploy_from_source, containers, release_track):
-  if properties.VALUES.run.enable_unified_build.GetBool():
-    if release_track != base.ReleaseTrack.ALPHA:
-      raise exceptions.ConfigurationError(
-          'The `enable_unified_build` property is only supported in the Alpha'
-          ' release track.'
-      )
-    if len(containers) > 1:
-      for _, container in deploy_from_source.items():
-        if not _IsIngressContainer(container):
-          raise c_exceptions.InvalidArgumentException(
-              '--container',
-              'Building sidecars from source is currently not supported when'
-              ' using unified build.',
-          )
+def ValidateUnifiedBuildContainers(
+    deploy_from_source, containers, enable_unified_build
+):
+  if not enable_unified_build:
+    return
+  if len(containers) > 1:
+    for _, container in deploy_from_source.items():
+      if IsSourceBuild(container) and not _IsIngressContainer(container):
+        raise c_exceptions.InvalidArgumentException(
+            '--container',
+            'Building sidecars from source is currently not supported when'
+            ' using unified build.',
+        )
 
 
 def ValidateNoBuildFromSource(

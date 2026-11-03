@@ -10,6 +10,11 @@
         "grpc": {
           "libraryClient": "PredictionServiceClient",
           "rpcs": {
+            "BatchEmbedContents": {
+              "methods": [
+                "batch_embed_contents"
+              ]
+            },
             "ChatCompletions": {
               "methods": [
                 "chat_completions"
@@ -98,6 +103,11 @@
             "StreamGenerateContent": {
               "methods": [
                 "stream_generate_content"
+              ]
+            },
+            "StreamPublisherInvoke": {
+              "methods": [
+                "stream_publisher_invoke"
               ]
             },
             "StreamRawPredict": {
@@ -120,6 +130,11 @@
         "grpc-async": {
           "libraryClient": "PredictionServiceAsyncClient",
           "rpcs": {
+            "BatchEmbedContents": {
+              "methods": [
+                "batch_embed_contents"
+              ]
+            },
             "ChatCompletions": {
               "methods": [
                 "chat_completions"
@@ -208,6 +223,11 @@
             "StreamGenerateContent": {
               "methods": [
                 "stream_generate_content"
+              ]
+            },
+            "StreamPublisherInvoke": {
+              "methods": [
+                "stream_publisher_invoke"
               ]
             },
             "StreamRawPredict": {
@@ -230,6 +250,11 @@
         "rest": {
           "libraryClient": "PredictionServiceClient",
           "rpcs": {
+            "BatchEmbedContents": {
+              "methods": [
+                "batch_embed_contents"
+              ]
+            },
             "ChatCompletions": {
               "methods": [
                 "chat_completions"
@@ -318,6 +343,11 @@
             "StreamGenerateContent": {
               "methods": [
                 "stream_generate_content"
+              ]
+            },
+            "StreamPublisherInvoke": {
+              "methods": [
+                "stream_publisher_invoke"
               ]
             },
             "StreamRawPredict": {

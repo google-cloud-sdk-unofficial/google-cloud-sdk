@@ -40,7 +40,7 @@ class AccessLevel(_messages.Message):
       `access_level` component must begin with a letter, followed by
       alphanumeric characters or `_`. Its maximum length is 50 characters.
       After you create an `AccessLevel`, you cannot change its `name`.
-    title: Human readable title. Must be unique within the Policy.
+    title: Human-readable title. Must be unique within the policy.
   """
 
   basic = _messages.MessageField('BasicLevel', 1)
@@ -60,7 +60,7 @@ class AccessPolicy(_messages.Message):
   Fields:
     etag: Output only. An opaque identifier for the current version of the
       `AccessPolicy`. This will always be a strongly validated etag, meaning
-      that two Access Policies will be identical if and only if their etags
+      that two access policies will be identical if and only if their etags
       are identical. Clients should not expect this to be in any specific
       format.
     name: Output only. Identifier. Resource name of the `AccessPolicy`.
@@ -74,13 +74,13 @@ class AccessPolicy(_messages.Message):
       behavior: - ServicePerimeter can only restrict projects within
       `folders/123`. - ServicePerimeter within policy A can only reference
       access levels defined within policy A. - Only one policy can include a
-      given scope; thus, attempting to create a second policy which includes
+      given scope; thus, attempting to create a second policy that includes
       `folders/123` will result in an error. If no scopes are provided, then
       any resource within the organization can be restricted. Scopes cannot be
       modified after a policy is created. Policies can only have a single
       scope. Format: list of `folders/{folder_number}` or
       `projects/{project_number}`
-    title: Required. Human readable title. Does not affect behavior.
+    title: Required. Human-readable title. Does not affect behavior.
   """
 
   etag = _messages.StringField(1)
@@ -91,8 +91,8 @@ class AccessPolicy(_messages.Message):
 
 
 class AccessScope(_messages.Message):
-  r"""Access scope represents the client scope, etc. to which the settings
-  will be applied to.
+  r"""Access scope represents the client scope to which the settings are
+  applied.
 
   Fields:
     clientScope: Optional. Client scope for this access scope.
@@ -109,9 +109,9 @@ class AccessSettings(_messages.Message):
     accessLevels: Optional. Access level that a user must have to be granted
       access. Only one access level is supported, not multiple. This repeated
       field must have exactly one element. Example:
-      "accessPolicies/9522/accessLevels/device_trusted"
+      `"accessPolicies/9522/accessLevels/device_trusted"`
     sessionSettings: Optional. Session settings applied to user access on a
-      given AccessScope.
+      given `AccessScope`.
   """
 
   accessLevels = _messages.StringField(1, repeated=True)
@@ -148,36 +148,37 @@ class AccesscontextmanagerAccessPoliciesAccessLevelsGetRequest(_messages.Message
   Enums:
     AccessLevelFormatValueValuesEnum: Whether to return `BasicLevels` in the
       Cloud Common Expression Language rather than as `BasicLevels`. Defaults
-      to AS_DEFINED, where Access Levels are returned as `BasicLevels` or
-      `CustomLevels` based on how they were created. If set to CEL, all Access
-      Levels are returned as `CustomLevels`. In the CEL case, `BasicLevels`
-      are translated to equivalent `CustomLevels`.
+      to `AS_DEFINED`, where Access Levels are returned as `BasicLevels` or
+      `CustomLevels` based on how they were created. If set to `CEL`, all
+      Access Levels are returned as `CustomLevels`. In the `CEL` case,
+      `BasicLevels` are translated to equivalent `CustomLevels`.
 
   Fields:
     accessLevelFormat: Whether to return `BasicLevels` in the Cloud Common
       Expression Language rather than as `BasicLevels`. Defaults to
-      AS_DEFINED, where Access Levels are returned as `BasicLevels` or
-      `CustomLevels` based on how they were created. If set to CEL, all Access
-      Levels are returned as `CustomLevels`. In the CEL case, `BasicLevels`
-      are translated to equivalent `CustomLevels`.
+      `AS_DEFINED`, where Access Levels are returned as `BasicLevels` or
+      `CustomLevels` based on how they were created. If set to `CEL`, all
+      Access Levels are returned as `CustomLevels`. In the `CEL` case,
+      `BasicLevels` are translated to equivalent `CustomLevels`.
     name: Required. Resource name for the Access Level. Format:
       `accessPolicies/{policy_id}/accessLevels/{access_level_id}`
   """
 
   class AccessLevelFormatValueValuesEnum(_messages.Enum):
     r"""Whether to return `BasicLevels` in the Cloud Common Expression
-    Language rather than as `BasicLevels`. Defaults to AS_DEFINED, where
+    Language rather than as `BasicLevels`. Defaults to `AS_DEFINED`, where
     Access Levels are returned as `BasicLevels` or `CustomLevels` based on how
-    they were created. If set to CEL, all Access Levels are returned as
-    `CustomLevels`. In the CEL case, `BasicLevels` are translated to
+    they were created. If set to `CEL`, all Access Levels are returned as
+    `CustomLevels`. In the `CEL` case, `BasicLevels` are translated to
     equivalent `CustomLevels`.
 
     Values:
       LEVEL_FORMAT_UNSPECIFIED: The format was not specified.
-      AS_DEFINED: Uses the format the resource was defined in. BasicLevels are
-        returned as BasicLevels, CustomLevels are returned as CustomLevels.
-      CEL: Use Cloud Common Expression Language when returning the resource.
-        Both BasicLevels and CustomLevels are returned as CustomLevels.
+      AS_DEFINED: Uses the format the resource was defined in. `BasicLevels`
+        are returned as `BasicLevels`, and `CustomLevels` are returned as
+        `CustomLevels`.
+      CEL: Uses Cloud Common Expression Language when returning the resource.
+        Both `BasicLevels` and `CustomLevels` are returned as `CustomLevels`.
     """
     LEVEL_FORMAT_UNSPECIFIED = 0
     AS_DEFINED = 1
@@ -192,13 +193,13 @@ class AccesscontextmanagerAccessPoliciesAccessLevelsListRequest(_messages.Messag
 
   Enums:
     AccessLevelFormatValueValuesEnum: Whether to return `BasicLevels` in the
-      Cloud Common Expression language, as `CustomLevels`, rather than as
+      Cloud Common Expression Language, as `CustomLevels`, rather than as
       `BasicLevels`. Defaults to returning `AccessLevels` in the format they
       were defined.
 
   Fields:
     accessLevelFormat: Whether to return `BasicLevels` in the Cloud Common
-      Expression language, as `CustomLevels`, rather than as `BasicLevels`.
+      Expression Language, as `CustomLevels`, rather than as `BasicLevels`.
       Defaults to returning `AccessLevels` in the format they were defined.
     pageSize: Number of Access Levels to include in the list. Default 100.
     pageToken: Next page token for the next batch of Access Level instances.
@@ -209,15 +210,16 @@ class AccesscontextmanagerAccessPoliciesAccessLevelsListRequest(_messages.Messag
 
   class AccessLevelFormatValueValuesEnum(_messages.Enum):
     r"""Whether to return `BasicLevels` in the Cloud Common Expression
-    language, as `CustomLevels`, rather than as `BasicLevels`. Defaults to
+    Language, as `CustomLevels`, rather than as `BasicLevels`. Defaults to
     returning `AccessLevels` in the format they were defined.
 
     Values:
       LEVEL_FORMAT_UNSPECIFIED: The format was not specified.
-      AS_DEFINED: Uses the format the resource was defined in. BasicLevels are
-        returned as BasicLevels, CustomLevels are returned as CustomLevels.
-      CEL: Use Cloud Common Expression Language when returning the resource.
-        Both BasicLevels and CustomLevels are returned as CustomLevels.
+      AS_DEFINED: Uses the format the resource was defined in. `BasicLevels`
+        are returned as `BasicLevels`, and `CustomLevels` are returned as
+        `CustomLevels`.
+      CEL: Uses Cloud Common Expression Language when returning the resource.
+        Both `BasicLevels` and `CustomLevels` are returned as `CustomLevels`.
     """
     LEVEL_FORMAT_UNSPECIFIED = 0
     AS_DEFINED = 1
@@ -302,8 +304,8 @@ class AccesscontextmanagerAccessPoliciesAuthorizedOrgsDescsDeleteRequest(_messag
 
   Fields:
     name: Required. Resource name for the Authorized Orgs Desc. Format:
-      `accessPolicies/{policy_id}/authorizedOrgsDesc/{authorized_orgs_desc_id}
-      `
+      `accessPolicies/{policy_id}/authorizedOrgsDescs/{authorized_orgs_desc_id
+      }`
   """
 
   name = _messages.StringField(1, required=True)
@@ -314,8 +316,9 @@ class AccesscontextmanagerAccessPoliciesAuthorizedOrgsDescsGetRequest(_messages.
   object.
 
   Fields:
-    name: Required. Resource name for the Authorized Orgs Desc. Format: `acces
-      sPolicies/{policy_id}/authorizedOrgsDescs/{authorized_orgs_descs_id}`
+    name: Required. Resource name for the Authorized Orgs Desc. Format:
+      `accessPolicies/{policy_id}/authorizedOrgsDescs/{authorized_orgs_desc_id
+      }`
   """
 
   name = _messages.StringField(1, required=True)
@@ -364,7 +367,7 @@ class AccesscontextmanagerAccessPoliciesDeleteRequest(_messages.Message):
   r"""A AccesscontextmanagerAccessPoliciesDeleteRequest object.
 
   Fields:
-    name: Required. Resource name for the access policy to delete. Format
+    name: Required. Resource name for the access policy to delete. Format:
       `accessPolicies/{policy_id}`
   """
 
@@ -391,7 +394,7 @@ class AccesscontextmanagerAccessPoliciesGetRequest(_messages.Message):
   r"""A AccesscontextmanagerAccessPoliciesGetRequest object.
 
   Fields:
-    name: Required. Resource name for the access policy to get. Format
+    name: Required. Resource name for the access policy to get. Format:
       `accessPolicies/{policy_id}`
   """
 
@@ -486,7 +489,7 @@ class AccesscontextmanagerAccessPoliciesServicePerimetersGetRequest(_messages.Me
     deletedPrincipalSyntax: Optional. If true, the response will contain the
       deleted principal syntax for identities that support it.
     name: Required. Resource name for the Service Perimeter. Format:
-      `accessPolicies/{policy_id}/servicePerimeters/{service_perimeters_id}`
+      `accessPolicies/{policy_id}/servicePerimeters/{service_perimeter_id}`
   """
 
   class DeletedPrincipalSyntaxValueValuesEnum(_messages.Enum):
@@ -670,8 +673,8 @@ class AccesscontextmanagerFoldersLookupConfiguredServicePerimeterRequest(_messag
   object.
 
   Fields:
-    resource: Required. The Resource to resolve (e.g. "projects/123",
-      "folders/456").
+    resource: Required. The resource to resolve (for example, `projects/123`
+      or `folders/456`).
   """
 
   resource = _messages.StringField(1, required=True)
@@ -804,13 +807,13 @@ class AccesscontextmanagerOrganizationsGcpUserAccessBindingsPatchRequest(_messag
     append: Optional. This field controls whether or not certain repeated
       settings in the update request overwrite or append to existing settings
       on the binding. If true, then append. Otherwise overwrite. So far, only
-      scoped_access_settings with session_settings supports appending. Global
-      access_levels, access_levels in scoped_access_settings,
-      dry_run_access_levels, and session_settings are not compatible with
+      `scoped_access_settings` with `session_settings` supports appending.
+      Global `access_levels`, `access_levels` in `scoped_access_settings`,
+      `dry_run_access_levels`, and `session_settings` are not compatible with
       append functionality, and the request will return an error if
-      append=true when these settings are in the update_mask. The request will
-      also return an error if append=true when "scoped_access_settings" is not
-      set in the update_mask.
+      `append=true` when these settings are in the `update_mask`. The request
+      will also return an error if `append=true` when
+      `"scoped_access_settings"` is not set in the `update_mask`.
     gcpUserAccessBinding: A GcpUserAccessBinding resource to be passed as the
       request body.
     name: Immutable. Assigned by the server during creation. The last segment
@@ -818,10 +821,10 @@ class AccesscontextmanagerOrganizationsGcpUserAccessBindingsPatchRequest(_messag
       defined by [RFC 3986 Section
       2.3](https://tools.ietf.org/html/rfc3986#section-2.3)). Should not be
       specified by the client during creation. Example:
-      "organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N"
+      `"organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N"`
     updateMask: Required. Only the fields specified in this mask are updated.
-      Because name and group_key cannot be changed, update_mask is required
-      and may only contain the following fields: `access_levels`,
+      Because `name` and `group_key` cannot be changed, `update_mask` is
+      required and may only contain the following fields: `access_levels`,
       `dry_run_access_levels`, `session_settings`, `scoped_access_settings`.
       update_mask { paths: "access_levels" }
   """
@@ -836,8 +839,8 @@ class AccesscontextmanagerPermissionsListRequest(_messages.Message):
   r"""A AccesscontextmanagerPermissionsListRequest object.
 
   Fields:
-    pageSize: Optional. This flag specifies the maximum number of services to
-      return per page. Default value is 100.
+    pageSize: Optional. This flag specifies the maximum number of permissions
+      to return per page. Default value is 100.
     pageToken: Optional. Use this token to retrieve a specific page of
       results. Default is the first page.
   """
@@ -851,8 +854,8 @@ class AccesscontextmanagerProjectsLookupConfiguredServicePerimeterRequest(_messa
   object.
 
   Fields:
-    resource: Required. The Resource to resolve (e.g. "projects/123",
-      "folders/456").
+    resource: Required. The resource to resolve (for example, `projects/123`
+      or `folders/456`).
   """
 
   resource = _messages.StringField(1, required=True)
@@ -996,7 +999,7 @@ class AuthorizedOrgsDesc(_messages.Message):
 
   Enums:
     AssetTypeValueValuesEnum: The asset type of this authorized orgs desc.
-      Valid values are `ASSET_TYPE_DEVICE`, and
+      Valid values are `ASSET_TYPE_DEVICE` and
       `ASSET_TYPE_CREDENTIAL_STRENGTH`.
     AuthorizationDirectionValueValuesEnum: The direction of the authorization
       relationship between this organization and the organizations listed in
@@ -1007,8 +1010,8 @@ class AuthorizedOrgsDesc(_messages.Message):
       `orgs` field to evaluate the traffic in this organization. For the
       authorization relationship to take effect, all of the organizations must
       authorize and specify the appropriate relationship direction. For
-      example, if organization A authorized organization B and C to evaluate
-      its traffic, by specifying `AUTHORIZATION_DIRECTION_TO` as the
+      example, if organization A authorizes organizations B and C to evaluate
+      its traffic by specifying `AUTHORIZATION_DIRECTION_TO` as the
       authorization direction, organizations B and C must specify
       `AUTHORIZATION_DIRECTION_FROM` as the authorization direction in their
       `AuthorizedOrgsDesc` resource.
@@ -1017,7 +1020,7 @@ class AuthorizedOrgsDesc(_messages.Message):
 
   Fields:
     assetType: The asset type of this authorized orgs desc. Valid values are
-      `ASSET_TYPE_DEVICE`, and `ASSET_TYPE_CREDENTIAL_STRENGTH`.
+      `ASSET_TYPE_DEVICE` and `ASSET_TYPE_CREDENTIAL_STRENGTH`.
     authorizationDirection: The direction of the authorization relationship
       between this organization and the organizations listed in the `orgs`
       field. The valid values for this field include the following:
@@ -1027,8 +1030,8 @@ class AuthorizedOrgsDesc(_messages.Message):
       `orgs` field to evaluate the traffic in this organization. For the
       authorization relationship to take effect, all of the organizations must
       authorize and specify the appropriate relationship direction. For
-      example, if organization A authorized organization B and C to evaluate
-      its traffic, by specifying `AUTHORIZATION_DIRECTION_TO` as the
+      example, if organization A authorizes organizations B and C to evaluate
+      its traffic by specifying `AUTHORIZATION_DIRECTION_TO` as the
       authorization direction, organizations B and C must specify
       `AUTHORIZATION_DIRECTION_FROM` as the authorization direction in their
       `AuthorizedOrgsDesc` resource.
@@ -1039,13 +1042,13 @@ class AuthorizedOrgsDesc(_messages.Message):
       The `authorized_orgs_desc` component must begin with a letter, followed
       by alphanumeric characters or `_`. After you create an
       `AuthorizedOrgsDesc`, you cannot change its `name`.
-    orgs: The list of organization ids in this AuthorizedOrgsDesc. Format:
-      `organizations/` Example: `organizations/123456`
+    orgs: The list of organization IDs in this `AuthorizedOrgsDesc`. Format:
+      `organizations/{org_number}` Example: `organizations/123456`
   """
 
   class AssetTypeValueValuesEnum(_messages.Enum):
     r"""The asset type of this authorized orgs desc. Valid values are
-    `ASSET_TYPE_DEVICE`, and `ASSET_TYPE_CREDENTIAL_STRENGTH`.
+    `ASSET_TYPE_DEVICE` and `ASSET_TYPE_CREDENTIAL_STRENGTH`.
 
     Values:
       ASSET_TYPE_UNSPECIFIED: No asset type specified.
@@ -1066,7 +1069,7 @@ class AuthorizedOrgsDesc(_messages.Message):
     `orgs` field to evaluate the traffic in this organization. For the
     authorization relationship to take effect, all of the organizations must
     authorize and specify the appropriate relationship direction. For example,
-    if organization A authorized organization B and C to evaluate its traffic,
+    if organization A authorizes organizations B and C to evaluate its traffic
     by specifying `AUTHORIZATION_DIRECTION_TO` as the authorization direction,
     organizations B and C must specify `AUTHORIZATION_DIRECTION_FROM` as the
     authorization direction in their `AuthorizedOrgsDesc` resource.
@@ -1105,29 +1108,29 @@ class BasicLevel(_messages.Message):
 
   Enums:
     CombiningFunctionValueValuesEnum: How the `conditions` list should be
-      combined to determine if a request is granted this `AccessLevel`. If AND
-      is used, each `Condition` in `conditions` must be satisfied for the
-      `AccessLevel` to be applied. If OR is used, at least one `Condition` in
-      `conditions` must be satisfied for the `AccessLevel` to be applied.
-      Default behavior is AND.
+      combined to determine if a request is granted this `AccessLevel`. If
+      `AND` is used, each `Condition` in `conditions` must be satisfied for
+      the `AccessLevel` to be applied. If `OR` is used, at least one
+      `Condition` in `conditions` must be satisfied for the `AccessLevel` to
+      be applied. Default behavior is `AND`.
 
   Fields:
     combiningFunction: How the `conditions` list should be combined to
-      determine if a request is granted this `AccessLevel`. If AND is used,
+      determine if a request is granted this `AccessLevel`. If `AND` is used,
       each `Condition` in `conditions` must be satisfied for the `AccessLevel`
-      to be applied. If OR is used, at least one `Condition` in `conditions`
+      to be applied. If `OR` is used, at least one `Condition` in `conditions`
       must be satisfied for the `AccessLevel` to be applied. Default behavior
-      is AND.
+      is `AND`.
     conditions: Required. A list of requirements for the `AccessLevel` to be
       granted.
   """
 
   class CombiningFunctionValueValuesEnum(_messages.Enum):
     r"""How the `conditions` list should be combined to determine if a request
-    is granted this `AccessLevel`. If AND is used, each `Condition` in
-    `conditions` must be satisfied for the `AccessLevel` to be applied. If OR
-    is used, at least one `Condition` in `conditions` must be satisfied for
-    the `AccessLevel` to be applied. Default behavior is AND.
+    is granted this `AccessLevel`. If `AND` is used, each `Condition` in
+    `conditions` must be satisfied for the `AccessLevel` to be applied. If
+    `OR` is used, at least one `Condition` in `conditions` must be satisfied
+    for the `AccessLevel` to be applied. Default behavior is `AND`.
 
     Values:
       AND: All `Conditions` must be true for the `BasicLevel` to be true.
@@ -1232,8 +1235,8 @@ class CancelOperationRequest(_messages.Message):
 
 
 class ClientScope(_messages.Message):
-  r"""Client scope represents the application, etc. subject to this binding's
-  restrictions.
+  r"""Client scope represents the application, project, or other resource
+  subject to this binding's restrictions.
 
   Fields:
     restrictedClientApplication: Optional. The application that is subject to
@@ -1276,38 +1279,40 @@ class CommitServicePerimetersResponse(_messages.Message):
 
 
 class Condition(_messages.Message):
-  r"""A condition necessary for an `AccessLevel` to be granted. The Condition
-  is an AND over its fields. So a Condition is true if: 1) the request IP is
-  from one of the listed subnetworks AND 2) the originating device complies
-  with the listed device policy AND 3) all listed access levels are granted
-  AND 4) the request was sent at a time allowed by the DateTimeRestriction.
+  r"""A condition necessary for an `AccessLevel` to be granted. The
+  `Condition` is an AND over its fields. A `Condition` is true if: 1) the
+  request IP is from one of the listed subnetworks, AND 2) the originating
+  device complies with the listed device policy, AND 3) all listed access
+  levels are granted, AND 4) the request was sent at a time allowed by the
+  `DateTimeRestriction`.
 
   Fields:
-    devicePolicy: Device specific restrictions, all restrictions must hold for
-      the Condition to be true. If not specified, all devices are allowed.
+    devicePolicy: Device-specific restrictions. All restrictions must hold for
+      the `Condition` to be true. If not specified, all devices are allowed.
     ipSubnetworks: CIDR block IP subnetwork specification. May be IPv4 or
       IPv6. Note that for a CIDR IP address block, the specified IP address
-      portion must be properly truncated (i.e. all the host bits must be zero)
-      or the input is considered malformed. For example, "192.0.2.0/24" is
-      accepted but "192.0.2.1/24" is not. Similarly, for IPv6, "2001:db8::/32"
-      is accepted whereas "2001:db8::1/32" is not. The originating IP of a
-      request must be in one of the listed subnets in order for this Condition
-      to be true. If empty, all IP addresses are allowed.
+      portion must be properly truncated (that is, all the host bits must be
+      zero) or the input is considered malformed. For example,
+      `"192.0.2.0/24"` is accepted, but `"192.0.2.1/24"` is not. Similarly,
+      for IPv6, `"2001:db8::/32"` is accepted, whereas `"2001:db8::1/32"` is
+      not. The originating IP of a request must be in one of the listed
+      subnets in order for this `Condition` to be true. If empty, all IP
+      addresses are allowed.
     members: The request must be made by one of the provided user or service
       accounts. Groups are not supported. Syntax: `user:{emailid}`
       `serviceAccount:{emailid}` If not specified, a request may come from any
       user.
-    negate: Whether to negate the Condition. If true, the Condition becomes a
-      NAND over its non-empty fields. Any non-empty field criteria evaluating
-      to false will result in the Condition to be satisfied. Defaults to
-      false.
+    negate: Whether to negate the `Condition`. If `true`, the `Condition`
+      becomes a NAND over its non-empty fields. Any non-empty field criteria
+      evaluating to `false` will result in the `Condition` being satisfied.
+      Defaults to `false`.
     regions: The request must originate from one of the provided
       countries/regions. Must be valid ISO 3166-1 alpha-2 codes.
     requiredAccessLevels: A list of other access levels defined in the same
-      `Policy`, referenced by resource name. Referencing an `AccessLevel`
-      which does not exist is an error. All access levels listed must be
-      granted for the Condition to be true. Example:
-      "`accessPolicies/MY_POLICY/accessLevels/LEVEL_NAME"`
+      `Policy`, referenced by resource name. Referencing an `AccessLevel` that
+      does not exist is an error. All access levels listed must be granted for
+      the `Condition` to be true. Example:
+      `"accessPolicies/MY_POLICY/accessLevels/LEVEL_NAME"`
     vpcNetworkSources: The request must originate from one of the provided VPC
       networks in Google Cloud. Cannot specify this field together with
       `ip_subnetworks`.
@@ -1335,14 +1340,14 @@ class CustomLevel(_messages.Message):
 
 
 class DevicePolicy(_messages.Message):
-  r"""`DevicePolicy` specifies device specific restrictions necessary to
+  r"""`DevicePolicy` specifies device-specific restrictions necessary to
   acquire a given access level. A `DevicePolicy` specifies requirements for
-  requests from devices to be granted access levels, it does not do any
+  requests from devices to be granted access levels; it does not do any
   enforcement on the device. `DevicePolicy` acts as an AND over all specified
   fields, and each repeated field is an OR over its elements. Any unset fields
-  are ignored. For example, if the proto is { os_type : DESKTOP_WINDOWS,
-  os_type : DESKTOP_LINUX, encryption_status: ENCRYPTED}, then the
-  DevicePolicy will be true for requests originating from encrypted Linux
+  are ignored. For example, if the proto is `{ os_type : DESKTOP_WINDOWS,
+  os_type : DESKTOP_LINUX, encryption_status: ENCRYPTED}`, then the
+  `DevicePolicy` will be true for requests originating from encrypted Linux
   desktops and encrypted Windows desktops.
 
   Enums:
@@ -1350,17 +1355,17 @@ class DevicePolicy(_messages.Message):
     AllowedEncryptionStatusesValueListEntryValuesEnum:
 
   Fields:
-    allowedDeviceManagementLevels: Allowed device management levels, an empty
+    allowedDeviceManagementLevels: Allowed device management levels. An empty
       list allows all management levels.
-    allowedEncryptionStatuses: Allowed encryptions statuses, an empty list
+    allowedEncryptionStatuses: Allowed encryption statuses. An empty list
       allows all statuses.
-    osConstraints: Allowed OS versions, an empty list allows all types and all
+    osConstraints: Allowed OS versions. An empty list allows all types and all
       versions.
     requireAdminApproval: Whether the device needs to be approved by the
       customer admin.
-    requireCorpOwned: Whether the device needs to be corp owned.
+    requireCorpOwned: Whether the device needs to be corp-owned.
     requireScreenlock: Whether or not screenlock is required for the
-      DevicePolicy to be true. Defaults to `false`.
+      `DevicePolicy` to be true. Defaults to `false`.
   """
 
   class AllowedDeviceManagementLevelsValueListEntryValuesEnum(_messages.Enum):
@@ -1408,18 +1413,18 @@ class DevicePolicy(_messages.Message):
 
 class EgressFrom(_messages.Message):
   r"""Defines the conditions under which an EgressPolicy matches a request.
-  Conditions based on information about the source of the request. Note that
-  if the destination of the request is also protected by a ServicePerimeter,
-  then that ServicePerimeter must have an IngressPolicy which allows access in
-  order for this request to succeed.
+  Conditions are based on information about the source of the request. Note
+  that if the destination of the request is also protected by a
+  ServicePerimeter, then that ServicePerimeter must have an IngressPolicy
+  which allows access in order for this request to succeed.
 
   Enums:
     IdentityTypeValueValuesEnum: Specifies the type of identities that are
       allowed access to outside the perimeter. If left unspecified, then
       members of `identities` field will be allowed access.
     SourceRestrictionValueValuesEnum: Whether to enforce traffic restrictions
-      based on `sources` field. If the `sources` fields is non-empty, then
-      this field must be set to `SOURCE_RESTRICTION_ENABLED`.
+      based on `sources` field. If the `sources` field is not empty, then this
+      field must be set to `SOURCE_RESTRICTION_ENABLED`.
 
   Fields:
     identities: A list of identities that are allowed access through
@@ -1431,7 +1436,7 @@ class EgressFrom(_messages.Message):
       outside the perimeter. If left unspecified, then members of `identities`
       field will be allowed access.
     sourceRestriction: Whether to enforce traffic restrictions based on
-      `sources` field. If the `sources` fields is non-empty, then this field
+      `sources` field. If the `sources` field is not empty, then this field
       must be set to `SOURCE_RESTRICTION_ENABLED`.
     sources: Sources that this EgressPolicy authorizes access from. If this
       field is not empty, then `source_restriction` must be set to
@@ -1459,7 +1464,7 @@ class EgressFrom(_messages.Message):
 
   class SourceRestrictionValueValuesEnum(_messages.Enum):
     r"""Whether to enforce traffic restrictions based on `sources` field. If
-    the `sources` fields is non-empty, then this field must be set to
+    the `sources` field is not empty, then this field must be set to
     `SOURCE_RESTRICTION_ENABLED`.
 
     Values:
@@ -1489,8 +1494,8 @@ class EgressPolicy(_messages.Message):
   within the ServicePerimeter to access a defined set of projects outside the
   perimeter in certain contexts (e.g. to read data from a Cloud Storage bucket
   or query against a BigQuery dataset). EgressPolicies are concerned with the
-  *resources* that a request relates as well as the API services and API
-  actions being used. They do not related to the direction of data movement.
+  *resources* that a request relates to, as well as the API services and API
+  actions being used. They do not relate to the direction of data movement.
   More detailed documentation for this concept can be found in the
   descriptions of EgressFrom and EgressTo.
 
@@ -1500,7 +1505,7 @@ class EgressPolicy(_messages.Message):
     egressTo: Defines the conditions on the ApiOperation and destination
       resources that cause this EgressPolicy to apply.
     title: Optional. Human-readable title for the egress rule. The title must
-      be unique within the perimeter and can not exceed 100 characters. Within
+      be unique within the perimeter and cannot exceed 100 characters. Within
       the access policy, the combined length of all rule titles must not
       exceed 240,000 characters.
   """
@@ -1530,8 +1535,9 @@ class EgressSource(_messages.Message):
       defined in.
     resource: A Google Cloud resource from the service perimeter that you want
       to allow to access data outside the perimeter. This field supports
-      projects, folders, and organizations in the form `projects/`,
-      `folders/`, and `organizations/`. You can't use `*` in this field to
+      projects, folders, and organizations in the form
+      `projects/{project_number}`, `folders/{folder_id}`, and
+      `organizations/{organization_id}`. You can't use `*` in this field to
       allow all Google Cloud resources.
   """
 
@@ -1552,23 +1558,24 @@ class EgressTo(_messages.Message):
   Fields:
     externalResources: A list of external resources that are allowed to be
       accessed. Only AWS and Azure resources are supported. For Amazon S3, the
-      supported formats are s3://BUCKET_NAME, s3a://BUCKET_NAME, and
-      s3n://BUCKET_NAME. For Azure Storage, the supported format is
-      azure://myaccount.blob.core.windows.net/CONTAINER_NAME. A request
+      supported formats are `s3://BUCKET_NAME`, `s3a://BUCKET_NAME`, and
+      `s3n://BUCKET_NAME`. For Azure Storage, the supported format is
+      `azure://myaccount.blob.core.windows.net/CONTAINER_NAME`. A request
       matches if it contains an external resource in this list (Example:
-      s3://bucket/path). Currently '*' is not allowed.
+      `s3://bucket/path`). Currently `'*'` is not allowed.
     operations: A list of ApiOperations allowed to be performed by the sources
       specified in the corresponding EgressFrom. A request matches if it uses
       an operation/service in this list.
     resources: A list of resources, currently projects, folders, and
-      organizations in the form `projects/`, `folders/`, and `organizations/`,
-      that are allowed to be accessed by sources defined in the corresponding
+      organizations in the form `projects/{project_number}`,
+      `folders/{folder_id}`, and `organizations/{organization_id}`, that are
+      allowed to be accessed by sources defined in the corresponding
       EgressFrom. A request matches if it contains a resource in this list. If
       `*` is specified for `resources`, then this EgressTo rule will authorize
       access to all resources outside the perimeter.
     roles: IAM roles that represent the set of operations that the sources
-      specified in the corresponding EgressFrom. are allowed to perform in
-      this ServicePerimeter.
+      specified in the corresponding EgressFrom are allowed to perform in this
+      ServicePerimeter.
   """
 
   externalResources = _messages.StringField(1, repeated=True)
@@ -1630,25 +1637,25 @@ class GcpUserAccessBinding(_messages.Message):
     accessLevels: Optional. Access level that a user must have to be granted
       access. Only one access level is supported, not multiple. This repeated
       field must have exactly one element. Example:
-      "accessPolicies/9522/accessLevels/device_trusted"
-    dryRunAccessLevels: Optional. Dry run access level that will be evaluated
-      but will not be enforced. The access denial based on dry run policy will
-      be logged. Only one access level is supported, not multiple. This list
-      must have exactly one element. Example:
-      "accessPolicies/9522/accessLevels/device_trusted"
-    groupKey: Optional. Immutable. Google Group id whose users are subject to
+      `"accessPolicies/9522/accessLevels/device_trusted"`
+    dryRunAccessLevels: Optional. Dry-run access level that is evaluated, but
+      not enforced. Any access denial based on the dry-run policy is logged.
+      Only one access level is supported, not multiple. This list must have
+      exactly one element. Example:
+      `"accessPolicies/9522/accessLevels/device_trusted"`
+    groupKey: Optional. Immutable. Google Group ID whose users are subject to
       this binding's restrictions. See "id" in the [Google Workspace Directory
       API's Group Resource] (https://developers.google.com/admin-
-      sdk/directory/v1/reference/groups#resource). If a group's email
-      address/alias is changed, this resource will continue to point at the
-      changed group. This field does not accept group email addresses or
-      aliases. Example: "01d520gv4vjcrht"
+      sdk/directory/v1/reference/groups#resource). If a group's email address
+      or alias is changed, this resource will continue to point at the changed
+      group. This field does not accept group email addresses or aliases.
+      Example: `"01d520gv4vjcrht"`
     name: Immutable. Assigned by the server during creation. The last segment
       has an arbitrary length and has only URI unreserved characters (as
       defined by [RFC 3986 Section
       2.3](https://tools.ietf.org/html/rfc3986#section-2.3)). Should not be
       specified by the client during creation. Example:
-      "organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N"
+      `"organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N"`
     principal: Optional. Immutable. The principal that is subject to the
       access policies in this policy binding.
     scopedAccessSettings: Optional. A list of scoped access settings that set
@@ -1767,7 +1774,7 @@ class IngressPolicy(_messages.Message):
     ingressTo: Defines the conditions on the ApiOperation and request
       destination that cause this IngressPolicy to apply.
     title: Optional. Human-readable title for the ingress rule. The title must
-      be unique within the perimeter and can not exceed 100 characters. Within
+      be unique within the perimeter and cannot exceed 100 characters. Within
       the access policy, the combined length of all rule titles must not
       exceed 240,000 characters.
   """
@@ -1781,7 +1788,7 @@ class IngressSource(_messages.Message):
   r"""The source that IngressPolicy authorizes access from.
 
   Fields:
-    accessLevel: An AccessLevel resource name that allow resources within the
+    accessLevel: An AccessLevel resource name that allows resources within the
       ServicePerimeters to be accessed from the internet. AccessLevels listed
       must be in the same policy as this ServicePerimeter. Referencing a
       nonexistent AccessLevel will cause an error. If no AccessLevel names are
@@ -1824,7 +1831,7 @@ class IngressTo(_messages.Message):
       `folders/{folder_id}`, and `organizations/{organization_id}`, protected
       by this ServicePerimeter that are allowed to be accessed by sources
       defined in the corresponding IngressFrom. If a single `*` is specified,
-      then access to all resources inside the perimeter are allowed.
+      then access to all resources inside the perimeter is allowed.
     roles: IAM roles that represent the set of operations that the sources
       specified in the corresponding IngressFrom are allowed to perform in
       this ServicePerimeter.
@@ -1949,10 +1956,11 @@ class LookupConfiguredServicePerimeterResponse(_messages.Message):
   r"""A configured service perimeter returned by Access Context Manager.
 
   Fields:
-    restrictedResource: The resource (e.g. "projects/123", "folders/456") that
-      directly owns/is restricted by the enforced perimeter.
-    restrictedResourceDryRun: The resource (e.g. "projects/123",
-      "folders/456") that directly owns/is restricted by the dry-run
+    restrictedResource: The resource (for example, `projects/123` or
+      `folders/456`) that directly owns or is restricted by the enforced
+      perimeter.
+    restrictedResourceDryRun: The resource (for example, `projects/123` or
+      `folders/456`) that directly owns or is restricted by the dry-run
       perimeter.
     servicePerimeter: Fully qualified name of the configured enforced
       perimeter. Format:
@@ -2115,8 +2123,8 @@ class OsConstraint(_messages.Message):
       Examples: `"10.5.301"`, `"9.2.1"`.
     osType: Required. The allowed OS type.
     requireVerifiedChromeOs: Only allows requests from devices with a verified
-      Chrome OS. Verifications includes requirements that the device is
-      enterprise-managed, conformant to domain policies, and the caller has
+      Chrome OS. Verification includes requirements that the device is
+      enterprise-managed, conforms to domain policies, and the caller has
       permission to call the API targeted by the request.
   """
 
@@ -2247,10 +2255,10 @@ class Principal(_messages.Message):
       allowed.
     serviceAccount: Immutable. Service account email used to assign policies
       to a specific service account. If a service account is subject to
-      multiple policies (e.g., if there is a policy for all service accounts
-      in a project and a policy for the service account), the closest (i.e.
-      the most specific) dry-run policy will be used for the dry-run
-      functionality and the closest enforcement policy will be used for the
+      multiple policies (for example, if there is a policy for all service
+      accounts in a project and a policy for the service account), the closest
+      (that is, the most specific) dry-run policy is used for the dry-run
+      functionality and the closest enforcement policy is used for
       enforcement.
     serviceAccountProjectNumber: Immutable. Cloud project number used to
       assign policies to all service accounts owned by the project.
@@ -2276,7 +2284,7 @@ class PrivateServiceConnectEndpoint(_messages.Message):
 
 
 class Project(_messages.Message):
-  r"""A Google Cloud project which contains applications and resources that
+  r"""A Google Cloud project that contains applications and resources that
   users can access.
 
   Fields:
@@ -2351,16 +2359,17 @@ class ReplaceServicePerimetersResponse(_messages.Message):
 
 
 class ScopedAccessSettings(_messages.Message):
-  r"""A relationship between access settings and its scope.
+  r"""A relationship between access settings and their scope.
 
   Fields:
-    activeSettings: Optional. Access settings for this scoped access settings.
-      This field may be empty if dry_run_settings is set.
-    dryRunSettings: Optional. Dry-run access settings for this scoped access
-      settings. This field may be empty if active_settings is set.
-    scope: Optional. Application, etc. to which the access settings will be
-      applied to. Implicitly, this is the scoped access settings key; as such,
-      it must be unique and non-empty.
+    activeSettings: Optional. Access settings for this `ScopedAccessSettings`.
+      This field may be empty if `dry_run_settings` is set.
+    dryRunSettings: Optional. Dry-run access settings for this
+      `ScopedAccessSettings`. This field may be empty if `active_settings` is
+      set.
+    scope: Optional. Application or other resource to which the access
+      settings are applied. Implicitly, this is the scoped access settings
+      key; as such, it must be unique and non-empty.
   """
 
   activeSettings = _messages.MessageField('AccessSettings', 1)
@@ -2373,9 +2382,9 @@ class ServicePattern(_messages.Message):
 
   Fields:
     modifiers: Modifiers to apply to the requests that match the URL pattern.
-    pattern: URL pattern to allow. Only patterns of ".googleapis.com/*",
-      "www.googleapis.com//*" and "*.appspot.com/* forms are supported, where
-      should be an alphanumeric name.
+    pattern: URL pattern to allow. Only patterns of `".googleapis.com/*"`,
+      `"www.googleapis.com//*"`, and `"*.appspot.com/*"` forms are supported,
+      where `` should be an alphanumeric name.
     service: Supported service to allow.
   """
 
@@ -2398,9 +2407,9 @@ class ServicePerimeter(_messages.Message):
 
   Enums:
     PerimeterTypeValueValuesEnum: Perimeter type indicator. A single project
-      or VPC network is allowed to be a member of single regular perimeter,
-      but multiple service perimeter bridges. A project cannot be a included
-      in a perimeter bridge without being included in regular perimeter. For
+      or VPC network is allowed to be a member of a single regular perimeter,
+      but multiple service perimeter bridges. A project cannot be included in
+      a perimeter bridge without being included in a regular perimeter. For
       perimeter bridges, the restricted service list as well as access level
       lists must be empty.
 
@@ -2417,17 +2426,17 @@ class ServicePerimeter(_messages.Message):
       alphanumeric characters or `_`. After you create a `ServicePerimeter`,
       you cannot change its `name`.
     perimeterType: Perimeter type indicator. A single project or VPC network
-      is allowed to be a member of single regular perimeter, but multiple
-      service perimeter bridges. A project cannot be a included in a perimeter
-      bridge without being included in regular perimeter. For perimeter
+      is allowed to be a member of a single regular perimeter, but multiple
+      service perimeter bridges. A project cannot be included in a perimeter
+      bridge without being included in a regular perimeter. For perimeter
       bridges, the restricted service list as well as access level lists must
       be empty.
     spec: Proposed (or dry run) ServicePerimeter configuration. This
-      configuration allows to specify and test ServicePerimeter configuration
-      without enforcing actual access restrictions. Only allowed to be set
-      when the "use_explicit_dry_run_spec" flag is set.
+      configuration allows you to specify and test ServicePerimeter
+      configuration without enforcing actual access restrictions. Only allowed
+      to be set when the `use_explicit_dry_run_spec` flag is set.
     status: Current ServicePerimeter configuration. Specifies sets of
-      resources, restricted services and access levels that determine
+      resources, restricted services, and access levels that determine
       perimeter content and boundaries.
     title: Human readable title. Must be unique within the Policy.
     useExplicitDryRunSpec: Use explicit dry run spec flag. Ordinarily, a dry-
@@ -2438,17 +2447,17 @@ class ServicePerimeter(_messages.Message):
       run version of the Service Perimeter. This allows the user to test
       changes to the enforced config ("status") without actually enforcing
       them. This testing is done through analyzing the differences between
-      currently enforced and suggested restrictions. use_explicit_dry_run_spec
-      must bet set to True if any of the fields in the spec are set to non-
-      default values.
+      currently enforced and suggested restrictions.
+      `use_explicit_dry_run_spec` must be set to `true` if any of the fields
+      in the spec are set to non-default values.
   """
 
   class PerimeterTypeValueValuesEnum(_messages.Enum):
     r"""Perimeter type indicator. A single project or VPC network is allowed
-    to be a member of single regular perimeter, but multiple service perimeter
-    bridges. A project cannot be a included in a perimeter bridge without
-    being included in regular perimeter. For perimeter bridges, the restricted
-    service list as well as access level lists must be empty.
+    to be a member of a single regular perimeter, but multiple service
+    perimeter bridges. A project cannot be included in a perimeter bridge
+    without being included in a regular perimeter. For perimeter bridges, the
+    restricted service list as well as access level lists must be empty.
 
     Values:
       PERIMETER_TYPE_REGULAR: Regular Perimeter. When no value is specified,
@@ -2511,13 +2520,13 @@ class ServicePerimeterConfig(_messages.Message):
 
 
 class SessionSettings(_messages.Message):
-  r"""Stores settings related to Google Cloud Session Length including session
-  duration, the type of challenge (i.e. method) they should face when their
-  session expires, and other related settings.
+  r"""Stores settings related to Google Cloud Session Length, including
+  session duration, the type of challenge (that is, method) a user faces when
+  their session expires, and other related settings.
 
   Enums:
-    SessionReauthMethodValueValuesEnum: Optional. Session method when user's
-      Google Cloud session is up.
+    SessionReauthMethodValueValuesEnum: Optional. Session challenge method
+      when a user's Google Cloud session expires.
 
   Fields:
     maxInactivity: Optional. How long a user is allowed to take between
@@ -2528,32 +2537,33 @@ class SessionSettings(_messages.Message):
       `session_length_enabled` to `false` disregards session limits, which
       means that sessions never expire. If `use_oidc_max_age` is `true`, for
       OIDC apps, the session length will be the minimum of this field and the
-      OIDC `max_age` param. If this field is set to zero,
+      OIDC `max_age` parameter. If this field is set to zero,
       `session_length_enabled` must be set to `false` or left unset.
     sessionLengthEnabled: Optional. This field enables or disables Google
-      Cloud session length. When false, all fields set above will be
-      disregarded and the session length is basically infinite. If
-      `session_length` is set to zero, this field must be set to false.
-    sessionReauthMethod: Optional. Session method when user's Google Cloud
-      session is up.
-    useOidcMaxAge: Optional. Only useful for OIDC apps. When false, the OIDC
-      max_age param, if passed in the authentication request will be ignored.
-      When true, the re-auth period will be the minimum of the session_length
-      field and the max_age OIDC param.
+      Cloud session length. When `false`, all fields set above are disregarded
+      and the session length is effectively infinite. If `session_length` is
+      set to zero, this field must be set to `false`.
+    sessionReauthMethod: Optional. Session challenge method when a user's
+      Google Cloud session expires.
+    useOidcMaxAge: Optional. Only useful for OIDC apps. When `false`, the OIDC
+      `max_age` parameter, if passed in the authentication request, is
+      ignored. When `true`, the re-authentication period is the minimum of the
+      `session_length` field and the `max_age` OIDC parameter.
   """
 
   class SessionReauthMethodValueValuesEnum(_messages.Enum):
-    r"""Optional. Session method when user's Google Cloud session is up.
+    r"""Optional. Session challenge method when a user's Google Cloud session
+    expires.
 
     Values:
-      SESSION_REAUTH_METHOD_UNSPECIFIED: If method is undefined in the API,
-        LOGIN will be used by default.
+      SESSION_REAUTH_METHOD_UNSPECIFIED: If the method is undefined in the
+        API, `LOGIN` is used by default.
       LOGIN: The user will be prompted to perform regular login. Users who are
         enrolled for two-step verification and haven't chosen "Remember this
         computer" will be prompted for their second factor.
       SECURITY_KEY: The user will be prompted to authenticate using their
         security key. If no security key has been configured, then
-        authentication will fallback to LOGIN.
+        authentication will fall back to `LOGIN`.
       PASSWORD: The user will be prompted for their password.
     """
     SESSION_REAUTH_METHOD_UNSPECIFIED = 0
@@ -2700,8 +2710,8 @@ class Status(_messages.Message):
 
 
 class SupportedService(_messages.Message):
-  r"""`SupportedService` specifies the VPC Service Controls and its
-  properties.
+  r"""`SupportedService` specifies a service supported by VPC Service Controls
+  and its properties.
 
   Enums:
     ServiceSupportStageValueValuesEnum: The support stage of the service.
@@ -2719,9 +2729,9 @@ class SupportedService(_messages.Message):
       `service.googleapis.com`.
     serviceSupportStage: The support stage of the service.
     supportStage: The support stage of the service.
-    supportedMethods: The list of the supported methods. This field exists
-      only in response to GetSupportedService
-    title: The name of the supported product, such as 'Cloud Product API'.
+    supportedMethods: The list of supported methods. This field exists only in
+      response to GetSupportedService.
+    title: The name of the supported product, such as `'Cloud Product API'`.
   """
 
   class ServiceSupportStageValueValuesEnum(_messages.Enum):
@@ -2732,7 +2742,7 @@ class SupportedService(_messages.Message):
       GA: GA features are open to all developers and are considered stable and
         fully qualified for production use.
       PREVIEW: PREVIEW indicates a pre-release stage where the product is
-        functionally complete but undergoing real-world testing.
+        functionally complete, but undergoing real-world testing.
       DEPRECATED: Deprecated features are scheduled to be shut down and
         removed.
     """
@@ -2829,12 +2839,12 @@ class VpcAccessibleServices(_messages.Message):
     allowedServicePatterns: Specifies which Google services are allowed to be
       accessed from VPC networks in the service perimeter.
     allowedServices: The list of APIs usable within the Service Perimeter.
-      Must be empty unless 'enable_restriction' is True. You can specify a
-      list of individual services, as well as include the 'RESTRICTED-
-      SERVICES' value, which automatically includes all of the services
+      Must be empty unless `enable_restriction` is `true`. You can specify a
+      list of individual services, as well as include the `'RESTRICTED-
+      SERVICES'` value, which automatically includes all of the services
       protected by the perimeter.
     enableRestriction: Whether to restrict API calls within the Service
-      Perimeter to the list of APIs specified in 'allowed_services'.
+      Perimeter to the list of APIs specified in `allowed_services`.
     servicePatternsEnforcementScopes: Defines the enforcement scopes of
       service patterns.
   """
@@ -2848,7 +2858,7 @@ class VpcAccessibleServices(_messages.Message):
       GOOGLE_APIS_VIA_PRIVATE_PATH: Enables VPC Accessible Services
         enforcement for all APIs (including unsupported APIs) for Private
         Google Access configured with Private VIP and Private Service Connect
-        Endpoint for Global Google APIs that uses 'all-apis' bundle.
+        Endpoint for Global Google APIs that use the `'all-apis'` bundle.
     """
     SERVICE_PATTERNS_ENFORCEMENT_SCOPE_UNSPECIFIED = 0
     GOOGLE_APIS_VIA_PRIVATE_PATH = 1
@@ -2870,7 +2880,7 @@ class VpcNetworkSource(_messages.Message):
 
 
 class VpcSubNetwork(_messages.Message):
-  r"""Sub-segment ranges inside of a VPC Network.
+  r"""Sub-segment ranges inside of a VPC network.
 
   Fields:
     network: Required. Network name. If the network is not part of the
@@ -2881,9 +2891,10 @@ class VpcSubNetwork(_messages.Message):
     vpcIpSubnetworks: CIDR block IP subnetwork specification. The IP address
       must be an IPv4 address and can be a public or private IP address. Note
       that for a CIDR IP address block, the specified IP address portion must
-      be properly truncated (i.e. all the host bits must be zero) or the input
-      is considered malformed. For example, "192.0.2.0/24" is accepted but
-      "192.0.2.1/24" is not. If empty, all IP addresses are allowed.
+      be properly truncated (that is, all the host bits must be zero) or the
+      input is considered malformed. For example, `"192.0.2.0/24"` is
+      accepted, but `"192.0.2.1/24"` is not. If empty, all IP addresses are
+      allowed.
   """
 
   network = _messages.StringField(1)

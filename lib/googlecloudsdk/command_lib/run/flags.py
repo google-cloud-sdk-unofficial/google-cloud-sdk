@@ -2664,7 +2664,9 @@ def AddWorkerPoolAddPubsubSubscriptionFlag(parser, *, hidden=False) -> None:
       help=(
           'Adds a Pub/Sub subscription scaling target to the worker pool. To'
           ' add more than one subscription, specify this flag multiple times.'
-          ' Keys supported:\n\n'
+          ' This feature is in private preview and is only available to'
+          ' allowlisted projects. Contact your account team or support to get'
+          ' your project allowlisted. Keys supported:\n\n'
           '*subscription*::: (Required) The Pub/Sub subscription name or'
           ' resource name (e.g. `my-sub` or'
           ' `projects/PROJECT/subscriptions/my-sub`).\n\n'
@@ -2689,6 +2691,9 @@ def AddWorkerPoolRemovePubsubSubscriptionFlag(parser, *, hidden=False) -> None:
           ' pool. Subscriptions can be specified as a name (e.g. `my-sub`) or'
           ' full resource name (e.g. `projects/PROJECT/subscriptions/my-sub`).'
           ' Specify a comma-separated list or pass the flag multiple times.'
+          ' This feature is in private preview and is only available to'
+          ' allowlisted projects. Contact your account team or support to get'
+          ' your project allowlisted.'
       ),
   )
 
@@ -2700,7 +2705,12 @@ def AddWorkerPoolClearPubsubSubscriptionsFlag(parser, *, hidden=False) -> None:
       hidden=hidden,
       action='store_true',
       default=False,
-      help='Clears all Pub/Sub scaling subscriptions from the worker pool.',
+      help=(
+          'Clears all Pub/Sub scaling subscriptions from the worker pool. This'
+          ' feature is in private preview and is only available to allowlisted'
+          ' projects. Contact your account team or support to get your project'
+          ' allowlisted.'
+      ),
   )
 
 

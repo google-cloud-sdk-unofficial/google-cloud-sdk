@@ -36,6 +36,25 @@
             --issuer-uri="https://test-idp.com"
             --allowed-audiences=https://test-audience-1.com,https://test-audience-2.com
             --jwk-json-path="path/to/jwk.json"
+    GA:
+      examples: |
+        The following command updates the OIDC workload identity pool provider with the ID
+        ``my-workload-identity-pool-provider''. Explicit values for all required and optional
+        parameters are provided:
+
+          $ {command} my-workload-identity-pool-provider \
+              --location="global" \
+              --workload-identity-pool="my-workload-identity-pool" \
+              --display-name="My workload pool provider" \
+              --description="My workload pool provider description" \
+              --disabled \
+              --attribute-mapping="google.subject=assertion.sub" \
+              --attribute-condition="true" \
+              --issuer-uri="https://test-idp.com" \
+              --discovery-uri=https://test-idp.com/.well-known/custom-openid-configuration \
+              --allowed-audiences="https://test-audience-1.com","https://test-audience-2.com" \
+              --jwk-json-path="path/to/jwk.json" \
+              --actor-providers=projects/123/locations/global/workloadIdentityPools/my-workload-identity-pool/providers/actor-provider-1,projects/123/locations/global/workloadIdentityPools/my-workload-identity-pool/providers/actor-provider-2
 
   request:
     collection: iam.projects.locations.workloadIdentityPools.providers

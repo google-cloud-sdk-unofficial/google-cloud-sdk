@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Data models shared by the per-action packagers."""
+"""Data models for locally packaged pipeline artifacts."""
 
 import dataclasses
 import pathlib
@@ -20,17 +20,19 @@ import pathlib
 
 @dataclasses.dataclass(frozen=True)
 class PackagingContext:
-  """Per-deployment inputs every packager needs."""
+  """Pipeline and environment settings for packaging an action."""
 
   pipeline_id: str
+  # The deployment environment; also the dbt target name.
   target: str
   staging_dir: pathlib.Path
 
 
 @dataclasses.dataclass(frozen=True)
 class StagedFile:
-  """One file staged locally for upload to Cloud Storage."""
+  """Local file staged for upload to Cloud Storage."""
 
+  # Local path to the packaged .tar.gz file on disk.
   local_path: pathlib.Path
   # Object name relative to the version prefix, e.g. `dbt_gold.tar.gz`.
   relative_path: str
@@ -39,7 +41,7 @@ class StagedFile:
 
 @dataclasses.dataclass(frozen=True)
 class PackagedArtifact:
-  """The local output of packaging one action."""
+  """Staged files produced by packaging a pipeline action."""
 
   action_name: str
   files: tuple[StagedFile, ...]

@@ -71,3 +71,23 @@ COMPUTE_OPERATION_ARG = compute_flags.ResourceArgument(
                'Use `gcloud compute operations list` to display recent '
                'operations.'
 )
+
+
+def AddScopeFlags(parser):
+  """Adds folder and organization scope flags to the parser."""
+  scope_group = parser.add_mutually_exclusive_group()
+  scope_group.add_argument(
+      '--folder',
+      help=(
+          'Folder ID for the request. Notice that the folder ID contains only'
+          ' digits, without the "folders/" prefix.'
+      ),
+  )
+  scope_group.add_argument(
+      '--organization',
+      help=(
+          'Organization ID for the request. Notice that the organization ID'
+          ' contains only digits, without the "organizations/" prefix.'
+      ),
+  )
+

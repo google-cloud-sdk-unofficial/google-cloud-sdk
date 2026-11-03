@@ -14,6 +14,7 @@
 # limitations under the License.
 """Create command for Resource Manager Semantic Tag Bindings."""
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.resource_manager import semantic_tags
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import endpoint_utils as endpoints
@@ -24,7 +25,6 @@ from googlecloudsdk.core import log
 
 
 # gcloud-disable-gdu-domain
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
@@ -81,12 +81,24 @@ class Create(base.CreateCommand):
       if args.validate_only:
         log.status.Print('Request is valid. No resources were created.')
         return op
-      if args.async_ or op.done:
+      if args.async_:
+        log.CreatedResource(
+            op.name or target_resource,
+            kind='Semantic Tag Binding',
+            is_async=True,
+        )
         return op
-
-      return operations.WaitForReturnOperation(
-          op,
-          'Waiting for SemanticTagBinding for target resource'
-          f' [{target_resource}] and semantic tag value'
-          f' [{semantic_tag_value}] to be created with [{op.name}]',
-      )
+      if not op.done:
+        op = operations.WaitForReturnOperation(
+            op,
+            'Waiting for SemanticTagBinding for target resource'
+            f' [{target_resource}] and semantic tag value'
+            f' [{semantic_tag_value}] to be created with [{op.name}]',
+        )
+      binding_name = target_resource
+      if op.response is not None:
+        response_dict = encoding.MessageToPyValue(op.response)
+        if isinstance(response_dict, dict) and response_dict.get('name'):
+          binding_name = response_dict['name']
+      log.CreatedResource(binding_name, kind='Semantic Tag Binding')
+      return op

@@ -24,7 +24,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
@@ -80,6 +79,9 @@ class Delete(base.DeleteCommand):
         log.status.Print('Request is valid. No resources were deleted.')
         return op
       if args.async_:
+        log.DeletedResource(
+            full_name, kind='Semantic Tag Binding', is_async=True
+        )
         return op
 
       result = operations.WaitForReturnOperation(

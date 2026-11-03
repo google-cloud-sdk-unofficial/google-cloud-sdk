@@ -1,20 +1,40 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
-    brief: List Rollouts
-    description: List Rollouts
-    examples: |-
-      To list all Rollouts, run:
+    brief: List rollouts.
+    description: |-
+      List App Lifecycle Manager rollouts.
 
-      $ {command}
+      If `--location` is not specified, rollouts in all locations are listed.
+    examples: |-
+      To list all rollouts in location `us-central1`, run:
+
+        $ {command} --location=us-central1
+
+      To list only the names of rollouts with the label `env=prod` in all
+      locations, run:
+
+        $ {command} --filter="labels.env=prod" --format="value(name)"
+  ALPHA:
+    help_text:
+      brief: List Rollouts
+      description: List Rollouts
+      examples: |-
+        To list all Rollouts, run:
+
+        $ {command}
   arguments:
     resource:
       help_text: |-
-        Parent value for ListRolloutsRequest
+        Location of the rollouts to list.
+      ALPHA:
+        help_text: Parent value for ListRolloutsRequest
       spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:project_location_with_default
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.rollouts
   response:

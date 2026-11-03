@@ -86,18 +86,19 @@ def _Update(
   dnssec_config = command_util.ParseDnssecConfigArgs(
       args, zones_client.messages, api_version
   )
-  labels_update = labels_util.ProcessUpdateArgsLazy(
-      args,
-      zones_client.messages.ManagedZone.LabelsValue,
-      lambda: zones_client.Get(zone_ref).labels,
-  )
+  labels_diff = labels_util.Diff.FromUpdateArgs(args)
 
   update_results = []
 
-  if labels_update.GetOrNone():
-    update_results.append(
-        zones_client.UpdateLabels(zone_ref, labels_update.GetOrNone())
+  if labels_diff.MayHaveUpdates():
+    zone = zones_client.Get(zone_ref)
+    labels_update = labels_diff.Apply(
+        zones_client.messages.ManagedZone.LabelsValue, zone.labels
     )
+    if labels_update.needs_update:
+      update_results.append(
+          zones_client.UpdateLabels(zone_ref, labels_update.labels, zone=zone)
+      )
 
   kwargs = {}
   if private_visibility_config:

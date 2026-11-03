@@ -12,6 +12,30 @@ from apitools.base.py import extra_types
 package = 'dataproc'
 
 
+class CancelRunRequest(_messages.Message):
+  r"""A request to cancel a run.
+
+  Fields:
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+  """
+
+  requestId = _messages.StringField(1)
+
+
+class CancelWorkloadRunRequest(_messages.Message):
+  r"""A request to cancel a workload run.
+
+  Fields:
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+  """
+
+  requestId = _messages.StringField(1)
+
+
 class DataprocProjectsLocationsEnvironmentsCreateRequest(_messages.Message):
   r"""A DataprocProjectsLocationsEnvironmentsCreateRequest object.
 
@@ -222,6 +246,348 @@ class DataprocProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class DataprocProjectsLocationsRunsCancelRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsCancelRequest object.
+
+  Fields:
+    cancelRunRequest: A CancelRunRequest resource to be passed as the request
+      body.
+    name: Required. The name of the run resource to cancel. Format:
+      projects/{project}/locations/{location}/runs/{run}
+  """
+
+  cancelRunRequest = _messages.MessageField('CancelRunRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DataprocProjectsLocationsRunsCreateRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource where this run will be created.
+      Format: projects/{project}/locations/{location}
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+    run: A Run resource to be passed as the request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  run = _messages.MessageField('Run', 3)
+
+
+class DataprocProjectsLocationsRunsDeleteRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the run resource to delete. Format:
+      projects/{project}/locations/{location}/runs/{run}
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsRunsGetRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsGetRequest object.
+
+  Fields:
+    name: Required. The name of the run to retrieve. Format:
+      projects/{project}/locations/{location}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataprocProjectsLocationsRunsListRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsListRequest object.
+
+  Fields:
+    filter: Optional. A filter for the runs to return in the response.See
+      https://google.aip.dev/160 for a detailed description of the filter
+      syntax.
+    pageSize: Optional. The maximum number of runs to return in each response.
+      The service may return fewer than this value.If unspecified, at most 20
+      runs will be returned. The maximum value is 200; values above 200 will
+      be coerced to 200.
+    pageToken: Optional. A page token received from a previous ListRuns call.
+      Provide this token to retrieve the subsequent page.When paginating, all
+      other parameters provided to ListRuns must match the call that provided
+      the page token.
+    parent: Required. The parent resource whose runs are listed. Format:
+      projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class DataprocProjectsLocationsWorkloadsCreateRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource where this workload will be created.
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+    workload: A Workload resource to be passed as the request body.
+    workloadId: Required. The ID to use for the workload, which becomes the
+      final component of the workload's resource name.This value should be
+      4-63 characters, and valid characters are /a-z-/.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  workload = _messages.MessageField('Workload', 3)
+  workloadId = _messages.StringField(4)
+
+
+class DataprocProjectsLocationsWorkloadsDeleteRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsDeleteRequest object.
+
+  Fields:
+    etag: Optional. The current etag of the workload. If provided, the delete
+      is only performed if the etag matches the workload's current etag;
+      otherwise the request fails with an ABORTED error. See
+      https://google.aip.dev/154 for more information.
+    name: Required. The name of the workload resource to delete.
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class DataprocProjectsLocationsWorkloadsDisableRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsDisableRequest object.
+
+  Fields:
+    disableWorkloadRequest: A DisableWorkloadRequest resource to be passed as
+      the request body.
+    name: Required. The name of the workload resource to disable. Format:
+      projects/{project}/locations/{location}/workloads/{workload}
+  """
+
+  disableWorkloadRequest = _messages.MessageField('DisableWorkloadRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DataprocProjectsLocationsWorkloadsEnableRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsEnableRequest object.
+
+  Fields:
+    enableWorkloadRequest: A EnableWorkloadRequest resource to be passed as
+      the request body.
+    name: Required. The name of the workload resource to enable. Format:
+      projects/{project}/locations/{location}/workloads/{workload}
+  """
+
+  enableWorkloadRequest = _messages.MessageField('EnableWorkloadRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DataprocProjectsLocationsWorkloadsExpungeRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsExpungeRequest object.
+
+  Fields:
+    expungeWorkloadRequest: A ExpungeWorkloadRequest resource to be passed as
+      the request body.
+    name: Required. The name of the workload resource to expunge. Format:
+      projects/{project}/locations/{location}/workloads/{workload}
+  """
+
+  expungeWorkloadRequest = _messages.MessageField('ExpungeWorkloadRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DataprocProjectsLocationsWorkloadsGetRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsGetRequest object.
+
+  Fields:
+    name: Required. The name of the workload to retrieve. Format:
+      projects/{project}/locations/{location}/workloads/{workload}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataprocProjectsLocationsWorkloadsListRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsListRequest object.
+
+  Fields:
+    filter: Optional. A filter for the workloads to return in the response.See
+      https://google.aip.dev/160 for a detailed description of the filter
+      syntax.
+    orderBy: Optional. Field(s) on which to sort the list of
+      workloads.Currently, the only supported sort field is create_time (for
+      example, create_time desc or create_time asc). If unspecified, the
+      default sort order is descending by creation time (create_time desc,
+      most recently created workloads first).See
+      https://google.aip.dev/132#ordering for more details.
+    pageSize: Optional. The maximum number of workloads to return in each
+      response. The service may return fewer than this value.If unspecified,
+      at most 20 workloads will be returned. The maximum value is 200; values
+      above 200 will be coerced to 200.
+    pageToken: Optional. A page token received from a previous ListWorkloads
+      call. Provide this token to retrieve the subsequent page.When
+      paginating, all other parameters provided to ListWorkloads must match
+      the call that provided the page token.
+    parent: Required. The parent, which owns this collection of workloads.
+    showDeleted: Optional. Whether to include soft-deleted workloads in the
+      response.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+  showDeleted = _messages.BooleanField(6)
+
+
+class DataprocProjectsLocationsWorkloadsPatchRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the workload. Format:
+      projects/{project}/locations/{location}/workloads/{workload}
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+    updateMask: Optional. The list of fields to update.If omitted, this is
+      treated as an implied mask over all fields that are populated in
+      workload. The special value * means full replacement.
+    workload: A Workload resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  updateMask = _messages.StringField(3)
+  workload = _messages.MessageField('Workload', 4)
+
+
+class DataprocProjectsLocationsWorkloadsRunRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunRequest object.
+
+  Fields:
+    name: Required. The name of the workload resource to run. Format:
+      projects/{project}/locations/{location}/workloads/{workload}
+    runWorkloadRequest: A RunWorkloadRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  runWorkloadRequest = _messages.MessageField('RunWorkloadRequest', 2)
+
+
+class DataprocProjectsLocationsWorkloadsRunsCancelRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsCancelRequest object.
+
+  Fields:
+    cancelWorkloadRunRequest: A CancelWorkloadRunRequest resource to be passed
+      as the request body.
+    name: Required. The name of the run resource to cancel. Format:
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  cancelWorkloadRunRequest = _messages.MessageField('CancelWorkloadRunRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DataprocProjectsLocationsWorkloadsRunsDeleteRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the run resource to delete. Format:
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsWorkloadsRunsGetRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsGetRequest object.
+
+  Fields:
+    name: Required. The name of the workload run to retrieve. Format:
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataprocProjectsLocationsWorkloadsRunsListRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsListRequest object.
+
+  Fields:
+    filter: Optional. A filter for the runs to return in the response.See
+      https://google.aip.dev/160 for a detailed description of the filter
+      syntax.
+    pageSize: Optional. The maximum number of runs to return in each response.
+      The service may return fewer than this value.If unspecified, at most 20
+      runs will be returned. The maximum value is 200; values above 200 will
+      be coerced to 200.
+    pageToken: Optional. A page token received from a previous
+      ListWorkloadRuns call. Provide this token to retrieve the subsequent
+      page.When paginating, all other parameters provided to ListWorkloadRuns
+      must match the call that provided the page token.
+    parent: Required. The parent resource whose runs are listed. Format:
+      projects/{project}/locations/{location}/workloads/{workload}
+    showDeleted: Optional. Whether to include soft-deleted runs in the
+      response.
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  showDeleted = _messages.BooleanField(5)
+
+
+class DataprocProjectsLocationsWorkloadsUndeleteRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsUndeleteRequest object.
+
+  Fields:
+    name: Required. The name of the workload resource to undelete. Format:
+      projects/{project}/locations/{location}/workloads/{workload}
+    undeleteWorkloadRequest: A UndeleteWorkloadRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  undeleteWorkloadRequest = _messages.MessageField('UndeleteWorkloadRequest', 2)
+
+
+class DisableWorkloadRequest(_messages.Message):
+  r"""A request to disable a workload.
+
+  Fields:
+    etag: Optional. The current etag of the workload. If provided, the disable
+      is only performed if the etag matches the workload's current etag;
+      otherwise the request fails with an ABORTED error. See
+      https://google.aip.dev/154 for more information.
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+  """
+
+  etag = _messages.StringField(1)
+  requestId = _messages.StringField(2)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -229,6 +595,23 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+
+class EnableWorkloadRequest(_messages.Message):
+  r"""A request to enable a workload.
+
+  Fields:
+    etag: Optional. The current etag of the workload. If provided, the enable
+      is only performed if the etag matches the workload's current etag;
+      otherwise the request fails with an ABORTED error. See
+      https://google.aip.dev/154 for more information.
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+  """
+
+  etag = _messages.StringField(1)
+  requestId = _messages.StringField(2)
 
 
 class Environment(_messages.Message):
@@ -267,6 +650,12 @@ class Environment(_messages.Message):
     revisionId: Output only. The globally unique, system-generated revision ID
       of the environment. This is updated every time the environment is
       successfully built.
+    serviceAccount: Optional. The IAM service account used to run the
+      environment build workload (for example, to pull packages from private
+      Artifact Registry repositories). If not specified, the environment build
+      runs using the Dataproc Environment Build Service Agent for the
+      project.Format: projects/{project}/serviceAccounts/{account} or
+      {account}@{project}.iam.gserviceaccount.com
     state: Output only. The state of the environment revision build.
     status: Output only. Output only. Detailed status of the current
       environment revision.
@@ -329,10 +718,11 @@ class Environment(_messages.Message):
   name = _messages.StringField(7)
   pythonPackagesConfig = _messages.MessageField('PythonPackagesConfig', 8)
   revisionId = _messages.StringField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  status = _messages.MessageField('EnvironmentStatus', 11)
-  uid = _messages.StringField(12)
-  updateTime = _messages.StringField(13)
+  serviceAccount = _messages.StringField(10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  status = _messages.MessageField('EnvironmentStatus', 12)
+  uid = _messages.StringField(13)
+  updateTime = _messages.StringField(14)
 
 
 class EnvironmentRevision(_messages.Message):
@@ -363,6 +753,35 @@ class EnvironmentStatus(_messages.Message):
   """
 
   baseVersion = _messages.StringField(1)
+
+
+class ExpungeWorkloadRequest(_messages.Message):
+  r"""A request to expunge (permanently delete) a workload.
+
+  Fields:
+    etag: Optional. The current etag of the workload. If provided, the expunge
+      is only performed if the etag matches the workload's current etag;
+      otherwise the request fails with an ABORTED error. See
+      https://google.aip.dev/154 for more information.
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+  """
+
+  etag = _messages.StringField(1)
+  requestId = _messages.StringField(2)
+
+
+class KubernetesPlacement(_messages.Message):
+  r"""Configuration for executing a workload on a Kubernetes cluster.
+
+  Fields:
+    executionTarget: Required. The resource name of the Kubernetes execution
+      target on which the workload runs. Format: projects/{project}/locations/
+      {location}/attachments/{attachment}/virtualClusters/{virtual_cluster}
+  """
+
+  executionTarget = _messages.StringField(1)
 
 
 class ListEnvironmentRevisionsResponse(_messages.Message):
@@ -407,6 +826,45 @@ class ListOperationsResponse(_messages.Message):
   nextPageToken = _messages.StringField(1)
   operations = _messages.MessageField('Operation', 2, repeated=True)
   unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListRunsResponse(_messages.Message):
+  r"""A list of runs.
+
+  Fields:
+    nextPageToken: A token, which can be sent as page_token, to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    runs: The runs from the specified collection.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  runs = _messages.MessageField('Run', 2, repeated=True)
+
+
+class ListWorkloadRunsResponse(_messages.Message):
+  r"""A list of workload runs.
+
+  Fields:
+    nextPageToken: A token, which can be sent as page_token, to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    runs: The runs from the specified collection.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  runs = _messages.MessageField('Run', 2, repeated=True)
+
+
+class ListWorkloadsResponse(_messages.Message):
+  r"""A list of workloads.
+
+  Fields:
+    nextPageToken: A token, which can be sent as page_token, to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    workloads: The workloads from the specified collection.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  workloads = _messages.MessageField('Workload', 2, repeated=True)
 
 
 class Operation(_messages.Message):
@@ -554,6 +1012,113 @@ class PackageRepository(_messages.Message):
   uri = _messages.StringField(1)
 
 
+class ParameterDeclaration(_messages.Message):
+  r"""Formal declaration of a named input parameter accepted by a workload.
+
+  Fields:
+    defaultValue: Optional. Default value used when a run does not supply this
+      parameter.Explicit presence (optional) distinguishes an unset default
+      (the parameter is required at run launch) from an empty-string default
+      ("", the parameter is optional and defaults to "").
+    description: Optional. Human-readable documentation for UI and CLI
+      prompts.
+    name: Required. Parameter identifier. Must be unique within the workload's
+      parameter_declarations. For PySpark and Spark JAR workloads, must match
+      ^[A-Za-z0-9_][A-Za-z0-9_.-]*$. For Spark SQL workloads, must match
+      ^[A-Za-z_][A-Za-z0-9_]*$.
+  """
+
+  defaultValue = _messages.StringField(1)
+  description = _messages.StringField(2)
+  name = _messages.StringField(3)
+
+
+class PySparkNotebookPayload(_messages.Message):
+  r"""A configuration for running a PySpark notebook workload.
+
+  Messages:
+    ParamsValue: Optional. Mapping of parameter names to values to pass to the
+      notebook during execution.
+
+  Fields:
+    archiveUris: Optional. Cloud Storage URIs (gs://...) of archives to be
+      extracted into the working directory of each executor. Supported file
+      types: .jar, .tar, .tar.gz, .tgz, and .zip.
+    fileUris: Optional. Cloud Storage URIs (gs://...) of files to be placed in
+      the working directory of each executor.
+    jarFileUris: Optional. Cloud Storage URIs (gs://...) of jar files to be
+      added to the Spark CLASSPATH.
+    notebookFileUri: Required. The Cloud Storage URI (gs://...) of the
+      notebook file to execute. Must be an .ipynb file.
+    params: Optional. Mapping of parameter names to values to pass to the
+      notebook during execution.
+    pythonFileUris: Optional. Cloud Storage URIs (gs://...) of Python files to
+      pass to the PySpark framework. Supported file types: .py, .egg, and
+      .zip.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParamsValue(_messages.Message):
+    r"""Optional. Mapping of parameter names to values to pass to the notebook
+    during execution.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParamsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ParamsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParamsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  archiveUris = _messages.StringField(1, repeated=True)
+  fileUris = _messages.StringField(2, repeated=True)
+  jarFileUris = _messages.StringField(3, repeated=True)
+  notebookFileUri = _messages.StringField(4)
+  params = _messages.MessageField('ParamsValue', 5)
+  pythonFileUris = _messages.StringField(6, repeated=True)
+
+
+class PySparkPayload(_messages.Message):
+  r"""A configuration for running an Apache PySpark workload.
+
+  Fields:
+    archiveUris: Optional. Cloud Storage URIs (gs://...) of archives to be
+      extracted into the working directory of each executor. Supported file
+      types: .jar, .tar, .tar.gz, .tgz, and .zip.
+    args: Optional. The arguments to pass to the driver. Do not include
+      arguments that can be set as Spark properties, such as --conf, since a
+      collision can occur that causes an incorrect workload submission.
+    fileUris: Optional. Cloud Storage URIs (gs://...) of files to be placed in
+      the working directory of each executor.
+    jarFileUris: Optional. Cloud Storage URIs (gs://...) of jar files to add
+      to the classpath of the Spark driver and tasks.
+    mainPythonFileUri: Required. The Cloud Storage URI (gs://...) of the main
+      Python file to use as the Spark driver. Must be a .py file.
+    pythonFileUris: Optional. Cloud Storage URIs (gs://...) of Python files to
+      pass to the PySpark framework. Supported file types: .py, .egg, and
+      .zip.
+  """
+
+  archiveUris = _messages.StringField(1, repeated=True)
+  args = _messages.StringField(2, repeated=True)
+  fileUris = _messages.StringField(3, repeated=True)
+  jarFileUris = _messages.StringField(4, repeated=True)
+  mainPythonFileUri = _messages.StringField(5)
+  pythonFileUris = _messages.StringField(6, repeated=True)
+
+
 class PythonPackagesConfig(_messages.Message):
   r"""Configuration for Python packages installed in an environment, resolved
   and installed with pip from the public PyPI index or a custom package
@@ -569,6 +1134,415 @@ class PythonPackagesConfig(_messages.Message):
 
   packages = _messages.StringField(1, repeated=True)
   repository = _messages.MessageField('PackageRepository', 2)
+
+
+class Run(_messages.Message):
+  r"""A Run represents a concrete execution of a workload.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current lifecycle state of the run.
+
+  Messages:
+    LabelsValue: Optional. Immutable. The labels to associate with this run.
+      For an ad-hoc run, the caller sets them in CreateRun. For a workload
+      run, the service copies the parent workload's labels when it creates the
+      run. Label keys must contain 1 to 63 characters, and must conform to RFC
+      1035 (https://www.ietf.org/rfc/rfc1035.txt). Label values may be empty,
+      but, if present, must contain 1 to 63 characters, and must conform to
+      RFC 1035 (https://www.ietf.org/rfc/rfc1035.txt). No more than 64 labels
+      can be associated with a resource.
+
+  Fields:
+    config: Required. Immutable. The execution configuration of the run. For
+      an ad-hoc run, the caller provides it in CreateRun. For a workload run,
+      the service copies the parent workload's config when it creates the run,
+      and later changes to the workload do not affect it.
+    createTime: Output only. The time when the run was created.
+    deleteTime: Output only. The timestamp when this run was soft-deleted.
+      Populated only when the parent workload is soft-deleted. Soft deletion
+      does not change state. See https://google.aip.dev/148 for more
+      information.
+    endTime: Output only. The time when the run entered a terminal state
+      (SUCCEEDED, FAILED, or CANCELLED).
+    labels: Optional. Immutable. The labels to associate with this run. For an
+      ad-hoc run, the caller sets them in CreateRun. For a workload run, the
+      service copies the parent workload's labels when it creates the run.
+      Label keys must contain 1 to 63 characters, and must conform to RFC 1035
+      (https://www.ietf.org/rfc/rfc1035.txt). Label values may be empty, but,
+      if present, must contain 1 to 63 characters, and must conform to RFC
+      1035 (https://www.ietf.org/rfc/rfc1035.txt). No more than 64 labels can
+      be associated with a resource.
+    name: Identifier. The resource name of the run. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    purgeTime: Output only. The timestamp at which this soft-deleted run will
+      be permanently purged. Calculated automatically as delete_time +
+      retention TTL (30 days). Populated only when the parent workload is
+      soft-deleted. See https://google.aip.dev/148 for more information.
+    startTime: Output only. The time when the run entered the RUNNING state.
+    state: Output only. The current lifecycle state of the run.
+    status: Output only. Output only. Runtime status and resolved execution
+      details of the run.
+    uid: Output only. The unique identifier for the run. The service generates
+      this value when it creates the run.
+    updateTime: Output only. The time when the run was last updated, for
+      example when its state changed.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current lifecycle state of the run.
+
+    Values:
+      STATE_UNSPECIFIED: The run state is unknown.
+      PENDING: The run was created and is waiting to start running.
+      RUNNING: The run is running.
+      CANCELLING: The run is being cancelled.
+      CANCELLED: The run was cancelled.
+      SUCCEEDED: The run completed successfully.
+      FAILED: The run failed.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    CANCELLING = 3
+    CANCELLED = 4
+    SUCCEEDED = 5
+    FAILED = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Immutable. The labels to associate with this run. For an ad-
+    hoc run, the caller sets them in CreateRun. For a workload run, the
+    service copies the parent workload's labels when it creates the run. Label
+    keys must contain 1 to 63 characters, and must conform to RFC 1035
+    (https://www.ietf.org/rfc/rfc1035.txt). Label values may be empty, but, if
+    present, must contain 1 to 63 characters, and must conform to RFC 1035
+    (https://www.ietf.org/rfc/rfc1035.txt). No more than 64 labels can be
+    associated with a resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  config = _messages.MessageField('WorkloadConfig', 1)
+  createTime = _messages.StringField(2)
+  deleteTime = _messages.StringField(3)
+  endTime = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  purgeTime = _messages.StringField(7)
+  startTime = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  status = _messages.MessageField('RunStatus', 10)
+  uid = _messages.StringField(11)
+  updateTime = _messages.StringField(12)
+
+
+class RunStatus(_messages.Message):
+  r"""Runtime status and resolved execution details of a Run.
+
+  Messages:
+    NamedParametersValue: Output only. The resolved named parameters for this
+      run (merging WorkloadConfig.parameter_declarations defaults with
+      invocation RunWorkloadRequest.named_parameters, including any undeclared
+      parameters).
+
+  Fields:
+    args: Output only. The effective command-line arguments passed to the
+      workload for pyspark and spark_jar runs (the inherited, replaced, or
+      cleared positional args followed by expanded ["--", ""] pairs from
+      named_parameters sorted lexicographically by ). Empty for spark_sql
+      runs.
+    namedParameters: Output only. The resolved named parameters for this run
+      (merging WorkloadConfig.parameter_declarations defaults with invocation
+      RunWorkloadRequest.named_parameters, including any undeclared
+      parameters).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class NamedParametersValue(_messages.Message):
+    r"""Output only. The resolved named parameters for this run (merging
+    WorkloadConfig.parameter_declarations defaults with invocation
+    RunWorkloadRequest.named_parameters, including any undeclared parameters).
+
+    Messages:
+      AdditionalProperty: An additional property for a NamedParametersValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type NamedParametersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a NamedParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  args = _messages.StringField(1, repeated=True)
+  namedParameters = _messages.MessageField('NamedParametersValue', 2)
+
+
+class RunWorkloadRequest(_messages.Message):
+  r"""A request to execute a workload.
+
+  Messages:
+    NamedParametersValue: Optional. Runtime named key-value parameters passed
+      to the workload execution.Merged on top of
+      WorkloadConfig.parameter_declarations default values. Both declared and
+      undeclared parameter keys are accepted. Omitting a declared parameter
+      that has no default_value returns 400 INVALID_ARGUMENT.
+
+  Fields:
+    args: Optional. Positional arguments to pass to the workload for this
+      run.Applicable only to pyspark and spark_jar workloads (returns 400
+      INVALID_ARGUMENT for spark_sql workloads). If non-empty, replaces the
+      base args defined on the workload payload (pyspark.args or
+      spark_jar.args) for this run, before expanded named_parameters (["--",
+      ""]) are appended. Must be empty when clear_args is set to true.
+    clearArgs: Optional. If true, clears the base args defined on the workload
+      payload (pyspark.args or spark_jar.args) to an empty list for this
+      run.Applicable only to pyspark and spark_jar workloads. args must be
+      empty when clear_args is set to true; specifying both non-empty args and
+      clear_args = true returns 400 INVALID_ARGUMENT.
+    namedParameters: Optional. Runtime named key-value parameters passed to
+      the workload execution.Merged on top of
+      WorkloadConfig.parameter_declarations default values. Both declared and
+      undeclared parameter keys are accepted. Omitting a declared parameter
+      that has no default_value returns 400 INVALID_ARGUMENT.
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class NamedParametersValue(_messages.Message):
+    r"""Optional. Runtime named key-value parameters passed to the workload
+    execution.Merged on top of WorkloadConfig.parameter_declarations default
+    values. Both declared and undeclared parameter keys are accepted. Omitting
+    a declared parameter that has no default_value returns 400
+    INVALID_ARGUMENT.
+
+    Messages:
+      AdditionalProperty: An additional property for a NamedParametersValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type NamedParametersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a NamedParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  args = _messages.StringField(1, repeated=True)
+  clearArgs = _messages.BooleanField(2)
+  namedParameters = _messages.MessageField('NamedParametersValue', 3)
+  requestId = _messages.StringField(4)
+
+
+class ServerlessPlacement(_messages.Message):
+  r"""Configuration for executing a workload on Dataproc Serverless.If both
+  serverless_runtime_profile and config are omitted, the workload executes on
+  Dataproc Serverless with system default configurations.
+
+  Fields:
+    config: Optional. Inline runtime configuration or overrides.If
+      serverless_runtime_profile is not specified, this defines the ad-hoc
+      serverless configuration for the run (any omitted fields use system
+      default configurations). If serverless_runtime_profile is specified, any
+      non-empty fields populated here override the corresponding fields in the
+      base profile (using key-by-key merge for properties and full replacement
+      for non-empty repeated fields; clearing a field defined in the base
+      profile with an empty value is not supported).
+    serverlessRuntimeProfile: Optional. Reference to a curated
+      ServerlessRuntimeProfile resource. Format: projects/{project}/locations/
+      {location}/serverlessRuntimeProfiles/{serverless_runtime_profile}
+  """
+
+  config = _messages.MessageField('ServerlessRuntimeConfig', 1)
+  serverlessRuntimeProfile = _messages.StringField(2)
+
+
+class ServerlessRuntimeConfig(_messages.Message):
+  r"""Compute and infrastructure configuration for Dataproc Serverless
+  execution.
+
+  Messages:
+    PropertiesValue: Optional. A mapping of property names to values, which
+      are used to configure serverless execution.
+
+  Fields:
+    containerImage: Optional. Custom Artifact Registry container image for the
+      serverless runtime environment (for example, us-west1-docker.pkg.dev/my-
+      project/my-repo/spark-custom:latest).
+    cryptoKeyName: Optional. Customer-Managed Encryption Key (CMEK) for
+      encrypting disks. Format: projects/{project}/locations/{location}/keyRin
+      gs/{keyRing}/cryptoKeys/{cryptoKey}
+    environment: Optional. Reference to a Managed Environment resource.
+      Format:
+      projects/{project}/locations/{location}/environments/{environment}
+    environmentVersion: Optional. The Dataproc predefined base environment
+      version to execute the serverless runtime with (for example, 1.0 or
+      2.0), without a custom Environment resource.
+    networkTags: Optional. Unordered list. Compute Engine network tags
+      attached to serverless compute VM instances for applying firewall rules
+      and network routing.
+    properties: Optional. A mapping of property names to values, which are
+      used to configure serverless execution.
+    serviceAccount: Optional. The IAM service account to be used for compute
+      execution. Format: projects/{project}/serviceAccounts/{account} or
+      {account}@{project}.iam.gserviceaccount.com
+    subnetwork: Optional. VPC subnetwork for serverless execution. Format:
+      projects/{project}/regions/{region}/subnetworks/{subnetwork}
+    version: Optional. Version of the serverless runtime.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PropertiesValue(_messages.Message):
+    r"""Optional. A mapping of property names to values, which are used to
+    configure serverless execution.
+
+    Messages:
+      AdditionalProperty: An additional property for a PropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  containerImage = _messages.StringField(1)
+  cryptoKeyName = _messages.StringField(2)
+  environment = _messages.StringField(3)
+  environmentVersion = _messages.StringField(4)
+  networkTags = _messages.StringField(5, repeated=True)
+  properties = _messages.MessageField('PropertiesValue', 6)
+  serviceAccount = _messages.StringField(7)
+  subnetwork = _messages.StringField(8)
+  version = _messages.StringField(9)
+
+
+class SparkJarPayload(_messages.Message):
+  r"""A configuration for running an Apache Spark JAR workload.
+
+  Fields:
+    archiveUris: Optional. Cloud Storage URIs (gs://...) of archives to be
+      extracted into the working directory of each executor. Supported file
+      types: .jar, .tar, .tar.gz, .tgz, and .zip.
+    args: Optional. The arguments to pass to the driver. Do not include
+      arguments that can be set as Spark properties, such as --conf, since a
+      collision can occur that causes an incorrect workload submission.
+    fileUris: Optional. Cloud Storage URIs (gs://...) of files to be placed in
+      the working directory of each executor.
+    jarFileUris: Optional. Cloud Storage URIs (gs://...) of jar files to add
+      to the classpath of the Spark driver and tasks.
+    mainClass: Optional. The name of the driver main class. The jar file that
+      contains the class must be in the classpath or specified in
+      jar_file_uris.
+    mainJarFileUri: Optional. The Cloud Storage URI (gs://...) of the jar file
+      that contains the main class.
+  """
+
+  archiveUris = _messages.StringField(1, repeated=True)
+  args = _messages.StringField(2, repeated=True)
+  fileUris = _messages.StringField(3, repeated=True)
+  jarFileUris = _messages.StringField(4, repeated=True)
+  mainClass = _messages.StringField(5)
+  mainJarFileUri = _messages.StringField(6)
+
+
+class SparkSqlPayload(_messages.Message):
+  r"""A configuration for running Apache Spark SQL queries as a workload.
+
+  Messages:
+    QueryVariablesValue: Optional. Mapping of query variable names to values
+      (equivalent to the Spark SQL command: SET name="value";).
+
+  Fields:
+    jarFileUris: Optional. Cloud Storage URIs (gs://...) of jar files to be
+      added to the Spark CLASSPATH.
+    queryFileUri: Optional. The Cloud Storage URI (gs://...) of the script
+      that contains Spark SQL queries to execute.
+    queryText: Optional. The Spark SQL query text to execute inline, without
+      staging a script file.
+    queryVariables: Optional. Mapping of query variable names to values
+      (equivalent to the Spark SQL command: SET name="value";).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class QueryVariablesValue(_messages.Message):
+    r"""Optional. Mapping of query variable names to values (equivalent to the
+    Spark SQL command: SET name="value";).
+
+    Messages:
+      AdditionalProperty: An additional property for a QueryVariablesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type QueryVariablesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a QueryVariablesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  jarFileUris = _messages.StringField(1, repeated=True)
+  queryFileUri = _messages.StringField(2)
+  queryText = _messages.StringField(3)
+  queryVariables = _messages.MessageField('QueryVariablesValue', 4)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -683,6 +1657,157 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
+
+
+class UndeleteWorkloadRequest(_messages.Message):
+  r"""A request to undelete (restore) a soft-deleted workload.
+
+  Fields:
+    etag: Optional. The current etag of the workload. If provided, the
+      undelete is only performed if the etag matches the workload's current
+      etag; otherwise the request fails with an ABORTED error. See
+      https://google.aip.dev/154 for more information.
+    requestId: Optional. A unique ID used to identify the request. Restricted
+      to 36 ASCII characters. A random UUID is recommended. This request is
+      only idempotent if a request_id is provided.
+  """
+
+  etag = _messages.StringField(1)
+  requestId = _messages.StringField(2)
+
+
+class Workload(_messages.Message):
+  r"""A Workload represents a managed workload.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current lifecycle state of the
+      workload.
+
+  Messages:
+    LabelsValue: Optional. The labels to associate with this workload. Label
+      keys must contain 1 to 63 characters, and must conform to RFC 1035
+      (https://www.ietf.org/rfc/rfc1035.txt). Label values may be empty, but,
+      if present, must contain 1 to 63 characters, and must conform to RFC
+      1035 (https://www.ietf.org/rfc/rfc1035.txt). No more than 64 labels can
+      be associated with a resource.
+
+  Fields:
+    config: Required. The execution configuration of the workload.
+    createTime: Output only. The time when the workload was created.
+    deleteTime: Output only. The time when the workload was soft-deleted.
+      Populated only when the workload is soft-deleted.
+    description: Optional. A description of the workload. Must be at most 2048
+      characters.
+    displayName: Optional. The human-readable display name of the workload.
+      Must be at most 63 characters.
+    etag: This checksum is computed by the server based on the value of other
+      fields, and may be sent on update and delete requests to ensure the
+      client has an up-to-date value before proceeding.
+    labels: Optional. The labels to associate with this workload. Label keys
+      must contain 1 to 63 characters, and must conform to RFC 1035
+      (https://www.ietf.org/rfc/rfc1035.txt). Label values may be empty, but,
+      if present, must contain 1 to 63 characters, and must conform to RFC
+      1035 (https://www.ietf.org/rfc/rfc1035.txt). No more than 64 labels can
+      be associated with a resource.
+    name: Identifier. The resource name of the workload. Format:
+      projects/{project}/locations/{location}/workloads/{workload}
+    purgeTime: Output only. The time when the soft-deleted workload will be
+      permanently purged. Calculated automatically as delete_time plus the
+      30-day retention period. Populated only when the workload is soft-
+      deleted.
+    state: Output only. The current lifecycle state of the workload.
+    uid: Output only. The unique identifier for the workload. The service
+      generates this value when it creates the workload.
+    updateTime: Output only. The time when the workload was last updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current lifecycle state of the workload.
+
+    Values:
+      STATE_UNSPECIFIED: The workload state is unknown.
+      CREATING: The workload is being created.
+      ACTIVE: The workload is active and ready to be executed.
+      DELETING: The workload is being deleted.
+      DELETED: The workload is soft-deleted and scheduled for purge.
+      UPDATING: The workload is being updated.
+      DISABLED: The workload is disabled and cannot be executed.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    DELETED = 4
+    UPDATING = 5
+    DISABLED = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. The labels to associate with this workload. Label keys must
+    contain 1 to 63 characters, and must conform to RFC 1035
+    (https://www.ietf.org/rfc/rfc1035.txt). Label values may be empty, but, if
+    present, must contain 1 to 63 characters, and must conform to RFC 1035
+    (https://www.ietf.org/rfc/rfc1035.txt). No more than 64 labels can be
+    associated with a resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  config = _messages.MessageField('WorkloadConfig', 1)
+  createTime = _messages.StringField(2)
+  deleteTime = _messages.StringField(3)
+  description = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  etag = _messages.StringField(6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  purgeTime = _messages.StringField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  uid = _messages.StringField(11)
+  updateTime = _messages.StringField(12)
+
+
+class WorkloadConfig(_messages.Message):
+  r"""The execution configuration of a workload.
+
+  Fields:
+    kubernetes: Optional. Executes on a Kubernetes cluster.
+    parameterDeclarations: Optional. Formal input parameter declarations for
+      this workload.Declares expected named parameters, their descriptions,
+      and optional default values. Any declaration without a default_value is
+      required at run launch. Callers of RunWorkload may also supply
+      undeclared parameters in RunWorkloadRequest.named_parameters.
+    pyspark: Optional. PySpark workload configuration.
+    pysparkNotebook: Optional. PySpark notebook workload configuration.
+    serverless: Optional. Execute on Dataproc Serverless (ephemeral per-run).
+    sparkJar: Optional. Spark JAR workload configuration.
+    sparkSql: Optional. Spark SQL workload configuration.
+  """
+
+  kubernetes = _messages.MessageField('KubernetesPlacement', 1)
+  parameterDeclarations = _messages.MessageField('ParameterDeclaration', 2, repeated=True)
+  pyspark = _messages.MessageField('PySparkPayload', 3)
+  pysparkNotebook = _messages.MessageField('PySparkNotebookPayload', 4)
+  serverless = _messages.MessageField('ServerlessPlacement', 5)
+  sparkJar = _messages.MessageField('SparkJarPayload', 6)
+  sparkSql = _messages.MessageField('SparkSqlPayload', 7)
 
 
 encoding.AddCustomJsonFieldMapping(

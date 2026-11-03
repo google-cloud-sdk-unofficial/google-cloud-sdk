@@ -250,9 +250,11 @@ def AddCreateInstanceFlags(parser):
   ]
   encryption_choices = ['GMEK', 'CMEK']
   nic_type_choices = ['VIRTIO_NET', 'GVNIC']
-  reservation_type_choices = [
-      'none', 'any', 'specific'
-  ]
+  reservation_type_choices = {
+      'any': 'Consume any available, matching reservation.',
+      'none': 'Do not consume from any reserved capacity.',
+      'specific': 'Must consume from a specific reservation.',
+  }
 
   AddInstanceResource(parser)
   gce_setup_group = parser.add_group(

@@ -20,12 +20,10 @@ GOCLOUD_PAYLOAD env var), compares it against the Python parser Namespace,
 and reports mismatches.
 """
 
-import datetime
-import functools
-import json
 import os
 
 from googlecloudsdk.calliope import namespace_hydrator
+from googlecloudsdk.calliope import namespace_serializer
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import encoding
 
@@ -42,113 +40,6 @@ def IsStrictParity():
   return encoding.GetEncodedValue(os.environ, _STRICT_PARITY_ENV) == '1'
 
 
-# ==============================================================================
-# 1. Extensible Normalization using singledispatch
-# ==============================================================================
-
-_TYPE_NAME_NORMALIZERS = {}
-
-
-def RegisterTypeNameNormalizer(type_name):
-  """Decorator to register a normalizer function for a type name string."""
-  def _Decorator(func):
-    _TYPE_NAME_NORMALIZERS[type_name] = func
-    return func
-  return _Decorator
-
-
-def _GetFullTypeName(obj):
-  cls = type(obj)
-  module = getattr(cls, '__module__', '')
-  qualname = getattr(cls, '__qualname__', cls.__name__)
-  if module and module != 'builtins':
-    return '{}.{}'.format(module, qualname)
-  return qualname
-
-
-@functools.singledispatch
-def _NormalizeValue(obj):
-  """Default fallback for custom/unknown types."""
-  full_name = _GetFullTypeName(obj)
-  if full_name in _TYPE_NAME_NORMALIZERS:
-    return _TYPE_NAME_NORMALIZERS[full_name](obj)
-
-  return str(obj)
-
-
-@RegisterTypeNameNormalizer('googlecloudsdk.calliope.arg_parsers.HostPort')
-def _NormalizeHostPort(obj):
-  host = getattr(obj, 'host', None)
-  port = getattr(obj, 'port', None)
-  if host is not None and port is not None:
-    return '{}:{}'.format(host, port)
-  elif host is not None:
-    return str(host)
-  elif port is not None:
-    return ':{}'.format(port)
-  return ''
-
-
-# Register standard types
-@_NormalizeValue.register(str)
-@_NormalizeValue.register(int)
-@_NormalizeValue.register(float)
-@_NormalizeValue.register(bool)
-@_NormalizeValue.register(type(None))
-def _(obj):
-  return obj
-
-
-@_NormalizeValue.register(dict)
-def _(obj):
-  return {str(k): _NormalizeValue(v) for k, v in obj.items()}
-
-
-@_NormalizeValue.register(list)
-@_NormalizeValue.register(tuple)
-def _(obj):
-  return [_NormalizeValue(v) for v in obj]
-
-
-@_NormalizeValue.register(set)
-def _(obj):
-  try:
-    return sorted([_NormalizeValue(v) for v in obj])
-  except TypeError:
-    return [_NormalizeValue(v) for v in obj]
-
-
-@_NormalizeValue.register(datetime.datetime)
-def _(obj):
-  return obj.isoformat()
-
-
-@_NormalizeValue.register(datetime.timedelta)
-def _(obj):
-  return obj.total_seconds()
-
-
-# Compatibility-safe Pattern registration
-@RegisterTypeNameNormalizer('re.Pattern')
-def _NormalizePattern(obj):
-  return obj.pattern
-
-
-def _NormalizePythonArgs(ns):
-  """Extracts and normalizes non-private attributes from a Calliope Namespace."""
-  args_dict = {}
-  for k, v in vars(ns).items():
-    if not k.startswith('_'):
-      norm_key = k.rstrip('_').replace('_', '-').lower()
-      args_dict[norm_key] = _NormalizeValue(v)
-  return args_dict
-
-
-# ==============================================================================
-# 2. Decomposed Verify Pipeline
-# ==============================================================================
-
-
 def Verify(py_namespace, go_payload_json):
   """Compares the Python namespace with the Go namespace from the payload.
 
@@ -162,7 +53,7 @@ def Verify(py_namespace, go_payload_json):
     ParityMismatchError: If there are mismatches and IsStrictParity() is True.
   """
   payload = _ParseGoPayload(go_payload_json)
-  if not payload:
+  if payload is None:
     return
 
   calliope_command = py_namespace._GetCommand()  # pylint: disable=protected-access
@@ -170,7 +61,7 @@ def Verify(py_namespace, go_payload_json):
     calliope_command._parser = py_namespace._GetParser()  # pylint: disable=protected-access
 
   py_cmd_path = calliope_command.GetPath()
-  go_cmd_path = payload.get('command_path', [])
+  go_cmd_path = payload.command_path
   mismatches = []
 
   # 1. Compare Command Path (Routing)
@@ -198,18 +89,9 @@ def Verify(py_namespace, go_payload_json):
 
 
 def _ParseGoPayload(go_payload_json):
-  """Parses GOCLOUD_PAYLOAD JSON string into a payload dictionary."""
+  """Parses GOCLOUD_PAYLOAD JSON string into a namespace_hydrator.Payload."""
   try:
-    payload = json.loads(go_payload_json)
-    # Backward compatibility if legacy 'resolved' field is provided
-    if (
-        'resolved' in payload
-        and not payload.get('flags')
-        and not payload.get('args')
-    ):
-      payload = dict(payload)
-      payload['flags'] = payload.get('resolved', [])
-    return payload
+    return namespace_hydrator.Payload.FromJson(go_payload_json)
   except Exception as e:  # pylint: disable=broad-except
     log.debug('Failed to parse GOCLOUD_PAYLOAD JSON: %s', e)
     return None
@@ -254,59 +136,20 @@ def _VerifySpecifiedArgs(py_specified, go_specified, mismatches):
 
 def _VerifyNamespaceValues(py_namespace, go_namespace, mismatches):
   """Compares normalized attribute values between Python and Go namespaces."""
-  py_args_norm = _NormalizePythonArgs(py_namespace)
-  go_args_norm = _NormalizePythonArgs(go_namespace)
-
-  # Get action mapping for property fallback checks
-  parser = py_namespace._GetParser()  # pylint: disable=protected-access
-  norm_dest_to_action = {}
-  if parser:
-    for action in parser._actions:  # pylint: disable=protected-access
-      if action.dest:
-        norm_dest = action.dest.rstrip('_').replace('_', '-').lower()
-        if (
-            hasattr(action, 'store_property')
-            or norm_dest not in norm_dest_to_action
-        ):
-          norm_dest_to_action[norm_dest] = action
-
-  all_keys = set(go_args_norm.keys()) | set(py_args_norm.keys())
-  arg_mismatches = {}
-  for k in all_keys:
-    go_val = go_args_norm.get(k)
-    py_val = py_args_norm.get(k)
-
-    # Property fallback matching
-    if py_val is None:
-      action = norm_dest_to_action.get(k)
-      if action and hasattr(action, 'store_property'):
-        prop = action.store_property[0]
-        try:
-          resolved_py_val = prop.Get()
-          if resolved_py_val is not None:
-            py_val = _NormalizeValue(resolved_py_val)
-        except Exception:  # pylint: disable=broad-except
-          pass
-
-    if go_val != py_val:
-      if _IsEmpty(go_val) and _IsEmpty(py_val):
-        continue
-      arg_mismatches[k] = {'expected': py_val, 'actual': go_val}
-
-  if arg_mismatches:
-    mismatches.append({
-        'type': 'arguments',
-        'mismatches': arg_mismatches
-    })
-
-
-def _IsEmpty(val):
-  """Returns True if value is None or empty sequence/dict."""
-  if val is None:
-    return True
-  if isinstance(val, (str, list, tuple, dict)) and not val:
-    return True
-  return False
+  raw_diffs = namespace_serializer.CompareArgs(
+      py_namespace, go_namespace, ignore_empty=True
+  )
+  if raw_diffs:
+    arg_mismatches = {
+        k.rstrip('_')
+        .replace('_', '-')
+        .lower(): {
+            'expected': diff['expected'],
+            'actual': diff['actual'],
+        }
+        for k, diff in raw_diffs.items()
+    }
+    mismatches.append({'type': 'arguments', 'mismatches': arg_mismatches})
 
 
 def _ReportMismatches(cmd_path, mismatches):

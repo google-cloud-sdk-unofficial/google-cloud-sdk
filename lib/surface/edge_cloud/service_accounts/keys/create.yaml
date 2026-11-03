@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
   command_type: GENERIC
   help_text:
     brief: Create service account key for a service account on a Google Distributed Cloud zone.

@@ -280,6 +280,10 @@ class ExportMetadata(_messages.Message):
     SourceValueValuesEnum: The source type of the migration.
 
   Fields:
+    esaMigrationToken: Opaque capability token for O2C Elite System Activity
+      (ESA) direct dataset migration. It is minted by the exporter together
+      with the cloned source dataset and presented back to Looker Original
+      when the import requests access to that dataset.
     esaSourceDatasetId: Source BigQuery dataset (formatted as
       `project_id:dataset_id`) for O2C Elite System Activity (ESA) direct
       dataset migration.
@@ -316,16 +320,17 @@ class ExportMetadata(_messages.Message):
     LOOKER_ORIGINAL = 2
     LOOKER_SELF_HOSTED = 3
 
-  esaSourceDatasetId = _messages.StringField(1)
-  exportEncryptionKey = _messages.MessageField('ExportMetadataEncryptionKey', 2)
-  exportMetrics = _messages.MessageField('ExportMetrics', 3)
-  exportTime = _messages.StringField(4)
-  filePaths = _messages.StringField(5, repeated=True)
-  lookerEncryptionKey = _messages.StringField(6)
-  lookerInstance = _messages.StringField(7)
-  lookerPlatformEdition = _messages.StringField(8)
-  lookerVersion = _messages.StringField(9)
-  source = _messages.EnumField('SourceValueValuesEnum', 10)
+  esaMigrationToken = _messages.StringField(1)
+  esaSourceDatasetId = _messages.StringField(2)
+  exportEncryptionKey = _messages.MessageField('ExportMetadataEncryptionKey', 3)
+  exportMetrics = _messages.MessageField('ExportMetrics', 4)
+  exportTime = _messages.StringField(5)
+  filePaths = _messages.StringField(6, repeated=True)
+  lookerEncryptionKey = _messages.StringField(7)
+  lookerInstance = _messages.StringField(8)
+  lookerPlatformEdition = _messages.StringField(9)
+  lookerVersion = _messages.StringField(10)
+  source = _messages.EnumField('SourceValueValuesEnum', 11)
 
 
 class ExportMetadataEncryptionKey(_messages.Message):

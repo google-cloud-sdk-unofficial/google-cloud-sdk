@@ -315,6 +315,26 @@
       release_tracks: [ALPHA, BETA, GA]
       help_text: |
         The ACL policy to use for the cluster.
+    - arg_name: zonal-failure-emulation-spec
+      api_field: cluster.zonalFailureEmulationSpec
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Specification to emulate zonal failures for internal testing.
+      type: arg_object
+      spec:
+      - api_field: targetMigType
+        required: false
+      - api_field: zones
+        required: true
+      - api_field: errorSource
+        required: false
+      - api_field: errorCode
+        required: false
+      - api_field: operationScope
+        required: false
+      - api_field: vmCreationSuccessRates
+        required: false
     - arg_name: tags
       release_tracks: [ALPHA, BETA, GA]
       api_field: cluster.tags.additionalProperties

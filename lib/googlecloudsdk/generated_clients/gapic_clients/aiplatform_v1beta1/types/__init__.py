@@ -53,6 +53,7 @@ from .content import (
     Segment,
     SpeakerVoiceConfig,
     SpeechConfig,
+    SpeechMetadata,
     TextResponseFormat,
     TranslationConfig,
     UrlContextMetadata,
@@ -116,6 +117,8 @@ from .operation import (
     GenericOperationMetadata,
 )
 from .prediction_service import (
+    BatchEmbedContentsRequest,
+    BatchEmbedContentsResponse,
     ChatCompletionsRequest,
     CountTokensRequest,
     CountTokensResponse,
@@ -148,6 +151,7 @@ from .prediction_service import (
     StreamingPredictResponse,
     StreamingRawPredictRequest,
     StreamingRawPredictResponse,
+    StreamPublisherInvokeRequest,
     StreamRawPredictRequest,
 )
 from .semantic_governance_policy_engine_service import (
@@ -269,6 +273,7 @@ __all__ = (
     'Segment',
     'SpeakerVoiceConfig',
     'SpeechConfig',
+    'SpeechMetadata',
     'TextResponseFormat',
     'TranslationConfig',
     'UrlContextMetadata',
@@ -318,6 +323,8 @@ __all__ = (
     'Type',
     'DeleteOperationMetadata',
     'GenericOperationMetadata',
+    'BatchEmbedContentsRequest',
+    'BatchEmbedContentsResponse',
     'ChatCompletionsRequest',
     'CountTokensRequest',
     'CountTokensResponse',
@@ -350,6 +357,7 @@ __all__ = (
     'StreamingPredictResponse',
     'StreamingRawPredictRequest',
     'StreamingRawPredictResponse',
+    'StreamPublisherInvokeRequest',
     'StreamRawPredictRequest',
     'DeprovisionSemanticGovernancePolicyEngineOperationMetadata',
     'DeprovisionSemanticGovernancePolicyEngineRequest',

@@ -18,14 +18,15 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
+  hints:
+    read_only: true
   help_text:
     brief: List findings.
     description: List all findings in a given project and location.
     examples: |-
-      To list findings in location 'us', run:
+      To list findings in location 'us-central1', run:
 
-        $ {command} --location=us
+        $ {command} --location=us-central1
   arguments:
     params:
     - help_text: |-

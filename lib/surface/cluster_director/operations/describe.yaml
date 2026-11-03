@@ -16,6 +16,8 @@
   - ALPHA
   - BETA
   - GA
+  hints:
+    read_only: true
   help_text:
     brief: Describe operations
     description: Describe an operation

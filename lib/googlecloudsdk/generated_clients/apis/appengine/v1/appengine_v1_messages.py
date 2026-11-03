@@ -477,9 +477,8 @@ class AppengineAppsLocationsListRequest(_messages.Message):
   r"""A AppengineAppsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like "displayName=tokyo", and is
       documented in more detail in AIP-160 (https://google.aip.dev/160).
@@ -1984,12 +1983,9 @@ class ExportAppImageRequest(_messages.Message):
       projects/{project}/locations/{location}/repositories/gae-standard in the
       same region as the app. The default repository will be created if it
       does not exist.
-    serviceAccount: Optional. Optional: A service account to use for
-      authenticating to Artifact Registry.
   """
 
   destinationRepository = _messages.StringField(1)
-  serviceAccount = _messages.StringField(2)
 
 
 class FeatureSettings(_messages.Message):
@@ -4166,6 +4162,7 @@ class Version(_messages.Message):
     versionUrl: Output only. Serving URL for this version. Example:
       "https://myversion-dot-myservice-dot-myapp.appspot.com"@OutputOnly
     vm: Whether to deploy this version in a container on a virtual machine.
+    vpcAccess: Enables VPC access connectivity for standard apps.
     vpcAccessConnector: Enables VPC connectivity for standard apps.
     zones: The Google Compute Engine zones that are supported by this version
       in the App Engine flexible environment. Deprecated.
@@ -4404,8 +4401,9 @@ class Version(_messages.Message):
   threadsafe = _messages.BooleanField(39)
   versionUrl = _messages.StringField(40)
   vm = _messages.BooleanField(41)
-  vpcAccessConnector = _messages.MessageField('VpcAccessConnector', 42)
-  zones = _messages.StringField(43, repeated=True)
+  vpcAccess = _messages.MessageField('VpcAccess', 42)
+  vpcAccessConnector = _messages.MessageField('VpcAccessConnector', 43)
+  zones = _messages.StringField(44, repeated=True)
 
 
 class Volume(_messages.Message):
@@ -4421,6 +4419,39 @@ class Volume(_messages.Message):
   name = _messages.StringField(1)
   sizeGb = _messages.FloatField(2)
   volumeType = _messages.StringField(3)
+
+
+class VpcAccess(_messages.Message):
+  r"""VPC Access settings
+
+  Enums:
+    VpcEgressValueValuesEnum: The traffic egress setting for the VPC network
+      interface, controlling what traffic is diverted through it.
+
+  Fields:
+    networkInterfaces: The Direct VPC configuration. Currently only single
+      network interface is supported.
+    vpcEgress: The traffic egress setting for the VPC network interface,
+      controlling what traffic is diverted through it.
+  """
+
+  class VpcEgressValueValuesEnum(_messages.Enum):
+    r"""The traffic egress setting for the VPC network interface, controlling
+    what traffic is diverted through it.
+
+    Values:
+      VPC_EGRESS_UNSPECIFIED: No value set; apply default behavior
+      ALL_TRAFFIC: Force all traffic to egress through the NetworkInterface
+        (and configured VPC Network)
+      PRIVATE_IP_RANGES: Force all Private IP Space traffic to egress through
+        NetworkInterface (and configured VPC Network)
+    """
+    VPC_EGRESS_UNSPECIFIED = 0
+    ALL_TRAFFIC = 1
+    PRIVATE_IP_RANGES = 2
+
+  networkInterfaces = _messages.MessageField('VpcNetworkInterface', 1, repeated=True)
+  vpcEgress = _messages.EnumField('VpcEgressValueValuesEnum', 2)
 
 
 class VpcAccessConnector(_messages.Message):
@@ -4454,6 +4485,33 @@ class VpcAccessConnector(_messages.Message):
 
   egressSetting = _messages.EnumField('EgressSettingValueValuesEnum', 1)
   name = _messages.StringField(2)
+
+
+class VpcNetworkInterface(_messages.Message):
+  r"""Network interface key message.
+
+  Fields:
+    network: Optional. The VPC network that the App Engine resource will be
+      able to send traffic to. At least one of network or subnetwork must be
+      specified. If both network and subnetwork are specified, the given VPC
+      subnetwork must belong to the given VPC network. If network is not
+      specified, it will be looked up from the subnetwork. Could be either a
+      short name or a full path. e.g. {VPC_NETWORK} or
+      projects/{HOST_PROJECT_ID}/global/networks/{VPC_NETWORK}
+    subnet: Optional. The VPC subnetwork that the App Engine resource will get
+      IPs from. At least one of network or subnetwork must be specified. If
+      both network and subnetwork are specified, the given VPC subnetwork must
+      belong to the given VPC network. If subnetwork is not specified, the
+      subnetwork with the same name with the network will be used. Could be
+      either a short name or a full path. e.g. {SUBNET_NAME} or
+      projects/{HOST_PROJECT_ID}/regions/{REGION}/subnetworks/{SUBNET_NAME}
+    tags: Optional. The network tags that will be applied to this App Engine
+      resource.
+  """
+
+  network = _messages.StringField(1)
+  subnet = _messages.StringField(2)
+  tags = _messages.StringField(3, repeated=True)
 
 
 class ZipInfo(_messages.Message):

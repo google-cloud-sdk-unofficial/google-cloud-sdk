@@ -2564,6 +2564,9 @@ class Instance(_messages.Message):
     ondemandMaintenance: Optional. Input only. Ondemand maintenance for the
       instance.
     persistenceConfig: Optional. Persistence configuration of the instance.
+    primaryZones: Optional. Immutable. Deprecated: Primary zones are no longer
+      specified directly at the root level. Use zone_distribution_config
+      instead. Set of zones to be used for instance primary nodes.
     pscAttachmentDetails: Output only. Service attachment details to configure
       PSC connections.
     pscAutoConnections: Optional. Immutable. Deprecated: Use the
@@ -2589,8 +2592,14 @@ class Instance(_messages.Message):
       the instance.
     uid: Output only. System assigned, unique identifier for the instance.
     updateTime: Output only. Latest update timestamp of the instance.
+    zonalFailureEmulationSpec: Optional. Specification for emulating zonal
+      failures during instance creation or update. For internal and test use
+      only.
     zoneDistributionConfig: Optional. Immutable. Zone distribution
       configuration of the instance for node allocation.
+    zones: Optional. Immutable. Deprecated: Zones are no longer specified
+      directly at the root level. Use zone_distribution_config instead. Set of
+      zones to be used for instance nodes.
   """
 
   class AuthorizationModeValueValuesEnum(_messages.Enum):
@@ -2787,22 +2796,25 @@ class Instance(_messages.Message):
   nodeType = _messages.EnumField('NodeTypeValueValuesEnum', 30)
   ondemandMaintenance = _messages.BooleanField(31)
   persistenceConfig = _messages.MessageField('PersistenceConfig', 32)
-  pscAttachmentDetails = _messages.MessageField('PscAttachmentDetail', 33, repeated=True)
-  pscAutoConnections = _messages.MessageField('PscAutoConnection', 34, repeated=True)
-  replicaCount = _messages.IntegerField(35, variant=_messages.Variant.INT32)
-  rotateServerCertificate = _messages.BooleanField(36)
-  satisfiesPzi = _messages.BooleanField(37)
-  satisfiesPzs = _messages.BooleanField(38)
-  serverCaMode = _messages.EnumField('ServerCaModeValueValuesEnum', 39)
-  serverCaPool = _messages.StringField(40)
-  shardCount = _messages.IntegerField(41, variant=_messages.Variant.INT32)
-  simulateMaintenanceEvent = _messages.BooleanField(42)
-  state = _messages.EnumField('StateValueValuesEnum', 43)
-  stateInfo = _messages.MessageField('StateInfo', 44)
-  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 45)
-  uid = _messages.StringField(46)
-  updateTime = _messages.StringField(47)
-  zoneDistributionConfig = _messages.MessageField('ZoneDistributionConfig', 48)
+  primaryZones = _messages.StringField(33, repeated=True)
+  pscAttachmentDetails = _messages.MessageField('PscAttachmentDetail', 34, repeated=True)
+  pscAutoConnections = _messages.MessageField('PscAutoConnection', 35, repeated=True)
+  replicaCount = _messages.IntegerField(36, variant=_messages.Variant.INT32)
+  rotateServerCertificate = _messages.BooleanField(37)
+  satisfiesPzi = _messages.BooleanField(38)
+  satisfiesPzs = _messages.BooleanField(39)
+  serverCaMode = _messages.EnumField('ServerCaModeValueValuesEnum', 40)
+  serverCaPool = _messages.StringField(41)
+  shardCount = _messages.IntegerField(42, variant=_messages.Variant.INT32)
+  simulateMaintenanceEvent = _messages.BooleanField(43)
+  state = _messages.EnumField('StateValueValuesEnum', 44)
+  stateInfo = _messages.MessageField('StateInfo', 45)
+  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 46)
+  uid = _messages.StringField(47)
+  updateTime = _messages.StringField(48)
+  zonalFailureEmulationSpec = _messages.MessageField('ZonalFailureEmulationSpec', 49)
+  zoneDistributionConfig = _messages.MessageField('ZoneDistributionConfig', 50)
+  zones = _messages.StringField(51, repeated=True)
 
 
 class InstanceAclPolicyAttachment(_messages.Message):
@@ -5224,18 +5236,19 @@ class WeeklyMaintenanceWindow(_messages.Message):
   r"""Time window specified for weekly operations.
 
   Enums:
-    DayValueValuesEnum: Optional. Allows to define schedule that runs
-      specified day of the week.
+    DayValueValuesEnum: Optional. The day of the week for the maintenance
+      window. This field is required. You can't use `DAY_OF_WEEK_UNSPECIFIED`.
 
   Fields:
-    day: Optional. Allows to define schedule that runs specified day of the
-      week.
-    startTime: Optional. Start time of the window in UTC.
+    day: Optional. The day of the week for the maintenance window. This field
+      is required. You can't use `DAY_OF_WEEK_UNSPECIFIED`.
+    startTime: Optional. The start time of the maintenance window in UTC. When
+      you specify a maintenance window, `start_time` is required.
   """
 
   class DayValueValuesEnum(_messages.Enum):
-    r"""Optional. Allows to define schedule that runs specified day of the
-    week.
+    r"""Optional. The day of the week for the maintenance window. This field
+    is required. You can't use `DAY_OF_WEEK_UNSPECIFIED`.
 
     Values:
       DAY_OF_WEEK_UNSPECIFIED: The day of the week is unspecified.
@@ -5260,6 +5273,135 @@ class WeeklyMaintenanceWindow(_messages.Message):
   startTime = _messages.MessageField('TimeOfDay', 2)
 
 
+class ZonalFailureEmulationSpec(_messages.Message):
+  r"""An INTERNAL only message to specify zonal failure emulation for instance
+  creation or update in integration and e2e testing. This message is only
+  added to v1alpha for testing purposes. Emulates Compute Engine zonal
+  stockouts by default.
+
+  Enums:
+    ErrorSourceValueValuesEnum: Optional. The source of the error to emulate.
+      Defaults to GCE.
+    OperationScopeValueValuesEnum: Optional. The operation scope for
+      triggering the failure. Defaults to ALL_OPERATIONS.
+    TargetMigTypeValueValuesEnum: Optional. The target MIG type to emulate
+      failure for. Defaults to DATA_MIGS_ONLY.
+
+  Messages:
+    VmCreationSuccessRatesValue: Optional. Success rate for VM creation in
+      each zone. This is used to simulate partial stockout errors in each
+      zone. The key is the zone name and the value is the success rate.
+      Success rate is in the range of [0, 1), e.g. 0.9 means 90% of VM
+      creation requests will succeed and 10% will fail. If a zone is specified
+      in the zones field, but not present in this map, then we assume the
+      success rate is 0 (100% failure). This is only used for stockout error
+      emulation.
+
+  Fields:
+    errorCode: Optional. The error code string to emulate (e.g.
+      "ZONE_RESOURCE_POOL_EXHAUSTED", "QUOTA_EXCEEDED", "UNAVAILABLE").
+      Defaults to "ZONE_RESOURCE_POOL_EXHAUSTED".
+    errorSource: Optional. The source of the error to emulate. Defaults to
+      GCE.
+    operationScope: Optional. The operation scope for triggering the failure.
+      Defaults to ALL_OPERATIONS.
+    targetMigType: Optional. The target MIG type to emulate failure for.
+      Defaults to DATA_MIGS_ONLY.
+    vmCreationSuccessRates: Optional. Success rate for VM creation in each
+      zone. This is used to simulate partial stockout errors in each zone. The
+      key is the zone name and the value is the success rate. Success rate is
+      in the range of [0, 1), e.g. 0.9 means 90% of VM creation requests will
+      succeed and 10% will fail. If a zone is specified in the zones field,
+      but not present in this map, then we assume the success rate is 0 (100%
+      failure). This is only used for stockout error emulation.
+    zones: Required. The zones in which failure should be emulated.
+  """
+
+  class ErrorSourceValueValuesEnum(_messages.Enum):
+    r"""Optional. The source of the error to emulate. Defaults to GCE.
+
+    Values:
+      ERROR_SOURCE_UNSPECIFIED: Not specified. Defaults to GCE.
+      GCE: Emulate a GCE error (e.g. ZONE_RESOURCE_POOL_EXHAUSTED,
+        QUOTA_EXCEEDED).
+      SLM: Emulate an SLM LRO failure.
+      GENERIC: Emulate a generic error / canonical status error.
+    """
+    ERROR_SOURCE_UNSPECIFIED = 0
+    GCE = 1
+    SLM = 2
+    GENERIC = 3
+
+  class OperationScopeValueValuesEnum(_messages.Enum):
+    r"""Optional. The operation scope for triggering the failure. Defaults to
+    ALL_OPERATIONS.
+
+    Values:
+      OPERATION_SCOPE_UNSPECIFIED: Not specified. Defaults to ALL_OPERATIONS.
+      CREATE_ONLY: Trigger failure only during instance creation.
+      UPDATE_ONLY: Trigger failure only during instance update.
+      ALL_OPERATIONS: Trigger failure during both creation and update.
+    """
+    OPERATION_SCOPE_UNSPECIFIED = 0
+    CREATE_ONLY = 1
+    UPDATE_ONLY = 2
+    ALL_OPERATIONS = 3
+
+  class TargetMigTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The target MIG type to emulate failure for. Defaults to
+    DATA_MIGS_ONLY.
+
+    Values:
+      TARGET_MIG_TYPE_UNSPECIFIED: Not specified. Defaults to DATA_MIGS_ONLY.
+      DATA_MIGS_ONLY: Emulate failure only for data MIGs.
+      INTERNAL_MIGS_ONLY: Emulate failure only for internal voter MIGs.
+      ALL_MIGS: Emulate failure for both data and internal voter MIGs.
+    """
+    TARGET_MIG_TYPE_UNSPECIFIED = 0
+    DATA_MIGS_ONLY = 1
+    INTERNAL_MIGS_ONLY = 2
+    ALL_MIGS = 3
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class VmCreationSuccessRatesValue(_messages.Message):
+    r"""Optional. Success rate for VM creation in each zone. This is used to
+    simulate partial stockout errors in each zone. The key is the zone name
+    and the value is the success rate. Success rate is in the range of [0, 1),
+    e.g. 0.9 means 90% of VM creation requests will succeed and 10% will fail.
+    If a zone is specified in the zones field, but not present in this map,
+    then we assume the success rate is 0 (100% failure). This is only used for
+    stockout error emulation.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        VmCreationSuccessRatesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        VmCreationSuccessRatesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a VmCreationSuccessRatesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A number attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.FloatField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  errorCode = _messages.StringField(1)
+  errorSource = _messages.EnumField('ErrorSourceValueValuesEnum', 2)
+  operationScope = _messages.EnumField('OperationScopeValueValuesEnum', 3)
+  targetMigType = _messages.EnumField('TargetMigTypeValueValuesEnum', 4)
+  vmCreationSuccessRates = _messages.MessageField('VmCreationSuccessRatesValue', 5)
+  zones = _messages.StringField(6, repeated=True)
+
+
 class ZoneDistributionConfig(_messages.Message):
   r"""Zone distribution configuration for allocation of instance resources.
 
@@ -5268,6 +5410,8 @@ class ZoneDistributionConfig(_messages.Message):
       MULTI_ZONE.
 
   Fields:
+    activeZones: Output only. The exact list of zones where the instance
+      currently has active VMs.
     mode: Optional. Current zone distribution mode. Defaults to MULTI_ZONE.
     zone: Optional. Defines zone where all resources will be allocated with
       SINGLE_ZONE mode. Ignored for MULTI_ZONE mode.
@@ -5290,9 +5434,10 @@ class ZoneDistributionConfig(_messages.Message):
     MULTI_ZONE = 1
     SINGLE_ZONE = 2
 
-  mode = _messages.EnumField('ModeValueValuesEnum', 1)
-  zone = _messages.StringField(2)
-  zones = _messages.StringField(3, repeated=True)
+  activeZones = _messages.StringField(1, repeated=True)
+  mode = _messages.EnumField('ModeValueValuesEnum', 2)
+  zone = _messages.StringField(3)
+  zones = _messages.StringField(4, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(

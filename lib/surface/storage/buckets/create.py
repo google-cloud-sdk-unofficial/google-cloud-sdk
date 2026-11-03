@@ -25,6 +25,15 @@ from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks.buckets import create_bucket_task
 
+_LABELS_HELP_TEXT = """
+Sets the label configuration for the bucket. An example label JSON document
+looks like the following:
+
+  {
+    "your_label_key": "your_label_value",
+    "your_other_label_key": "your_other_label_value"
+  }
+"""
 _LIFECYCLE_HELP_TEXT = """
 Sets the lifecycle management configuration on a bucket. For example,
 The following lifecycle management configuration JSON document
@@ -164,6 +173,18 @@ class Create(base.Command):
     )
 
     parser.add_argument('--lifecycle-file', help=_LIFECYCLE_HELP_TEXT)
+    labels = parser.add_mutually_exclusive_group()
+    labels.add_argument(
+        '--labels',
+        metavar='LABEL_KEYS_AND_VALUES',
+        type=arg_parsers.ArgDict(),
+        help=(
+            'Sets the label configuration for the bucket. Accepts a'
+            ' comma-separated list of key=value pairs. Example:'
+            ' --labels=key1=value1,key2=value2'
+        ),
+    )
+    labels.add_argument('--labels-file', help=_LABELS_HELP_TEXT)
     flags.add_ip_filter_file_flag(parser)
     flags.add_encryption_enforcement_file_flag(parser)
 

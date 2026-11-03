@@ -1228,6 +1228,38 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "findings": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ],
+                "--location": "dynamic"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ],
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            }
+          },
+          "flags": {}
+        },
         "mcp-servers": {
           "commands": {
             "describe": {
@@ -1294,6 +1326,38 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--location": "dynamic"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "publishers": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ],
+                "--location": "dynamic"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ],
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
               }
             }
           },
@@ -1366,6 +1430,264 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--mcp-server-spec-content": "value",
                 "--remove-interfaces": "value",
                 "--request-id": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "skills": {
+          "commands": {
+            "add-iam-policy-binding": {
+              "commands": {},
+              "flags": {
+                "--condition": "value",
+                "--condition-from-file": "value",
+                "--location": "dynamic",
+                "--member": "value",
+                "--role": "dynamic"
+              }
+            },
+            "create": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--default-revision": "dynamic",
+                "--description": "value",
+                "--display-name": "value",
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ],
+                "--gcs-source-generation": "value",
+                "--gcs-source-uri": "value",
+                "--initial-revision-name": "value",
+                "--location": "value",
+                "--payload": "value",
+                "--publisher": "dynamic",
+                "--request-id": "value",
+                "--scanning-policy": [
+                  "disabled",
+                  "enabled-blocking",
+                  "enabled-nonblocking"
+                ],
+                "--scanning-state": [
+                  "disabled",
+                  "enabled-blocking",
+                  "enabled-nonblocking"
+                ],
+                "--target-state": [
+                  "active",
+                  "decommissioned",
+                  "deprecated",
+                  "disabled",
+                  "draft",
+                  "target-state-active",
+                  "target-state-decommissioned",
+                  "target-state-deprecated",
+                  "target-state-disabled",
+                  "target-state-draft"
+                ],
+                "--type": [
+                  "simple"
+                ]
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ],
+                "--location": "dynamic",
+                "--request-id": "value"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ],
+                "--location": "dynamic"
+              }
+            },
+            "get-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "dynamic",
+                "--page-size": "value",
+                "--sort-by": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ],
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            },
+            "remove-iam-policy-binding": {
+              "commands": {},
+              "flags": {
+                "--all": "bool",
+                "--condition": "value",
+                "--condition-from-file": "value",
+                "--location": "dynamic",
+                "--member": "value",
+                "--role": "dynamic"
+              }
+            },
+            "revisions": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--gcs-source-generation": "value",
+                    "--gcs-source-uri": "value",
+                    "--location": "dynamic",
+                    "--payload": "value",
+                    "--request-id": "value",
+                    "--skill": "dynamic"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--location": "dynamic",
+                    "--request-id": "value",
+                    "--skill": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--location": "dynamic",
+                    "--skill": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "dynamic",
+                    "--page-size": "value",
+                    "--skill": "dynamic",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "search": {
+              "commands": {},
+              "flags": {
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ],
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "value",
+                "--page-size": "value",
+                "--query": "value",
+                "--search-type": [
+                  "keyword",
+                  "semantic"
+                ],
+                "--sort-by": "value"
+              }
+            },
+            "set-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--clear-default-revision": "bool",
+                "--clear-initial-revision": "bool",
+                "--default-revision": "dynamic",
+                "--description": "value",
+                "--display-name": "value",
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ],
+                "--initial-revision-name": "value",
+                "--location": "value",
+                "--publisher": "dynamic",
+                "--request-id": "value",
+                "--scanning-policy": [
+                  "disabled",
+                  "enabled-blocking",
+                  "enabled-nonblocking"
+                ],
+                "--scanning-state": [
+                  "disabled",
+                  "enabled-blocking",
+                  "enabled-nonblocking"
+                ],
+                "--target-state": [
+                  "active",
+                  "decommissioned",
+                  "deprecated",
+                  "disabled",
+                  "draft",
+                  "target-state-active",
+                  "target-state-decommissioned",
+                  "target-state-deprecated",
+                  "target-state-disabled",
+                  "target-state-draft"
+                ],
+                "--type": [
+                  "simple"
+                ]
               }
             }
           },
@@ -5351,6 +5673,38 @@ STATIC_COMPLETION_CLI_TREE = {
                 "list": {
                   "commands": {},
                   "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "findings": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--location": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
                     "--filter": "value",
                     "--limit": "value",
                     "--location": "value",
@@ -9471,6 +9825,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "flags": {
                             "--api": "dynamic",
                             "--attributes": "value",
+                            "--deployments": "dynamic",
                             "--details-deprecated": "bool",
                             "--details-description": "value",
                             "--documentation-external-uri": "value",
@@ -9486,7 +9841,7 @@ STATIC_COMPLETION_CLI_TREE = {
                             ],
                             "--http-operation-path": "value",
                             "--http-operation-path-description": "value",
-                            "--location": "dynamic",
+                            "--location": "value",
                             "--mcp-tool-annotations-additional-hints": "value",
                             "--mcp-tool-annotations-destructive-hint": "bool",
                             "--mcp-tool-annotations-idempotent-hint": "bool",
@@ -9529,11 +9884,14 @@ STATIC_COMPLETION_CLI_TREE = {
                         "update": {
                           "commands": {},
                           "flags": {
+                            "--add-deployments": "dynamic",
                             "--api": "dynamic",
                             "--attributes": "value",
                             "--clear-attributes": "bool",
+                            "--clear-deployments": "bool",
                             "--clear-details": "bool",
                             "--clear-mcp-tool-annotations-additional-hints": "bool",
+                            "--deployments": "dynamic",
                             "--details-deprecated": "bool",
                             "--details-description": "value",
                             "--documentation-external-uri": "value",
@@ -9549,7 +9907,7 @@ STATIC_COMPLETION_CLI_TREE = {
                             ],
                             "--http-operation-path": "value",
                             "--http-operation-path-description": "value",
-                            "--location": "dynamic",
+                            "--location": "value",
                             "--mcp-tool-annotations-additional-hints": "value",
                             "--mcp-tool-annotations-destructive-hint": "bool",
                             "--mcp-tool-annotations-idempotent-hint": "bool",
@@ -9562,6 +9920,7 @@ STATIC_COMPLETION_CLI_TREE = {
                             "--mcp-tool-output-schema-json": "value",
                             "--mcp-tool-title": "value",
                             "--remove-attributes": "value",
+                            "--remove-deployments": "dynamic",
                             "--remove-mcp-tool-annotations-additional-hints": "value",
                             "--update-attributes": "value",
                             "--update-mcp-tool-annotations-additional-hints": "value"
@@ -9579,6 +9938,7 @@ STATIC_COMPLETION_CLI_TREE = {
                             "--attributes": "value",
                             "--contents": "value",
                             "--contents-mime-type": "value",
+                            "--deployments": "dynamic",
                             "--display-name": "value",
                             "--documentation-external-uri": "value",
                             "--lint-response-create-time": "value",
@@ -9593,7 +9953,7 @@ STATIC_COMPLETION_CLI_TREE = {
                               "lint-state-success"
                             ],
                             "--lint-response-summary": "value",
-                            "--location": "dynamic",
+                            "--location": "value",
                             "--parsing-mode": [
                               "relaxed",
                               "strict"
@@ -9648,6 +10008,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "update": {
                           "commands": {},
                           "flags": {
+                            "--add-deployments": "dynamic",
                             "--add-lint-response-issues": "value",
                             "--add-lint-response-summary": "value",
                             "--add-spec-type-enum-values": "value",
@@ -9655,6 +10016,7 @@ STATIC_COMPLETION_CLI_TREE = {
                             "--attributes": "value",
                             "--clear-attributes": "bool",
                             "--clear-contents": "bool",
+                            "--clear-deployments": "bool",
                             "--clear-documentation": "bool",
                             "--clear-lint-response": "bool",
                             "--clear-lint-response-issues": "bool",
@@ -9663,6 +10025,7 @@ STATIC_COMPLETION_CLI_TREE = {
                             "--clear-spec-type-enum-values": "bool",
                             "--contents": "value",
                             "--contents-mime-type": "value",
+                            "--deployments": "dynamic",
                             "--display-name": "value",
                             "--documentation-external-uri": "value",
                             "--lint-response-create-time": "value",
@@ -9677,12 +10040,13 @@ STATIC_COMPLETION_CLI_TREE = {
                               "lint-state-success"
                             ],
                             "--lint-response-summary": "value",
-                            "--location": "dynamic",
+                            "--location": "value",
                             "--parsing-mode": [
                               "relaxed",
                               "strict"
                             ],
                             "--remove-attributes": "value",
+                            "--remove-deployments": "dynamic",
                             "--remove-lint-response-issues": "value",
                             "--remove-lint-response-summary": "value",
                             "--remove-spec-type-enum-values": "value",
@@ -9963,6 +10327,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--slo-uri-values": "value",
                     "--source-environment": "value",
                     "--source-project": "value",
+                    "--source-revision": "value",
                     "--source-uri-enum-values": "value",
                     "--source-uri-json-values": "value",
                     "--source-uri-string-values": "value",
@@ -10043,6 +10408,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--slo-uri-values": "value",
                     "--source-environment": "value",
                     "--source-project": "value",
+                    "--source-revision": "value",
                     "--source-uri-enum-values": "value",
                     "--source-uri-json-values": "value",
                     "--source-uri-string-values": "value",
@@ -12225,6 +12591,16 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--start-time": "value",
                     "--time-zone": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ]
                   }
                 },
                 "list": {
@@ -14504,7 +14880,11 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--row-key-schema-definition-file": "value",
                         "--row-key-schema-pre-encoded-bytes": "bool",
                         "--splits": "value",
-                        "--tiered-storage-infrequent-access-older-than": "value"
+                        "--tiered-storage-infrequent-access-older-than": "value",
+                        "--timestamp-granularity": [
+                          "micros",
+                          "millis"
+                        ]
                       }
                     },
                     "delete": {
@@ -14918,7 +15298,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--row-key-schema-definition-file": "value",
                     "--row-key-schema-pre-encoded-bytes": "bool",
                     "--splits": "value",
-                    "--tiered-storage-infrequent-access-older-than": "value"
+                    "--tiered-storage-infrequent-access-older-than": "value",
+                    "--timestamp-granularity": [
+                      "micros",
+                      "millis"
+                    ]
                   }
                 },
                 "delete": {
@@ -17823,7 +18207,6 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--buckets": "value",
-                    "--config": "value",
                     "--controller-version": "value",
                     "--create-buckets": "value",
                     "--create-filestores": "value",
@@ -17841,16 +18224,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--network-project": "value",
                     "--nfs": "value",
                     "--on-demand-instances": "value",
-                    "--quickstart-cluster": "bool",
                     "--reference-architecture": [
                       "a3-ultra",
                       "a4-high-flex-start",
                       "a4x-high",
                       "g4-flex-start",
-                      "h4d-highmem-flex-start"
+                      "h4d-highmem-flex-start",
+                      "quickstart"
                     ],
                     "--reserved-instances": "value",
-                    "--slurm-conf-file": "value",
                     "--slurm-config": "value",
                     "--slurm-default-partition": "value",
                     "--slurm-epilog-scripts": "value",
@@ -17911,7 +18293,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--add-spot-instances": "value",
                     "--add-storage-buckets": "value",
                     "--async": "bool",
-                    "--config": "value",
                     "--description": "value",
                     "--enable-slurm-health-check": "bool",
                     "--location": "value",
@@ -17931,10 +18312,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--remove-slurm-task-prolog-scripts": "value",
                     "--remove-spot-instances": "value",
                     "--remove-storage-buckets": "value",
-                    "--slurm-conf-file": "value",
                     "--slurm-default-partition": "value",
                     "--update-managed-instance-groups": "value",
-                    "--update-mask": "value",
                     "--update-slurm-config": "value",
                     "--update-slurm-login-node": "value",
                     "--update-slurm-node-sets": "value",
@@ -19047,7 +19426,12 @@ STATIC_COMPLETION_CLI_TREE = {
                       "FORCE_CACHE_ALL",
                       "USE_ORIGIN_HEADERS"
                     ],
+                    "--circuit-breakers-connect-timeout": "value",
+                    "--circuit-breakers-max-connections": "value",
+                    "--circuit-breakers-max-pending-requests": "value",
                     "--circuit-breakers-max-requests": "value",
+                    "--circuit-breakers-max-requests-per-connection": "value",
+                    "--circuit-breakers-max-retries": "value",
                     "--client-ttl": "value",
                     "--compression-mode": [
                       "AUTOMATIC",
@@ -19366,7 +19750,12 @@ STATIC_COMPLETION_CLI_TREE = {
                       "FORCE_CACHE_ALL",
                       "USE_ORIGIN_HEADERS"
                     ],
+                    "--circuit-breakers-connect-timeout": "value",
+                    "--circuit-breakers-max-connections": "value",
+                    "--circuit-breakers-max-pending-requests": "value",
                     "--circuit-breakers-max-requests": "value",
+                    "--circuit-breakers-max-requests-per-connection": "value",
+                    "--circuit-breakers-max-retries": "value",
                     "--clear-custom-metrics": "bool",
                     "--clear-external-managed-migration-state": "bool",
                     "--client-ttl": "value",
@@ -19449,6 +19838,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--negative-caching": "bool",
                     "--negative-caching-policy": "value",
                     "--no-bypass-cache-on-request-headers": "bool",
+                    "--no-circuit-breakers": "bool",
                     "--no-client-ttl": "bool",
                     "--no-custom-request-headers": "bool",
                     "--no-custom-response-headers": "bool",
@@ -20772,6 +21162,81 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--source-tags": "value",
                     "--target-service-accounts": "value",
                     "--target-tags": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "folder-rollout-plans": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--folder": "value",
+                    "--location-scope": [
+                      "REGIONAL",
+                      "ZONAL"
+                    ],
+                    "--waves-from-file": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--folder": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "folder-rollouts": {
+              "commands": {
+                "cancel": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value",
+                    "--rollback": "bool"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--folder": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
                   }
                 }
               },
@@ -22400,6 +22865,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "individual"
                         ],
                         "--template": "value",
+                        "--update-policy-allowed-actions": "value",
                         "--update-policy-max-surge": "value",
                         "--update-policy-max-unavailable": "value",
                         "--update-policy-min-ready": "value",
@@ -22953,6 +23419,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "even"
                         ],
                         "--template": "value",
+                        "--update-policy-allowed-actions": "value",
                         "--update-policy-max-surge": "value",
                         "--update-policy-max-unavailable": "value",
                         "--update-policy-min-ready": "value",
@@ -23023,6 +23490,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--all-instances": "bool",
+                        "--allowed-actions": "value",
                         "--instances": "value",
                         "--minimal-action": [
                           "none",
@@ -27612,7 +28080,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "describe": {
                   "commands": {},
                   "flags": {
+                    "--folder": "value",
                     "--global": "bool",
+                    "--organization": "value",
                     "--region": "dynamic",
                     "--zone": "dynamic"
                   }
@@ -27621,8 +28091,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--filter": "value",
+                    "--folder": "value",
                     "--global": "bool",
                     "--limit": "value",
+                    "--organization": "value",
                     "--page-size": "value",
                     "--regexp": "value",
                     "--regions": "value",
@@ -40226,6 +40698,9 @@ STATIC_COMPLETION_CLI_TREE = {
                       "none",
                       "unspecified"
                     ],
+                    "--node-config-update-mode": [
+                      "LIVE_UPDATE_WITHOUT_DRAIN"
+                    ],
                     "--node-drain-grace-period-seconds": "value",
                     "--node-drain-pdb-timeout-seconds": "value",
                     "--node-labels": "value",
@@ -47424,13 +47899,6 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--sort-by": "value",
                         "--uri": "bool"
                       }
-                    },
-                    "update": {
-                      "commands": {},
-                      "flags": {
-                        "--connection": "dynamic",
-                        "--location": "dynamic"
-                      }
                     }
                   },
                   "flags": {}
@@ -47871,7 +48339,19 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--location": "value",
                         "--other-files-to-push": "value",
                         "--paths-to-pull": "value",
+                        "--sharding-option": [
+                          "smart",
+                          "uniform"
+                        ],
+                        "--smart-sharding-max-shard-count": "value",
+                        "--smart-sharding-record-name": "value",
+                        "--smart-sharding-target-duration": "value",
                         "--test": "value",
+                        "--uniform-sharding-count": "value",
+                        "--video": [
+                          "always",
+                          "on-failure"
+                        ],
                         "--xcode-version": "value",
                         "--xctest-timeout": "value",
                         "--xctestrun-file": "value"
@@ -51292,19 +51772,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     }
                   },
                   "flags": {}
-                }
-              },
-              "flags": {}
-            },
-            "projects": {
-              "commands": {
-                "create": {
-                  "commands": {},
-                  "flags": {
-                    "--app-namespace": "value",
-                    "--async": "bool",
-                    "--display-name": "value"
-                  }
                 }
               },
               "flags": {}
@@ -62920,7 +63387,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "create": {
                       "commands": {},
                       "flags": {
-                        "--async": "bool",
                         "--comment": "value",
                         "--endpoint": "value",
                         "--hash": "value",
@@ -63703,7 +64169,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--url-filtering-profile-project": "value",
                     "--wildfire-analysis-profile": "value",
                     "--wildfire-analysis-profile-location": "value",
-                    "--wildfire-analysis-profile-organization": "value"
+                    "--wildfire-analysis-profile-organization": "value",
+                    "--wildfire-analysis-profile-project": "value"
                   }
                 }
               },
@@ -69891,6 +70358,42 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "semantic-tags": {
               "commands": {
+                "bindings": {
+                  "commands": {
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--location": "value",
+                        "--parent": "value",
+                        "--semantic-tag-value": "value",
+                        "--target-resource": "value",
+                        "--validate-only": "bool"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--location": "value",
+                        "--parent": "value",
+                        "--validate-only": "bool"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--location": "value",
+                        "--page-size": "value",
+                        "--parent": "value",
+                        "--target-resource": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
                 "keys": {
                   "commands": {
                     "describe": {
@@ -69915,6 +70418,44 @@ STATIC_COMPLETION_CLI_TREE = {
                           "basic",
                           "full"
                         ]
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "values": {
+                  "commands": {
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--description": "value",
+                        "--display-name": "value",
+                        "--key": "value",
+                        "--location": "value",
+                        "--parent": "value",
+                        "--validate-only": "bool",
+                        "--value": "value",
+                        "--value-field": "value",
+                        "--value-file": "value"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value",
+                        "--parent": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--key": "value",
+                        "--limit": "value",
+                        "--location": "value",
+                        "--page-size": "value",
+                        "--parent": "value"
                       }
                     }
                   },
@@ -72001,12 +72542,15 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--add-cloudsql-instances": "value",
+                    "--add-scaling-pubsub-subscription": "value",
                     "--add-volume": "value",
                     "--add-volume-mount": "value",
                     "--args": "value",
                     "--async": "bool",
+                    "--base-image": "value",
                     "--binary-authorization": "value",
                     "--breakglass": "value",
+                    "--clear-base-image": "bool",
                     "--clear-binary-authorization": "bool",
                     "--clear-cloudsql-instances": "bool",
                     "--clear-encryption-key-shutdown-hours": "bool",
@@ -72017,6 +72561,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-network-tags": "bool",
                     "--clear-post-key-revocation-action-type": "bool",
                     "--clear-scaling-cpu-target": "bool",
+                    "--clear-scaling-pubsub-subscriptions": "bool",
                     "--clear-secrets": "bool",
                     "--clear-volume-mounts": "bool",
                     "--clear-volumes": "bool",
@@ -72045,6 +72590,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--memory": "value",
                     "--network": "value",
                     "--network-tags": "value",
+                    "--no-build": "bool",
                     "--no-promote": "bool",
                     "--post-key-revocation-action-type": [
                       "prevent-new",
@@ -72055,6 +72601,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--remove-containers": "value",
                     "--remove-env-vars": "value",
                     "--remove-labels": "value",
+                    "--remove-scaling-pubsub-subscription": "value",
                     "--remove-secrets": "value",
                     "--remove-volume": "value",
                     "--remove-volume-mount": "value",
@@ -72261,6 +72808,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--add-cloudsql-instances": "value",
+                    "--add-scaling-pubsub-subscription": "value",
                     "--add-volume": "value",
                     "--add-volume-mount": "value",
                     "--args": "value",
@@ -72277,6 +72825,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-network-tags": "bool",
                     "--clear-post-key-revocation-action-type": "bool",
                     "--clear-scaling-cpu-target": "bool",
+                    "--clear-scaling-pubsub-subscriptions": "bool",
                     "--clear-secrets": "bool",
                     "--clear-volume-mounts": "bool",
                     "--clear-volumes": "bool",
@@ -72315,6 +72864,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--remove-containers": "value",
                     "--remove-env-vars": "value",
                     "--remove-labels": "value",
+                    "--remove-scaling-pubsub-subscription": "value",
                     "--remove-secrets": "value",
                     "--remove-volume": "value",
                     "--remove-volume-mount": "value",
@@ -78885,6 +79435,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-per-object-retention": "bool",
                     "--encryption-enforcement-file": "value",
                     "--ip-filter-file": "value",
+                    "--labels": "value",
+                    "--labels-file": "value",
                     "--lifecycle-file": "value",
                     "--location": "value",
                     "--pap": "bool",
@@ -81321,6 +81873,43 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "workload-manager": {
+          "commands": {
+            "evaluations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
         "workstations": {
           "commands": {
             "clusters": {
@@ -83027,6 +83616,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--api": "dynamic",
                         "--attributes": "value",
+                        "--deployments": "dynamic",
                         "--details-deprecated": "bool",
                         "--details-description": "value",
                         "--documentation-external-uri": "value",
@@ -83042,7 +83632,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         ],
                         "--http-operation-path": "value",
                         "--http-operation-path-description": "value",
-                        "--location": "dynamic",
+                        "--location": "value",
                         "--mcp-tool-annotations-additional-hints": "value",
                         "--mcp-tool-annotations-destructive-hint": "bool",
                         "--mcp-tool-annotations-idempotent-hint": "bool",
@@ -83085,11 +83675,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "update": {
                       "commands": {},
                       "flags": {
+                        "--add-deployments": "dynamic",
                         "--api": "dynamic",
                         "--attributes": "value",
                         "--clear-attributes": "bool",
+                        "--clear-deployments": "bool",
                         "--clear-details": "bool",
                         "--clear-mcp-tool-annotations-additional-hints": "bool",
+                        "--deployments": "dynamic",
                         "--details-deprecated": "bool",
                         "--details-description": "value",
                         "--documentation-external-uri": "value",
@@ -83105,7 +83698,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         ],
                         "--http-operation-path": "value",
                         "--http-operation-path-description": "value",
-                        "--location": "dynamic",
+                        "--location": "value",
                         "--mcp-tool-annotations-additional-hints": "value",
                         "--mcp-tool-annotations-destructive-hint": "bool",
                         "--mcp-tool-annotations-idempotent-hint": "bool",
@@ -83118,6 +83711,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--mcp-tool-output-schema-json": "value",
                         "--mcp-tool-title": "value",
                         "--remove-attributes": "value",
+                        "--remove-deployments": "dynamic",
                         "--remove-mcp-tool-annotations-additional-hints": "value",
                         "--update-attributes": "value",
                         "--update-mcp-tool-annotations-additional-hints": "value"
@@ -83135,6 +83729,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--attributes": "value",
                         "--contents": "value",
                         "--contents-mime-type": "value",
+                        "--deployments": "dynamic",
                         "--display-name": "value",
                         "--documentation-external-uri": "value",
                         "--lint-response-create-time": "value",
@@ -83149,7 +83744,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "lint-state-success"
                         ],
                         "--lint-response-summary": "value",
-                        "--location": "dynamic",
+                        "--location": "value",
                         "--parsing-mode": [
                           "relaxed",
                           "strict"
@@ -83204,6 +83799,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "update": {
                       "commands": {},
                       "flags": {
+                        "--add-deployments": "dynamic",
                         "--add-lint-response-issues": "value",
                         "--add-lint-response-summary": "value",
                         "--add-spec-type-enum-values": "value",
@@ -83211,6 +83807,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--attributes": "value",
                         "--clear-attributes": "bool",
                         "--clear-contents": "bool",
+                        "--clear-deployments": "bool",
                         "--clear-documentation": "bool",
                         "--clear-lint-response": "bool",
                         "--clear-lint-response-issues": "bool",
@@ -83219,6 +83816,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--clear-spec-type-enum-values": "bool",
                         "--contents": "value",
                         "--contents-mime-type": "value",
+                        "--deployments": "dynamic",
                         "--display-name": "value",
                         "--documentation-external-uri": "value",
                         "--lint-response-create-time": "value",
@@ -83233,12 +83831,13 @@ STATIC_COMPLETION_CLI_TREE = {
                           "lint-state-success"
                         ],
                         "--lint-response-summary": "value",
-                        "--location": "dynamic",
+                        "--location": "value",
                         "--parsing-mode": [
                           "relaxed",
                           "strict"
                         ],
                         "--remove-attributes": "value",
+                        "--remove-deployments": "dynamic",
                         "--remove-lint-response-issues": "value",
                         "--remove-lint-response-summary": "value",
                         "--remove-spec-type-enum-values": "value",
@@ -83519,6 +84118,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--slo-uri-values": "value",
                 "--source-environment": "value",
                 "--source-project": "value",
+                "--source-revision": "value",
                 "--source-uri-enum-values": "value",
                 "--source-uri-json-values": "value",
                 "--source-uri-string-values": "value",
@@ -83599,6 +84199,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--slo-uri-values": "value",
                 "--source-environment": "value",
                 "--source-project": "value",
+                "--source-revision": "value",
                 "--source-uri-enum-values": "value",
                 "--source-uri-json-values": "value",
                 "--source-uri-string-values": "value",
@@ -86560,6 +87161,16 @@ STATIC_COMPLETION_CLI_TREE = {
                 ],
                 "--start-time": "value",
                 "--time-zone": "value"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--endpoint-mode": [
+                  "global",
+                  "regional",
+                  "regional-preferred"
+                ]
               }
             },
             "list": {
@@ -95713,6 +96324,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "none",
                       "protobuf"
                     ],
+                    "--dispatch-info-output-type": [
+                      "json",
+                      "none",
+                      "protobuf"
+                    ],
                     "--display-name": "value",
                     "--group-info-output-type": [
                       "json",
@@ -95806,6 +96422,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "protobuf"
                     ],
                     "--device-info-output-type": [
+                      "json",
+                      "none",
+                      "protobuf"
+                    ],
+                    "--dispatch-info-output-type": [
                       "json",
                       "none",
                       "protobuf"
@@ -96779,7 +97400,11 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--row-key-schema-definition-file": "value",
                         "--row-key-schema-pre-encoded-bytes": "bool",
                         "--splits": "value",
-                        "--tiered-storage-infrequent-access-older-than": "value"
+                        "--tiered-storage-infrequent-access-older-than": "value",
+                        "--timestamp-granularity": [
+                          "micros",
+                          "millis"
+                        ]
                       }
                     },
                     "delete": {
@@ -97172,7 +97797,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--row-key-schema-definition-file": "value",
                     "--row-key-schema-pre-encoded-bytes": "bool",
                     "--splits": "value",
-                    "--tiered-storage-infrequent-access-older-than": "value"
+                    "--tiered-storage-infrequent-access-older-than": "value",
+                    "--timestamp-granularity": [
+                      "micros",
+                      "millis"
+                    ]
                   }
                 },
                 "delete": {
@@ -98948,7 +99577,6 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--buckets": "value",
-                    "--config": "value",
                     "--create-buckets": "value",
                     "--create-filestores": "value",
                     "--create-lustres": "value",
@@ -98963,13 +99591,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--network-project": "value",
                     "--nfs": "value",
                     "--on-demand-instances": "value",
-                    "--quickstart-cluster": "bool",
                     "--reference-architecture": [
                       "a3-ultra",
                       "a4-high-flex-start",
                       "a4x-high",
                       "g4-flex-start",
-                      "h4d-highmem-flex-start"
+                      "h4d-highmem-flex-start",
+                      "quickstart"
                     ],
                     "--reserved-instances": "value",
                     "--slurm-default-partition": "value",
@@ -99026,7 +99654,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--add-spot-instances": "value",
                     "--add-storage-buckets": "value",
                     "--async": "bool",
-                    "--config": "value",
                     "--description": "value",
                     "--location": "value",
                     "--remove-filestore-instances": "value",
@@ -99043,7 +99670,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--remove-spot-instances": "value",
                     "--remove-storage-buckets": "value",
                     "--slurm-default-partition": "value",
-                    "--update-mask": "value",
                     "--update-slurm-login-node": "value",
                     "--update-slurm-node-sets": "value",
                     "--update-slurm-partitions": "value"
@@ -100392,7 +101018,12 @@ STATIC_COMPLETION_CLI_TREE = {
                       "FORCE_CACHE_ALL",
                       "USE_ORIGIN_HEADERS"
                     ],
+                    "--circuit-breakers-connect-timeout": "value",
+                    "--circuit-breakers-max-connections": "value",
+                    "--circuit-breakers-max-pending-requests": "value",
                     "--circuit-breakers-max-requests": "value",
+                    "--circuit-breakers-max-requests-per-connection": "value",
+                    "--circuit-breakers-max-retries": "value",
                     "--client-ttl": "value",
                     "--compression-mode": [
                       "AUTOMATIC",
@@ -100702,7 +101333,12 @@ STATIC_COMPLETION_CLI_TREE = {
                       "FORCE_CACHE_ALL",
                       "USE_ORIGIN_HEADERS"
                     ],
+                    "--circuit-breakers-connect-timeout": "value",
+                    "--circuit-breakers-max-connections": "value",
+                    "--circuit-breakers-max-pending-requests": "value",
                     "--circuit-breakers-max-requests": "value",
+                    "--circuit-breakers-max-requests-per-connection": "value",
+                    "--circuit-breakers-max-retries": "value",
                     "--clear-custom-metrics": "bool",
                     "--clear-external-managed-migration-state": "bool",
                     "--client-ttl": "value",
@@ -100785,6 +101421,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--negative-caching": "bool",
                     "--negative-caching-policy": "value",
                     "--no-bypass-cache-on-request-headers": "bool",
+                    "--no-circuit-breakers": "bool",
                     "--no-client-ttl": "bool",
                     "--no-custom-request-headers": "bool",
                     "--no-custom-response-headers": "bool",
@@ -103454,6 +104091,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "individual"
                         ],
                         "--template": "value",
+                        "--update-policy-allowed-actions": "value",
                         "--update-policy-max-surge": "value",
                         "--update-policy-max-unavailable": "value",
                         "--update-policy-min-ready": "value",
@@ -103651,6 +104289,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--filter": "value",
                         "--limit": "value",
+                        "--no-color": "bool",
                         "--page-size": "value",
                         "--region": "dynamic",
                         "--sort-by": "value",
@@ -103974,6 +104613,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "even"
                         ],
                         "--template": "value",
+                        "--update-policy-allowed-actions": "value",
                         "--update-policy-max-surge": "value",
                         "--update-policy-max-unavailable": "value",
                         "--update-policy-min-ready": "value",
@@ -104038,6 +104678,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--all-instances": "bool",
+                        "--allowed-actions": "value",
                         "--instances": "value",
                         "--minimal-action": [
                           "none",
@@ -104226,6 +104867,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--host-error-timeout-seconds": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--image": "value",
                     "--image-family": "value",
                     "--image-project": "value",
@@ -104380,6 +105026,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--external-ipv6-prefix-length": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--image": "value",
                     "--image-family": "value",
                     "--image-project": "value",
@@ -104670,6 +105321,11 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--host-error-timeout-seconds": "value",
                         "--identity": "value",
                         "--identity-certificate": "bool",
+                        "--identity-type": [
+                          "AGENT_IDENTITY",
+                          "IDENTITY_TYPE_UNSPECIFIED",
+                          "SERVICE_ACCOUNT"
+                        ],
                         "--image": "value",
                         "--image-family": "value",
                         "--image-project": "value",
@@ -104822,6 +105478,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--hostname": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--image": "value",
                     "--image-family": "value",
                     "--image-family-scope": [
@@ -105000,6 +105661,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--host-error-timeout-seconds": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--image": "value",
                     "--image-family": "value",
                     "--image-project": "value",
@@ -105737,6 +106403,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--graceful-shutdown-max-duration": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--min-cpu-platform": "value",
                     "--most-disruptive-allowed-action": [
                       "NO_EFFECT",
@@ -118310,6 +118981,9 @@ STATIC_COMPLETION_CLI_TREE = {
                       "none",
                       "unspecified"
                     ],
+                    "--node-config-update-mode": [
+                      "LIVE_UPDATE_WITHOUT_DRAIN"
+                    ],
                     "--node-drain-grace-period-seconds": "value",
                     "--node-drain-pdb-timeout-seconds": "value",
                     "--node-labels": "value",
@@ -123309,13 +123983,6 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--sort-by": "value",
                         "--uri": "bool"
-                      }
-                    },
-                    "update": {
-                      "commands": {},
-                      "flags": {
-                        "--connection": "dynamic",
-                        "--location": "dynamic"
                       }
                     }
                   },
@@ -136015,6 +136682,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--description": "value",
                     "--enable-admin": "bool",
+                    "--group": "value",
                     "--hub": "value",
                     "--labels": "value",
                     "--network": "value",
@@ -136901,7 +137569,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "create": {
                       "commands": {},
                       "flags": {
-                        "--async": "bool",
                         "--comment": "value",
                         "--endpoint": "value",
                         "--hash": "value",
@@ -137812,7 +138479,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--url-filtering-profile-project": "value",
                     "--wildfire-analysis-profile": "value",
                     "--wildfire-analysis-profile-location": "value",
-                    "--wildfire-analysis-profile-organization": "value"
+                    "--wildfire-analysis-profile-organization": "value",
+                    "--wildfire-analysis-profile-project": "value"
                   }
                 }
               },
@@ -147258,6 +147926,176 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "source-manager": {
           "commands": {
+            "branch-rules": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--allow-stale-reviews": "bool",
+                    "--async": "bool",
+                    "--disabled": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--include-pattern": "value",
+                    "--minimum-approvals-count": "value",
+                    "--minimum-reviews-count": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--require-code-owner-approval": "bool",
+                    "--require-comments-resolved": "bool",
+                    "--require-linear-history": "bool",
+                    "--require-pull-request": "bool"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--allow-stale-reviews": "bool",
+                    "--async": "bool",
+                    "--disabled": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--include-pattern": "value",
+                    "--minimum-approvals-count": "value",
+                    "--minimum-reviews-count": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--require-code-owner-approval": "bool",
+                    "--require-comments-resolved": "bool",
+                    "--require-linear-history": "bool",
+                    "--require-pull-request": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "hooks": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--disabled": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--events": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--target-uri": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--disabled": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--events": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--target-uri": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "instances": {
               "commands": {
                 "add-iam-policy-binding": {
@@ -147377,6 +148215,191 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "issues": {
+              "commands": {
+                "close": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--etag": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "comments": {
+                  "commands": {
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--body": "value",
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--issue": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--issue": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--issue": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--filter": "value",
+                        "--issue": "dynamic",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--region": "dynamic",
+                        "--repository": "dynamic",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--body": "value",
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--issue": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--body": "value",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--title": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "open": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--etag": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--body": "value",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--title": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "locations": {
               "commands": {
                 "list": {
@@ -147419,6 +148442,254 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic",
                     "--sort-by": "value",
                     "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "pull-requests": {
+              "commands": {
+                "close": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "comments": {
+                  "commands": {
+                    "batch-create": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--comments-file": "value",
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--pull-request": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    },
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--body": "value",
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--pull-request": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--pull-request": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--pull-request": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--pull-request": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
+                    "resolve": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--auto-fill": "bool",
+                        "--comments": "value",
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--pull-request": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    },
+                    "unresolve": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--auto-fill": "bool",
+                        "--comments": "value",
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--pull-request": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--body": "value",
+                        "--endpoint-mode": [
+                          "global",
+                          "regional",
+                          "regional-preferred"
+                        ],
+                        "--pull-request": "dynamic",
+                        "--region": "dynamic",
+                        "--repository": "dynamic"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--base-branch": "value",
+                    "--body": "value",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--head-branch": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--title": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "list-file-diffs": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--sort-by": "value"
+                  }
+                },
+                "merge": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "open": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--body": "value",
+                    "--endpoint-mode": [
+                      "global",
+                      "regional",
+                      "regional-preferred"
+                    ],
+                    "--region": "dynamic",
+                    "--repository": "dynamic",
+                    "--title": "value"
                   }
                 }
               },
@@ -151211,6 +152482,178 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "workspace-key-access": {
+          "commands": {
+            "configs": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--admin-emails": "value",
+                    "--annotations": "value",
+                    "--async": "bool",
+                    "--customer-id": "value",
+                    "--idp-configs": "value",
+                    "--kacls-owner-domains": "value",
+                    "--labels": "value",
+                    "--location": "dynamic",
+                    "--request-id": "value",
+                    "--tags": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "dynamic",
+                    "--request-id": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--add-idp-configs": "value",
+                    "--admin-emails": "value",
+                    "--annotations": "value",
+                    "--async": "bool",
+                    "--clear-annotations": "bool",
+                    "--clear-idp-configs": "bool",
+                    "--clear-labels": "bool",
+                    "--clear-tags": "bool",
+                    "--idp-configs": "value",
+                    "--kacls-owner-domains": "value",
+                    "--labels": "value",
+                    "--location": "dynamic",
+                    "--remove-annotations": "value",
+                    "--remove-idp-configs": "value",
+                    "--remove-labels": "value",
+                    "--remove-tags": "value",
+                    "--request-id": "value",
+                    "--tags": "value",
+                    "--update-annotations": "value",
+                    "--update-labels": "value",
+                    "--update-tags": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "endpoints": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--annotations": "value",
+                    "--async": "bool",
+                    "--config": "dynamic",
+                    "--kms-key": "value",
+                    "--labels": "value",
+                    "--location": "value",
+                    "--request-id": "value",
+                    "--tags": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--annotations": "value",
+                    "--async": "bool",
+                    "--clear-annotations": "bool",
+                    "--clear-labels": "bool",
+                    "--clear-tags": "bool",
+                    "--config": "dynamic",
+                    "--labels": "value",
+                    "--location": "value",
+                    "--remove-annotations": "value",
+                    "--remove-labels": "value",
+                    "--remove-tags": "value",
+                    "--request-id": "value",
+                    "--tags": "value",
+                    "--update-annotations": "value",
+                    "--update-labels": "value",
+                    "--update-tags": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "operations": {
+              "commands": {
+                "cancel": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "dynamic"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "wait": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "dynamic"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
         "workstations": {
           "commands": {
             "clusters": {
@@ -151955,6 +153398,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "none",
                   "protobuf"
                 ],
+                "--dispatch-info-output-type": [
+                  "json",
+                  "none",
+                  "protobuf"
+                ],
                 "--display-name": "value",
                 "--group-info-output-type": [
                   "json",
@@ -152048,6 +153496,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "protobuf"
                 ],
                 "--device-info-output-type": [
+                  "json",
+                  "none",
+                  "protobuf"
+                ],
+                "--dispatch-info-output-type": [
                   "json",
                   "none",
                   "protobuf"
@@ -153139,7 +154592,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--instance": "dynamic",
                     "--row-key-schema-definition-file": "value",
                     "--row-key-schema-pre-encoded-bytes": "bool",
-                    "--splits": "value"
+                    "--splits": "value",
+                    "--timestamp-granularity": [
+                      "micros",
+                      "millis"
+                    ]
                   }
                 },
                 "delete": {
@@ -153497,7 +154954,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--instance": "dynamic",
                 "--row-key-schema-definition-file": "value",
                 "--row-key-schema-pre-encoded-bytes": "bool",
-                "--splits": "value"
+                "--splits": "value",
+                "--timestamp-granularity": [
+                  "micros",
+                  "millis"
+                ]
               }
             },
             "delete": {
@@ -155569,7 +157030,6 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--async": "bool",
                 "--buckets": "value",
-                "--config": "value",
                 "--create-buckets": "value",
                 "--create-filestores": "value",
                 "--create-lustres": "value",
@@ -155583,13 +157043,13 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--network": "value",
                 "--network-project": "value",
                 "--on-demand-instances": "value",
-                "--quickstart-cluster": "bool",
                 "--reference-architecture": [
                   "a3-ultra",
                   "a4-high-flex-start",
                   "a4x-high",
                   "g4-flex-start",
-                  "h4d-highmem-flex-start"
+                  "h4d-highmem-flex-start",
+                  "quickstart"
                 ],
                 "--reserved-instances": "value",
                 "--slurm-default-partition": "value",
@@ -155645,7 +157105,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--add-spot-instances": "value",
                 "--add-storage-buckets": "value",
                 "--async": "bool",
-                "--config": "value",
                 "--description": "value",
                 "--location": "value",
                 "--remove-filestore-instances": "value",
@@ -155661,7 +157120,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--remove-spot-instances": "value",
                 "--remove-storage-buckets": "value",
                 "--slurm-default-partition": "value",
-                "--update-mask": "value",
                 "--update-slurm-login-node": "value",
                 "--update-slurm-node-sets": "value",
                 "--update-slurm-partitions": "value"
@@ -157257,7 +158715,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "FORCE_CACHE_ALL",
                   "USE_ORIGIN_HEADERS"
                 ],
+                "--circuit-breakers-max-connections": "value",
+                "--circuit-breakers-max-pending-requests": "value",
                 "--circuit-breakers-max-requests": "value",
+                "--circuit-breakers-max-requests-per-connection": "value",
+                "--circuit-breakers-max-retries": "value",
                 "--client-ttl": "value",
                 "--compression-mode": [
                   "AUTOMATIC",
@@ -157550,7 +159012,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "FORCE_CACHE_ALL",
                   "USE_ORIGIN_HEADERS"
                 ],
+                "--circuit-breakers-max-connections": "value",
+                "--circuit-breakers-max-pending-requests": "value",
                 "--circuit-breakers-max-requests": "value",
+                "--circuit-breakers-max-requests-per-connection": "value",
+                "--circuit-breakers-max-retries": "value",
                 "--clear-custom-metrics": "bool",
                 "--clear-external-managed-migration-state": "bool",
                 "--client-ttl": "value",
@@ -157630,6 +159096,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--negative-caching": "bool",
                 "--negative-caching-policy": "value",
                 "--no-bypass-cache-on-request-headers": "bool",
+                "--no-circuit-breakers": "bool",
                 "--no-client-ttl": "bool",
                 "--no-custom-request-headers": "bool",
                 "--no-custom-response-headers": "bool",
@@ -160315,6 +161782,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--filter": "value",
                     "--limit": "value",
+                    "--no-color": "bool",
                     "--page-size": "value",
                     "--region": "dynamic",
                     "--sort-by": "value",
@@ -160868,6 +162336,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--host-error-timeout-seconds": "value",
                 "--identity": "value",
                 "--identity-certificate": "bool",
+                "--identity-type": [
+                  "AGENT_IDENTITY",
+                  "IDENTITY_TYPE_UNSPECIFIED",
+                  "SERVICE_ACCOUNT"
+                ],
                 "--image": "value",
                 "--image-family": "value",
                 "--image-project": "value",
@@ -161007,6 +162480,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--external-ipv6-prefix-length": "value",
                 "--identity": "value",
                 "--identity-certificate": "bool",
+                "--identity-type": [
+                  "AGENT_IDENTITY",
+                  "IDENTITY_TYPE_UNSPECIFIED",
+                  "SERVICE_ACCOUNT"
+                ],
                 "--image": "value",
                 "--image-family": "value",
                 "--image-project": "value",
@@ -161274,6 +162752,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--host-error-timeout-seconds": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--image": "value",
                     "--image-family": "value",
                     "--image-project": "value",
@@ -161421,6 +162904,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--hostname": "value",
                 "--identity": "value",
                 "--identity-certificate": "bool",
+                "--identity-type": [
+                  "AGENT_IDENTITY",
+                  "IDENTITY_TYPE_UNSPECIFIED",
+                  "SERVICE_ACCOUNT"
+                ],
                 "--image": "value",
                 "--image-family": "value",
                 "--image-family-scope": [
@@ -161585,6 +163073,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--host-error-timeout-seconds": "value",
                 "--identity": "value",
                 "--identity-certificate": "bool",
+                "--identity-type": [
+                  "AGENT_IDENTITY",
+                  "IDENTITY_TYPE_UNSPECIFIED",
+                  "SERVICE_ACCOUNT"
+                ],
                 "--image": "value",
                 "--image-family": "value",
                 "--image-project": "value",
@@ -162256,6 +163749,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--graceful-shutdown-max-duration": "value",
                 "--identity": "value",
                 "--identity-certificate": "bool",
+                "--identity-type": [
+                  "AGENT_IDENTITY",
+                  "IDENTITY_TYPE_UNSPECIFIED",
+                  "SERVICE_ACCOUNT"
+                ],
                 "--min-cpu-platform": "value",
                 "--most-disruptive-allowed-action": [
                   "NO_EFFECT",
@@ -172035,6 +173533,19 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--memberships": "value",
                     "--uninstall": "bool"
                   }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--all-memberships": "bool",
+                    "--config": "value",
+                    "--fleet-default-member-config": "value",
+                    "--location": "value",
+                    "--memberships": "value",
+                    "--origin": [
+                      "fleet"
+                    ]
+                  }
                 }
               },
               "flags": {}
@@ -172952,6 +174463,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--ignore-maintenance-policies": "bool",
                     "--node-version": "value",
                     "--patch-only": "bool",
+                    "--prioritized": "bool",
                     "--soak-duration-override-all-stages": "value",
                     "--soak-duration-overrides-per-stage": "value"
                   }
@@ -173326,6 +174838,19 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--memberships": "value",
                     "--uninstall": "bool"
                   }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--all-memberships": "bool",
+                    "--config": "value",
+                    "--fleet-default-member-config": "value",
+                    "--location": "value",
+                    "--memberships": "value",
+                    "--origin": [
+                      "fleet"
+                    ]
+                  }
                 }
               },
               "flags": {}
@@ -174243,6 +175768,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--ignore-maintenance-policies": "bool",
                     "--node-version": "value",
                     "--patch-only": "bool",
+                    "--prioritized": "bool",
                     "--soak-duration-override-all-stages": "value",
                     "--soak-duration-overrides-per-stage": "value"
                   }
@@ -174842,6 +176368,9 @@ STATIC_COMPLETION_CLI_TREE = {
                   "arm",
                   "none",
                   "unspecified"
+                ],
+                "--node-config-update-mode": [
+                  "LIVE_UPDATE_WITHOUT_DRAIN"
                 ],
                 "--node-drain-grace-period-seconds": "value",
                 "--node-drain-pdb-timeout-seconds": "value",
@@ -176242,6 +177771,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "create": {
               "commands": {},
               "flags": {
+                "--ai-processing-location": "value",
                 "--auto-conversion": "bool",
                 "--conversion-assistance": "bool",
                 "--destination-database-engine": [
@@ -176461,6 +177991,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "update": {
               "commands": {},
               "flags": {
+                "--ai-processing-location": "value",
                 "--auto-conversion": "bool",
                 "--conversion-assistance": "bool",
                 "--display-name": "value",
@@ -179552,6 +181083,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--master-boot-disk-provisioned-throughput": "value",
                 "--master-boot-disk-size": "value",
                 "--master-boot-disk-type": "value",
+                "--master-flexible-config": "value",
                 "--master-instance-flexibility-policy-file": "value",
                 "--master-instance-selection": "value",
                 "--master-local-ssd-interface": "value",
@@ -179596,6 +181128,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--secondary-worker-attached-disks": "value",
                 "--secondary-worker-boot-disk-size": "value",
                 "--secondary-worker-boot-disk-type": "value",
+                "--secondary-worker-flexible-config": "value",
                 "--secondary-worker-instance-flexibility-policy-file": "value",
                 "--secondary-worker-instance-selection": "value",
                 "--secondary-worker-local-ssd-interface": "value",
@@ -179625,6 +181158,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--worker-boot-disk-provisioned-throughput": "value",
                 "--worker-boot-disk-size": "value",
                 "--worker-boot-disk-type": "value",
+                "--worker-flexible-config": "value",
                 "--worker-instance-flexibility-policy-file": "value",
                 "--worker-instance-selection": "value",
                 "--worker-local-ssd-interface": "value",
@@ -179764,10 +181298,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--region": "value",
                 "--remove-labels": "value",
                 "--remove-user-mappings": "value",
+                "--secondary-worker-flexible-config": "value",
                 "--stop-expiration-time": "value",
                 "--stop-max-age": "value",
                 "--stop-max-idle": "value",
-                "--update-labels": "value"
+                "--update-labels": "value",
+                "--worker-flexible-config": "value"
               }
             }
           },
@@ -180461,6 +181997,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--master-boot-disk-provisioned-throughput": "value",
                 "--master-boot-disk-size": "value",
                 "--master-boot-disk-type": "value",
+                "--master-flexible-config": "value",
                 "--master-instance-flexibility-policy-file": "value",
                 "--master-instance-selection": "value",
                 "--master-local-ssd-interface": "value",
@@ -180504,6 +182041,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--secondary-worker-attached-disks": "value",
                 "--secondary-worker-boot-disk-size": "value",
                 "--secondary-worker-boot-disk-type": "value",
+                "--secondary-worker-flexible-config": "value",
                 "--secondary-worker-instance-flexibility-policy-file": "value",
                 "--secondary-worker-instance-selection": "value",
                 "--secondary-worker-local-ssd-interface": "value",
@@ -180530,6 +182068,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--worker-boot-disk-provisioned-throughput": "value",
                 "--worker-boot-disk-size": "value",
                 "--worker-boot-disk-type": "value",
+                "--worker-flexible-config": "value",
                 "--worker-instance-flexibility-policy-file": "value",
                 "--worker-instance-selection": "value",
                 "--worker-local-ssd-interface": "value",
@@ -191004,11 +192543,13 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create-oidc": {
                   "commands": {},
                   "flags": {
+                    "--actor-providers": "value",
                     "--allowed-audiences": "value",
                     "--attribute-condition": "value",
                     "--attribute-mapping": "value",
                     "--description": "value",
                     "--disabled": "bool",
+                    "--discovery-uri": "value",
                     "--display-name": "value",
                     "--issuer-uri": "value",
                     "--jwk-json-path": "value",
@@ -191181,11 +192722,13 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update-oidc": {
                   "commands": {},
                   "flags": {
+                    "--actor-providers": "value",
                     "--allowed-audiences": "value",
                     "--attribute-condition": "value",
                     "--attribute-mapping": "value",
                     "--description": "value",
                     "--disabled": "bool",
+                    "--discovery-uri": "value",
                     "--display-name": "value",
                     "--issuer-uri": "value",
                     "--jwk-json-path": "value",
@@ -200163,12 +201706,27 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--async": "bool",
+                "--block-partial-http": "bool",
+                "--content-cloud-region": "value",
                 "--description": "value",
                 "--enable-jumbo-frames": "bool",
+                "--enable-wildfire": "bool",
+                "--enable-wildfire-analysis-logging": "bool",
                 "--labels": "value",
                 "--location": "value",
                 "--max-wait": "value",
                 "--organization": "value",
+                "--wildfire-analysis-action": [
+                  "ALLOW",
+                  "DENY"
+                ],
+                "--wildfire-analysis-timeout": "value",
+                "--wildfire-lookup-action": [
+                  "ALLOW",
+                  "DENY"
+                ],
+                "--wildfire-lookup-timeout": "value",
+                "--wildfire-region": "value",
                 "--zone": "value"
               }
             },
@@ -200207,16 +201765,71 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--async": "bool",
+                "--block-partial-http": "bool",
                 "--clear-labels": "bool",
+                "--content-cloud-region": "value",
                 "--description": "value",
+                "--enable-wildfire": "bool",
+                "--enable-wildfire-analysis-logging": "bool",
                 "--location": "value",
                 "--max-wait": "value",
                 "--organization": "value",
                 "--remove-labels": "value",
                 "--update-billing-project": "value",
                 "--update-labels": "value",
+                "--wildfire-analysis-action": [
+                  "ALLOW",
+                  "DENY"
+                ],
+                "--wildfire-analysis-timeout": "value",
+                "--wildfire-lookup-action": [
+                  "ALLOW",
+                  "DENY"
+                ],
+                "--wildfire-lookup-timeout": "value",
+                "--wildfire-region": "value",
                 "--zone": "value"
               }
+            },
+            "wildfire-verdict-change-requests": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--comment": "value",
+                    "--endpoint": "value",
+                    "--hash": "value",
+                    "--location": "value",
+                    "--organization": "value",
+                    "--verdict": "value",
+                    "--zone": "value"
+                  }
+                },
+                "get": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint": "value",
+                    "--location": "value",
+                    "--organization": "value",
+                    "--zone": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--endpoint": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--organization": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool",
+                    "--zone": "value"
+                  }
+                }
+              },
+              "flags": {}
             }
           },
           "flags": {}
@@ -201037,7 +202650,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--url-filtering-profile-project": "value",
                 "--wildfire-analysis-profile": "value",
                 "--wildfire-analysis-profile-location": "value",
-                "--wildfire-analysis-profile-organization": "value"
+                "--wildfire-analysis-profile-organization": "value",
+                "--wildfire-analysis-profile-project": "value"
               }
             }
           },
@@ -201369,6 +202983,33 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--organization": "value"
                   }
                 },
+                "add-inline-ml-exception": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--filename": "value",
+                    "--location": "value",
+                    "--organization": "value",
+                    "--partial-hash": "value"
+                  }
+                },
+                "add-override": {
+                  "commands": {},
+                  "flags": {
+                    "--action": [
+                      "ALERT",
+                      "ALLOW",
+                      "DEFAULT",
+                      "DENY"
+                    ],
+                    "--async": "bool",
+                    "--location": "value",
+                    "--organization": "value",
+                    "--threat-ids": "value",
+                    "--wildfire": "value",
+                    "--wildfire-inline-ml": "value"
+                  }
+                },
                 "add-submission-rule": {
                   "commands": {},
                   "flags": {
@@ -201418,6 +203059,27 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--file-types": "value",
                     "--location": "value",
                     "--organization": "value"
+                  }
+                },
+                "delete-inline-ml-exception": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--filename": "value",
+                    "--location": "value",
+                    "--organization": "value",
+                    "--partial-hash": "value"
+                  }
+                },
+                "delete-override": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value",
+                    "--organization": "value",
+                    "--threat-ids": "value",
+                    "--wildfire": "value",
+                    "--wildfire-inline-ml": "value"
                   }
                 },
                 "delete-submission-rule": {
@@ -201473,6 +203135,23 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--update-labels": "value",
                     "--wildfire-realtime-lookup": "bool"
                   }
+                },
+                "update-override": {
+                  "commands": {},
+                  "flags": {
+                    "--action": [
+                      "ALERT",
+                      "ALLOW",
+                      "DEFAULT",
+                      "DENY"
+                    ],
+                    "--async": "bool",
+                    "--location": "value",
+                    "--organization": "value",
+                    "--threat-ids": "value",
+                    "--wildfire": "value",
+                    "--wildfire-inline-ml": "value"
+                  }
                 }
               },
               "flags": {}
@@ -201482,6 +203161,27 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "server-tls-policies": {
           "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--allow-open": "bool",
+                "--async": "bool",
+                "--client-validation-ca-grpc-endpoint": "value",
+                "--client-validation-ca-plugin-instance": "value",
+                "--client-validation-mode": [
+                  "allow-invalid-or-missing-client-cert",
+                  "allow-validation-relaxations",
+                  "reject-invalid"
+                ],
+                "--client-validation-relaxations": "value",
+                "--client-validation-trust-config": "value",
+                "--description": "value",
+                "--labels": "value",
+                "--location": "value",
+                "--server-certificate-grpc-endpoint": "value",
+                "--server-certificate-plugin-instance": "value"
+              }
+            },
             "delete": {
               "commands": {},
               "flags": {
@@ -201519,6 +203219,29 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--sort-by": "value",
                 "--uri": "bool"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--allow-open": "bool",
+                "--async": "bool",
+                "--clear-client-validation-relaxations": "bool",
+                "--clear-labels": "bool",
+                "--client-validation-ca-grpc-endpoint": "value",
+                "--client-validation-ca-plugin-instance": "value",
+                "--client-validation-mode": [
+                  "allow-invalid-or-missing-client-cert",
+                  "allow-validation-relaxations",
+                  "reject-invalid"
+                ],
+                "--client-validation-relaxations": "value",
+                "--description": "value",
+                "--location": "value",
+                "--remove-labels": "value",
+                "--server-certificate-grpc-endpoint": "value",
+                "--server-certificate-plugin-instance": "value",
+                "--update-labels": "value"
               }
             }
           },
@@ -203481,6 +205204,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "ajd",
                   "apex",
                   "dw",
+                  "lh",
                   "oltp"
                 ],
                 "--properties-is-auto-scaling-enabled": "bool",
@@ -203673,7 +205397,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--async": "bool",
-                "--location": "dynamic",
+                "--location": "value",
                 "--request-id": "value",
                 "--total-storage-size-gb": "value",
                 "--total-vm-storage-size-gb": "value"
@@ -203686,7 +205410,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--display-name": "value",
                 "--gcp-oracle-zone": "value",
                 "--labels": "value",
-                "--location": "dynamic",
+                "--location": "value",
                 "--maintenance-window-custom-action-timeout-mins": "value",
                 "--maintenance-window-days-of-week": "value",
                 "--maintenance-window-hours-of-day": "value",
@@ -203717,10 +205441,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "list": {
                   "commands": {},
                   "flags": {
-                    "--cloud-exadata-infrastructure": "dynamic",
+                    "--cloud-exadata-infrastructure": "value",
                     "--filter": "value",
                     "--limit": "value",
-                    "--location": "dynamic",
+                    "--location": "value",
                     "--page-size": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -203734,14 +205458,14 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--async": "bool",
                 "--force": "bool",
-                "--location": "dynamic",
+                "--location": "value",
                 "--request-id": "value"
               }
             },
             "describe": {
               "commands": {},
               "flags": {
-                "--location": "dynamic"
+                "--location": "value"
               }
             },
             "list": {
@@ -203761,7 +205485,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--async": "bool",
                 "--clear-labels": "bool",
                 "--labels": "value",
-                "--location": "dynamic",
+                "--location": "value",
                 "--remove-labels": "value",
                 "--request-id": "value",
                 "--update-labels": "value"
@@ -203783,11 +205507,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--diagnostics-data-collection-options-health-monitoring-enabled": "bool",
                 "--diagnostics-data-collection-options-incident-logs-enabled": "bool",
                 "--display-name": "value",
-                "--exadata-infrastructure": "dynamic",
+                "--exadata-infrastructure": "value",
                 "--exascale-db-storage-vault": "dynamic",
                 "--labels": "value",
                 "--location": "value",
                 "--network": "value",
+                "--odb-dns-zone": "dynamic",
                 "--odb-network": "value",
                 "--odb-subnet": "dynamic",
                 "--properties-cluster-name": "value",
@@ -203897,6 +205622,82 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--sort-by": "value",
                 "--uri": "bool"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "database-connections": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--connection-string": "value",
+                "--display-name": "value",
+                "--labels": "value",
+                "--location": "value",
+                "--odb-network": "dynamic",
+                "--password-secret-version": "value",
+                "--request-id": "value",
+                "--secret": "value",
+                "--username": "value",
+                "--wallet-secret-version": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "dynamic",
+                "--request-id": "value"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic"
+              }
+            },
+            "execute-sql": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic",
+                "--params": "value",
+                "--sql-statement": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            },
+            "test": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--clear-labels": "bool",
+                "--clear-wallet-secret-version": "bool",
+                "--labels": "value",
+                "--location": "dynamic",
+                "--password-secret-version": "value",
+                "--remove-labels": "value",
+                "--request-id": "value",
+                "--secret": "value",
+                "--update-labels": "value",
+                "--wallet-secret-version": "value"
               }
             }
           },
@@ -204233,7 +206034,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--async": "bool",
                 "--display-name": "value",
-                "--exadata-infrastructure": "dynamic",
+                "--exadata-infrastructure": "value",
                 "--exascale-db-storage-details-total-size-gbs": "value",
                 "--gcp-oracle-zone": "value",
                 "--labels": "value",
@@ -205000,6 +206801,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--labels": "value",
                 "--location": "dynamic",
                 "--network": "value",
+                "--psc-interface-config-network-attachment": "value",
                 "--request-id": "value"
               }
             },
@@ -205027,6 +206829,50 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--sort-by": "value",
                 "--uri": "bool"
               }
+            },
+            "odb-dns-zones": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--domain": "value",
+                    "--labels": "value",
+                    "--location": "dynamic",
+                    "--odb-network": "dynamic",
+                    "--request-id": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "dynamic",
+                    "--odb-network": "dynamic",
+                    "--request-id": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "dynamic",
+                    "--odb-network": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "dynamic",
+                    "--odb-network": "dynamic",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
             },
             "odb-subnets": {
               "commands": {
@@ -205088,6 +206934,20 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--clear-labels": "bool",
+                "--clear-service-connectivity-config": "bool",
+                "--labels": "value",
+                "--location": "dynamic",
+                "--psc-interface-config-network-attachment": "value",
+                "--remove-labels": "value",
+                "--request-id": "value",
+                "--update-labels": "value"
+              }
             }
           },
           "flags": {}
@@ -206192,7 +208052,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "FORCE_CACHE_ALL",
                       "USE_ORIGIN_HEADERS"
                     ],
+                    "--circuit-breakers-max-connections": "value",
+                    "--circuit-breakers-max-pending-requests": "value",
                     "--circuit-breakers-max-requests": "value",
+                    "--circuit-breakers-max-requests-per-connection": "value",
+                    "--circuit-breakers-max-retries": "value",
                     "--client-ttl": "value",
                     "--compression-mode": [
                       "AUTOMATIC",
@@ -206485,7 +208349,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "FORCE_CACHE_ALL",
                       "USE_ORIGIN_HEADERS"
                     ],
+                    "--circuit-breakers-max-connections": "value",
+                    "--circuit-breakers-max-pending-requests": "value",
                     "--circuit-breakers-max-requests": "value",
+                    "--circuit-breakers-max-requests-per-connection": "value",
+                    "--circuit-breakers-max-retries": "value",
                     "--clear-custom-metrics": "bool",
                     "--clear-external-managed-migration-state": "bool",
                     "--client-ttl": "value",
@@ -206565,6 +208433,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--negative-caching": "bool",
                     "--negative-caching-policy": "value",
                     "--no-bypass-cache-on-request-headers": "bool",
+                    "--no-circuit-breakers": "bool",
                     "--no-client-ttl": "bool",
                     "--no-custom-request-headers": "bool",
                     "--no-custom-response-headers": "bool",
@@ -207567,6 +209436,81 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "folder-rollout-plans": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--folder": "value",
+                    "--location-scope": [
+                      "REGIONAL",
+                      "ZONAL"
+                    ],
+                    "--waves-from-file": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--folder": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "folder-rollouts": {
+              "commands": {
+                "cancel": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value",
+                    "--rollback": "bool"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--folder": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "forwarding-rules": {
               "commands": {
                 "create": {
@@ -207895,6 +209839,106 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--start-time": "value",
                     "--total-count": "value",
                     "--zone": "dynamic"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "global-vm-extension-policies": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--config": "value",
+                    "--config-from-file": "value",
+                    "--description": "value",
+                    "--extensions": "value",
+                    "--folder": "value",
+                    "--inclusion-labels": "value",
+                    "--organization": "value",
+                    "--priority": "value",
+                    "--rollout-conflict-behavior": "value",
+                    "--rollout-custom-plan": "value",
+                    "--rollout-predefined-plan": [
+                      "fast_rollout",
+                      "slow_rollout"
+                    ]
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value",
+                    "--organization": "value",
+                    "--rollout-custom-plan": "value",
+                    "--rollout-predefined-plan": [
+                      "fast_rollout",
+                      "slow_rollout"
+                    ],
+                    "--rollout-retry-uuid": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value",
+                    "--organization": "value"
+                  }
+                },
+                "extensions": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--folder": "value",
+                        "--organization": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--folder": "value",
+                        "--limit": "value",
+                        "--organization": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--folder": "value",
+                    "--limit": "value",
+                    "--organization": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--config": "value",
+                    "--config-from-file": "value",
+                    "--description": "value",
+                    "--extensions": "value",
+                    "--folder": "value",
+                    "--inclusion-labels": "value",
+                    "--organization": "value",
+                    "--priority": "value",
+                    "--rollout-conflict-behavior": "value",
+                    "--rollout-custom-plan": "value",
+                    "--rollout-predefined-plan": [
+                      "fast_rollout",
+                      "slow_rollout"
+                    ],
+                    "--rollout-retry-uuid": "value"
                   }
                 }
               },
@@ -208933,6 +210977,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--filter": "value",
                         "--limit": "value",
+                        "--no-color": "bool",
                         "--page-size": "value",
                         "--region": "dynamic",
                         "--sort-by": "value",
@@ -209491,6 +211536,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--host-error-timeout-seconds": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--image": "value",
                     "--image-family": "value",
                     "--image-project": "value",
@@ -209634,6 +211684,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--external-ipv6-prefix-length": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--image": "value",
                     "--image-family": "value",
                     "--image-project": "value",
@@ -209901,6 +211956,11 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--host-error-timeout-seconds": "value",
                         "--identity": "value",
                         "--identity-certificate": "bool",
+                        "--identity-type": [
+                          "AGENT_IDENTITY",
+                          "IDENTITY_TYPE_UNSPECIFIED",
+                          "SERVICE_ACCOUNT"
+                        ],
                         "--image": "value",
                         "--image-family": "value",
                         "--image-project": "value",
@@ -210048,6 +212108,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--hostname": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--image": "value",
                     "--image-family": "value",
                     "--image-family-scope": [
@@ -210216,6 +212281,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--host-error-timeout-seconds": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--image": "value",
                     "--image-family": "value",
                     "--image-project": "value",
@@ -210892,6 +212962,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--graceful-shutdown-max-duration": "value",
                     "--identity": "value",
                     "--identity-certificate": "bool",
+                    "--identity-type": [
+                      "AGENT_IDENTITY",
+                      "IDENTITY_TYPE_UNSPECIFIED",
+                      "SERVICE_ACCOUNT"
+                    ],
                     "--min-cpu-platform": "value",
                     "--most-disruptive-allowed-action": [
                       "NO_EFFECT",
@@ -212090,6 +214165,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--default-port": "value",
                     "--global": "bool",
                     "--network": "value",
+                    "--network-attachment": "value",
                     "--network-endpoint-type": [
                       "gce-vm-ip",
                       "gce-vm-ip-port",
@@ -212103,6 +214179,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--producer-port": "value",
                     "--psc-target-service": "value",
                     "--region": "dynamic",
+                    "--service-class-id": "value",
                     "--subnet": "value",
                     "--zone": "dynamic"
                   }
@@ -212987,7 +215064,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "describe": {
                   "commands": {},
                   "flags": {
+                    "--folder": "value",
                     "--global": "bool",
+                    "--organization": "value",
                     "--region": "dynamic",
                     "--zone": "dynamic"
                   }
@@ -212996,8 +215075,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--filter": "value",
+                    "--folder": "value",
                     "--global": "bool",
                     "--limit": "value",
+                    "--organization": "value",
                     "--page-size": "value",
                     "--regexp": "value",
                     "--regions": "value",
@@ -216764,6 +218845,94 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "zone-vm-extension-policies": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--config": "value",
+                    "--config-from-file": "value",
+                    "--description": "value",
+                    "--extensions": "value",
+                    "--folder": "value",
+                    "--inclusion-labels": "value",
+                    "--organization": "value",
+                    "--priority": "value",
+                    "--zone": "dynamic"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value",
+                    "--organization": "value",
+                    "--zone": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value",
+                    "--organization": "value",
+                    "--zone": "dynamic"
+                  }
+                },
+                "extensions": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--folder": "value",
+                        "--organization": "value",
+                        "--zone": "dynamic"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--folder": "value",
+                        "--limit": "value",
+                        "--organization": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool",
+                        "--zone": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--folder": "value",
+                    "--limit": "value",
+                    "--organization": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool",
+                    "--zone": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--config": "value",
+                    "--config-from-file": "value",
+                    "--description": "value",
+                    "--extensions": "value",
+                    "--folder": "value",
+                    "--inclusion-labels": "value",
+                    "--organization": "value",
+                    "--priority": "value",
+                    "--zone": "dynamic"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "zones": {
               "commands": {
                 "describe": {
@@ -219099,6 +221268,14 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--ttl": "value"
               }
             },
+            "create-token-auth-user": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--region": "dynamic",
+                "--token-auth-user": "value"
+              }
+            },
             "delete": {
               "commands": {},
               "flags": {
@@ -219177,6 +221354,82 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--region": "dynamic"
               }
             },
+            "token-auth-users": {
+              "commands": {
+                "auth-tokens": {
+                  "commands": {
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--cluster": "dynamic",
+                        "--region": "dynamic",
+                        "--token-auth-user": "dynamic"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--cluster": "dynamic",
+                        "--region": "dynamic",
+                        "--token-auth-user": "dynamic"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--cluster": "dynamic",
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--region": "dynamic",
+                        "--sort-by": "value",
+                        "--token-auth-user": "dynamic",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "create-auth-token": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cluster": "dynamic",
+                    "--region": "dynamic"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cluster": "dynamic",
+                    "--force": "bool",
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "dynamic",
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "dynamic",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "update": {
               "commands": {},
               "flags": {
@@ -219187,6 +221440,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "no"
                 ],
                 "--async": "bool",
+                "--auth-mode": [
+                  "disabled",
+                  "token-auth"
+                ],
                 "--automated-backup-mode": [
                   "disabled",
                   "enabled"
@@ -226462,6 +228719,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-per-object-retention": "bool",
                 "--encryption-enforcement-file": "value",
                 "--ip-filter-file": "value",
+                "--labels": "value",
+                "--labels-file": "value",
                 "--lifecycle-file": "value",
                 "--location": "value",
                 "--pap": "bool",

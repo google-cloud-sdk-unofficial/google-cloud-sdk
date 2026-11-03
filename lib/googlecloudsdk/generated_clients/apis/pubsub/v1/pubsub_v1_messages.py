@@ -542,8 +542,8 @@ class CloudStorage(_messages.Message):
     avroFormat: Optional. Data from Cloud Storage will be interpreted in Avro
       format.
     bucket: Optional. Cloud Storage bucket. The bucket name must be without
-      any prefix like "gs://". See the [bucket naming requirements]
-      (https://cloud.google.com/storage/docs/buckets#naming).
+      any prefix like "gs://". See the [bucket naming requirements](
+      https://cloud.google.com/storage/docs/buckets#naming).
     matchGlob: Optional. Glob pattern used to match objects that will be
       ingested. If unset, all objects will be ingested. See the [supported pat
       terns](https://cloud.google.com/storage/docs/json_api/v1/objects/list#li
@@ -1618,8 +1618,8 @@ class PubsubMessage(_messages.Message):
   attribute. Note that client libraries represent this object differently
   depending on the language. See the corresponding [client library
   documentation](https://cloud.google.com/pubsub/docs/reference/libraries) for
-  more information. See [quotas and limits]
-  (https://cloud.google.com/pubsub/quotas) for more information about message
+  more information. See [quotas and limits](
+  https://cloud.google.com/pubsub/quotas) for more information about message
   limits.
 
   Messages:
@@ -2476,8 +2476,8 @@ class PubsubProjectsValidateMessageTransformRequest(_messages.Message):
 
 class PubsubWrapper(_messages.Message):
   r"""The payload to the push endpoint is in the form of the JSON
-  representation of a PubsubMessage (https://cloud.google.com/pubsub/docs/refe
-  rence/rpc/google.pubsub.v1#pubsubmessage).
+  representation of a [PubsubMessage](https://cloud.google.com/pubsub/docs/ref
+  erence/rpc/google.pubsub.v1#pubsubmessage).
   """
 
 
@@ -2558,8 +2558,8 @@ class PushConfig(_messages.Message):
       OIDC JWT token as an `Authorization` header in the HTTP request for
       every pushed message.
     pubsubWrapper: Optional. When set, the payload to the push endpoint is in
-      the form of the JSON representation of a PubsubMessage (https://cloud.go
-      ogle.com/pubsub/docs/reference/rpc/google.pubsub.v1#pubsubmessage).
+      the form of the JSON representation of a [PubsubMessage]( https://cloud.
+      google.com/pubsub/docs/reference/rpc/google.pubsub.v1#pubsubmessage).
     pushEndpoint: Optional. A URL locating the endpoint to which messages
       should be pushed. For example, a Webhook endpoint might use
       `https://example.com/push`.
@@ -2952,8 +2952,8 @@ class Snapshot(_messages.Message):
   state captured by a snapshot.
 
   Messages:
-    LabelsValue: Optional. See [Creating and managing labels]
-      (https://cloud.google.com/pubsub/docs/labels).
+    LabelsValue: Optional. See [Creating and managing labels](
+      https://cloud.google.com/pubsub/docs/labels).
 
   Fields:
     expireTime: Optional. The snapshot is guaranteed to exist up until this
@@ -2967,8 +2967,8 @@ class Snapshot(_messages.Message):
       backlog as long as the snapshot exists -- will expire in 4 days. The
       service will refuse to create a snapshot that would expire in less than
       1 hour after creation.
-    labels: Optional. See [Creating and managing labels]
-      (https://cloud.google.com/pubsub/docs/labels).
+    labels: Optional. See [Creating and managing labels](
+      https://cloud.google.com/pubsub/docs/labels).
     name: Optional. The name of the snapshot.
     topic: Optional. The name of the topic from which this snapshot is
       retaining messages.
@@ -2976,8 +2976,8 @@ class Snapshot(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. See [Creating and managing labels]
-    (https://cloud.google.com/pubsub/docs/labels).
+    r"""Optional. See [Creating and managing labels](
+    https://cloud.google.com/pubsub/docs/labels).
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -3229,8 +3229,8 @@ class Subscription(_messages.Message):
       messages. If true, then messages are not expunged from the
       subscription's backlog, even if they are acknowledged, until they fall
       out of the `message_retention_duration` window. This must be true if you
-      would like to [`Seek` to a timestamp]
-      (https://cloud.google.com/pubsub/docs/replay-overview#seek_to_a_time) in
+      would like to [`Seek` to a timestamp](
+      https://cloud.google.com/pubsub/docs/replay-overview#seek_to_a_time) in
       the past to replay previously-acknowledged messages.
     retryPolicy: Optional. A policy that specifies how Pub/Sub retries message
       delivery for this subscription. If not set, the default retry policy is
@@ -3434,8 +3434,8 @@ class Topic(_messages.Message):
       state of the topic.
 
   Messages:
-    LabelsValue: Optional. See [Creating and managing labels]
-      (https://cloud.google.com/pubsub/docs/labels).
+    LabelsValue: Optional. See [Creating and managing labels](
+      https://cloud.google.com/pubsub/docs/labels).
     TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
       to this resource. For example: "123/environment": "production",
       "123/costCenter": "marketing" See https://{$universe.dns_names.final_doc
@@ -3448,8 +3448,8 @@ class Topic(_messages.Message):
     kmsKeyName: Optional. The resource name of the Cloud KMS CryptoKey to be
       used to protect access to messages published on this topic. The expected
       format is `projects/*/locations/*/keyRings/*/cryptoKeys/*`.
-    labels: Optional. See [Creating and managing labels]
-      (https://cloud.google.com/pubsub/docs/labels).
+    labels: Optional. See [Creating and managing labels](
+      https://cloud.google.com/pubsub/docs/labels).
     messageRetentionDuration: Optional. Indicates the minimum duration to
       retain a message after it is published to the topic. If this field is
       set, messages published to the topic in the last
@@ -3504,8 +3504,8 @@ class Topic(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. See [Creating and managing labels]
-    (https://cloud.google.com/pubsub/docs/labels).
+    r"""Optional. See [Creating and managing labels](
+    https://cloud.google.com/pubsub/docs/labels).
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.

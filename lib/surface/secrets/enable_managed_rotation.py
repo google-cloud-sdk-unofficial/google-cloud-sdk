@@ -35,12 +35,12 @@ class EnableManagedRotation(base.Command):
   instance:
 
     $ {command} my-secret --location=us-central1
-    --instance-id=my-project:my-instance --username=db-user
+    --instance-id=my-instance --username=db-user
 
   To enable managed rotation and set an initial password:
 
     $ {command} my-secret --location=us-central1
-    --instance-id=my-project:my-instance --username=db-user
+    --instance-id=my-instance --username=db-user
     --password="s3cr3tPassword"
   """
 
@@ -63,7 +63,12 @@ class EnableManagedRotation(base.Command):
     messages = secrets_api.GetMessages(version=api_version)
     secret_ref = args.CONCEPTS.secret.Parse()
 
-    credentials = messages.CloudSQLSingleUserCredentials(
+    credentials_cls = getattr(
+        messages,
+        'CloudSqlSingleUserCredentials',
+        getattr(messages, 'CloudSQLSingleUserCredentials', None),
+    )
+    credentials = credentials_cls(
         instanceId=args.instance_id,
         username=args.username,
         password=args.password,

@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 
 def AddTypeFlag(parser):
   """Adds a --type flag to the given parser."""
-  help_text = """Type can be MYSQL, ORACLE, POSTGRESQL, SQLSERVER, SALESFORCE, GOOGLE-CLOUD-STORAGE, BIGQUERY, DATAVERSE, SALESFORCE-MARKETING-CLOUD or SERVICENOW"""
+  help_text = """Type can be MYSQL, ORACLE, POSTGRESQL, SQLSERVER, SALESFORCE, SPANNER, MONGODB, GOOGLE-CLOUD-STORAGE, BIGQUERY, DATAVERSE, SALESFORCE-MARKETING-CLOUD or SERVICENOW"""
 
   parser.add_argument('--type', help=help_text, required=True)
 

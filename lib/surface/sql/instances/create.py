@@ -149,6 +149,7 @@ def AddBaseArgs(parser):
   psc_setup_group = parser.add_group()
   flags.AddEnablePrivateServiceConnect(psc_setup_group)
   flags.AddAllowedPscProjects(psc_setup_group)
+  flags.AddEnablePscEndpointAllowlisting(psc_setup_group, hidden=True)
   flags.AddCustomSubjectAlternativeNames(parser)
   flags.AddSslMode(parser)
   flags.AddEnableGoogleMLIntegration(parser)
@@ -387,6 +388,14 @@ def RunBaseCreateCommand(args, release_track):
   ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
     raise sql_exceptions.ArgumentError(
         '`--allowed-psc-projects` requires `--enable-private-service-connect`'
+    )
+
+  if args.IsKnownAndSpecified(
+      'enable_psc_endpoint_allowlisting'
+  ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
+    raise sql_exceptions.ArgumentError(
+        '`--enable-psc-endpoint-allowlisting` requires'
+        ' `--enable-private-service-connect`'
     )
 
   if args.IsKnownAndSpecified(

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
 
@@ -10,7 +10,7 @@
       An initial token will be generated for the user. The username and token
       can be used to authenticate a client connecting to the cluster.
 
-    example: |
+    examples: |
       To create a new token auth user, run:
 
       $ {command} my-cluster --token-auth-user=my-user --region=us-central1
@@ -34,5 +34,7 @@
       api_version: v1alpha1
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     collection: redis.projects.locations.clusters
     method: addTokenAuthUser

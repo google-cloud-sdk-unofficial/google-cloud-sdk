@@ -1,4 +1,6 @@
 release_tracks: [ALPHA, BETA, GA, PREVIEW]
+hints:
+  read_only: true
 help_text:
   brief: |
     Export a Compute Engine virtual machine instance's configuration to a file.

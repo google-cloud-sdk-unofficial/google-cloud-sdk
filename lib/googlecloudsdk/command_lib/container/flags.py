@@ -2206,6 +2206,21 @@ To read more about node-taints, see https://cloud.google.com/kubernetes-engine/d
   )
 
 
+def AddNodeConfigUpdateModeFlag(parser, hidden=False):
+  """Adds a --node-config-update-mode flag to the given parser."""
+  help_text = """\
+Specifies the rollout strategy to apply node pool configuration updates in-place.
+
+* `LIVE_UPDATE_WITHOUT_DRAIN` - Node configuration updates are applied in-place on the running VM without VM recreation and without draining workloads/pods.
+"""
+  parser.add_argument(
+      '--node-config-update-mode',
+      choices=['LIVE_UPDATE_WITHOUT_DRAIN'],  # 'LIVE_UPDATE_WITH_DRAIN'
+      help=help_text,
+      hidden=hidden,
+  )
+
+
 def AddPreemptibleFlag(parser, for_node_pool=False, suppressed=False):
   """Adds a --preemptible flag to parser."""
   if for_node_pool:
@@ -4117,7 +4132,7 @@ def AddAddonsFlagsWithOptions(parser, addon_options):
       type=arg_parsers.ArgDict(
           spec={
               choice: _ParseAddonEnabled
-              for choice in (addon_options + api_adapter.CLOUDRUN_ADDONS)
+              for choice in addon_options + api_adapter.CLOUDRUN_ADDONS
           },
           allow_key_only=True,
       ),
@@ -4129,6 +4144,8 @@ are additional Kubernetes cluster components. Addons specified by this flag will
 be enabled. The others will be disabled. Default addons: {0}.
 The Istio addon is deprecated and removed.
 For more information and migration, see https://cloud.google.com/istio/docs/istio-on-gke/migrate-to-anthos-service-mesh.
+The ConfigConnector add-on lags behind the latest open-source release by 12 months or more.
+For the latest version, CustomResourceDefinition of Google Cloud resources, and independent upgrades, install the self-managed Config Connector Operator instead: https://cloud.google.com/config-connector/docs/how-to/install-manually#switch-add-on.
 ADDON must be one of: {1}.
 """.format(
           ', '.join(api_adapter.DEFAULT_ADDONS),
@@ -6780,7 +6797,14 @@ def AddNumNodes(parser, default=3):
   parser.add_argument(
       '--num-nodes',
       type=arg_parsers.BoundedInt(0),
-      help="The number of nodes to be created in each of the cluster's zones.",
+      help=(
+          "The number of nodes to be created in each of the cluster's zones."
+          ' Set to 0 to create the cluster without a default node pool. This'
+          ' requires a GKE version that supports clusters without a default'
+          ' node pool. Flags that only configure the default node pool, such'
+          " as '--machine-type', can't be used with '--num-nodes=0'. To add"
+          " nodes later, use 'gcloud container node-pools create'."
+      ),
       default=default,
   )
 
@@ -9346,7 +9370,7 @@ def AddControlPlaneSoakDurationFlag(parser, hidden):
       default=None,
       hidden=hidden,
       help=help_text,
-      type=arg_parsers.Duration(lower_bound='6h', upper_bound='7d'),
+      type=arg_parsers.Duration(lower_bound='6h'),
   )
 
 
@@ -9611,6 +9635,19 @@ Select scalability mode for dataplane v2.
       '--dataplane-optimization-mode',
       default=None,
       choices=_DPV2_SCALABILITY_MODES,
+      help=help_text,
+      hidden=hidden,
+  )
+
+
+def AddDataplaneEbpfHostRoutingFlag(parser, hidden=True):
+  """Adds --enable-dataplane-ebpf-host-routing boolean flag to the parser."""
+  help_text = """\
+Enable Dataplane V2 eBPF host routing for the cluster.
+"""
+  parser.add_argument(
+      '--enable-dataplane-ebpf-host-routing',
+      action=arg_parsers.StoreTrueFalseAction,
       help=help_text,
       hidden=hidden,
   )

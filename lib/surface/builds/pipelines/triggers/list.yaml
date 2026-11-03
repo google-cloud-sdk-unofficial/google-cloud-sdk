@@ -1,0 +1,49 @@
+- release_tracks: [ALPHA]
+
+  # Keeps the command out of help text, tab-completion and the public
+  # reference documentation while Cloud Build Pipelines is in preview.
+  hidden: true
+  universe_compatible: true
+
+  hints:
+    read_only: true
+
+  help_text:
+    brief: List the triggers of a Cloud Build pipeline.
+    description: List the triggers of a Cloud Build pipeline.
+    examples: |
+      To list the triggers of pipeline `payments-pipeline` in region
+      `us-central1`:
+
+        $ {command} --pipeline=payments-pipeline --region=us-central1
+
+      To list only the disabled ones:
+
+        $ {command} --pipeline=payments-pipeline --region=us-central1 \
+            --filter=options.disabled=true
+
+  request:
+    collection: cloudbuild.projects.locations.pipelines.triggers
+    api_version: v1
+    regional_endpoint_compatibility: SUPPORTED
+
+  # Enables --uri. The generator builds each URI from the `name` returned by
+  # the server.
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The Cloud Build pipeline whose triggers to list.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:pipeline
+      is_positional: false
+
+  output:
+    format: |
+      table(
+        name.segment(-1):label=TRIGGER_ID,
+        displayName:label=DISPLAY_NAME,
+        options.disabled.yesno(yes='True', no='False'):label=DISABLED,
+        createTime.date():label=CREATE_TIME,
+        updateTime.date():label=UPDATE_TIME
+      )

@@ -356,12 +356,20 @@ def MakeRequests(
     if (isinstance(response, service.client.MESSAGES_MODULE.Operation) and
         not _IsEmptyOperation(response, service) and
         service.__class__.__name__ not in (
-            'GlobalOperationsService', 'RegionOperationsService',
-            'ZoneOperationsService', 'GlobalOrganizationOperationsService',
-            'GlobalAccountsOperationsService')):
+            'GlobalOperationsService',
+            'RegionOperationsService',
+            'ZoneOperationsService',
+            'GlobalOrganizationOperationsService',
+            'GlobalAccountsOperationsService',
+            'GlobalFolderOperationsService',
+            'ZoneFolderOperationsService',
+            'ZoneOrganizationOperationsService',
+        )):
 
       resource_service = service
       project = None
+      folder = None
+      organization = None
       if hasattr(request_body, 'project'):
         if project_override:
           project = project_override
@@ -374,6 +382,18 @@ def MakeRequests(
           operation_service = service.client.regionOperations
         else:
           operation_service = service.client.globalOperations
+      elif hasattr(request_body, 'folder'):
+        folder = request_body.folder
+        if response.zone:
+          operation_service = service.client.zoneFolderOperations
+        else:
+          operation_service = service.client.globalFolderOperations
+      elif hasattr(request_body, 'organization'):
+        organization = request_body.organization
+        if response.zone:
+          operation_service = service.client.zoneOrganizationOperations
+        else:
+          operation_service = service.client.globalOrganizationOperations
       else:
         operation_service = service.client.globalOrganizationOperations
       # TODO: b/313849714 - Leave only else block once the bug is fixed.
@@ -384,6 +404,8 @@ def MakeRequests(
                 operation_service,
                 resource_service,
                 project=project,
+                folder=folder,
+                organization=organization,
                 resize_request_name=request_body.instanceGroupManagerResizeRequest.name,
                 no_followup=no_followup,
                 followup_override=followup_override,
@@ -397,6 +419,8 @@ def MakeRequests(
                 operation_service,
                 resource_service,
                 project=project,
+                folder=folder,
+                organization=organization,
                 no_followup=no_followup,
                 followup_override=followup_override,
                 always_return_operation=always_return_operation))

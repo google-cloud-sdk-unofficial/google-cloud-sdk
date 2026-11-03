@@ -3136,6 +3136,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EncryptionConfig(_messages.Message):
   r"""EncryptionConfig describes the encryption config of a cluster that is
   encrypted with a CMEK (customer-managed encryption key).
@@ -7826,6 +7827,7 @@ class StaticIpConnectivity(_messages.Message):
   instance from the Cloud SQL console or using Cloud SQL APIs. No additional
   configuration is required.
   """
+
 
 
 class StaticServiceIpConnectivity(_messages.Message):

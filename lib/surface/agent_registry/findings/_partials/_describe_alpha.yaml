@@ -18,14 +18,15 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
+  hints:
+    read_only: true
   help_text:
     brief: Get details of a finding.
     description: Retrieve metadata and properties of a specific finding.
     examples: |-
-      To describe finding 'my-finding' in location 'us', run:
+      To describe finding 'my-finding' in location 'us-central1', run:
 
-        $ {command} my-finding --location=us
+        $ {command} my-finding --location=us-central1
   arguments:
     params:
     - help_text: |-

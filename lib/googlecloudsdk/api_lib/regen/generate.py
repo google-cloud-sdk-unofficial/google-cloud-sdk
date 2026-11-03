@@ -22,6 +22,7 @@ import logging
 import os
 
 from apitools.gen import gen_client
+from apitools.gen import util as apitools_util
 from googlecloudsdk.api_lib.regen import api_def
 from googlecloudsdk.api_lib.regen import resource_generator
 from googlecloudsdk.core.util import files
@@ -58,7 +59,14 @@ class WrongDiscoveryDocError(Exception):
 
 
 def GenerateApitoolsApi(
-    discovery_doc, output_dir, root_package, api_name, api_version, api_config):
+    discovery_doc,
+    output_dir,
+    root_package,
+    api_name,
+    api_version,
+    api_config,
+    create_parent_init_files=True,
+):
   """Invokes apitools generator for given api."""
   args = [gen_client.__file__]
 
@@ -84,12 +92,19 @@ def GenerateApitoolsApi(
   gen_client.main(args)
 
   package_dir, dir_name = os.path.split(output_dir)
-  for subdir in [dir_name, api_name, api_version]:
+  subdirs = (
+      [dir_name, api_name, api_version]
+      if create_parent_init_files
+      else [os.path.join(dir_name, api_name, api_version)]
+  )
+  for subdir in subdirs:
     package_dir = os.path.join(package_dir, subdir)
     init_file = os.path.join(package_dir, '__init__.py')
     if not os.path.isfile(init_file):
-      logging.warning('%s does not have __init__.py file, generating ...',
-                      package_dir)
+      if create_parent_init_files:
+        logging.warning(
+            '%s does not have __init__.py file, generating ...', package_dir
+        )
       files.WriteFileContents(init_file, _INIT_FILE_CONTENT)
 
 
@@ -97,7 +112,9 @@ def _CamelCase(snake_case):
   return ''.join(x.capitalize() for x in snake_case.split('_'))
 
 
-def _MakeApitoolsClientDef(root_package, api_name, api_version):
+def _MakeApitoolsClientDef(
+    root_package, api_name, api_version, discovery_doc=None
+):
   """Makes an ApitoolsClientDef."""
   class_path = '.'.join([root_package, api_name, api_version])
   # TODO(b/142448542) Roll back the hack
@@ -110,13 +127,25 @@ def _MakeApitoolsClientDef(root_package, api_name, api_version):
 
   messages_modulepath = '_'.join([api_name, api_version, 'messages'])
   base_url = ''
-  client_full_classpath = class_path + '.' + client_classpath
-  try:
-    client_classpath_def = _GetClientClassFromDef(client_full_classpath)
-    base_url = client_classpath_def.BASE_URL
-  except Exception:   # pylint: disable=broad-except
-    # unreleased api or test not in "googlecloudsdk.generated_clients.apis"
-    pass
+  if discovery_doc is not None:
+    doc_dict = discovery_doc._discovery_doc_dict  # pylint: disable=protected-access
+    if all(
+        k in doc_dict for k in ('name', 'version', 'rootUrl', 'servicePath')
+    ):
+      base_url, _ = apitools_util._ComputePaths(  # pylint: disable=protected-access
+          doc_dict['name'],
+          doc_dict['version'],
+          doc_dict['rootUrl'],
+          doc_dict['servicePath'],
+      )
+  if not base_url:
+    client_full_classpath = class_path + '.' + client_classpath
+    try:
+      client_classpath_def = _GetClientClassFromDef(client_full_classpath)
+      base_url = client_classpath_def.BASE_URL
+    except Exception:  # pylint: disable=broad-except
+      # unreleased api or test not in "googlecloudsdk.generated_clients.apis"
+      pass
 
   apitools_def = api_def.ApitoolsClientDef(
       class_path=class_path,
@@ -175,10 +204,13 @@ def _MakeApiMap(apis_config_map):
   for api_name, api_version_config in apis_config_map.items():
     for api_version, api_config in api_version_config.items():
       if doc_data := api_config.discovery_doc:
-        apitools_client = _MakeApitoolsClientDef(
-            api_config.root_package, api_name, api_version
-        )
         discovery_doc = resource_generator.DiscoveryDoc.FromJson(doc_data)
+        apitools_client = _MakeApitoolsClientDef(
+            api_config.root_package,
+            api_name,
+            api_version,
+            discovery_doc=discovery_doc,
+        )
         regional_endpoints = discovery_doc.endpoints
       else:
         apitools_client = None

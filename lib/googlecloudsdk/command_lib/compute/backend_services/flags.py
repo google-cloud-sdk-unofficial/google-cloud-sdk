@@ -1672,18 +1672,6 @@ def AddHaPolicyLeaderFlags(parser, hidden=False):
   )
 
 
-def AddCircuitBreakersMaxRequests(parser):
-  """Adds the --circuit-breakers-max-requests flag to the parser."""
-  return parser.add_argument(
-      '--circuit-breakers-max-requests',
-      type=int,
-      help="""\
-      Maximum number of parallel requests that can be made to all instances in
-      the backend service cluster. Defaults to 1024.
-      """,
-  )
-
-
 def AddSecuritySettingsFlags(parser, add_clear_argument=False):
   """Adds arguments for configuring security settings on backend services."""
   mtls_group = parser.add_group(
@@ -1864,4 +1852,78 @@ def AddOutlierDetectionFlags(parser, add_clear_argument=False):
         '--no-outlier-detection',
         action='store_true',
         help='Clears currently set backend service outlier detection settings.',
+    )
+
+
+def AddCircuitBreakersFlags(
+    parser, add_clear_argument=False, support_connect_timeout=False
+):
+  """Adds arguments for configuring circuit breakers on backend services.
+
+  Args:
+    parser: The argparse parser to add the flags to.
+    add_clear_argument: Boolean indicating whether to add the
+      --no-circuit-breakers flag to clear settings.
+    support_connect_timeout: Boolean indicating whether to add the
+      --circuit-breakers-connect-timeout flag.
+  """
+  group = parser.add_group(
+      help=(
+          'Settings controlling the volume of connections, requests, and'
+          ' retries to this backend service.'
+      )
+  )
+  group.add_argument(
+      '--circuit-breakers-max-connections',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help="""\
+      The maximum number of connections to the backend service. If not
+      specified, there is no limit.
+      """,
+  )
+  group.add_argument(
+      '--circuit-breakers-max-pending-requests',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help="""\
+      The maximum number of pending requests allowed to the backend service. If
+      not specified, there is no limit.
+      """,
+  )
+  group.add_argument(
+      '--circuit-breakers-max-requests',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help="""\
+      The maximum number of parallel requests that are allowed to the backend
+      service. If not specified, there is no limit.
+      """,
+  )
+  group.add_argument(
+      '--circuit-breakers-max-requests-per-connection',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help="""\
+      Maximum requests for a single connection to the backend service. Setting
+      this parameter to 1 will effectively disable keep alive.
+      """,
+  )
+  group.add_argument(
+      '--circuit-breakers-max-retries',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help="""\
+      The maximum number of parallel retries allowed to the backend cluster. If
+      not specified, the default is 1.
+      """,
+  )
+  if support_connect_timeout:
+    group.add_argument(
+        '--circuit-breakers-connect-timeout',
+        type=arg_parsers.Duration(),
+        help="""\
+        The timeout for new network connections to hosts.
+        """,
+    )
+  if add_clear_argument:
+    parser.add_argument(
+        '--no-circuit-breakers',
+        action='store_true',
+        help='Clears currently set backend service circuit breakers.',
     )

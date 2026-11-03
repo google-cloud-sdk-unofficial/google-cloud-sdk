@@ -1835,6 +1835,7 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message)
       determines if and where build logs are stored.
     MachineTypeValueValuesEnum: Compute Engine machine type on which to run
       the build.
+    RankedMachineSeriesValueListEntryValuesEnum:
     RequestedVerifyOptionValueValuesEnum: Requested verifiability options.
     SourceProvenanceHashValueListEntryValuesEnum:
     SubstitutionOptionValueValuesEnum: Option to specify behavior when there
@@ -1877,6 +1878,11 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message)
       private-pool) for more information.
     pubsubTopic: Optional. Option to specify the Pub/Sub topic to receive
       build status updates.
+    rankedMachineSeries: Optional. Ranked list (earlier items have higher
+      priority) of Machine Series to consider when provisioning Worker VMs. A
+      concrete machine type will be selected based on machine availability in
+      the given region. This field must be empty for the Build to be eligible
+      to be paired with a pre-provisioned worker VM.
     requestedVerifyOption: Requested verifiability options.
     resolvedWorkerRelease: Output only. Worker release resolved from the
       release channel.
@@ -1974,6 +1980,20 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message)
     E2_MEDIUM = 5
     E2_STANDARD_2 = 6
 
+  class RankedMachineSeriesValueListEntryValuesEnum(_messages.Enum):
+    r"""RankedMachineSeriesValueListEntryValuesEnum enum type.
+
+    Values:
+      MACHINE_SERIES_UNSPECIFIED: Should not be used.
+      MACHINE_SERIES_E: Cost-optimized machines such as E2.
+      MACHINE_SERIES_N: General-purpose machines such as N4.
+      MACHINE_SERIES_C: Performance-optimized machines such as C4.
+    """
+    MACHINE_SERIES_UNSPECIFIED = 0
+    MACHINE_SERIES_E = 1
+    MACHINE_SERIES_N = 2
+    MACHINE_SERIES_C = 3
+
   class RequestedVerifyOptionValueValuesEnum(_messages.Enum):
     r"""Requested verifiability options.
 
@@ -2030,14 +2050,15 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message)
   machineType = _messages.EnumField('MachineTypeValueValuesEnum', 9)
   pool = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptionsPoolOption', 10)
   pubsubTopic = _messages.StringField(11)
-  requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 12)
-  resolvedWorkerRelease = _messages.StringField(13)
-  secretEnv = _messages.StringField(14, repeated=True)
-  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 15, repeated=True)
-  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 16)
-  volumes = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1Volume', 17, repeated=True)
-  workerPool = _messages.StringField(18)
-  workerRelease = _messages.StringField(19)
+  rankedMachineSeries = _messages.EnumField('RankedMachineSeriesValueListEntryValuesEnum', 12, repeated=True)
+  requestedVerifyOption = _messages.EnumField('RequestedVerifyOptionValueValuesEnum', 13)
+  resolvedWorkerRelease = _messages.StringField(14)
+  secretEnv = _messages.StringField(15, repeated=True)
+  sourceProvenanceHash = _messages.EnumField('SourceProvenanceHashValueListEntryValuesEnum', 16, repeated=True)
+  substitutionOption = _messages.EnumField('SubstitutionOptionValueValuesEnum', 17)
+  volumes = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1Volume', 18, repeated=True)
+  workerPool = _messages.StringField(19)
+  workerRelease = _messages.StringField(20)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptionsPoolOption(_messages.Message):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import proto  # type: ignore
 
 from cloudsdk.google.protobuf import field_mask_pb2  # type: ignore
 from cloudsdk.google.protobuf import timestamp_pb2  # type: ignore
+from googlecloudsdk.generated_clients.gapic_clients.logging_v2.types import analytics_query_builder
 
 
 __protobuf__ = proto.module(
@@ -196,7 +197,7 @@ class IndexConfig(proto.Message):
 
             Note that some paths are automatically indexed, and other
             paths are not eligible for indexing. See `indexing
-            documentation <https://cloud.google.com/logging/docs/analyze/custom-index>`__
+            documentation <https://docs.cloud.google.com/logging/docs/analyze/custom-index>`__
             for details.
 
             For example: ``jsonPayload.request.status``
@@ -237,7 +238,7 @@ class LogBucket(proto.Message):
             ``projects/my-project/locations/global/buckets/my-bucket``
 
             For a list of supported locations, see `Supported
-            Regions <https://cloud.google.com/logging/docs/region-support>`__
+            Regions <https://docs.cloud.google.com/logging/docs/region-support>`__
 
             For the location of ``global`` it is unspecified where log
             entries are actually stored.
@@ -373,10 +374,10 @@ class LogView(proto.Message):
             Filters must be logical conjunctions that use the AND
             operator, and they can use any of the following qualifiers:
 
-            -  ``SOURCE()``, which specifies a project, folder,
-               organization, or billing account of origin.
-            -  ``resource.type``, which specifies the resource type.
-            -  ``LOG_ID()``, which identifies the log.
+            - ``SOURCE()``, which specifies a project, folder,
+              organization, or billing account of origin.
+            - ``resource.type``, which specifies the resource type.
+            - ``LOG_ID()``, which identifies the log.
 
             They can also use the negations of these qualifiers with the
             NOT operator.
@@ -423,13 +424,14 @@ class LogScope(proto.Message):
 
             ``projects/my-project/locations/global/logScopes/my-log-scope``
         resource_names (MutableSequence[str]):
-            Required. Names of one or more parent resources:
+            Required. Names of one or more parent resources
+            (``organizations`` and ``folders`` are not supported.):
 
-            -  ``projects/[PROJECT_ID]``
+            - ``projects/[PROJECT_ID]``
 
             May alternatively be one or more views:
 
-            -  ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
             A log scope can include a maximum of 5 projects and a
             maximum of 100 resources in total.
@@ -489,10 +491,10 @@ class LogExclusion(proto.Message):
             Optional. A description of this exclusion.
         filter (str):
             Required. An `advanced logs
-            filter <https://cloud.google.com/logging/docs/view/advanced-queries>`__
+            filter <https://docs.cloud.google.com/logging/docs/view/building-queries#queries-by-expression>`__
             that matches the log entries to be excluded. By using the
             `sample
-            function <https://cloud.google.com/logging/docs/view/advanced-queries#sample>`__,
+            function <https://docs.cloud.google.com/logging/docs/view/logging-query-language#sample>`__,
             you can exclude less than 100% of the matching log entries.
 
             For example, the following query matches 99% of low-severity
@@ -551,12 +553,12 @@ class BigQueryOptions(proto.Message):
     Attributes:
         use_partitioned_tables (bool):
             Optional. Whether to use `BigQuery's partition
-            tables <https://cloud.google.com/bigquery/docs/partitioned-tables>`__.
+            tables <https://docs.cloud.google.com/bigquery/docs/partitioned-tables>`__.
             By default, Cloud Logging creates dated tables based on the
             log entries' timestamps, e.g. syslog_20170523. With
             partitioned tables the date suffix is no longer present and
             `special query
-            syntax <https://cloud.google.com/bigquery/docs/querying-partitioned-tables>`__
+            syntax <https://docs.cloud.google.com/bigquery/docs/querying-partitioned-tables>`__
             has to be used instead. In both cases, tables are sharded
             based on UTC timezone.
         uses_timestamp_column_partitioning (bool):
@@ -585,11 +587,11 @@ class LogSink(proto.Message):
     r"""Describes a sink used to export log entries to one of the following
     destinations:
 
-    -  a Cloud Logging log bucket,
-    -  a Cloud Storage bucket,
-    -  a BigQuery dataset,
-    -  a Pub/Sub topic,
-    -  a Cloud project.
+    - a Cloud Logging log bucket,
+    - a Cloud Storage bucket,
+    - a BigQuery dataset,
+    - a Pub/Sub topic,
+    - a Cloud project.
 
     A logs filter controls which log entries are exported. The sink must
     be created within a project, organization, billing account, or
@@ -608,10 +610,10 @@ class LogSink(proto.Message):
             Sink identifiers are limited to 100 characters and can
             include only the following characters:
 
-            -  upper and lower-case alphanumeric characters,
-            -  underscores,
-            -  hyphens,
-            -  periods.
+            - upper and lower-case alphanumeric characters,
+            - underscores,
+            - hyphens,
+            - periods.
 
             First character has to be alphanumeric.
         resource_name (str):
@@ -639,11 +641,11 @@ class LogSink(proto.Message):
             The sink's ``writer_identity``, set when the sink is
             created, must have permission to write to the destination or
             else the log entries are not exported. For more information,
-            see `Exporting Logs with
-            Sinks <https://cloud.google.com/logging/docs/api/tasks/exporting-logs>`__.
+            see `Route logs to supported
+            destinations <https://docs.cloud.google.com/logging/docs/export/configure_export_v2>`__.
         filter (str):
             Optional. An `advanced logs
-            filter <https://cloud.google.com/logging/docs/view/advanced-queries>`__.
+            filter <https://docs.cloud.google.com/logging/docs/view/building-queries#queries-by-expression>`__.
             The only exported log entries are those that are in the
             resource owning the sink and that match the filter.
 
@@ -680,8 +682,9 @@ class LogSink(proto.Message):
 
             Until you grant this identity write-access to the
             destination, log entry exports from this sink will fail. For
-            more information, see `Granting Access for a
-            Resource <https://cloud.google.com/iam/docs/granting-roles-to-service-accounts#granting_access_to_a_service_account_for_a_resource>`__.
+            more information, see `Manage access to projects, folders,
+            and
+            organizations <https://docs.cloud.google.com/iam/docs/granting-roles-to-service-accounts#granting_access_to_a_service_account_for_a_resource>`__.
             Consult the destination service's documentation to determine
             the appropriate IAM roles to assign to the identity.
 
@@ -715,18 +718,18 @@ class LogSink(proto.Message):
             When the value of 'intercept_children' is true, the
             following restrictions apply:
 
-            -  The sink must have the ``include_children`` flag set to
-               true.
-            -  The sink destination must be a Cloud project.
+            - The sink must have the ``include_children`` flag set to
+              true.
+            - The sink destination must be a Cloud project.
 
             Also, the following behaviors apply:
 
-            -  Any logs matched by the sink won't be included by
-               non-\ ``_Required`` sinks owned by child resources.
-            -  The sink appears in the results of a ``ListSinks`` call
-               from a child resource if the value of the ``filter``
-               field in its request is either ``'in_scope("ALL")'`` or
-               ``'in_scope("ANCESTOR")'``.
+            - Any logs matched by the sink won't be included by
+              non-``_Required`` sinks owned by child resources.
+            - The sink appears in the results of a ``ListSinks`` call
+              from a child resource if the value of the ``filter`` field
+              in its request is either ``'in_scope("ALL")'`` or
+              ``'in_scope("ANCESTOR")'``.
         bigquery_options (googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.BigQueryOptions):
             Optional. Options that affect sinks exporting
             data to BigQuery.
@@ -914,8 +917,8 @@ class CmekSettings(proto.Message):
     Google Cloud organizations. Once configured, it applies to all
     projects and folders in the Google Cloud organization.
 
-    See `Enabling CMEK for Log
-    Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+    See `Configure CMEK for Cloud
+    Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
     for more information.
 
     Attributes:
@@ -953,8 +956,8 @@ class CmekSettings(proto.Message):
             To disable CMEK for the Log Router, set this field to an
             empty string.
 
-            See `Enabling CMEK for Log
-            Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+            See `Configure CMEK for Cloud
+            Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
             for more information.
         kms_key_version_name (str):
             Output only. The CryptoKeyVersion resource name for the
@@ -988,8 +991,8 @@ class CmekSettings(proto.Message):
             [GetCmekSettings][google.logging.v2.ConfigServiceV2.GetCmekSettings]
             to obtain the service account ID.
 
-            See `Enabling CMEK for Log
-            Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+            See `Configure CMEK for Cloud
+            Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
             for more information.
     """
 
@@ -1044,8 +1047,8 @@ class Settings(proto.Message):
             To disable CMEK for the Log Router, set this field to an
             empty string.
 
-            See `Enabling CMEK for Log
-            Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+            See `Configure CMEK for Cloud
+            Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
             for more information.
         kms_service_account_id (str):
             Output only. The service account that will be used by the
@@ -1058,8 +1061,8 @@ class Settings(proto.Message):
             [GetSettings][google.logging.v2.ConfigServiceV2.GetSettings]
             to obtain the service account ID.
 
-            See `Enabling CMEK for Log
-            Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+            See `Configure CMEK for Cloud
+            Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
             for more information.
         storage_location (str):
             Optional. The storage location for the ``_Default`` and
@@ -1097,7 +1100,7 @@ class Settings(proto.Message):
         Attributes:
             filter (str):
                 Optional. An `advanced logs
-                filter <https://cloud.google.com/logging/docs/view/advanced-queries>`__.
+                filter <https://docs.cloud.google.com/logging/docs/view/building-queries#queries-by-expression>`__.
                 The only exported log entries are those that are in the
                 resource owning the sink and that match the filter.
 
@@ -1206,7 +1209,7 @@ class LoggingQuery(proto.Message):
     Attributes:
         filter (str):
             Required. An `advanced query using the Logging Query
-            Language <https://cloud.google.com/logging/docs/view/logging-query-language>`__.
+            Language <https://docs.cloud.google.com/logging/docs/view/logging-query-language>`__.
             The maximum length of the filter is 20000 characters.
         summary_fields (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LoggingQuery.SummaryField]):
             Optional. The set of summary fields to
@@ -1225,7 +1228,7 @@ class LoggingQuery(proto.Message):
 
     class SummaryField(proto.Message):
         r"""A field from the LogEntry that is `added to the summary
-        line <https://cloud.google.com/logging/docs/view/logs-explorer-interface#add-summary-fields>`__
+        line <https://docs.cloud.google.com/logging/docs/view/logs-explorer-interface#preferences>`__
         for a query in the Logs Explorer.
 
         Attributes:
@@ -1262,24 +1265,32 @@ class LoggingQuery(proto.Message):
 
 
 class OpsAnalyticsQuery(proto.Message):
-    r"""Describes an analytics query that can be run in the Log
-    Analytics page of Google Cloud console.
-
-    Preview: This is a preview feature and may be subject to change
-    before final release.
+    r"""Describes a query that can be run in Log Analytics.
 
     Attributes:
         sql_query_text (str):
-            Required. A logs analytics SQL query, which
-            generally follows BigQuery format.
+            Optional. A Log Analytics SQL query in text format.
 
-            This is the SQL query that appears in the Log
-            Analytics UI's query editor.
+            If both ``sql_query_text`` and ``query_builder`` fields are
+            set, then the ``sql_query_text`` will be used, if its
+            non-empty. At least one of the two fields must be set.
+        query_builder (googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.QueryBuilderConfig):
+            Optional. A query builder configuration used in Log
+            Analytics.
+
+            If both ``query_builder`` and ``sql_query_text`` fields are
+            set, then the ``sql_query_text`` will be used, if its
+            non-empty. At least one of the two fields must be set.
     """
 
     sql_query_text: str = proto.Field(
         proto.STRING,
         number=2,
+    )
+    query_builder: analytics_query_builder.QueryBuilderConfig = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        message=analytics_query_builder.QueryBuilderConfig,
     )
 
 
@@ -1304,7 +1315,7 @@ class SavedQuery(proto.Message):
                 "projects/[PROJECT_ID]/locations/[LOCATION_ID]/savedQueries/[QUERY_ID]"
 
             For a list of supported locations, see `Supported
-            Regions <https://cloud.google.com/logging/docs/region-support#bucket-regions>`__
+            Regions <https://docs.cloud.google.com/logging/docs/region-support#bucket-regions>`__
 
             After the saved query is created, the location cannot be
             changed.
@@ -1419,7 +1430,7 @@ class RecentQuery(proto.Message):
                 "projects/[PROJECT_ID]/locations/[LOCATION_ID]/recentQueries/[QUERY_ID]"
 
             For a list of supported locations, see `Supported
-            Regions <https://cloud.google.com/logging/docs/region-support>`__
+            Regions <https://docs.cloud.google.com/logging/docs/region-support>`__
 
             The [QUERY_ID] is a system generated alphanumeric ID.
         logging_query (googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LoggingQuery):
@@ -1969,7 +1980,9 @@ class GetLogScopeRequest(proto.Message):
 
             ::
 
-                "projects/[PROJECT_ID]/locations/[LOCATION_ID]/logScopes/[LOG_SCOPE_ID]"
+                "projects/[PROJECT_ID]/locations/[LOCATION_ID]"
+                "organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]"
+                "folders/[FOLDER_ID]/locations/[LOCATION_ID]"
 
             For example:
 
@@ -1987,12 +2000,14 @@ class CreateLogScopeRequest(proto.Message):
 
     Attributes:
         parent (str):
-            Required. The parent project in which to create the log
-            scope
+            Required. The parent resource in which to create the log
+            scope:
 
             ::
 
                 "projects/[PROJECT_ID]/locations/[LOCATION_ID]"
+                "organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]"
+                "folders/[FOLDER_ID]/locations/[LOCATION_ID]"
 
             For example:
 
@@ -2062,7 +2077,9 @@ class DeleteLogScopeRequest(proto.Message):
 
             ::
 
-                "projects/[PROJECT_ID]/locations/[LOCATION_ID]/logScopes/[LOG_SCOPE_ID]"
+                "projects/[PROJECT_ID]/locations/[LOCATION_ID]"
+                "organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]"
+                "folders/[FOLDER_ID]/locations/[LOCATION_ID]"
 
             For example:
 
@@ -2308,10 +2325,10 @@ class ListSinksRequest(proto.Message):
             Optional. A filter expression to constrain the sinks
             returned. Today, this only supports the following strings:
 
-            -  ``''``
-            -  ``'in_scope("ALL")'``,
-            -  ``'in_scope("ANCESTOR")'``,
-            -  ``'in_scope("DEFAULT")'``.
+            - ``''``
+            - ``'in_scope("ALL")'``,
+            - ``'in_scope("ANCESTOR")'``,
+            - ``'in_scope("DEFAULT")'``.
 
             Description of scopes below. ALL: Includes all of the sinks
             which can be returned in any other scope. ANCESTOR: Includes
@@ -2426,7 +2443,7 @@ class CreateSinkRequest(proto.Message):
             If this field is set to true, or if the sink is owned by a
             non-project resource such as an organization, then the value
             of ``writer_identity`` will be a `service
-            agent <https://cloud.google.com/iam/docs/service-account-types#service-agents>`__
+            agent <https://docs.cloud.google.com/iam/docs/service-account-types#service-agents>`__
             used by the sinks with the same parent. For more
             information, see ``writer_identity`` in
             [LogSink][google.logging.v2.LogSink].
@@ -2487,15 +2504,15 @@ class UpdateSinkRequest(proto.Message):
             the updated sink depends on both the old and new values of
             this field:
 
-            -  If the old and new values of this field are both false or
-               both true, then there is no change to the sink's
-               ``writer_identity``.
-            -  If the old value is false and the new value is true, then
-               ``writer_identity`` is changed to a `service
-               agent <https://cloud.google.com/iam/docs/service-account-types#service-agents>`__
-               owned by Cloud Logging.
-            -  It is an error if the old value is true and the new value
-               is set to false or defaulted to false.
+            - If the old and new values of this field are both false or
+              both true, then there is no change to the sink's
+              ``writer_identity``.
+            - If the old value is false and the new value is true, then
+              ``writer_identity`` is changed to a `service
+              agent <https://docs.cloud.google.com/iam/docs/service-account-types#service-agents>`__
+              owned by Cloud Logging.
+            - It is an error if the old value is true and the new value
+              is set to false or defaulted to false.
         custom_writer_identity (str):
             Optional. The service account provided by the caller that
             will be used to write the log entries. The format must be
@@ -2718,8 +2735,8 @@ class GetCmekSettingsRequest(proto.Message):
     r"""The parameters to
     [GetCmekSettings][google.logging.v2.ConfigServiceV2.GetCmekSettings].
 
-    See `Enabling CMEK for Log
-    Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+    See `Configure CMEK for Cloud
+    Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
     for more information.
 
     Attributes:
@@ -2753,8 +2770,8 @@ class UpdateCmekSettingsRequest(proto.Message):
     r"""The parameters to
     [UpdateCmekSettings][google.logging.v2.ConfigServiceV2.UpdateCmekSettings].
 
-    See `Enabling CMEK for Log
-    Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+    See `Configure CMEK for Cloud
+    Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
     for more information.
 
     Attributes:
@@ -2779,8 +2796,8 @@ class UpdateCmekSettingsRequest(proto.Message):
         cmek_settings (googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.CmekSettings):
             Required. The CMEK settings to update.
 
-            See `Enabling CMEK for Log
-            Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+            See `Configure CMEK for Cloud
+            Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
             for more information.
         update_mask (google.protobuf.field_mask_pb2.FieldMask):
             Optional. Field mask identifying which fields from
@@ -2815,7 +2832,7 @@ class GetSettingsRequest(proto.Message):
     [GetSettings][google.logging.v2.ConfigServiceV2.GetSettings].
 
     See [View default resource settings for Logging]
-    (https://cloud.google.com/logging/docs/default-settings#view-org-settings)
+    (https://docs.cloud.google.com/logging/docs/default-settings#view-org-settings)
     for more information.
 
     Attributes:
@@ -2848,8 +2865,8 @@ class UpdateSettingsRequest(proto.Message):
     [UpdateSettings][google.logging.v2.ConfigServiceV2.UpdateSettings].
 
     See [Configure default settings for organizations and folders]
-    (https://cloud.google.com/logging/docs/default-settings) for more
-    information.
+    (https://docs.cloud.google.com/logging/docs/default-settings) for
+    more information.
 
     Attributes:
         name (str):
@@ -2866,8 +2883,8 @@ class UpdateSettingsRequest(proto.Message):
         settings (googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.Settings):
             Required. The settings to update.
 
-            See `Enabling CMEK for Log
-            Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+            See `Configure CMEK for Cloud
+            Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
             for more information.
         update_mask (google.protobuf.field_mask_pb2.FieldMask):
             Optional. Field mask identifying which fields from
@@ -2947,13 +2964,13 @@ class ListSavedQueriesRequest(proto.Message):
 
             The two supported ``type`` function calls are:
 
-            -  ``type("Logging")``
-            -  ``type("OpsAnalytics")``
+            - ``type("Logging")``
+            - ``type("OpsAnalytics")``
 
             The two supported ``visibility`` tokens are:
 
-            -  ``visibility = PRIVATE``
-            -  ``visibility = SHARED``
+            - ``visibility = PRIVATE``
+            - ``visibility = SHARED``
 
             For example:
 
@@ -3092,10 +3109,10 @@ class CreateSavedQueryRequest(proto.Message):
             The ``saved_query_id`` is limited to 100 characters and can
             include only the following characters:
 
-            -  upper and lower-case alphanumeric characters,
-            -  underscores,
-            -  hyphens,
-            -  periods.
+            - upper and lower-case alphanumeric characters,
+            - underscores,
+            - hyphens,
+            - periods.
 
             First character has to be alphanumeric.
         saved_query (googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.SavedQuery):
@@ -3228,8 +3245,8 @@ class ListRecentQueriesRequest(proto.Message):
             field is one of the two allowable ``type`` function calls,
             which are the following:
 
-            -  ``type("Logging")``
-            -  ``type("OpsAnalytics")``
+            - ``type("Logging")``
+            - ``type("OpsAnalytics")``
     """
 
     parent: str = proto.Field(

@@ -16,6 +16,7 @@
 
 
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import requests
@@ -71,16 +72,39 @@ class Copy(base.Command):
             ' stored in the lro metadata and response.'
         ),
     )
-    parser.add_argument(
+    version_filter_group = parser.add_mutually_exclusive_group()
+    version_filter_group.add_argument(
         '--max-version-age-days',
         type=int,
         default=0,
+        action=actions.DeprecationAction(
+            '--max-version-age-days',
+            warn=(
+                'The {flag_name} flag is deprecated. Use'
+                ' --version-updated-within-days or'
+                ' --version-created-within-days.'
+            ),
+            action='store',
+        ),
         help=(
-            'If set, only versions updated within the specified number of days'
-            " (24-hour periods) up to the operation's start time will be"
-            ' copied. If unset or set to 0, all versions will be copied. This'
-            ' arg provides a convenient way to speed up regular repository'
-            ' copies by skipping older versions.'
+            'Only copy versions updated within the specified number of days.'
+            ' Set to 0 to disable this filter. Default is 0.'
+        ),
+    )
+    version_filter_group.add_argument(
+        '--version-created-within-days',
+        type=int,
+        help=(
+            'Only copy package versions created within the specified number of'
+            ' days.'
+        ),
+    )
+    version_filter_group.add_argument(
+        '--version-updated-within-days',
+        type=int,
+        help=(
+            'Only copy package versions updated or refreshed within the'
+            ' specified number of days.'
         ),
     )
     parser.add_argument(
@@ -108,6 +132,8 @@ class Copy(base.Command):
         args.max_version_age_days,
         args.include_all_attachments,
         args.exclude_all_tags,
+        version_created_within_days=args.version_created_within_days,
+        version_updated_within_days=args.version_updated_within_days,
     )
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='artifactregistry.projects.locations.operations'

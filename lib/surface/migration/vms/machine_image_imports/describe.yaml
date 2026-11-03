@@ -1,6 +1,4 @@
-- hints:
-    read_only: true
-  help_text:
+- help_text:
     brief: describe an Image Import.
     description: |
       {command} describes an Image Import resource with a nested Image Import Job.

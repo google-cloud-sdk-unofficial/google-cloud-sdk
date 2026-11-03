@@ -14,25 +14,22 @@
 # limitations under the License.
 """Contains the properties for the 'regional' section."""
 
+from googlecloudsdk.core.properties.constants import regional
 from googlecloudsdk.core.properties.types import _Section
 
 
 class _SectionRegional(_Section):
   """Contains the properties for the 'regional' section."""
 
-  # User properties.
-  GLOBAL = 'global'
-  REGIONAL = 'regional'
-  REGIONAL_PREFERRED = 'regional-preferred'
-  # Command / group support level annotations.
-  SUPPORTED = 'supported'
-  REQUIRED = 'required'
-
   def __init__(self):
     super(_SectionRegional, self).__init__('regional')
     self.endpoint_mode = self._Add(
         'endpoint_mode',
-        choices=[self.GLOBAL, self.REGIONAL, self.REGIONAL_PREFERRED],
+        choices=[
+            regional.GLOBAL,
+            regional.REGIONAL,
+            regional.REGIONAL_PREFERRED,
+        ],
         help_text="""\
         Specifies endpoint mode for a given command. Regional endpoints
         provide enhanced data residency and reliability by ensuring your
@@ -55,7 +52,7 @@ class _SectionRegional(_Section):
     )
     self.endpoint_compatibility = self._Add(
         'endpoint_compatibility',
-        choices=[self.SUPPORTED, self.REQUIRED],
+        choices=[regional.SUPPORTED, regional.REQUIRED],
         hidden=True,
         help_text=(
             'Hidden property set by @base.RegionalEndpoints[Supported|Required]'

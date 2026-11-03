@@ -161,22 +161,48 @@ def AddGlobalFilterFlag(parser: argparse.ArgumentParser) -> None:
 
 def AddFeatureFlags(parser: argparse.ArgumentParser) -> None:
   """Adds feature flags to the given parser."""
-  parser.add_argument(
+  # Keep the declaration order so that --ai-processing-location is listed right
+  # after --auto-conversion, which it relates to.
+  group = parser.add_group(help='Gemini feature settings.', sort_args=False)
+  group.add_argument(
       '--auto-conversion',
       action=arg_parsers.StoreTrueFalseAction,
       help='Whether to enable Gemini auto-conversion.',
   )
-  parser.add_argument(
+  # TODO(b/538059905): Once the backend enforces a location for Gemini features
+  # (EnableDrzStrictLocationValidation experiment), validate locally that a
+  # location is set when Gemini features are enabled, so users fail fast before
+  # the API call. Adding it now would be a breaking change that the experiment
+  # does not gate.
+  group.add_argument(
+      '--ai-processing-location',
+      metavar='AI_PROCESSING_LOCATION',
+      help="""\
+        The location where Gemini features process the conversion workspace
+        data, which can be outside of the conversion workspace region.
+        Setting this flag gives explicit consent to process data in the
+        selected location. Required to use Gemini features on regional
+        endpoints. Supported values are:
+
+        * `global`: Process Gemini requests using the global endpoint.
+        * `us`: Process Gemini requests within the United States multi-region.
+        * `eu`: Process Gemini requests within the European Union multi-region.
+
+        To remove a previously set location, pass an empty value, for example
+        `--ai-processing-location=""`.
+      """,
+  )
+  group.add_argument(
       '--quality-assessment',
       action=arg_parsers.StoreTrueFalseAction,
       help='Whether to enable Gemini quality assessment.',
   )
-  parser.add_argument(
+  group.add_argument(
       '--conversion-assistance',
       action=arg_parsers.StoreTrueFalseAction,
       help='Whether to enable Gemini conversion assistance.',
   )
-  parser.add_argument(
+  group.add_argument(
       '--pattern-matching',
       action=arg_parsers.StoreTrueFalseAction,
       help='Whether to enable Gemini pattern matching.',

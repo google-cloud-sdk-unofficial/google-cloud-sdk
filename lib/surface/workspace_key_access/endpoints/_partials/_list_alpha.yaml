@@ -18,14 +18,16 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: true
   hidden: true
   help_text:
     brief: List Workspace Key Access endpoints.
     description: List Workspace Key Access endpoints in a given project and location.
     examples: |-
-      To list endpoints in `us-central1`, run:
+      To list endpoints in `us-east1`, run:
 
-      $ {command} --location=us-central1
+      $ {command} --location=us-east1
   arguments:
     params:
     - help_text: |-

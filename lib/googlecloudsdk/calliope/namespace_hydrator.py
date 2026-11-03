@@ -15,34 +15,88 @@
 
 """Calliope JSON argument hydration library."""
 
+from collections.abc import Mapping
+import dataclasses
+import json
+from typing import Any
+
 from googlecloudsdk.calliope import parser_extensions
 
 
-def HydrateNamespace(calliope_command, payload):
+@dataclasses.dataclass(frozen=True)
+class Arg:
+  """A parsed flag or positional argument from Go's clap parser."""
+
+  name: str
+  value: Any = None
+  is_set: bool = False
+  _dest: str | None = None
+
+  @classmethod
+  def FromDict(cls, data: Mapping[str, Any]) -> 'Arg':
+    return cls(
+        name=data['name'],
+        value=data.get('value'),
+        is_set=bool(data.get('is_set', False)),
+        _dest=data.get('dest'),
+    )
+
+  @property
+  def dest(self) -> str:
+    return self._dest or self.name.lstrip('-').replace('-', '_')
+
+  @property
+  def cli_flag_name(self) -> str:
+    return self.name if self.name.startswith('-') else f'--{self.name}'
+
+
+@dataclasses.dataclass(frozen=True)
+class Payload:
+  """The deserialized GOCLOUD_PAYLOAD emitted by the Go CLI."""
+
+  command_path: list[str] = dataclasses.field(default_factory=list)
+  flags: tuple[Arg, ...] = ()
+  args: tuple[Arg, ...] = ()
+
+  @classmethod
+  def FromJson(cls, payload_json: str) -> 'Payload':
+    """Deserializes a GOCLOUD_PAYLOAD JSON string into a Payload.
+
+    Args:
+      payload_json: The raw JSON string emitted by the Go CLI.
+
+    Returns:
+      The deserialized Payload instance.
+
+    Raises:
+      ValueError: If payload_json is not valid JSON or does not match the
+        expected payload schema.
+    """
+    try:
+      data = json.loads(payload_json)
+      if not isinstance(data, Mapping):
+        raise ValueError(
+            f'Expected a JSON object, got {type(data).__name__}'
+        )
+      return cls(
+          command_path=list(data.get('command_path') or []),
+          flags=tuple(
+              Arg.FromDict(item) for item in (data.get('flags') or [])
+          ),
+          args=tuple(
+              Arg.FromDict(item) for item in (data.get('args') or [])
+          ),
+      )
+    except (KeyError, TypeError, ValueError) as e:
+      raise ValueError(f'Invalid GOCLOUD_PAYLOAD: {e}') from e
+
+
+def HydrateNamespace(calliope_command, payload: Payload):
   """Constructs and populates a Calliope Namespace from a Go payload.
 
   Args:
     calliope_command: calliope.backend.Command, The resolved Calliope command.
-    payload: dict, The deserialized Go clap.Payload JSON dictionary:
-      {
-        'command_path': list[str],  # e.g. ['gcloud', 'compute', 'instances']
-        'flags': [
-          {
-            'name': str,    # Flag name (e.g. 'zone' or '--zone')
-            'value': any,   # Resolved flag value (including defaults from Go)
-            'is_set': bool, # True if explicitly specified on the command line
-          },
-          ...
-        ],
-        'args': [
-          {
-            'name': str,    # Positional argument name (e.g. 'instance')
-            'value': any,   # Resolved argument value
-            'is_set': bool, # True if explicitly specified on the command line
-          },
-          ...
-        ],
-      }
+    payload: Payload, The parsed Go payload.
 
   Returns:
     parser_extensions.Namespace, The populated Calliope namespace object.
@@ -57,25 +111,14 @@ def HydrateNamespace(calliope_command, payload):
   ns = parser_extensions.Namespace()
   ns._SetParser(parser)  # pylint: disable=protected-access
 
-  for item in payload.get('flags') or []:
-    name = item.get('name', '')
-    val = item.get('value')
-    is_set = item.get('is_set', False)
+  for flag in payload.flags:
+    setattr(ns, flag.dest, flag.value)
+    if flag.is_set:
+      ns._specified_args[flag.dest] = flag.cli_flag_name  # pylint: disable=protected-access
 
-    dest = name.lstrip('-').replace('-', '_')
-    setattr(ns, dest, val)
-    if is_set:
-      cli_name = name if name.startswith('-') else '--{}'.format(name)
-      ns._specified_args[dest] = cli_name  # pylint: disable=protected-access
-
-  for item in payload.get('args') or []:
-    name = item.get('name', '')
-    val = item.get('value')
-    is_set = item.get('is_set', False)
-
-    dest = name.replace('-', '_')
-    setattr(ns, dest, val)
-    if is_set:
-      ns._specified_args[dest] = name  # pylint: disable=protected-access
+  for arg in payload.args:
+    setattr(ns, arg.dest, arg.value)
+    if arg.is_set:
+      ns._specified_args[arg.dest] = arg.name  # pylint: disable=protected-access
 
   return ns

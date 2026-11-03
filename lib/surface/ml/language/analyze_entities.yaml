@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Use Google Cloud Natural Language API to identify entities in text.
@@ -27,6 +29,8 @@
 
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Use Google Cloud Natural Language API to identify entities in text.

@@ -1,3 +1,5 @@
+hints:
+  read_only: true
 help_text:
   brief: Get an IAM policy on a Cloud Bigtable Backup.
   description: |

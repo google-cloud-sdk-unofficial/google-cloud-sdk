@@ -233,11 +233,17 @@ class S3XmlClient(cloud_api.CloudApi):
         self.scheme, metadata, bucket_name
     )
 
-  def list_buckets(self, fields_scope=cloud_api.FieldsScope.NO_ACL):
+  def list_buckets(
+      self,
+      fields_scope=cloud_api.FieldsScope.NO_ACL,
+      soft_deleted=False,
+      prefix=None,
+  ):
     """See super class."""
+    del soft_deleted, prefix  # Unused.
     try:
       response = self.client.list_buckets()
-      for bucket in response['Buckets']:
+      for bucket in response.get('Buckets', []):
         if fields_scope == cloud_api.FieldsScope.FULL:
           yield self.get_bucket(bucket['Name'], fields_scope)
         else:
@@ -248,7 +254,7 @@ class S3XmlClient(cloud_api.CloudApi):
                   bucket['CreationDate']),
               metadata={
                   'Bucket': bucket,
-                  'Owner': response['Owner']
+                  'Owner': response.get('Owner'),
               })
     except botocore.exceptions.ClientError as error:
       core_exceptions.reraise(errors.XmlApiError(error))

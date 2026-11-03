@@ -7140,63 +7140,10 @@ class BackendServiceHAPolicy(_messages.Message):
       Gratuitous ARP (GARP) packet (IPv4) or an ICMPv6 Router
       Advertisement(RA) packet (IPv6).  Google Cloud immediately but
       temporarily associates the forwarding rule IP address with that VM, and
-      both new and in-flight packets are quickly delivered to that VM.    Note
-      the important properties of the Fast IP Move functionality:        - The
-      GARP/RA-initiated re-routing stays active for approximately 20
-      minutes. After triggering fast failover, you must also    appropriately
-      set the haPolicy.leader.    -  The new leader instance should continue
-      to send GARP/RA packets    periodically every 10 seconds until at least
-      10 minutes after updating    the haPolicy.leader (but stop immediately
-      if it is no longer the leader).    - After triggering a fast failover,
-      we recommend that you wait at least    3 seconds before sending another
-      GARP/RA packet from a different VM    instance to avoid race conditions.
-      - Don't send GARP/RA packets from different VM    instances at the same
-      time. If multiple instances continue to send    GARP/RA packets, traffic
-      might be routed to different destinations in an    alternating order.
-      This condition ceases when a single instance    issues a GARP/RA packet.
-      - The GARP/RA request always takes priority over the leader API.
-      Using the haPolicy.leader API to change the leader to a different
-      instance will have no effect until the GARP/RA request becomes
-      inactive.    - The GARP/RA packets should follow the GARP/RA    Packet
-      Specifications..    -  When multiple forwarding rules refer to a
-      regional backend service,    you need only send a GARP or RA packet for
-      a single forwarding rule    virtual IP. The virtual IPs for all
-      forwarding rules targeting the same    backend service will also be
-      moved to the sender of the GARP or RA    packet.     The following are
-      the Fast IP Move limitations (that is, when fastIPMove is not DISABLED):
-      - Multiple forwarding rules cannot use the same IP address if one of
-      them refers to a regional backend service with fastIPMove.    - The
-      regional backend service must set the network field, and all    NEGs
-      must belong to that network. However, individual    NEGs can belong to
-      different subnetworks of that network.     - The maximum number of
-      network endpoints across all backends of a    backend service with
-      fastIPMove is 32.    - The maximum number of backend services with
-      fastIPMove that can have    the same network endpoint attached to one of
-      its backends is 64.    - The maximum number of backend services with
-      fastIPMove in a VPC in a    region is 64.    - The network endpoints
-      that are attached to a backend of a backend    service with fastIPMove
-      cannot resolve to Gen3+ machines for IPv6.    - Traffic directed to the
-      leader by a static route next hop will not be    redirected to a new
-      leader by fast failover. Such traffic will only be    redirected once an
-      haPolicy.leader update has taken effect. Only traffic    to the
-      forwarding rule's virtual IP will be redirected to a new leader by
-      fast failover.   haPolicy.fastIPMove can be set only at backend service
-      creation time. Once set, it cannot be updated.  By default, fastIpMove
-      is set to DISABLED.
-
-  Fields:
-    fastIPMove: Specifies whether fast IP move is enabled, and if so, the
-      mechanism to achieve it.  Supported values are:        - DISABLED: Fast
-      IP Move is disabled. You can only use the    haPolicy.leader API to
-      update the leader.    - >GARP_RA: Provides a method to very quickly
-      define a new network    endpoint as the leader. This method is faster
-      than updating the leader    using the haPolicy.leader API. Fast IP move
-      works as follows: The VM    hosting the network endpoint that should
-      become the new leader sends    either a Gratuitous ARP (GARP) packet
-      (IPv4) or an ICMPv6 Router    Advertisement(RA) packet (IPv6).  Google
-      Cloud immediately but    temporarily associates the forwarding rule IP
-      address with that VM, and    both new and in-flight packets are quickly
-      delivered to that VM.    Note the important properties of the Fast IP
+      both new and in-flight packets are quickly delivered to that VM.    -
+      HA_CONTROLLER: The Backend Service is managed by a High Availability
+      Controller. Failover and leader election are exclusively managed by the
+      HA Controller service.    Note the important properties of the Fast IP
       Move functionality:        - The GARP/RA-initiated re-routing stays
       active for approximately 20    minutes. After triggering fast failover,
       you must also    appropriately set the haPolicy.leader.    -  The new
@@ -7238,6 +7185,64 @@ class BackendServiceHAPolicy(_messages.Message):
       redirected to a new leader by    fast failover.   haPolicy.fastIPMove
       can be set only at backend service creation time. Once set, it cannot be
       updated.  By default, fastIpMove is set to DISABLED.
+
+  Fields:
+    fastIPMove: Specifies whether fast IP move is enabled, and if so, the
+      mechanism to achieve it.  Supported values are:        - DISABLED: Fast
+      IP Move is disabled. You can only use the    haPolicy.leader API to
+      update the leader.    - >GARP_RA: Provides a method to very quickly
+      define a new network    endpoint as the leader. This method is faster
+      than updating the leader    using the haPolicy.leader API. Fast IP move
+      works as follows: The VM    hosting the network endpoint that should
+      become the new leader sends    either a Gratuitous ARP (GARP) packet
+      (IPv4) or an ICMPv6 Router    Advertisement(RA) packet (IPv6).  Google
+      Cloud immediately but    temporarily associates the forwarding rule IP
+      address with that VM, and    both new and in-flight packets are quickly
+      delivered to that VM.    - HA_CONTROLLER: The Backend Service is managed
+      by a High Availability    Controller. Failover and leader election are
+      exclusively managed by the    HA Controller service.    Note the
+      important properties of the Fast IP Move functionality:        - The
+      GARP/RA-initiated re-routing stays active for approximately 20
+      minutes. After triggering fast failover, you must also    appropriately
+      set the haPolicy.leader.    -  The new leader instance should continue
+      to send GARP/RA packets    periodically every 10 seconds until at least
+      10 minutes after updating    the haPolicy.leader (but stop immediately
+      if it is no longer the leader).    - After triggering a fast failover,
+      we recommend that you wait at least    3 seconds before sending another
+      GARP/RA packet from a different VM    instance to avoid race conditions.
+      - Don't send GARP/RA packets from different VM    instances at the same
+      time. If multiple instances continue to send    GARP/RA packets, traffic
+      might be routed to different destinations in an    alternating order.
+      This condition ceases when a single instance    issues a GARP/RA packet.
+      - The GARP/RA request always takes priority over the leader API.
+      Using the haPolicy.leader API to change the leader to a different
+      instance will have no effect until the GARP/RA request becomes
+      inactive.    - The GARP/RA packets should follow the GARP/RA    Packet
+      Specifications..    -  When multiple forwarding rules refer to a
+      regional backend service,    you need only send a GARP or RA packet for
+      a single forwarding rule    virtual IP. The virtual IPs for all
+      forwarding rules targeting the same    backend service will also be
+      moved to the sender of the GARP or RA    packet.     The following are
+      the Fast IP Move limitations (that is, when fastIPMove is not DISABLED):
+      - Multiple forwarding rules cannot use the same IP address if one of
+      them refers to a regional backend service with fastIPMove.    - The
+      regional backend service must set the network field, and all    NEGs
+      must belong to that network. However, individual    NEGs can belong to
+      different subnetworks of that network.     - The maximum number of
+      network endpoints across all backends of a    backend service with
+      fastIPMove is 32.    - The maximum number of backend services with
+      fastIPMove that can have    the same network endpoint attached to one of
+      its backends is 64.    - The maximum number of backend services with
+      fastIPMove in a VPC in a    region is 64.    - The network endpoints
+      that are attached to a backend of a backend    service with fastIPMove
+      cannot resolve to Gen3+ machines for IPv6.    - Traffic directed to the
+      leader by a static route next hop will not be    redirected to a new
+      leader by fast failover. Such traffic will only be    redirected once an
+      haPolicy.leader update has taken effect. Only traffic    to the
+      forwarding rule's virtual IP will be redirected to a new leader by
+      fast failover.   haPolicy.fastIPMove can be set only at backend service
+      creation time. Once set, it cannot be updated.  By default, fastIpMove
+      is set to DISABLED.
     leader: Selects one of the network endpoints attached to the backend NEGs
       of this service as the active endpoint (the leader) that receives all
       traffic.  When the leader changes, there is no connection draining to
@@ -7259,38 +7264,41 @@ class BackendServiceHAPolicy(_messages.Message):
     sends    either a Gratuitous ARP (GARP) packet (IPv4) or an ICMPv6 Router
     Advertisement(RA) packet (IPv6).  Google Cloud immediately but
     temporarily associates the forwarding rule IP address with that VM, and
-    both new and in-flight packets are quickly delivered to that VM.    Note
-    the important properties of the Fast IP Move functionality:        - The
-    GARP/RA-initiated re-routing stays active for approximately 20    minutes.
-    After triggering fast failover, you must also    appropriately set the
-    haPolicy.leader.    -  The new leader instance should continue to send
-    GARP/RA packets    periodically every 10 seconds until at least 10 minutes
-    after updating    the haPolicy.leader (but stop immediately if it is no
-    longer the leader).    - After triggering a fast failover, we recommend
-    that you wait at least    3 seconds before sending another GARP/RA packet
-    from a different VM    instance to avoid race conditions.    - Don't send
-    GARP/RA packets from different VM    instances at the same time. If
-    multiple instances continue to send    GARP/RA packets, traffic might be
-    routed to different destinations in an    alternating order. This
-    condition ceases when a single instance    issues a GARP/RA packet.    -
-    The GARP/RA request always takes priority over the leader API.    Using
-    the haPolicy.leader API to change the leader to a different    instance
-    will have no effect until the GARP/RA request becomes    inactive.    -
-    The GARP/RA packets should follow the GARP/RA    Packet Specifications..
-    -  When multiple forwarding rules refer to a regional backend service,
-    you need only send a GARP or RA packet for a single forwarding rule
-    virtual IP. The virtual IPs for all forwarding rules targeting the same
-    backend service will also be moved to the sender of the GARP or RA
-    packet.     The following are the Fast IP Move limitations (that is, when
-    fastIPMove is not DISABLED):        - Multiple forwarding rules cannot use
-    the same IP address if one of    them refers to a regional backend service
-    with fastIPMove.    - The regional backend service must set the network
-    field, and all    NEGs must belong to that network. However, individual
-    NEGs can belong to different subnetworks of that network.     - The
-    maximum number of network endpoints across all backends of a    backend
-    service with fastIPMove is 32.    - The maximum number of backend services
-    with fastIPMove that can have    the same network endpoint attached to one
-    of its backends is 64.    - The maximum number of backend services with
+    both new and in-flight packets are quickly delivered to that VM.    -
+    HA_CONTROLLER: The Backend Service is managed by a High Availability
+    Controller. Failover and leader election are exclusively managed by the
+    HA Controller service.    Note the important properties of the Fast IP
+    Move functionality:        - The GARP/RA-initiated re-routing stays active
+    for approximately 20    minutes. After triggering fast failover, you must
+    also    appropriately set the haPolicy.leader.    -  The new leader
+    instance should continue to send GARP/RA packets    periodically every 10
+    seconds until at least 10 minutes after updating    the haPolicy.leader
+    (but stop immediately if it is no longer the leader).    - After
+    triggering a fast failover, we recommend that you wait at least    3
+    seconds before sending another GARP/RA packet from a different VM
+    instance to avoid race conditions.    - Don't send GARP/RA packets from
+    different VM    instances at the same time. If multiple instances continue
+    to send    GARP/RA packets, traffic might be routed to different
+    destinations in an    alternating order. This condition ceases when a
+    single instance    issues a GARP/RA packet.    - The GARP/RA request
+    always takes priority over the leader API.    Using the haPolicy.leader
+    API to change the leader to a different    instance will have no effect
+    until the GARP/RA request becomes    inactive.    - The GARP/RA packets
+    should follow the GARP/RA    Packet Specifications..    -  When multiple
+    forwarding rules refer to a regional backend service,    you need only
+    send a GARP or RA packet for a single forwarding rule    virtual IP. The
+    virtual IPs for all forwarding rules targeting the same    backend service
+    will also be moved to the sender of the GARP or RA    packet.     The
+    following are the Fast IP Move limitations (that is, when fastIPMove is
+    not DISABLED):        - Multiple forwarding rules cannot use the same IP
+    address if one of    them refers to a regional backend service with
+    fastIPMove.    - The regional backend service must set the network field,
+    and all    NEGs must belong to that network. However, individual    NEGs
+    can belong to different subnetworks of that network.     - The maximum
+    number of network endpoints across all backends of a    backend service
+    with fastIPMove is 32.    - The maximum number of backend services with
+    fastIPMove that can have    the same network endpoint attached to one of
+    its backends is 64.    - The maximum number of backend services with
     fastIPMove in a VPC in a    region is 64.    - The network endpoints that
     are attached to a backend of a backend    service with fastIPMove cannot
     resolve to Gen3+ machines for IPv6.    - Traffic directed to the leader by
@@ -7304,9 +7312,11 @@ class BackendServiceHAPolicy(_messages.Message):
     Values:
       DISABLED: <no description>
       GARP_RA: <no description>
+      HA_CONTROLLER: <no description>
     """
     DISABLED = 0
     GARP_RA = 1
+    HA_CONTROLLER = 2
 
   fastIPMove = _messages.EnumField('FastIPMoveValueValuesEnum', 1)
   leader = _messages.MessageField('BackendServiceHAPolicyLeader', 2)
@@ -8755,8 +8765,12 @@ class BulkInsertInstanceResource(_messages.Message):
 
   Fields:
     count: The maximum number of instances to create.
-    instanceFlexibilityPolicy: A flexible specification of machine type of
-      instances to create.
+    instanceFlexibilityPolicy: A specification of alternative machine types to
+      use when creating instances. A single bulkInsert request can create
+      instances with multiple different machine types based on capacity and
+      quota availability. This field is supported only for regional bulkInsert
+      requests. For more information, see About instance flexibility for VMs
+      created in bulk.
     instanceProperties: The instance properties defining the VM instances to
       be created. Required if sourceInstanceTemplate is not provided.
     locationPolicy: Policy for choosing target zone. For more information,
@@ -15446,6 +15460,330 @@ class ComputeFolderGlobalVmExtensionPoliciesUpdateRequest(_messages.Message):
   globalVmExtensionPolicy = _messages.StringField(2, required=True)
   globalVmExtensionPolicyResource = _messages.MessageField('GlobalVmExtensionPolicy', 3)
   requestId = _messages.StringField(4)
+
+
+class ComputeFolderRolloutPlansDeleteRequest(_messages.Message):
+  r"""A ComputeFolderRolloutPlansDeleteRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    rolloutPlan: Name of the FolderRolloutPlan resource to delete.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  rolloutPlan = _messages.StringField(3, required=True)
+
+
+class ComputeFolderRolloutPlansGetRequest(_messages.Message):
+  r"""A ComputeFolderRolloutPlansGetRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    rolloutPlan: Name of the persistent rollout plan to return.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  rolloutPlan = _messages.StringField(2, required=True)
+
+
+class ComputeFolderRolloutPlansInsertRequest(_messages.Message):
+  r"""A ComputeFolderRolloutPlansInsertRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    rolloutPlan: A RolloutPlan resource to be passed as the request body.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  rolloutPlan = _messages.MessageField('RolloutPlan', 3)
+
+
+class ComputeFolderRolloutPlansListRequest(_messages.Message):
+  r"""A ComputeFolderRolloutPlansListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    folder: Folder ID for this request.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+  """
+
+  filter = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  maxResults = _messages.IntegerField(3, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(4)
+  pageToken = _messages.StringField(5)
+
+
+class ComputeFolderRolloutsAdvanceRequest(_messages.Message):
+  r"""A ComputeFolderRolloutsAdvanceRequest object.
+
+  Fields:
+    currentWaveNumber: Required. Wave number of the current wave.
+    folder: Required. Folder ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    rollout: Required. Name of the Rollout resource to advance.
+  """
+
+  currentWaveNumber = _messages.IntegerField(1)
+  folder = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  rollout = _messages.StringField(4, required=True)
+
+
+class ComputeFolderRolloutsCancelRequest(_messages.Message):
+  r"""A ComputeFolderRolloutsCancelRequest object.
+
+  Fields:
+    folder: Required. Folder ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    rollback: Optional. If true, then the ongoing rollout must be rolled back.
+      Else, just cancel the rollout without taking any further actions. Note
+      that products must support at least one of these options, however, it
+      does not need to support both.
+    rollout: Name of the Rollout resource to cancel.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  rollback = _messages.BooleanField(3)
+  rollout = _messages.StringField(4, required=True)
+
+
+class ComputeFolderRolloutsDeleteRequest(_messages.Message):
+  r"""A ComputeFolderRolloutsDeleteRequest object.
+
+  Fields:
+    folder: Required. Folder ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    rollout: Name of the Rollout resource to delete.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  rollout = _messages.StringField(3, required=True)
+
+
+class ComputeFolderRolloutsGetRequest(_messages.Message):
+  r"""A ComputeFolderRolloutsGetRequest object.
+
+  Fields:
+    folder: Folder ID for this request.
+    rollout: Name of the persistent rollout to return.
+  """
+
+  folder = _messages.StringField(1, required=True)
+  rollout = _messages.StringField(2, required=True)
+
+
+class ComputeFolderRolloutsListRequest(_messages.Message):
+  r"""A ComputeFolderRolloutsListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    folder: Required. Folder ID for this request.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+  """
+
+  filter = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  maxResults = _messages.IntegerField(3, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(4)
+  pageToken = _messages.StringField(5)
+
+
+class ComputeFolderRolloutsPauseRequest(_messages.Message):
+  r"""A ComputeFolderRolloutsPauseRequest object.
+
+  Fields:
+    etag: The etag of the Rollout. If this is provided, the request will only
+      succeed if the etag matches the current etag of the Rollout.
+    folder: Required. Folder ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    rollout: Required. Name of the Rollout resource to pause.
+  """
+
+  etag = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  rollout = _messages.StringField(4, required=True)
+
+
+class ComputeFolderRolloutsResumeRequest(_messages.Message):
+  r"""A ComputeFolderRolloutsResumeRequest object.
+
+  Fields:
+    etag: The etag of the Rollout. If this is provided, the request will only
+      succeed if the etag matches the current etag of the Rollout.
+    folder: Required. Folder ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    rollout: Required. Name of the Rollout resource to resume.
+  """
+
+  etag = _messages.StringField(1)
+  folder = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  rollout = _messages.StringField(4, required=True)
 
 
 class ComputeFolderZoneVmExtensionPoliciesDeleteRequest(_messages.Message):
@@ -22265,11 +22603,14 @@ class ComputeInstancesUpdateRequest(_messages.Message):
       NO_EFFECT: No changes can be made to the instance.
       REFRESH: The instance will not restart.
       RESTART: The instance will restart, potentially on a different host.
+      RESTART_IN_PLACE: The instance will restart on the same host. Data on
+        all local SSDs will be preserved.
     """
     INVALID = 0
     NO_EFFECT = 1
     REFRESH = 2
     RESTART = 3
+    RESTART_IN_PLACE = 4
 
   class MostDisruptiveAllowedActionValueValuesEnum(_messages.Enum):
     r"""Specifies the most disruptive action that can be taken on the instance
@@ -22283,11 +22624,14 @@ class ComputeInstancesUpdateRequest(_messages.Message):
       NO_EFFECT: No changes can be made to the instance.
       REFRESH: The instance will not restart.
       RESTART: The instance will restart, potentially on a different host.
+      RESTART_IN_PLACE: The instance will restart on the same host. Data on
+        all local SSDs will be preserved.
     """
     INVALID = 0
     NO_EFFECT = 1
     REFRESH = 2
     RESTART = 3
+    RESTART_IN_PLACE = 4
 
   discardLocalSsd = _messages.BooleanField(1)
   instance = _messages.StringField(2, required=True)
@@ -45646,6 +45990,8 @@ class ConfidentialInstanceConfig(_messages.Message):
   Fields:
     confidentialInstanceType: Defines the type of technology used by the
       confidential instance.
+    confidentialParavisorConfig: Defines a set of Confidential Paravisor
+      (SVSM) options.
     enableConfidentialCompute: Defines whether the instance should have
       confidential compute enabled.
   """
@@ -45670,7 +46016,48 @@ class ConfidentialInstanceConfig(_messages.Message):
     TDX = 5
 
   confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
-  enableConfidentialCompute = _messages.BooleanField(2)
+  confidentialParavisorConfig = _messages.MessageField('ConfidentialParavisorConfig', 2)
+  enableConfidentialCompute = _messages.BooleanField(3)
+
+
+class ConfidentialParavisorConfig(_messages.Message):
+  r"""A set of Confidential Paravisor (SVSM) options.
+
+  Enums:
+    ConfidentialTpmTypeValueValuesEnum:
+    SevSnpIrqModeValueValuesEnum:
+
+  Fields:
+    confidentialTpmType: A ConfidentialTpmTypeValueValuesEnum attribute.
+    sevSnpIrqMode: A SevSnpIrqModeValueValuesEnum attribute.
+  """
+
+  class ConfidentialTpmTypeValueValuesEnum(_messages.Enum):
+    r"""ConfidentialTpmTypeValueValuesEnum enum type.
+
+    Values:
+      CONFIDENTIAL_TPM_TYPE_UNSPECIFIED: <no description>
+      EPHEMERAL: <no description>
+      NO_CC_TPM: <no description>
+    """
+    CONFIDENTIAL_TPM_TYPE_UNSPECIFIED = 0
+    EPHEMERAL = 1
+    NO_CC_TPM = 2
+
+  class SevSnpIrqModeValueValuesEnum(_messages.Enum):
+    r"""SevSnpIrqModeValueValuesEnum enum type.
+
+    Values:
+      RESTRICTED: <no description>
+      SEV_SNP_IRQ_MODE_UNSPECIFIED: <no description>
+      UNRESTRICTED: <no description>
+    """
+    RESTRICTED = 0
+    SEV_SNP_IRQ_MODE_UNSPECIFIED = 1
+    UNRESTRICTED = 2
+
+  confidentialTpmType = _messages.EnumField('ConfidentialTpmTypeValueValuesEnum', 1)
+  sevSnpIrqMode = _messages.EnumField('SevSnpIrqModeValueValuesEnum', 2)
 
 
 class ConnectionDraining(_messages.Message):
@@ -50179,6 +50566,175 @@ class FlexibleTimeRange(_messages.Message):
   minDuration = _messages.StringField(2)
   startTimeNotEarlierThan = _messages.StringField(3)
   startTimeNotLaterThan = _messages.StringField(4)
+
+
+class FolderRolloutsListResponse(_messages.Message):
+  r"""A FolderRolloutsListResponse object.
+
+  Messages:
+    WarningValue: [Output Only] Informational warning message.
+
+  Fields:
+    etag: A string attribute.
+    id: [Output Only] Unique identifier for the resource; defined by the
+      server.
+    items: A list of Rollout resources.
+    nextPageToken: [Output Only] This token allows you to get the next page of
+      results for list requests. If the number of results is larger
+      thanmaxResults, use the nextPageToken as a value for the query parameter
+      pageToken in the next list request. Subsequent list requests will have
+      their own nextPageToken to continue paging through the results.
+    selfLink: Output only. [Output Only] Server-defined URL for this resource.
+    unreachables: Output only. [Output Only] Unreachable resources.
+      end_interface: MixerListResponseWithEtagBuilder
+    warning: [Output Only] Informational warning message.
+  """
+
+  class WarningValue(_messages.Message):
+    r"""[Output Only] Informational warning message.
+
+    Enums:
+      CodeValueValuesEnum: [Output Only] A warning code, if applicable. For
+        example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no
+        results in the response.
+
+    Messages:
+      DataValueListEntry: A DataValueListEntry object.
+
+    Fields:
+      code: [Output Only] A warning code, if applicable. For example, Compute
+        Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+        response.
+      data: [Output Only] Metadata about this warning in key: value format.
+        For example:  "data": [   {    "key": "scope",    "value": "zones/us-
+        east1-d"   }]
+      message: [Output Only] A human-readable description of the warning code.
+    """
+
+    class CodeValueValuesEnum(_messages.Enum):
+      r"""[Output Only] A warning code, if applicable. For example, Compute
+      Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+      response.
+
+      Values:
+        CLEANUP_FAILED: Warning about failed cleanup of transient changes made
+          by a failed operation.
+        DEPRECATED_RESOURCE_USED: A link to a deprecated resource was created.
+        DEPRECATED_TYPE_USED: When deploying and at least one of the resources
+          has a type marked as deprecated
+        DISK_SIZE_LARGER_THAN_IMAGE_SIZE: The user created a boot disk that is
+          larger than image size.
+        EXPERIMENTAL_TYPE_USED: When deploying and at least one of the
+          resources has a type marked as experimental
+        EXTERNAL_API_WARNING: Warning that is present in an external api call
+        FIELD_VALUE_OVERRIDEN: Warning that value of a field has been
+          overridden. Deprecated unused field.
+        INJECTED_KERNELS_DEPRECATED: The operation involved use of an injected
+          kernel, which is deprecated.
+        INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB: A WEIGHTED_MAGLEV
+          backend service is associated with a health check that is not of
+          type HTTP/HTTPS/HTTP2.
+        LARGE_DEPLOYMENT_WARNING: When deploying a deployment with a
+          exceedingly large number of resources
+        LIST_OVERHEAD_QUOTA_EXCEED: Resource can't be retrieved due to list
+          overhead quota exceed which captures the amount of resources
+          filtered out by user-defined list filter.
+        MISSING_TYPE_DEPENDENCY: A resource depends on a missing type
+        NEXT_HOP_ADDRESS_NOT_ASSIGNED: The route's nextHopIp address is not
+          assigned to an instance on the network.
+        NEXT_HOP_CANNOT_IP_FORWARD: The route's next hop instance cannot ip
+          forward.
+        NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE: The route's nextHopInstance
+          URL refers to an instance that does not have an ipv6 interface on
+          the same network as the route.
+        NEXT_HOP_INSTANCE_NOT_FOUND: The route's nextHopInstance URL refers to
+          an instance that does not exist.
+        NEXT_HOP_INSTANCE_NOT_ON_NETWORK: The route's nextHopInstance URL
+          refers to an instance that is not on the same network as the route.
+        NEXT_HOP_NOT_RUNNING: The route's next hop instance does not have a
+          status of RUNNING.
+        NOT_CRITICAL_ERROR: Error which is not critical. We decided to
+          continue the process despite the mentioned error.
+        NO_RESULTS_ON_PAGE: No results are present on a particular list page.
+        PARTIAL_SUCCESS: Success is reported, but some results may be missing
+          due to errors
+        QUOTA_INFO_UNAVAILABLE: Quota information is not available to client
+          requests (e.g: regions.list).
+        REQUIRED_TOS_AGREEMENT: The user attempted to use a resource that
+          requires a TOS they have not accepted.
+        RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING: Warning that a resource is
+          in use.
+        RESOURCE_NOT_DELETED: One or more of the resources set to auto-delete
+          could not be deleted because they were in use.
+        SCHEMA_VALIDATION_IGNORED: When a resource schema validation is
+          ignored.
+        SINGLE_INSTANCE_PROPERTY_TEMPLATE: Instance template used in instance
+          group manager is valid as such, but its application does not make a
+          lot of sense, because it allows only single instance in instance
+          group.
+        UNDECLARED_PROPERTIES: When undeclared properties in the schema are
+          present
+        UNREACHABLE: A given scope cannot be reached.
+      """
+      CLEANUP_FAILED = 0
+      DEPRECATED_RESOURCE_USED = 1
+      DEPRECATED_TYPE_USED = 2
+      DISK_SIZE_LARGER_THAN_IMAGE_SIZE = 3
+      EXPERIMENTAL_TYPE_USED = 4
+      EXTERNAL_API_WARNING = 5
+      FIELD_VALUE_OVERRIDEN = 6
+      INJECTED_KERNELS_DEPRECATED = 7
+      INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB = 8
+      LARGE_DEPLOYMENT_WARNING = 9
+      LIST_OVERHEAD_QUOTA_EXCEED = 10
+      MISSING_TYPE_DEPENDENCY = 11
+      NEXT_HOP_ADDRESS_NOT_ASSIGNED = 12
+      NEXT_HOP_CANNOT_IP_FORWARD = 13
+      NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE = 14
+      NEXT_HOP_INSTANCE_NOT_FOUND = 15
+      NEXT_HOP_INSTANCE_NOT_ON_NETWORK = 16
+      NEXT_HOP_NOT_RUNNING = 17
+      NOT_CRITICAL_ERROR = 18
+      NO_RESULTS_ON_PAGE = 19
+      PARTIAL_SUCCESS = 20
+      QUOTA_INFO_UNAVAILABLE = 21
+      REQUIRED_TOS_AGREEMENT = 22
+      RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING = 23
+      RESOURCE_NOT_DELETED = 24
+      SCHEMA_VALIDATION_IGNORED = 25
+      SINGLE_INSTANCE_PROPERTY_TEMPLATE = 26
+      UNDECLARED_PROPERTIES = 27
+      UNREACHABLE = 28
+
+    class DataValueListEntry(_messages.Message):
+      r"""A DataValueListEntry object.
+
+      Fields:
+        key: [Output Only] A key that provides more detail on the warning
+          being returned. For example, for warnings where there are no results
+          in a list request for a particular zone, this key might be scope and
+          the key value might be the zone name. Other examples might be a key
+          indicating a deprecated resource and a suggested replacement, or a
+          warning about invalid network settings (for example, if an instance
+          attempts to perform IP forwarding but is not enabled for IP
+          forwarding).
+        value: [Output Only] A warning data value corresponding to the key.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    code = _messages.EnumField('CodeValueValuesEnum', 1)
+    data = _messages.MessageField('DataValueListEntry', 2, repeated=True)
+    message = _messages.StringField(3)
+
+  etag = _messages.StringField(1)
+  id = _messages.StringField(2)
+  items = _messages.MessageField('Rollout', 3, repeated=True)
+  nextPageToken = _messages.StringField(4)
+  selfLink = _messages.StringField(5)
+  unreachables = _messages.StringField(6, repeated=True)
+  warning = _messages.MessageField('WarningValue', 7)
 
 
 class FolderVmExtensionPolicyAggregatedListResponse(_messages.Message):
@@ -61344,30 +61900,21 @@ class InstanceFlexibilityPolicy(_messages.Message):
   r"""A flexible specification of machine types for instances to create.
 
   Messages:
-    InstanceSelectionsValue: Specification of alternative, flexible instance
-      subsets. One of them will be selected to create the instances based on
-      various criteria, like: - ranks, - location policy, - current capacity,
-      - available reservations (you can specify affinity in
-      InstanceProperties), - SWAN/GOOSE limitations. Key is an arbitrary,
-      unique RFC1035 string that identifies the instance selection.
+    InstanceSelectionsValue: Specifies named instance selections that define
+      properties for instances created in bulk. Key is an arbitrary, unique
+      RFC1035 string that identifies the instance selection.
 
   Fields:
-    instanceSelections: Specification of alternative, flexible instance
-      subsets. One of them will be selected to create the instances based on
-      various criteria, like: - ranks, - location policy, - current capacity,
-      - available reservations (you can specify affinity in
-      InstanceProperties), - SWAN/GOOSE limitations. Key is an arbitrary,
-      unique RFC1035 string that identifies the instance selection.
+    instanceSelections: Specifies named instance selections that define
+      properties for instances created in bulk. Key is an arbitrary, unique
+      RFC1035 string that identifies the instance selection.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class InstanceSelectionsValue(_messages.Message):
-    r"""Specification of alternative, flexible instance subsets. One of them
-    will be selected to create the instances based on various criteria, like:
-    - ranks, - location policy, - current capacity, - available reservations
-    (you can specify affinity in InstanceProperties), - SWAN/GOOSE
-    limitations. Key is an arbitrary, unique RFC1035 string that identifies
-    the instance selection.
+    r"""Specifies named instance selections that define properties for
+    instances created in bulk. Key is an arbitrary, unique RFC1035 string that
+    identifies the instance selection.
 
     Messages:
       AdditionalProperty: An additional property for a InstanceSelectionsValue
@@ -106995,9 +107542,9 @@ class TargetHttpsProxy(_messages.Message):
       SSL Certificates or up to 100 Certificate Manager Certificates.
       Certificate Manager Certificates accepted formats are:        - //certif
       icatemanager.googleapis.com/projects/{project}/locations/{location}/cert
-      ificates/{resourceName}.    - https://certificatemanager.googleapis.com/
-      v1alpha1/projects/{project}/locations/{location}/certificates/{resourceN
-      ame}.
+      ificates/{resourceName}.    - https://certificatemanager.{universeDomain
+      }/v1alpha1/projects/{project}/locations/{location}/certificates/{resourc
+      eName}.
     sslPolicy: URL of SslPolicy resource that will be associated with the
       TargetHttpsProxy resource. If not set, the TargetHttpsProxy resource has
       no SSL policy configured.
@@ -113859,6 +114406,10 @@ class VpnTunnel(_messages.Message):
       the same vpnGatewayInterface ID in the peer Google Cloud VPN gateway.
     peerIp: IP address of the peer VPN gateway. Only IPv4 is supported. This
       field can be set only for Classic VPN tunnels.
+    pqcPhase1: User specified list of PQC key exchange mechanisms (KEMs) to
+      use for the phase 1 of the IKE protocol.
+    pqcPhase2: User specified list of PQC key exchange mechanisms (KEMs) to
+      use for the phase 2 of the IKE protocol.
     region: [Output Only] URL of the region where the VPN tunnel resides. You
       must specify this field as part of the HTTP request URL. It is not
       settable as a field in the request body.
@@ -114003,16 +114554,147 @@ class VpnTunnel(_messages.Message):
   peerExternalGatewayInterface = _messages.IntegerField(14, variant=_messages.Variant.INT32)
   peerGcpGateway = _messages.StringField(15)
   peerIp = _messages.StringField(16)
-  region = _messages.StringField(17)
-  remoteTrafficSelector = _messages.StringField(18, repeated=True)
-  router = _messages.StringField(19)
-  selfLink = _messages.StringField(20)
-  sharedSecret = _messages.StringField(21)
-  sharedSecretHash = _messages.StringField(22)
-  status = _messages.EnumField('StatusValueValuesEnum', 23)
-  targetVpnGateway = _messages.StringField(24)
-  vpnGateway = _messages.StringField(25)
-  vpnGatewayInterface = _messages.IntegerField(26, variant=_messages.Variant.INT32)
+  pqcPhase1 = _messages.MessageField('VpnTunnelPqc', 17)
+  pqcPhase2 = _messages.MessageField('VpnTunnelPqc', 18)
+  region = _messages.StringField(19)
+  remoteTrafficSelector = _messages.StringField(20, repeated=True)
+  router = _messages.StringField(21)
+  selfLink = _messages.StringField(22)
+  sharedSecret = _messages.StringField(23)
+  sharedSecretHash = _messages.StringField(24)
+  status = _messages.EnumField('StatusValueValuesEnum', 25)
+  targetVpnGateway = _messages.StringField(26)
+  vpnGateway = _messages.StringField(27)
+  vpnGatewayInterface = _messages.IntegerField(28, variant=_messages.Variant.INT32)
+
+
+class VpnTunnelAdditionalKeyExchanges(_messages.Message):
+  r"""User specified list of PQC key exchanges.
+
+  Enums:
+    Ke1sValueListEntryValuesEnum:
+    Ke2sValueListEntryValuesEnum:
+    Ke3sValueListEntryValuesEnum:
+    Ke4sValueListEntryValuesEnum:
+    Ke5sValueListEntryValuesEnum:
+    Ke6sValueListEntryValuesEnum:
+    Ke7sValueListEntryValuesEnum:
+
+  Fields:
+    ke1s: A Ke1sValueListEntryValuesEnum attribute.
+    ke2s: A Ke2sValueListEntryValuesEnum attribute.
+    ke3s: A Ke3sValueListEntryValuesEnum attribute.
+    ke4s: A Ke4sValueListEntryValuesEnum attribute.
+    ke5s: A Ke5sValueListEntryValuesEnum attribute.
+    ke6s: A Ke6sValueListEntryValuesEnum attribute.
+    ke7s: A Ke7sValueListEntryValuesEnum attribute.
+  """
+
+  class Ke1sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke1sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke2sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke2sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke3sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke3sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke4sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke4sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke5sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke5sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke6sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke6sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke7sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke7sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  ke1s = _messages.EnumField('Ke1sValueListEntryValuesEnum', 1, repeated=True)
+  ke2s = _messages.EnumField('Ke2sValueListEntryValuesEnum', 2, repeated=True)
+  ke3s = _messages.EnumField('Ke3sValueListEntryValuesEnum', 3, repeated=True)
+  ke4s = _messages.EnumField('Ke4sValueListEntryValuesEnum', 4, repeated=True)
+  ke5s = _messages.EnumField('Ke5sValueListEntryValuesEnum', 5, repeated=True)
+  ke6s = _messages.EnumField('Ke6sValueListEntryValuesEnum', 6, repeated=True)
+  ke7s = _messages.EnumField('Ke7sValueListEntryValuesEnum', 7, repeated=True)
 
 
 class VpnTunnelAggregatedList(_messages.Message):
@@ -114214,8 +114896,8 @@ class VpnTunnelCipherSuite(_messages.Message):
   r"""A VpnTunnelCipherSuite object.
 
   Fields:
-    phase1: A VpnTunnelPhase1Algorithms attribute.
-    phase2: A VpnTunnelPhase2Algorithms attribute.
+    phase1: Cipher algorithms for IKE phase 1.
+    phase2: Cipher algorithms for IKE phase 2.
   """
 
   phase1 = _messages.MessageField('VpnTunnelPhase1Algorithms', 1)
@@ -114461,10 +115143,10 @@ class VpnTunnelPhase1Algorithms(_messages.Message):
   r"""A VpnTunnelPhase1Algorithms object.
 
   Fields:
-    dh: A string attribute.
-    encryption: A string attribute.
-    integrity: A string attribute.
-    prf: A string attribute.
+    dh: Diffie-Hellman groups for IKE phase 1.
+    encryption: Encryption algorithms for IKE phase 1.
+    integrity: Integrity algorithms for IKE phase 1.
+    prf: Pseudo-random functions (PRF) for IKE phase 1.
   """
 
   dh = _messages.StringField(1, repeated=True)
@@ -114477,14 +115159,41 @@ class VpnTunnelPhase2Algorithms(_messages.Message):
   r"""A VpnTunnelPhase2Algorithms object.
 
   Fields:
-    encryption: A string attribute.
-    integrity: A string attribute.
-    pfs: A string attribute.
+    encryption: Encryption algorithms for IKE phase 2.
+    integrity: Integrity algorithms for IKE phase 2.
+    pfs: Perfect Forward Secrecy (PFS) groups for IKE phase 2.
   """
 
   encryption = _messages.StringField(1, repeated=True)
   integrity = _messages.StringField(2, repeated=True)
   pfs = _messages.StringField(3, repeated=True)
+
+
+class VpnTunnelPqc(_messages.Message):
+  r"""A VpnTunnelPqc object.
+
+  Enums:
+    ModeValueValuesEnum:
+
+  Fields:
+    keys: A VpnTunnelAdditionalKeyExchanges attribute.
+    mode: A ModeValueValuesEnum attribute.
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""ModeValueValuesEnum enum type.
+
+    Values:
+      DISABLED: <no description>
+      ENABLED: <no description>
+      PQC_MODE_UNSPECIFIED: <no description>
+    """
+    DISABLED = 0
+    ENABLED = 1
+    PQC_MODE_UNSPECIFIED = 2
+
+  keys = _messages.MessageField('VpnTunnelAdditionalKeyExchanges', 1)
+  mode = _messages.EnumField('ModeValueValuesEnum', 2)
 
 
 class VpnTunnelsScopedList(_messages.Message):
@@ -115199,13 +115908,30 @@ class WireProperties(_messages.Message):
 class WorkloadIdentityConfig(_messages.Message):
   r"""A WorkloadIdentityConfig object.
 
+  Enums:
+    IdentityTypeValueValuesEnum:
+
   Fields:
     identity: A string attribute.
     identityCertificateEnabled: A boolean attribute.
+    identityType: A IdentityTypeValueValuesEnum attribute.
   """
+
+  class IdentityTypeValueValuesEnum(_messages.Enum):
+    r"""IdentityTypeValueValuesEnum enum type.
+
+    Values:
+      AGENT_IDENTITY: <no description>
+      IDENTITY_TYPE_UNSPECIFIED: <no description>
+      SERVICE_ACCOUNT: <no description>
+    """
+    AGENT_IDENTITY = 0
+    IDENTITY_TYPE_UNSPECIFIED = 1
+    SERVICE_ACCOUNT = 2
 
   identity = _messages.StringField(1)
   identityCertificateEnabled = _messages.BooleanField(2)
+  identityType = _messages.EnumField('IdentityTypeValueValuesEnum', 3)
 
 
 class XpnHostList(_messages.Message):

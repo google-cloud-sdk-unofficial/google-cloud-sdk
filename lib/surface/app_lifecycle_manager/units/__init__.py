@@ -18,7 +18,37 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Saas(base.Group):
+  category = base.SAAS_CATEGORY
+  detailed_help = {
+      'brief': 'Manage App Lifecycle Manager units.',
+      'DESCRIPTION': """
+          Manage App Lifecycle Manager units. A unit is an instance of a unit
+          kind whose lifecycle is managed through an actuation engine, for
+          example, one based on Terraform. Units are the building blocks of a
+          tenant. Use unit operations to provision, upgrade, or deprovision a
+          unit.
+      """,
+      'EXAMPLES': """
+          To create a unit named `my-unit` of the unit kind `my-unit-kind` in
+          location `us-central1`, run:
+
+            $ {command} create my-unit --location=us-central1 --unit-kind=my-unit-kind
+
+          To list the names of all units in location `us-central1`, run:
+
+            $ {command} list --location=us-central1 --format="value(name)"
+
+          To describe the unit named `my-unit` in location `us-central1`, run:
+
+            $ {command} describe my-unit --location=us-central1
+      """,
+  }
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SaasAlpha(base.Group):
   category = base.SAAS_CATEGORY
   detailed_help = {'brief': 'Manage App Lifecycle Manager units.'}

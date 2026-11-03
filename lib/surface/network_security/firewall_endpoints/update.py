@@ -77,16 +77,15 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddUpdateLabelsFlags(parser)
-    if cls.ReleaseTrack() in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
-      activation_flags.AddEnableWildfireArg(parser)
-      activation_flags.AddWildfireRegionArg(parser)
-      activation_flags.AddContentCloudRegionArg(parser)
-      activation_flags.AddWildfireLookupTimeoutArg(parser)
-      activation_flags.AddWildfireLookupActionArg(parser)
-      activation_flags.AddWildfireAnalysisTimeoutArg(parser)
-      activation_flags.AddWildfireAnalysisActionArg(parser)
-      activation_flags.AddEnableWildfireAnalysisLoggingArg(parser)
-      activation_flags.AddBlockPartialHttpArg(parser)
+    activation_flags.AddEnableWildfireArg(parser)
+    activation_flags.AddWildfireRegionArg(parser)
+    activation_flags.AddContentCloudRegionArg(parser)
+    activation_flags.AddWildfireLookupTimeoutArg(parser)
+    activation_flags.AddWildfireLookupActionArg(parser)
+    activation_flags.AddWildfireAnalysisTimeoutArg(parser)
+    activation_flags.AddWildfireAnalysisActionArg(parser)
+    activation_flags.AddEnableWildfireAnalysisLoggingArg(parser)
+    activation_flags.AddBlockPartialHttpArg(parser)
 
   def Run(self, args):
     result = args.CONCEPTS.firewall_endpoint.Parse()
@@ -165,29 +164,21 @@ class Update(base.UpdateCommand):
       update_mask.append('endpoint_settings.http_partial_response_blocked')
 
     if not update_mask:
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-        raise exceptions.MinimumArgumentException([
-            '--clear-labels',
-            '--remove-labels',
-            '--update-labels',
-            '--update-billing-project',
-            '--enable-wildfire',
-            '--wildfire-region',
-            '--content-cloud-region',
-            '--wildfire-lookup-timeout',
-            '--wildfire-lookup-action',
-            '--wildfire-analysis-timeout',
-            '--wildfire-analysis-action',
-            '--enable-wildfire-analysis-logging',
-            '--block-partial-http',
-        ])
-      else:
-        raise exceptions.MinimumArgumentException([
-            '--clear-labels',
-            '--remove-labels',
-            '--update-labels',
-            '--update-billing-project',
-        ])
+      raise exceptions.MinimumArgumentException([
+          '--clear-labels',
+          '--remove-labels',
+          '--update-labels',
+          '--update-billing-project',
+          '--enable-wildfire',
+          '--wildfire-region',
+          '--content-cloud-region',
+          '--wildfire-lookup-timeout',
+          '--wildfire-lookup-action',
+          '--wildfire-analysis-timeout',
+          '--wildfire-analysis-action',
+          '--enable-wildfire-analysis-logging',
+          '--block-partial-http',
+      ])
 
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)

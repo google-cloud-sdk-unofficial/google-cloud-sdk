@@ -12,12 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Hardcoded SemanticTagKey catalog and helpers for Resource Manager CLI."""
+"""SemanticTagKey name helpers for Resource Manager Semantic Tags commands."""
 
-import copy
 import re
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import properties
 
 # TODO: b/561830899 - Consolidate CATALOG_PARENT_PREFIX, _FULL_KEY_NAME_PATTERN,
@@ -25,15 +23,11 @@ from googlecloudsdk.core import properties
 # with flags.py and utils.py once both the keys and values CLs land.
 CATALOG_PARENT_PREFIX = 'projects/gcp-semantic-tags-catalog'
 _FULL_KEY_NAME_PATTERN = re.compile(
-    r'^(organizations|projects)/([^/]+)/locations/([^/]+)/semanticTagKeys/([^/]+)$'
+    r'^(organizations/\d+|projects/[^/]+)/locations/([^/]+)/semanticTagKeys/([^/]+)$'
 )
 _KEY_RESOURCE_NAME_PATTERN = re.compile(
-    r'^(?:(organizations|projects)/([^/]+)/)?locations/([^/]+)/semanticTagKeys/([^/]+)$'
+    r'^(?:(organizations/\d+|projects/[^/]+)/)?locations/([^/]+)/semanticTagKeys/([^/]+)$'
 )
-
-
-class SemanticTagKeyNotFoundError(core_exceptions.Error):
-  """Raised when a SemanticTagKey is not found in the catalog."""
 
 
 def GetCatalogParent() -> str:
@@ -100,88 +94,12 @@ def NormalizeSemanticTagKey(
   )
 
 
-def _PlacementCompositeConstraint(sensitivity_desc: str) -> dict[str, object]:
-  """Builds the RV placement CompositeValueConstraint dictionary."""
-  return {
-      'fields': {
-          'group': {
-              'required': True,
-              'description': 'Customer-defined affinity group name.',
-              'stringConstraint': {'minLength': 1, 'maxLength': 63},
-          },
-          'sensitivity': {
-              'description': sensitivity_desc,
-              'stringConstraint': {'allowedValues': ['HIGH', 'MEDIUM', 'LOW']},
-              'defaultValue': 'HIGH',
-          },
-      },
-  }
-
-
-def GetHardcodedSemanticTagKeys(location: str) -> list[dict[str, object]]:
-  """Returns hardcoded GCP-owned RV placement SemanticTagKey entries."""
-  prefix = f'{GetCatalogParent()}/locations/{location}/semanticTagKeys'
-  # TODO: b/572407621 - Fetch from SemanticTagKeys service when RPC is ready.
-  return [
-      {
-          'name': f'{prefix}/placement',
-          'shortId': 'placement',
-          'keyType': 'COMPOSITE',
-          'displayName': 'Placement',
-          'description': 'Region Virtualization workload placement dimensions.',
-          'childSemanticTagKeys': [
-              f'{prefix}/placement.capacity-optimized',
-              f'{prefix}/placement.latency-optimized',
-          ],
-      },
-      {
-          'name': f'{prefix}/placement.latency-optimized',
-          'shortId': 'latency-optimized',
-          'parentSemanticTagKey': f'{prefix}/placement',
-          'keyType': 'SCALAR',
-          'displayName': 'Latency-Optimized Placement',
-          'description': (
-              'Region Virtualization strict low-latency co-location dimension.'
-          ),
-          'multipleValuesAllowed': True,
-          'compositeValueConstraint': _PlacementCompositeConstraint(
-              'Latency sensitivity tier.'
-          ),
-      },
-      {
-          'name': f'{prefix}/placement.capacity-optimized',
-          'shortId': 'capacity-optimized',
-          'parentSemanticTagKey': f'{prefix}/placement',
-          'keyType': 'SCALAR',
-          'displayName': 'Capacity-Optimized Placement',
-          'description': (
-              'Region Virtualization capacity-optimized workload placement'
-              ' dimension.'
-          ),
-          'multipleValuesAllowed': True,
-          'compositeValueConstraint': _PlacementCompositeConstraint(
-              'Capacity sensitivity tier.'
-          ),
-      },
-  ]
-
-
-def ApplyView(
-    entry: dict[str, object], view: str | None = 'basic'
-) -> dict[str, object]:
-  """Applies SemanticTagKeyView ('basic' or 'full') to a key dictionary."""
-  item = copy.deepcopy(entry)
-  if (view or 'basic').lower() == 'basic':
-    item.pop('childSemanticTagKeys', None)
-  return item
-
-
 def ParseSemanticTagKeyName(args) -> tuple[str, str, str]:
   """Resolves a SemanticTagKey full resource name from KEY and --location."""
   raw_key = args.key
   match = _KEY_RESOURCE_NAME_PATTERN.match(raw_key)
   if match:
-    _, _, parsed_location, _ = match.groups()
+    _, parsed_location, _ = match.groups()
     if args.IsSpecified('location') and args.location != parsed_location:
       raise calliope_exceptions.InvalidArgumentException(
           '--location',

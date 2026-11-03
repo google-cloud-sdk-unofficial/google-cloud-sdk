@@ -579,9 +579,9 @@ class AutoProtectionPolicy(_messages.Message):
     etag: Output only. The etag for the policy. If this is provided on update,
       it must match the server's etag, otherwise the request will be rejected
       with an ABORTED error.
-    name: Identifier. The resource name of the AutoprotectionPolicy. Format: `
-      projects/{project}/locations/{location}/autoProtectionPolicies/{auto_pro
-      tection_policy}`
+    name: Output only. Identifier. The resource name of the
+      AutoprotectionPolicy. Format: `projects/{project}/locations/{location}/a
+      utoProtectionPolicies/{auto_protection_policy}`
     policyEvaluationSummary: Output only. Summary of last policy application
       when job was run per workload type.
     state: Output only. The current state of the AutoprotectionPolicy.
@@ -633,9 +633,10 @@ class AutoProtectionPolicyBinding(_messages.Message):
     description: Optional. A description of the binding.
     etag: Optional. Output only. The etag for the binding. If this is provided
       on update, it must match the server's etag.
-    name: Identifier. The resource name of the AutoProtectionPolicyBinding.
-      Format: `projects/{project}/locations/{location}/autoProtectionPolicies/
-      {auto_protection_policy}/bindings/{binding}`
+    name: Output only. Identifier. The resource name of the
+      AutoProtectionPolicyBinding. Format: `projects/{project}/locations/{loca
+      tion}/autoProtectionPolicies/{auto_protection_policy}/bindings/{binding}
+      `
     scope: Required. Immutable. Resource Id of target container on which
       policy will be applied. Format: projects/{project_id}
     state: Output only. The current state of the AutoProtectionPolicyBinding.
@@ -1105,12 +1106,16 @@ class BackupInsightPlan(_messages.Message):
   r"""Message describing a BackupInsightPlan object.
 
   Enums:
+    AllowedRuleRecurrenceTypesValueListEntryValuesEnum:
     BackupInsightTypeValueValuesEnum: Required. Immutable. The type of insight
       this plan enables.
     StateValueValuesEnum: Output only. The current state of the
       BackupInsightPlan.
 
   Fields:
+    allowedRuleRecurrenceTypes: Optional. Backups are processed from rules
+      whose recurrence matches an entry here. If not specified, defaults to
+      [DAILY, WEEKLY, MONTHLY, YEARLY].
     backupInsightType: Required. Immutable. The type of insight this plan
       enables.
     backupMetadataInsightSettings: Settings for backup metadata insight.
@@ -1122,6 +1127,22 @@ class BackupInsightPlan(_messages.Message):
       nsightPlans/{backup_insight_plan}`
     state: Output only. The current state of the BackupInsightPlan.
   """
+
+  class AllowedRuleRecurrenceTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""AllowedRuleRecurrenceTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      RULE_RECURRENCE_TYPE_UNSPECIFIED: The rule recurrence is unspecified.
+      DAILY: Rules with daily recurrence.
+      WEEKLY: Rules with weekly recurrence.
+      MONTHLY: Rules with monthly recurrence.
+      YEARLY: Rules with yearly recurrence.
+    """
+    RULE_RECURRENCE_TYPE_UNSPECIFIED = 0
+    DAILY = 1
+    WEEKLY = 2
+    MONTHLY = 3
+    YEARLY = 4
 
   class BackupInsightTypeValueValuesEnum(_messages.Enum):
     r"""Required. Immutable. The type of insight this plan enables.
@@ -1149,12 +1170,13 @@ class BackupInsightPlan(_messages.Message):
     DELETING = 3
     ERROR = 4
 
-  backupInsightType = _messages.EnumField('BackupInsightTypeValueValuesEnum', 1)
-  backupMetadataInsightSettings = _messages.MessageField('BackupMetadataInsightSettings', 2)
-  createTime = _messages.StringField(3)
-  etag = _messages.StringField(4)
-  name = _messages.StringField(5)
-  state = _messages.EnumField('StateValueValuesEnum', 6)
+  allowedRuleRecurrenceTypes = _messages.EnumField('AllowedRuleRecurrenceTypesValueListEntryValuesEnum', 1, repeated=True)
+  backupInsightType = _messages.EnumField('BackupInsightTypeValueValuesEnum', 2)
+  backupMetadataInsightSettings = _messages.MessageField('BackupMetadataInsightSettings', 3)
+  createTime = _messages.StringField(4)
+  etag = _messages.StringField(5)
+  name = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
 
 
 class BackupLocation(_messages.Message):
@@ -1491,7 +1513,13 @@ class BackupPlanRevision(_messages.Message):
 class BackupRule(_messages.Message):
   r"""`BackupRule` binds the backup schedule to a retention policy.
 
+  Messages:
+    BackupLabelsValue: Optional. Allows custom labels to be supplied by the
+      user on a per-rule basis.
+
   Fields:
+    backupLabels: Optional. Allows custom labels to be supplied by the user on
+      a per-rule basis.
     backupRetentionDays: Required. Configures the duration for which backup
       data will be kept. It is defined in "days". The value should be greater
       than or equal to minimum enforced retention of the backup vault. Minimum
@@ -1513,11 +1541,38 @@ class BackupRule(_messages.Message):
       confines of a defined window of time.
   """
 
-  backupRetentionDays = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  backupVault = _messages.StringField(2)
-  backupVaultServiceAccount = _messages.StringField(3)
-  ruleId = _messages.StringField(4)
-  standardSchedule = _messages.MessageField('StandardSchedule', 5)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class BackupLabelsValue(_messages.Message):
+    r"""Optional. Allows custom labels to be supplied by the user on a per-
+    rule basis.
+
+    Messages:
+      AdditionalProperty: An additional property for a BackupLabelsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type BackupLabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a BackupLabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  backupLabels = _messages.MessageField('BackupLabelsValue', 1)
+  backupRetentionDays = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  backupVault = _messages.StringField(3)
+  backupVaultServiceAccount = _messages.StringField(4)
+  ruleId = _messages.StringField(5)
+  standardSchedule = _messages.MessageField('StandardSchedule', 6)
 
 
 class BackupSelectionConfig(_messages.Message):
@@ -2061,10 +2116,10 @@ class BackupdrProjectsLocationsAutoProtectionPoliciesPatchRequest(_messages.Mess
   Fields:
     autoProtectionPolicy: A AutoProtectionPolicy resource to be passed as the
       request body.
-    name: Identifier. The resource name of the AutoprotectionPolicy. Format: `
-      projects/{project}/locations/{location}/autoProtectionPolicies/{auto_pro
-      tection_policy}`
-    updateMask: Required. Field mask is used to specify the fields to be
+    name: Output only. Identifier. The resource name of the
+      AutoprotectionPolicy. Format: `projects/{project}/locations/{location}/a
+      utoProtectionPolicies/{auto_protection_policy}`
+    updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the AutoProtectionPolicy resource by the update. The
       fields specified in the update_mask are relative to the resource, not
       the full request. A field will be overwritten if it is in the mask. If
@@ -8203,7 +8258,11 @@ class RuleConfigInfo(_messages.Message):
     LastBackupStateValueValuesEnum: Output only. The last backup state for
       rule.
 
+  Messages:
+    BackupLabelsValue: Output only. The labels applied to this rule.
+
   Fields:
+    backupLabels: Output only. The labels applied to this rule.
     dataSource: Output only. The DataSource in the vault targeted by this
       rule. Format: projects/{project}/locations/{location}/backupVaults/{back
       up_vault}/dataSources/{data_source}
@@ -8232,11 +8291,37 @@ class RuleConfigInfo(_messages.Message):
     SUCCEEDED = 3
     FAILED = 4
 
-  dataSource = _messages.StringField(1)
-  lastBackupError = _messages.MessageField('Status', 2)
-  lastBackupState = _messages.EnumField('LastBackupStateValueValuesEnum', 3)
-  lastSuccessfulBackupConsistencyTime = _messages.StringField(4)
-  ruleId = _messages.StringField(5)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class BackupLabelsValue(_messages.Message):
+    r"""Output only. The labels applied to this rule.
+
+    Messages:
+      AdditionalProperty: An additional property for a BackupLabelsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type BackupLabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a BackupLabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  backupLabels = _messages.MessageField('BackupLabelsValue', 1)
+  dataSource = _messages.StringField(2)
+  lastBackupError = _messages.MessageField('Status', 3)
+  lastBackupState = _messages.EnumField('LastBackupStateValueValuesEnum', 4)
+  lastSuccessfulBackupConsistencyTime = _messages.StringField(5)
+  ruleId = _messages.StringField(6)
 
 
 class RunRestoreTemplateRequest(_messages.Message):

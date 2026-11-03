@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import flags as shared_flags
 from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -419,7 +420,9 @@ def AddCreateFlags(parser):
   shared_flags.AddRegionResourceArg(
       parser,
       'to create an agent runtime in',
-      prompt_func=region_util.PromptForOpRegion,
+      prompt_func=region_util.GetPromptForRegionFunc(
+          constants.SUPPORTED_AP_REGIONS
+      ),
   )
   base.ASYNC_FLAG.AddToParser(parser)
   _AddSourceFlags(parser)
@@ -446,7 +449,9 @@ def AddDeployFlags(parser):
   shared_flags.AddRegionResourceArg(
       parser,
       'to deploy the agent runtime in',
-      prompt_func=region_util.PromptForOpRegion,
+      prompt_func=region_util.GetPromptForRegionFunc(
+          constants.SUPPORTED_AP_REGIONS
+      ),
   )
   shared_flags.AddAgentRuntimeResourceArg(
       parser,
@@ -455,6 +460,7 @@ def AddDeployFlags(parser):
       flag_name_overrides={'region': ''},
       command_level_fallthroughs={'region': ['--region']},
   )
+  base.ASYNC_FLAG.AddToParser(parser)
   _AddSourceFlags(parser, required=False)
   _AddIdentityFlags(parser)
   _AddTrafficFlags(parser)
@@ -477,7 +483,7 @@ def AddDeployFlags(parser):
           ' Only applies when creating a new runtime.'
       ),
   )
-  _AddDeploymentConfigFlags(parser)
+  _AddDeploymentConfigFlags(parser, with_clear_dns_peering=True)
 
 
 def AddUpdateFlags(parser):
@@ -486,6 +492,7 @@ def AddUpdateFlags(parser):
       parser,
       'to update',
   )
+  base.ASYNC_FLAG.AddToParser(parser)
   _AddSourceFlags(parser, required=False)
   _AddIdentityFlags(parser)
   _AddTrafficFlags(parser)
@@ -503,6 +510,7 @@ def AddUpdateTrafficFlags(parser):
       parser,
       'to update traffic for',
   )
+  base.ASYNC_FLAG.AddToParser(parser)
   traffic_group = parser.add_group(
       mutex=True,
       required=True,

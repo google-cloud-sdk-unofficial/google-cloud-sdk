@@ -14,6 +14,7 @@
 # limitations under the License.
 """Parse pipeline config files and derive their update masks."""
 
+import collections
 import os
 
 from apitools.base.py import encoding as apitools_encoding
@@ -56,6 +57,21 @@ _MUTABLE_FIELD_DEFAULTS = {
 # update. The etag is the exception: the server validates it, so an exported
 # pipeline could not be re-applied without first hitting a checksum mismatch.
 _IGNORED_FIELDS = ('etag', 'name')
+
+# Top-level key that declares the pipeline's triggers inline. It is not a field
+# of the Pipeline resource: `triggers` lists PipelineTrigger definitions, so it
+# is split off before the pipeline is decoded and handed back raw to be
+# converted by pipeline_trigger_config.LoadNestedTriggers.
+_TRIGGERS_FIELD = 'triggers'
+
+# A decoded pipeline config file.
+#
+# Attributes:
+#   pipeline: messages.Pipeline, the decoded pipeline.
+#   triggers: list|None, the raw `triggers` list, or None if the file has none.
+PipelineConfig = collections.namedtuple(
+    'PipelineConfig', ['pipeline', 'triggers']
+)
 
 
 def ComputeUpdateMask(pipeline):
@@ -161,6 +177,9 @@ def ExtractPipelineId(path):
 def LoadPipelineConfigFromPath(path, messages):
   """Loads a pipeline config file into a Pipeline message.
 
+  The file may also declare the pipeline's triggers inline in a top-level
+  `triggers` list, which is returned undecoded.
+
   Args:
     path: str, path to the JSON or YAML data to be decoded.
     messages: module, the messages module that has a Pipeline type.
@@ -170,10 +189,14 @@ def LoadPipelineConfigFromPath(path, messages):
       does not describe a pipeline.
 
   Returns:
-    messages.Pipeline, the decoded pipeline.
+    PipelineConfig, the decoded pipeline and its raw nested triggers list.
   """
   data = _ReadYamlMapping(path)
   clean_data = dict(data)
+
+  # The nested triggers section is not a pipeline field, so it must come out
+  # before the decoder sees it or it would be reported as unrecognized.
+  triggers = clean_data.pop(_TRIGGERS_FIELD, None)
 
   for field in _IGNORED_FIELDS:
     clean_data.pop(field, None)
@@ -198,4 +221,4 @@ def LoadPipelineConfigFromPath(path, messages):
         .format(path, ', '.join(sorted(unrecognized_fields)))
     )
 
-  return pipeline
+  return PipelineConfig(pipeline=pipeline, triggers=triggers)

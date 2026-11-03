@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.composer import util as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import airflow_rbac_util
 from googlecloudsdk.command_lib.composer import util as command_util
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 import six
 
@@ -185,6 +186,7 @@ def ConstructPatch(
     update_airflow_rbac_binding=None,
     remove_airflow_rbac_binding=None,
     update_airflow_rbac_config_from_file=None,
+    operation_settings_strategy=None,
 ):
   """Constructs an environment patch.
 
@@ -337,6 +339,8 @@ def ConstructPatch(
     update_airflow_rbac_config_from_file: str or None, path to local YAML/JSON
       file containing Airflow RBAC configuration. Can be specified only in
       Composer 3.
+    operation_settings_strategy: str or None, defines the operation strategy for
+      the environment. Can be specified only in Composer 3.
 
   Returns:
     (str, Environment), the field mask and environment to use for update.
@@ -427,6 +431,10 @@ def ConstructPatch(
   if cloud_run_functions_routing is not None:
     return _ConstructTrafficRoutingConfigPatch(
         cloud_run_functions_routing, release_track
+    )
+  if operation_settings_strategy is not None:
+    return _ConstructOperationSettingsPatch(
+        operation_settings_strategy, release_track
     )
   if (
       disable_vpc_connectivity is not None
@@ -657,6 +665,32 @@ def _ConstructTrafficRoutingConfigPatch(
   return (
       update_mask,
       messages.Environment(config=config),
+  )
+
+
+def _ConstructOperationSettingsPatch(
+    operation_settings_strategy, release_track=base.ReleaseTrack.GA
+):
+  """Constructs an environment patch for operation settings.
+
+  Args:
+    operation_settings_strategy: str, the operation strategy choice for the
+      environment.
+    release_track: base.ReleaseTrack, the release track of command.
+
+  Returns:
+    (str, Environment), the field mask and environment to use for update.
+  """
+  messages = api_util.GetMessagesModule(release_track=release_track)
+  strategy_enum = arg_utils.ChoiceToEnum(
+      operation_settings_strategy,
+      messages.OperationSettings.StrategyValueValuesEnum,
+  )
+  operation_settings = messages.OperationSettings(strategy=strategy_enum)
+  update_mask = 'operation_settings.strategy'
+  return (
+      update_mask,
+      messages.Environment(operationSettings=operation_settings),
   )
 
 

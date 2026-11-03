@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Delete databaseConnections
-    description: Delete a databaseConnection
+    brief: Delete a DatabaseConnection.
+    description: Delete a DatabaseConnection.
     examples: |-
-      To delete the databaseConnection, run:
+      To delete a DatabaseConnection with id `my-connection` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-connection --location=us-east4
   arguments:
     params:
     - help_text: |-

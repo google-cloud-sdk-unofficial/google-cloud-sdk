@@ -144,5 +144,6 @@ class Binauthz(base.Group):
     base.RequireProjectID(args)
     # Explicitly override container group's LEGACY billing configuration.
     properties.VALUES.billing.quota_project.Set(
-        properties.VALUES.billing.CURRENT_PROJECT)
+        properties.constants.billing.CURRENT_PROJECT
+    )
     return context

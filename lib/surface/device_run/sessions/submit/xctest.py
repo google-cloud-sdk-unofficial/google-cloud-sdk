@@ -151,7 +151,7 @@ class XcTest(base.Command):
         help=(
             'A dictionary of additional files to be pushed to the device before'
             ' running the test. The key is the source path of the file'
-            ' (supports both Google Cloud Storage and local paths; local files'
+            ' (supports both Google Cloud Storage and local paths. Local files'
             ' will be uploaded to Google Cloud Storage prior to test'
             ' execution), and the value is the destination path in the format'
             ' BUNDLE_ID:DEVICE_PATH.'
@@ -165,6 +165,20 @@ class XcTest(base.Command):
         help=(
             'A list of file or directory paths to pull from the device'
             ' following test completion, in the format BUNDLE_ID:DEVICE_PATH.'
+        ),
+    )
+    parser.add_argument(
+        '--video',
+        type=str,
+        choices=['always', 'on-failure'],
+        help=(
+            'Specify when to record video of the device screen during the'
+            ' test run. Accepted values are `always` or `on-failure`. One'
+            ' video is recorded per UI test case, and with `on-failure` only'
+            ' the videos of failed test cases are kept. Videos are written to'
+            ' `testcases/[TEST_CLASS]/[TEST_METHOD]/video.mp4` in the'
+            ' execution output directory. Requires iOS 17 or later. Unit'
+            ' tests are not recorded.'
         ),
     )
     parser.add_argument(
@@ -184,17 +198,20 @@ class XcTest(base.Command):
         type=str,
         help=(
             'The name of a Google Cloud Storage bucket to store test'
-            ' artifacts, including local input files and test output files.'
-            ' If not specified, a default bucket named'
-            ' ```gs://[PROJECT_ID]-devicerun``` will be used or created.'
+            ' artifacts, including local input files, test output files, and'
+            ' smart sharding timing records. If not specified, a default'
+            ' bucket named ```gs://[PROJECT_ID]-devicerun``` will be used or'
+            ' created.'
         ),
     )
+    session_submit_ops.AddShardingFlags(parser)
     parser.add_argument(
         '--flaky-test-attempts',
         type=int,
         help=(
-            'Specify the maximum number of execution attempts per job'
-            ' to handle flakiness. If not specified, defaults to 1.'
+            'Specify the maximum number of execution attempts per test shard'
+            ' to handle flakiness or infrastructure errors. If not specified,'
+            ' defaults to 1.'
         ),
     )
     parser.add_argument(
@@ -227,6 +244,8 @@ class XcTest(base.Command):
               '--paths-to-pull',
               f'Path [{path}] must follow the format BUNDLE_ID:DEVICE_PATH.',
           )
+
+    session_submit_ops.ValidateShardingArgs(args)
 
     location_ref = args.CONCEPTS.location.Parse()
     client = device_run.SessionsClient(api_version='v1alpha')
@@ -319,6 +338,14 @@ class XcTest(base.Command):
       )
       device_actions.append(push_action)
 
+    if args.video:
+      video_action = messages.DeviceAction(
+          iosRecordVideo=messages.IosRecordVideoDeviceAction(
+              discardOnPass=(args.video == 'on-failure')
+          )
+      )
+      device_actions.append(video_action)
+
     if args.locale:
       locale_action = messages.DeviceAction(
           iosSwitchLocale=messages.IosSwitchLocaleDeviceAction(
@@ -340,11 +367,17 @@ class XcTest(base.Command):
           gcsInputFile=messages.GcsPath(path=xctestrun_gcs)
       )
 
+    uniform_sharding, smart_sharding = session_submit_ops.BuildShardingOptions(
+        args, bucket_name, messages
+    )
+
     ios_xc_test = messages.IosXcTest(
         testsZip=test_zip_file,
         xctestrun=xctestrun_file,
         xcodeVersion=xcode_version,
         xcTestTimeout=xctest_timeout,
+        uniformSharding=uniform_sharding,
+        smartSharding=smart_sharding,
     )
 
     job_action = messages.JobAction(iosXcTest=ios_xc_test)

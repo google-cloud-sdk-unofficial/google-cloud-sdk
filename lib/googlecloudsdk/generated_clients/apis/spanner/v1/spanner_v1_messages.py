@@ -150,6 +150,26 @@ class AddSplitPointsResponse(_messages.Message):
   r"""The response for AddSplitPoints."""
 
 
+class AllowedProcessingUnits(_messages.Message):
+  r"""Defines a range of processing units supported by an instance
+  configuration.
+
+  Fields:
+    maxProcessingUnits: The maximum value of processing units applicable to
+      this interval, inclusive. If unset, there is no predefined limit to the
+      supported number of processing units, although project quota limits
+      still apply.
+    minProcessingUnits: The minimum value of processing units applicable to
+      this interval, inclusive.
+    processingUnitIncrement: Allowed increments of processing units between
+      "min" and "max".
+  """
+
+  maxProcessingUnits = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  minProcessingUnits = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  processingUnitIncrement = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
 class AsymmetricAutoscalingOption(_messages.Message):
   r"""AsymmetricAutoscalingOption specifies the scaling of replicas identified
   by the given selection.
@@ -579,7 +599,14 @@ class BatchWriteRequest(_messages.Message):
   r"""The request for BatchWrite.
 
   Fields:
-    excludeTxnFromChangeStreams: Optional. If you don't set the
+    excludeTxnFromChangeStreams: Optional. For change streams monitoring
+      columns modified by transactions, when `exclude_txn_from_change_streams`
+      is set to `true`, two scenarios are possible: * If the DDL option
+      `allow_txn_exclusion` is set to `true`, then the updates made within all
+      transactions in this batch write aren't recorded in the change stream. *
+      If you don't set the DDL option `allow_txn_exclusion` or if it's set to
+      `false`, then the updates made within this transaction are recorded in
+      the change stream. If you don't set the
       `exclude_txn_from_change_streams` option or if it's set to `false`, then
       any change streams monitoring columns modified by transactions will
       capture the updates made within that transaction.
@@ -1658,6 +1685,15 @@ class Database(_messages.Message):
   Enums:
     DatabaseDialectValueValuesEnum: Output only. The dialect of the Cloud
       Spanner Database.
+    DefaultReadLockModeValueValuesEnum: Output only. The default read lock
+      mode for transactions. If not configured via DDL,
+      `READ_LOCK_MODE_UNSPECIFIED` will be returned. For transactions, if lock
+      mode is unspecified, it defaults to `PESSIMISTIC` for `SERIALIZABLE`
+      isolation and `OPTIMISTIC` for `REPEATABLE_READ` isolation.
+    DefaultTransactionIsolationValueValuesEnum: Output only. The default
+      isolation level for transactions in this database. If not configured via
+      DDL, `ISOLATION_LEVEL_UNSPECIFIED` will be returned. For transactions,
+      if isolation level is unspecified, it defaults to `SERIALIZABLE`.
     StateValueValuesEnum: Output only. The current database state.
 
   Fields:
@@ -1668,6 +1704,15 @@ class Database(_messages.Message):
       database's leader replicas. This is the same as the value of
       default_leader database option set using DatabaseAdmin.CreateDatabase or
       DatabaseAdmin.UpdateDatabaseDdl. If not explicitly set, this is empty.
+    defaultReadLockMode: Output only. The default read lock mode for
+      transactions. If not configured via DDL, `READ_LOCK_MODE_UNSPECIFIED`
+      will be returned. For transactions, if lock mode is unspecified, it
+      defaults to `PESSIMISTIC` for `SERIALIZABLE` isolation and `OPTIMISTIC`
+      for `REPEATABLE_READ` isolation.
+    defaultTransactionIsolation: Output only. The default isolation level for
+      transactions in this database. If not configured via DDL,
+      `ISOLATION_LEVEL_UNSPECIFIED` will be returned. For transactions, if
+      isolation level is unspecified, it defaults to `SERIALIZABLE`.
     earliestVersionTime: Output only. Earliest timestamp at which older
       versions of the data can be read. This value is continuously updated by
       Cloud Spanner and becomes stale the moment it is queried. If you are
@@ -1721,6 +1766,59 @@ class Database(_messages.Message):
     GOOGLE_STANDARD_SQL = 1
     POSTGRESQL = 2
 
+  class DefaultReadLockModeValueValuesEnum(_messages.Enum):
+    r"""Output only. The default read lock mode for transactions. If not
+    configured via DDL, `READ_LOCK_MODE_UNSPECIFIED` will be returned. For
+    transactions, if lock mode is unspecified, it defaults to `PESSIMISTIC`
+    for `SERIALIZABLE` isolation and `OPTIMISTIC` for `REPEATABLE_READ`
+    isolation.
+
+    Values:
+      READ_LOCK_MODE_UNSPECIFIED: If `READ_LOCK_MODE_UNSPECIFIED` is used, the
+        default behavior described in `ReadLockMode` applies.
+      PESSIMISTIC: Pessimistic lock mode. Read locks are acquired immediately
+        on read.
+      OPTIMISTIC: Optimistic lock mode. Locks for reads within the transaction
+        are not acquired on read. Instead the locks are acquired on a commit
+        to validate that read/queried data has not changed since the
+        transaction started.
+    """
+    READ_LOCK_MODE_UNSPECIFIED = 0
+    PESSIMISTIC = 1
+    OPTIMISTIC = 2
+
+  class DefaultTransactionIsolationValueValuesEnum(_messages.Enum):
+    r"""Output only. The default isolation level for transactions in this
+    database. If not configured via DDL, `ISOLATION_LEVEL_UNSPECIFIED` will be
+    returned. For transactions, if isolation level is unspecified, it defaults
+    to `SERIALIZABLE`.
+
+    Values:
+      ISOLATION_LEVEL_UNSPECIFIED: Default value. If the value is not
+        specified, the `SERIALIZABLE` isolation level is used.
+      SERIALIZABLE: All transactions appear as if they executed in a serial
+        order, even if some of the reads, writes, and other operations of
+        distinct transactions actually occurred in parallel. Spanner assigns
+        commit timestamps that reflect the order of committed transactions to
+        implement this property. Spanner offers a stronger guarantee than
+        serializability called external consistency. For more information, see
+        [TrueTime and external
+        consistency](https://cloud.google.com/spanner/docs/true-time-external-
+        consistency#serializability).
+      REPEATABLE_READ: All reads performed during the transaction observe a
+        consistent snapshot of the database, and the transaction is only
+        successfully committed in the absence of conflicts between its updates
+        and any concurrent updates that have occurred since that snapshot.
+        Consequently, in contrast to `SERIALIZABLE` transactions, only write-
+        write conflicts are detected in snapshot transactions. This isolation
+        level does not support read-only and partitioned DML transactions.
+        When `REPEATABLE_READ` is specified on a read-write transaction, the
+        locking semantics default to `OPTIMISTIC`.
+    """
+    ISOLATION_LEVEL_UNSPECIFIED = 0
+    SERIALIZABLE = 1
+    REPEATABLE_READ = 2
+
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current database state.
 
@@ -1744,16 +1842,18 @@ class Database(_messages.Message):
   createTime = _messages.StringField(1)
   databaseDialect = _messages.EnumField('DatabaseDialectValueValuesEnum', 2)
   defaultLeader = _messages.StringField(3)
-  earliestVersionTime = _messages.StringField(4)
-  enableDropProtection = _messages.BooleanField(5)
-  encryptionConfig = _messages.MessageField('EncryptionConfig', 6)
-  encryptionInfo = _messages.MessageField('EncryptionInfo', 7, repeated=True)
-  name = _messages.StringField(8)
-  quorumInfo = _messages.MessageField('QuorumInfo', 9)
-  reconciling = _messages.BooleanField(10)
-  restoreInfo = _messages.MessageField('RestoreInfo', 11)
-  state = _messages.EnumField('StateValueValuesEnum', 12)
-  versionRetentionPeriod = _messages.StringField(13)
+  defaultReadLockMode = _messages.EnumField('DefaultReadLockModeValueValuesEnum', 4)
+  defaultTransactionIsolation = _messages.EnumField('DefaultTransactionIsolationValueValuesEnum', 5)
+  earliestVersionTime = _messages.StringField(6)
+  enableDropProtection = _messages.BooleanField(7)
+  encryptionConfig = _messages.MessageField('EncryptionConfig', 8)
+  encryptionInfo = _messages.MessageField('EncryptionInfo', 9, repeated=True)
+  name = _messages.StringField(10)
+  quorumInfo = _messages.MessageField('QuorumInfo', 11)
+  reconciling = _messages.BooleanField(12)
+  restoreInfo = _messages.MessageField('RestoreInfo', 13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  versionRetentionPeriod = _messages.StringField(15)
 
 
 class DatabaseMoveConfig(_messages.Message):
@@ -2887,6 +2987,18 @@ class InstanceConfig(_messages.Message):
       "_" in a future release.
 
   Fields:
+    allowedProcessingUnits: Output only. Defines the ranges of allowed
+      processing units supported by this instance configuration. If multiple
+      ranges are specified, an instance using this configuration may use a
+      valid increment in any of the given ranges. For example, an
+      allowed_processing_units specification of `[{min_processing_units:100,
+      max_processing_units:900, processing_unit_increment:100},
+      {min_processing_units:1000, processing_unit_increment:1000}]` specifies
+      that the instance configuration supports instances with quantities of
+      processing units in multiples of 100 processing units (100, 200, 300 and
+      so on) up to and including 900 processing units and quantities that are
+      at least 1000 processing units and multiples of 1000 processing units
+      (1000, 2000, 3000 and so on).
     allowedStorageTypes: Output only. Deprecated: Use the equivalent Cascading
       Options field (kAllowedStorageTypes) instead. The allowed storage types
       for this configuration. The first storage type is considered the default
@@ -3073,21 +3185,22 @@ class InstanceConfig(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  allowedStorageTypes = _messages.EnumField('AllowedStorageTypesValueListEntryValuesEnum', 1, repeated=True)
-  baseConfig = _messages.StringField(2)
-  configType = _messages.EnumField('ConfigTypeValueValuesEnum', 3)
-  displayName = _messages.StringField(4)
-  etag = _messages.StringField(5)
-  freeInstanceAvailability = _messages.EnumField('FreeInstanceAvailabilityValueValuesEnum', 6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  leaderOptions = _messages.StringField(8, repeated=True)
-  name = _messages.StringField(9)
-  optionalReplicas = _messages.MessageField('ReplicaInfo', 10, repeated=True)
-  quorumType = _messages.EnumField('QuorumTypeValueValuesEnum', 11)
-  reconciling = _messages.BooleanField(12)
-  replicas = _messages.MessageField('ReplicaInfo', 13, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 14)
-  storageLimitPerProcessingUnit = _messages.IntegerField(15)
+  allowedProcessingUnits = _messages.MessageField('AllowedProcessingUnits', 1, repeated=True)
+  allowedStorageTypes = _messages.EnumField('AllowedStorageTypesValueListEntryValuesEnum', 2, repeated=True)
+  baseConfig = _messages.StringField(3)
+  configType = _messages.EnumField('ConfigTypeValueValuesEnum', 4)
+  displayName = _messages.StringField(5)
+  etag = _messages.StringField(6)
+  freeInstanceAvailability = _messages.EnumField('FreeInstanceAvailabilityValueValuesEnum', 7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  leaderOptions = _messages.StringField(9, repeated=True)
+  name = _messages.StringField(10)
+  optionalReplicas = _messages.MessageField('ReplicaInfo', 11, repeated=True)
+  quorumType = _messages.EnumField('QuorumTypeValueValuesEnum', 12)
+  reconciling = _messages.BooleanField(13)
+  replicas = _messages.MessageField('ReplicaInfo', 14, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 15)
+  storageLimitPerProcessingUnit = _messages.IntegerField(16)
 
 
 class InstanceEncryptionConfig(_messages.Message):

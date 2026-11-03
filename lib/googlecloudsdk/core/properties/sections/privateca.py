@@ -14,6 +14,7 @@
 # limitations under the License.
 """Contains the properties for the 'privateca' section."""
 
+from googlecloudsdk.core.properties.completers import COMPLETERS
 from googlecloudsdk.core.properties.types import _Section
 
 
@@ -29,7 +30,5 @@ class _SectionPrivateCa(_Section):
             ' When a `--location` flag is required but not provided, the'
             ' command will fall back to this value, if set.'
         ),
-        completer=(
-            'googlecloudsdk.command_lib.privateca.completers:LocationsCompleter'
-        ),
+        completer=COMPLETERS['PrivateCaLocationsCompleter'],
     )

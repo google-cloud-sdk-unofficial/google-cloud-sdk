@@ -215,3 +215,17 @@ def CheckMaintenanceWindowStartTimeField(maintenance_window_start_time):
         'A valid time of day must be specified (0, 23) hours.'
     )
   return maintenance_window_start_time
+
+
+def UpdateZonalFailureEmulationSpec(unused_cluster_ref, args, patch_request):
+  """Hook to update or clear zonal failure emulation spec on the cluster."""
+  if args.IsSpecified('clear_zonal_failure_emulation_spec'):
+    patch_request.cluster.zonalFailureEmulationSpec = None
+    patch_request = AddFieldToUpdateMask(
+        'zonal_failure_emulation_spec', patch_request
+    )
+  elif args.IsSpecified('zonal_failure_emulation_spec'):
+    patch_request = AddFieldToUpdateMask(
+        'zonal_failure_emulation_spec', patch_request
+    )
+  return patch_request

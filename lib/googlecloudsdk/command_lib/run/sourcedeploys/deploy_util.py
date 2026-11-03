@@ -426,7 +426,7 @@ def DeployServiceFromSource(
           build_image=build_image,
           build_source=source,
           build_pack=build_pack,
-          repo_to_create=repo_to_create,
+          legacy_repo_to_create=repo_to_create,
           build_region=region,
           skip_activation_prompt=skip_activation_prompt,
           source_bucket=source_bucket,

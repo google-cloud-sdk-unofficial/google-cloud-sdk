@@ -662,7 +662,7 @@ def ApplyConnectionTrackingPolicyArgs(client, args, backend_service):
   if args.idle_timeout_sec:
     connection_tracking_policy.idleTimeoutSec = args.idle_timeout_sec
 
-  if args.enable_strong_affinity:
+  if args.enable_strong_affinity is not None:
     connection_tracking_policy.enableStrongAffinity = (
         args.enable_strong_affinity)
 
@@ -1041,6 +1041,57 @@ def ApplySecuritySettingsArgs(
   backend_service.securitySettings = sec_settings
 
 
+def ApplyCircuitBreakersArgs(
+    client, args, backend_service, cleared_fields=None
+):
+  """Applies CircuitBreakers related flags to the backend service message.
+
+  Args:
+    client: The compute client holder containing messages.
+    args: The argparse namespaces containing parsed argument values.
+    backend_service: The BackendService message to populate.
+    cleared_fields: List of fields to be cleared on the server side.
+  """
+  if args.IsKnownAndSpecified('no_circuit_breakers'):
+    backend_service.circuitBreakers = None
+    if cleared_fields is not None:
+      cleared_fields.append('circuitBreakers')
+    return
+
+  cb_fields = {
+      'circuit_breakers_max_connections': 'maxConnections',
+      'circuit_breakers_max_pending_requests': 'maxPendingRequests',
+      'circuit_breakers_max_requests': 'maxRequests',
+      'circuit_breakers_max_requests_per_connection': (
+          'maxRequestsPerConnection'
+      ),
+      'circuit_breakers_max_retries': 'maxRetries',
+  }
+  cb_flag_names = list(cb_fields.keys()) + ['circuit_breakers_connect_timeout']
+  has_any_cb_flag = any(
+      args.IsKnownAndSpecified(f) for f in cb_flag_names
+  )
+  if not has_any_cb_flag:
+    return
+
+  cb = (
+      backend_service.circuitBreakers
+      if backend_service.circuitBreakers
+      else client.messages.CircuitBreakers()
+  )
+
+  for flag_name, field_name in cb_fields.items():
+    if args.IsKnownAndSpecified(flag_name):
+      setattr(cb, field_name, getattr(args, flag_name))
+
+  if args.IsKnownAndSpecified('circuit_breakers_connect_timeout'):
+    cb.connectTimeout = client.messages.Duration(
+        seconds=args.circuit_breakers_connect_timeout
+    )
+
+  backend_service.circuitBreakers = cb
+
+
 def IpPortDynamicForwarding(client, args, backend_service):
   """Enables the Ip Port Dynamic Forwarding in the backend service.
 
@@ -1208,18 +1259,6 @@ def ApplyConsistentHashSettings(client, args, backend_service):
       )
     backend_service.consistentHash.minimumRingSize = (
         args.consistent_hash_minimum_ring_size
-    )
-
-
-def ApplyCircuitBreakersSettings(client, args, backend_service):
-  """Applies CircuitBreakers related flags to the backend service message."""
-  if hasattr(args, 'circuit_breakers_max_requests') and args.IsSpecified(
-      'circuit_breakers_max_requests'
-  ):
-    if backend_service.circuitBreakers is None:
-      backend_service.circuitBreakers = client.messages.CircuitBreakers()
-    backend_service.circuitBreakers.maxRequests = (
-        args.circuit_breakers_max_requests
     )
 
 

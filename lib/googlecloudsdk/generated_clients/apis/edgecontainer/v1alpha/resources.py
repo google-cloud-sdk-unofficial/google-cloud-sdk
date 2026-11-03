@@ -157,6 +157,59 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_REGIONALROLLOUTS = (
+      'projects.locations.regionalRollouts',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'regionalRollouts/{regionalRolloutsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_REGIONALROLLOUTS_WAVES = (
+      'projects.locations.regionalRollouts.waves',
+      'projects/{projectsId}/locations/{locationsId}/regionalRollouts/'
+      '{regionalRolloutsId}/waves/{wavesId}',
+      {},
+      ['projectsId', 'locationsId', 'regionalRolloutsId', 'wavesId'],
+      True
+  )
+  PROJECTS_LOCATIONS_REGIONALROLLOUTS_WAVES_UNITS = (
+      'projects.locations.regionalRollouts.waves.units',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'regionalRollouts/{regionalRolloutsId}/waves/{wavesId}/units/'
+              '{unitsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_ROLLOUTTEMPLATES = (
+      'projects.locations.rolloutTemplates',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'rolloutTemplates/{rolloutTemplatesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_ROLLOUTS = (
+      'projects.locations.rollouts',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/rollouts/'
+              '{rolloutsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SERVICEACCOUNTS = (
       'projects.locations.serviceAccounts',
       '{+name}',

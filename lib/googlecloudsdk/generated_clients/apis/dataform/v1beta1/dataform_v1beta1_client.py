@@ -484,6 +484,33 @@ class DataformV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def CreateLongRunning(self, request, global_params=None):
+      r"""Creates a new CompilationResult in a given project and location asynchronously.
+
+      Args:
+        request: (DataformProjectsLocationsRepositoriesCompilationResultsCreateLongRunningRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('CreateLongRunning')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CreateLongRunning.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/compilationResults:createLongRunning',
+        http_method='POST',
+        method_id='dataform.projects.locations.repositories.compilationResults.createLongRunning',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta1/{+parent}/compilationResults:createLongRunning',
+        request_field='compilationResult',
+        request_type_name='DataformProjectsLocationsRepositoriesCompilationResultsCreateLongRunningRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Fetches a single CompilationResult.
 
@@ -1304,6 +1331,33 @@ class DataformV1beta1(base_api.BaseApiClient):
         request_field='',
         request_type_name='DataformProjectsLocationsRepositoriesWorkspacesFetchGitAheadBehindRequest',
         response_type_name='FetchGitAheadBehindResponse',
+        supports_download=False,
+    )
+
+    def FetchHistory(self, request, global_params=None):
+      r"""Fetches a Workspace's history of commits.
+
+      Args:
+        request: (DataformProjectsLocationsRepositoriesWorkspacesFetchHistoryRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchWorkspaceHistoryResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchHistory')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchHistory.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/workspaces/{workspacesId}:fetchHistory',
+        http_method='GET',
+        method_id='dataform.projects.locations.repositories.workspaces.fetchHistory',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1beta1/{+name}:fetchHistory',
+        request_field='',
+        request_type_name='DataformProjectsLocationsRepositoriesWorkspacesFetchHistoryRequest',
+        response_type_name='FetchWorkspaceHistoryResponse',
         supports_download=False,
     )
 

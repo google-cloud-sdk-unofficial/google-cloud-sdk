@@ -16,7 +16,10 @@
 
 from __future__ import annotations
 
+import collections
+
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 
@@ -105,3 +108,85 @@ def ExtractTriggerId(path):
   if isinstance(name, str):
     return name.strip() or None
   return None
+
+
+def LoadNestedTriggers(triggers, messages, path):
+  """Converts the `triggers` section of a pipeline config file.
+
+  Called by `gcloud builds pipelines apply` when a pipeline file declares its
+  triggers inline. Every entry is converted before any RPC is sent, so a bad
+  trigger stops the command up front rather than after the pipeline has
+  already been written.
+
+  Args:
+    triggers: object, the raw `triggers` value from the pipeline file, or None.
+    messages: module, the Cloud Build v1 messages module.
+    path: str, path to the pipeline file, for error messages.
+
+  Raises:
+    c_exceptions.BadFileException: If `triggers` is not a valid list of named
+      trigger mappings.
+    cloudbuild_exceptions.ParseProtoException: If a trigger entry cannot be
+      converted into a `PipelineTrigger` message.
+
+  Returns:
+    [(str, messages.PipelineTrigger)], `(trigger_id, trigger)` pairs in the
+    order they appear in the file.
+  """
+  if triggers is None:
+    return []
+  entries = _ListEntries(triggers, path)
+  return [
+      (trigger_id, _BuildTrigger(raw, messages, trigger_id, path))
+      for trigger_id, raw in entries.items()
+  ]
+
+
+def _ListEntries(triggers, path):
+  """Validates a `triggers` list and indexes its entries by `name`."""
+  if not isinstance(triggers, list):
+    raise c_exceptions.BadFileException(
+        '`triggers` in [{}] must be a list of trigger definitions.'.format(path)
+    )
+
+  entries = collections.OrderedDict()
+  for i, entry in enumerate(triggers):
+    location = 'triggers[{}] in [{}]'.format(i, path)
+    if not isinstance(entry, dict):
+      raise c_exceptions.BadFileException(
+          '{} must be a mapping.'.format(location)
+      )
+    name = entry.get('name')
+    if not isinstance(name, str) or not name.strip():
+      raise c_exceptions.BadFileException(
+          '{} must set `name` to the ID of the trigger.'.format(location)
+      )
+    name = name.strip()
+    if '/' in name:
+      raise c_exceptions.BadFileException(
+          '{} must set `name` to a trigger ID, not a full resource name [{}].'
+          .format(location, name)
+      )
+    if name in entries:
+      raise c_exceptions.BadFileException(
+          '`triggers` in [{}] defines trigger [{}] more than once.'.format(
+              path, name
+          )
+      )
+    entries[name] = entry
+  return entries
+
+
+def _BuildTrigger(raw, messages, trigger_id, path):
+  """Converts a single raw trigger mapping into a PipelineTrigger message."""
+  trigger = cloudbuild_util.LoadMessageFromStream(
+      stream=yaml.dump(raw),
+      msg_type=messages.PipelineTrigger,
+      msg_friendly_name='Trigger [{}]'.format(trigger_id),
+      skip_camel_case=_SKIP_CAMEL_CASE,
+      path=path,
+  )
+  for field in _IGNORED_FIELDS:
+    trigger.reset(field)
+  return trigger
+

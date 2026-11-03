@@ -416,16 +416,6 @@ class DnsKeysListResponse(_messages.Message):
   nextPageToken = _messages.StringField(3)
 
 
-class DnsLocationsGetRequest(_messages.Message):
-  r"""A DnsLocationsGetRequest object.
-
-  Fields:
-    name: Resource name for the location.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
 class DnsLocationsListRequest(_messages.Message):
   r"""A DnsLocationsListRequest object.
 

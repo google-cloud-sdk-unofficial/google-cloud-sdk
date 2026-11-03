@@ -52,6 +52,7 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
     self.projects_locations_authzPolicies = self.ProjectsLocationsAuthzPoliciesService(self)
     self.projects_locations_backendAuthenticationConfigs = self.ProjectsLocationsBackendAuthenticationConfigsService(self)
     self.projects_locations_clientTlsPolicies = self.ProjectsLocationsClientTlsPoliciesService(self)
+    self.projects_locations_costPerTokenPolicies = self.ProjectsLocationsCostPerTokenPoliciesService(self)
     self.projects_locations_dnsArmorSecurityPolicies_rules = self.ProjectsLocationsDnsArmorSecurityPoliciesRulesService(self)
     self.projects_locations_dnsArmorSecurityPolicies = self.ProjectsLocationsDnsArmorSecurityPoliciesService(self)
     self.projects_locations_dnsArmorSecurityPolicyAssociations = self.ProjectsLocationsDnsArmorSecurityPolicyAssociationsService(self)
@@ -2293,6 +2294,151 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
         request_field='googleIamV1TestIamPermissionsRequest',
         request_type_name='NetworksecurityProjectsLocationsClientTlsPoliciesTestIamPermissionsRequest',
         response_type_name='GoogleIamV1TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsCostPerTokenPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_costPerTokenPolicies resource."""
+
+    _NAME = 'projects_locations_costPerTokenPolicies'
+
+    def __init__(self, client):
+      super(NetworksecurityV1alpha1.ProjectsLocationsCostPerTokenPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new `CostPerTokenPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsCostPerTokenPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/costPerTokenPolicies',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.costPerTokenPolicies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['costPerTokenPolicyId'],
+        relative_path='v1alpha1/{+parent}/costPerTokenPolicies',
+        request_field='costPerTokenPolicy',
+        request_type_name='NetworksecurityProjectsLocationsCostPerTokenPoliciesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single `CostPerTokenPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsCostPerTokenPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/costPerTokenPolicies/{costPerTokenPoliciesId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.costPerTokenPolicies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsCostPerTokenPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single `CostPerTokenPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsCostPerTokenPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CostPerTokenPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/costPerTokenPolicies/{costPerTokenPoliciesId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.costPerTokenPolicies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsCostPerTokenPoliciesGetRequest',
+        response_type_name='CostPerTokenPolicy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists `CostPerTokenPolicy` resources in a given project and location.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsCostPerTokenPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListCostPerTokenPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/costPerTokenPolicies',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.costPerTokenPolicies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/costPerTokenPolicies',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsCostPerTokenPoliciesListRequest',
+        response_type_name='ListCostPerTokenPoliciesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a single `CostPerTokenPolicy`.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsCostPerTokenPoliciesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/costPerTokenPolicies/{costPerTokenPoliciesId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.costPerTokenPolicies.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='costPerTokenPolicy',
+        request_type_name='NetworksecurityProjectsLocationsCostPerTokenPoliciesPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

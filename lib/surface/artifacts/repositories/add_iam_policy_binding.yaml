@@ -14,10 +14,11 @@
         * The active account does not have permission to access the given
           repository's IAM policies.
     examples: |
-      To add an IAM policy binding for the role of 'roles/editor' for the user
-      'test-user@gmail.com' with repository 'my-repo', run:
 
-        $ {command} my-repo --member='user:test-user@gmail.com' --role='roles/editor'
+      The following example adds an IAM policy binding for the role of 'roles/editor'
+      for the user 'test-user@gmail.com', with repository 'my-repo' in the 'us-central1' region:
+
+        $ {command} my-repo --member='user:test-user@gmail.com' --role='roles/editor' --location='us-central1'
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.

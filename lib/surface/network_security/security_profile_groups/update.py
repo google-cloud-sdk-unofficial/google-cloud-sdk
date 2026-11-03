@@ -124,6 +124,7 @@ class UpdateProfileGroup(base.UpdateCommand):
           group=wildfire_analysis_group,
           required=False,
           help_text='Path to WildFire Analysis Profile resource.',
+          project_scope_supported=project_scope_supported,
       )
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)

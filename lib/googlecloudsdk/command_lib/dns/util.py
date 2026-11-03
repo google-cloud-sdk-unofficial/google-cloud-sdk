@@ -15,6 +15,8 @@
 """Helper functions for DNS commands."""
 
 
+import ipaddress
+
 from googlecloudsdk.api_lib.dns import util as api_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import exceptions
@@ -22,13 +24,11 @@ from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
-import ipaddr
-
 
 def IsIPv4(ip: str) -> bool:
   """Returns True if ip is an IPv4."""
   try:
-    ipaddr.IPv4Address(ip)
+    ipaddress.IPv4Address(ip)
     return True
   except ValueError:
     return False
@@ -37,7 +37,7 @@ def IsIPv4(ip: str) -> bool:
 def IsIPv6(ip: str) -> bool:
   """Returns True if ip is an IPv6."""
   try:
-    ipaddr.IPv6Address(ip)
+    ipaddress.IPv6Address(ip)
     return True
   except ValueError:
     return False

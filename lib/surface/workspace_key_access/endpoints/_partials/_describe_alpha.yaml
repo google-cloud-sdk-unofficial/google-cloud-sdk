@@ -18,14 +18,16 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: true
   hidden: true
   help_text:
     brief: Describe a Workspace Key Access endpoint.
     description: Show details of a Workspace Key Access endpoint.
     examples: |-
-      To describe endpoint `my-endpoint` in `us-central1`, run:
+      To describe endpoint `my-endpoint` in `us-east1`, run:
 
-      $ {command} my-endpoint --location=us-central1
+      $ {command} my-endpoint --location=us-east1
   arguments:
     params:
     - help_text: |-

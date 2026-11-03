@@ -13,7 +13,7 @@ class AssuredworkloadsV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://assuredworkloads.mtls.googleapis.com/'
 
   _PACKAGE = 'assuredworkloads'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/assuredworkloads', 'https://www.googleapis.com/auth/assuredworkloads.readonly', 'https://www.googleapis.com/auth/cloud-platform']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

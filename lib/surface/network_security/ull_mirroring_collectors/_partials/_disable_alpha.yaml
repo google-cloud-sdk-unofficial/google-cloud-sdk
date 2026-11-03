@@ -18,6 +18,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: false
   hidden: true
   help_text:
     brief: disable ullMirroringCollectors

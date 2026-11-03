@@ -415,6 +415,7 @@ ASSERT_FLAG = Argument(
     category=COMMONLY_USED_FLAGS,
     hidden=True,
     help="""\
+    *(EXPERIMENTAL)* This flag is experimental and not for production use.
     Assert properties about the command execution. If the assertion fails, the
     command is not executed and an error is raised. Supported assertions:
     `readonly`.
@@ -803,11 +804,11 @@ class _Common(six.with_metaclass(abc.ABCMeta, object)):
         else 'command')
     support_level = (
         'requires'
-        if cls._regional_endpoint_compatibility == properties.VALUES.regional.REQUIRED  # pylint:disable=line-too-long
+        if cls._regional_endpoint_compatibility == properties.constants.regional.REQUIRED  # pylint:disable=line-too-long
         else 'supports')
     help_text = (
         f'This {entity} {support_level} regional endpoints.')
-    if cls._regional_endpoint_compatibility == properties.VALUES.regional.SUPPORTED:  # pylint:disable=line-too-long
+    if cls._regional_endpoint_compatibility == properties.constants.regional.SUPPORTED:  # pylint:disable=line-too-long
       help_text += (
           ' To use regional endpoints for this command, use the'
           ' `--endpoint-mode=regional-preferred` flag. To use regional'
@@ -938,14 +939,14 @@ class Command(six.with_metaclass(abc.ABCMeta, _Common)):
           '--endpoint-mode',
           metavar='ENDPOINT_MODE',
           choices={
-              properties.VALUES.regional.GLOBAL: (
+              properties.constants.regional.GLOBAL: (
                   '(Default) Use global rather than regional endpoints.'
               ),
-              properties.VALUES.regional.REGIONAL: (
+              properties.constants.regional.REGIONAL: (
                   'Only use regional endpoints. An error will be raised if a'
                   ' regional endpoint is not available for a given command.'
               ),
-              properties.VALUES.regional.REGIONAL_PREFERRED: (
+              properties.constants.regional.REGIONAL_PREFERRED: (
                   'Use regional endpoints when available, otherwise use global'
                   ' endpoints. Recommended for most users.'
               ),
@@ -1302,13 +1303,13 @@ def _RegionalEndpointCompatibility(compatibility):
 
 def RegionalEndpointsSupported(cmd_class):
   decorator = _RegionalEndpointCompatibility(
-      properties.VALUES.regional.SUPPORTED)
+      properties.constants.regional.SUPPORTED)
   return decorator(cmd_class)
 
 
 def RegionalEndpointsRequired(cmd_class):
   decorator = _RegionalEndpointCompatibility(
-      properties.VALUES.regional.REQUIRED)
+      properties.constants.regional.REQUIRED)
   return decorator(cmd_class)
 
 
@@ -1525,7 +1526,7 @@ def WithLegacyQuota():
   properties.VALUES.PushInvocationValues()
   properties.VALUES.SetInvocationValue(
       properties.VALUES.billing.quota_project,
-      properties.VALUES.billing.LEGACY,
+      properties.constants.billing.LEGACY,
       None,
   )
   try:
@@ -1567,7 +1568,7 @@ def DisableUserProjectQuota():
      how override works.
   2. L4 can override the default value (L5).
   """
-  _SetUserProjectQuotaFallback(properties.VALUES.billing.LEGACY)
+  _SetUserProjectQuotaFallback(properties.constants.billing.LEGACY)
 
 
 def EnableUserProjectQuota():
@@ -1580,7 +1581,7 @@ def EnableUserProjectQuota():
 
   See the docstring of DisableUserProjectQuota for more information.
   """
-  _SetUserProjectQuotaFallback(properties.VALUES.billing.CURRENT_PROJECT)
+  _SetUserProjectQuotaFallback(properties.constants.billing.CURRENT_PROJECT)
 
 
 def EnableUserProjectQuotaWithFallback():
@@ -1595,7 +1596,7 @@ def EnableUserProjectQuotaWithFallback():
   See the docstring of DisableUserProjectQuota for more information.
   """
   _SetUserProjectQuotaFallback(
-      properties.VALUES.billing.CURRENT_PROJECT_WITH_FALLBACK
+      properties.constants.billing.CURRENT_PROJECT_WITH_FALLBACK
   )
 
 
@@ -1603,7 +1604,7 @@ def UserProjectQuotaWithFallbackEnabled():
   """Returns if the CURRENT_PROJECT_WITH_FALLBACK mode is enabled."""
   return (
       properties.VALUES.billing.quota_project.Get()
-      == properties.VALUES.billing.CURRENT_PROJECT_WITH_FALLBACK
+      == properties.constants.billing.CURRENT_PROJECT_WITH_FALLBACK
   )
 
 

@@ -14,7 +14,9 @@
 # limitations under the License.
 """Describe command for Resource Manager Semantic Tag Keys."""
 
+from googlecloudsdk.api_lib.resource_manager import semantic_tags
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.resource_manager import endpoint_utils as endpoints
 from googlecloudsdk.command_lib.resource_manager.semantic_tags import keys_catalog
 
 
@@ -46,10 +48,13 @@ class Describe(base.DescribeCommand):
         'key',
         metavar='KEY',
         help=(
-            'ID of the Semantic Tag Key to describe (for example,'
-            ' `placement.latency-optimized`), or its full resource name'
-            ' (`projects/gcp-semantic-tags-catalog/locations/{location}/'
-            'semanticTagKeys/{key}`).'
+            'Semantic Tag Key to describe: its key ID (for example,'
+            ' `placement.latency-optimized`), `semanticTagKeys/{key}`,'
+            ' `locations/{location}/semanticTagKeys/{key}`, or its full'
+            ' resource name (`projects/gcp-semantic-tags-catalog/locations/'
+            '{location}/semanticTagKeys/{key}`). Shorter forms use the'
+            ' `--location` value and the Google Cloud Semantic Tags Catalog'
+            ' project.'
         ),
     )
     keys_catalog.AddLocationArgToParser(
@@ -69,10 +74,5 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     full_name, location, _ = keys_catalog.ParseSemanticTagKeyName(args)
-    entries = keys_catalog.GetHardcodedSemanticTagKeys(location)
-    for item in entries:
-      if item['name'] == full_name:
-        return keys_catalog.ApplyView(item, args.view)
-    raise keys_catalog.SemanticTagKeyNotFoundError(
-        f"NOT_FOUND: SemanticTagKey '{full_name}' was not found."
-    )
+    with endpoints.CrmEndpointOverrides(location):
+      return semantic_tags.GetSemanticTagKey(full_name, view=args.view)

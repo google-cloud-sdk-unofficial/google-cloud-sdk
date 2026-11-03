@@ -305,51 +305,6 @@ class AutoCaptureSettings(_messages.Message):
   pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 8)
 
 
-class BenchmarkingTrial(_messages.Message):
-  r"""A benchmarking trial represents an execution of a benchmark.
-
-  Messages:
-    LabelsValue: Optional. Labels for the benchmarking trial.
-
-  Fields:
-    createTime: Output only. Create time of the benchmarking trial.
-    labels: Optional. Labels for the benchmarking trial.
-    name: Identifier. The resource name of the benchmarking trial. Format: pro
-      jects/{project}/locations/{location}/benchmarkingTrials/{benchmarking_tr
-      ial}
-    updateTime: Output only. Update time of the benchmarking trial.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. Labels for the benchmarking trial.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  createTime = _messages.StringField(1)
-  labels = _messages.MessageField('LabelsValue', 2)
-  name = _messages.StringField(3)
-  updateTime = _messages.StringField(4)
-
-
 class BootDisk(_messages.Message):
   r"""A [Persistent disk](https://cloud.google.com/compute/docs/disks) used as
   the boot disk for a Compute Engine VM instance.
@@ -435,6 +390,10 @@ class Cluster(_messages.Message):
       referenced elsewhere, and must conform to
       [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
       alphanumeric, and at most 63 characters).
+    VmTagsValue: Optional.
+      [Tags](https://docs.cloud.google.com/compute/docs/tag-resources) applied
+      to all provisioned VMs in the cluster. Tags are used to control access
+      to the VMs and to apply policies to them.
 
   Fields:
     computeResources: Optional. Compute resources available to the cluster.
@@ -472,6 +431,9 @@ class Cluster(_messages.Message):
       alphanumeric, and at most 63 characters).
     uid: Output only. The globally unique identifier for this Cluster.
     updateTime: Output only. Time that the cluster was most recently updated.
+    vmTags: Optional. [Tags](https://docs.cloud.google.com/compute/docs/tag-
+      resources) applied to all provisioned VMs in the cluster. Tags are used
+      to control access to the VMs and to apply policies to them.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -588,6 +550,32 @@ class Cluster(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class VmTagsValue(_messages.Message):
+    r"""Optional. [Tags](https://docs.cloud.google.com/compute/docs/tag-
+    resources) applied to all provisioned VMs in the cluster. Tags are used to
+    control access to the VMs and to apply policies to them.
+
+    Messages:
+      AdditionalProperty: An additional property for a VmTagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type VmTagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a VmTagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   computeResources = _messages.MessageField('ComputeResourcesValue', 1)
   createTime = _messages.StringField(2)
   description = _messages.StringField(3)
@@ -602,10 +590,16 @@ class Cluster(_messages.Message):
   storageResources = _messages.MessageField('StorageResourcesValue', 12)
   uid = _messages.StringField(13)
   updateTime = _messages.StringField(14)
+  vmTags = _messages.MessageField('VmTagsValue', 15)
 
 
 class ComputeEngineNodeDetails(_messages.Message):
   r"""Compute Engine-specific details for a Node.
+
+  Messages:
+    LabelsValue: Output only.
+      [Labels](https://cloud.google.com/compute/docs/labeling-resources)
+      attached to the Compute Engine VM instance.
 
   Fields:
     externalIpAddress: Output only. The external IP address of the VM
@@ -620,6 +614,9 @@ class ComputeEngineNodeDetails(_messages.Message):
       nagers/{instance_group_manager}`
     internalIpAddress: Output only. The internal IP address of the VM
       instance.
+    labels: Output only.
+      [Labels](https://cloud.google.com/compute/docs/labeling-resources)
+      attached to the Compute Engine VM instance.
     machineType: Output only. Name of the Compute Engine [machine
       type](https://cloud.google.com/compute/docs/machine-resource) to use,
       e.g. `n2-standard-2`.
@@ -631,13 +628,39 @@ class ComputeEngineNodeDetails(_messages.Message):
       lifecycle).
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Output only. [Labels](https://cloud.google.com/compute/docs/labeling-
+    resources) attached to the Compute Engine VM instance.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   externalIpAddress = _messages.StringField(1)
   instance = _messages.StringField(2)
   instanceGroupManager = _messages.StringField(3)
   internalIpAddress = _messages.StringField(4)
-  machineType = _messages.StringField(5)
-  sourceImage = _messages.StringField(6)
-  state = _messages.StringField(7)
+  labels = _messages.MessageField('LabelsValue', 5)
+  machineType = _messages.StringField(6)
+  sourceImage = _messages.StringField(7)
+  state = _messages.StringField(8)
 
 
 class ComputeEngineOrchestrator(_messages.Message):
@@ -1395,18 +1418,24 @@ class Disk(_messages.Message):
   r"""Additional disk for managed instance groups.
 
   Fields:
+    existingDisk: Optional. An existing persistent disk to attach read-only to
+      all VMs in the managed instance group, in the format
+      `projects/{project}/zones/{zone}/disks/{disk}`.
     image: Optional. Source image for the disk.
-    sizeGb: Required. Size of the disk in GB.
+    sizeGb: Optional. Size of the disk in GB. This field is required when
+      creating a new disk.
     snapshot: Optional. Source snapshot for the disk.
-    type: Required. [Persistent disk
+    type: Optional. [Persistent disk
       type](https://cloud.google.com/compute/docs/disks#disk-types), in the
-      format `projects/{project}/zones/{zone}/diskTypes/{disk_type}`.
+      format `projects/{project}/zones/{zone}/diskTypes/{disk_type}`. This
+      field is required when creating a new disk.
   """
 
-  image = _messages.StringField(1)
-  sizeGb = _messages.IntegerField(2)
-  snapshot = _messages.StringField(3)
-  type = _messages.StringField(4)
+  existingDisk = _messages.StringField(1)
+  image = _messages.StringField(2)
+  sizeGb = _messages.IntegerField(3)
+  snapshot = _messages.StringField(4)
+  type = _messages.StringField(5)
 
 
 class DynamicTierOptions(_messages.Message):
@@ -1756,57 +1785,20 @@ class HealthChecks(_messages.Message):
 
     Values:
       NODE_ACTION_UNSPECIFIED: Not set.
-      CORDON: Cordons the node to prevent new jobs from being scheduled.
+      CORDON: Deprecated: Use `PERMANENT_CORDON` instead.
       REBOOT: Reboots the node.
       RECREATE: Recreates the node.
+      PERMANENT_CORDON: Permanently cordons the node to prevent new jobs from
+        being scheduled.
     """
     NODE_ACTION_UNSPECIFIED = 0
     CORDON = 1
     REBOOT = 2
     RECREATE = 3
+    PERMANENT_CORDON = 4
 
   disabledNodeActions = _messages.EnumField('DisabledNodeActionsValueListEntryValuesEnum', 1, repeated=True)
   enableStandardChecks = _messages.BooleanField(2)
-
-
-class HypercomputeclusterProjectsLocationsBenchmarkingTrialsGetRequest(_messages.Message):
-  r"""A HypercomputeclusterProjectsLocationsBenchmarkingTrialsGetRequest
-  object.
-
-  Fields:
-    name: Required. The name of the benchmarking trial to retrieve. Format: pr
-      ojects/{project}/locations/{location}/benchmarkingTrials/{benchmarking_t
-      rial}
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class HypercomputeclusterProjectsLocationsBenchmarkingTrialsListRequest(_messages.Message):
-  r"""A HypercomputeclusterProjectsLocationsBenchmarkingTrialsListRequest
-  object.
-
-  Fields:
-    filter: Optional. Filtering results.
-    orderBy: Optional. Hint for how to order the results.
-    pageSize: Optional. The maximum number of benchmarking trials to return.
-      The service may return fewer than this value. If unspecified, at most 50
-      trials will be returned. The maximum value is 1000; values above 1000
-      will be coerced to 1000.
-    pageToken: Optional. A page token, received from a previous
-      `ListBenchmarkingTrials` call. Provide this to retrieve the subsequent
-      page. When paginating, all other parameters provided to
-      `ListBenchmarkingTrials` must match the call that provided the page
-      token.
-    parent: Required. The parent Location to list benchmarking trials for.
-      Format: projects/{project}/locations/{location}
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
 
 
 class HypercomputeclusterProjectsLocationsClustersCreateRequest(_messages.Message):
@@ -2439,17 +2431,44 @@ class HypercomputeclusterProjectsLocationsOperationsListRequest(_messages.Messag
   returnPartialSuccess = _messages.BooleanField(5)
 
 
-class ListBenchmarkingTrialsResponse(_messages.Message):
-  r"""Response message for Benchmarking.ListBenchmarkingTrials.
+class HypercomputeclusterProjectsLocationsPerformanceTrialsGetRequest(_messages.Message):
+  r"""A HypercomputeclusterProjectsLocationsPerformanceTrialsGetRequest
+  object.
 
   Fields:
-    benchmarkingTrials: The list of benchmarking trials.
-    nextPageToken: A token, which can be sent as `page_token` to retrieve the
-      next page. If this field is omitted, there are no subsequent pages.
+    name: Required. The name of the performance trial to retrieve. Format: pro
+      jects/{project}/locations/{location}/performanceTrials/{performance_tria
+      l}
   """
 
-  benchmarkingTrials = _messages.MessageField('BenchmarkingTrial', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
+  name = _messages.StringField(1, required=True)
+
+
+class HypercomputeclusterProjectsLocationsPerformanceTrialsListRequest(_messages.Message):
+  r"""A HypercomputeclusterProjectsLocationsPerformanceTrialsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. The maximum number of performance trials to return.
+      The service may return fewer than this value. If unspecified, at most 50
+      trials will be returned. The maximum value is 1000; values above 1000
+      will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListPerformanceTrials` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListPerformanceTrials` must match the call that provided the page
+      token.
+    parent: Required. The parent Location to list performance trials for.
+      Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
 
 
 class ListClustersResponse(_messages.Message):
@@ -2534,6 +2553,19 @@ class ListOperationsResponse(_messages.Message):
   nextPageToken = _messages.StringField(1)
   operations = _messages.MessageField('Operation', 2, repeated=True)
   unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListPerformanceTrialsResponse(_messages.Message):
+  r"""Response message for Benchmarking.ListPerformanceTrials.
+
+  Fields:
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    performanceTrials: The list of performance trials.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  performanceTrials = _messages.MessageField('PerformanceTrial', 2, repeated=True)
 
 
 class ListProfileSessionsResponse(_messages.Message):
@@ -3936,6 +3968,51 @@ class Orchestrator(_messages.Message):
   computeEngine = _messages.MessageField('ComputeEngineOrchestrator', 1)
   existingContainerCluster = _messages.MessageField('ExistingContainerClusterOrchestrator', 2)
   slurm = _messages.MessageField('SlurmOrchestrator', 3)
+
+
+class PerformanceTrial(_messages.Message):
+  r"""A performance trial represents an execution of a benchmark.
+
+  Messages:
+    LabelsValue: Optional. Labels for the performance trial.
+
+  Fields:
+    createTime: Output only. Create time of the performance trial.
+    labels: Optional. Labels for the performance trial.
+    name: Identifier. The resource name of the performance trial. Format: proj
+      ects/{project}/locations/{location}/performanceTrials/{performance_trial
+      }
+    updateTime: Output only. Update time of the performance trial.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels for the performance trial.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  name = _messages.StringField(3)
+  updateTime = _messages.StringField(4)
 
 
 class PreemptParameters(_messages.Message):

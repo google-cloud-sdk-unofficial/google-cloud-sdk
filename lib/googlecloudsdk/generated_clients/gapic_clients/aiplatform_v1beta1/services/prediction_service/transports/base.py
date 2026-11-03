@@ -194,6 +194,11 @@ class PredictionServiceTransport(abc.ABC):
                 default_timeout=None,
                 client_info=client_info,
             ),
+            self.stream_publisher_invoke: gapic_v1.method.wrap_method(
+                self.stream_publisher_invoke,
+                default_timeout=None,
+                client_info=client_info,
+            ),
             self.get_response: gapic_v1.method.wrap_method(
                 self.get_response,
                 default_timeout=None,
@@ -231,6 +236,11 @@ class PredictionServiceTransport(abc.ABC):
             ),
             self.embed_content: gapic_v1.method.wrap_method(
                 self.embed_content,
+                default_timeout=None,
+                client_info=client_info,
+            ),
+            self.batch_embed_contents: gapic_v1.method.wrap_method(
+                self.batch_embed_contents,
                 default_timeout=None,
                 client_info=client_info,
             ),
@@ -363,6 +373,15 @@ class PredictionServiceTransport(abc.ABC):
         raise NotImplementedError()
 
     @property
+    def stream_publisher_invoke(self) -> Callable[
+            [prediction_service.StreamPublisherInvokeRequest],
+            Union[
+                httpbody_pb2.HttpBody,
+                Awaitable[httpbody_pb2.HttpBody]
+            ]]:
+        raise NotImplementedError()
+
+    @property
     def get_response(self) -> Callable[
             [prediction_service.GetResponseRequest],
             Union[
@@ -431,6 +450,15 @@ class PredictionServiceTransport(abc.ABC):
             Union[
                 prediction_service.EmbedContentResponse,
                 Awaitable[prediction_service.EmbedContentResponse]
+            ]]:
+        raise NotImplementedError()
+
+    @property
+    def batch_embed_contents(self) -> Callable[
+            [prediction_service.BatchEmbedContentsRequest],
+            Union[
+                prediction_service.BatchEmbedContentsResponse,
+                Awaitable[prediction_service.BatchEmbedContentsResponse]
             ]]:
         raise NotImplementedError()
 

@@ -85,7 +85,7 @@
     collection:
     - agentregistry.projects.locations.skills.revisions
     modify_request_hooks:
-    - googlecloudsdk.command_lib.agent_registry.util:ReadPayloadFile
+    - googlecloudsdk.command_lib.agent_registry.util:ReadPayloadFile:api_version=v1alpha
   async:
     collection:
     - agentregistry.projects.locations.operations

@@ -45,5 +45,5 @@ class UpdateTraffic(base.UpdateCommand):
     return agent_runtimes_util.UpdateTraffic(
         runtime_ref,
         args,
-        asynchronous=False,
+        asynchronous=args.async_,
     )

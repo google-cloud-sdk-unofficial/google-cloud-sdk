@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA]
+
+  # Keeps the command out of help text, tab-completion and the public
+  # reference documentation while Cloud Build Pipelines is in preview.
+  hidden: true
+  universe_compatible: true
+
+  hints:
+    read_only: true
+
+  help_text:
+    brief: Describe a Cloud Build pipeline trigger.
+    description: |
+      Show the full configuration of a Cloud Build pipeline trigger, including
+      its event source, filters and options.
+    examples: |
+      To describe the trigger `deploy-main` of pipeline `payments-pipeline`
+      in region `us-central1`:
+
+        $ {command} deploy-main --pipeline=payments-pipeline \
+            --region=us-central1
+
+  request:
+    collection: cloudbuild.projects.locations.pipelines.triggers
+    api_version: v1
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: Cloud Build pipeline trigger to describe.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:pipeline_trigger
+      is_positional: true

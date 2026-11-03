@@ -56,6 +56,54 @@ def _get_dialect_registry():
     raise exceptions.Error(f'Failed to load dialect registry: {e}')
 
 
+def _get_ga_supported_dialects_hint(
+    registry: typing.Mapping[str, typing.Any],
+    target_legacy_batch_name: str,
+) -> str:
+  """Returns a hint listing only GA-supported dialects from the registry."""
+  ga_input_name_to_legacy: dict[str, list[str]] = {}
+  for dialect in registry.get('input_dialects', []):
+    if dialect.get('status') == 'GA':
+      name = dialect.get('name')
+      legacy_name = dialect.get('legacy_batch_name') or name
+      if name and legacy_name:
+        ga_input_name_to_legacy.setdefault(name, []).append(legacy_name)
+
+  ga_output_name_to_legacy: dict[str, str] = {}
+  for dialect in registry.get('output_dialects', []):
+    if dialect.get('status') == 'GA':
+      name = dialect.get('name')
+      legacy_name = dialect.get('legacy_batch_name') or name
+      if name and legacy_name:
+        ga_output_name_to_legacy[name] = legacy_name
+
+  ga_sources_by_target: dict[str, set[str]] = {}
+  for pair in registry.get('dialect_pairs', []):
+    if pair.get('status') != 'GA' or not pair.get('legacy_batch_name'):
+      continue
+    src_name = pair.get('source_name')
+    tgt_name = pair.get('target_name')
+    tgt_legacy = ga_output_name_to_legacy.get(tgt_name)
+    if not tgt_legacy or src_name not in ga_input_name_to_legacy:
+      continue
+    for src_legacy in ga_input_name_to_legacy[src_name]:
+      if f'{src_legacy}2{tgt_legacy}_Translation' in pair.get(
+          'legacy_batch_name', []
+      ):
+        ga_sources_by_target.setdefault(tgt_legacy, set()).add(src_name)
+
+  ga_sources = sorted(ga_sources_by_target.get(target_legacy_batch_name, ()))
+  if ga_sources:
+    return (
+        f' Supported source dialects for {target_legacy_batch_name}: '
+        f'{", ".join(ga_sources)}.'
+    )
+  ga_targets = sorted(ga_sources_by_target.keys())
+  if ga_targets:
+    return f' Supported target dialects: {", ".join(ga_targets)}.'
+  return ''
+
+
 def get_task_type(source_dialect: str, target_dialect: str) -> str:
   """Returns the translation task type based on the source dialect."""
   registry = _get_dialect_registry()
@@ -94,9 +142,10 @@ def get_task_type(source_dialect: str, target_dialect: str) -> str:
       valid_task_type = True
       break
   if not valid_task_type:
+    hint = _get_ga_supported_dialects_hint(registry, target_legacy_batch_name)
     raise exceptions.Error(
         f'Translation from {source_dialect} to {target_dialect} is not'
-        ' supported.'
+        f' supported.{hint}'
     )
   return task_type
 

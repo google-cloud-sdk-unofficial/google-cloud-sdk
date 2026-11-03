@@ -1,3 +1,5 @@
+hints:
+  read_only: false
 help_text:
   brief: Add an IAM policy binding to a Cloud Bigtable Backup.
   description: |

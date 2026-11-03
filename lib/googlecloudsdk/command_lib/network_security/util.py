@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+from googlecloudsdk.generated_clients.apis.networksecurity.v1 import networksecurity_v1_messages as v1_messages
 from googlecloudsdk.generated_clients.apis.networksecurity.v1alpha1 import networksecurity_v1alpha1_messages as v1alpha1_messages
 from googlecloudsdk.generated_clients.apis.networksecurity.v1beta1 import networksecurity_v1beta1_messages as v1beta1_messages
 
@@ -119,7 +120,8 @@ def ForceStartOrganizationAddressGroupProgressiveRollout(release_track, args):
 
 
 _CreateServerTlsPolicyRequest = (
-    v1alpha1_messages.NetworksecurityProjectsLocationsServerTlsPoliciesCreateRequest
+    v1_messages.NetworksecurityProjectsLocationsServerTlsPoliciesCreateRequest
+    | v1alpha1_messages.NetworksecurityProjectsLocationsServerTlsPoliciesCreateRequest
     | v1beta1_messages.NetworksecurityProjectsLocationsServerTlsPoliciesCreateRequest
 )
 
@@ -203,7 +205,8 @@ def SetServerTlsPolicyFields(
 
 
 _PatchServerTlsPolicyRequest = (
-    v1alpha1_messages.NetworksecurityProjectsLocationsServerTlsPoliciesPatchRequest
+    v1_messages.NetworksecurityProjectsLocationsServerTlsPoliciesPatchRequest
+    | v1alpha1_messages.NetworksecurityProjectsLocationsServerTlsPoliciesPatchRequest
     | v1beta1_messages.NetworksecurityProjectsLocationsServerTlsPoliciesPatchRequest
 )
 

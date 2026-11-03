@@ -2129,6 +2129,11 @@ class NetworkPeering(_messages.Message):
       field has a value of 'ACTIVE' when there's a matching configuration in
       the peer network. New values may be added to this enum when appropriate.
 
+  Messages:
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to this resource. For example: ``` "123/environment": "production",
+      "123/costCenter": "marketing" ```
+
   Fields:
     createTime: Output only. Creation time of this resource.
     description: Optional. User-provided description for this network peering.
@@ -2174,6 +2179,9 @@ class NetworkPeering(_messages.Message):
       New values may be added to this enum when appropriate.
     stateDetails: Output only. Output Only. Details about the current state of
       the network peering.
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      this resource. For example: ``` "123/environment": "production",
+      "123/costCenter": "marketing" ```
     uid: Output only. System-generated unique identifier for the resource.
     updateTime: Output only. Last update time of this resource.
     vmwareEngineNetwork: Required. The relative resource name of the VMware
@@ -2238,6 +2246,32 @@ class NetworkPeering(_messages.Message):
     CREATING = 3
     DELETING = 4
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to
+    this resource. For example: ``` "123/environment": "production",
+    "123/costCenter": "marketing" ```
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
   exchangeSubnetRoutes = _messages.BooleanField(3)
@@ -2251,9 +2285,10 @@ class NetworkPeering(_messages.Message):
   peerNetworkType = _messages.EnumField('PeerNetworkTypeValueValuesEnum', 11)
   state = _messages.EnumField('StateValueValuesEnum', 12)
   stateDetails = _messages.StringField(13)
-  uid = _messages.StringField(14)
-  updateTime = _messages.StringField(15)
-  vmwareEngineNetwork = _messages.StringField(16)
+  tags = _messages.MessageField('TagsValue', 14)
+  uid = _messages.StringField(15)
+  updateTime = _messages.StringField(16)
+  vmwareEngineNetwork = _messages.StringField(17)
 
 
 class NetworkPolicy(_messages.Message):
@@ -2263,6 +2298,11 @@ class NetworkPolicy(_messages.Message):
   network, which might span across regions. For a given region, a network
   policy applies to all private clouds in the VMware Engine network associated
   with the policy.
+
+  Messages:
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to this resource. For example: ``` "123/environment": "production",
+      "123/costCenter": "marketing" ```
 
   Fields:
     createTime: Output only. Creation time of this resource.
@@ -2289,6 +2329,9 @@ class NetworkPolicy(_messages.Message):
       project ID or project number of the project containing the network. In
       case of shared VPC, use the project ID or project number of the host
       project containing the shared VPC network.
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      this resource. For example: ``` "123/environment": "production",
+      "123/costCenter": "marketing" ```
     uid: Output only. System-generated unique identifier for the resource.
     updateTime: Output only. Last update time of this resource.
     vmwareEngineNetwork: Optional. The relative resource name of the VMware
@@ -2300,6 +2343,32 @@ class NetworkPolicy(_messages.Message):
       {location}/vmwareEngineNetworks/{vmware_engine_network_id}`
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to
+    this resource. For example: ``` "123/environment": "production",
+    "123/costCenter": "marketing" ```
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
   edgeServicesCidr = _messages.StringField(3)
@@ -2307,10 +2376,11 @@ class NetworkPolicy(_messages.Message):
   internetAccess = _messages.MessageField('NetworkService', 5)
   name = _messages.StringField(6)
   network = _messages.StringField(7)
-  uid = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
-  vmwareEngineNetwork = _messages.StringField(10)
-  vmwareEngineNetworkCanonical = _messages.StringField(11)
+  tags = _messages.MessageField('TagsValue', 8)
+  uid = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+  vmwareEngineNetwork = _messages.StringField(11)
+  vmwareEngineNetworkCanonical = _messages.StringField(12)
 
 
 class NetworkService(_messages.Message):
@@ -2917,6 +2987,11 @@ class PrivateCloud(_messages.Message):
     TypeValueValuesEnum: Optional. Type of the private cloud. Defaults to
       STANDARD.
 
+  Messages:
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to this resource. For example: ``` "123/environment": "production",
+      "123/costCenter": "marketing" ```
+
   Fields:
     createTime: Output only. Creation time of this resource.
     deleteTime: Output only. Time when the resource was scheduled for
@@ -2941,6 +3016,9 @@ class PrivateCloud(_messages.Message):
     nsx: Output only. NSX appliance.
     state: Output only. State of the resource. New values may be added to this
       enum when appropriate.
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      this resource. For example: ``` "123/environment": "production",
+      "123/costCenter": "marketing" ```
     type: Optional. Type of the private cloud. Defaults to STANDARD.
     uid: Output only. System-generated unique identifier for the resource.
     updateTime: Output only. Last update time of this resource.
@@ -2992,6 +3070,32 @@ class PrivateCloud(_messages.Message):
     TIME_LIMITED = 1
     STRETCHED = 2
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to
+    this resource. For example: ``` "123/environment": "production",
+    "123/costCenter": "marketing" ```
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   createTime = _messages.StringField(1)
   deleteTime = _messages.StringField(2)
   description = _messages.StringField(3)
@@ -3003,10 +3107,11 @@ class PrivateCloud(_messages.Message):
   networkConfig = _messages.MessageField('NetworkConfig', 9)
   nsx = _messages.MessageField('Nsx', 10)
   state = _messages.EnumField('StateValueValuesEnum', 11)
-  type = _messages.EnumField('TypeValueValuesEnum', 12)
-  uid = _messages.StringField(13)
-  updateTime = _messages.StringField(14)
-  vcenter = _messages.MessageField('Vcenter', 15)
+  tags = _messages.MessageField('TagsValue', 12)
+  type = _messages.EnumField('TypeValueValuesEnum', 13)
+  uid = _messages.StringField(14)
+  updateTime = _messages.StringField(15)
+  vcenter = _messages.MessageField('Vcenter', 16)
 
 
 class PrivateConnection(_messages.Message):
@@ -3021,6 +3126,11 @@ class PrivateConnection(_messages.Message):
       GLOBAL or REGIONAL, for other types only GLOBAL is supported.
     StateValueValuesEnum: Output only. State of the private connection.
     TypeValueValuesEnum: Required. Private connection type.
+
+  Messages:
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to this resource. For example: ``` "123/environment": "production",
+      "123/costCenter": "marketing" ```
 
   Fields:
     createTime: Output only. Creation time of this resource.
@@ -3051,6 +3161,9 @@ class PrivateConnection(_messages.Message):
       other producer VPC to which the VMware Engine Network needs to be
       connected, e.g. projects/project/global/networks/vpc.
     state: Output only. State of the private connection.
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      this resource. For example: ``` "123/environment": "production",
+      "123/costCenter": "marketing" ```
     type: Required. Private connection type.
     uid: Output only. System-generated unique identifier for the resource.
     updateTime: Output only. Last update time of this resource.
@@ -3140,6 +3253,32 @@ class PrivateConnection(_messages.Message):
     THIRD_PARTY_SERVICE = 4
     GOOGLE_CLOUD_NETAPP_VOLUMES = 5
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to
+    this resource. For example: ``` "123/environment": "production",
+    "123/costCenter": "marketing" ```
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
   name = _messages.StringField(3)
@@ -3148,11 +3287,12 @@ class PrivateConnection(_messages.Message):
   routingMode = _messages.EnumField('RoutingModeValueValuesEnum', 6)
   serviceNetwork = _messages.StringField(7)
   state = _messages.EnumField('StateValueValuesEnum', 8)
-  type = _messages.EnumField('TypeValueValuesEnum', 9)
-  uid = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
-  vmwareEngineNetwork = _messages.StringField(12)
-  vmwareEngineNetworkCanonical = _messages.StringField(13)
+  tags = _messages.MessageField('TagsValue', 9)
+  type = _messages.EnumField('TypeValueValuesEnum', 10)
+  uid = _messages.StringField(11)
+  updateTime = _messages.StringField(12)
+  vmwareEngineNetwork = _messages.StringField(13)
+  vmwareEngineNetworkCanonical = _messages.StringField(14)
 
 
 class RefreshVmAuthTokenRequest(_messages.Message):
@@ -4050,6 +4190,11 @@ class VmwareEngineNetwork(_messages.Message):
     StateValueValuesEnum: Output only. State of the VMware Engine network.
     TypeValueValuesEnum: Required. VMware Engine network type.
 
+  Messages:
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to this resource. For example: ``` "123/environment": "production",
+      "123/costCenter": "marketing" ```
+
   Fields:
     createTime: Output only. Creation time of this resource.
     description: User-provided description for this VMware Engine network.
@@ -4062,6 +4207,9 @@ class VmwareEngineNetwork(_messages.Message):
       in https://cloud.google.com/apis/design/resource_names. For example:
       `projects/my-project/locations/global/vmwareEngineNetworks/my-network`
     state: Output only. State of the VMware Engine network.
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      this resource. For example: ``` "123/environment": "production",
+      "123/costCenter": "marketing" ```
     type: Required. VMware Engine network type.
     uid: Output only. System-generated unique identifier for the resource.
     updateTime: Output only. Last update time of this resource.
@@ -4101,15 +4249,42 @@ class VmwareEngineNetwork(_messages.Message):
     LEGACY = 1
     STANDARD = 2
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to
+    this resource. For example: ``` "123/environment": "production",
+    "123/costCenter": "marketing" ```
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
   etag = _messages.StringField(3)
   name = _messages.StringField(4)
   state = _messages.EnumField('StateValueValuesEnum', 5)
-  type = _messages.EnumField('TypeValueValuesEnum', 6)
-  uid = _messages.StringField(7)
-  updateTime = _messages.StringField(8)
-  vpcNetworks = _messages.MessageField('VpcNetwork', 9, repeated=True)
+  tags = _messages.MessageField('TagsValue', 6)
+  type = _messages.EnumField('TypeValueValuesEnum', 7)
+  uid = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
+  vpcNetworks = _messages.MessageField('VpcNetwork', 10, repeated=True)
 
 
 class VmwareUpgradeComponent(_messages.Message):
@@ -4251,18 +4426,20 @@ class VmwareengineProjectsLocationsCapacityAllocationsListRequest(_messages.Mess
     filter: Optional. A filter expression that matches resources returned in
       the response. The expression must specify the field name, a comparison
       operator, and the value that you want to use for filtering. The value
-      must be a string, a number, or a boolean. The comparison operator must
-      be `=`, `!=`, `>`, or `<`. For example, if you are filtering a list of
-      capacity allocations, you can exclude the ones named `example-capacity-
-      allocation` by specifying `name != "example-capacity-allocation"`. You
-      can also filter on other fields. For example, you could specify
-      `machineFamily = "standard-72"` to include capacity allocations only if
-      they have a matching machine family. To filter on multiple expressions,
-      provide each separate expression within parentheses. For example: ```
-      (machineFamily = "standard-72") (allocatedCapacity > 10) ``` By default,
-      each expression is an `AND` expression. However, you can include `AND`
-      and `OR` expressions explicitly. For example: ``` (machineFamily =
-      "standard-72") AND (allocatedCapacity > 10) OR (netDemand > 0) ```
+      must be a string, a number, or a boolean. For strings and numbers, the
+      comparison operator must be `=`, `!=`, `<`, `<=`, `>`, `>=`, or `:`. For
+      booleans, the comparison operator must be `=` or `!=`. For example, if
+      you are filtering a list of capacity allocations, you can exclude the
+      ones named `example-capacity-allocation` by specifying `name !=
+      "example-capacity-allocation"`. You can also filter on other fields. For
+      example, you could specify `machine_family = "standard-72"` to include
+      capacity allocations only if they have a matching machine family. To
+      filter on multiple expressions, provide each separate expression within
+      parentheses. For example: ``` (machine_family = "standard-72")
+      (allocated_capacity > 10) ``` By default, each expression is an `AND`
+      expression. However, you can include `AND` and `OR` expressions
+      explicitly. For example: ``` (machine_family = "standard-72") AND
+      (allocated_capacity > 10) OR (consumed_capacity_count > 0) ```
     orderBy: Optional. Sorts list results by a certain order. By default,
       returned results are ordered by `name` in ascending order. You can also
       sort results in descending order based on the `name` value using

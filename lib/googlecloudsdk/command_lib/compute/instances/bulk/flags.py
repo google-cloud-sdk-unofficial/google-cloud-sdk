@@ -436,7 +436,6 @@ def AddCommonBulkInsertArgs(
     support_preemption_notice_duration=False,
     support_instance_flexibility_policy=False,
     support_workload_identity_config=False,
-    support_identity_type=False,
     support_instance_selection_min_cpu_platform=False,
     support_flex_policy_flag_with_mincpu_and_disks=False,
     support_vsock_mode=False,
@@ -614,9 +613,7 @@ def AddCommonBulkInsertArgs(
         support_flex_policy_flag_with_mincpu_and_disks=support_flex_policy_flag_with_mincpu_and_disks,
     )
   if support_workload_identity_config:
-    instances_flags.AddWorkloadIdentityConfigArgs(
-        parser, support_identity_type=support_identity_type
-    )
+    instances_flags.AddWorkloadIdentityConfigArgs(parser)
 
 
 def ValidateBulkCreateArgs(args):

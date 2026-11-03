@@ -46,13 +46,21 @@ class AirflowMetadataRetentionPolicyConfig(_messages.Message):
 
 
 class AirflowRbacBinding(_messages.Message):
-  r"""A binding for identities (prefixed users/groups emails) to a specific
-  Airflow role.
+  r"""A binding for identities to a specific Airflow role.
 
   Fields:
-    members: Required. Specifies the identities (prefixed user/group emails)
-      to which the role is granted. An identity must be prefixed with `user:`
-      or `group:`.
+    members: Required. Specifies the identities to which the role is granted.
+      Each identity has one of the following forms: * `user:{email}`: the
+      email address of a user account. For example, `user:alice@example.com`.
+      * `group:{email}`: the email address of a group. For example,
+      `group:admins@example.com`. * `serviceAccount:{email}`: the email
+      address of a service account. For example, `serviceAccount:my-sa@my-
+      project.iam.gserviceaccount.com`. * `principal://iam.googleapis.com/loca
+      tions/global/workforcePools/{pool_id}/subject/{subject_attribute_value}`
+      : a single identity in a workforce identity pool. Each `user:`,
+      `group:`, or `serviceAccount:` identity must exist when it is added, and
+      its prefix must match its type. All bindings together can list at most
+      1000 members, counting repetitions, and at most 50 distinct groups.
     role: Required. Specifies the name of the Airflow role.
   """
 
@@ -68,8 +76,9 @@ class AirflowRbacConfig(_messages.Message):
   an Airflow RBAC configuration with 2 bindings.
 
   Fields:
-    bindings: Required. Binds the identities (prefixed users/groups emails) to
-      the Airflow roles.
+    bindings: Required. Binds the identities (users, groups, service accounts,
+      and workforce identity pool principals) to the Airflow roles. Must
+      contain at least one binding.
   """
 
   bindings = _messages.MessageField('AirflowRbacBinding', 1, repeated=True)
@@ -1689,7 +1698,7 @@ class EnvironmentConfig(_messages.Message):
       the environment.
     userWorkloadsConfig: Optional. The configuration for the user workloads.
       This field is supported for Cloud Composer environments in versions
-      `composer-3.*.*-airflow-*.*.*` and newer.
+      `composer-3-airflow-*.*.*` and newer.
     webServerConfig: Optional. The configuration settings for the Airflow web
       server App Engine instance. This field is supported for Cloud Composer
       environments in versions composer-1.*.*-airflow-*.*.*.
@@ -1715,12 +1724,15 @@ class EnvironmentConfig(_messages.Message):
       ENVIRONMENT_SIZE_MEDIUM: The environment size is medium.
       ENVIRONMENT_SIZE_LARGE: The environment size is large.
       ENVIRONMENT_SIZE_EXTRA_LARGE: The environment size is extra large.
+      ENVIRONMENT_SIZE_X_EXTRA_LARGE: The environment size is double extra
+        large.
     """
     ENVIRONMENT_SIZE_UNSPECIFIED = 0
     ENVIRONMENT_SIZE_SMALL = 1
     ENVIRONMENT_SIZE_MEDIUM = 2
     ENVIRONMENT_SIZE_LARGE = 3
     ENVIRONMENT_SIZE_EXTRA_LARGE = 4
+    ENVIRONMENT_SIZE_X_EXTRA_LARGE = 5
 
   class ResilienceModeValueValuesEnum(_messages.Enum):
     r"""Optional. Resilience mode of the Cloud Composer Environment. This
@@ -1937,6 +1949,8 @@ class ImageVersion(_messages.Message):
   Fields:
     creationDisabled: Whether it is impossible to create an environment with
       the image version.
+    devModeSupported: Whether it is possible to create an environment in the
+      `DEVELOPMENT` mode with the image version.
     imageVersionId: The string identifier of the ImageVersion, in the form:
       "composer-x.y.z-airflow-a.b.c"
     isDefault: Whether this is the default ImageVersion used by Composer
@@ -1948,11 +1962,12 @@ class ImageVersion(_messages.Message):
   """
 
   creationDisabled = _messages.BooleanField(1)
-  imageVersionId = _messages.StringField(2)
-  isDefault = _messages.BooleanField(3)
-  releaseDate = _messages.MessageField('Date', 4)
-  supportedPythonVersions = _messages.StringField(5, repeated=True)
-  upgradeDisabled = _messages.BooleanField(6)
+  devModeSupported = _messages.BooleanField(2)
+  imageVersionId = _messages.StringField(3)
+  isDefault = _messages.BooleanField(4)
+  releaseDate = _messages.MessageField('Date', 5)
+  supportedPythonVersions = _messages.StringField(6, repeated=True)
+  upgradeDisabled = _messages.BooleanField(7)
 
 
 class ImageVersionRollbackTarget(_messages.Message):
@@ -2185,6 +2200,8 @@ class LoadSnapshotRequest(_messages.Message):
   Fields:
     skipAirflowOverridesSetting: Whether or not to skip setting Airflow
       overrides when loading the environment's state.
+    skipAirflowRbacConfigSetting: Optional. Whether or not to skip setting
+      Airflow RBAC configuration when loading the environment's state.
     skipEnvironmentVariablesSetting: Whether or not to skip setting
       environment variables when loading the environment's state.
     skipGcsDataCopying: Whether or not to skip copying Cloud Storage data when
@@ -2200,11 +2217,12 @@ class LoadSnapshotRequest(_messages.Message):
   """
 
   skipAirflowOverridesSetting = _messages.BooleanField(1)
-  skipEnvironmentVariablesSetting = _messages.BooleanField(2)
-  skipGcsDataCopying = _messages.BooleanField(3)
-  skipPypiPackagesInstallation = _messages.BooleanField(4)
-  skipUserWorkloadsServiceAccountsSetting = _messages.BooleanField(5)
-  snapshotPath = _messages.StringField(6)
+  skipAirflowRbacConfigSetting = _messages.BooleanField(2)
+  skipEnvironmentVariablesSetting = _messages.BooleanField(3)
+  skipGcsDataCopying = _messages.BooleanField(4)
+  skipPypiPackagesInstallation = _messages.BooleanField(5)
+  skipUserWorkloadsServiceAccountsSetting = _messages.BooleanField(6)
+  snapshotPath = _messages.StringField(7)
 
 
 class LoadSnapshotResponse(_messages.Message):
@@ -4039,12 +4057,15 @@ class WorkloadsConfigPreset(_messages.Message):
       ENVIRONMENT_SIZE_MEDIUM: The environment size is medium.
       ENVIRONMENT_SIZE_LARGE: The environment size is large.
       ENVIRONMENT_SIZE_EXTRA_LARGE: The environment size is extra large.
+      ENVIRONMENT_SIZE_X_EXTRA_LARGE: The environment size is double extra
+        large.
     """
     ENVIRONMENT_SIZE_UNSPECIFIED = 0
     ENVIRONMENT_SIZE_SMALL = 1
     ENVIRONMENT_SIZE_MEDIUM = 2
     ENVIRONMENT_SIZE_LARGE = 3
     ENVIRONMENT_SIZE_EXTRA_LARGE = 4
+    ENVIRONMENT_SIZE_X_EXTRA_LARGE = 5
 
   environmentSize = _messages.EnumField('EnvironmentSizeValueValuesEnum', 1)
   id = _messages.StringField(2)

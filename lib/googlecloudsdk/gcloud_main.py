@@ -31,14 +31,11 @@ import sys
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import cli
 from googlecloudsdk.command_lib import crash_handling
-from googlecloudsdk.command_lib.util.apis import yaml_command_translator
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import creds_context_managers
-from googlecloudsdk.core.credentials import devshell as c_devshell
-from googlecloudsdk.core.survey import survey_check
 from googlecloudsdk.core.updater import local_state
 
 from googlecloudsdk.core.util import encoding
@@ -86,6 +83,8 @@ def _ShouldCheckSurveyPrompt(command_path):
   # dev shell environment uses temporary folder for user config. That means
   # survey prompt cache gets cleaned each time user starts a new session,
   # which results in too frequent prompting.
+  # pylint:disable=g-import-not-at-top
+  from googlecloudsdk.core.credentials import devshell as c_devshell
   if c_devshell.IsDevshellEnvironment():
     return False
 
@@ -105,6 +104,8 @@ def SurveyPromptCheck(command_path, **unused_kwargs):
   if not _ShouldCheckSurveyPrompt(command_path):
     return
   try:
+    # pylint:disable=g-import-not-at-top
+    from googlecloudsdk.core.survey import survey_check
     survey_check.SurveyPrompter().Prompt()
   # pylint:disable=broad-except, We never want this to escape, ever. Only
   # messages printed should reach the user.
@@ -132,6 +133,11 @@ def CreateCLI(surfaces, translator=None):
   def HandleKnownErrorFunc():
     crash_handling.ReportError(is_crash=False)
 
+  if translator is None:
+    # pylint:disable=g-import-not-at-top
+    from googlecloudsdk.command_lib.util.apis import yaml_command_translator
+    translator = yaml_command_translator.Translator()
+
   pkg_root = os.path.dirname(os.path.dirname(surface.__file__))
   loader = cli.CLILoader(
       name='gcloud',
@@ -139,8 +145,7 @@ def CreateCLI(surfaces, translator=None):
       allow_non_existing_modules=True,
       version_func=VersionFunc,
       known_error_handler=HandleKnownErrorFunc,
-      yaml_command_translator=(translator or
-                               yaml_command_translator.Translator()),
+      yaml_command_translator=(translator),
   )
   loader.AddReleaseTrack(
       base.ReleaseTrack.ALPHA,

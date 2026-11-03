@@ -1,3 +1,5 @@
+hints:
+  read_only: false
 help_text:
   brief: Delete an existing backup.
   description: Delete an existing backup.

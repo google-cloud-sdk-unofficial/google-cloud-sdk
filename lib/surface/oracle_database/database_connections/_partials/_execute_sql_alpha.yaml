@@ -20,12 +20,16 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: execute databaseConnections
-    description: execute databaseConnections
+    brief: Execute a SQL statement on a DatabaseConnection.
+    description: Executes a SQL statement on a DatabaseConnection. Supports `SELECT` queries as well as DML and DDL statements, which are autocommitted.
     examples: |-
-      To execute all databaseConnections, run:
+      To execute a SQL statement on a DatabaseConnection with id `my-connection` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-connection --location=us-east4 --sql-statement="SELECT 1 FROM DUAL"
+
+      To execute a parameterized SQL statement with bind variables (where `value` takes JSON) on a DatabaseConnection with id `my-connection` in the location `us-east4`, run:
+
+        $ {command} my-connection --location=us-east4 --sql-statement="SELECT * FROM employees WHERE department_id = :dept_id AND status = :status" --params='name=dept_id,value=10' --params='name=status,value="ACTIVE"'
   arguments:
     params:
     - help_text: |-

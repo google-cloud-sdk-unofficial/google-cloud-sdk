@@ -129,13 +129,35 @@ class GoogleCloudVectorsearchV1AggregateDataObjectsRequest(_messages.Message):
       query.
 
   Messages:
-    FilterValue: Optional. A JSON filter expression, e.g. {"genre": {"$eq":
-      "sci-fi"}}, represented as a google.protobuf.Struct.
+    FilterValue: Optional. A JSON filter expression, e.g. `{"genre": {"$eq":
+      "sci-fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
 
   Fields:
     aggregate: Required. The aggregation method to apply to the query.
-    filter: Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-
-      fi"}}, represented as a google.protobuf.Struct.
+    filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+      fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
   """
 
   class AggregateValueValuesEnum(_messages.Enum):
@@ -150,8 +172,19 @@ class GoogleCloudVectorsearchV1AggregateDataObjectsRequest(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterValue(_messages.Message):
-    r"""Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-fi"}},
-    represented as a google.protobuf.Struct.
+    r"""Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+    fi"}}`, represented as a `google.protobuf.Struct`. An empty filter (`{}`)
+    matches all data objects. Otherwise, each JSON object in the filter must
+    have exactly one key: either a field name mapped to one operator
+    (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or `$or` with a
+    list of filters, or `$not` with one filter. Field operators and their
+    values: `$eq` and `$ne` take a string, number or bool; `$lt`, `$lte`,
+    `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a list of
+    strings; `$exists` takes a bool. Several keys in one object (implicit AND)
+    and implicit equality (`{"genre": "sci-fi"}`) are rejected; use `$and` and
+    `$eq` instead. Logical operators can be nested at most 2 levels deep, e.g.
+    `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b": {"$eq": 2}}]}]}`. Deeper
+    filters are rejected with `INVALID_ARGUMENT`.
 
     Messages:
       AdditionalProperty: An additional property for a FilterValue object.
@@ -421,6 +454,34 @@ class GoogleCloudVectorsearchV1Collection(_messages.Message):
   name = _messages.StringField(7)
   updateTime = _messages.StringField(8)
   vectorSchema = _messages.MessageField('VectorSchemaValue', 9)
+
+
+class GoogleCloudVectorsearchV1CombinedQuery(_messages.Message):
+  r"""A query that combines multiple sub-queries with a boolean operator.
+
+  Enums:
+    OpValueValuesEnum: Required. The boolean operator used to combine the sub-
+      queries.
+
+  Fields:
+    op: Required. The boolean operator used to combine the sub-queries.
+    subQueries: Required. The sub-queries to be combined.
+  """
+
+  class OpValueValuesEnum(_messages.Enum):
+    r"""Required. The boolean operator used to combine the sub-queries.
+
+    Values:
+      OPERATOR_UNSPECIFIED: Default value. This value is unused.
+      AND: All sub-queries must match.
+      OR: At least one sub-query must match.
+    """
+    OPERATOR_UNSPECIFIED = 0
+    AND = 1
+    OR = 2
+
+  op = _messages.EnumField('OpValueValuesEnum', 1)
+  subQueries = _messages.MessageField('GoogleCloudVectorsearchV1StructuredQuery', 2, repeated=True)
 
 
 class GoogleCloudVectorsearchV1CreateDataObjectRequest(_messages.Message):
@@ -883,15 +944,24 @@ class GoogleCloudVectorsearchV1OperationMetadata(_messages.Message):
 
 
 class GoogleCloudVectorsearchV1OutputFields(_messages.Message):
-  r"""Defines a output fields struct for data in DataObject.
+  r"""Defines an output fields struct for data in DataObject. Output fields
+  are opt-in. A search or query result contains only the data object name and
+  ID, plus the fields listed here. If this message is unset or a list is
+  empty, the corresponding part of the data object (`data`, `vectors` or
+  metadata) is omitted from the result; it is not an indication that the
+  stored data object is empty. Use `"*"` in a list to return all fields of
+  that kind.
 
   Fields:
     dataFields: Optional. The fields from the data fields to include in the
-      output.
-    metadataFields: Optional. The fields from the DataObject metadata to
-      include in the output.
+      output. Use `"*"` to include all data fields. If empty, `data` is
+      omitted from results.
+    metadataFields: Optional. The DataObject metadata fields to include in the
+      output: `create_time`, `update_time` and `etag`. Use `"*"` to include
+      all metadata fields. If empty, these fields are omitted from results.
     vectorFields: Optional. The fields from the vector fields to include in
-      the output.
+      the output. Use `"*"` to include all vector fields. If empty, `vectors`
+      is omitted from results.
   """
 
   dataFields = _messages.StringField(1, repeated=True)
@@ -903,12 +973,34 @@ class GoogleCloudVectorsearchV1QueryDataObjectsRequest(_messages.Message):
   r"""Request message for DataObjectSearchService.QueryDataObjects.
 
   Messages:
-    FilterValue: Optional. A JSON filter expression, e.g. {"genre": {"$eq":
-      "sci-fi"}}, represented as a google.protobuf.Struct.
+    FilterValue: Optional. A JSON filter expression, e.g. `{"genre": {"$eq":
+      "sci-fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
 
   Fields:
-    filter: Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-
-      fi"}}, represented as a google.protobuf.Struct.
+    filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+      fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
     outputFields: Optional. Mask specifying which fields to return.
     pageSize: Optional. The standard list page size. Default is 100. The
       maximum value is 1000; values above 1000 will be coerced to 1000.
@@ -919,8 +1011,19 @@ class GoogleCloudVectorsearchV1QueryDataObjectsRequest(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterValue(_messages.Message):
-    r"""Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-fi"}},
-    represented as a google.protobuf.Struct.
+    r"""Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+    fi"}}`, represented as a `google.protobuf.Struct`. An empty filter (`{}`)
+    matches all data objects. Otherwise, each JSON object in the filter must
+    have exactly one key: either a field name mapped to one operator
+    (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or `$or` with a
+    list of filters, or `$not` with one filter. Field operators and their
+    values: `$eq` and `$ne` take a string, number or bool; `$lt`, `$lte`,
+    `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a list of
+    strings; `$exists` takes a bool. Several keys in one object (implicit AND)
+    and implicit equality (`{"genre": "sci-fi"}`) are rejected; use `$and` and
+    `$eq` instead. Logical operators can be nested at most 2 levels deep, e.g.
+    `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b": {"$eq": 2}}]}]}`. Deeper
+    filters are rejected with `INVALID_ARGUMENT`.
 
     Messages:
       AdditionalProperty: An additional property for a FilterValue object.
@@ -960,6 +1063,21 @@ class GoogleCloudVectorsearchV1QueryDataObjectsResponse(_messages.Message):
 
   dataObjects = _messages.MessageField('GoogleCloudVectorsearchV1DataObject', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+
+
+class GoogleCloudVectorsearchV1QueryEnhancement(_messages.Message):
+  r"""Query enhancement settings. When enabled, expands the search terms with
+  stemming, synonyms, and spelling corrections, and removes stop words.
+
+  Fields:
+    enabled: Optional. Whether query enhancement is enabled.
+    languageCode: Optional. The IETF BCP 47 language tag, such as "en-US", for
+      query enhancement. If unset, the language is detected automatically. See
+      .
+  """
+
+  enabled = _messages.BooleanField(1)
+  languageCode = _messages.StringField(2)
 
 
 class GoogleCloudVectorsearchV1Ranker(_messages.Message):
@@ -1106,12 +1224,56 @@ class GoogleCloudVectorsearchV1SemanticSearch(_messages.Message):
       multi modal embedding models, see
 
   Messages:
-    FilterValue: Optional. A JSON filter expression, e.g. {"genre": {"$eq":
-      "sci-fi"}}, represented as a google.protobuf.Struct.
+    FilterValue: Optional. A JSON filter expression, e.g. `{"genre": {"$eq":
+      "sci-fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
+      Which filters are accepted depends on how the search is served. If it is
+      served by an approximate nearest neighbor (ANN) index (by default when a
+      ready index exists on `search_field`, or when one is selected via
+      `search_hint.index_hint`), every filtered field must be listed in
+      `Index.filter_fields` at index creation, `$or` and `$all` are accepted
+      only at the top level of the filter, and `$not` and `$exists` are not
+      supported. Not every unsupported filter is rejected: most produce
+      `INVALID_ARGUMENT`, but some are silently ignored, so do not rely on the
+      error. If no ready index exists on `search_field`, or if
+      `search_hint.knn_hint` is set, the search is served by K-Nearest
+      Neighbor (KNN) search, which has none of these filter restrictions.
 
   Fields:
-    filter: Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-
-      fi"}}, represented as a google.protobuf.Struct.
+    filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+      fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
+      Which filters are accepted depends on how the search is served. If it is
+      served by an approximate nearest neighbor (ANN) index (by default when a
+      ready index exists on `search_field`, or when one is selected via
+      `search_hint.index_hint`), every filtered field must be listed in
+      `Index.filter_fields` at index creation, `$or` and `$all` are accepted
+      only at the top level of the filter, and `$not` and `$exists` are not
+      supported. Not every unsupported filter is rejected: most produce
+      `INVALID_ARGUMENT`, but some are silently ignored, so do not rely on the
+      error. If no ready index exists on `search_field`, or if
+      `search_hint.knn_hint` is set, the search is served by K-Nearest
+      Neighbor (KNN) search, which has none of these filter restrictions.
     outputFields: Optional. The fields to return in the search results.
     searchField: Required. The vector field to search.
     searchHint: Optional. Sets the search hint. If no strategy is specified,
@@ -1159,8 +1321,30 @@ class GoogleCloudVectorsearchV1SemanticSearch(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterValue(_messages.Message):
-    r"""Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-fi"}},
-    represented as a google.protobuf.Struct.
+    r"""Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+    fi"}}`, represented as a `google.protobuf.Struct`. An empty filter (`{}`)
+    matches all data objects. Otherwise, each JSON object in the filter must
+    have exactly one key: either a field name mapped to one operator
+    (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or `$or` with a
+    list of filters, or `$not` with one filter. Field operators and their
+    values: `$eq` and `$ne` take a string, number or bool; `$lt`, `$lte`,
+    `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a list of
+    strings; `$exists` takes a bool. Several keys in one object (implicit AND)
+    and implicit equality (`{"genre": "sci-fi"}`) are rejected; use `$and` and
+    `$eq` instead. Logical operators can be nested at most 2 levels deep, e.g.
+    `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b": {"$eq": 2}}]}]}`. Deeper
+    filters are rejected with `INVALID_ARGUMENT`. Which filters are accepted
+    depends on how the search is served. If it is served by an approximate
+    nearest neighbor (ANN) index (by default when a ready index exists on
+    `search_field`, or when one is selected via `search_hint.index_hint`),
+    every filtered field must be listed in `Index.filter_fields` at index
+    creation, `$or` and `$all` are accepted only at the top level of the
+    filter, and `$not` and `$exists` are not supported. Not every unsupported
+    filter is rejected: most produce `INVALID_ARGUMENT`, but some are silently
+    ignored, so do not rely on the error. If no ready index exists on
+    `search_field`, or if `search_hint.knn_hint` is set, the search is served
+    by K-Nearest Neighbor (KNN) search, which has none of these filter
+    restrictions.
 
     Messages:
       AdditionalProperty: An additional property for a FilterValue object.
@@ -1207,28 +1391,129 @@ class GoogleCloudVectorsearchV1SparseVectorField(_messages.Message):
   r"""Message describing a sparse vector field."""
 
 
+class GoogleCloudVectorsearchV1StructuredQuery(_messages.Message):
+  r"""A structured query for text search. Allows expressing field-targeted
+  text queries combined via boolean operators, with optional per-node
+  boosting.
+
+  Fields:
+    boost: Optional. Optional multiplier applied to this query node's
+      contribution to the final relevance score. Must be non-negative; if
+      unset or 0, defaults to 1.0. Values greater than 1.0 increase its
+      influence on ranking, values between 0.0 and 1.0 decrease it.
+    combine: Optional. A query that combines multiple sub-queries with a
+      boolean operator.
+    text: Optional. A leaf-level text query.
+    unary: Optional. A query that applies a unary operator to a sub-query.
+  """
+
+  boost = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  combine = _messages.MessageField('GoogleCloudVectorsearchV1CombinedQuery', 2)
+  text = _messages.MessageField('GoogleCloudVectorsearchV1TextQuery', 3)
+  unary = _messages.MessageField('GoogleCloudVectorsearchV1UnaryQuery', 4)
+
+
+class GoogleCloudVectorsearchV1TextQuery(_messages.Message):
+  r"""A leaf-level text query targeting one or more data fields. When multiple
+  fields are specified, this is equivalent to combining per-field matches with
+  an OR operator (i.e. the query matches if the text is found in any of the
+  listed fields).
+
+  Enums:
+    MatchTypeValueValuesEnum: Optional. The matching strategy to apply for
+      this query. If unset, defaults to `TEXT`.
+
+  Fields:
+    fields: Required. The data fields to search against.
+    matchType: Optional. The matching strategy to apply for this query. If
+      unset, defaults to `TEXT`.
+    queryEnhancement: Optional. The query enhancement settings to apply for
+      this query.
+    text: Required. The text to search for.
+  """
+
+  class MatchTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The matching strategy to apply for this query. If unset,
+    defaults to `TEXT`.
+
+    Values:
+      MATCH_TYPE_UNSPECIFIED: Defaults to `TEXT`.
+      TEXT: Treats `text` as individual search terms combined with an implicit
+        AND: every term must appear in the field, in any order and any
+        position. Case-insensitive.
+      EXACT: Matches only when the entire field value is exactly equal to
+        `text`.
+    """
+    MATCH_TYPE_UNSPECIFIED = 0
+    TEXT = 1
+    EXACT = 2
+
+  fields = _messages.StringField(1, repeated=True)
+  matchType = _messages.EnumField('MatchTypeValueValuesEnum', 2)
+  queryEnhancement = _messages.MessageField('GoogleCloudVectorsearchV1QueryEnhancement', 3)
+  text = _messages.StringField(4)
+
+
 class GoogleCloudVectorsearchV1TextSearch(_messages.Message):
   r"""Defines a text search operation.
 
   Messages:
     FilterValue: Optional. A JSON filter expression, e.g. `{"genre": {"$eq":
-      "sci-fi"}}`, represented as a `google.protobuf.Struct`.
+      "sci-fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
 
   Fields:
     dataFieldNames: Optional. The data field names to search. Required when
       using the default text search mode.
     filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
-      fi"}}`, represented as a `google.protobuf.Struct`.
+      fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
     outputFields: Optional. The fields to return in the search results.
     searchText: Optional. The query text. Required when using the default text
       search mode.
+    structuredQuery: Optional. Structured query definition. When set,
+      `search_text` and `data_field_names` must be left empty; otherwise the
+      request will be rejected with an `INVALID_ARGUMENT` error. Conversely,
+      when `structured_query` is unset, both `search_text` and
+      `data_field_names` are required.
     topK: Optional. The number of results to return.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterValue(_messages.Message):
     r"""Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
-    fi"}}`, represented as a `google.protobuf.Struct`.
+    fi"}}`, represented as a `google.protobuf.Struct`. An empty filter (`{}`)
+    matches all data objects. Otherwise, each JSON object in the filter must
+    have exactly one key: either a field name mapped to one operator
+    (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or `$or` with a
+    list of filters, or `$not` with one filter. Field operators and their
+    values: `$eq` and `$ne` take a string, number or bool; `$lt`, `$lte`,
+    `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a list of
+    strings; `$exists` takes a bool. Several keys in one object (implicit AND)
+    and implicit equality (`{"genre": "sci-fi"}`) are rejected; use `$and` and
+    `$eq` instead. Logical operators can be nested at most 2 levels deep, e.g.
+    `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b": {"$eq": 2}}]}]}`. Deeper
+    filters are rejected with `INVALID_ARGUMENT`.
 
     Messages:
       AdditionalProperty: An additional property for a FilterValue object.
@@ -1254,7 +1539,33 @@ class GoogleCloudVectorsearchV1TextSearch(_messages.Message):
   filter = _messages.MessageField('FilterValue', 2)
   outputFields = _messages.MessageField('GoogleCloudVectorsearchV1OutputFields', 3)
   searchText = _messages.StringField(4)
-  topK = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  structuredQuery = _messages.MessageField('GoogleCloudVectorsearchV1StructuredQuery', 5)
+  topK = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudVectorsearchV1UnaryQuery(_messages.Message):
+  r"""A query that applies a unary operator to a sub-query.
+
+  Enums:
+    OpValueValuesEnum: Required. The unary operator to apply.
+
+  Fields:
+    op: Required. The unary operator to apply.
+    subQuery: Required. The sub-query the operator is applied to.
+  """
+
+  class OpValueValuesEnum(_messages.Enum):
+    r"""Required. The unary operator to apply.
+
+    Values:
+      OPERATOR_UNSPECIFIED: Default value. This value is unused.
+      NOT: Negates the sub-query.
+    """
+    OPERATOR_UNSPECIFIED = 0
+    NOT = 1
+
+  op = _messages.EnumField('OpValueValuesEnum', 1)
+  subQuery = _messages.MessageField('GoogleCloudVectorsearchV1StructuredQuery', 2)
 
 
 class GoogleCloudVectorsearchV1UpdateDataObjectRequest(_messages.Message):
@@ -1304,14 +1615,58 @@ class GoogleCloudVectorsearchV1VectorSearch(_messages.Message):
       default.
 
   Messages:
-    FilterValue: Optional. A JSON filter expression, e.g. {"genre": {"$eq":
-      "sci-fi"}}, represented as a google.protobuf.Struct.
+    FilterValue: Optional. A JSON filter expression, e.g. `{"genre": {"$eq":
+      "sci-fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
+      Which filters are accepted depends on how the search is served. If it is
+      served by an approximate nearest neighbor (ANN) index (by default when a
+      ready index exists on `search_field`, or when one is selected via
+      `search_hint.index_hint`), every filtered field must be listed in
+      `Index.filter_fields` at index creation, `$or` and `$all` are accepted
+      only at the top level of the filter, and `$not` and `$exists` are not
+      supported. Not every unsupported filter is rejected: most produce
+      `INVALID_ARGUMENT`, but some are silently ignored, so do not rely on the
+      error. If no ready index exists on `search_field`, or if
+      `search_hint.knn_hint` is set, the search is served by K-Nearest
+      Neighbor (KNN) search, which has none of these filter restrictions.
 
   Fields:
     distanceMetric: Optional. The distance metric to use for the KNN search.
       If not specified, DOT_PRODUCT will be used as the default.
-    filter: Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-
-      fi"}}, represented as a google.protobuf.Struct.
+    filter: Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+      fi"}}`, represented as a `google.protobuf.Struct`. An empty filter
+      (`{}`) matches all data objects. Otherwise, each JSON object in the
+      filter must have exactly one key: either a field name mapped to one
+      operator (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or
+      `$or` with a list of filters, or `$not` with one filter. Field operators
+      and their values: `$eq` and `$ne` take a string, number or bool; `$lt`,
+      `$lte`, `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a
+      list of strings; `$exists` takes a bool. Several keys in one object
+      (implicit AND) and implicit equality (`{"genre": "sci-fi"}`) are
+      rejected; use `$and` and `$eq` instead. Logical operators can be nested
+      at most 2 levels deep, e.g. `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b":
+      {"$eq": 2}}]}]}`. Deeper filters are rejected with `INVALID_ARGUMENT`.
+      Which filters are accepted depends on how the search is served. If it is
+      served by an approximate nearest neighbor (ANN) index (by default when a
+      ready index exists on `search_field`, or when one is selected via
+      `search_hint.index_hint`), every filtered field must be listed in
+      `Index.filter_fields` at index creation, `$or` and `$all` are accepted
+      only at the top level of the filter, and `$not` and `$exists` are not
+      supported. Not every unsupported filter is rejected: most produce
+      `INVALID_ARGUMENT`, but some are silently ignored, so do not rely on the
+      error. If no ready index exists on `search_field`, or if
+      `search_hint.knn_hint` is set, the search is served by K-Nearest
+      Neighbor (KNN) search, which has none of these filter restrictions.
     outputFields: Optional. Mask specifying which fields to return.
     searchField: Required. The vector field to search.
     searchHint: Optional. Sets the search hint. If no strategy is specified,
@@ -1338,8 +1693,30 @@ class GoogleCloudVectorsearchV1VectorSearch(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterValue(_messages.Message):
-    r"""Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-fi"}},
-    represented as a google.protobuf.Struct.
+    r"""Optional. A JSON filter expression, e.g. `{"genre": {"$eq": "sci-
+    fi"}}`, represented as a `google.protobuf.Struct`. An empty filter (`{}`)
+    matches all data objects. Otherwise, each JSON object in the filter must
+    have exactly one key: either a field name mapped to one operator
+    (`{"price": {"$lt": 100}}`), or a logical operator: `$and` or `$or` with a
+    list of filters, or `$not` with one filter. Field operators and their
+    values: `$eq` and `$ne` take a string, number or bool; `$lt`, `$lte`,
+    `$gt` and `$gte` take a number; `$in`, `$nin` and `$all` take a list of
+    strings; `$exists` takes a bool. Several keys in one object (implicit AND)
+    and implicit equality (`{"genre": "sci-fi"}`) are rejected; use `$and` and
+    `$eq` instead. Logical operators can be nested at most 2 levels deep, e.g.
+    `{"$and": [{"$or": [{"a": {"$eq": 1}}, {"b": {"$eq": 2}}]}]}`. Deeper
+    filters are rejected with `INVALID_ARGUMENT`. Which filters are accepted
+    depends on how the search is served. If it is served by an approximate
+    nearest neighbor (ANN) index (by default when a ready index exists on
+    `search_field`, or when one is selected via `search_hint.index_hint`),
+    every filtered field must be listed in `Index.filter_fields` at index
+    creation, `$or` and `$all` are accepted only at the top level of the
+    filter, and `$not` and `$exists` are not supported. Not every unsupported
+    filter is rejected: most produce `INVALID_ARGUMENT`, but some are silently
+    ignored, so do not rely on the error. If no ready index exists on
+    `search_field`, or if `search_hint.knn_hint` is set, the search is served
+    by K-Nearest Neighbor (KNN) search, which has none of these filter
+    restrictions.
 
     Messages:
       AdditionalProperty: An additional property for a FilterValue object.

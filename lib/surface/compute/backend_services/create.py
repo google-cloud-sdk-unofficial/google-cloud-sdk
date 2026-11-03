@@ -134,6 +134,7 @@ class CreateHelper(object):
       support_allow_multinetwork,
       support_external_passthrough,
       support_iap_alpha=False,
+      support_connect_timeout=False,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -204,10 +205,14 @@ class CreateHelper(object):
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service')
 
+    flags.AddCircuitBreakersFlags(
+        parser,
+        support_connect_timeout=support_connect_timeout,
+    )
+
     flags.AddConnectionTrackingPolicy(parser)
     flags.AddConsistentHashHttpHeaderName(parser)
     flags.AddConsistentHashMinimumRingSize(parser)
-    flags.AddCircuitBreakersMaxRequests(parser)
     flags.AddOutlierDetectionFlags(parser)
     flags.AddCompressionMode(parser)
     flags.AddIpAddressSelectionPolicy(parser)
@@ -300,9 +305,6 @@ class CreateHelper(object):
     backend_services_utils.ApplyConsistentHashSettings(
         client, args, backend_service
     )
-    backend_services_utils.ApplyCircuitBreakersSettings(
-        client, args, backend_service
-    )
     backend_services_utils.ApplyOutlierDetectionArgs(
         client, args, backend_service
     )
@@ -379,6 +381,9 @@ class CreateHelper(object):
         client, args, backend_service
     )
     _ApplyHaPolicyArgs(client.messages, args, backend_service)
+    backend_services_utils.ApplyCircuitBreakersArgs(
+        client, args, backend_service
+    )
 
     group_ref = self._GetNetworkEndpointGroupRef(args, holder.resources, client)
     if group_ref:
@@ -457,9 +462,6 @@ class CreateHelper(object):
     backend_services_utils.ApplyConsistentHashSettings(
         client, args, backend_service
     )
-    backend_services_utils.ApplyCircuitBreakersSettings(
-        client, args, backend_service
-    )
     backend_services_utils.ApplyOutlierDetectionArgs(
         client, args, backend_service
     )
@@ -524,6 +526,9 @@ class CreateHelper(object):
         client, args, backend_service
     )
     _ApplyHaPolicyArgs(client.messages, args, backend_service)
+    backend_services_utils.ApplyCircuitBreakersArgs(
+        client, args, backend_service
+    )
 
     group_ref = self._GetNetworkEndpointGroupRef(args, holder.resources, client)
     if group_ref:
@@ -679,6 +684,7 @@ class CreateGA(base.CreateCommand):
   _support_allow_multinetwork = False
   _support_external_passthrough = False
   _support_iap_alpha = False
+  _support_connect_timeout = False
 
   @classmethod
   def Args(cls, parser):
@@ -690,6 +696,7 @@ class CreateGA(base.CreateCommand):
         support_allow_multinetwork=cls._support_allow_multinetwork,
         support_external_passthrough=cls._support_external_passthrough,
         support_iap_alpha=cls._support_iap_alpha,
+        support_connect_timeout=cls._support_connect_timeout,
     )
 
   def Run(self, args):
@@ -729,6 +736,7 @@ class CreateBeta(CreateGA):
   _support_forward_proxy = True
   _support_allow_multinetwork = False
   _support_external_passthrough = True
+  _support_connect_timeout = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -40,7 +40,7 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.RegionalEndpointsSupported
 class Unresolve(base.Command):
   """Unresolve Secure Source Manager pull request comments."""

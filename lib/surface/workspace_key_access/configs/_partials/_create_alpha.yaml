@@ -18,14 +18,16 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: false
   hidden: true
   help_text:
     brief: Create a Workspace Key Access config.
     description: Create a Workspace Key Access config in a given project and location.
     examples: |-
-      To create config `my-config` in `us-central1`, run:
+      To create config `my-config` in `us-east1`, run:
 
-      $ {command} my-config --location=us-central1 --customer-id=C0123abcd
+      $ {command} my-config --location=us-east1 --customer-id=C0123abcd
         --admin-emails=admin@example.com --kacls-owner-domains=example.com
         --idp-configs=issuer=https://idp.example.com,audience=my-audience,jwksUri=https://idp.example.com/.well-known/jwks.json,idpType=PRIMARY_IDP
   arguments:

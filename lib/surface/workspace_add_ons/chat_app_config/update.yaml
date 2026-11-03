@@ -1,0 +1,163 @@
+- release_tracks: [BETA]
+  hints:
+    read_only: false
+  help_text:
+    brief: Update the Google Chat app configuration of a project
+    description: |
+      Update the Google Chat app configuration of a Google Cloud project. If
+      the project doesn't have a Chat app yet, the first update creates it, so
+      it must set at least the display name and the description.
+
+      Pass either `--config-file` or the per-field flags. Only the fields you
+      specify are changed:
+
+      * With the per-field flags, the update covers the flags you pass.
+      * With `--config-file`, the update covers the fields that are present in
+        the file. A field that is present with an empty value, such as
+        `urlPatterns: []`, is cleared. The `name` field is ignored; the target
+        project comes from `--project`.
+
+      Lists, such as app commands, URL patterns, and testing principals, are
+      replaced as a whole. Setting a Dialogflow edition replaces the whole
+      Dialogflow configuration.
+
+      While the app is published or under review in the Google Workspace
+      Marketplace, the API rejects changes to the display name, avatar,
+      description, app commands, and URL patterns.
+    examples: |
+      To update the Chat app configuration of the current project from a YAML
+      file, run:
+
+        $ {command} --config-file=chat_app_config.yaml
+
+      To change the display name and the description, run:
+
+        $ {command} --display-name="Standup Bot v2" --description="Team standups"
+
+      To disable the app, run:
+
+        $ {command} --state=disabled
+
+      To send events to an HTTP endpoint, run:
+
+        $ {command} --http-endpoint-url=https://bot.example.com/events
+  request:
+    collection: gsuiteaddons.projects.chatAppConfig
+    api_version: v1
+    display_resource_type: Chat app configuration
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.workspace_add_ons.chat_app_util:ParseConfigFileHook
+    - googlecloudsdk.command_lib.workspace_add_ons.chat_app_util:AddClearedFieldsToMaskHook
+  arguments:
+    resource:
+      help_text: The project whose Chat app configuration to update.
+      spec: !REF googlecloudsdk.command_lib.workspace_add_ons.resources:chat_app_config
+    params:
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: config-file
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+          help_text: |
+            Path to a YAML or JSON file with the Chat app configuration fields
+            to set. The file uses the same field names as the output of
+            `describe`. Fields that aren't in the file are left unchanged.
+        - group:
+            help_text: Chat app configuration fields to update.
+            params:
+            - arg_name: display-name
+              api_field: googleCloudGsuiteaddonsV1ChatAppConfig.displayName
+              help_text: Display name of the Chat app, between 3 and 25 characters.
+            - arg_name: description
+              api_field: googleCloudGsuiteaddonsV1ChatAppConfig.description
+              help_text: Short description of the Chat app, between 1 and 40 characters.
+            - group:
+                mutex: true
+                params:
+                - arg_name: avatar-uri
+                  api_field: googleCloudGsuiteaddonsV1ChatAppConfig.avatarUri
+                  help_text: |
+                    HTTPS URL of a square PNG image to use as the app's avatar.
+                - arg_name: clear-avatar-uri
+                  action: store_true
+                  help_text: Reset the app's avatar to the default avatar.
+            - arg_name: state
+              api_field: googleCloudGsuiteaddonsV1ChatAppConfig.state
+              help_text: |
+                State of the Chat app. If the state isn't set when the app is
+                created, the app is active.
+              choices:
+              - arg_value: active
+                enum_value: ACTIVE
+                help_text: People who can see the app can find and use it.
+              - arg_value: disabled
+                enum_value: DISABLED
+                help_text: Nobody can find or talk to the app.
+            - arg_name: error-logging-enabled
+              api_field: googleCloudGsuiteaddonsV1ChatAppConfig.errorLoggingEnabled
+              action: store_true_false
+              help_text: |
+                Whether to log the app's errors to Cloud Logging. New apps log
+                errors unless you turn it off.
+            - arg_name: markup-syntax
+              api_field: googleCloudGsuiteaddonsV1ChatAppConfig.markupSyntax
+              help_text: |
+                Markup syntax for the text of messages that the app sends and
+                reads. New apps use Markdown.
+              choices:
+              - arg_value: markdown
+                enum_value: MARKUP_SYNTAX_MARKDOWN
+                help_text: Markdown, based on CommonMark.
+              - arg_value: chat
+                enum_value: MARKUP_SYNTAX_CHAT
+                help_text: Google Chat's own markup syntax.
+            - arg_name: supports-multiuser-spaces
+              api_field: googleCloudGsuiteaddonsV1ChatAppConfig.interactiveFeatureConfig.supportsMultiuserSpaces
+              action: store_true_false
+              help_text: |
+                Whether people can add the app to spaces and group
+                conversations, not just direct messages.
+            - group:
+                mutex: true
+                help_text: |
+                  Where Google Chat sends the app's events. Set at most one
+                  connection type; setting one replaces the app's current
+                  connection.
+                params:
+                - arg_name: http-endpoint-url
+                  api_field: googleCloudGsuiteaddonsV1ChatAppConfig.interactiveFeatureConfig.connectionConfig.httpEndpointConfig.commonUrl
+                  help_text: HTTPS URL that receives all of the app's events.
+                - arg_name: apps-script-deployment-id
+                  api_field: googleCloudGsuiteaddonsV1ChatAppConfig.interactiveFeatureConfig.connectionConfig.appsScriptEndpointConfig.deploymentId
+                  help_text: ID of the Apps Script deployment that handles the app's events.
+                - arg_name: pubsub-topic
+                  api_field: googleCloudGsuiteaddonsV1ChatAppConfig.interactiveFeatureConfig.connectionConfig.cloudPubSubEndpointConfig.topic
+                  help_text: |
+                    Pub/Sub topic that receives the app's events, in the form
+                    `projects/PROJECT/topics/TOPIC`. The topic must be in the
+                    same project.
+                - group:
+                    help_text: Dialogflow agent that handles the app's events.
+                    params:
+                    - arg_name: dialogflow-edition
+                      api_field: googleCloudGsuiteaddonsV1ChatAppConfig.interactiveFeatureConfig.connectionConfig.dialogflowEndpointConfig.dialogflowEdition
+                      required: true
+                      help_text: |
+                        Dialogflow edition of the agent. Setting it replaces the
+                        whole Dialogflow configuration.
+                      choices:
+                      - arg_value: es
+                        enum_value: ES
+                        help_text: Dialogflow ES.
+                      - arg_value: cx
+                        enum_value: CX
+                        help_text: Dialogflow CX. Also set `--dialogflow-agent`.
+                    - arg_name: dialogflow-agent
+                      api_field: googleCloudGsuiteaddonsV1ChatAppConfig.interactiveFeatureConfig.connectionConfig.dialogflowEndpointConfig.agent
+                      help_text: |
+                        Name of the Dialogflow CX agent or environment, in the
+                        form `projects/PROJECT/locations/LOCATION/agents/AGENT`
+                        or `projects/PROJECT/locations/LOCATION/agents/AGENT/environments/ENVIRONMENT`.
+                        Required for Dialogflow CX; don't set it for
+                        Dialogflow ES.

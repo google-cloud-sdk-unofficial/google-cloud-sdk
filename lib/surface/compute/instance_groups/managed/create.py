@@ -109,6 +109,7 @@ class CreateGA(base.CreateCommand):
   """Create Compute Engine managed instance groups."""
 
   support_update_policy_min_ready_flag = False
+  support_update_policy_allowed_actions = False
   support_resource_manager_tags = False
   support_instance_selection_min_cpu_platform = True
   support_flex_policy_flag_with_mincpu_and_disks = True
@@ -125,7 +126,10 @@ class CreateGA(base.CreateCommand):
     managed_flags.AddMigDistributionPolicyFlags(parser)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     managed_flags.AddMigUpdatePolicyFlags(
-        parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag)
+        parser,
+        support_min_ready_flag=cls.support_update_policy_min_ready_flag,
+        support_allowed_actions=cls.support_update_policy_allowed_actions,
+    )
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
     if cls.support_resource_manager_tags:
       managed_flags.AddMigResourceManagerTagsFlags(parser)
@@ -475,6 +479,7 @@ class CreateBeta(CreateGA):
   """Create Compute Engine managed instance groups."""
 
   support_update_policy_min_ready_flag = True
+  support_update_policy_allowed_actions = True
   support_resource_manager_tags = True
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,

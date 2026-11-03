@@ -193,3 +193,35 @@ class AuditSchedulesClient(object):
     req.auditSchedule = audit_schedule
     req.updateMask = "state"
     return service.Patch(req)
+
+  def Get(
+      self,
+      name: str,
+  ):
+    """Get an Audit Schedule."""
+    if name.startswith("folders/"):
+      service = self.client.folders_locations_auditSchedules
+      req = (
+          self.messages.AuditmanagerFoldersLocationsAuditSchedulesGetRequest()
+      )
+    elif name.startswith("organizations/"):
+      service = self.client.organizations_locations_auditSchedules
+      req = (
+          self.messages.AuditmanagerOrganizationsLocationsAuditSchedulesGetRequest()
+      )
+    elif name.startswith("projects/"):
+      service = self.client.projects_locations_auditSchedules
+      req = (
+          self.messages.AuditmanagerProjectsLocationsAuditSchedulesGetRequest()
+      )
+    else:
+      raise exceptions.InvalidArgumentException(
+          "name",
+          "Audit schedule name must be of the form "
+          "projects/{project}/locations/{location}/auditSchedules/{audit_schedule}, "
+          "folders/{folder}/locations/{location}/auditSchedules/{audit_schedule}, or "
+          "organizations/{organization}/locations/{location}/auditSchedules/{audit_schedule}.",
+      )
+
+    req.name = name
+    return service.Get(req)

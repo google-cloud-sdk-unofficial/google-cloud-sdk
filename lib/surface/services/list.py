@@ -97,7 +97,8 @@ class ListAlpha(base.ListCommand):
 
     parser.display_info.AddFormat("""
         table(
-            name:label=NAME:sort=1
+            name:label=NAME:sort=1,
+            title
         )
       """)
 
@@ -153,6 +154,7 @@ class ListAlpha(base.ListCommand):
       args.GetDisplayInfo().AddFormat("""
           table(
               name:label=NAME:sort=1,
+              title,
               inheritance:label=INHERITANCE,
               catalog:label=CATALOG
           )

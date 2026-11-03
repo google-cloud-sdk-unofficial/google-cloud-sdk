@@ -80,8 +80,9 @@ Container Flags
   group.AddArgument(flags.GpuFlag())
   if release_track != base.ReleaseTrack.GA:
     group.AddArgument(flags.SandboxLauncherFlag())
-    group.AddArgument(flags.NoBuildArg(hidden=True))
-    group.AddArgument(flags.BaseImageArg(hidden=True))
+  if release_track == base.ReleaseTrack.ALPHA:
+    group.AddArgument(flags.NoBuildArg())
+    group.AddArgument(flags.BaseImageArg())
 
   return group
 
@@ -577,9 +578,9 @@ class AlphaDeploy(BetaDeploy):
     flags.AddWorkerPoolClearCpuUtilizationFlag(parser)
     flags.AddWorkerPoolMinInstancesFlag(parser)
     flags.AddWorkerPoolMaxInstancesFlag(parser)
-    flags.AddWorkerPoolAddPubsubSubscriptionFlag(parser, hidden=True)
-    flags.AddWorkerPoolRemovePubsubSubscriptionFlag(parser, hidden=True)
-    flags.AddWorkerPoolClearPubsubSubscriptionsFlag(parser, hidden=True)
+    flags.AddWorkerPoolAddPubsubSubscriptionFlag(parser)
+    flags.AddWorkerPoolRemovePubsubSubscriptionFlag(parser)
+    flags.AddWorkerPoolClearPubsubSubscriptionsFlag(parser)
     flags.AddVpcConnectorArgs(parser)
 
 

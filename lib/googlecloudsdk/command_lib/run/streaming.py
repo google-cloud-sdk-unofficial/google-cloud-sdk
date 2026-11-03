@@ -51,5 +51,17 @@ class LogStreamingWrapper(binary_operations.StreamingBinaryBackedOperation):
     if log_format:
       exec_args.extend(['-format', log_format])
     if token:
-      exec_args.extend(['-token', token])
+      exec_args.append('-token-from-stdin')
     return exec_args
+
+  def _Execute(self, cmd, stdin=None, env=None, token=None, **kwargs):
+    show_exec_error = kwargs.pop('show_exec_error', False)
+    if token and stdin is None:
+      stdin = token
+    result_holder = super(LogStreamingWrapper, self)._Execute(
+        cmd, stdin=stdin, env=env, show_exec_error=False, **kwargs
+    )
+    if stdin is not None:
+      result_holder.context['stdin'] = '<redacted>'
+    self.set_failure_status(result_holder, show_exec_error)
+    return result_holder

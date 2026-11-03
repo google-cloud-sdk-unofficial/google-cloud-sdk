@@ -19,7 +19,7 @@
   - ALPHA
   auto_generated: true
   hints:
-    read_only: false
+    read_only: true
   help_text:
     brief: Describe operations
     description: Describe an operation

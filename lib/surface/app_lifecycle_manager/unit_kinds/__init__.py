@@ -18,7 +18,37 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Saas(base.Group):
+  category = base.SAAS_CATEGORY
+  detailed_help = {
+      'brief': 'Manage App Lifecycle Manager unit kinds.',
+      'DESCRIPTION': """
+          Manage App Lifecycle Manager unit kinds. A unit kind defines a type
+          of managed component (unit) within a SaaS offering. Units of the same
+          unit kind are managed together; for example, they follow the same
+          release model and are typically rolled out together.
+      """,
+      'EXAMPLES': """
+          To create a unit kind named `my-unit-kind` for the SaaS offering
+          `my-saas` in location `us-central1`, run:
+
+            $ {command} create my-unit-kind --location=us-central1 --saas=my-saas
+
+          To list the names of all unit kinds in location `us-central1`, run:
+
+            $ {command} list --location=us-central1 --format="value(name)"
+
+          To describe the unit kind named `my-unit-kind` in location
+          `us-central1`, run:
+
+            $ {command} describe my-unit-kind --location=us-central1
+      """,
+  }
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SaasAlpha(base.Group):
   category = base.SAAS_CATEGORY
   detailed_help = {'brief': 'Manage App Lifecycle Manager unit-kinds.'}

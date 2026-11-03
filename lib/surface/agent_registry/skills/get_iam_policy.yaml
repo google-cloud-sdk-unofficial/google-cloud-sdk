@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: Get the IAM policy for a skill.
     description: Get the IAM policy for a skill.
@@ -29,6 +31,31 @@
     resource:
       help_text: The skill for which to display the IAM policy.
       spec: !REF googlecloudsdk.command_lib.agent_registry.v1alpha_resources:projects_locations_skills
+      is_positional: true
+
+  iam:
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion
+
+- release_tracks: [GA]
+  hints:
+    read_only: true
+  help_text:
+    brief: Get the IAM policy for a skill.
+    description: Get the IAM policy for a skill.
+    examples: |
+      The following command gets the IAM policy for the skill with ID `my-skill`:
+
+        $ {command} my-skill --location=us-central1
+
+  request:
+    api_version: v1
+    collection: agentregistry.projects.locations.skills
+
+  arguments:
+    resource:
+      help_text: The skill for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.agent_registry.v1_resources:projects_locations_skills
       is_positional: true
 
   iam:

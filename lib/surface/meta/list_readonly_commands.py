@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A command that lists all gcloud commands designated as read-only."""
+"""Experimental command to list read_only commands; not for production use."""
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.meta import list_readonly_commands as readonly_util
@@ -29,10 +29,17 @@ ReadOnlyCommandWalker = readonly_util.ReadOnlyCommandWalker
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListReadOnlyCommands(base.Command):
-  """List gcloud CLI commands filtered by their read_only metadata state."""
+  """(EXPERIMENTAL) List read_only commands (not for production use)."""
 
   detailed_help = {
+      'brief': (
+          '(EXPERIMENTAL) List gcloud CLI commands filtered by their '
+          'read_only metadata state (not for production use).'
+      ),
       'DESCRIPTION': """\
+          *(EXPERIMENTAL)* `{command}` is experimental and
+          not for production use.
+
           `{command}` traverses the `gcloud` CLI command tree and lists leaf
           commands matching the requested `read_only` metadata state
           (`--state=readonly`, `--state=mutating`, or `--state=unannotated`).

@@ -18,6 +18,8 @@
 - release_tracks:
   - GA
   auto_generated: true
+  hints:
+    read_only: false
   help_text:
     brief: Disable an auth provider.
     description: Disable a single auth provider.

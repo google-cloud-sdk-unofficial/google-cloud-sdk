@@ -29,12 +29,9 @@ class ClustersAlpha(extensions.ClustersAlpha):
   The service automates complex infrastructure setup by integrating compute,
   networking, and storage to maximize performance and minimize downtimes.
 
-  If you have your own configuration already:
-  - Use `--config` to provide a complete JSON definition
-
   To start from a pre-configuration:
-  - Use `--quickstart-cluster` to create and connect a managed Slurm cluster
-  with basic defaults
+  - Use `--reference-architecture=quickstart` to create and connect a managed
+  Slurm cluster with basic defaults
   - Use `--reference-architecture` to choose from workload-optimized templates
 
   To fully customize:
@@ -57,12 +54,9 @@ class ClustersBeta(extensions.ClustersBeta):
   The service automates complex infrastructure setup by integrating compute,
   networking, and storage to maximize performance and minimize downtimes.
 
-  If you have your own configuration already:
-  - Use `--config` to provide a complete JSON definition
-
   To start from a pre-configuration:
-  - Use `--quickstart-cluster` to create and connect a managed Slurm cluster
-  with basic defaults
+  - Use `--reference-architecture=quickstart` to create and connect a managed
+  Slurm cluster with basic defaults
   - Use `--reference-architecture` to choose from workload-optimized templates
 
   To fully customize:
@@ -85,12 +79,9 @@ class ClustersGa(extensions.ClustersGa):
   The service automates complex infrastructure setup by integrating compute,
   networking, and storage to maximize performance and minimize downtimes.
 
-  If you have your own configuration already:
-  - Use `--config` to provide a complete JSON definition
-
   To start from a pre-configuration:
-  - Use `--quickstart-cluster` to create and connect a managed Slurm cluster
-  with basic defaults
+  - Use `--reference-architecture=quickstart` to create and connect a managed
+  Slurm cluster with basic defaults
   - Use `--reference-architecture` to choose from workload-optimized templates
 
   To fully customize:

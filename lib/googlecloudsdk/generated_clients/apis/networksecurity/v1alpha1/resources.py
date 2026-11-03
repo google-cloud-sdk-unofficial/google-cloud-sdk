@@ -181,6 +181,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_COSTPERTOKENPOLICIES = (
+      'projects.locations.costPerTokenPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'costPerTokenPolicies/{costPerTokenPoliciesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_DNSARMORSECURITYPOLICIES = (
       'projects.locations.dnsArmorSecurityPolicies',
       '{+name}',

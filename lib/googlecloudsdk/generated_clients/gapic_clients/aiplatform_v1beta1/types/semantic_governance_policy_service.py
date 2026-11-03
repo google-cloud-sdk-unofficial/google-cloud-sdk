@@ -72,8 +72,9 @@ class SemanticGovernancePolicy(proto.Message):
             Required. The natural language constraint of
             the SemanticGovernancePolicy.
         agent (str):
-            Required. The name of the agent in Agent
-            Registry that is affected by this policy.
+            Required. The name of the agent in Agent Registry that is
+            affected by this policy. Format:
+            ``projects/{project}/locations/{location}/agents/{agent}``
         mcp_tools (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.SemanticGovernancePolicy.McpTool]):
             Optional. The McpTools that are affected by
             this policy.
@@ -92,6 +93,17 @@ class SemanticGovernancePolicy(proto.Message):
             agent's response to end users when this policy
             is evaluated, such as messages displayed when
             the policy denies a request.
+        dry_run (bool):
+            Optional. If true, this policy is evaluated and its result
+            is reported, but the policy is not enforced: a violation
+            does not block the agent's action. Use this to validate a
+            policy against real traffic before turning enforcement on.
+            Defaults to ``false``, meaning the policy is enforced.
+
+            This setting applies only to this policy. If the
+            SemanticGovernancePolicyEngine for the project is itself in
+            dry run, every policy behaves as dry run regardless of this
+            field.
     """
 
     class McpTool(proto.Message):
@@ -104,10 +116,10 @@ class SemanticGovernancePolicy(proto.Message):
                 Registry that is affected by this policy. Format:
                 ``projects/{project}/locations/{location}/mcpServers/{mcp_server}``
             tools (MutableSequence[str]):
-                Optional. The resource names of the McpTools
+                Required. The resource names of the tools
                 used by the Agent that is affected by this
-                policy. If not specified, the policy applies to
-                all McpTools in the McpServer.
+                policy. Currently, exactly one tool must be
+                specified.
         """
 
         mcp_server: str = proto.Field(
@@ -166,6 +178,10 @@ class SemanticGovernancePolicy(proto.Message):
         proto.MESSAGE,
         number=12,
         message='AgentResponseCustomization',
+    )
+    dry_run: bool = proto.Field(
+        proto.BOOL,
+        number=13,
     )
 
 

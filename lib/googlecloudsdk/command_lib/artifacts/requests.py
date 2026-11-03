@@ -615,10 +615,23 @@ def CopyRepository(
     max_version_age_days=0,
     include_all_attachments=False,
     exclude_all_tags=False,
+    version_created_within_days=None,
+    version_updated_within_days=None,
 ):
   """Copies a repository."""
   client = GetClient()
   messages = GetMessages()
+  if version_created_within_days is not None:
+    version_filter = messages.VersionFilter(
+        createdWithin=f"{version_created_within_days * 86400}s"
+    )
+  elif version_updated_within_days is not None:
+    version_filter = messages.VersionFilter(
+        updatedWithin=f"{version_updated_within_days * 86400}s"
+    )
+  else:
+    version_filter = None
+
   copy_req = messages.CopyRepositoryRequest(
       sourceRepository=source_repo,
       behavior=messages.Behavior(
@@ -626,6 +639,7 @@ def CopyRepository(
           maxVersionAgeDays=max_version_age_days,
           allAttachmentsIncluded=include_all_attachments,
           allTagsExcluded=exclude_all_tags,
+          versionFilter=version_filter,
       ),
   )
   req = messages.ArtifactregistryProjectsLocationsRepositoriesCopyRepositoryRequest(

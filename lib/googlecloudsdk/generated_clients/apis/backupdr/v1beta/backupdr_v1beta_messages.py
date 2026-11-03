@@ -579,9 +579,9 @@ class AutoProtectionPolicy(_messages.Message):
     etag: Output only. The etag for the policy. If this is provided on update,
       it must match the server's etag, otherwise the request will be rejected
       with an ABORTED error.
-    name: Identifier. The resource name of the AutoprotectionPolicy. Format: `
-      projects/{project}/locations/{location}/autoProtectionPolicies/{auto_pro
-      tection_policy}`
+    name: Output only. Identifier. The resource name of the
+      AutoprotectionPolicy. Format: `projects/{project}/locations/{location}/a
+      utoProtectionPolicies/{auto_protection_policy}`
     policyEvaluationSummary: Output only. Summary of last policy application
       when job was run per workload type.
     state: Output only. The current state of the AutoprotectionPolicy.
@@ -633,9 +633,10 @@ class AutoProtectionPolicyBinding(_messages.Message):
     description: Optional. A description of the binding.
     etag: Optional. Output only. The etag for the binding. If this is provided
       on update, it must match the server's etag.
-    name: Identifier. The resource name of the AutoProtectionPolicyBinding.
-      Format: `projects/{project}/locations/{location}/autoProtectionPolicies/
-      {auto_protection_policy}/bindings/{binding}`
+    name: Output only. Identifier. The resource name of the
+      AutoProtectionPolicyBinding. Format: `projects/{project}/locations/{loca
+      tion}/autoProtectionPolicies/{auto_protection_policy}/bindings/{binding}
+      `
     scope: Required. Immutable. Resource Id of target container on which
       policy will be applied. Format: projects/{project_id}
     state: Output only. The current state of the AutoProtectionPolicyBinding.
@@ -1424,7 +1425,13 @@ class BackupPlanRevision(_messages.Message):
 class BackupRule(_messages.Message):
   r"""`BackupRule` binds the backup schedule to a retention policy.
 
+  Messages:
+    BackupLabelsValue: Optional. Allows custom labels to be supplied by the
+      user on a per-rule basis.
+
   Fields:
+    backupLabels: Optional. Allows custom labels to be supplied by the user on
+      a per-rule basis.
     backupRetentionDays: Required. Configures the duration for which backup
       data will be kept. It is defined in "days". The value should be greater
       than or equal to minimum enforced retention of the backup vault. Minimum
@@ -1441,9 +1448,36 @@ class BackupRule(_messages.Message):
       confines of a defined window of time.
   """
 
-  backupRetentionDays = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  ruleId = _messages.StringField(2)
-  standardSchedule = _messages.MessageField('StandardSchedule', 3)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class BackupLabelsValue(_messages.Message):
+    r"""Optional. Allows custom labels to be supplied by the user on a per-
+    rule basis.
+
+    Messages:
+      AdditionalProperty: An additional property for a BackupLabelsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type BackupLabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a BackupLabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  backupLabels = _messages.MessageField('BackupLabelsValue', 1)
+  backupRetentionDays = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  ruleId = _messages.StringField(3)
+  standardSchedule = _messages.MessageField('StandardSchedule', 4)
 
 
 class BackupSelectionConfig(_messages.Message):
@@ -1987,10 +2021,10 @@ class BackupdrProjectsLocationsAutoProtectionPoliciesPatchRequest(_messages.Mess
   Fields:
     autoProtectionPolicy: A AutoProtectionPolicy resource to be passed as the
       request body.
-    name: Identifier. The resource name of the AutoprotectionPolicy. Format: `
-      projects/{project}/locations/{location}/autoProtectionPolicies/{auto_pro
-      tection_policy}`
-    updateMask: Required. Field mask is used to specify the fields to be
+    name: Output only. Identifier. The resource name of the
+      AutoprotectionPolicy. Format: `projects/{project}/locations/{location}/a
+      utoProtectionPolicies/{auto_protection_policy}`
+    updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the AutoProtectionPolicy resource by the update. The
       fields specified in the update_mask are relative to the resource, not
       the full request. A field will be overwritten if it is in the mask. If
@@ -7860,7 +7894,11 @@ class RuleConfigInfo(_messages.Message):
     LastBackupStateValueValuesEnum: Output only. The last backup state for
       rule.
 
+  Messages:
+    BackupLabelsValue: Output only. The labels applied to this rule.
+
   Fields:
+    backupLabels: Output only. The labels applied to this rule.
     lastBackupError: Output only. google.rpc.Status object to store the last
       backup error.
     lastBackupState: Output only. The last backup state for rule.
@@ -7886,10 +7924,36 @@ class RuleConfigInfo(_messages.Message):
     SUCCEEDED = 3
     FAILED = 4
 
-  lastBackupError = _messages.MessageField('Status', 1)
-  lastBackupState = _messages.EnumField('LastBackupStateValueValuesEnum', 2)
-  lastSuccessfulBackupConsistencyTime = _messages.StringField(3)
-  ruleId = _messages.StringField(4)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class BackupLabelsValue(_messages.Message):
+    r"""Output only. The labels applied to this rule.
+
+    Messages:
+      AdditionalProperty: An additional property for a BackupLabelsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type BackupLabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a BackupLabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  backupLabels = _messages.MessageField('BackupLabelsValue', 1)
+  lastBackupError = _messages.MessageField('Status', 2)
+  lastBackupState = _messages.EnumField('LastBackupStateValueValuesEnum', 3)
+  lastSuccessfulBackupConsistencyTime = _messages.StringField(4)
+  ruleId = _messages.StringField(5)
 
 
 class RunRestoreTemplateRequest(_messages.Message):

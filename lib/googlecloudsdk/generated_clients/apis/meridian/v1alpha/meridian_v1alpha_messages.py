@@ -750,6 +750,17 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class Changepoints(_messages.Message):
+  r"""The changepoints of one paid media or reach and frequency channel.
+
+  Fields:
+    dates: Dates where the channel's effect may change. Each date is a time
+      coordinate of the input data and starts a new interval.
+  """
+
+  dates = _messages.MessageField('Date', 1, repeated=True)
+
+
 class ChannelCalibration(_messages.Message):
   r"""The incrementality experiments available for a single channel.
 
@@ -2341,10 +2352,18 @@ class HttpHeaderContext(_messages.Message):
 
 
 class Hyperparameters(_messages.Message):
-  r"""Hyperparameters for the MMM model. Next ID: 38
+  r"""Hyperparameters for the MMM model. Next ID: 42
   LINT.IfChange(meridian_model_proto)
 
   Enums:
+    ChangepointMediaEffectsDistValueValuesEnum: Distribution of the media
+      random effects of the channels in `changepoints`. Unlike
+      `media_effects_dist`, it also applies to national models. Unset means
+      log-normal.
+    ChangepointMediaPriorTypeValueValuesEnum: Prior type of the paid media
+      channels in `changepoints`. Unset means ROI.
+    ChangepointRfPriorTypeValueValuesEnum: Prior type of the reach and
+      frequency channels in `changepoints`. Unset means ROI.
     MediaEffectsDistValueValuesEnum: Specifies the distribution of media
       random effects across geos. This hyperparameter is ignored in a
       national-level model.
@@ -2381,6 +2400,10 @@ class Hyperparameters(_messages.Message):
       is `'contribution'`, then the `contribution_rf` is used.
 
   Messages:
+    ChangepointsValue: Time-varying effects: maps a paid media or reach and
+      frequency channel name to its changepoints. Empty means no time-varying
+      effects, which is how models serialized before this field existed were
+      fit.
     NonMediaBaselineValuesMapValue: Named baseline values for non-media
       treatment channels. Maps channel names to their respective baseline
       configuration (either a fixed float value or a baseline function like
@@ -2392,6 +2415,17 @@ class Hyperparameters(_messages.Message):
     baselineGeoInt: Integer representation of baseline geo.
     baselineGeoIntDeprecated: Deprecated. Use `baseline_geo_int` instead.
     baselineGeoString: A string attribute.
+    changepointMediaEffectsDist: Distribution of the media random effects of
+      the channels in `changepoints`. Unlike `media_effects_dist`, it also
+      applies to national models. Unset means log-normal.
+    changepointMediaPriorType: Prior type of the paid media channels in
+      `changepoints`. Unset means ROI.
+    changepointRfPriorType: Prior type of the reach and frequency channels in
+      `changepoints`. Unset means ROI.
+    changepoints: Time-varying effects: maps a paid media or reach and
+      frequency channel name to its changepoints. Empty means no time-varying
+      effects, which is how models serialized before this field existed were
+      fit.
     controlPopulationScalingId: A boolean tensor in the shape `(n_controls,)`.
       This indicates the control variables for which the control value will be
       scaled by population. If unset, no control variables are scaled by
@@ -2514,6 +2548,54 @@ class Hyperparameters(_messages.Message):
       geos.
   """
 
+  class ChangepointMediaEffectsDistValueValuesEnum(_messages.Enum):
+    r"""Distribution of the media random effects of the channels in
+    `changepoints`. Unlike `media_effects_dist`, it also applies to national
+    models. Unset means log-normal.
+
+    Values:
+      MEDIA_EFFECTS_DISTRIBUTION_UNSPECIFIED: <no description>
+      NORMAL: <no description>
+      LOG_NORMAL: <no description>
+    """
+    MEDIA_EFFECTS_DISTRIBUTION_UNSPECIFIED = 0
+    NORMAL = 1
+    LOG_NORMAL = 2
+
+  class ChangepointMediaPriorTypeValueValuesEnum(_messages.Enum):
+    r"""Prior type of the paid media channels in `changepoints`. Unset means
+    ROI.
+
+    Values:
+      PAID_MEDIA_PRIOR_TYPE_UNSPECIFIED: <no description>
+      ROI: <no description>
+      MROI: <no description>
+      COEFFICIENT: <no description>
+      CONTRIBUTION: <no description>
+    """
+    PAID_MEDIA_PRIOR_TYPE_UNSPECIFIED = 0
+    ROI = 1
+    MROI = 2
+    COEFFICIENT = 3
+    CONTRIBUTION = 4
+
+  class ChangepointRfPriorTypeValueValuesEnum(_messages.Enum):
+    r"""Prior type of the reach and frequency channels in `changepoints`.
+    Unset means ROI.
+
+    Values:
+      PAID_MEDIA_PRIOR_TYPE_UNSPECIFIED: <no description>
+      ROI: <no description>
+      MROI: <no description>
+      COEFFICIENT: <no description>
+      CONTRIBUTION: <no description>
+    """
+    PAID_MEDIA_PRIOR_TYPE_UNSPECIFIED = 0
+    ROI = 1
+    MROI = 2
+    COEFFICIENT = 3
+    CONTRIBUTION = 4
+
   class MediaEffectsDistValueValuesEnum(_messages.Enum):
     r"""Specifies the distribution of media random effects across geos. This
     hyperparameter is ignored in a national-level model.
@@ -2633,6 +2715,33 @@ class Hyperparameters(_messages.Message):
     CONTRIBUTION = 4
 
   @encoding.MapUnrecognizedFields('additionalProperties')
+  class ChangepointsValue(_messages.Message):
+    r"""Time-varying effects: maps a paid media or reach and frequency channel
+    name to its changepoints. Empty means no time-varying effects, which is
+    how models serialized before this field existed were fit.
+
+    Messages:
+      AdditionalProperty: An additional property for a ChangepointsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type ChangepointsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ChangepointsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A Changepoints attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('Changepoints', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
   class NonMediaBaselineValuesMapValue(_messages.Message):
     r"""Named baseline values for non-media treatment channels. Maps channel
     names to their respective baseline configuration (either a fixed float
@@ -2665,37 +2774,41 @@ class Hyperparameters(_messages.Message):
   baselineGeoInt = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   baselineGeoIntDeprecated = _messages.FloatField(3)
   baselineGeoString = _messages.StringField(4)
-  controlPopulationScalingId = _messages.MessageField('TensorProto', 5)
-  enableAks = _messages.BooleanField(6)
-  forceNonnegativeAggregateBaseline = _messages.BooleanField(7)
-  globalAdstockDecay = _messages.StringField(8)
-  globalSaturation = _messages.StringField(9)
-  hillBeforeAdstock = _messages.BooleanField(10)
-  holdoutConfig = _messages.MessageField('HoldoutConfig', 11)
-  holdoutId = _messages.MessageField('TensorProto', 12)
-  holdoutRatio = _messages.FloatField(13)
-  knotLocations = _messages.MessageField('KnotLocations', 14)
-  knots = _messages.IntegerField(15, repeated=True, variant=_messages.Variant.INT32)
-  maxLag = _messages.IntegerField(16, variant=_messages.Variant.UINT32)
-  mediaEffectsDist = _messages.EnumField('MediaEffectsDistValueValuesEnum', 17)
-  mediaPriorType = _messages.EnumField('MediaPriorTypeValueValuesEnum', 18)
-  nKnots = _messages.IntegerField(19, variant=_messages.Variant.INT32)
-  nonMediaBaselineValues = _messages.MessageField('NonMediaBaselineValue', 20, repeated=True)
-  nonMediaBaselineValuesMap = _messages.MessageField('NonMediaBaselineValuesMapValue', 21)
-  nonMediaPopulationScalingId = _messages.MessageField('TensorProto', 22)
-  nonMediaTreatmentsPriorType = _messages.EnumField('NonMediaTreatmentsPriorTypeValueValuesEnum', 23)
-  organicMediaPriorType = _messages.EnumField('OrganicMediaPriorTypeValueValuesEnum', 24)
-  organicRfPriorType = _messages.EnumField('OrganicRfPriorTypeValueValuesEnum', 25)
-  paidMediaPriorType = _messages.EnumField('PaidMediaPriorTypeValueValuesEnum', 26)
-  populationScaledControls = _messages.StringField(27, repeated=True)
-  populationScaledNonMediaChannels = _messages.StringField(28, repeated=True)
-  rfPriorType = _messages.EnumField('RfPriorTypeValueValuesEnum', 29)
-  rfRoiCalibrationConfig = _messages.MessageField('CalibrationConfig', 30)
-  rfRoiCalibrationPeriod = _messages.MessageField('TensorProto', 31)
-  roiCalibrationConfig = _messages.MessageField('CalibrationConfig', 32)
-  roiCalibrationPeriod = _messages.MessageField('TensorProto', 33)
-  saturationByChannel = _messages.MessageField('SaturationByChannel', 34)
-  uniqueSigmaForEachGeo = _messages.BooleanField(35)
+  changepointMediaEffectsDist = _messages.EnumField('ChangepointMediaEffectsDistValueValuesEnum', 5)
+  changepointMediaPriorType = _messages.EnumField('ChangepointMediaPriorTypeValueValuesEnum', 6)
+  changepointRfPriorType = _messages.EnumField('ChangepointRfPriorTypeValueValuesEnum', 7)
+  changepoints = _messages.MessageField('ChangepointsValue', 8)
+  controlPopulationScalingId = _messages.MessageField('TensorProto', 9)
+  enableAks = _messages.BooleanField(10)
+  forceNonnegativeAggregateBaseline = _messages.BooleanField(11)
+  globalAdstockDecay = _messages.StringField(12)
+  globalSaturation = _messages.StringField(13)
+  hillBeforeAdstock = _messages.BooleanField(14)
+  holdoutConfig = _messages.MessageField('HoldoutConfig', 15)
+  holdoutId = _messages.MessageField('TensorProto', 16)
+  holdoutRatio = _messages.FloatField(17)
+  knotLocations = _messages.MessageField('KnotLocations', 18)
+  knots = _messages.IntegerField(19, repeated=True, variant=_messages.Variant.INT32)
+  maxLag = _messages.IntegerField(20, variant=_messages.Variant.UINT32)
+  mediaEffectsDist = _messages.EnumField('MediaEffectsDistValueValuesEnum', 21)
+  mediaPriorType = _messages.EnumField('MediaPriorTypeValueValuesEnum', 22)
+  nKnots = _messages.IntegerField(23, variant=_messages.Variant.INT32)
+  nonMediaBaselineValues = _messages.MessageField('NonMediaBaselineValue', 24, repeated=True)
+  nonMediaBaselineValuesMap = _messages.MessageField('NonMediaBaselineValuesMapValue', 25)
+  nonMediaPopulationScalingId = _messages.MessageField('TensorProto', 26)
+  nonMediaTreatmentsPriorType = _messages.EnumField('NonMediaTreatmentsPriorTypeValueValuesEnum', 27)
+  organicMediaPriorType = _messages.EnumField('OrganicMediaPriorTypeValueValuesEnum', 28)
+  organicRfPriorType = _messages.EnumField('OrganicRfPriorTypeValueValuesEnum', 29)
+  paidMediaPriorType = _messages.EnumField('PaidMediaPriorTypeValueValuesEnum', 30)
+  populationScaledControls = _messages.StringField(31, repeated=True)
+  populationScaledNonMediaChannels = _messages.StringField(32, repeated=True)
+  rfPriorType = _messages.EnumField('RfPriorTypeValueValuesEnum', 33)
+  rfRoiCalibrationConfig = _messages.MessageField('CalibrationConfig', 34)
+  rfRoiCalibrationPeriod = _messages.MessageField('TensorProto', 35)
+  roiCalibrationConfig = _messages.MessageField('CalibrationConfig', 36)
+  roiCalibrationPeriod = _messages.MessageField('TensorProto', 37)
+  saturationByChannel = _messages.MessageField('SaturationByChannel', 38)
+  uniqueSigmaForEachGeo = _messages.BooleanField(39)
 
 
 class IncrementalityExperiment(_messages.Message):
@@ -4320,6 +4433,10 @@ class Model(_messages.Message):
     createTime: Output only. The time the model was created.
     displayName: Optional. User-friendly display name. Defaults to
       "{DatasetDisplayName}({version})".
+    effectiveTrainingPeriod: Output only. The window this model trains on,
+      with open bounds resolved to concrete dataset dates. Always set, even
+      when `model_spec.training_period` is unset (it then covers the full
+      dataset).
     error: Output only. Status details, especially useful if the state is
       FAILED.
     isDefaultModel: Optional. Indicates if this is the currently designated
@@ -4435,22 +4552,23 @@ class Model(_messages.Message):
 
   createTime = _messages.StringField(1)
   displayName = _messages.StringField(2)
-  error = _messages.MessageField('Status', 3)
-  isDefaultModel = _messages.BooleanField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  meridianModel = _messages.MessageField('MeridianModel', 6)
-  modelArtifacts = _messages.MessageField('ModelArtifactData', 7, repeated=True)
-  modelQualitySummary = _messages.MessageField('ReviewSummary', 8)
-  modelScenarioPlanningState = _messages.EnumField('ModelScenarioPlanningStateValueValuesEnum', 9)
-  modelSpec = _messages.MessageField('ModelSpec', 10)
-  modelingJobState = _messages.EnumField('ModelingJobStateValueValuesEnum', 11)
-  modelingState = _messages.EnumField('ModelingStateValueValuesEnum', 12)
-  name = _messages.StringField(13)
-  notes = _messages.StringField(14)
-  scenarioPlanningParams = _messages.MessageField('ScenarioPlanningParameters', 15)
-  tenantProjectModelId = _messages.StringField(16)
-  updateTime = _messages.StringField(17)
-  version = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  effectiveTrainingPeriod = _messages.MessageField('TrainingPeriod', 3)
+  error = _messages.MessageField('Status', 4)
+  isDefaultModel = _messages.BooleanField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  meridianModel = _messages.MessageField('MeridianModel', 7)
+  modelArtifacts = _messages.MessageField('ModelArtifactData', 8, repeated=True)
+  modelQualitySummary = _messages.MessageField('ReviewSummary', 9)
+  modelScenarioPlanningState = _messages.EnumField('ModelScenarioPlanningStateValueValuesEnum', 10)
+  modelSpec = _messages.MessageField('ModelSpec', 11)
+  modelingJobState = _messages.EnumField('ModelingJobStateValueValuesEnum', 12)
+  modelingState = _messages.EnumField('ModelingStateValueValuesEnum', 13)
+  name = _messages.StringField(14)
+  notes = _messages.StringField(15)
+  scenarioPlanningParams = _messages.MessageField('ScenarioPlanningParameters', 16)
+  tenantProjectModelId = _messages.StringField(17)
+  updateTime = _messages.StringField(18)
+  version = _messages.IntegerField(19, variant=_messages.Variant.INT32)
 
 
 class ModelArtifact(_messages.Message):
@@ -4666,6 +4784,9 @@ class ModelSpec(_messages.Message):
       instead.
     priorTfpDistributions: Optional. User-defined prior tfp distributions.
     samplingParameters: Optional. Parameters controlling the sampling process.
+    trainingPeriod: Optional. Immutable. Restricts training to a date window
+      of the dataset. If unset, the full dataset is used. Immutable after
+      creation.
   """
 
   experimentPriorCalibration = _messages.MessageField('ExperimentPriorCalibration', 1)
@@ -4674,6 +4795,7 @@ class ModelSpec(_messages.Message):
   priorDistributions = _messages.MessageField('PriorDistributions', 4)
   priorTfpDistributions = _messages.MessageField('PriorTfpDistributions', 5)
   samplingParameters = _messages.MessageField('SamplingParameters', 6)
+  trainingPeriod = _messages.MessageField('TrainingPeriod', 7)
 
 
 class ModelSpecTemplate(_messages.Message):
@@ -4929,6 +5051,9 @@ class Outcome(_messages.Message):
       CHECK_TYPE_MULTICOLLINEARITY: Multicollinearity check.
       CHECK_TYPE_KPI_INVARIABILITY: KPI invariability check.
       CHECK_TYPE_COST_PER_MEDIA_UNIT: Cost per media unit check.
+      CHECK_TYPE_DATA_VALIDATION: Pre-EDA data validation check (e.g. missing
+        or malformed columns, NaN or negative values, irregular time spacing).
+        Findings of this type block the statistical EDA checks from running.
     """
     CHECK_TYPE_UNSPECIFIED = 0
     CHECK_TYPE_PAIRWISE_CORRELATION = 1
@@ -4936,6 +5061,7 @@ class Outcome(_messages.Message):
     CHECK_TYPE_MULTICOLLINEARITY = 3
     CHECK_TYPE_KPI_INVARIABILITY = 4
     CHECK_TYPE_COST_PER_MEDIA_UNIT = 5
+    CHECK_TYPE_DATA_VALIDATION = 6
 
   aiFixable = _messages.BooleanField(1)
   checkType = _messages.EnumField('CheckTypeValueValuesEnum', 2)
@@ -5227,7 +5353,7 @@ class PriorTfpDistributions(_messages.Message):
   given parameter, Meridian will select its default prior distribution. See:
   `meridian.model.prior_distribution` module. See:
   https://developers.google.com/meridian/docs/advanced-modeling/default-prior-
-  distributions Next ID: 38 LINT.IfChange
+  distributions Next ID: 40 LINT.IfChange
 
   Messages:
     FunctionRegistryValue: Lookup table that contains function names mapped to
@@ -5272,6 +5398,10 @@ class PriorTfpDistributions(_messages.Message):
     tauGExclBaseline: A TfpDistribution attribute.
     xiC: A TfpDistribution attribute.
     xiN: A TfpDistribution attribute.
+    zetaM: Priors on the scale of the time-varying effect of paid media and RF
+      channels with changepoints. Only set when `Hyperparameters.changepoints`
+      is not empty.
+    zetaRf: A TfpDistribution attribute.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -5338,6 +5468,8 @@ class PriorTfpDistributions(_messages.Message):
   tauGExclBaseline = _messages.MessageField('TfpDistribution', 35)
   xiC = _messages.MessageField('TfpDistribution', 36)
   xiN = _messages.MessageField('TfpDistribution', 37)
+  zetaM = _messages.MessageField('TfpDistribution', 38)
+  zetaRf = _messages.MessageField('TfpDistribution', 39)
 
 
 class RHatDiagnostic(_messages.Message):
@@ -6437,6 +6569,23 @@ class TrainModelResponse(_messages.Message):
   """
 
   model = _messages.MessageField('Model', 1)
+
+
+class TrainingPeriod(_messages.Message):
+  r"""Time window of the dataset to train the model on. Both bounds are
+  inclusive, so they use `first_`/`last_` naming (AIP-145). Note:
+  `holdout_config` and experiment `DateInterval`s use half-open `[start, end)`
+  intervals.
+
+  Fields:
+    firstDate: Optional. Inclusive first date. Must be a date in the dataset.
+      If unset, the dataset's first date is used.
+    lastDate: Optional. Inclusive last date. Must be a date in the dataset. If
+      unset, the dataset's last date is used.
+  """
+
+  firstDate = _messages.MessageField('Date', 1)
+  lastDate = _messages.MessageField('Date', 2)
 
 
 class Transformed(_messages.Message):

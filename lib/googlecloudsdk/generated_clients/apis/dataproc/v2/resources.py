@@ -71,6 +71,38 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_RUNS = (
+      'projects.locations.runs',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/runs/{runsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_WORKLOADS = (
+      'projects.locations.workloads',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/workloads/'
+              '{workloadsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_WORKLOADS_RUNS = (
+      'projects.locations.workloads.runs',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/workloads/'
+              '{workloadsId}/runs/{runsId}',
+      },
+      ['name'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

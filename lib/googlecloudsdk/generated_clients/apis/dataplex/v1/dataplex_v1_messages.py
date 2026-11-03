@@ -4094,6 +4094,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class GoogleCloudDataplexV1Action(_messages.Message):
   r"""Action represents an issue requiring administrator action for
   resolution.
@@ -4284,11 +4285,13 @@ class GoogleCloudDataplexV1ActionMissingResource(_messages.Message):
   """
 
 
+
 class GoogleCloudDataplexV1ActionUnauthorizedResource(_messages.Message):
   r"""Action details for unauthorized resource issues raised to indicate that
   the service account associated with the lake instance is not authorized to
   access or manage the resource associated with an asset.
   """
+
 
 
 class GoogleCloudDataplexV1ApproveChangeRequestRequest(_messages.Message):
@@ -5781,12 +5784,45 @@ class GoogleCloudDataplexV1DataDocumentationResult(_messages.Message):
   r"""The output of a DataDocumentation scan.
 
   Fields:
+    dataProductResult: Output only. Insights for a data product.
     datasetResult: Output only. Insights for a Dataset resource.
     tableResult: Output only. Insights for a Table resource.
   """
 
-  datasetResult = _messages.MessageField('GoogleCloudDataplexV1DataDocumentationResultDatasetResult', 1)
-  tableResult = _messages.MessageField('GoogleCloudDataplexV1DataDocumentationResultTableResult', 2)
+  dataProductResult = _messages.MessageField('GoogleCloudDataplexV1DataDocumentationResultDataProductResult', 1)
+  datasetResult = _messages.MessageField('GoogleCloudDataplexV1DataDocumentationResultDatasetResult', 2)
+  tableResult = _messages.MessageField('GoogleCloudDataplexV1DataDocumentationResultTableResult', 3)
+
+
+class GoogleCloudDataplexV1DataDocumentationResultDataProductResult(_messages.Message):
+  r"""Generated metadata about a data product.
+
+  Fields:
+    assetDescriptions: Output only. Unordered list. Generated descriptions for
+      assets in the data product. Note that some assets may not have a
+      generated description. Such assets will not be included in this list.
+    overview: Output only. A detailed description for the data product.
+    queries: Output only. Unordered list. Sample SQL queries for the data
+      product.
+  """
+
+  assetDescriptions = _messages.MessageField('GoogleCloudDataplexV1DataDocumentationResultDataProductResultAssetDescription', 1, repeated=True)
+  overview = _messages.StringField(2)
+  queries = _messages.MessageField('GoogleCloudDataplexV1DataDocumentationResultQuery', 3, repeated=True)
+
+
+class GoogleCloudDataplexV1DataDocumentationResultDataProductResultAssetDescription(_messages.Message):
+  r"""Description for an asset in the data product.
+
+  Fields:
+    overview: Output only. A generated description for the asset.
+    resource: Output only. The service-qualified full resource name of the
+      asset. Example: //bigquery.googleapis.com/projects/PROJECT_ID/datasets/D
+      ATASET_ID/tables/TABLE_ID
+  """
+
+  overview = _messages.StringField(1)
+  resource = _messages.StringField(2)
 
 
 class GoogleCloudDataplexV1DataDocumentationResultDatasetResult(_messages.Message):
@@ -6004,9 +6040,7 @@ class GoogleCloudDataplexV1DataDocumentationSpec(_messages.Message):
 
   catalogPublishingEnabled = _messages.BooleanField(1)
   customInstructions = _messages.StringField(2)
-  generationScopes = _messages.EnumField(
-      'GenerationScopesValueListEntryValuesEnum', 3, repeated=True
-  )
+  generationScopes = _messages.EnumField('GenerationScopesValueListEntryValuesEnum', 3, repeated=True)
   sqlDialect = _messages.EnumField('SqlDialectValueValuesEnum', 4)
 
 
@@ -7528,10 +7562,12 @@ class GoogleCloudDataplexV1DataQualitySpecPostScanActionsJobEndTrigger(_messages
   """
 
 
+
 class GoogleCloudDataplexV1DataQualitySpecPostScanActionsJobFailureTrigger(_messages.Message):
   r"""This trigger is triggered when the scan job itself fails, regardless of
   the result.
   """
+
 
 
 class GoogleCloudDataplexV1DataQualitySpecPostScanActionsNotificationReport(_messages.Message):

@@ -427,13 +427,13 @@ def _ShouldUseRegionalEndpoints(api_name, api_version, region):
   """
   mode = properties.VALUES.regional.endpoint_mode.Get()
   compatibility = properties.VALUES.regional.endpoint_compatibility.Get()
-  if mode == properties.VALUES.regional.REGIONAL and compatibility is None:
+  if mode == properties.constants.regional.REGIONAL and compatibility is None:
     raise UnsupportedEndpointModeError(
         f'The regional/endpoint_mode property is currently set to [{mode}], but'
         ' this command does not support regional endpoints.')
   if (
-      mode == properties.VALUES.regional.GLOBAL and
-      compatibility == properties.VALUES.regional.REQUIRED
+      mode == properties.constants.regional.GLOBAL and
+      compatibility == properties.constants.regional.REQUIRED
   ):
     raise UnsupportedEndpointModeError(
         f'The regional/endpoint_mode property is currently set to [{mode}], but'
@@ -442,10 +442,10 @@ def _ShouldUseRegionalEndpoints(api_name, api_version, region):
   # Global.
   if (
       compatibility is None
-      or mode == properties.VALUES.regional.GLOBAL
+      or mode == properties.constants.regional.GLOBAL
       or (
           mode is None
-          and compatibility == properties.VALUES.regional.SUPPORTED
+          and compatibility == properties.constants.regional.SUPPORTED
       )
   ):
     return False
@@ -453,8 +453,8 @@ def _ShouldUseRegionalEndpoints(api_name, api_version, region):
   # Regional if available.
   known_available_regions = GetApiDef(api_name, api_version).regional_endpoints
   if (
-      mode == properties.VALUES.regional.REGIONAL_PREFERRED
-      and compatibility == properties.VALUES.regional.SUPPORTED
+      mode == properties.constants.regional.REGIONAL_PREFERRED
+      and compatibility == properties.constants.regional.SUPPORTED
   ):
     return region in known_available_regions
 

@@ -14,16 +14,13 @@
 # limitations under the License.
 """Command to list agent runtimes in Vertex AI."""
 
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai.agent_runtimes import client
-from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import region_util
-from googlecloudsdk.command_lib.ai import validation
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.ai.agent_runtimes import agent_runtimes_util
 from googlecloudsdk.core import resources
 
 
@@ -47,6 +44,7 @@ def _GetUri(agent_runtime):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 class List(base.ListCommand):
   """List the agent runtimes of a project and region.
 
@@ -65,30 +63,23 @@ class List(base.ListCommand):
     flags.AddRegionResourceArg(
         parser,
         'to list agent runtimes',
-        prompt_func=region_util.PromptForOpRegion,
+        prompt_func=region_util.GetPromptForRegionFunc(
+            constants.SUPPORTED_AP_REGIONS
+        ),
     )
 
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
-    if properties.IsDefaultUniverse():
-      validation.ValidateRegion(
-          region, available_regions=constants.SUPPORTED_AP_REGIONS
-      )
+    agent_runtimes_util.ValidateRegion(region)
 
-    def _Yield():
-      try:
-        yield from runtimes_client.List(region=region_ref.RelativeName())
-      except apitools_exceptions.HttpError as error:
-        # Translates generic HTTP error into a user-friendly gcloud exception
-        raise api_exceptions.HttpException(
-            error,
-            'ResponseError: code={status_code}, message={status_message}',
-        )
     with endpoint_util.AiplatformEndpointOverrides(
         constants.BETA_VERSION, region=region
     ):
       runtimes_client = client.AgentRuntimesClient(
           version=constants.BETA_VERSION
       )
-      return _Yield()
+      return agent_runtimes_util.WrapHttpErrors(
+          runtimes_client.List(region=region_ref.RelativeName()),
+          cmd_args=args,
+      )

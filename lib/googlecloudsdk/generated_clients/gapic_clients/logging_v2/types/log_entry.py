@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -250,20 +250,15 @@ class LogEntry(proto.Message):
 
             This field is a member of `oneof`_ ``payload``.
         timestamp (google.protobuf.timestamp_pb2.Timestamp):
-            Optional. The time the event described by the log entry
-            occurred. This time is used to compute the log entry's age
-            and to enforce the logs retention period. If this field is
-            omitted in a new log entry, then Logging assigns it the
-            current time. Timestamps have nanosecond accuracy, but
-            trailing zeros in the fractional seconds might be omitted
-            when the timestamp is displayed.
-
-            Incoming log entries must have timestamps that don't exceed
-            the `logs retention
-            period <https://cloud.google.com/logging/quotas#logs_retention_periods>`__
-            in the past, and that don't exceed 24 hours in the future.
-            Log entries outside those time boundaries are rejected by
-            Logging.
+            Optional. The time the event described by the
+            log entry occurred. This time is used to compute
+            the log entry's age and to enforce the logs
+            retention period. If this field is omitted in a
+            new log entry, then Logging assigns it the
+            current time. Timestamps have nanosecond
+            accuracy, but trailing zeros in the fractional
+            seconds might be omitted when the timestamp is
+            displayed.
         receive_timestamp (google.protobuf.timestamp_pb2.Timestamp):
             Output only. The time the log entry was
             received by Logging.
@@ -296,7 +291,7 @@ class LogEntry(proto.Message):
             User-defined labels are arbitrary key, value pairs that you
             can use to classify logs.
 
-            System-defined labels are defined by GCP services for
+            System-defined labels are defined by cloud services for
             platform logs. They have two components - a service
             namespace component and the attribute name. For example:
             ``compute.googleapis.com/resource_name``.
@@ -313,28 +308,30 @@ class LogEntry(proto.Message):
             Optional. Information about an operation
             associated with the log entry, if applicable.
         trace (str):
-            Optional. The REST resource name of the trace being written
-            to `Cloud Trace <https://cloud.google.com/trace>`__ in
+            Optional. The trace ID being written to `Cloud
+            Trace <https://docs.cloud.google.com/trace/docs>`__ in
             association with this log entry. For example, if your trace
             data is stored in the Cloud project "my-trace-project" and
             if the service that is creating the log entry receives a
             trace header that includes the trace ID "12345", then the
-            service should use "projects/my-trace-project/traces/12345".
+            service should use "12345".
+
+            The REST resource name of the trace is also supported, but
+            using this format is not recommended. An example trace REST
+            resource name is similar to
+            "projects/my-trace-project/traces/12345".
 
             The ``trace`` field provides the link between logs and
             traces. By using this field, you can navigate from a log
             entry to a trace.
         span_id (str):
             Optional. The ID of the `Cloud
-            Trace <https://cloud.google.com/trace>`__ span associated
-            with the current operation in which the log is being
-            written. For example, if a span has the REST resource name
-            of
-            "projects/some-project/traces/some-trace/spans/some-span-id",
-            then the ``span_id`` field is "some-span-id".
+            Trace <https://docs.cloud.google.com/trace/docs>`__ span
+            associated with the current operation in which the log is
+            being written.
 
             A
-            `Span <https://cloud.google.com/trace/docs/reference/v2/rest/v2/projects.traces/batchWrite#Span>`__
+            `Span <https://docs.cloud.google.com/trace/docs/reference/v2/rest/v2/projects.traces/batchWrite#Span>`__
             represents a single operation within a trace. Whereas a
             trace may involve multiple different microservices running
             on multiple different machines, a span generally corresponds
@@ -343,8 +340,8 @@ class LogEntry(proto.Message):
             are the nodes within the tree that is a trace.
 
             Applications that are `instrumented for
-            tracing <https://cloud.google.com/trace/docs/setup>`__ will
-            generally assign a new, unique span ID on each incoming
+            tracing <https://docs.cloud.google.com/trace/docs/setup>`__
+            will generally assign a new, unique span ID on each incoming
             request. It is also common to create and record additional
             spans corresponding to internal processing elements as well
             as issuing requests to dependencies.
@@ -356,10 +353,10 @@ class LogEntry(proto.Message):
 
             Example values:
 
-            -  ``000000000000004a``
-            -  ``7a2190356c3fc94b``
-            -  ``0000f00300090021``
-            -  ``d39223e101960076``
+            - ``000000000000004a``
+            - ``7a2190356c3fc94b``
+            - ``0000f00300090021``
+            - ``d39223e101960076``
         trace_sampled (bool):
             Optional. The sampling decision of the span associated with
             the log entry at the time the log entry was created. This
@@ -381,11 +378,15 @@ class LogEntry(proto.Message):
             error groups associated with this LogEntry. Error Reporting
             sets the values for this field during error group creation.
 
+            This field is populated only when log entries are stored in
+            Cloud Logging storage (Logs Explorer and Observability
+            Analytics). It is **not available** for use in log sink
+            filters, log-based metrics, or log-based alerts, and it is
+            excluded from log exports (Cloud Storage, BigQuery, and
+            Pub/Sub).
+
             For more information, see `View error
             details <https://cloud.google.com/error-reporting/docs/viewing-errors#view_error_details>`__
-
-            This field isn't available during `log
-            routing <https://cloud.google.com/logging/docs/routing/overview>`__
         apphub (googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.AppHub):
             Output only. AppHub application metadata
             associated with this LogEntry. May be empty if
@@ -397,7 +398,22 @@ class LogEntry(proto.Message):
             associated with the destination application.
             This is only populated if the log represented
             "edge"-like data (such as for VPC flow logs)
-            with a source and destination.
+            with a destination.
+        apphub_source (googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.AppHub):
+            Output only. AppHub application metadata
+            associated with the source application. This is
+            only populated if the log represented
+            "edge"-like data (such as for VPC flow logs)
+            with a source.
+        otel (google.protobuf.struct_pb2.Struct):
+            Optional. The structured OpenTelemetry
+            protocol payload. Contains the OpenTelemetry
+            Resource, Instrumentation Scope, and Entities
+            attributes for this log as they are defined in
+            the OTLP specification, and any other fields
+            that do not have a direct analog in the
+            LogEntry. See
+            https://opentelemetry.io/docs/specs/otel/logs/data-model/
     """
 
     log_name: str = proto.Field(
@@ -502,6 +518,16 @@ class LogEntry(proto.Message):
         number=38,
         message='AppHub',
     )
+    apphub_source: 'AppHub' = proto.Field(
+        proto.MESSAGE,
+        number=39,
+        message='AppHub',
+    )
+    otel: struct_pb2.Struct = proto.Field(
+        proto.MESSAGE,
+        number=40,
+        message=struct_pb2.Struct,
+    )
 
 
 class LogErrorGroup(proto.Message):
@@ -513,10 +539,15 @@ class LogErrorGroup(proto.Message):
             The id is a unique identifier for a particular error group;
             it is the last part of the error group resource name:
             ``/project/[PROJECT_ID]/errors/[ERROR_GROUP_ID]``. Example:
-            ``COShysOX0r_51QE``. The id is derived from key parts of the
-            error-log content and is treated as Service Data. For
-            information about how Service Data is handled, see `Google
-            Cloud Privacy
+            ``COShysOX0r_51QE``.
+
+            This field can be used to search for log entries belonging
+            to a specific error group in Logs Explorer (e.g.,
+            ``error_groups.id = "ID"``) or Observability Analytics.
+
+            The id is derived from key parts of the error-log content
+            and is treated as Service Data. For information about how
+            Service Data is handled, see `Google Cloud Privacy
             Notice <https://cloud.google.com/terms/cloud-privacy-notice>`__.
     """
 

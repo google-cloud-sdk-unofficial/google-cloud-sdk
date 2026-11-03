@@ -18,7 +18,7 @@ import enum
 
 
 BASE_URL = 'https://workspacekeyaccess.googleapis.com/v1alpha/'
-DOCS_URL = ''
+DOCS_URL = 'https://docs.cloud.google.com/kms/docs/hsm-for-workspace'
 
 
 class Collections(enum.Enum):

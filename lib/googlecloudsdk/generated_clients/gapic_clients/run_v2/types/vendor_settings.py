@@ -23,6 +23,7 @@ import proto  # type: ignore
 __protobuf__ = proto.module(
     package='google.cloud.run.v2',
     manifest={
+        'AmbientScope',
         'IngressTraffic',
         'ExecutionEnvironment',
         'EncryptionKeyRevocationAction',
@@ -32,6 +33,7 @@ __protobuf__ = proto.module(
         'BinaryAuthorization',
         'RevisionScaling',
         'ServiceMesh',
+        'AmbientNetworking',
         'ServiceScaling',
         'CpuScaling',
         'PubSubScaling',
@@ -41,6 +43,22 @@ __protobuf__ = proto.module(
         'WorkloadIdentityConfig',
     },
 )
+
+
+class AmbientScope(proto.Enum):
+    r"""The ambient networking scopes of the instance.
+
+    Values:
+        AMBIENT_SCOPE_UNSPECIFIED (0):
+            Unspecified.
+        AMBIENT_SCOPE_REGIONAL (1):
+            Regional ambient networking.
+        AMBIENT_SCOPE_GLOBAL (2):
+            Global ambient networking.
+    """
+    AMBIENT_SCOPE_UNSPECIFIED = 0
+    AMBIENT_SCOPE_REGIONAL = 1
+    AMBIENT_SCOPE_GLOBAL = 2
 
 
 class IngressTraffic(proto.Enum):
@@ -340,6 +358,33 @@ class ServiceMesh(proto.Message):
     mesh: str = proto.Field(
         proto.STRING,
         number=1,
+    )
+
+
+class AmbientNetworking(proto.Message):
+    r"""Configuration for Ambient Networking.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        enabled (bool):
+            Optional. Whether ambient networking is
+            enabled.
+
+            This field is a member of `oneof`_ ``_enabled``.
+        ambient_scope (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.AmbientScope):
+            The ambient networking scope of the instance.
+    """
+
+    enabled: bool = proto.Field(
+        proto.BOOL,
+        number=1,
+        optional=True,
+    )
+    ambient_scope: 'AmbientScope' = proto.Field(
+        proto.ENUM,
+        number=2,
+        enum='AmbientScope',
     )
 
 
@@ -686,6 +731,8 @@ class BuildConfig(proto.Message):
 class WorkloadIdentityConfig(proto.Message):
     r"""Workload identity settings.
 
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         identity (str):
             Optional. The Revision's SPIFFE workload
@@ -697,6 +744,8 @@ class WorkloadIdentityConfig(proto.Message):
             Optional. Controls whether an instance receives a MWLID
             certificate. Corresponds to the intention of the original
             --[no-]identity-certificate flag.
+
+            This field is a member of `oneof`_ ``_identity_certificate_enabled``.
     """
 
     identity: str = proto.Field(
@@ -711,6 +760,7 @@ class WorkloadIdentityConfig(proto.Message):
     identity_certificate_enabled: bool = proto.Field(
         proto.BOOL,
         number=3,
+        optional=True,
     )
 
 

@@ -1,36 +1,67 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Update a Unit Operation
-    description: Update a Unit Operation
-    examples: |-
-      To update the Unit Operation, run:
+    brief: Update a unit operation.
+    description: |-
+      Update an App Lifecycle Manager unit operation.
 
-      $ {command}
+      Use `--cancel` to request cancellation of a unit operation.
+    examples: |-
+      To request cancellation of the unit operation named `my-unit-operation` in
+      location `us-central1`, run:
+
+        $ {command} my-unit-operation --location=us-central1 --cancel
+
+      To reschedule the unit operation named `my-unit-operation` to start at
+      `2099-01-02T10:00:00Z` and add or update the label `env=prod`, run:
+
+        $ {command} my-unit-operation --location=us-central1 --schedule-start-time=2099-01-02T10:00:00Z --update-labels=env=prod
+  ALPHA:
+    help_text:
+      brief: Update a Unit Operation
+      description: Update a Unit Operation
+      examples: |-
+        To update the Unit Operation, run:
+
+        $ {command}
   arguments:
     params:
     - group:
         mutex: true
         help_text: |-
-          Arguments for the unit operation type.
+          Unit operation type.
+        ALPHA:
+          help_text: |-
+            Arguments for the unit operation type.
         params:
         - group:
             required: false
             help_text: |-
-              Provision is the unit operation that provision the underlying resources
-              represented by a Unit. Can only execute if the Unit is not currently
-              provisioned.
+              Provision operation, which provisions the underlying resources
+              represented by the unit. The operation can run only if the unit
+              is not provisioned.
+            ALPHA:
+              help_text: |-
+                Provision is the unit operation that provision the underlying resources
+                represented by a Unit. Can only execute if the Unit is not currently
+                provisioned.
             params:
             - arg_name: provision
               help_text: |-
-                This flag can be used to specify an empty provision operation.
+                Provision the unit.
+              ALPHA:
+                help_text: |-
+                  This flag can be used to specify an empty provision operation.
               is_positional: false
               required: false
               type: bool
             - arg_name: provision-release
               help_text: |-
-                Reference to the Release object to use for the Unit. (optional).
+                Release to use for the unit.
+              ALPHA:
+                help_text: |-
+                  Reference to the Release object to use for the Unit. (optional).
               is_positional: false
               resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:release
               resource_method_params:
@@ -42,35 +73,59 @@
               required: false
               repeated: true
               help_text: |-
-                Set of input variables. Maximum 100. (optional)
+                Input variables for the provision operation. A maximum of 100
+                input variables can be specified.
+              ALPHA:
+                help_text: Set of input variables. Maximum 100. (optional)
               clearable: true
               spec:
               - api_field: variable
                 required: true
                 help_text: |-
-                  Name of the variable from actuation configs.
+                  Name of the variable from the actuation configuration.
+                ALPHA:
+                  help_text: |-
+                    Name of the variable from actuation configs.
               - api_field: type
                 help_text: |-
-                  Name of a supported variable type. Supported types are string, int, bool.
+                  Name of a supported variable type. Supported types are
+                  `string`, `int`, `bool`, `struct`, and `list`.
+                ALPHA:
+                  help_text: |-
+                    Name of a supported variable type. Supported types are string, int, bool.
               - api_field: value
                 help_text: |-
-                  String encoded value for the variable.
+                  String-encoded value for the variable. Values of type
+                  `struct` or `list` must be JSON-encoded strings.
+                ALPHA:
+                  help_text: String encoded value for the variable.
         - group:
             required: false
             help_text: |-
-              Upgrade is the unit operation that upgrades a provisioned unit, which may
-              also include the underlying resources represented by a Unit. Can only execute
-              if the Unit is currently provisioned.
+              Upgrade operation, which upgrades a provisioned unit, possibly
+              including the underlying resources represented by the unit. The
+              operation can run only if the unit is provisioned.
+            ALPHA:
+              help_text: |-
+                Upgrade is the unit operation that upgrades a provisioned unit, which may
+                also include the underlying resources represented by a Unit. Can only execute
+                if the Unit is currently provisioned.
             params:
             - arg_name: upgrade
               help_text: |-
-                This flag can be used to specify an empty upgrade operation.
+                Upgrade the unit.
+              ALPHA:
+                help_text: |-
+                  This flag can be used to specify an empty upgrade operation.
               is_positional: false
               required: false
               type: bool
             - arg_name: upgrade-release
               help_text: |-
-                Reference to the Release object to use for the Unit. (optional).
+                Release to use for the unit.
+              ALPHA:
+                help_text: |-
+                  Reference to the Release object to use for the Unit. (optional).
               is_positional: false
               resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:release
               resource_method_params:
@@ -82,58 +137,94 @@
               required: false
               repeated: true
               help_text: |-
-                Set of input variables. Maximum 100. (optional)
+                Input variables for the upgrade operation. A maximum of 100
+                input variables can be specified.
+              ALPHA:
+                help_text: Set of input variables. Maximum 100. (optional)
               clearable: true
               spec:
               - api_field: variable
                 required: true
                 help_text: |-
-                  Name of the variable from actuation configs.
+                  Name of the variable from the actuation configuration.
+                ALPHA:
+                  help_text: |-
+                    Name of the variable from actuation configs.
               - api_field: type
                 help_text: |-
-                  Name of a supported variable type. Supported types are string, int, bool.
+                  Name of a supported variable type. Supported types are
+                  `string`, `int`, `bool`, `struct`, and `list`.
+                ALPHA:
+                  help_text: |-
+                    Name of a supported variable type. Supported types are string, int, bool.
               - api_field: value
                 help_text: |-
-                  String encoded value for the variable.
+                  String-encoded value for the variable. Values of type
+                  `struct` or `list` must be JSON-encoded strings.
+                ALPHA:
+                  help_text: String encoded value for the variable.
         - group:
             required: false
             help_text: |-
-              Deprovision is the unit operation that deprovision the underlying
-              resources represented by a Unit. Can only execute if the Unit is currently
-              provisioned.
+              Deprovision operation, which deprovisions the underlying
+              resources represented by the unit. The operation can run only if
+              the unit is provisioned.
+            ALPHA:
+              help_text: |-
+                Deprovision is the unit operation that deprovision the underlying
+                resources represented by a Unit. Can only execute if the Unit is currently
+                provisioned.
             params:
             - arg_name: deprovision
               help_text: |-
-                This flag can be used to specify an empty deprovision operation.
+                Deprovision the unit.
+              ALPHA:
+                help_text: |-
+                  This flag can be used to specify an empty deprovision operation.
               is_positional: false
               required: false
               type: bool
         - group:
+            # The Flags API is not public in v1.
+            release_tracks: [ALPHA, BETA]
             required: false
             help_text: |-
-              Flag update is the unit operation that pushes new flag values to Units.
+              Flag update operation, which pushes new flag values to units.
+            ALPHA:
+              help_text: |-
+                Flag update is the unit operation that pushes new flag values to Units.
             params:
             - arg_name: flag-update
               help_text: |-
-                Flag release being applied by UnitOperation.
+                Flag release applied by the unit operation.
+              ALPHA:
+                help_text: Flag release being applied by UnitOperation.
               is_positional: false
               resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_release
               resource_method_params:
                 unitOperation.flagUpdate.flagRelease: '{__relative_name__}'
     - help_text: |-
-        Identifier. The resource name (full URI of the resource) following the standard naming
-        scheme:
+        Unit operation to update.
+      ALPHA:
+        help_text: |-
+          Identifier. The resource name (full URI of the resource) following the standard naming
+          scheme:
 
-         "projects/{project}/locations/{location}/unitOperations/{unitOperation}"
+           "projects/{project}/locations/{location}/unitOperations/{unitOperation}"
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:unit_operation
       required: true
     - arg_name: parent-unit-operation
       help_text: |-
-        Reference to parent resource: UnitOperation. If an operation needs to
-        create other operations as part of its workflow, each of the child
-        operations should have this field set to the parent. This can be used for
-        tracing. (Optional)
+        Parent unit operation. If an operation creates child operations as part
+        of its workflow, set this flag on each child operation to the parent
+        unit operation for tracing.
+      ALPHA:
+        help_text: |-
+          Reference to parent resource: UnitOperation. If an operation needs to
+          create other operations as part of its workflow, each of the child
+          operations should have this field set to the parent. This can be used for
+          tracing. (Optional)
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:parent_unit_operation
       resource_method_params:
@@ -143,10 +234,16 @@
       is_primary_resource: false
     - arg_name: rollout
       help_text: |-
-        Specifies which rollout created this Unit Operation. This cannot be
-        modified and is used for filtering purposes only. If a dependent unit and
-        unit operation are created as part of another unit operation, they will use
-        the same rolloutId.
+        Rollout that created this unit operation. The rollout cannot be
+        changed after it is set and is used only for filtering. If a dependent
+        unit and unit operation are created as part of another unit operation,
+        they use the same rollout.
+      ALPHA:
+        help_text: |-
+          Specifies which rollout created this Unit Operation. This cannot be
+          modified and is used for filtering purposes only. If a dependent unit and
+          unit operation are created as part of another unit operation, they will use
+          the same rolloutId.
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:rollout
       resource_method_params:
@@ -159,13 +256,19 @@
       required: false
       type: bool
       help_text: |-
-        When true, attempt to cancel the operation. Cancellation may fail if the
-        operation is already executing. (Optional)
+        Attempt to cancel the operation. Cancellation might fail if the
+        operation is already running.
+      ALPHA:
+        help_text: |-
+          When true, attempt to cancel the operation. Cancellation may fail if the
+          operation is already executing. (Optional)
       default: null
     - group:
         required: false
         help_text: |-
-          A time specification to schedule the maintenance.
+          Time specification to schedule the operation.
+        ALPHA:
+          help_text: A time specification to schedule the maintenance.
         params:
         - arg_name: schedule-start-time
           api_field: unitOperation.schedule.startTime
@@ -174,21 +277,31 @@
           type: googlecloudsdk.core.util.times:ParseDateTime
           processor: googlecloudsdk.core.util.times:FormatDateTime
           help_text: |-
-            Start of operation. If not set, will be set to the start of the next
-            window. (optional)
+            Start time of the operation. If not set, the start of the next
+            maintenance window is used.
+          ALPHA:
+            help_text: |-
+              Start of operation. If not set, will be set to the start of the next
+              window. (optional)
     - arg_name: labels
       api_field: unitOperation.labels
       required: false
       repeated: true
       help_text: |-
-        The labels on the resource, which can be used for categorization.
-        similar to Kubernetes resource labels.
+        Labels on the resource, which can be used for categorization, similar
+        to Kubernetes resource labels.
+      ALPHA:
+        help_text: |-
+          The labels on the resource, which can be used for categorization.
+          similar to Kubernetes resource labels.
       clearable: true
       spec:
       - api_field: key
       - api_field: value
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.unitOperations
     modify_request_hooks:

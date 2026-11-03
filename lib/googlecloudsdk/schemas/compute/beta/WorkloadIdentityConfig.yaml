@@ -31,3 +31,6 @@ properties:
   identityCertificateEnabled:
     description: A boolean attribute.
     type: boolean
+  identityType:
+    description: The identity type of the instance.
+    type: enum

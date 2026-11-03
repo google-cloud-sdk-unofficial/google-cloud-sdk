@@ -15,7 +15,6 @@
 """Flags and helpers for the Datastream related commands."""
 
 
-
 def AddDisplayNameFlag(parser):
   """Adds a --display-name flag to the given parser."""
   help_text = """Friendly name for the route."""
@@ -23,13 +22,13 @@ def AddDisplayNameFlag(parser):
 
 
 def AddDestinationAddressFlag(parser):
-  """Adds a --destination-addresss flag to the given parser."""
+  """Adds a --destination-address flag to the given parser."""
   help_text = """Destination address for connection."""
   parser.add_argument('--destination-address', help=help_text, required=True)
 
 
 def AddDestinationPortFlag(parser):
-  """Adds a --display-name flag to the given parser."""
+  """Adds a --destination-port flag to the given parser."""
   help_text = """Destination port for connection."""
   parser.add_argument(
       '--destination-port', help=help_text, type=int)

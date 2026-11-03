@@ -123,6 +123,17 @@ class Collections(enum.Enum):
       ['projectsId', 'locationsId', 'databaseCharacterSetsId'],
       True
   )
+  PROJECTS_LOCATIONS_DATABASECONNECTIONS = (
+      'projects.locations.databaseConnections',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'databaseConnections/{databaseConnectionsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_DATABASES = (
       'projects.locations.databases',
       '{+name}',
@@ -304,6 +315,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/odbNetworks/'
               '{odbNetworksId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_ODBNETWORKS_ODBDNSZONES = (
+      'projects.locations.odbNetworks.odbDnsZones',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/odbNetworks/'
+              '{odbNetworksId}/odbDnsZones/{odbDnsZonesId}',
       },
       ['name'],
       True

@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.composer.flags import CONNECTION_TYPE_FLAG_GA
 from googlecloudsdk.command_lib.composer.flags import ENVIRONMENT_SIZE_ALPHA
 from googlecloudsdk.command_lib.composer.flags import ENVIRONMENT_SIZE_BETA
 from googlecloudsdk.command_lib.composer.flags import ENVIRONMENT_SIZE_GA
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 def GetService(release_track=base.ReleaseTrack.GA):
@@ -196,6 +197,8 @@ class CreateEnvironmentFlags:
       to be used by user workloads.
     airflow_rbac_config: messages.AirflowRbacConfig or None, Airflow RBAC
       configuration for the environment.
+    operation_settings_strategy: str or None, the operation strategy for the
+      environment. Can be 'standard', 'graceful', or 'graceful-when-supported'.
   """
 
   # TODO(b/154131605): This a type that is an immutable data object. Can't use
@@ -289,6 +292,7 @@ class CreateEnvironmentFlags:
       enable_development_mode=None,
       user_workloads_service_accounts=None,
       airflow_rbac_config=None,
+      operation_settings_strategy=None,
   ):
     self.node_count = node_count
     self.environment_size = environment_size
@@ -378,6 +382,7 @@ class CreateEnvironmentFlags:
     self.enable_development_mode = enable_development_mode
     self.user_workloads_service_accounts = user_workloads_service_accounts
     self.airflow_rbac_config = airflow_rbac_config
+    self.operation_settings_strategy = operation_settings_strategy
 
 
 def _CreateNodeConfig(messages, flags):
@@ -794,6 +799,15 @@ def Create(environment_ref, flags, is_composer_v1):
     mode_enum = getattr(messages.Environment, 'ModeValueValuesEnum', None)
     if mode_enum:
       environment.mode = mode_enum.DEVELOPMENT
+
+  if flags.operation_settings_strategy:
+    strategy_enum = arg_utils.ChoiceToEnum(
+        flags.operation_settings_strategy,
+        messages.OperationSettings.StrategyValueValuesEnum,
+    )
+    environment.operationSettings = messages.OperationSettings(
+        strategy=strategy_enum
+    )
 
   try:
     return GetService(release_track=flags.release_track).Create(

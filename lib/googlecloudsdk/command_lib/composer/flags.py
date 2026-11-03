@@ -1005,6 +1005,32 @@ CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA = arg_utils.ChoiceEnumMapper(
     hidden_choices=['routing-mode-unspecified'],
 )
 
+OPERATION_SETTINGS_STRATEGY_BETA = arg_utils.ChoiceEnumMapper(
+    arg_name='--operation-settings-strategy',
+    help_str=(
+        'Strategy for operations on the environment. Supported in Composer {} '
+        'environments or greater.'.format(MIN_COMPOSER3_VERSION)
+    ),
+    message_enum=api_util.GetMessagesModule(
+        release_track=base.ReleaseTrack.BETA
+    ).OperationSettings.StrategyValueValuesEnum,
+    hidden=True,
+    hidden_choices=['strategy-unspecified'],
+)
+
+OPERATION_SETTINGS_STRATEGY_ALPHA = arg_utils.ChoiceEnumMapper(
+    arg_name='--operation-settings-strategy',
+    help_str=(
+        'Strategy for operations on the environment. Supported in Composer {} '
+        'environments or greater.'.format(MIN_COMPOSER3_VERSION)
+    ),
+    message_enum=api_util.GetMessagesModule(
+        release_track=base.ReleaseTrack.ALPHA
+    ).OperationSettings.StrategyValueValuesEnum,
+    hidden=True,
+    hidden_choices=['strategy-unspecified'],
+)
+
 USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG = base.Argument(
     '--user-workloads-service-accounts',
     metavar='KEY=VALUE',
@@ -2029,10 +2055,12 @@ def AddComposer3FlagsToGroup(update_type_group, release_track=None):
         traffic_routing_group
     )
     AddAirflowRbacUpdateFlagsToGroup(update_type_group)
+    OPERATION_SETTINGS_STRATEGY_BETA.choice_arg.AddToParser(update_type_group)
   elif release_track == base.ReleaseTrack.ALPHA:
     CLOUD_RUN_FUNCTIONS_ROUTING_ALPHA.choice_arg.AddToParser(
         traffic_routing_group
     )
+    OPERATION_SETTINGS_STRATEGY_ALPHA.choice_arg.AddToParser(update_type_group)
     _AddPartialDictUpdateFlagsToGroup(
         update_type_group,
         CLEAR_USER_WORKLOADS_SERVICE_ACCOUNTS_FLAG,

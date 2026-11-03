@@ -18,14 +18,16 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: true
   hidden: true
   help_text:
     brief: List Workspace Key Access configs.
     description: List Workspace Key Access configs in a given project and location.
     examples: |-
-      To list configs in `us-central1`, run:
+      To list configs in `us-east1`, run:
 
-      $ {command} --location=us-central1
+      $ {command} --location=us-east1
   arguments:
     params:
     - help_text: |-

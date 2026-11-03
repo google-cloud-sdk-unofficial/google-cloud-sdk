@@ -21,13 +21,20 @@ class BootDisk(_messages.Message):
   Fields:
     sizeGb: Optional. The size of the disk in gigabytes (GB), which must be at
       least 40 GB.
+    storagePools: Optional. The [storage
+      pools](https://docs.cloud.google.com/compute/docs/disks/storage-pools)
+      used for creating the boot disk, in the format:
+      `projects/{project}/zones/{zone}/storagePools/{storage_pool}`.
+      Currently, only one Hyperdisk Balanced storage pool is supported. The
+      storage pool must reside in the same zone as the compute instance.
     type: Optional. [Persistent disk
       type](https://cloud.google.com/compute/docs/disks#disk-types), in the
       format `projects/{project}/zones/{zone}/diskTypes/{disk_type}`.
   """
 
   sizeGb = _messages.IntegerField(1)
-  type = _messages.StringField(2)
+  storagePools = _messages.StringField(2, repeated=True)
+  type = _messages.StringField(3)
 
 
 class BucketReference(_messages.Message):

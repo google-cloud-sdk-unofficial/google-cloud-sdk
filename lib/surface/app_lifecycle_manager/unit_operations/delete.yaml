@@ -1,21 +1,43 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Delete a Unit Operation
-    description: Delete a Unit Operation
-    examples: |-
-      To delete the Unit Operation, run:
+    brief: Delete a unit operation.
+    description: |-
+      Delete an App Lifecycle Manager unit operation.
 
-      $ {command}
+      The command prompts for confirmation before the unit operation is
+      deleted.
+    examples: |-
+      To delete the unit operation named `my-unit-operation` in location
+      `us-central1`, run:
+
+        $ {command} my-unit-operation --location=us-central1
+
+      To delete the unit operation named `my-unit-operation` in location
+      `us-central1` without a confirmation prompt, run:
+
+        $ {command} my-unit-operation --location=us-central1 --quiet
+  ALPHA:
+    help_text:
+      brief: Delete a Unit Operation
+      description: Delete a Unit Operation
+      examples: |-
+        To delete the Unit Operation, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        The resource name of the resource within a service.
+        Unit operation to delete.
+      ALPHA:
+        help_text: The resource name of the resource within a service.
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:unit_operation
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.unitOperations

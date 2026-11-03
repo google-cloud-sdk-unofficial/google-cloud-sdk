@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 from collections import OrderedDict
+from http import HTTPStatus
+import json
+import logging as std_logging
 import os
 import re
 from typing import Dict, Callable, Mapping, MutableMapping, MutableSequence, Optional, Sequence, Tuple, Type, Union, cast
@@ -30,11 +33,20 @@ from google.auth.transport import mtls                            # type: ignore
 from google.auth.transport.grpc import SslCredentials             # type: ignore
 from google.auth.exceptions import MutualTLSChannelError          # type: ignore
 from google.oauth2 import service_account                         # type: ignore
+import cloudsdk.google.protobuf
 
 try:
     OptionalRetry = Union[retries.Retry, gapic_v1.method._MethodDefault, None]
 except AttributeError:  # pragma: NO COVER
     OptionalRetry = Union[retries.Retry, object, None]  # type: ignore
+
+try:
+    from google.api_core import client_logging  # type: ignore
+    CLIENT_LOGGING_SUPPORTED = True  # pragma: NO COVER
+except ImportError:  # pragma: NO COVER
+    CLIENT_LOGGING_SUPPORTED = False
+
+_LOGGER = std_logging.getLogger(__name__)
 
 from google.api_core import operation  # type: ignore
 from google.api_core import operation_async  # type: ignore
@@ -490,33 +502,6 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             raise ValueError("Universe Domain cannot be an empty string.")
         return universe_domain
 
-    @staticmethod
-    def _compare_universes(client_universe: str,
-                           credentials: ga_credentials.Credentials) -> bool:
-        """Returns True iff the universe domains used by the client and credentials match.
-
-        Args:
-            client_universe (str): The universe domain configured via the client options.
-            credentials (ga_credentials.Credentials): The credentials being used in the client.
-
-        Returns:
-            bool: True iff client_universe matches the universe in credentials.
-
-        Raises:
-            ValueError: when client_universe does not match the universe in credentials.
-        """
-
-        default_universe = ConfigServiceV2Client._DEFAULT_UNIVERSE
-        credentials_universe = getattr(credentials, "universe_domain", default_universe)
-
-        if client_universe != credentials_universe:
-            raise ValueError("The configured universe domain "
-                f"({client_universe}) does not match the universe domain "
-                f"found in the credentials ({credentials_universe}). "
-                "If you haven't configured the universe domain explicitly, "
-                f"`{default_universe}` is the default.")
-        return True
-
     def _validate_universe_domain(self):
         """Validates client's and credentials' universe domains are consistent.
 
@@ -526,9 +511,33 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         Raises:
             ValueError: If the configured universe domain is not valid.
         """
-        self._is_universe_domain_valid = (self._is_universe_domain_valid or
-            ConfigServiceV2Client._compare_universes(self.universe_domain, self.transport._credentials))
-        return self._is_universe_domain_valid
+
+        # NOTE (b/349488459): universe validation is disabled until further notice.
+        return True
+
+    def _add_cred_info_for_auth_errors(
+        self,
+        error: core_exceptions.GoogleAPICallError
+    ) -> None:
+        """Adds credential info string to error details for 401/403/404 errors.
+
+        Args:
+            error (google.api_core.exceptions.GoogleAPICallError): The error to add the cred info.
+        """
+        if error.code not in [HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN, HTTPStatus.NOT_FOUND]:
+            return
+
+        cred = self._transport._credentials
+
+        # get_cred_info is only available in google-auth>=2.35.0
+        if not hasattr(cred, "get_cred_info"):
+            return
+
+        # ignore the type check since pypy test fails when get_cred_info
+        # is not available
+        cred_info = cred.get_cred_info()  # type: ignore
+        if cred_info and hasattr(error._details, "append"):
+            error._details.append(json.dumps(cred_info))
 
     @property
     def api_endpoint(self):
@@ -623,6 +632,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Initialize the universe domain validation.
         self._is_universe_domain_valid = False
 
+        if CLIENT_LOGGING_SUPPORTED:  # pragma: NO COVER
+            # Setup logging.
+            client_logging.initialize_logging()
+
         api_key_value = getattr(self._client_options, "api_key", None)
         if api_key_value and credentials:
             raise ValueError("client_options.api_key and credentials are mutually exclusive")
@@ -658,7 +671,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                 credentials = google.auth._default.get_api_key_credentials(api_key_value)
 
             transport_init: Union[Type[ConfigServiceV2Transport], Callable[..., ConfigServiceV2Transport]] = (
-                type(self).get_transport_class(transport)
+                ConfigServiceV2Client.get_transport_class(transport)
                 if isinstance(transport, str) or transport is None
                 else cast(Callable[..., ConfigServiceV2Transport], transport)
             )
@@ -675,13 +688,28 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                 api_audience=self._client_options.api_audience,
             )
 
+        if "async" not in str(self._transport):
+            if CLIENT_LOGGING_SUPPORTED and _LOGGER.isEnabledFor(std_logging.DEBUG):  # pragma: NO COVER
+                _LOGGER.debug(
+                    "Created client `google.logging_v2.ConfigServiceV2Client`.",
+                    extra = {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "universeDomain": getattr(self._transport._credentials, "universe_domain", ""),
+                        "credentialsType": f"{type(self._transport._credentials).__module__}.{type(self._transport._credentials).__qualname__}",
+                        "credentialsInfo": getattr(self.transport._credentials, "get_cred_info", lambda: None)(),
+                    } if hasattr(self._transport, "_credentials") else {
+                        "serviceName": "google.logging.v2.ConfigServiceV2",
+                        "credentialsType": None,
+                    }
+                )
+
     def list_buckets(self,
             request: Optional[Union[logging_config.ListBucketsRequest, dict]] = None,
             *,
             parent: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListBucketsPager:
         r"""Lists log buckets.
 
@@ -736,8 +764,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.config_service_v2.pagers.ListBucketsPager:
@@ -751,7 +781,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent])
+        flattened_params = [parent]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -769,7 +800,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.list_buckets]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -794,6 +825,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -806,7 +839,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogBucket:
         r"""Gets a log bucket.
 
@@ -859,8 +892,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogBucket:
@@ -871,7 +906,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -889,7 +925,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.get_bucket]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -919,7 +955,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             bucket_id: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> operation.Operation:
         r"""Creates a log bucket asynchronously that can be used
         to store log entries.
@@ -998,8 +1034,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             google.api_core.operation.Operation:
@@ -1013,7 +1051,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent, bucket, bucket_id])
+        flattened_params = [parent, bucket, bucket_id]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -1035,7 +1074,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.create_bucket_async]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -1073,7 +1112,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             update_mask: Optional[field_mask_pb2.FieldMask] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> operation.Operation:
         r"""Updates a log bucket asynchronously.
 
@@ -1156,8 +1195,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             google.api_core.operation.Operation:
@@ -1171,7 +1212,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name, bucket, update_mask])
+        flattened_params = [name, bucket, update_mask]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -1193,7 +1235,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.update_bucket_async]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -1231,7 +1273,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             bucket_id: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogBucket:
         r"""Creates a log bucket that can be used to store log
         entries. After a bucket has been created, the bucket's
@@ -1305,8 +1347,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogBucket:
@@ -1317,7 +1361,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent, bucket, bucket_id])
+        flattened_params = [parent, bucket, bucket_id]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -1339,7 +1384,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.create_bucket]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -1369,7 +1414,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             update_mask: Optional[field_mask_pb2.FieldMask] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogBucket:
         r"""Updates a log bucket.
 
@@ -1448,8 +1493,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogBucket:
@@ -1460,7 +1507,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name, bucket, update_mask])
+        flattened_params = [name, bucket, update_mask]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -1482,7 +1530,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.update_bucket]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -1510,7 +1558,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> None:
         r"""Deletes a log bucket.
 
@@ -1566,13 +1614,16 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -1590,7 +1641,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.delete_bucket]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -1614,7 +1665,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             *,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> None:
         r"""Undeletes a log bucket. A bucket that has been
         deleted can be undeleted within the grace period of 7
@@ -1649,8 +1700,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
         """
         # Create or coerce a protobuf request object.
         # - Use the request object if provided (there's no risk of modifying the input as
@@ -1662,7 +1715,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.undelete_bucket]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -1687,7 +1740,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             parent: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListViewsPager:
         r"""Lists views on a log bucket.
 
@@ -1734,8 +1787,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.config_service_v2.pagers.ListViewsPager:
@@ -1749,7 +1804,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent])
+        flattened_params = [parent]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -1767,7 +1823,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.list_views]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -1792,6 +1848,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -1804,7 +1862,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogView:
         r"""Gets a view on a log bucket.
 
@@ -1854,8 +1912,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogView:
@@ -1866,7 +1926,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -1884,7 +1945,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.get_view]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -1914,7 +1975,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             view_id: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogView:
         r"""Creates a view over log entries in a log bucket. A
         bucket may contain a maximum of 30 views.
@@ -1980,8 +2041,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogView:
@@ -1992,7 +2055,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent, view, view_id])
+        flattened_params = [parent, view, view_id]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -2014,7 +2078,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.create_view]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -2041,7 +2105,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             *,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogView:
         r"""Updates a view on a log bucket. This method replaces the value
         of the ``filter`` field from the existing view with the
@@ -2082,8 +2146,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogView:
@@ -2101,7 +2167,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.update_view]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -2129,7 +2195,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> None:
         r"""Deletes a view on a log bucket. If an ``UNAVAILABLE`` error is
         returned, this indicates that system is not in a state where it
@@ -2181,13 +2247,16 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -2205,7 +2274,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.delete_view]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -2230,7 +2299,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             parent: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListLogScopesPager:
         r"""Lists log scopes.
 
@@ -2278,8 +2347,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.config_service_v2.pagers.ListLogScopesPager:
@@ -2294,7 +2365,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent])
+        flattened_params = [parent]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -2312,7 +2384,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.list_log_scopes]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -2337,6 +2409,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -2349,7 +2423,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogScope:
         r"""Gets a log scope.
 
@@ -2387,7 +2461,9 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
 
                 ::
 
-                    "projects/[PROJECT_ID]/locations/[LOCATION_ID]/logScopes/[LOG_SCOPE_ID]"
+                    "projects/[PROJECT_ID]/locations/[LOCATION_ID]"
+                    "organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]"
+                    "folders/[FOLDER_ID]/locations/[LOCATION_ID]"
 
                 For example:
 
@@ -2399,8 +2475,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogScope:
@@ -2411,7 +2489,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -2429,7 +2508,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.get_log_scope]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -2459,7 +2538,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             log_scope_id: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogScope:
         r"""Creates a log scope.
 
@@ -2498,12 +2577,14 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             request (Union[googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.CreateLogScopeRequest, dict]):
                 The request object. The parameters to ``CreateLogScope``.
             parent (str):
-                Required. The parent project in which to create the log
-                scope
+                Required. The parent resource in which to create the log
+                scope:
 
                 ::
 
                     "projects/[PROJECT_ID]/locations/[LOCATION_ID]"
+                    "organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]"
+                    "folders/[FOLDER_ID]/locations/[LOCATION_ID]"
 
                 For example:
 
@@ -2530,8 +2611,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogScope:
@@ -2542,7 +2625,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent, log_scope, log_scope_id])
+        flattened_params = [parent, log_scope, log_scope_id]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -2564,7 +2648,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.create_log_scope]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -2593,7 +2677,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             update_mask: Optional[field_mask_pb2.FieldMask] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogScope:
         r"""Updates a log scope.
 
@@ -2652,8 +2736,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogScope:
@@ -2664,7 +2750,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([log_scope, update_mask])
+        flattened_params = [log_scope, update_mask]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -2684,7 +2771,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.update_log_scope]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -2712,7 +2799,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> None:
         r"""Deletes a log scope.
 
@@ -2748,7 +2835,9 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
 
                 ::
 
-                    "projects/[PROJECT_ID]/locations/[LOCATION_ID]/logScopes/[LOG_SCOPE_ID]"
+                    "projects/[PROJECT_ID]/locations/[LOCATION_ID]"
+                    "organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]"
+                    "folders/[FOLDER_ID]/locations/[LOCATION_ID]"
 
                 For example:
 
@@ -2760,13 +2849,16 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -2784,7 +2876,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.delete_log_scope]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -2809,7 +2901,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             parent: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListExclusionsPager:
         r"""Lists all the exclusions on the \_Default sink in a parent
         resource.
@@ -2861,8 +2953,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.config_service_v2.pagers.ListExclusionsPager:
@@ -2875,7 +2969,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent])
+        flattened_params = [parent]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -2893,7 +2988,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.list_exclusions]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -2918,6 +3013,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -2930,7 +3027,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogExclusion:
         r"""Gets the description of an exclusion in the \_Default sink.
 
@@ -2983,8 +3080,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogExclusion:
@@ -2994,13 +3093,14 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                    chargeable logs. Note that exclusions on
                    organization-level and folder-level sinks don't apply
                    to child resources. Note also that you cannot modify
-                   the \_Required sink or exclude logs from it.
+                   the Required sink or exclude logs from it.
 
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -3018,7 +3118,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.get_exclusion]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -3047,7 +3147,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             exclusion: Optional[logging_config.LogExclusion] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogExclusion:
         r"""Creates a new exclusion in the \_Default sink in a specified
         parent resource. Only log entries belonging to that resource can
@@ -3116,8 +3216,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogExclusion:
@@ -3127,13 +3229,14 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                    chargeable logs. Note that exclusions on
                    organization-level and folder-level sinks don't apply
                    to child resources. Note also that you cannot modify
-                   the \_Required sink or exclude logs from it.
+                   the Required sink or exclude logs from it.
 
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent, exclusion])
+        flattened_params = [parent, exclusion]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -3153,7 +3256,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.create_exclusion]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -3183,7 +3286,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             update_mask: Optional[field_mask_pb2.FieldMask] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogExclusion:
         r"""Changes one or more properties of an existing exclusion in the
         \_Default sink.
@@ -3263,8 +3366,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogExclusion:
@@ -3274,13 +3379,14 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                    chargeable logs. Note that exclusions on
                    organization-level and folder-level sinks don't apply
                    to child resources. Note also that you cannot modify
-                   the \_Required sink or exclude logs from it.
+                   the Required sink or exclude logs from it.
 
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name, exclusion, update_mask])
+        flattened_params = [name, exclusion, update_mask]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -3302,7 +3408,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.update_exclusion]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -3330,7 +3436,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> None:
         r"""Deletes an exclusion in the \_Default sink.
 
@@ -3381,13 +3487,16 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -3405,7 +3514,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.delete_exclusion]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -3430,7 +3539,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             parent: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListSinksPager:
         r"""Lists sinks.
 
@@ -3481,8 +3590,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.config_service_v2.pagers.ListSinksPager:
@@ -3495,7 +3606,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent])
+        flattened_params = [parent]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -3513,7 +3625,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.list_sinks]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -3538,6 +3650,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -3550,7 +3664,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             sink_name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogSink:
         r"""Gets a sink.
 
@@ -3603,19 +3717,21 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogSink:
                 Describes a sink used to export log entries to one of the following
                    destinations:
 
-                   -  a Cloud Logging log bucket,
-                   -  a Cloud Storage bucket,
-                   -  a BigQuery dataset,
-                   -  a Pub/Sub topic,
-                   -  a Cloud project.
+                   - a Cloud Logging log bucket,
+                   - a Cloud Storage bucket,
+                   - a BigQuery dataset,
+                   - a Pub/Sub topic,
+                   - a Cloud project.
 
                    A logs filter controls which log entries are
                    exported. The sink must be created within a project,
@@ -3625,7 +3741,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([sink_name])
+        flattened_params = [sink_name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -3643,7 +3760,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.get_sink]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -3672,7 +3789,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             sink: Optional[logging_config.LogSink] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogSink:
         r"""Creates a sink that exports specified log entries to a
         destination. The export begins upon ingress, unless the sink's
@@ -3740,19 +3857,21 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogSink:
                 Describes a sink used to export log entries to one of the following
                    destinations:
 
-                   -  a Cloud Logging log bucket,
-                   -  a Cloud Storage bucket,
-                   -  a BigQuery dataset,
-                   -  a Pub/Sub topic,
-                   -  a Cloud project.
+                   - a Cloud Logging log bucket,
+                   - a Cloud Storage bucket,
+                   - a BigQuery dataset,
+                   - a Pub/Sub topic,
+                   - a Cloud project.
 
                    A logs filter controls which log entries are
                    exported. The sink must be created within a project,
@@ -3762,7 +3881,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent, sink])
+        flattened_params = [parent, sink]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -3782,7 +3902,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.create_sink]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -3812,7 +3932,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             update_mask: Optional[field_mask_pb2.FieldMask] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.LogSink:
         r"""Updates a sink. This method replaces the values of the
         ``destination`` and ``filter`` fields of the existing sink with
@@ -3904,19 +4024,21 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.LogSink:
                 Describes a sink used to export log entries to one of the following
                    destinations:
 
-                   -  a Cloud Logging log bucket,
-                   -  a Cloud Storage bucket,
-                   -  a BigQuery dataset,
-                   -  a Pub/Sub topic,
-                   -  a Cloud project.
+                   - a Cloud Logging log bucket,
+                   - a Cloud Storage bucket,
+                   - a BigQuery dataset,
+                   - a Pub/Sub topic,
+                   - a Cloud project.
 
                    A logs filter controls which log entries are
                    exported. The sink must be created within a project,
@@ -3926,7 +4048,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([sink_name, sink, update_mask])
+        flattened_params = [sink_name, sink, update_mask]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -3948,7 +4071,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.update_sink]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -3976,7 +4099,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             sink_name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> None:
         r"""Deletes a sink. If the sink has a unique ``writer_identity``,
         then that service account is also deleted.
@@ -4028,13 +4151,16 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([sink_name])
+        flattened_params = [sink_name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -4052,7 +4178,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.delete_sink]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -4077,7 +4203,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             parent: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListLinksPager:
         r"""Lists links.
 
@@ -4128,8 +4254,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.config_service_v2.pagers.ListLinksPager:
@@ -4143,7 +4271,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent])
+        flattened_params = [parent]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -4161,7 +4290,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.list_links]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -4186,6 +4315,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -4198,7 +4329,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.Link:
         r"""Gets a link.
 
@@ -4247,8 +4378,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.Link:
@@ -4259,7 +4392,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -4277,7 +4411,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.get_link]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -4307,7 +4441,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             link_id: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> operation.Operation:
         r"""Asynchronously creates a linked dataset in BigQuery
         which makes it possible to use BigQuery to read the logs
@@ -4375,8 +4509,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             google.api_core.operation.Operation:
@@ -4391,7 +4527,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent, link, link_id])
+        flattened_params = [parent, link, link_id]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -4413,7 +4550,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.create_link]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -4449,7 +4586,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> operation.Operation:
         r"""Deletes a link. This will also delete the
         corresponding BigQuery linked dataset.
@@ -4503,8 +4640,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             google.api_core.operation.Operation:
@@ -4525,7 +4664,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -4543,7 +4683,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.delete_link]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -4579,7 +4719,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.CmekSettings:
         r"""Gets the Logging CMEK settings for the given resource.
 
@@ -4588,8 +4728,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         configured for an organization, it applies to all projects and
         folders in the Google Cloud organization.
 
-        See `Enabling CMEK for Log
-        Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+        See `Configure CMEK for Cloud
+        Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
         for more information.
 
         .. code-block:: python
@@ -4623,8 +4763,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                 The request object. The parameters to
                 [GetCmekSettings][google.logging.v2.ConfigServiceV2.GetCmekSettings].
 
-                See `Enabling CMEK for Log
-                Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+                See `Configure CMEK for Cloud
+                Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
                 for more information.
             name (str):
                 Required. The resource for which to retrieve CMEK
@@ -4653,8 +4793,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.CmekSettings:
@@ -4667,15 +4809,16 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                    configured, it applies to all projects and folders in
                    the Google Cloud organization.
 
-                   See [Enabling CMEK for Log
-                   Router](\ https://cloud.google.com/logging/docs/routing/managed-encryption)
+                   See [Configure CMEK for Cloud
+                   Logging](https://docs.cloud.google.com/logging/docs/routing/managed-encryption)
                    for more information.
 
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -4693,7 +4836,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.get_cmek_settings]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -4723,7 +4866,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             update_mask: Optional[field_mask_pb2.FieldMask] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.CmekSettings:
         r"""Updates the Log Router CMEK settings for the given resource.
 
@@ -4734,14 +4877,14 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         [UpdateCmekSettings][google.logging.v2.ConfigServiceV2.UpdateCmekSettings]
         fails when any of the following are true:
 
-        -  The value of ``kms_key_name`` is invalid.
-        -  The associated service account doesn't have the required
-           ``roles/cloudkms.cryptoKeyEncrypterDecrypter`` role assigned
-           for the key.
-        -  Access to the key is disabled.
+        - The value of ``kms_key_name`` is invalid.
+        - The associated service account doesn't have the required
+          ``roles/cloudkms.cryptoKeyEncrypterDecrypter`` role assigned
+          for the key.
+        - Access to the key is disabled.
 
-        See `Enabling CMEK for Log
-        Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+        See `Configure CMEK for Cloud
+        Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
         for more information.
 
         .. code-block:: python
@@ -4775,8 +4918,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                 The request object. The parameters to
                 [UpdateCmekSettings][google.logging.v2.ConfigServiceV2.UpdateCmekSettings].
 
-                See `Enabling CMEK for Log
-                Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+                See `Configure CMEK for Cloud
+                Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
                 for more information.
             name (str):
                 Required. The resource name for the CMEK settings to
@@ -4804,8 +4947,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             cmek_settings (googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.CmekSettings):
                 Required. The CMEK settings to update.
 
-                See `Enabling CMEK for Log
-                Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+                See `Configure CMEK for Cloud
+                Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
                 for more information.
 
                 This corresponds to the ``cmek_settings`` field
@@ -4828,8 +4971,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.CmekSettings:
@@ -4842,15 +4987,16 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                    configured, it applies to all projects and folders in
                    the Google Cloud organization.
 
-                   See [Enabling CMEK for Log
-                   Router](\ https://cloud.google.com/logging/docs/routing/managed-encryption)
+                   See [Configure CMEK for Cloud
+                   Logging](https://docs.cloud.google.com/logging/docs/routing/managed-encryption)
                    for more information.
 
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name, cmek_settings, update_mask])
+        flattened_params = [name, cmek_settings, update_mask]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -4872,7 +5018,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.update_cmek_settings]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -4900,7 +5046,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.Settings:
         r"""Gets the settings for the given resource.
 
@@ -4908,7 +5054,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         folders, organizations, and billing accounts.
 
         See [View default resource settings for Logging]
-        (https://cloud.google.com/logging/docs/default-settings#view-org-settings)
+        (https://docs.cloud.google.com/logging/docs/default-settings#view-org-settings)
         for more information.
 
         .. code-block:: python
@@ -4943,7 +5089,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                 [GetSettings][google.logging.v2.ConfigServiceV2.GetSettings].
 
                 See [View default resource settings for Logging]
-                (https://cloud.google.com/logging/docs/default-settings#view-org-settings)
+                (https://docs.cloud.google.com/logging/docs/default-settings#view-org-settings)
                 for more information.
             name (str):
                 Required. The resource for which to retrieve settings.
@@ -4968,8 +5114,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.Settings:
@@ -4981,7 +5129,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -4999,7 +5148,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.get_settings]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -5029,7 +5178,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.Settings:
         r"""Updates the settings for the given resource. This method applies
         to all feature configurations for organization and folders.
@@ -5037,19 +5186,19 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         [UpdateSettings][google.logging.v2.ConfigServiceV2.UpdateSettings]
         fails when any of the following are true:
 
-        -  The value of ``storage_location`` either isn't supported by
-           Logging or violates the location OrgPolicy.
-        -  The ``default_sink_config`` field is set, but it has an
-           unspecified filter write mode.
-        -  The value of ``kms_key_name`` is invalid.
-        -  The associated service account doesn't have the required
-           ``roles/cloudkms.cryptoKeyEncrypterDecrypter`` role assigned
-           for the key.
-        -  Access to the key is disabled.
+        - The value of ``storage_location`` either isn't supported by
+          Logging or violates the location OrgPolicy.
+        - The ``default_sink_config`` field is set, but it has an
+          unspecified filter write mode.
+        - The value of ``kms_key_name`` is invalid.
+        - The associated service account doesn't have the required
+          ``roles/cloudkms.cryptoKeyEncrypterDecrypter`` role assigned
+          for the key.
+        - Access to the key is disabled.
 
         See [Configure default settings for organizations and folders]
-        (https://cloud.google.com/logging/docs/default-settings) for
-        more information.
+        (https://docs.cloud.google.com/logging/docs/default-settings)
+        for more information.
 
         .. code-block:: python
 
@@ -5084,13 +5233,13 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
 
                 See [Configure default settings for organizations and
                 folders]
-                (https://cloud.google.com/logging/docs/default-settings)
+                (https://docs.cloud.google.com/logging/docs/default-settings)
                 for more information.
             settings (googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.Settings):
                 Required. The settings to update.
 
-                See `Enabling CMEK for Log
-                Router <https://cloud.google.com/logging/docs/routing/managed-encryption>`__
+                See `Configure CMEK for Cloud
+                Logging <https://docs.cloud.google.com/logging/docs/routing/managed-encryption>`__
                 for more information.
 
                 This corresponds to the ``settings`` field
@@ -5128,8 +5277,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.Settings:
@@ -5141,7 +5292,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([settings, update_mask, name])
+        flattened_params = [settings, update_mask, name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -5163,7 +5315,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.update_settings]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -5191,7 +5343,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             parent: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListSavedQueriesPager:
         r"""Lists the SavedQueries that were created by the user
         making the request.
@@ -5258,8 +5410,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.config_service_v2.pagers.ListSavedQueriesPager:
@@ -5273,7 +5427,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent])
+        flattened_params = [parent]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -5291,7 +5446,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.list_saved_queries]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -5316,6 +5471,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -5328,7 +5485,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.SavedQuery:
         r"""Returns all data associated with the requested query.
 
@@ -5383,8 +5540,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.SavedQuery:
@@ -5395,7 +5554,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -5413,7 +5573,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.get_saved_query]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -5443,7 +5603,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             saved_query_id: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.SavedQuery:
         r"""Creates a new SavedQuery for the user making the
         request.
@@ -5521,10 +5681,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
                 The ``saved_query_id`` is limited to 100 characters and
                 can include only the following characters:
 
-                -  upper and lower-case alphanumeric characters,
-                -  underscores,
-                -  hyphens,
-                -  periods.
+                - upper and lower-case alphanumeric characters,
+                - underscores,
+                - hyphens,
+                - periods.
 
                 First character has to be alphanumeric.
 
@@ -5534,8 +5694,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.SavedQuery:
@@ -5546,7 +5708,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent, saved_query, saved_query_id])
+        flattened_params = [parent, saved_query, saved_query_id]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -5568,7 +5731,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.create_saved_query]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -5597,7 +5760,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             update_mask: Optional[field_mask_pb2.FieldMask] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> logging_config.SavedQuery:
         r"""Updates an existing SavedQuery.
 
@@ -5674,8 +5837,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.types.SavedQuery:
@@ -5686,7 +5851,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([saved_query, update_mask])
+        flattened_params = [saved_query, update_mask]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -5706,7 +5872,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.update_saved_query]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -5734,7 +5900,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             name: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> None:
         r"""Deletes an existing SavedQuery that was created by
         the user making the request.
@@ -5788,13 +5954,16 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
         """
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([name])
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -5812,7 +5981,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.delete_saved_query]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -5837,7 +6006,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             parent: Optional[str] = None,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> pagers.ListRecentQueriesPager:
         r"""Lists the RecentQueries that were created by the user
         making the request.
@@ -5898,8 +6067,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             googlecloudsdk.generated_clients.gapic_clients.logging_v2.services.config_service_v2.pagers.ListRecentQueriesPager:
@@ -5913,7 +6084,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # Create or coerce a protobuf request object.
         # - Quick check: If we got a request object, we should *not* have
         #   gotten any keyword arguments that map to the request.
-        has_flattened_params = any([parent])
+        flattened_params = [parent]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
         if request is not None and has_flattened_params:
             raise ValueError('If the `request` argument is set, then none of '
                              'the individual field arguments should be set.')
@@ -5931,7 +6103,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.list_recent_queries]
 
-         # Certain fields should be provided within the metadata header;
+        # Certain fields should be provided within the metadata header;
         # add these here.
         metadata = tuple(metadata) + (
             gapic_v1.routing_header.to_grpc_metadata((
@@ -5956,6 +6128,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             method=rpc,
             request=request,
             response=response,
+            retry=retry,
+            timeout=timeout,
             metadata=metadata,
         )
 
@@ -5967,7 +6141,7 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             *,
             retry: OptionalRetry = gapic_v1.method.DEFAULT,
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
-            metadata: Sequence[Tuple[str, str]] = (),
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> operation.Operation:
         r"""Copies a set of log entries from a log bucket to a
         Cloud Storage bucket.
@@ -6009,8 +6183,10 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
 
         Returns:
             google.api_core.operation.Operation:
@@ -6075,6 +6251,8 @@ class ConfigServiceV2Client(metaclass=ConfigServiceV2ClientMeta):
 
 DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(gapic_version=package_version.__version__)
 
+if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"):  # pragma: NO COVER
+    DEFAULT_CLIENT_INFO.protobuf_runtime_version = cloudsdk.google.protobuf.__version__
 
 __all__ = (
     "ConfigServiceV2Client",

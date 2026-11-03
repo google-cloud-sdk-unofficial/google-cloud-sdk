@@ -51,7 +51,6 @@ def _Args(
     support_flex_start=True,
     support_skip_guest_os_shutdown=False,
     support_workload_identity_config=False,
-    support_identity_type=False,
     support_vsock_mode=False,
     support_expose_host_topology=False,
     support_external_ip_tier=False,
@@ -152,9 +151,7 @@ def _Args(
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
   if support_workload_identity_config:
-    instances_flags.AddWorkloadIdentityConfigArgs(
-        parser, support_identity_type=support_identity_type
-    )
+    instances_flags.AddWorkloadIdentityConfigArgs(parser)
   instances_flags.AddRequestValidForDurationArgs(parser)
 
 
@@ -201,7 +198,6 @@ class CreateWithContainer(base.CreateCommand):
   _support_graceful_shutdown = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
-  _support_identity_type = False
   _support_vsock_mode = False
   _support_expose_host_topology = True
   _support_external_ip_tier = False
@@ -225,7 +221,6 @@ class CreateWithContainer(base.CreateCommand):
         support_graceful_shutdown=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
-        support_identity_type=False,
         support_vsock_mode=False,
         support_expose_host_topology=CreateWithContainer._support_expose_host_topology,
         support_external_ip_tier=CreateWithContainer._support_external_ip_tier,
@@ -412,7 +407,6 @@ class CreateWithContainer(base.CreateCommand):
             args,
             compute_client.messages,
             self._support_workload_identity_config,
-            self._support_identity_type,
         )
     )
 
@@ -602,7 +596,6 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_disk_labels = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
-  _support_identity_type = False
 
   @staticmethod
   def Args(parser):
@@ -623,7 +616,6 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
-        support_identity_type=False,
         support_vsock_mode=False,
         support_expose_host_topology=CreateWithContainerBeta._support_expose_host_topology,
         support_external_ip_tier=CreateWithContainerBeta._support_external_ip_tier,
@@ -665,7 +657,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_ipv6_only = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
-  _support_identity_type = True
   _support_vsock_mode = True
   _support_expose_host_topology = True
   _support_external_ip_tier = True
@@ -689,7 +680,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
-        support_identity_type=True,
         support_vsock_mode=True,
         support_expose_host_topology=True,
         support_external_ip_tier=CreateWithContainerAlpha._support_external_ip_tier,

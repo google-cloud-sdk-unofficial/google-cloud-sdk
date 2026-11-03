@@ -80,7 +80,8 @@ class AuthProxyNotFound(exceptions.Error):
       action = (
           install_action
           + (
-              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.14.1"\nwget'
+              # gcloud-disable-gdu-domain
+              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.17.2"\nwget'
               ' "$URL/alloydb-auth-proxy.linux.amd64" -O'
               ' alloydb-auth-proxy\nchmod +x alloydb-auth-proxy\n'
           )
@@ -91,7 +92,8 @@ class AuthProxyNotFound(exceptions.Error):
       action = (
           install_action
           + (
-              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.14.1"\nwget'
+              # gcloud-disable-gdu-domain
+              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.17.2"\nwget'
               ' "$URL/alloydb-auth-proxy.linux.amd64" -O'
               ' alloydb-auth-proxy\nchmod +x alloydb-auth-proxy\n'
           )
@@ -102,7 +104,8 @@ class AuthProxyNotFound(exceptions.Error):
       action = (
           install_action
           + (
-              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.14.1"\nwget'
+              # gcloud-disable-gdu-domain
+              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.17.2"\nwget'
               ' "$URL/alloydb-auth-proxy.linux.arm64" -O'
               ' alloydb-auth-proxy\nchmod +x alloydb-auth-proxy\n'
           )
@@ -113,7 +116,8 @@ class AuthProxyNotFound(exceptions.Error):
       action = (
           install_action
           + (
-              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.14.1"\nwget'
+              # gcloud-disable-gdu-domain
+              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.17.2"\nwget'
               ' "$URL/alloydb-auth-proxy.linux.386" -O'
               ' alloydb-auth-proxy\nchmod +x alloydb-auth-proxy\n'
           )
@@ -124,7 +128,8 @@ class AuthProxyNotFound(exceptions.Error):
       action = (
           install_action
           + (
-              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.14.1"\nwget'
+              # gcloud-disable-gdu-domain
+              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.17.2"\nwget'
               ' "$URL/alloydb-auth-proxy.darwin.arm64" -O'
               ' alloydb-auth-proxy\nchmod +x alloydb-auth-proxy\n'
           )
@@ -135,7 +140,8 @@ class AuthProxyNotFound(exceptions.Error):
       action = (
           install_action
           + (
-              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.14.1"\nwget'
+              # gcloud-disable-gdu-domain
+              '\n\nURL="https://storage.googleapis.com/alloydb-auth-proxy/v1.17.2"\nwget'
               ' "$URL/alloydb-auth-proxy.darwin.amd64" -O'
               ' alloydb-auth-proxy\nchmod +x alloydb-auth-proxy\n'
           )
@@ -146,8 +152,9 @@ class AuthProxyNotFound(exceptions.Error):
       action = (
           install_action
           + (
+              # gcloud-disable-gdu-domain
               '\n\nInvoke-WebRequest -Uri'
-              ' "https://storage.googleapis.com/alloydb-auth-proxy/v1.14.1/alloydb-auth-proxy-x64.exe"'
+              ' "https://storage.googleapis.com/alloydb-auth-proxy/v1.17.2/alloydb-auth-proxy-x64.exe"'
               ' -OutFile "alloydb-auth-proxy.exe"\n'
           )
           + windows_post_install_action
@@ -156,8 +163,9 @@ class AuthProxyNotFound(exceptions.Error):
       action = (
           install_action
           + (
+              # gcloud-disable-gdu-domain
               '\n\nInvoke-WebRequest -Uri'
-              ' "https://storage.googleapis.com/alloydb-auth-proxy/v1.14.1/alloydb-auth-proxy-x86.exe"'
+              ' "https://storage.googleapis.com/alloydb-auth-proxy/v1.17.2/alloydb-auth-proxy-x86.exe"'
               ' -OutFile "alloydb-auth-proxy.exe"\n'
           )
           + windows_post_install_action

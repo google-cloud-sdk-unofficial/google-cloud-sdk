@@ -1279,6 +1279,12 @@ class DataflowProjectsJobsAggregatedRequest(_messages.Message):
       Use GetJob for other JobViews.
 
   Fields:
+    createTimeRange_endTime: Optional. Exclusive end of the interval. If
+      specified, a Timestamp matching this interval will have to be before the
+      end.
+    createTimeRange_startTime: Optional. Inclusive start of the interval. If
+      specified, a Timestamp matching this interval will have to be the same
+      or after the start.
     filter: The kind of filter to use.
     location: The [regional endpoint]
       (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints)
@@ -1291,6 +1297,12 @@ class DataflowProjectsJobsAggregatedRequest(_messages.Message):
       to request additional results in a long list.
     projectId: The project which owns the jobs.
     regionalFanoutRequested: Optional.
+    terminationTimeRange_endTime: Optional. Exclusive end of the interval. If
+      specified, a Timestamp matching this interval will have to be before the
+      end.
+    terminationTimeRange_startTime: Optional. Inclusive start of the interval.
+      If specified, a Timestamp matching this interval will have to be the
+      same or after the start.
     view: Deprecated. ListJobs always returns summaries now. Use GetJob for
       other JobViews.
   """
@@ -1339,14 +1351,18 @@ class DataflowProjectsJobsAggregatedRequest(_messages.Message):
     JOB_VIEW_ALL = 2
     JOB_VIEW_DESCRIPTION = 3
 
-  filter = _messages.EnumField('FilterValueValuesEnum', 1)
-  location = _messages.StringField(2)
-  name = _messages.StringField(3)
-  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(5)
-  projectId = _messages.StringField(6, required=True)
-  regionalFanoutRequested = _messages.BooleanField(7)
-  view = _messages.EnumField('ViewValueValuesEnum', 8)
+  createTimeRange_endTime = _messages.StringField(1)
+  createTimeRange_startTime = _messages.StringField(2)
+  filter = _messages.EnumField('FilterValueValuesEnum', 3)
+  location = _messages.StringField(4)
+  name = _messages.StringField(5)
+  pageSize = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(7)
+  projectId = _messages.StringField(8, required=True)
+  regionalFanoutRequested = _messages.BooleanField(9)
+  terminationTimeRange_endTime = _messages.StringField(10)
+  terminationTimeRange_startTime = _messages.StringField(11)
+  view = _messages.EnumField('ViewValueValuesEnum', 12)
 
 
 class DataflowProjectsJobsCreateRequest(_messages.Message):
@@ -1499,6 +1515,12 @@ class DataflowProjectsJobsListRequest(_messages.Message):
       Use GetJob for other JobViews.
 
   Fields:
+    createTimeRange_endTime: Optional. Exclusive end of the interval. If
+      specified, a Timestamp matching this interval will have to be before the
+      end.
+    createTimeRange_startTime: Optional. Inclusive start of the interval. If
+      specified, a Timestamp matching this interval will have to be the same
+      or after the start.
     filter: The kind of filter to use.
     location: The [regional endpoint]
       (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints)
@@ -1511,6 +1533,12 @@ class DataflowProjectsJobsListRequest(_messages.Message):
       to request additional results in a long list.
     projectId: The project which owns the jobs.
     regionalFanoutRequested: Optional.
+    terminationTimeRange_endTime: Optional. Exclusive end of the interval. If
+      specified, a Timestamp matching this interval will have to be before the
+      end.
+    terminationTimeRange_startTime: Optional. Inclusive start of the interval.
+      If specified, a Timestamp matching this interval will have to be the
+      same or after the start.
     view: Deprecated. ListJobs always returns summaries now. Use GetJob for
       other JobViews.
   """
@@ -1559,14 +1587,18 @@ class DataflowProjectsJobsListRequest(_messages.Message):
     JOB_VIEW_ALL = 2
     JOB_VIEW_DESCRIPTION = 3
 
-  filter = _messages.EnumField('FilterValueValuesEnum', 1)
-  location = _messages.StringField(2)
-  name = _messages.StringField(3)
-  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(5)
-  projectId = _messages.StringField(6, required=True)
-  regionalFanoutRequested = _messages.BooleanField(7)
-  view = _messages.EnumField('ViewValueValuesEnum', 8)
+  createTimeRange_endTime = _messages.StringField(1)
+  createTimeRange_startTime = _messages.StringField(2)
+  filter = _messages.EnumField('FilterValueValuesEnum', 3)
+  location = _messages.StringField(4)
+  name = _messages.StringField(5)
+  pageSize = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(7)
+  projectId = _messages.StringField(8, required=True)
+  regionalFanoutRequested = _messages.BooleanField(9)
+  terminationTimeRange_endTime = _messages.StringField(10)
+  terminationTimeRange_startTime = _messages.StringField(11)
+  view = _messages.EnumField('ViewValueValuesEnum', 12)
 
 
 class DataflowProjectsJobsMessagesListRequest(_messages.Message):
@@ -2155,6 +2187,12 @@ class DataflowProjectsLocationsJobsListRequest(_messages.Message):
       Use GetJob for other JobViews.
 
   Fields:
+    createTimeRange_endTime: Optional. Exclusive end of the interval. If
+      specified, a Timestamp matching this interval will have to be before the
+      end.
+    createTimeRange_startTime: Optional. Inclusive start of the interval. If
+      specified, a Timestamp matching this interval will have to be the same
+      or after the start.
     filter: The kind of filter to use.
     location: The [regional endpoint]
       (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints)
@@ -2167,6 +2205,12 @@ class DataflowProjectsLocationsJobsListRequest(_messages.Message):
       to request additional results in a long list.
     projectId: The project which owns the jobs.
     regionalFanoutRequested: Optional.
+    terminationTimeRange_endTime: Optional. Exclusive end of the interval. If
+      specified, a Timestamp matching this interval will have to be before the
+      end.
+    terminationTimeRange_startTime: Optional. Inclusive start of the interval.
+      If specified, a Timestamp matching this interval will have to be the
+      same or after the start.
     view: Deprecated. ListJobs always returns summaries now. Use GetJob for
       other JobViews.
   """
@@ -2215,14 +2259,18 @@ class DataflowProjectsLocationsJobsListRequest(_messages.Message):
     JOB_VIEW_ALL = 2
     JOB_VIEW_DESCRIPTION = 3
 
-  filter = _messages.EnumField('FilterValueValuesEnum', 1)
-  location = _messages.StringField(2, required=True)
-  name = _messages.StringField(3)
-  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(5)
-  projectId = _messages.StringField(6, required=True)
-  regionalFanoutRequested = _messages.BooleanField(7)
-  view = _messages.EnumField('ViewValueValuesEnum', 8)
+  createTimeRange_endTime = _messages.StringField(1)
+  createTimeRange_startTime = _messages.StringField(2)
+  filter = _messages.EnumField('FilterValueValuesEnum', 3)
+  location = _messages.StringField(4, required=True)
+  name = _messages.StringField(5)
+  pageSize = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(7)
+  projectId = _messages.StringField(8, required=True)
+  regionalFanoutRequested = _messages.BooleanField(9)
+  terminationTimeRange_endTime = _messages.StringField(10)
+  terminationTimeRange_startTime = _messages.StringField(11)
+  view = _messages.EnumField('ViewValueValuesEnum', 12)
 
 
 class DataflowProjectsLocationsJobsMessagesListRequest(_messages.Message):
@@ -9416,6 +9464,30 @@ encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_1', '1')
 encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsJobsAggregatedRequest, 'createTimeRange_endTime', 'createTimeRange.endTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsJobsAggregatedRequest, 'createTimeRange_startTime', 'createTimeRange.startTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsJobsAggregatedRequest, 'terminationTimeRange_endTime', 'terminationTimeRange.endTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsJobsAggregatedRequest, 'terminationTimeRange_startTime', 'terminationTimeRange.startTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsJobsListRequest, 'createTimeRange_endTime', 'createTimeRange.endTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsJobsListRequest, 'createTimeRange_startTime', 'createTimeRange.startTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsJobsListRequest, 'terminationTimeRange_endTime', 'terminationTimeRange.endTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsJobsListRequest, 'terminationTimeRange_startTime', 'terminationTimeRange.startTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsLocationsJobsListRequest, 'createTimeRange_endTime', 'createTimeRange.endTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsLocationsJobsListRequest, 'createTimeRange_startTime', 'createTimeRange.startTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsLocationsJobsListRequest, 'terminationTimeRange_endTime', 'terminationTimeRange.endTime')
+encoding.AddCustomJsonFieldMapping(
+    DataflowProjectsLocationsJobsListRequest, 'terminationTimeRange_startTime', 'terminationTimeRange.startTime')
 encoding.AddCustomJsonFieldMapping(
     DataflowProjectsLocationsTemplatesLaunchRequest, 'dynamicTemplate_gcsPath', 'dynamicTemplate.gcsPath')
 encoding.AddCustomJsonFieldMapping(

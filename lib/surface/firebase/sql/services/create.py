@@ -28,15 +28,31 @@ class Create(base.CreateCommand):
   """Create a new Firebase SQL Connect service."""
 
   detailed_help = {
+      'DESCRIPTION': (
+          """\
+          Create a new Firebase SQL Connect service.
+
+          By default, when `--cloud-sql-instance-id` and
+          `--cloud-sql-database-id` are omitted, a new underlying Cloud SQL
+          instance and database with the same ID as `SERVICE` will be created.
+          Passing `--cloud-sql-instance-id` and `--cloud-sql-database-id` links
+          the new service to an existing Cloud SQL instance and database (or
+          creates them if they do not exist).
+      """
+      ),
       'EXAMPLES': (
           """\
-          To create a service linked to an existing Cloud SQL instance:
+          To create a service with a new default Cloud SQL instance and database:
+
+            $ {command} my-service --location=us-central1
+
+          To create a service linked to an existing Cloud SQL instance and database:
 
             $ {command} my-service --location=us-central1 --cloud-sql-instance-id=my-sql-instance --cloud-sql-database-id=my-db
 
           To create a service with initial SQL migrations:
 
-            $ {command} my-service --location=us-central1 --cloud-sql-instance-id=my-sql-instance --cloud-sql-database-id=my-db --sql-source-dir=./sql
+            $ {command} my-service --location=us-central1 --sql-source-dir=./sql
       """
       ),
   }
@@ -45,15 +61,28 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     flags.AddServicePositionalArg(parser)
     flags.AddLocationFlag(parser, required=True)
-    parser.add_argument(
+    cloud_sql_group = parser.add_group(
+        help=(
+            'Cloud SQL instance and database configuration. If omitted, both'
+            ' default to the service ID and a new Cloud SQL instance and'
+            ' database will be created.'
+        ),
+    )
+    cloud_sql_group.add_argument(
         '--cloud-sql-instance-id',
         required=True,
-        help='Cloud SQL instance ID or resource name to link to the service.',
+        help=(
+            'Cloud SQL instance ID or resource name to link to the service, or'
+            ' to create if it does not exist.'
+        ),
     )
-    parser.add_argument(
+    cloud_sql_group.add_argument(
         '--cloud-sql-database-id',
         required=True,
-        help='Cloud SQL database ID to link to the service.',
+        help=(
+            'Cloud SQL database ID to link to the service, or to create if it'
+            ' does not exist.'
+        ),
     )
     parser.add_argument(
         '--sql-source-dir',

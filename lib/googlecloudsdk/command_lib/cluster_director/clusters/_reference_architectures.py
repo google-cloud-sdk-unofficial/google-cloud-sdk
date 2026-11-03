@@ -206,25 +206,15 @@ REFERENCE_ARCHITECTURE_DEFINITIONS = {
 def ApplyReferenceArchitecture(
     args: Any, message_module: Any, cluster_ref: Any
 ) -> None:
-  """Applies reference architecture or quickstart defaults to arguments."""
+  """Applies reference architecture defaults to arguments."""
   ref_arch = getattr(args, "reference_architecture", None)
-  quickstart = getattr(args, "quickstart_cluster", False)
-  if not ref_arch and not quickstart:
+  if not ref_arch:
     return
 
-  if ref_arch and quickstart:
-    raise errors.ClusterDirectorError(
-        "Cannot specify both --reference-architecture and --quickstart-cluster."
-    )
-
-  if quickstart:
-    spec = REFERENCE_ARCHITECTURE_DEFINITIONS.get("quickstart")
-    label = "--quickstart-cluster"
-  else:
-    spec = cast(
-        Dict[str, Any], REFERENCE_ARCHITECTURE_DEFINITIONS.get(ref_arch)
-    )
-    label = f"'{ref_arch}'"
+  spec = cast(
+      Dict[str, Any], REFERENCE_ARCHITECTURE_DEFINITIONS.get(ref_arch)
+  )
+  label = f"'{ref_arch}'"
 
   if not spec:
     raise errors.ClusterDirectorError(

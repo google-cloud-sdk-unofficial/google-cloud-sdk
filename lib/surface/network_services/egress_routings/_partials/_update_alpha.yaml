@@ -18,6 +18,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: false
   help_text:
     brief: Update an Egress Routing.
     description: Updates the parameters of a single EgressRouting.
@@ -31,7 +33,7 @@
     params:
     - help_text: |-
         Identifier. Name of the EgressRouting resource. It matches pattern
-        `projects/*/locations/*/egressRoutings/<egress_routing>`.
+        `projects/*/locations/*/egressRoutings/{egress_routing}`.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.network_services.v1alpha1_resources:projects_locations_egress_routings
@@ -74,8 +76,8 @@
         help_text: |-
           The resource URI representing the workload, project, or location.
           Examples:
-          "//cloudresourcemanager.googleapis.com/projects/{project_id}"
-          "//run.googleapis.com/projects/{project_id}/locations/{location}/services/*"
+          "//run.googleapis.com/projects/{project_number}"
+          "//run.googleapis.com/projects/{project_id}/locations/{location}/services/{service_name}"
           "//container.googleapis.com/projects/{project_id}/locations/{location}/clusters/{cluster_name}"
           "//container.googleapis.com/projects/{project_id}/locations/{location}/clusters/{cluster_name}/k8s/namespaces/{namespace}"
     - arg_name: gateway

@@ -1110,14 +1110,15 @@ class Scope(_messages.Message):
   r"""Message describing Scope object
 
   Fields:
-    logScope: Required. The full resource name of the `LogScope`. For example:
-      //logging.googleapis.com/projects/myproject/locations/global/logScopes/m
-      y-log-scope
+    logScope: Required. The full resource name of the
+      `logging.googleapis.com/LogScope`. For example: //logging.googleapis.com
+      /projects/myproject/locations/global/logScopes/my-log-scope
     name: Identifier. Name of the resource. The format is:
       projects/{project}/locations/{location}/scopes/{scope} The `{location}`
       field must be set to `global`. The `{scope}` field must be set to
       `_Default`.
-    traceScope: Required. The resource name of the `TraceScope`. For example:
+    traceScope: Required. The unqualified resource name of the
+      `cloudtrace.googleapis.com/TraceScope`. For example:
       projects/myproject/locations/global/traceScopes/my-trace-scope
     updateTime: Output only. Update timestamp. Note: The Update timestamp for
       the default scope is initially unset.

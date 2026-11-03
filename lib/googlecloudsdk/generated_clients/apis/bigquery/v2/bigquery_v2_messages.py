@@ -5917,6 +5917,7 @@ class JobStatistics2(_messages.Message):
       longer be populated.
     schema: Output only. The schema of the results. Present only for
       successful dry run of non-legacy SQL queries.
+    searchIndexingStats: Output only. Search indexing specific statistics.
     searchStatistics: Output only. Search query specific statistics.
     sparkStatistics: Output only. Statistics of a Spark procedure job.
     statementType: Output only. The type of query statement, if valid.
@@ -6175,6 +6176,8 @@ class JobStatistics2(_messages.Message):
       example, S3) because that data stays within the remote cloud.
     undeclaredQueryParameters: Output only. GoogleSQL only: list of undeclared
       query parameters detected during a dry run validation.
+    vectorSearchIndexingStats: Output only. Vector Search indexing specific
+      statistics.
     vectorSearchStatistics: Output only. Vector Search query specific
       statistics.
   """
@@ -6229,19 +6232,21 @@ class JobStatistics2(_messages.Message):
   referencedTables = _messages.MessageField('TableReference', 35, repeated=True)
   reservationUsage = _messages.MessageField('ReservationUsageValueListEntry', 36, repeated=True)
   schema = _messages.MessageField('TableSchema', 37)
-  searchStatistics = _messages.MessageField('SearchStatistics', 38)
-  sparkStatistics = _messages.MessageField('SparkStatistics', 39)
-  statementType = _messages.StringField(40)
-  timeline = _messages.MessageField('QueryTimelineSample', 41, repeated=True)
-  totalBytesBilled = _messages.IntegerField(42)
-  totalBytesProcessed = _messages.IntegerField(43)
-  totalBytesProcessedAccuracy = _messages.StringField(44)
-  totalPartitionsProcessed = _messages.IntegerField(45)
-  totalServicesSkuSlotMs = _messages.IntegerField(46)
-  totalSlotMs = _messages.IntegerField(47)
-  transferredBytes = _messages.IntegerField(48)
-  undeclaredQueryParameters = _messages.MessageField('QueryParameter', 49, repeated=True)
-  vectorSearchStatistics = _messages.MessageField('VectorSearchStatistics', 50)
+  searchIndexingStats = _messages.MessageField('SearchIndexingStats', 38)
+  searchStatistics = _messages.MessageField('SearchStatistics', 39)
+  sparkStatistics = _messages.MessageField('SparkStatistics', 40)
+  statementType = _messages.StringField(41)
+  timeline = _messages.MessageField('QueryTimelineSample', 42, repeated=True)
+  totalBytesBilled = _messages.IntegerField(43)
+  totalBytesProcessed = _messages.IntegerField(44)
+  totalBytesProcessedAccuracy = _messages.StringField(45)
+  totalPartitionsProcessed = _messages.IntegerField(46)
+  totalServicesSkuSlotMs = _messages.IntegerField(47)
+  totalSlotMs = _messages.IntegerField(48)
+  transferredBytes = _messages.IntegerField(49)
+  undeclaredQueryParameters = _messages.MessageField('QueryParameter', 50, repeated=True)
+  vectorSearchIndexingStats = _messages.MessageField('VectorSearchIndexingStats', 51)
+  vectorSearchStatistics = _messages.MessageField('VectorSearchStatistics', 52)
 
 
 class JobStatistics3(_messages.Message):
@@ -8826,6 +8831,20 @@ class ScriptStatistics(_messages.Message):
 
   evaluationKind = _messages.EnumField('EvaluationKindValueValuesEnum', 1)
   stackFrames = _messages.MessageField('ScriptStackFrame', 2, repeated=True)
+
+
+class SearchIndexingStats(_messages.Message):
+  r"""Statistics for a search indexing job. Populated as part of
+  JobStatistics2.
+
+  Fields:
+    baseTable: Output only. The base table for which the search index is being
+      created or refreshed.
+    indexName: Output only. The name of the search index.
+  """
+
+  baseTable = _messages.MessageField('TableReference', 1)
+  indexName = _messages.StringField(2)
 
 
 class SearchStatistics(_messages.Message):
@@ -11717,6 +11736,20 @@ class UserDefinedFunctionResource(_messages.Message):
 
   inlineCode = _messages.StringField(1)
   resourceUri = _messages.StringField(2)
+
+
+class VectorSearchIndexingStats(_messages.Message):
+  r"""Statistics for a vector search indexing job. Populated as part of
+  JobStatistics2.
+
+  Fields:
+    baseTable: Output only. The base table for which the vector index is being
+      created or refreshed.
+    indexName: Output only. The name of the vector index.
+  """
+
+  baseTable = _messages.MessageField('TableReference', 1)
+  indexName = _messages.StringField(2)
 
 
 class VectorSearchStatistics(_messages.Message):

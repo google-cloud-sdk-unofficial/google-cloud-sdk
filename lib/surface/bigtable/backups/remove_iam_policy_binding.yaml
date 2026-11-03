@@ -1,3 +1,5 @@
+hints:
+  read_only: false
 help_text:
   brief: Remove an IAM policy binding from a Cloud Bigtable Backup.
   description: |

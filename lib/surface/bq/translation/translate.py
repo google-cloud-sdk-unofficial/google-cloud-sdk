@@ -31,6 +31,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.util import files
 
 
@@ -238,8 +239,8 @@ def _format_log_result(
   return result
 
 
-def _handle_task_failure(wait_response, result_task):
-  """Checks the task state for failure and raises an exception if needed."""
+def _handle_task_failure(wait_response, result_task) -> bool:
+  """Logs task failure details and returns True if the task failed."""
   if result_task and result_task.state and result_task.state.name == 'FAILED':
     log.error('Workflow wait_response: %s', wait_response)
     if result_task.processingError:
@@ -259,7 +260,8 @@ def _handle_task_failure(wait_response, result_task):
       log.err.Print(f'Task processing error: {error_str}')
     if result_task.resourceErrorDetails:
       log.error('Task resource errors: %s', result_task.resourceErrorDetails)
-    raise exceptions.Error('Failed to retrieve the translated SQL query.')
+    return True
+  return False
 
 
 def _process_workflow_result(wait_response, task_type, args):
@@ -283,9 +285,16 @@ def _process_workflow_result(wait_response, task_type, args):
         f'Successfully saved translation logs to {args.translation_log_file}.'
     )
 
-  _handle_task_failure(wait_response, result_task)
-
-  if not translated_sql:
+  task_failed = _handle_task_failure(wait_response, result_task)
+  if task_failed or not translated_sql:
+    if not args.translation_log_file:
+      log.status.Print('\nTranslation logs:')
+      resource_printer.Print(
+          result,
+          args.format or 'yaml',
+          out=log.status,
+          single=True,
+      )
     raise exceptions.Error('Failed to retrieve the translated SQL query.')
 
   if args.output_file and args.output_file != '-':

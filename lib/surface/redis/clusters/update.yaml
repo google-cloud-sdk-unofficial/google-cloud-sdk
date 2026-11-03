@@ -43,7 +43,7 @@
         arg_value: redis-shared-core-nano
     - arg_name: auth-mode
       api_field: cluster.authorizationMode
-      release_tracks: [ALPHA, BETA]
+      release_tracks: [ALPHA, BETA, GA]
       help_text: |
         Available authorization mode of a Redis cluster.
       choices:
@@ -202,6 +202,37 @@
       help_text: |
         Rotate the server certificates for the cluster. This is allowed only for clusters using a customer-managed CA.
       type: bool
+    - group:
+        mutex: true
+        release_tracks: [ALPHA]
+        hidden: true
+        params:
+        - arg_name: clear-zonal-failure-emulation-spec
+          action: store_true
+          release_tracks: [ALPHA]
+          hidden: true
+          help_text: |
+            Clear the zonal failure emulation specification on the cluster.
+        - arg_name: zonal-failure-emulation-spec
+          api_field: cluster.zonalFailureEmulationSpec
+          release_tracks: [ALPHA]
+          hidden: true
+          help_text: |
+            Specification to emulate zonal failures for internal testing.
+          type: arg_object
+          spec:
+          - api_field: targetMigType
+            required: false
+          - api_field: zones
+            required: true
+          - api_field: errorSource
+            required: false
+          - api_field: errorCode
+            required: false
+          - api_field: operationScope
+            required: false
+          - api_field: vmCreationSuccessRates
+            required: false
     - arg_name: acl-policy
       api_field: cluster.aclPolicy
       release_tracks: [ALPHA, BETA, GA]
@@ -232,6 +263,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAclPolicy
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAuthMode
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateZonalFailureEmulationSpec
     BETA:
       api_version: v1beta1
       modify_request_hooks:

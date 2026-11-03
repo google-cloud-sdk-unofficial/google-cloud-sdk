@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Set the IAM policy for a skill.
     description: Set the IAM policy for a skill.
@@ -30,6 +32,35 @@
     resource:
       help_text: The skill for which to display the IAM policy.
       spec: !REF googlecloudsdk.command_lib.agent_registry.v1alpha_resources:projects_locations_skills
+      is_positional: true
+
+  iam:
+    policy_version: 3
+    set_iam_policy_request_path: googleIamV1SetIamPolicyRequest
+    message_type_overrides:
+      policy: GoogleIamV1Policy
+      set_iam_policy_request: GoogleIamV1SetIamPolicyRequest
+
+- release_tracks: [GA]
+  hints:
+    read_only: false
+  help_text:
+    brief: Set the IAM policy for a skill.
+    description: Set the IAM policy for a skill.
+    examples: |
+      The following command reads an IAM policy defined in a JSON file `policy.json` and sets it
+      for the skill with ID `my-skill`:
+
+        $ {command} my-skill policy.json --location=us-central1
+
+  request:
+    api_version: v1
+    collection: agentregistry.projects.locations.skills
+
+  arguments:
+    resource:
+      help_text: The skill for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.agent_registry.v1_resources:projects_locations_skills
       is_positional: true
 
   iam:

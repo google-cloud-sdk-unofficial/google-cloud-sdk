@@ -867,6 +867,7 @@ def ListCatalogMembers(
     catalog: str,
     page_size: int = 50,
     limit: int = sys.maxsize,
+    include_metadata: bool = False,
 ):
   """Make API call to list members of a specific catalog.
 
@@ -876,19 +877,28 @@ def ListCatalogMembers(
     catalog: Catalog name, for example, 'catalogs/default-cloud-services'.
     page_size: The page size to list. The default page_size is 50.
     limit: The max number of services to display.
+    include_metadata: Whether to request CATALOG_MEMBER_VIEW_FULL and return a
+      dict mapping service name to display name.
 
   Raises:
     exceptions.ListCatalogMembersException: when listing catalog members fails.
     apitools_exceptions.HttpError: Another miscellaneous error with the service.
 
   Returns:
-    List of service names belonging to the catalog.
+    List of service names belonging to the catalog, or a dict mapping service
+    name to display name when include_metadata is True.
   """
   client = _GetClientInstance(_V2BETA_VERSION)
   messages = client.MESSAGES_MODULE
 
+  view = (
+      messages.ServiceusageCatalogsMembersListRequest.ViewValueValuesEnum.CATALOG_MEMBER_VIEW_FULL
+      if include_metadata
+      else None
+  )
   request = messages.ServiceusageCatalogsMembersListRequest(
-      parent=f'{resource}/{catalog}'
+      parent=f'{resource}/{catalog}',
+      view=view,
   )
 
   try:
@@ -900,6 +910,11 @@ def ListCatalogMembers(
         batch_size=page_size,
         field='members',
     )
+    if include_metadata:
+      service_metadata = {}
+      for member in response:
+        service_metadata[member.service] = member.serviceMetadata.displayName
+      return service_metadata
     service_names = []
     for member in response:
       service_names.append(member.service)
@@ -2112,6 +2127,7 @@ def ListServicesV2Beta(
     resource_name = _ORGANIZATION_RESOURCE % organization
 
   services = {}
+  parent = []
   detailed_services = []
   try:
     if enabled:
@@ -2126,7 +2142,7 @@ def ListServicesV2Beta(
           if limit == 0:
             break
           catalog_members = ListCatalogMembers(
-              resource_name, catalog, page_size
+              resource_name, catalog, page_size, include_metadata=True
           )
           if show_details:
             catalog_inheritance = '-'
@@ -2139,22 +2155,22 @@ def ListServicesV2Beta(
               if catalog_inheritance != '-':
                 break
 
-            for member_service in catalog_members:
+            for member_service, title in catalog_members.items():
               if limit == 0:
                 break
-              service_name = member_service
+              services[member_service] = title
               detailed_services.append({
-                  'name': service_name,
+                  'name': member_service,
                   'inheritance': catalog_inheritance,
                   'catalog': catalog,
               })
               limit -= 1
           else:
-            for member_service in catalog_members:
+            for member_service, title in catalog_members.items():
               if limit == 0:
                 break
               if member_service not in services:
-                services[member_service] = ''
+                services[member_service] = title
                 limit -= 1
 
         # Check per-service enablement and populate the fields.
@@ -2173,6 +2189,9 @@ def ListServicesV2Beta(
               if explicit_inheritance != '-':
                 break
 
+            if service_name not in services:
+              services[service_name] = ''
+              parent.append(f'{resource_name}/{service_name}')
             detailed_services.append({
                 'name': service_name,
                 'inheritance': explicit_inheritance,
@@ -2182,36 +2201,53 @@ def ListServicesV2Beta(
           else:
             if service_name not in services:
               services[service_name] = ''
+              parent.append(f'{resource_name}/{service_name}')
               limit -= 1
+
+      for value in range(0, len(parent), 20):
+        response = BatchGetServiceV2Beta(
+            resource_name, parent[value : value + 20]
+        )
+        for service_state in response.services:
+          service_name = '/'.join(service_state.name.split('/')[2:])
+          services[service_name] = service_state.service.displayName
 
     else:
       for public_service in _ListPublicServices(
           page_size=page_size, limit=limit
       ):
-        services[public_service.name] = ''
+        services[public_service.name] = public_service.displayName
       for shared_service in _ListSharedServices(
           resource_name, page_size=page_size, limit=limit
       ):
-        services[shared_service.service.name] = ''
+        services[shared_service.service.name] = (
+            shared_service.service.displayName
+        )
 
     result = []
     if show_details and enabled:
       service_info = collections.namedtuple(
-          'ServiceList', ['name', 'inheritance', 'catalog']
+          'ServiceList', ['name', 'title', 'inheritance', 'catalog']
       )
       for entry in detailed_services:
         result.append(
             service_info(
-                name=entry['name'],
+                name=entry['name'].split('/')[-1],
+                title=services[entry['name']],
                 inheritance=entry['inheritance'],
                 catalog=entry['catalog'],
             )
         )
       result.sort(key=lambda x: (x.name, x.catalog, x.inheritance))
     else:
-      service_info = collections.namedtuple('ServiceList', ['name'])
+      service_info = collections.namedtuple('ServiceList', ['name', 'title'])
       for service in sorted(services):
-        result.append(service_info(name=service))
+        result.append(
+            service_info(
+                name=service.split('/')[-1],
+                title=services[service],
+            )
+        )
 
     return result
   except (

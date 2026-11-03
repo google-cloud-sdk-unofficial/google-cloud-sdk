@@ -412,7 +412,8 @@ class AppLocationResolver(object):
     # the App Engine API request. This prompts a check to see if the App Engine
     # admin API is enabled for that project.
     properties.VALUES.billing.quota_project.Set(
-        properties.VALUES.billing.LEGACY)
+        properties.constants.billing.LEGACY
+    )
     if app.AppEngineAppExists():
       project = properties.VALUES.core.project.GetOrFail()
       return self._GetLocation(project)

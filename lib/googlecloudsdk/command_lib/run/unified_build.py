@@ -24,12 +24,15 @@ from typing import Any
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.run import k8s_object
+from googlecloudsdk.api_lib.run import revision
 from googlecloudsdk.api_lib.run import service as service_lib
 from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import validators
 from googlecloudsdk.command_lib.util.args import map_util
+from googlecloudsdk.core import properties
 from googlecloudsdk.generated_clients.apis.run.v2 import run_v2_messages
 
 _GPU_BUILD_MACHINE_TYPE = 'E2_HIGHCPU_8'
@@ -50,6 +53,7 @@ def GetUnifiedBuildChanges(
     container_args: Any,
     skip_activation_prompt: bool = False,
     service_ref: Any = None,
+    ar_region: str | None = None,
 ) -> list[config_changes.ConfigChanger]:
   """Configures a source container for unified build and returns its changes.
   """
@@ -57,11 +61,13 @@ def GetUnifiedBuildChanges(
   container_key = container_name or ''
   changes = []
 
-  # 1. Load previous build config and source URI (rolling forward legacy
-  # service-level build-* annotations, only for the ingress build container).
-  if _ShouldRollForwardLegacyAnnotations(service, container_args):
+  # 1. Load previous build config (rolling forward legacy service-level build-*
+  # annotations, only for the ingress build container).
+  roll_forward_legacy = _ShouldRollForwardLegacyAnnotations(
+      service, container_args
+  )
+  if roll_forward_legacy:
     build_config = _GetLegacyBuildConfig(service.annotations)
-    source_uri = service.source_location
     changes.extend(
         config_changes.DeleteAnnotationChange(key)
         for key in service_lib.RUN_FUNCTIONS_BUILD_ANNOTATIONS
@@ -69,38 +75,48 @@ def GetUnifiedBuildChanges(
     )
   else:
     build_config = _GetExistingBuildConfig(service, container_name)
-    source_uri = _GetSourceUriFromSourcesAnnotation(service, container_key)
 
-  # 2. Configure source, validate image repo, apply flags to build config.
+  # 2. Configure source bucket.
+  source_uri = (
+      service.source_location
+      if roll_forward_legacy
+      else _GetSourceUriFromSourcesAnnotation(service, container_key)
+  )
   match = re.search(r'gs://([^/]+)/.*', source_uri or '')
   # Like legacy build, source is None if pattern doesn't match.
   container_args.local_context.source_bucket = (
       match.group(1) if match else None
   )
-  image_repository_uri = None
-  if getattr(container_args, 'image', None):
-    repository = artifact_registry.ValidateAndGetArRepository(
-        container_args.image, skip_activation_prompt, enable_by_default=True
-    )
-    validators.ValidateServiceNameFromImage(
-        container_args.image, service_ref.servicesId
-    )
-    image_repository_uri = f'{repository}/{service_ref.servicesId}'
+
+  # 3. Resolve Artifact Registry image repository.
+  build_config.imageRepositoryUri = _ResolveImageRepository(
+      container_args,
+      build_config,
+      service_ref,
+      skip_activation_prompt,
+      ar_region,
+  )
   container_args.image = ''
+
+  # 4. Apply flags to build config.
   build_config = _ApplyFlagsToBuildConfig(
-      container_args, service, build_config, image_repository_uri
+      container_args, service, build_config
   )
 
-  # 3. Emit container command, ABIU base-images, and build_config changes.
+  # 5. Emit container command, ABIU base-images, and build_config changes.
   # Remove previously set command for function builds.
   if build_config.buildpacksBuild and getattr(container_args, 'function', None):
     changes.append(
         config_changes.ContainerCommandChange([], container_name=container_name)
     )
-  # ABIU is default on unless specified otherwise.
+  # ABIU enrollment in `run.googleapis.com/base-images`.
   changes.append(
       _GetBaseImagesAnnotationChange(
-          container_args, container_key, build_config
+          service,
+          container_args,
+          container_key,
+          build_config,
+          roll_forward_legacy=roll_forward_legacy,
       )
   )
   changes.append(
@@ -111,15 +127,59 @@ def GetUnifiedBuildChanges(
   return changes
 
 
+def _ResolveImageRepository(
+    container_args: Any,
+    build_config: _BuildConfiguration,
+    service_ref: Any,
+    skip_activation_prompt: bool,
+    ar_region: str | None,
+) -> str:
+  """Resolves the target Artifact Registry image repository URI."""
+  container_name = container_args.local_context.name
+  image_path = (
+      f'{service_ref.servicesId}/{container_name}'
+      if container_name
+      else service_ref.servicesId
+  )
+  # 1. Explicit --image flag overrides any previous repository.
+  if getattr(container_args, 'image', None):
+    repository = artifact_registry.ValidateAndGetArRepository(
+        container_args.image, skip_activation_prompt, enable_by_default=True
+    )
+    validators.ValidateServiceNameFromImage(
+        container_args.image, service_ref.servicesId
+    )
+    return f'{repository}/{image_path}'
+
+  # 2. Reuse existing imageRepositoryUri (from build-config or legacy
+  # roll-forward).
+  if build_config.imageRepositoryUri:
+    return build_config.imageRepositoryUri
+
+  # 3. Default to `cloud-run-source-deploy` (and mark for creation if missing).
+  # TODO(b/563121521): Remove client-side default repo resolution and creation
+  # once the backend provisions `cloud-run-source-deploy` server-side.
+  ar_repo = docker_util.DockerRepo(
+      project_id=properties.VALUES.core.project.Get(required=True),
+      location_id=ar_region,
+      repo_id='cloud-run-source-deploy',
+  )
+  if artifact_registry.ShouldCreateRepository(
+      ar_repo,
+      skip_activation_prompt=skip_activation_prompt,
+      skip_console_prompt=True,
+      enable_by_default=True,
+  ):
+    container_args.local_context.image_repo_to_create = ar_repo
+  return f'{ar_repo.GetDockerString()}/{image_path}'
+
+
 def _ApplyFlagsToBuildConfig(
     container_args: parser_extensions.Namespace,
     service: service_lib.Service | None,
     config: _BuildConfiguration,
-    image_repository_uri: str | None = None,
 ) -> _BuildConfiguration:
   """Merges a container's build flags on top of `config`."""
-  if image_repository_uri:
-    config.imageRepositoryUri = image_repository_uri
   config.serviceAccount = _ApplyFlag(
       container_args, 'build_service_account', config.serviceAccount
   )
@@ -207,14 +267,20 @@ def _ApplyWorkerConfiguration(
       else None
   )
   worker_pool = _ApplyFlag(container_args, 'build_worker_pool', current_pool)
+  if worker_pool:
+    return _WorkerConfiguration(
+        cloudBuildWorkerConfiguration=_CloudBuildWorkerConfiguration(
+            workerPool=worker_pool
+        )
+    )
   machine_type = _GetBuildMachineType(container_args, service)
-  if not worker_pool and not machine_type:
-    return None
-  return _WorkerConfiguration(
-      cloudBuildWorkerConfiguration=_CloudBuildWorkerConfiguration(
-          workerPool=worker_pool, machineType=machine_type
-      )
-  )
+  if machine_type:
+    return _WorkerConfiguration(
+        cloudBuildWorkerConfiguration=_CloudBuildWorkerConfiguration(
+            machineType=machine_type
+        )
+    )
+  return None
 
 
 def _ShouldRollForwardLegacyAnnotations(
@@ -255,6 +321,9 @@ def _GetLegacyBuildConfig(
     env_vars['GOOGLE_FUNCTION_TARGET'] = function_target
 
   return _BuildConfiguration(
+      imageRepositoryUri=annotations.get(
+          service_lib.RUN_FUNCTIONS_BUILD_IMAGE_URI_ANNOTATION
+      ),
       serviceAccount=annotations.get(
           service_lib.RUN_FUNCTIONS_BUILD_SERVICE_ACCOUNT_ANNOTATION
       ),
@@ -306,24 +375,69 @@ def _GetSourceUriFromSourcesAnnotation(
   return sources.get(container_key) if isinstance(sources, dict) else None
 
 
+def _HasBaseImageAnnotation(
+    service: service_lib.Service | None, container_key: str
+) -> bool:
+  """Returns whether `container_key` is in `run.googleapis.com/base-images`."""
+  if not service:
+    return False
+  raw_base_images = service.template.annotations.get(
+      revision.BASE_IMAGES_ANNOTATION
+  )
+  if not raw_base_images:
+    return False
+  try:
+    base_images = json.loads(raw_base_images)
+  except (json.JSONDecodeError, TypeError) as e:
+    logging.debug('failed to parse base images annotation: %s', e)
+    return False
+  return isinstance(base_images, dict) and bool(base_images.get(container_key))
+
+
 def _GetBaseImagesAnnotationChange(
+    service: service_lib.Service | None,
     container_args: parser_extensions.Namespace,
     container_key: str,
     build_config: _BuildConfiguration,
+    roll_forward_legacy: bool = False,
 ) -> config_changes.BaseImagesAnnotationChange:
-  """Returns the ABIU `run.googleapis.com/base-images` annotation change."""
-  base_image = (
+  """Returns the ABIU `run.googleapis.com/base-images` annotation change.
+
+  When `build_base_image` is set, automatic base image updates are enabled
+  according to the following precedence:
+    1. Explicit `--[no-]automatic-updates` flag.
+    2. Explicit `--base-image` flag (enables automatic updates by default).
+    3. Legacy `run.googleapis.com/build-enable-automatic-updates` service
+       annotation when rolling forward a legacy build.
+    4. Existing `run.googleapis.com/base-images` revision annotation entry for
+       the container (sticky across subsequent deployments).
+
+  Args:
+    service: The existing Cloud Run service, or None if creating a new service.
+    container_args: The parsed arguments for the container.
+    container_key: The annotation key for the container ('' for unnamed).
+    build_config: The resolved build configuration for the container.
+    roll_forward_legacy: Whether legacy build annotations are rolling forward.
+  """
+  build_base_image = (
       build_config.buildpacksBuild.buildBaseImageUri
       if build_config.buildpacksBuild
       else None
   )
-  enable_automatic_updates = (
-      bool(container_args.automatic_updates)
-      if container_args.IsKnownAndSpecified('automatic_updates')
-      else True
-  )
-  if base_image and enable_automatic_updates:
+  if container_args.IsKnownAndSpecified('automatic_updates'):
+    enable_automatic_updates = bool(container_args.automatic_updates)
+  elif container_args.IsKnownAndSpecified('base_image'):
+    enable_automatic_updates = True
+  elif roll_forward_legacy and service:
+    legacy_au = service.annotations.get(
+        service_lib.RUN_FUNCTIONS_BUILD_ENABLE_AUTOMATIC_UPDATES, 'true'
+    )
+    enable_automatic_updates = legacy_au.lower() == 'true'
+  else:
+    enable_automatic_updates = _HasBaseImageAnnotation(service, container_key)
+
+  if build_base_image and enable_automatic_updates:
     return config_changes.BaseImagesAnnotationChange(
-        updates={container_key: base_image}
+        updates={container_key: build_base_image}
     )
   return config_changes.BaseImagesAnnotationChange(deletes=[container_key])

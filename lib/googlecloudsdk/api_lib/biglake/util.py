@@ -31,7 +31,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.credentials import requests
 from six.moves import http_client as httplib
 
-
 quote_plus = parse.quote_plus
 VERSION_MAP = {
     base.ReleaseTrack.ALPHA: 'v1',
@@ -121,6 +120,25 @@ def GetTableName(catalog_id, namespace_id, table_id):
     The table name string.
   """
   return f'projects/{properties.VALUES.core.project.GetOrFail()}/catalogs/{catalog_id}/namespaces/{namespace_id}/tables/{table_id}'
+
+
+def GetViewName(catalog_id, namespace_id, view_id, project_id=None):
+  """Get the view name.
+
+  The name is in the format of
+  projects/{project-id}/catalogs/{catalog-id}/namespaces/{namespace-id}/views/{view-id}.
+
+  Args:
+    catalog_id: The ID of the catalog.
+    namespace_id: The ID of the namespace.
+    view_id: The ID of the view.
+    project_id: Optional ID of the project.
+
+  Returns:
+    The view name string.
+  """
+  project = project_id or properties.VALUES.core.project.GetOrFail()
+  return f'projects/{project}/catalogs/{catalog_id}/namespaces/{namespace_id}/views/{view_id}'
 
 
 def GetParentName():
@@ -674,9 +692,7 @@ def _BuildRefreshOptions(refresh_options_option):
   ):
     refresh_schedule = {}
     if (
-        hasattr(
-            refresh_options_option.refresh_schedule, 'refresh_interval'
-        )
+        hasattr(refresh_options_option.refresh_schedule, 'refresh_interval')
         and refresh_options_option.refresh_schedule.refresh_interval
     ):
       refresh_schedule['refresh-interval'] = (
@@ -997,6 +1013,189 @@ def UpdateTable(catalog_id, namespace_id, table_id, table_data):
         'HTTP request failed. Response: ' + response.text
     )
   return response.text
+
+
+def CreateView(catalog_id, namespace_id, view_data, project_id=None):
+  """Creates an Iceberg view.
+
+  Args:
+      catalog_id: The ID of the catalog.
+      namespace_id: The ID of the namespace.
+      view_data: The JSON data for the view creation request.
+      project_id: Optional ID of the project.
+
+  Returns:
+      The created Iceberg view metadata as JSON.
+
+  Raises:
+      HttpRequestFailError: if error happens with http request, or parsing
+          the http response.
+  """
+  endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
+  project = project_id or properties.VALUES.core.project.GetOrFail()
+  parent_name = (
+      f'projects/{project}/catalogs/{catalog_id}/namespaces/{namespace_id}'
+  )
+  url = f'{endpoint}/iceberg/v1/restcatalog/v1/{parent_name}/views?alt=json'
+  headers = {
+      'Content-Type': 'application/json',
+      'X-Iceberg-Access-Delegation': 'vended-credentials',
+  }
+  response = requests.GetSession().request(
+      'POST', url, data=json.dumps(view_data), headers=headers
+  )
+  if int(response.status_code) not in [httplib.OK, httplib.CREATED]:
+    raise HttpRequestFailError(
+        'HTTP request failed. Response: ' + response.text
+    )
+  return response.text
+
+
+def GetView(catalog_id, namespace_id, view_id, project_id=None):
+  """Gets Iceberg view metadata.
+
+  Args:
+      catalog_id: The ID of the catalog.
+      namespace_id: The ID of the namespace.
+      view_id: The ID of the view.
+      project_id: Optional ID of the project.
+
+  Returns:
+      The Iceberg view metadata as JSON.
+
+  Raises:
+      HttpRequestFailError: if error happens with HTTP request, or parsing
+          the http response.
+  """
+  endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
+  view_name = GetViewName(
+      catalog_id, namespace_id, view_id, project_id=project_id
+  )
+  url = f'{endpoint}/iceberg/v1/restcatalog/v1/{view_name}?alt=json'
+  headers = {
+      'Content-Type': 'application/json',
+      'X-Iceberg-Access-Delegation': 'vended-credentials',
+  }
+  response = requests.GetSession().request('GET', url, headers=headers)
+  if int(response.status_code) != httplib.OK:
+    raise HttpRequestFailError(
+        'HTTP request failed. Response: ' + response.text
+    )
+  return response.text
+
+
+def DeleteView(catalog_id, namespace_id, view_id, project_id=None):
+  """Deletes an Iceberg view.
+
+  Args:
+      catalog_id: The ID of the catalog.
+      namespace_id: The ID of the namespace.
+      view_id: The ID of the view.
+      project_id: Optional ID of the project.
+
+  Raises:
+      HttpRequestFailError: if error happens with HTTP request, or parsing
+          the http response.
+  """
+  endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
+  view_name = GetViewName(
+      catalog_id, namespace_id, view_id, project_id=project_id
+  )
+  url = f'{endpoint}/iceberg/v1/restcatalog/v1/{view_name}?alt=json'
+  headers = {
+      'Content-Type': 'application/json',
+      'X-Iceberg-Access-Delegation': 'vended-credentials',
+  }
+  response = requests.GetSession().request('DELETE', url, headers=headers)
+  if int(response.status_code) not in [httplib.OK, httplib.NO_CONTENT]:
+    raise HttpRequestFailError(
+        'HTTP request failed. Response: ' + response.text
+    )
+
+
+def UpdateView(catalog_id, namespace_id, view_id, view_data, project_id=None):
+  """Updates an Iceberg view.
+
+  Args:
+      catalog_id: The ID of the catalog.
+      namespace_id: The ID of the namespace.
+      view_id: The ID of the view.
+      view_data: The JSON data for the view update request.
+      project_id: Optional ID of the project.
+
+  Returns:
+      The updated Iceberg view metadata as JSON.
+
+  Raises:
+      HttpRequestFailError: if error happens with http request, or parsing
+          the http response.
+  """
+  endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
+  view_name = GetViewName(
+      catalog_id, namespace_id, view_id, project_id=project_id
+  )
+  url = f'{endpoint}/iceberg/v1/restcatalog/v1/{view_name}?alt=json'
+  headers = {
+      'Content-Type': 'application/json',
+      'X-Iceberg-Access-Delegation': 'vended-credentials',
+  }
+  response = requests.GetSession().request(
+      'POST', url, data=json.dumps(view_data), headers=headers
+  )
+  if int(response.status_code) not in [httplib.OK, httplib.CREATED]:
+    raise HttpRequestFailError(
+        'HTTP request failed. Response: ' + response.text
+    )
+  return response.text
+
+
+def ListViews(
+    catalog_id, namespace_id, page_size=None, page_token=None, project_id=None
+):
+  """Lists Iceberg views in a namespace.
+
+  Args:
+      catalog_id: The ID of the catalog.
+      namespace_id: The ID of the namespace.
+      page_size: Optional page size.
+      page_token: Optional page token.
+      project_id: Optional ID of the project.
+
+  Returns:
+      The list of view identifiers as JSON dict.
+
+  Raises:
+      HttpRequestFailError: if error happens with HTTP request, or parsing
+          the http response.
+  """
+  endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
+  project = project_id or properties.VALUES.core.project.GetOrFail()
+  parent_name = (
+      f'projects/{project}/catalogs/{catalog_id}/namespaces/{namespace_id}'
+  )
+  url = f'{endpoint}/iceberg/v1/restcatalog/v1/{parent_name}/views?alt=json'
+  params = []
+  if page_size:
+    params.append(f'pageSize={page_size}')
+  if page_token:
+    params.append(f'pageToken={quote_plus(page_token)}')
+  if params:
+    url += '&' + '&'.join(params)
+  headers = {
+      'Content-Type': 'application/json',
+      'X-Iceberg-Access-Delegation': 'vended-credentials',
+  }
+  response = requests.GetSession().request('GET', url, headers=headers)
+  if int(response.status_code) != httplib.OK:
+    raise HttpRequestFailError(
+        'HTTP request failed. Response: ' + response.text
+    )
+  try:
+    return json.loads(response.text)
+  except ValueError as e:
+    raise HttpRequestFailError(
+        'Failed to parse HTTP response as JSON: ' + str(e)
+    ) from e
 
 
 def ParseHiveTableColumns(columns_data, messages):

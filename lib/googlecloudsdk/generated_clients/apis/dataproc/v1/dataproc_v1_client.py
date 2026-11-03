@@ -1449,7 +1449,7 @@ class DataprocV1(base_api.BaseApiClient):
         request: (DataprocProjectsLocationsKubernetesJobsCancelRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
-        (Operation) The response message.
+        (KubernetesJob) The response message.
       """
       config = self.GetMethodConfig('Cancel')
       return self._RunMethod(
@@ -1465,7 +1465,7 @@ class DataprocV1(base_api.BaseApiClient):
         relative_path='v1/{+name}:cancel',
         request_field='cancelKubernetesJobRequest',
         request_type_name='DataprocProjectsLocationsKubernetesJobsCancelRequest',
-        response_type_name='Operation',
+        response_type_name='KubernetesJob',
         supports_download=False,
     )
 

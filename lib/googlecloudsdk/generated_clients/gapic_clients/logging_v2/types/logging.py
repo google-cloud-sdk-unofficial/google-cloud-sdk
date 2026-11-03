@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,10 +51,10 @@ class DeleteLogRequest(proto.Message):
         log_name (str):
             Required. The resource name of the log to delete:
 
-            -  ``projects/[PROJECT_ID]/logs/[LOG_ID]``
-            -  ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
-            -  ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
-            -  ``folders/[FOLDER_ID]/logs/[LOG_ID]``
+            - ``projects/[PROJECT_ID]/logs/[LOG_ID]``
+            - ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
+            - ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
+            - ``folders/[FOLDER_ID]/logs/[LOG_ID]``
 
             ``[LOG_ID]`` must be URL-encoded. For example,
             ``"projects/my-project-id/logs/syslog"``,
@@ -79,10 +79,10 @@ class WriteLogEntriesRequest(proto.Message):
             all log entries in ``entries`` that do not specify a value
             for ``log_name``:
 
-            -  ``projects/[PROJECT_ID]/logs/[LOG_ID]``
-            -  ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
-            -  ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
-            -  ``folders/[FOLDER_ID]/logs/[LOG_ID]``
+            - ``projects/[PROJECT_ID]/logs/[LOG_ID]``
+            - ``organizations/[ORGANIZATION_ID]/logs/[LOG_ID]``
+            - ``billingAccounts/[BILLING_ACCOUNT_ID]/logs/[LOG_ID]``
+            - ``folders/[FOLDER_ID]/logs/[LOG_ID]``
 
             ``[LOG_ID]`` must be URL-encoded. For example:
 
@@ -95,6 +95,8 @@ class WriteLogEntriesRequest(proto.Message):
             each project, organization, billing account, or folder that
             is receiving new log entries, whether the resource is
             specified in ``logName`` or in an individual log entry.
+
+            Only platform services can write logs to billing accounts.
         resource (google.api.monitored_resource_pb2.MonitoredResource):
             Optional. A default monitored resource object that is
             assigned to all log entries in ``entries`` that do not
@@ -132,17 +134,17 @@ class WriteLogEntriesRequest(proto.Message):
 
             Log entries with timestamps that are more than the `logs
             retention
-            period <https://cloud.google.com/logging/quotas>`__ in the
-            past or more than 24 hours in the future will not be
+            period <https://docs.cloud.google.com/logging/quotas>`__ in
+            the past or more than 24 hours in the future will not be
             available when calling ``entries.list``. However, those log
             entries can still be `exported with
-            LogSinks <https://cloud.google.com/logging/docs/api/tasks/exporting-logs>`__.
+            LogSinks <https://docs.cloud.google.com/logging/docs/routing/overview>`__.
 
             To improve throughput and to avoid exceeding the `quota
-            limit <https://cloud.google.com/logging/quotas>`__ for calls
-            to ``entries.write``, you should try to include several log
-            entries in this list, rather than calling this method for
-            each individual log entry.
+            limit <https://docs.cloud.google.com/logging/quotas>`__ for
+            calls to ``entries.write``, you should try to include
+            several log entries in this list, rather than calling this
+            method for each individual log entry.
         partial_success (bool):
             Optional. Whether a batch's valid entries should be written
             even if some other entry failed due to a permanent error
@@ -236,21 +238,21 @@ class ListLogEntriesRequest(proto.Message):
             specify a specific set of ``LogViews`` that do not include
             the unavailable region.
 
-            -  ``projects/[PROJECT_ID]``
+            - ``projects/[PROJECT_ID]``
 
-            -  ``organizations/[ORGANIZATION_ID]``
+            - ``organizations/[ORGANIZATION_ID]``
 
-            -  ``billingAccounts/[BILLING_ACCOUNT_ID]``
+            - ``billingAccounts/[BILLING_ACCOUNT_ID]``
 
-            -  ``folders/[FOLDER_ID]``
+            - ``folders/[FOLDER_ID]``
 
-            -  ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
-            -  ``organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
-            -  ``billingAccounts/[BILLING_ACCOUNT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``billingAccounts/[BILLING_ACCOUNT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
-            -  ``folders/[FOLDER_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``folders/[FOLDER_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
             Projects listed in the ``project_ids`` field are added to
             this list. A maximum of 100 resources may be specified in a
@@ -258,7 +260,7 @@ class ListLogEntriesRequest(proto.Message):
         filter (str):
             Optional. A filter that chooses which log entries to return.
             For more information, see [Logging query language]
-            (https://cloud.google.com/logging/docs/view/logging-query-language).
+            (https://docs.cloud.google.com/logging/docs/view/logging-query-language).
 
             Only log entries that match the filter are returned. An
             empty filter matches all log entries in the resources listed
@@ -269,7 +271,7 @@ class ListLogEntriesRequest(proto.Message):
 
             To make queries faster, you can make the filter more
             selective by using restrictions on [indexed fields]
-            (https://cloud.google.com/logging/docs/view/logging-query-language#indexed-fields)
+            (https://docs.cloud.google.com/logging/docs/view/logging-query-language#indexed-fields)
             as well as limit the time range of the query by adding range
             restrictions on the ``timestamp`` field.
         order_by (str):
@@ -430,24 +432,24 @@ class ListLogsRequest(proto.Message):
         parent (str):
             Required. The resource name to list logs for:
 
-            -  ``projects/[PROJECT_ID]``
-            -  ``organizations/[ORGANIZATION_ID]``
-            -  ``billingAccounts/[BILLING_ACCOUNT_ID]``
-            -  ``folders/[FOLDER_ID]``
+            - ``projects/[PROJECT_ID]``
+            - ``organizations/[ORGANIZATION_ID]``
+            - ``billingAccounts/[BILLING_ACCOUNT_ID]``
+            - ``folders/[FOLDER_ID]``
         resource_names (MutableSequence[str]):
             Optional. List of resource names to list logs for:
 
-            -  ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
-            -  ``organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
-            -  ``billingAccounts/[BILLING_ACCOUNT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
-            -  ``folders/[FOLDER_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``billingAccounts/[BILLING_ACCOUNT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``folders/[FOLDER_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
 
             To support legacy queries, it could also be:
 
-            -  ``projects/[PROJECT_ID]``
-            -  ``organizations/[ORGANIZATION_ID]``
-            -  ``billingAccounts/[BILLING_ACCOUNT_ID]``
-            -  ``folders/[FOLDER_ID]``
+            - ``projects/[PROJECT_ID]``
+            - ``organizations/[ORGANIZATION_ID]``
+            - ``billingAccounts/[BILLING_ACCOUNT_ID]``
+            - ``folders/[FOLDER_ID]``
 
             The resource name in the ``parent`` field is added to this
             list.
@@ -519,24 +521,28 @@ class TailLogEntriesRequest(proto.Message):
             Required. Name of a parent resource from which to retrieve
             log entries:
 
-            -  ``projects/[PROJECT_ID]``
-            -  ``organizations/[ORGANIZATION_ID]``
-            -  ``billingAccounts/[BILLING_ACCOUNT_ID]``
-            -  ``folders/[FOLDER_ID]``
+            - ``projects/[PROJECT_ID]``
+            - ``organizations/[ORGANIZATION_ID]``
+            - ``billingAccounts/[BILLING_ACCOUNT_ID]``
+            - ``folders/[FOLDER_ID]``
 
             May alternatively be one or more views:
 
-            -  ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
-            -  ``organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
-            -  ``billingAccounts/[BILLING_ACCOUNT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
-            -  ``folders/[FOLDER_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``projects/[PROJECT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``organizations/[ORGANIZATION_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``billingAccounts/[BILLING_ACCOUNT_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
+            - ``folders/[FOLDER_ID]/locations/[LOCATION_ID]/buckets/[BUCKET_ID]/views/[VIEW_ID]``
         filter (str):
-            Optional. Only log entries that match the filter are
-            returned. An empty filter matches all log entries in the
-            resources listed in ``resource_names``. Referencing a parent
-            resource that is not listed in ``resource_names`` will cause
-            the filter to return no results. The maximum length of a
-            filter is 20,000 characters.
+            Optional. A filter that chooses which log entries to return.
+            For more information, see [Logging query language]
+            (https://docs.cloud.google.com/logging/docs/view/logging-query-language).
+
+            Only log entries that match the filter are returned. An
+            empty filter matches all log entries in the resources listed
+            in ``resource_names``. Referencing a parent resource that is
+            not listed in ``resource_names`` will cause the filter to
+            return no results. The maximum length of a filter is 20,000
+            characters.
         buffer_window (google.protobuf.duration_pb2.Duration):
             Optional. The amount of time to buffer log
             entries at the server before being returned to
@@ -602,7 +608,7 @@ class TailLogEntriesResponse(proto.Message):
                     Indicates suppression occurred due to relevant entries being
                     received in excess of rate limits. For quotas and limits,
                     see `Logging API quotas and
-                    limits <https://cloud.google.com/logging/quotas#api-limits>`__.
+                    limits <https://docs.cloud.google.com/logging/quotas#api-limits>`__.
                 NOT_CONSUMED (2):
                     Indicates suppression occurred due to the
                     client not consuming responses quickly enough.

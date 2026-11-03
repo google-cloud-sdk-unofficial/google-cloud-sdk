@@ -233,26 +233,25 @@ def ArgsForClusterRef(
       for the master node group.
       """,
   )
-  if beta or alpha:
-    master_machine_type_group.add_argument(
-        '--master-flexible-config',
-        type=arg_parsers.ArgDict(
-            spec={
-                'cores': _HO_CORES_VALIDATOR,
-                'hardware-class': _HO_HARDWARE_CLASS_VALIDATOR,
-                'num-instances': arg_parsers.BoundedInt(1, 1),
-                'boot-disk-size': arg_parsers.BinarySize(lower_bound='10GB'),
-            }
-        ),
-        metavar='KEY=VALUE',
-        help=(
-            'Configuration for master instances in High Obtainability (HO)'
-            ' mode. Supported keys are: cores (power of 2: 2, 4, 8, 16, 32),'
-            ' hardware-class (STANDARD, PERFORMANCE),'
-            ' num-instances (must be 1 for master),'
-            ' and boot-disk-size (e.g. 100GB).'
-        ),
-    )
+  master_machine_type_group.add_argument(
+      '--master-flexible-config',
+      type=arg_parsers.ArgDict(
+          spec={
+              'cores': _HO_CORES_VALIDATOR,
+              'hardware-class': _HO_HARDWARE_CLASS_VALIDATOR,
+              'num-instances': arg_parsers.BoundedInt(1, 1),
+              'boot-disk-size': arg_parsers.BinarySize(lower_bound='10GB'),
+          }
+      ),
+      metavar='KEY=VALUE',
+      help=(
+          'Configuration for master instances in High Obtainability (HO)'
+          ' mode. Supported keys are: cores (power of 2: 2, 4, 8, 16, 32),'
+          ' hardware-class (STANDARD, PERFORMANCE),'
+          ' num-instances (must be 1 for master),'
+          ' and boot-disk-size (e.g. 100GB).'
+      ),
+  )
 
   worker_machine_type_group = parser.add_argument_group(mutex=True)
   worker_machine_type_group.add_argument(
@@ -297,25 +296,24 @@ def ArgsForClusterRef(
       for the primary worker node group.
       """,
   )
-  if beta or alpha:
-    worker_machine_type_group.add_argument(
-        '--worker-flexible-config',
-        type=arg_parsers.ArgDict(
-            spec={
-                'cores': _HO_CORES_VALIDATOR,
-                'hardware-class': _HO_HARDWARE_CLASS_VALIDATOR,
-                'num-instances': arg_parsers.BoundedInt(lower_bound=1),
-                'boot-disk-size': arg_parsers.BinarySize(lower_bound='10GB'),
-            }
-        ),
-        metavar='KEY=VALUE',
-        help=(
-            'Configuration for primary worker instances in High Obtainability'
-            ' (HO) mode. Supported keys are: cores (power of 2: 2, 4, 8, 16,'
-            ' 32), hardware-class (STANDARD, PERFORMANCE), num-instances'
-            ' (positive integer), and boot-disk-size (e.g. 100GB).'
-        ),
-    )
+  worker_machine_type_group.add_argument(
+      '--worker-flexible-config',
+      type=arg_parsers.ArgDict(
+          spec={
+              'cores': _HO_CORES_VALIDATOR,
+              'hardware-class': _HO_HARDWARE_CLASS_VALIDATOR,
+              'num-instances': arg_parsers.BoundedInt(lower_bound=1),
+              'boot-disk-size': arg_parsers.BinarySize(lower_bound='10GB'),
+          }
+      ),
+      metavar='KEY=VALUE',
+      help=(
+          'Configuration for primary worker instances in High Obtainability'
+          ' (HO) mode. Supported keys are: cores (power of 2: 2, 4, 8, 16,'
+          ' 32), hardware-class (STANDARD, PERFORMANCE), num-instances'
+          ' (positive integer), and boot-disk-size (e.g. 100GB).'
+      ),
+  )
 
   parser.add_argument(
       '--min-secondary-worker-fraction',
@@ -384,26 +382,25 @@ def ArgsForClusterRef(
       for the secondary worker node group.
       """,
   )
-  if beta or alpha:
-    secondary_worker_machine_type_group.add_argument(
-        '--secondary-worker-flexible-config',
-        type=arg_parsers.ArgDict(
-            spec={
-                'cores': _HO_CORES_VALIDATOR,
-                'hardware-class': _HO_HARDWARE_CLASS_VALIDATOR,
-                'num-instances': arg_parsers.BoundedInt(lower_bound=0),
-                'boot-disk-size': arg_parsers.BinarySize(lower_bound='10GB'),
-            }
-        ),
-        metavar='KEY=VALUE',
-        help=(
-            'Configuration for secondary worker instances in High'
-            ' Obtainability (HO) mode. Supported keys are: cores (power of 2:'
-            ' 2, 4, 8, 16, 32), hardware-class (STANDARD, PERFORMANCE),'
-            ' num-instances (non-negative integer), and boot-disk-size (e.g.'
-            ' 100GB).'
-        ),
-    )
+  secondary_worker_machine_type_group.add_argument(
+      '--secondary-worker-flexible-config',
+      type=arg_parsers.ArgDict(
+          spec={
+              'cores': _HO_CORES_VALIDATOR,
+              'hardware-class': _HO_HARDWARE_CLASS_VALIDATOR,
+              'num-instances': arg_parsers.BoundedInt(lower_bound=0),
+              'boot-disk-size': arg_parsers.BinarySize(lower_bound='10GB'),
+          }
+      ),
+      metavar='KEY=VALUE',
+      help=(
+          'Configuration for secondary worker instances in High'
+          ' Obtainability (HO) mode. Supported keys are: cores (power of 2:'
+          ' 2, 4, 8, 16, 32), hardware-class (STANDARD, PERFORMANCE),'
+          ' num-instances (non-negative integer), and boot-disk-size (e.g.'
+          ' 100GB).'
+      ),
+  )
 
   parser.add_argument(
       '--cluster-type',

@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.global_vm_extension_policies import exte
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.PREVIEW)
 class List(base.ListCommand):
   """List Vm Extensions globally."""
 

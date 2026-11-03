@@ -1,0 +1,45 @@
+- release_tracks: [BETA]
+  hints:
+    read_only: true
+  help_text:
+    brief: Describe the Google Chat app configuration of a project
+    description: |
+      Describe the Google Chat app configuration of a Google Cloud project.
+
+      By default, the output includes all settings, so you can save it to a file,
+      edit it, and pass it to `update --config-file`. Use the `--view` flag to
+      modify this behavior. If the project doesn't have a Chat app yet, the
+      command prints an empty configuration.
+    examples: |
+      To describe the Chat app configuration of the current project, run:
+
+        $ {command}
+
+      To describe the Chat app configuration of the project `my-project` in JSON format, run:
+
+        $ {command} --project=my-project --format=json
+
+      To describe the Chat app configuration using the basic view, run:
+
+        $ {command} --view=basic
+  request:
+    collection: gsuiteaddons.projects.chatAppConfig
+    api_version: v1
+  arguments:
+    resource:
+      help_text: The project whose Chat app configuration to describe.
+      spec: !REF googlecloudsdk.command_lib.workspace_add_ons.resources:chat_app_config
+    params:
+    - arg_name: view
+      api_field: view
+      # The API defaults to BASIC, which leaves out interactiveFeatureConfig.
+      # Defaulting to FULL lets the output be passed to `update --config-file`.
+      default: full
+      help_text: Settings to include in the output.
+      choices:
+      - arg_value: basic
+        enum_value: BASIC
+        help_text: All settings except the interactive feature settings.
+      - arg_value: full
+        enum_value: FULL
+        help_text: All settings, including the interactive feature settings.

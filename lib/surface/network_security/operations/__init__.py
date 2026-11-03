@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Operations(base.Group):
   """Manage Network Security Operations."""
   category = base.MANAGEMENT_TOOLS_CATEGORY

@@ -747,6 +747,103 @@
         the instance creation, the instance will only be deployed in 2 zones, and
         stay within the 2 zones for its lifecycle.
       default: null
+    - group:
+        api_field: instance.zonalFailureEmulationSpec
+        required: false
+        hidden: true
+        help_text: |-
+          An INTERNAL only message to specify zonal failure emulation for instance
+          creation or update in integration and e2e testing.
+          This message is only added to v1alpha for testing purposes.
+          Emulates Compute Engine zonal stockouts by default.
+        params:
+        - arg_name: zonal-failure-emulation-spec-target-mig-type
+          api_field: instance.zonalFailureEmulationSpec.targetMigType
+          required: false
+          help_text: |-
+            The target MIG type to emulate failure for.
+            Defaults to DATA_MIGS_ONLY.
+          choices:
+          - arg_value: data-migs-only
+            enum_value: DATA_MIGS_ONLY
+            help_text: |-
+              Emulate failure only for data MIGs.
+          - arg_value: internal-migs-only
+            enum_value: INTERNAL_MIGS_ONLY
+            help_text: |-
+              Emulate failure only for internal voter MIGs.
+          - arg_value: all-migs
+            enum_value: ALL_MIGS
+            help_text: |-
+              Emulate failure for both data and internal voter MIGs.
+        - arg_name: zonal-failure-emulation-spec-zones
+          api_field: instance.zonalFailureEmulationSpec.zones
+          required: true
+          repeated: true
+          help_text: |-
+            The zones in which failure should be emulated.
+        - arg_name: zonal-failure-emulation-spec-error-source
+          api_field: instance.zonalFailureEmulationSpec.errorSource
+          required: false
+          help_text: |-
+            The source of the error to emulate.
+            Defaults to GCE.
+          choices:
+          - arg_value: gce
+            enum_value: GCE
+            help_text: |-
+              Emulate a GCE error (e.g. ZONE_RESOURCE_POOL_EXHAUSTED, QUOTA_EXCEEDED).
+          - arg_value: slm
+            enum_value: SLM
+            help_text: |-
+              Emulate an SLM LRO failure.
+          - arg_value: generic
+            enum_value: GENERIC
+            help_text: |-
+              Emulate a generic error / canonical status error.
+        - arg_name: zonal-failure-emulation-spec-error-code
+          api_field: instance.zonalFailureEmulationSpec.errorCode
+          required: false
+          repeated: false
+          help_text: |-
+            The error code string to emulate (e.g.
+            "ZONE_RESOURCE_POOL_EXHAUSTED", "QUOTA_EXCEEDED", "UNAVAILABLE").
+            Defaults to "ZONE_RESOURCE_POOL_EXHAUSTED".
+        - arg_name: zonal-failure-emulation-spec-operation-scope
+          api_field: instance.zonalFailureEmulationSpec.operationScope
+          required: false
+          help_text: |-
+            The operation scope for triggering the failure. Defaults to
+            ALL_OPERATIONS.
+          choices:
+          - arg_value: create-only
+            enum_value: CREATE_ONLY
+            help_text: |-
+              Trigger failure only during instance creation.
+          - arg_value: update-only
+            enum_value: UPDATE_ONLY
+            help_text: |-
+              Trigger failure only during instance update.
+          - arg_value: all-operations
+            enum_value: ALL_OPERATIONS
+            help_text: |-
+              Trigger failure during both creation and update.
+        - arg_name: zonal-failure-emulation-spec-vm-creation-success-rates
+          api_field: instance.zonalFailureEmulationSpec.vmCreationSuccessRates
+          required: false
+          repeated: true
+          help_text: |-
+            Success rate for VM creation in each zone.
+            This is used to simulate partial stockout errors in each zone.
+            The key is the zone name and the value is the success rate.
+            Success rate is in the range of [0, 1), e.g. 0.9 means 90% of VM creation
+            requests will succeed and 10% will fail. If a zone is specified in the
+            zones field, but not present in this map, then we assume the success rate
+            is 0 (100% failure).
+            This is only used for stockout error emulation.
+          spec:
+          - api_field: key
+          - api_field: value
     - arg_name: request-id
       api_field: requestId
       required: false

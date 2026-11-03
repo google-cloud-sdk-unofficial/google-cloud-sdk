@@ -185,6 +185,15 @@ CONFIGCONNECTOR_WORKLOAD_IDENTITY_DISABLED_ERROR_MSG = """\
 The ConfigConnector-on-GKE addon (--addons=ConfigConnector) requires workload identity to be enabled via the --workload-pool=WORKLOAD_POOL flag.
 """
 
+CONFIGCONNECTOR_ADDON_LAG_WARNING_MSG = (
+    'The ConfigConnector add-on lags behind the latest open-source release '
+    'by 12 months or more. For the latest version, '
+    'CustomResourceDefinition of Google Cloud resources, and '
+    'independent upgrades, install the self-managed Config Connector '
+    'Operator instead: '
+    'https://cloud.google.com/config-connector/docs/how-to/install-manually#switch-add-on'
+)
+
 CLOUDBUILD_STACKDRIVER_KUBERNETES_DISABLED_ERROR_MSG = """\
 Cloud Build for Anthos (--addons=CloudBuild) requires System Logging and Monitoring to be enabled via the --monitoring=SYSTEM and --logging=SYSTEM flags.
 """
@@ -875,6 +884,7 @@ class CreateClusterOptions(object):
       disable_default_snat=None,
       dataplane_v2=None,
       dataplane_v2_optimization_mode=None,
+      enable_dataplane_ebpf_host_routing=None,
       enable_dataplane_v2_metrics=None,
       disable_dataplane_v2_metrics=None,
       enable_dataplane_v2_flow_observability=None,
@@ -1174,6 +1184,7 @@ class CreateClusterOptions(object):
     self.disable_default_snat = disable_default_snat
     self.dataplane_v2 = dataplane_v2
     self.dataplane_v2_optimization_mode = dataplane_v2_optimization_mode
+    self.enable_dataplane_ebpf_host_routing = enable_dataplane_ebpf_host_routing
     self.enable_dataplane_v2_metrics = enable_dataplane_v2_metrics
     self.disable_dataplane_v2_metrics = disable_dataplane_v2_metrics
     self.enable_dataplane_v2_flow_observability = (
@@ -1499,6 +1510,7 @@ class UpdateClusterOptions(object):
       enable_managed_mldiagnostics=None,
       maintenance_interval=None,
       dataplane_v2=None,
+      enable_dataplane_ebpf_host_routing=None,
       enable_dataplane_v2_metrics=None,
       disable_dataplane_v2_metrics=None,
       enable_dataplane_v2_flow_observability=None,
@@ -1729,6 +1741,7 @@ class UpdateClusterOptions(object):
     self.enable_managed_mldiagnostics = enable_managed_mldiagnostics
     self.maintenance_interval = maintenance_interval
     self.dataplane_v2 = dataplane_v2
+    self.enable_dataplane_ebpf_host_routing = enable_dataplane_ebpf_host_routing
     self.enable_dataplane_v2_metrics = enable_dataplane_v2_metrics
     self.disable_dataplane_v2_metrics = disable_dataplane_v2_metrics
     self.enable_dataplane_v2_flow_observability = (
@@ -2223,6 +2236,7 @@ class UpdateNodePoolOptions(object):
       node_architecture_taint_behavior=None,
       add_maintenance_exclusion_until_end_of_support=None,
       remove_maintenance_exclusion_until_end_of_support=None,
+      node_config_update_mode=None,
   ):
     self.enable_autorepair = enable_autorepair
     self.enable_autoupgrade = enable_autoupgrade
@@ -2297,6 +2311,7 @@ class UpdateNodePoolOptions(object):
     self.remove_maintenance_exclusion_until_end_of_support = (
         remove_maintenance_exclusion_until_end_of_support
     )
+    self.node_config_update_mode = node_config_update_mode
 
   def IsAutoscalingUpdate(self):
     return (
@@ -2369,6 +2384,7 @@ class UpdateNodePoolOptions(object):
         or self.enable_workload_log_collection is not None
         or self.add_maintenance_exclusion_until_end_of_support is not None
         or self.remove_maintenance_exclusion_until_end_of_support is not None
+        or self.node_config_update_mode is not None
     )
 
 
@@ -2962,6 +2978,7 @@ class APIAdapter(object):
           )
         if options.workload_pool is None:
           raise util.Error(CONFIGCONNECTOR_WORKLOAD_IDENTITY_DISABLED_ERROR_MSG)
+        log.warning(CONFIGCONNECTOR_ADDON_LAG_WARNING_MSG)
         addons.configConnectorConfig = self.messages.ConfigConnectorConfig(
             enabled=True
         )
@@ -3072,6 +3089,19 @@ class APIAdapter(object):
       cluster.networkConfig.dataplaneV2Config.scalabilityMode = (
           self.messages.DataplaneV2Config.ScalabilityModeValueValuesEnum(
               options.dataplane_v2_optimization_mode
+          )
+      )
+
+    if options.enable_dataplane_ebpf_host_routing is not None:
+      if cluster.networkConfig is None:
+        cluster.networkConfig = self.messages.NetworkConfig()
+      if cluster.networkConfig.dataplaneV2Config is None:
+        cluster.networkConfig.dataplaneV2Config = (
+            self.messages.DataplaneV2Config()
+        )
+      cluster.networkConfig.dataplaneV2Config.ebpfHostRouting = (
+          self.messages.EbpfHostRouting(
+              enabled=options.enable_dataplane_ebpf_host_routing
           )
       )
 
@@ -5320,6 +5350,8 @@ class APIAdapter(object):
           wiz_sensor_proxy_secret_uri=options.wiz_sensor_proxy_secret_uri,
       )
       if options.disable_addons.get(CONFIGCONNECTOR) is not None:
+        if not options.disable_addons.get(CONFIGCONNECTOR):
+          log.warning(CONFIGCONNECTOR_ADDON_LAG_WARNING_MSG)
         addons.configConnectorConfig = self.messages.ConfigConnectorConfig(
             enabled=(not options.disable_addons.get(CONFIGCONNECTOR))
         )
@@ -6377,6 +6409,14 @@ class APIAdapter(object):
       update = self.messages.ClusterUpdate(
           desiredGranularNatConfig=self.messages.GranularNATConfig(
               enabled=options.enable_granular_nat
+          )
+      )
+    if options.enable_dataplane_ebpf_host_routing is not None:
+      update = self.messages.ClusterUpdate(
+          desiredDataplaneV2Config=self.messages.DataplaneV2Config(
+              ebpfHostRouting=self.messages.EbpfHostRouting(
+                  enabled=options.enable_dataplane_ebpf_host_routing
+              )
           )
       )
     if options.network_suite is not None:
@@ -8070,6 +8110,11 @@ class APIAdapter(object):
       if maintenance_policy:
         update_request.maintenancePolicy = maintenance_policy
 
+    if options.node_config_update_mode is not None:
+      update_request.nodeConfigUpdateMode = NodeConfigUpdateModeEnumFromString(
+          self.messages, options.node_config_update_mode
+      )
+
     return update_request
 
   def UpdateNodePool(self, node_pool_ref, options):
@@ -9707,6 +9752,8 @@ class V1Beta1Adapter(V1Adapter):
           wiz_sensor_proxy_secret_uri=options.wiz_sensor_proxy_secret_uri,
       )
       if disable_addons.get(CONFIGCONNECTOR) is not None:
+        if not disable_addons.get(CONFIGCONNECTOR):
+          log.warning(CONFIGCONNECTOR_ADDON_LAG_WARNING_MSG)
         addons.configConnectorConfig = self.messages.ConfigConnectorConfig(
             enabled=(not disable_addons.get(CONFIGCONNECTOR))
         )
@@ -10755,6 +10802,14 @@ class V1Beta1Adapter(V1Adapter):
       update = self.messages.ClusterUpdate(
           desiredGranularNatConfig=self.messages.GranularNATConfig(
               enabled=options.enable_granular_nat
+          )
+      )
+    if options.enable_dataplane_ebpf_host_routing is not None:
+      update = self.messages.ClusterUpdate(
+          desiredDataplaneV2Config=self.messages.DataplaneV2Config(
+              ebpfHostRouting=self.messages.EbpfHostRouting(
+                  enabled=options.enable_dataplane_ebpf_host_routing
+              )
           )
       )
     if options.network_suite is not None:
@@ -13002,6 +13057,22 @@ def LocationPolicyEnumFromString(messages, location_policy):
         messages.NodePoolAutoscaling.LocationPolicyValueValuesEnum.ANY
     )
   return location_policy_enum
+
+
+def NodeConfigUpdateModeEnumFromString(messages, node_config_update_mode):
+  """Converts a node config update mode string to an enum value."""
+  node_config_update_mode_enum = (
+      messages.UpdateNodePoolRequest.NodeConfigUpdateModeValueValuesEnum.NODE_CONFIG_UPDATE_MODE_UNSPECIFIED
+  )
+  if node_config_update_mode == 'LIVE_UPDATE_WITHOUT_DRAIN':
+    node_config_update_mode_enum = (
+        messages.UpdateNodePoolRequest.NodeConfigUpdateModeValueValuesEnum.LIVE_UPDATE_WITHOUT_DRAIN
+    )
+  # elif node_config_update_mode == 'LIVE_UPDATE_WITH_DRAIN':
+  #   node_config_update_mode_enum = (
+  #       messages.UpdateNodePoolRequest.NodeConfigUpdateModeValueValuesEnum.LIVE_UPDATE_WITH_DRAIN
+  #   )
+  return node_config_update_mode_enum
 
 
 def ProjectLocation(project, location):

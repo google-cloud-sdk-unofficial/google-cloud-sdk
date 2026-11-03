@@ -1,6 +1,4 @@
-- hints:
-    read_only: false
-  help_text:
+- help_text:
     brief: |
       Delete a Filestore snapshot.
     description: |

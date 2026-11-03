@@ -180,6 +180,10 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append(
         'settings.ipConfiguration.pscConfig.allowedConsumerProjects'
     )
+  if args.IsKnownAndSpecified('clear_allowed_consumer_endpoints'):
+    cleared_fields.append(
+        'settings.ipConfiguration.pscConfig.allowedConsumerEndpoints'
+    )
   if args.IsKnownAndSpecified('clear_psc_auto_connections'):
     cleared_fields.append(
         'settings.ipConfiguration.pscConfig.pscAutoConnections'
@@ -380,6 +384,11 @@ def AddBaseArgs(parser):
   psc_update_group = parser.add_mutually_exclusive_group()
   flags.AddAllowedPscProjects(psc_update_group)
   flags.AddClearAllowedPscProjects(psc_update_group)
+  psc_endpoints_update_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.AddAllowedConsumerEndpoints(psc_endpoints_update_group, hidden=True)
+  flags.AddClearAllowedConsumerEndpoints(
+      psc_endpoints_update_group, hidden=True
+  )
   ip_update_custom_sans_group = parser.add_mutually_exclusive_group()
   flags.AddCustomSubjectAlternativeNames(ip_update_custom_sans_group)
   flags.AddClearCustomSubjectAlternativeNames(ip_update_custom_sans_group)

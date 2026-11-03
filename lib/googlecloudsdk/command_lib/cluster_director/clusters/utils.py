@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from typing import Any, Optional, Set, Tuple
 
-from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.cluster_director.clusters import _compute
 from googlecloudsdk.command_lib.cluster_director.clusters import _networks
@@ -28,7 +27,6 @@ from googlecloudsdk.command_lib.cluster_director.clusters import _reference_arch
 from googlecloudsdk.command_lib.cluster_director.clusters import _storage
 from googlecloudsdk.command_lib.cluster_director.clusters import _validator
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
-from googlecloudsdk.command_lib.cluster_director.clusters import flag_types
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -54,11 +52,6 @@ def AddClusterNameArgToParser(parser, api_version=None):
   concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)
 
 
-def GetClusterFlagType(api_version: Optional[str] = None) -> dict[str, Any]:  # pylint: disable=g-bare-generic
-  """Returns the cluster spec for the given API version."""
-  return flag_types.FlagTypes(api_version).GetClusterFlagType()
-
-
 class ClusterUtil:
   """Represents a cluster utility class."""
 
@@ -76,18 +69,10 @@ class ClusterUtil:
     self.existing_cluster = existing_cluster
     self.update_mask: Set[str] = update_mask if update_mask else set()
 
-  def MakeClusterFromConfig(self) -> Any:
-    """Returns a cluster message from the config JSON string."""
-    config_dict = self.args.config
-    return messages_util.DictToMessageWithErrorCheck(
-        config_dict, self.message_module.Cluster
-    )
-
   def MakeCluster(self) -> Any:
     """Returns a cluster message."""
     ref_arch = getattr(self.args, "reference_architecture", None)
-    quickstart = getattr(self.args, "quickstart_cluster", False)
-    if ref_arch or quickstart:
+    if ref_arch:
       _reference_architectures.ApplyReferenceArchitecture(
           self.args, self.message_module, self.cluster_ref
       )
@@ -96,7 +81,7 @@ class ClusterUtil:
         self.args, "managed_instance_groups"
     )
 
-    if not ref_arch and not quickstart and not self.args.IsSpecified("config"):
+    if not ref_arch:
       if not self.args.IsSpecified("network") and not self.args.IsSpecified(
           "create_network"
       ):
@@ -147,11 +132,6 @@ class ClusterUtil:
           self.args.labels, self.message_module.Cluster.LabelsValue
       )
     return cluster
-
-  def MakeClusterPatchFromConfig(self):
-    """Returns the cluster message from the config."""
-    cluster = self.MakeClusterFromConfig()
-    return cluster, self.args.update_mask
 
   def MakeClusterPatch(self) -> Tuple[Any, str]:
     """Returns the cluster message with patch fields."""

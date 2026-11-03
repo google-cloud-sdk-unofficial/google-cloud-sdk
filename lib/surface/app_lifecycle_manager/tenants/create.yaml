@@ -1,29 +1,55 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Create a Tenant
-    description: Create a Tenant
-    examples: |-
-      To create the Tenant, run:
+    brief: Create a tenant.
+    description: |-
+      Create an App Lifecycle Manager tenant.
 
-      $ {command}
+      A tenant represents the service producer side of an instance of the
+      service that is created based on a request from a consumer. A tenant
+      usually maps one-to-one to a resource given out to a service consumer.
+    examples: |-
+      To create a tenant named `my-tenant` for the SaaS offering `my-saas` in
+      location `us-central1`, run:
+
+        $ {command} my-tenant --location=us-central1 --saas=my-saas
+
+      To create a tenant named `my-tenant` that has the label `env=prod`, run:
+
+        $ {command} my-tenant --location=us-central1 --saas=my-saas --labels=env=prod
+  ALPHA:
+    help_text:
+      brief: Create a Tenant
+      description: Create a Tenant
+      examples: |-
+        To create the Tenant, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Identifier. The resource name (full URI of the resource) following the standard naming
-        scheme:
+        Tenant to create.
+      ALPHA:
+        help_text: |-
+          Identifier. The resource name (full URI of the resource) following the standard naming
+          scheme:
 
-          "projects/{project}/locations/{location}/tenants/{tenant}"
+            "projects/{project}/locations/{location}/tenants/{tenant}"
       is_positional: true
       request_id_field: tenantId
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:tenant
       required: true
     - arg_name: saas
       help_text: |-
-        A reference to the Saas that defines the product (managed service) that
-        the producer wants to manage with App Lifecycle Manager. Part of the
-        App Lifecycle Manager common data model.
+        SaaS offering that defines the product (managed service) that the
+        service producer manages with App Lifecycle Manager. The SaaS offering
+        cannot be changed after the tenant is created.
+      ALPHA:
+        help_text: |-
+          A reference to the Saas that defines the product (managed service) that
+          the producer wants to manage with App Lifecycle Manager. Part of the
+          App Lifecycle Manager common data model.
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:saas
       resource_method_params:
@@ -34,18 +60,28 @@
       required: false
       repeated: false
       help_text: |-
-        A reference to the consumer resource this SaaS Tenant is representing.
+        Consumer resource that this tenant represents. The consumer resource
+        cannot be changed after it is set.
+      ALPHA:
+        help_text: |-
+          A reference to the consumer resource this SaaS Tenant is representing.
     - arg_name: labels
       api_field: tenant.labels
       required: false
       repeated: true
       help_text: |-
-        The labels on the resource, which can be used for categorization.
-        similar to Kubernetes resource labels.
+        Labels on the resource, which can be used for categorization, similar
+        to Kubernetes resource labels.
+      ALPHA:
+        help_text: |-
+          The labels on the resource, which can be used for categorization.
+          similar to Kubernetes resource labels.
       spec:
       - api_field: key
       - api_field: value
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.tenants

@@ -1,21 +1,42 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Delete a SaaS
-    description: Delete a SaaS
-    examples: |-
-      To delete the SaaS, run:
+    brief: Delete a SaaS offering.
+    description: |-
+      Delete an App Lifecycle Manager SaaS offering.
 
-      $ {command}
+      The command prompts for confirmation before the SaaS offering is deleted.
+    examples: |-
+      To delete the SaaS offering named `my-saas` in location `us-central1`,
+      run:
+
+        $ {command} my-saas --location=us-central1
+
+      To delete the SaaS offering named `my-saas` in location `us-central1`
+      without a confirmation prompt, run:
+
+        $ {command} my-saas --location=us-central1 --quiet
+  ALPHA:
+    help_text:
+      brief: Delete a SaaS
+      description: Delete a SaaS
+      examples: |-
+        To delete the SaaS, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        The resource name of the resource within a service.
+        SaaS offering to delete.
+      ALPHA:
+        help_text: The resource name of the resource within a service.
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:saas
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.saas

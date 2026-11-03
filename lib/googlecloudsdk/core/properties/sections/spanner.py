@@ -14,6 +14,7 @@
 # limitations under the License.
 """Contains the properties for the 'spanner' section."""
 
+from googlecloudsdk.core.properties.completers import COMPLETERS
 from googlecloudsdk.core.properties.types import _Section
 
 
@@ -29,5 +30,5 @@ class _SectionSpanner(_Section):
             ' When an instance is required but not provided by a flag, the'
             ' command will fall back to this value, if set.'
         ),
-        completer='googlecloudsdk.command_lib.spanner.flags:InstanceCompleter',
+        completer=COMPLETERS['InstanceCompleter'],
     )

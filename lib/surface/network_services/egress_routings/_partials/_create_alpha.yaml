@@ -18,6 +18,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: false
   help_text:
     brief: Create an Egress Routing.
     description: Creates a new EgressRouting in a given project and location.
@@ -26,13 +28,13 @@
 
         $ {command} my-egress-routing \
             --location=us-central1 \
-            --gateway=projects/my-project/locations/us-central1/gateways/my-gateway \
-            --sources="workloadUri=run.googleapis.com/projects/my-project/locations/us-central1/services/*"
+            --gateway=//networkservices.googleapis.com/projects/my-project/locations/us-central1/gateways/my-gateway \
+            --sources="workloadUri=//run.googleapis.com/projects/my-project/locations/us-central1/services/my-service"
   arguments:
     params:
     - help_text: |-
         Identifier. Name of the EgressRouting resource. It matches pattern
-        `projects/*/locations/*/egressRoutings/<egress_routing>`.
+        `projects/*/locations/*/egressRoutings/{egress_routing}`.
       is_positional: true
       is_primary_resource: true
       request_id_field: egressRoutingId
@@ -74,8 +76,8 @@
         help_text: |-
           The resource URI representing the workload, project, or location.
           Examples:
-          "//cloudresourcemanager.googleapis.com/projects/{project_id}"
-          "//run.googleapis.com/projects/{project_id}/locations/{location}/services/*"
+          "//run.googleapis.com/projects/{project_number}"
+          "//run.googleapis.com/projects/{project_id}/locations/{location}/services/{service_name}"
           "//container.googleapis.com/projects/{project_id}/locations/{location}/clusters/{cluster_name}"
           "//container.googleapis.com/projects/{project_id}/locations/{location}/clusters/{cluster_name}/k8s/namespaces/{namespace}"
     - arg_name: gateway

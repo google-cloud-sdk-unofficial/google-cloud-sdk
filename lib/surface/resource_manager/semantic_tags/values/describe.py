@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.resource_manager.semantic_tags import flags
 from googlecloudsdk.command_lib.resource_manager.semantic_tags import utils
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):

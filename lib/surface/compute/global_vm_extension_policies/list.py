@@ -50,11 +50,17 @@ class List(base.ListCommand):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
+class ListPreview(List):
   """List Compute Engine global VM extension policies."""
 
   @classmethod
   def Args(cls, parser):
-    super(ListAlpha, cls).Args(parser)
+    super(ListPreview, cls).Args(parser)
     vm_extension_policies_flags.AddScopeFlags(parser)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListPreview):
+  """List Compute Engine global VM extension policies."""

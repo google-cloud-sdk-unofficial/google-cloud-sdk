@@ -753,7 +753,7 @@ class UpdateAlpha(UpdateBeta):
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
     flags.AddGracefulShutdownArgs(parser)
-    flags.AddWorkloadIdentityConfigArgs(parser, support_identity_type=True)
+    flags.AddWorkloadIdentityConfigArgs(parser)
     flags.AddMostDisruptiveAllowedActionArgs(parser)
     flags.AddMinimalActionArgs(parser)
     flags.AddExposeHostTopologyArg(parser)

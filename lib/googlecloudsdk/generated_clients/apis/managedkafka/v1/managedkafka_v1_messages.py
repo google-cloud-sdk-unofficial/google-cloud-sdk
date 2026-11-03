@@ -236,6 +236,14 @@ class Cluster(_messages.Message):
     LabelsValue: Optional. Labels as key value pairs.
 
   Fields:
+    binaryVersion: Optional. The version of the cluster's broker and
+      controller binaries. This field is used for Kafka version upgrades.
+      Kafka requires two-step upgrades: First, broker/controller binaries are
+      upgraded with the `binary_version` field. Then, the metadata version is
+      finalized by incrementing the `kafka_version` field. The binary version
+      must be greater than or equal to the finalized metadata version
+      (`kafka_version`). If not specified during cluster creation, defaults to
+      the cluster's `kafka_version`." Supported values: `3.7.x`, `4.3.x`.
     bootstrapAddress: Output only. The bootstrap address of the Kafka cluster.
       The returned address format is: `bootstrap-...managedkafka.s.cloud.goog`
       or `bootstrap...managedkafka..cloud.goog` (legacy format). ## Examples:
@@ -260,9 +268,10 @@ class Cluster(_messages.Message):
       requested. The effective capacity configuration of the cluster.
     gcpConfig: Required. Configuration properties for a Kafka cluster deployed
       to Google Cloud Platform.
-    kafkaVersion: Optional. The Apache Kafka version of the cluster (for
-      example, `3.7.x`, `4.3.x`). If not specified during cluster creation,
-      defaults to `3.7.x`.
+    kafkaVersion: Optional. The Apache Kafka version of the cluster.
+      Specifically, this value is the finalized metadata version. If not
+      specified during cluster creation, defaults to `3.7.x`. Supported
+      values: `3.7.x`.
     labels: Optional. Labels as key value pairs.
     name: Identifier. The name of the cluster. Structured like:
       projects/{project_number}/locations/{location}/clusters/{cluster_id}
@@ -372,26 +381,27 @@ class Cluster(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  bootstrapAddress = _messages.StringField(1)
-  brokerCapacityConfig = _messages.MessageField('BrokerCapacityConfig', 2)
-  brokerConfigOverrides = _messages.MessageField('BrokerConfigOverridesValue', 3)
-  brokerDetails = _messages.MessageField('BrokerDetails', 4, repeated=True)
-  brokersPerZone = _messages.MessageField('BrokersPerZoneValue', 5)
-  capacityConfig = _messages.MessageField('CapacityConfig', 6)
-  createTime = _messages.StringField(7)
-  effectiveCapacityConfig = _messages.MessageField('EffectiveCapacityConfig', 8)
-  gcpConfig = _messages.MessageField('GcpConfig', 9)
-  kafkaVersion = _messages.StringField(10)
-  labels = _messages.MessageField('LabelsValue', 11)
-  name = _messages.StringField(12)
-  publicClusterDetails = _messages.MessageField('PublicClusterDetails', 13)
-  rebalanceConfig = _messages.MessageField('RebalanceConfig', 14)
-  satisfiesPzi = _messages.BooleanField(15)
-  satisfiesPzs = _messages.BooleanField(16)
-  state = _messages.EnumField('StateValueValuesEnum', 17)
-  tlsConfig = _messages.MessageField('TlsConfig', 18)
-  updateOptions = _messages.MessageField('UpdateOptions', 19)
-  updateTime = _messages.StringField(20)
+  binaryVersion = _messages.StringField(1)
+  bootstrapAddress = _messages.StringField(2)
+  brokerCapacityConfig = _messages.MessageField('BrokerCapacityConfig', 3)
+  brokerConfigOverrides = _messages.MessageField('BrokerConfigOverridesValue', 4)
+  brokerDetails = _messages.MessageField('BrokerDetails', 5, repeated=True)
+  brokersPerZone = _messages.MessageField('BrokersPerZoneValue', 6)
+  capacityConfig = _messages.MessageField('CapacityConfig', 7)
+  createTime = _messages.StringField(8)
+  effectiveCapacityConfig = _messages.MessageField('EffectiveCapacityConfig', 9)
+  gcpConfig = _messages.MessageField('GcpConfig', 10)
+  kafkaVersion = _messages.StringField(11)
+  labels = _messages.MessageField('LabelsValue', 12)
+  name = _messages.StringField(13)
+  publicClusterDetails = _messages.MessageField('PublicClusterDetails', 14)
+  rebalanceConfig = _messages.MessageField('RebalanceConfig', 15)
+  satisfiesPzi = _messages.BooleanField(16)
+  satisfiesPzs = _messages.BooleanField(17)
+  state = _messages.EnumField('StateValueValuesEnum', 18)
+  tlsConfig = _messages.MessageField('TlsConfig', 19)
+  updateOptions = _messages.MessageField('UpdateOptions', 20)
+  updateTime = _messages.StringField(21)
 
 
 class ConnectAccessConfig(_messages.Message):

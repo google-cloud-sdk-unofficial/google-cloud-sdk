@@ -47120,6 +47120,8 @@ class ConfidentialInstanceConfig(_messages.Message):
   Fields:
     confidentialInstanceType: Defines the type of technology used by the
       confidential instance.
+    confidentialParavisorConfig: Defines a set of Confidential Paravisor
+      (SVSM) options.
     enableConfidentialCompute: Defines whether the instance should have
       confidential compute enabled.
   """
@@ -47144,7 +47146,48 @@ class ConfidentialInstanceConfig(_messages.Message):
     TDX = 5
 
   confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
-  enableConfidentialCompute = _messages.BooleanField(2)
+  confidentialParavisorConfig = _messages.MessageField('ConfidentialParavisorConfig', 2)
+  enableConfidentialCompute = _messages.BooleanField(3)
+
+
+class ConfidentialParavisorConfig(_messages.Message):
+  r"""A set of Confidential Paravisor (SVSM) options.
+
+  Enums:
+    ConfidentialTpmTypeValueValuesEnum:
+    SevSnpIrqModeValueValuesEnum:
+
+  Fields:
+    confidentialTpmType: A ConfidentialTpmTypeValueValuesEnum attribute.
+    sevSnpIrqMode: A SevSnpIrqModeValueValuesEnum attribute.
+  """
+
+  class ConfidentialTpmTypeValueValuesEnum(_messages.Enum):
+    r"""ConfidentialTpmTypeValueValuesEnum enum type.
+
+    Values:
+      CONFIDENTIAL_TPM_TYPE_UNSPECIFIED: <no description>
+      EPHEMERAL: <no description>
+      NO_CC_TPM: <no description>
+    """
+    CONFIDENTIAL_TPM_TYPE_UNSPECIFIED = 0
+    EPHEMERAL = 1
+    NO_CC_TPM = 2
+
+  class SevSnpIrqModeValueValuesEnum(_messages.Enum):
+    r"""SevSnpIrqModeValueValuesEnum enum type.
+
+    Values:
+      RESTRICTED: <no description>
+      SEV_SNP_IRQ_MODE_UNSPECIFIED: <no description>
+      UNRESTRICTED: <no description>
+    """
+    RESTRICTED = 0
+    SEV_SNP_IRQ_MODE_UNSPECIFIED = 1
+    UNRESTRICTED = 2
+
+  confidentialTpmType = _messages.EnumField('ConfidentialTpmTypeValueValuesEnum', 1)
+  sevSnpIrqMode = _messages.EnumField('SevSnpIrqModeValueValuesEnum', 2)
 
 
 class ConnectionDraining(_messages.Message):

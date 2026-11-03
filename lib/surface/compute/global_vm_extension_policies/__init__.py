@@ -18,7 +18,10 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
 )
 @base.DefaultUniverseOnly
 class GlobalVmExtensionPolicies(base.Group):

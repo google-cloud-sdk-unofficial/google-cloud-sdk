@@ -1,3 +1,5 @@
+hints:
+  read_only: false
 help_text:
   brief: |
     Update a backup, only supported for the following fields: --expiration-date and --retention-period.

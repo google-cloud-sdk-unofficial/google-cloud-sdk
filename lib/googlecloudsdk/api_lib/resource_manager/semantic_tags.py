@@ -48,6 +48,85 @@ def SemanticTagsMessages(api_version: str = API_VERSION):
   return apis.GetMessagesModule(API_NAME, api_version)
 
 
+def ProjectsSemanticTagKeysService(
+    api_version: str = API_VERSION,
+) -> (
+    cloudresourcemanager_v3_client.CloudresourcemanagerV3.ProjectsLocationsSemanticTagKeysService
+):
+  """Returns the projects locations semanticTagKeys service instance."""
+  return SemanticTagsClient(api_version).projects_locations_semanticTagKeys
+
+
+def _SemanticTagKeyView(view: str | None, request_class):
+  """Returns the request's `view` enum for a `basic` or `full` view name."""
+  if not view:
+    return None
+  return request_class.ViewValueValuesEnum(
+      f'SEMANTIC_TAG_KEY_VIEW_{view.upper()}'
+  )
+
+
+def GetSemanticTagKey(
+    name: str, view: str | None = None, api_version: str = API_VERSION
+) -> cloudresourcemanager_v3_messages.SemanticTagKey:
+  """Gets a SemanticTagKey by its full resource name.
+
+  Args:
+    name: The full resource name of the SemanticTagKey (e.g.
+      'projects/gcp-semantic-tags-catalog/locations/global/semanticTagKeys/'
+      'placement').
+    view: Optional level of detail, `basic` or `full`.
+    api_version: The CRM API version to use.
+
+  Returns:
+    The SemanticTagKey message.
+  """
+  messages = SemanticTagsMessages(api_version)
+  request_class = (
+      messages.CloudresourcemanagerProjectsLocationsSemanticTagKeysGetRequest
+  )
+  return ProjectsSemanticTagKeysService(api_version).Get(
+      request_class(name=name, view=_SemanticTagKeyView(view, request_class))
+  )
+
+
+def ListSemanticTagKeys(
+    parent: str,
+    filter_expr: str | None = None,
+    view: str | None = None,
+    page_size: int | None = None,
+    api_version: str = API_VERSION,
+) -> Iterator[cloudresourcemanager_v3_messages.SemanticTagKey]:
+  """Lists SemanticTagKeys in a catalog location.
+
+  Args:
+    parent: The catalog location resource name (e.g.
+      'projects/gcp-semantic-tags-catalog/locations/global').
+    filter_expr: Optional server-side filter expression.
+    view: Optional level of detail, `basic` or `full`.
+    page_size: Optional maximum number of keys per page.
+    api_version: The CRM API version to use.
+
+  Returns:
+    A generator yielding SemanticTagKey messages.
+  """
+  messages = SemanticTagsMessages(api_version)
+  request_class = (
+      messages.CloudresourcemanagerProjectsLocationsSemanticTagKeysListRequest
+  )
+  return list_pager.YieldFromList(
+      ProjectsSemanticTagKeysService(api_version),
+      request_class(
+          parent=parent,
+          filter=filter_expr,
+          view=_SemanticTagKeyView(view, request_class),
+      ),
+      batch_size_attribute='pageSize',
+      batch_size=page_size,
+      field='semanticTagKeys',
+  )
+
+
 def OrganizationsSemanticTagValuesService(api_version: str = API_VERSION):
   """Returns the organizations locations semanticTagValues service instance."""
   return SemanticTagsClient(

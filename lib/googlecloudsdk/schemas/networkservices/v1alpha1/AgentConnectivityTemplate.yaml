@@ -3,9 +3,6 @@ $schema: "http://json-schema.org/draft-06/schema#"
 title: networkservices v1alpha1 AgentConnectivityTemplate export schema
 description: A gcloud export/import command YAML validation schema.
 type: object
-required:
-- accessPath
-- deploymentModel
 additionalProperties: false
 properties:
   COMMENT:
@@ -60,6 +57,7 @@ properties:
     - BORG
     - CLOUD_RUN
     - GKE
+    - K8S
   deploymentModel:
     description: The deployment model for the gateway.
     type: string
@@ -89,4 +87,13 @@ properties:
     description: |-
       Identifier. Name of the AgentConnectivityTemplate resource. It matches
       pattern `projects/*/locations/*/agentConnectivityTemplates/`.
+    type: string
+  registeredCluster:
+    description: |-
+      Immutable. The RegisteredCluster resource that represents the external
+      cluster where the AgentGateway will be deployed. This field can only
+      be set when `agent_compute` is `K8S` (for hybrid self-managed
+      AgentGateways deployed on external Kubernetes clusters). Format:
+      `projects/{project}/locations/{location}/registeredCl
+      usters/{registered_cluster}`
     type: string

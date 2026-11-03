@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA]
+  hints:
+    read_only: true
+
+  help_text:
+    brief: List Workload Manager evaluations.
+    description: List Workload Manager evaluations.
+    examples: |
+      To list all evaluations in the location ``us-central1'', run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: workloadmanager.projects.locations.evaluations
+    regional_endpoint_compatibility: SUPPORTED
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The location in which to list evaluations.
+      spec: !REF googlecloudsdk.command_lib.workload_manager.resources:location
+
+  output:
+    format: |
+      table(
+        name.scope("evaluations"):label=ID,
+        name.scope("locations").segment(0):label=LOCATION,
+        evaluationType:label=TYPE,
+        description:label=DESCRIPTION,
+        schedule:label=SCHEDULE,
+        createTime.date(tz_default=UTC):label=CREATE_TIME
+      )

@@ -678,12 +678,14 @@ class AutonomousDatabaseProperties(_messages.Message):
       AJD: Autonomous JSON Database.
       APEX: Autonomous Database with the Oracle APEX Application Development
         workload type.
+      LH: Autonomous Database with the Lakehouse workload type.
     """
     DB_WORKLOAD_UNSPECIFIED = 0
     OLTP = 1
     DW = 2
     AJD = 3
     APEX = 4
+    LH = 5
 
   class LicenseTypeValueValuesEnum(_messages.Enum):
     r"""Required. Immutable. The license type used for the Autonomous
@@ -1096,12 +1098,14 @@ class AutonomousDbVersion(_messages.Message):
       AJD: Autonomous JSON Database.
       APEX: Autonomous Database with the Oracle APEX Application Development
         workload type.
+      LH: Autonomous Database with the Lakehouse workload type.
     """
     DB_WORKLOAD_UNSPECIFIED = 0
     OLTP = 1
     DW = 2
     AJD = 3
     APEX = 4
+    LH = 5
 
   dbWorkload = _messages.EnumField('DbWorkloadValueValuesEnum', 1)
   name = _messages.StringField(2)
@@ -1406,6 +1410,9 @@ class CloudVmCluster(_messages.Message):
       projects/{project}/locations/{region}/cloudVmClusters/{cloud_vm_cluster}
     network: Optional. Immutable. The name of the VPC network. Format:
       projects/{project}/global/networks/{network}
+    odbDnsZone: Optional. Immutable. The name of the OdbDnsZone for using
+      custom domain name for the VM Cluster. Format: projects/{project}/locati
+      ons/{location}/odbNetworks/{odb_network}/odbDnsZones/{odb_dns_zone}
     odbNetwork: Optional. Immutable. The name of the OdbNetwork associated
       with the VM Cluster. Format:
       projects/{project}/locations/{location}/odbNetworks/{odb_network} It is
@@ -1453,9 +1460,10 @@ class CloudVmCluster(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 10)
   name = _messages.StringField(11)
   network = _messages.StringField(12)
-  odbNetwork = _messages.StringField(13)
-  odbSubnet = _messages.StringField(14)
-  properties = _messages.MessageField('CloudVmClusterProperties', 15)
+  odbDnsZone = _messages.StringField(13)
+  odbNetwork = _messages.StringField(14)
+  odbSubnet = _messages.StringField(15)
+  properties = _messages.MessageField('CloudVmClusterProperties', 16)
 
 
 class CloudVmClusterProperties(_messages.Message):
@@ -1662,6 +1670,19 @@ class CloudVmClusterProperties(_messages.Message):
   timeZone = _messages.MessageField('TimeZone', 34)
   vmBackupStorageType = _messages.EnumField('VmBackupStorageTypeValueValuesEnum', 35)
   vmFileSystemStorageType = _messages.EnumField('VmFileSystemStorageTypeValueValuesEnum', 36)
+
+
+class Column(_messages.Message):
+  r"""Contains the name and datatype of a column in a SQL Result.
+
+  Fields:
+    name: Required. Name of the column.
+    type: Required. Database-specific type name (e.g., "VARCHAR2(255)",
+      "NUMBER", "DATE", "CLOB")
+  """
+
+  name = _messages.StringField(1)
+  type = _messages.StringField(2)
 
 
 class ConfigureExascaleCloudExadataInfrastructureRequest(_messages.Message):
@@ -1871,6 +1892,110 @@ class DatabaseCharacterSet(_messages.Message):
   characterSet = _messages.StringField(1)
   characterSetType = _messages.EnumField('CharacterSetTypeValueValuesEnum', 2)
   name = _messages.StringField(3)
+
+
+class DatabaseConnection(_messages.Message):
+  r"""Represents DatabaseConnection resource.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the connection.
+
+  Messages:
+    LabelsValue: Optional. Optional: Labels as key-value pairs to organize the
+      resource.
+
+  Fields:
+    connectionString: Required. Immutable. Oracle Easy Connect or TNS
+      connection string. Example: "your-db-
+      host.example.com:1521/YOUR_SERVICE_NAME"
+    createTime: Output only. The create time of the resource.
+    displayName: Optional. Immutable. User-friendly display name for the
+      connection.
+    labels: Optional. Optional: Labels as key-value pairs to organize the
+      resource.
+    lifecycleDetails: Output only. Additional information about the current
+      state of the connection.
+    name: Identifier. The resource name of the DatabaseConnection. Format: pro
+      jects/{project}/locations/{location}/databaseConnections/{database_conne
+      ction}
+    odbNetwork: Optional. Immutable. For Oracle Database@Google cloud
+      resources. Format:
+      projects/{project}/locations/{location}/odbNetworks/{odbNetwork}
+    passwordSecretVersion: Optional. The resource name of the GCP Secret
+      Manager secret version containing the password for the specified
+      username. Format:
+      projects/{project}/secrets/{secret_id}/versions/{version_id} The
+      service's Per-Product Per-Project Service Account (P4SA) must have the
+      'secretmanager.secretAccessor' permission on this secret.
+    state: Output only. The current state of the connection.
+    updateTime: Output only. The update time of the resource.
+    username: Optional. Immutable. The default database username to use for
+      connections.
+    walletSecretVersion: Optional. Optional: The resource name of the GCP
+      Secret Manager secret version containing base64 encoded content of the
+      Oracle Wallet ZIP file required for mTLS/TLS connections. Format:
+      projects/{project}/secrets/{secret_id}/versions/{version_id} The
+      service's Per-Product Per-Project Service Account (P4SA) must have the
+      'secretmanager.secretAccessor' permission on this secret.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the connection.
+
+    Values:
+      STATE_UNSPECIFIED: Default unspecified value.
+      CREATING: Indicates that the resource is in a creating state.
+      ACTIVE: Indicates that the resource is in an active state.
+      FAILED: Indicates that the resource is in a failed state.
+      DELETING: Indicates that the resource is in a deleting state.
+    """
+
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    FAILED = 3
+    DELETING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional.
+
+    Optional: Labels as key-value pairs to organize the resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField(
+        'AdditionalProperty', 1, repeated=True
+    )
+
+  connectionString = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  lifecycleDetails = _messages.StringField(5)
+  name = _messages.StringField(6)
+  odbNetwork = _messages.StringField(7)
+  passwordSecretVersion = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  updateTime = _messages.StringField(10)
+  username = _messages.StringField(11)
+  walletSecretVersion = _messages.StringField(12)
 
 
 class DatabaseConnectionStringProfile(_messages.Message):
@@ -2860,7 +2985,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class EncryptionKey(_messages.Message):
   r"""The encryption key used to encrypt the Autonomous Database.
 
@@ -3346,6 +3470,79 @@ class ExascaleDbStorageVaultProperties(_messages.Message):
   timeZone = _messages.MessageField('TimeZone', 9)
   vmClusterCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
   vmClusterIds = _messages.StringField(11, repeated=True)
+
+
+class ExecuteSqlMetadata(_messages.Message):
+  r"""Any additional metadata information regarding the execution of the SQL
+
+  Enums:
+    StatusValueValuesEnum: Output only. Status of SQL execution.
+
+  Fields:
+    executionDuration: The time duration taken to execute the sql statement.
+    message: Message related to SQL execution. This field can be used to
+      convey size limit related message.
+    partialResult: Set to true if SQL returned a result set larger than the
+      acceptable response size limits and the result was truncated.
+    status: Output only. Status of SQL execution.
+  """
+
+  class StatusValueValuesEnum(_messages.Enum):
+    r"""Output only. Status of SQL execution.
+
+    Values:
+      STATUS_UNSPECIFIED: Default value. Not returned by the service.
+      OK: No error during SQL execution i.e. All SQL statements ran to
+        completion. The "message" will be empty.
+      PARTIAL: Same as OK, except indicates that only partial results were
+        returned. The "message" field will contain details on why results were
+        truncated. `partial_result` is true if and only if `status` is
+        `PARTIAL`.
+      ERROR: The database returned an error while executing the SQL statement.
+        `message` contains the error text returned by Oracle. `sql_results` is
+        empty. The statement runs in autocommit mode; which changes are
+        committed or rolled back follows Oracle Database behavior.
+        Authentication failures, database availability errors, network errors,
+        and timeouts are returned as API errors (AIP-193), not as ERROR.
+    """
+
+    STATUS_UNSPECIFIED = 0
+    OK = 1
+    PARTIAL = 2
+    ERROR = 3
+
+  executionDuration = _messages.StringField(1)
+  message = _messages.StringField(2)
+  partialResult = _messages.BooleanField(3)
+  status = _messages.EnumField('StatusValueValuesEnum', 4)
+
+
+class ExecuteSqlRequest(_messages.Message):
+  r"""The request for `DatabaseConnection.ExecuteSql`.
+
+  Fields:
+    params: Optional. Optional: Bind variables (parameters) to be used with
+      the SQL statement. Supports named bind variables (e.g., :dept_id,
+      :status in Oracle SQL) or positional parameters (:1, :2).
+    sqlStatement: Required. The SQL statement to execute.
+  """
+
+  params = _messages.MessageField('SqlParameter', 1, repeated=True)
+  sqlStatement = _messages.StringField(2)
+
+
+class ExecuteSqlResponse(_messages.Message):
+  r"""Execute a SQL statement response.
+
+  Fields:
+    metadata: Any additional metadata information regarding the execution of
+      the sql statement.
+    sqlResults: SqlResult represents the results for the execution of sql
+      statements.
+  """
+
+  metadata = _messages.MessageField('ExecuteSqlMetadata', 1)
+  sqlResults = _messages.MessageField('SqlResult', 2, repeated=True)
 
 
 class FailoverAutonomousDatabaseRequest(_messages.Message):
@@ -6283,6 +6480,24 @@ class ListDatabaseCharacterSetsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListDatabaseConnectionsResponse(_messages.Message):
+  r"""The response for `DatabaseConnection.List`.
+
+  Fields:
+    databaseConnections: The list of DatabaseConnections.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
+  """
+
+  databaseConnections = _messages.MessageField(
+      'DatabaseConnection', 1, repeated=True
+  )
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListDatabasesResponse(_messages.Message):
   r"""The response for `Database.List`.
 
@@ -6570,6 +6785,22 @@ class ListMinorVersionsResponse(_messages.Message):
 
   minorVersions = _messages.MessageField('MinorVersion', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+
+
+class ListOdbDnsZonesResponse(_messages.Message):
+  r"""The response for `OdbDnsZone.List`.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    odbDnsZones: The list of OdbDnsZones.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  odbDnsZones = _messages.MessageField('OdbDnsZone', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListOdbNetworksResponse(_messages.Message):
@@ -6905,6 +7136,75 @@ class NessieIcebergCatalog(_messages.Message):
   uri = _messages.StringField(2)
 
 
+class OdbDnsZone(_messages.Message):
+  r"""Represents OdbDnsZone resource.
+
+  Enums:
+    StateValueValuesEnum: Output only. State of the OdbDnsZone.
+
+  Messages:
+    LabelsValue: Optional. Labels or tags associated with the resource.
+
+  Fields:
+    createTime: Output only. The date and time that the OdbDnsZone was
+      created.
+    domain: Required. The DNS suffix for the zone. Ex: abc.example.com.
+    labels: Optional. Labels or tags associated with the resource.
+    name: Identifier. The name of the OdbDnsZone resource in the following
+      format: projects/{project}/locations/{location}/odbNetworks/{odb_network
+      }/odbDnsZones/{odb_dns_zone}
+    state: Output only. State of the OdbDnsZone.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the OdbDnsZone.
+
+    Values:
+      STATE_UNSPECIFIED: Default unspecified value.
+      PROVISIONING: Indicates that the resource is in a provisioning state.
+      AVAILABLE: Indicates that the resource is in an available state.
+      INACTIVE: Indicates that the resource is available but inactive.
+      TERMINATING: Indicates that the resource is in a terminating state.
+      FAILED: Indicates that the resource is in a failed state.
+    """
+    STATE_UNSPECIFIED = 0
+    PROVISIONING = 1
+    AVAILABLE = 2
+    INACTIVE = 3
+    TERMINATING = 4
+    FAILED = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels or tags associated with the resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  domain = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
+
+
 class OdbNetwork(_messages.Message):
   r"""Represents OdbNetwork resource.
 
@@ -6927,6 +7227,14 @@ class OdbNetwork(_messages.Message):
       format: projects/{project}/locations/{region}/odbNetworks/{odb_network}
     network: Required. The name of the VPC network in the following format:
       projects/{project}/global/networks/{network}
+    reconciling: Output only. Indicates whether the OdbNetwork is currently
+      reconciling changes.
+    serviceConnectivityConfig: Optional. Configuration to enable the service
+      (Oracledatabase@Google Cloud) to establish connectivity to the database.
+      This should be specified if you intend to associate this OdbNetwork with
+      a DatabaseConnection resource to `ExecuteSQL` on the database, or to
+      create a ServiceIntegration with the Database. Please don't specify it
+      otherwise to avoid complicating the network setup.
     state: Output only. State of the ODB Network.
   """
 
@@ -6976,7 +7284,11 @@ class OdbNetwork(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
   network = _messages.StringField(6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
+  reconciling = _messages.BooleanField(7)
+  serviceConnectivityConfig = _messages.MessageField(
+      'ServiceConnectivityConfig', 8
+  )
+  state = _messages.EnumField('StateValueValuesEnum', 9)
 
 
 class OdbSubnet(_messages.Message):
@@ -7843,6 +8155,167 @@ class OracledatabaseProjectsLocationsDatabaseCharacterSetsListRequest(_messages.
   pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(3)
   parent = _messages.StringField(4, required=True)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest(
+    _messages.Message
+):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest
+
+  object.
+
+  Fields:
+    databaseConnection: A DatabaseConnection resource to be passed as the
+      request body.
+    databaseConnectionId: Required. The ID of the DatabaseConnection to
+      create. This value is restricted to (^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$)
+      and must be a maximum of 63 characters in length. The value must start
+      with a letter and end with a letter or a number.
+    parent: Required. The parent value for the DatabaseConnection in the
+      following format: projects/{project}/locations/{location}.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  databaseConnection = _messages.MessageField('DatabaseConnection', 1)
+  databaseConnectionId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest(
+    _messages.Message
+):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest
+
+  object.
+
+  Fields:
+    name: Required. The name of the resource in the following format: projects
+      /{project}/locations/{location}/databaseConnections/{database_connection
+      }.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest(
+    _messages.Message
+):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest
+
+  object.
+
+  Fields:
+    executeSqlRequest: A ExecuteSqlRequest resource to be passed as the
+      request body.
+    name: Required. The name of the DatabaseConnection in the following
+      format: projects/{project}/locations/{location}/databaseConnections/{dat
+      abase_connection}.
+  """
+
+  executeSqlRequest = _messages.MessageField('ExecuteSqlRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest(
+    _messages.Message
+):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest object.
+
+  Fields:
+    name: Required. The name of the DatabaseConnection in the following
+      format: projects/{project}/locations/{location}/databaseConnections/{dat
+      abase_connection}.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsListRequest(
+    _messages.Message
+):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsListRequest object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+    orderBy: Optional. An expression for ordering the results of the request.
+    pageSize: Optional. The maximum number of items to return. If unspecified,
+      at most 50 DatabaseConnections will be returned. The maximum value is
+      1000; values above 1000 will be coerced to 1000.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent value for the DatabaseConnection in the
+      following format: projects/{project}/locations/{location}.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest(
+    _messages.Message
+):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest object.
+
+  Fields:
+    databaseConnection: A DatabaseConnection resource to be passed as the
+      request body.
+    name: Identifier. The resource name of the DatabaseConnection. Format: pro
+      jects/{project}/locations/{location}/databaseConnections/{database_conne
+      ction}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the
+      DatabaseConnection should be updated. A field specified in the mask is
+      overwritten. If a mask isn't provided then all the fields in the
+      DatabaseConnection are overwritten.
+  """
+
+  databaseConnection = _messages.MessageField('DatabaseConnection', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest(
+    _messages.Message
+):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest object.
+
+  Fields:
+    name: Required. The name of the DatabaseConnection to test. Format: projec
+      ts/{project}/locations/{location}/databaseConnections/{database_connecti
+      on}
+    testDatabaseConnectionRequest: A TestDatabaseConnectionRequest resource to
+      be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  testDatabaseConnectionRequest = _messages.MessageField(
+      'TestDatabaseConnectionRequest', 2
+  )
 
 
 class OracledatabaseProjectsLocationsDatabasesGetRequest(_messages.Message):
@@ -9031,6 +9504,92 @@ class OracledatabaseProjectsLocationsOdbNetworksListRequest(_messages.Message):
   parent = _messages.StringField(5, required=True)
 
 
+class OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesCreateRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesCreateRequest
+  object.
+
+  Fields:
+    odbDnsZone: A OdbDnsZone resource to be passed as the request body.
+    odbDnsZoneId: Required. The ID of the OdbDnsZone to create. This value is
+      restricted to (^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$) and must be a maximum
+      of 63 characters in length. The value must start with a letter and end
+      with a letter or a number.
+    parent: Required. The parent value for the OdbDnsZone in the following
+      format:
+      projects/{project}/locations/{location}/odbNetworks/{odb_network}.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  odbDnsZone = _messages.MessageField('OdbDnsZone', 1)
+  odbDnsZoneId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesDeleteRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the resource in the following format: projects
+      /{project}/locations/{location}/odbNetworks/{odb_network}/odbDnsZones/{o
+      db_dns_zone}.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of the OdbDnsZone in the following format: projec
+      ts/{project}/locations/{location}/odbNetworks/{odb_network}/odbDnsZones/
+      {odb_dns_zone}.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+    orderBy: Optional. An expression for ordering the results of the request.
+    pageSize: Optional. The maximum number of items to return. If unspecified,
+      at most 50 OdbDnsZones will be returned. The maximum value is 1000;
+      values above 1000 will be coerced to 1000.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent value for the OdbDnsZone in the following
+      format:
+      projects/{project}/locations/{location}/odbNetworks/{odb_network}.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
 class OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsCreateRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsCreateRequest
   object.
@@ -9142,6 +9701,34 @@ class OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsPatchRequest(_messages
 
   name = _messages.StringField(1, required=True)
   odbSubnet = _messages.MessageField('OdbSubnet', 2)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsOdbNetworksPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksPatchRequest object.
+
+  Fields:
+    name: Identifier. The name of the OdbNetwork resource in the following
+      format: projects/{project}/locations/{region}/odbNetworks/{odb_network}
+    odbNetwork: A OdbNetwork resource to be passed as the request body.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the OdbNetwork
+      should be updated. A field specified in the mask is updated. If a mask
+      isn't provided, the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value). To
+      clear or unset a field, the field must be explicitly specified in the
+      `update_mask`.
+  """
+
+  name = _messages.StringField(1, required=True)
+  odbNetwork = _messages.MessageField('OdbNetwork', 2)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
 
@@ -9523,6 +10110,23 @@ class PolarisIcebergCatalog(_messages.Message):
   uri = _messages.StringField(5)
 
 
+class PscInterfaceConfig(_messages.Message):
+  r"""Configuration for a Private Service Connect (PSC) interface used by
+
+  Oracledatabase@Google Cloud to establish private connectivity to the
+  database.
+
+  Fields:
+    networkAttachment: Optional. The resource name of the Network Attachment
+      that Oracledatabase@Google Cloud will use to establish private
+      connectivity to the database via a Private Service Connect Interface
+      (PSC-I). Format: projects/{project}/regions/{region}/networkAttachments/
+      {network_attachment}
+  """
+
+  networkAttachment = _messages.StringField(1)
+
+
 class RefreshAutonomousDatabaseRequest(_messages.Message):
   r"""Request message for RefreshAutonomousDatabase method.
 
@@ -9581,6 +10185,16 @@ class RestoreAutonomousDatabaseRequest(_messages.Message):
   restoreTime = _messages.StringField(1)
 
 
+class Row(_messages.Message):
+  r"""A single row from a sql result.
+
+  Fields:
+    values: List of values in a row of sql result.
+  """
+
+  values = _messages.MessageField('Value', 1, repeated=True)
+
+
 class ScheduledOperationDetails(_messages.Message):
   r"""Details of scheduled operation. https://docs.oracle.com/en-
   us/iaas/api/#/en/database/20160918/datatypes/ScheduledOperationDetails
@@ -9619,6 +10233,23 @@ class ScheduledOperationDetails(_messages.Message):
   dayOfWeek = _messages.EnumField('DayOfWeekValueValuesEnum', 1)
   startTime = _messages.MessageField('TimeOfDay', 2)
   stopTime = _messages.MessageField('TimeOfDay', 3)
+
+
+class ServiceConnectivityConfig(_messages.Message):
+  r"""Configuration to enable the service (Oracledatabase@Google Cloud) to
+
+  establish connectivity to the database. This should be specified if you
+  intend to associate this OdbNetwork with a DatabaseConnection resource to
+  `ExecuteSQL` on the database, or to create a ServiceIntegration with the
+  Database. Please don't specify it otherwise to avoid complicating the
+  network setup.
+
+  Fields:
+    pscInterfaceConfig: Optional. Configuration for Private Service Connect
+      (PSC) interface.
+  """
+
+  pscInterfaceConfig = _messages.MessageField('PscInterfaceConfig', 1)
 
 
 class SourceConfig(_messages.Message):
@@ -9723,6 +10354,41 @@ class SourceConfig(_messages.Message):
   refreshableMode = _messages.EnumField('RefreshableModeValueValuesEnum', 9)
   sourceType = _messages.EnumField('SourceTypeValueValuesEnum', 10)
   useLatestAvailableBackup = _messages.BooleanField(11)
+
+
+class SqlParameter(_messages.Message):
+  r"""Represents a bind variable (parameter) for SQL execution.
+
+  Fields:
+    name: Optional. The name of the SQL bind parameter (excluding the leading
+      colon, e.g. "id"). If omitted, parameters bind positionally based on
+      their order in the list.
+    typeName: Optional. Optional: Datatype hint for the parameter (e.g.,
+      "VARCHAR2", "NUMBER", "DATE", "TIMESTAMP"). If omitted, the Oracle
+      driver will infer the type from the value string.
+    value: Required. Use protobuf.Value so clients can pass ints, bools, and
+      strings natively.
+  """
+
+  name = _messages.StringField(1)
+  typeName = _messages.StringField(2)
+  value = _messages.MessageField('extra_types.JsonValue', 3)
+
+
+class SqlResult(_messages.Message):
+  r"""SqlResult represents the result for the execution of a sql statement.
+
+  Fields:
+    affectedRowCount: Optional. The number of rows affected by DML statements
+      (e.g., INSERT, UPDATE, DELETE, MERGE). Unset or 0 for SELECT / DDL
+      statements.
+    columns: List of columns included in the result, including data type.
+    rows: Rows returned by the SQL statement.
+  """
+
+  affectedRowCount = _messages.IntegerField(1)
+  columns = _messages.MessageField('Column', 2, repeated=True)
+  rows = _messages.MessageField('Row', 3, repeated=True)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -9899,6 +10565,22 @@ class TestConnectionAssignmentError(_messages.Message):
   message = _messages.StringField(4)
 
 
+class TestDatabaseConnectionRequest(_messages.Message):
+  r"""Request message for `DatabaseConnection.TestDatabaseConnection`."""
+
+
+class TestDatabaseConnectionResponse(_messages.Message):
+  r"""Response message for `DatabaseConnection.TestDatabaseConnection`.
+
+  Fields:
+    errorMessage: Error message if the test connection failed.
+    success: Whether the test connection was successful.
+  """
+
+  errorMessage = _messages.StringField(1)
+  success = _messages.BooleanField(2)
+
+
 class TestGoldengateConnectionAssignmentRequest(_messages.Message):
   r"""Request message for TestGoldengateConnectionAssignment.
 
@@ -9994,6 +10676,19 @@ class TimeZone(_messages.Message):
 
   id = _messages.StringField(1)
   version = _messages.StringField(2)
+
+
+class Value(_messages.Message):
+  r"""A single value in a row from a sql result.
+
+  Fields:
+    nullValue: Set to true if the cell value is NULL.
+    value: The cell value represented in string format. Timestamps should be
+      converted using RFC3339Nano format.
+  """
+
+  nullValue = _messages.BooleanField(1)
+  value = _messages.StringField(2)
 
 
 encoding.AddCustomJsonFieldMapping(

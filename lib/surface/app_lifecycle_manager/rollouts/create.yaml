@@ -1,20 +1,48 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Create a Rollout
-    description: Create a Rollout
-    examples: |-
-      To create the Rollout, run:
+    brief: Create a rollout.
+    description: |-
+      Create an App Lifecycle Manager rollout.
 
-      $ {command}
+      A rollout represents a single execution of rolling out a release to the
+      target units, including its results. The rollout follows the settings of
+      the rollout kind that it stems from.
+    examples: |-
+      To create a rollout named `my-rollout` in location `us-central1` that
+      rolls out the release `my-release` according to the rollout kind
+      `my-rollout-kind`, run:
+
+        $ {command} my-rollout --location=us-central1 --release=my-release --rollout-kind=my-rollout-kind
+
+      To create a rollout named `my-rollout` that rolls out the release
+      `my-release` only to units that have the label `env=prod`, run:
+
+        $ {command} my-rollout --location=us-central1 --release=my-release --rollout-kind=my-rollout-kind --unit-filter="unit.labels['env'] == 'prod'"
+
+      To create a rollout named `my-rollout` that rolls out to all locations at
+      once and has the label `env=prod`, run:
+
+        $ {command} my-rollout --location=us-central1 --release=my-release --rollout-kind=my-rollout-kind --rollout-orchestration-strategy=Google.Cloud.Simple.AllAtOnce --labels=env=prod
+  ALPHA:
+    help_text:
+      brief: Create a Rollout
+      description: Create a Rollout
+      examples: |-
+        To create the Rollout, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Identifier. The resource name (full URI of the resource) following the standard naming
-        scheme:
+        Rollout to create.
+      ALPHA:
+        help_text: |-
+          Identifier. The resource name (full URI of the resource) following the standard naming
+          scheme:
 
-          "projects/{project}/locations/{location}/rollout/{rollout_id}"
+            "projects/{project}/locations/{location}/rollout/{rollout_id}"
       is_positional: true
       is_primary_resource: true
       request_id_field: rolloutId
@@ -26,8 +54,12 @@
         params:
         - arg_name: release
           help_text: |-
-            Name of the Release that gets rolled out to target Units.
-            Required if no other type of release is specified.
+            Release that is rolled out to the target units. The release cannot
+            be changed after the rollout is created.
+          ALPHA:
+            help_text: |-
+              Name of the Release that gets rolled out to target Units.
+              Required if no other type of release is specified.
           is_positional: false
           is_primary_resource: false
           resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:release
@@ -35,9 +67,15 @@
             rollout.release: '{__relative_name__}'
           required: false
         - arg_name: flag-release
+          # The Flags API is not public in v1.
+          release_tracks: [ALPHA, BETA]
           help_text: |-
-            Name of the Flag Release that gets rolled out to target Units.
-            Required if no other type of release is specified.
+            Flag release that is rolled out to the target units. The flag
+            release cannot be changed after the rollout is created.
+          ALPHA:
+            help_text: |-
+              Name of the Flag Release that gets rolled out to target Units.
+              Required if no other type of release is specified.
           is_positional: false
           is_primary_resource: false
           resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_release
@@ -49,20 +87,39 @@
       required: false
       repeated: false
       help_text: |-
-        The strategy to use for executing this rollout. If not provided, the
-        strategy from Rollout Type will be used.
+        Strategy to use for executing this rollout. Supported values are
+        `Google.Cloud.Simple.AllAtOnce`,
+        `Google.Cloud.Simple.OneLocationAtATime`,
+        `Google.Cloud.Progressive.Gradual.v1`, and
+        `Google.Cloud.Progressive.SingleLocation.v1`. If not set, the strategy
+        from the rollout kind is used.
+      ALPHA:
+        help_text: |-
+          The strategy to use for executing this rollout. If not provided, the
+          strategy from Rollout Type will be used.
     - arg_name: unit-filter
       api_field: rollout.unitFilter
       required: false
       repeated: false
       help_text: |-
-        CEL(https://github.com/google/cel-spec) formatted filter string against
-        Unit. The filter will be applied to determine the eligible unit population.
-        This filter can only reduce, but not expand the scope of the rollout. If
-        not provided, the unit_filter from the RolloutType will be used.
+        Filter, in Common Expression Language (CEL) format, that selects the
+        eligible units. The filter can only reduce, not expand, the scope of
+        the rollout. If empty, the unit filter from the rollout kind is used.
+        For more information about CEL, see
+        https://github.com/google/cel-spec.
+      ALPHA:
+        help_text: |-
+          CEL(https://github.com/google/cel-spec) formatted filter string against
+          Unit. The filter will be applied to determine the eligible unit population.
+          This filter can only reduce, but not expand the scope of the rollout. If
+          not provided, the unit_filter from the RolloutType will be used.
     - arg_name: rollout-kind
       help_text: |-
-        Name of the RolloutKind this rollout is stemming from and adhering to.
+        Rollout kind that this rollout stems from and adheres to. The rollout
+        kind cannot be changed after the rollout is created.
+      ALPHA:
+        help_text: |-
+          Name of the RolloutKind this rollout is stemming from and adhering to.
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:rollout_kind
@@ -73,20 +130,33 @@
         api_field: rollout.control
         required: false
         help_text: |-
-          RolloutControl provides a way to request a change to the execution of a
-          Rollout by pausing or canceling it.
+          Rollout control, which requests a change to the execution of the
+          rollout, such as pausing or canceling it. Requests can only be made
+          when the rollout is in a non-terminal state.
+        ALPHA:
+          help_text: |-
+            RolloutControl provides a way to request a change to the execution of a
+            Rollout by pausing or canceling it.
         params:
         - group:
             mutex: true
             help_text: |-
-              Arguments for the action params.
+              Action parameters.
+            ALPHA:
+              help_text: Arguments for the action params.
             params:
             - group:
                 api_field: rollout.control.runParams
                 required: false
                 help_text: |-
-                  Parameters for the RUN action controlling the behavior of the rollout
-                  when it is resumed from a PAUSED state.
+                  Parameters for the `run` action that control the behavior of
+                  the rollout when it is resumed from a paused state. By
+                  default, the rollout retries failed operations when resumed.
+                  Can be specified only when `--control-action=run`.
+                ALPHA:
+                  help_text: |-
+                    Parameters for the RUN action controlling the behavior of the rollout
+                    when it is resumed from a PAUSED state.
                 params:
                 - arg_name: retry-failed-operations
                   api_field: rollout.control.runParams.retryFailedOperations
@@ -94,45 +164,73 @@
                   required: true
                   type: bool
                   help_text: |-
-                    If true, the rollout will retry failed operations when resumed.
-                    This is applicable only the current state of the Rollout is PAUSED and
-                    the requested action is RUN.
+                    Retry failed operations when the rollout is resumed. Applies
+                    only if the rollout is paused.
+                  ALPHA:
+                    help_text: |-
+                      If true, the rollout will retry failed operations when resumed.
+                      This is applicable only the current state of the Rollout is PAUSED and
+                      the requested action is RUN.
         - arg_name: control-action
           api_field: rollout.control.action
           required: true
           help_text: |-
-            Action to be performed on the Rollout.
-            The default behavior is to run the rollout until it naturally reaches a
-            terminal state.
+            Action to perform on the rollout. By default, the rollout runs
+            until it naturally reaches a terminal state.
+          ALPHA:
+            help_text: |-
+              Action to be performed on the Rollout.
+              The default behavior is to run the rollout until it naturally reaches a
+              terminal state.
           choices:
           - arg_value: run
             enum_value: ROLLOUT_ACTION_RUN
             help_text: |-
-              Run the Rollout until it naturally reaches a terminal state.
-              A rollout requested to run will progress through all natural Rollout
-              States (such as RUNNING -> SUCCEEDED or RUNNING -> FAILED).
-              If retriable errors are encountered during the rollout, the rollout
-              will paused by default and can be resumed by re-requesting this RUN
-              action.
+              Run the rollout until it naturally reaches a terminal state. A
+              rollout requested to run progresses through all natural rollout
+              states, such as from running to succeeded or from running to
+              failed. If errors that can be retried occur during the rollout,
+              the rollout is paused by default and can be resumed by requesting
+              the `run` action again.
+            ALPHA:
+              help_text: |-
+                Run the Rollout until it naturally reaches a terminal state.
+                A rollout requested to run will progress through all natural Rollout
+                States (such as RUNNING -> SUCCEEDED or RUNNING -> FAILED).
+                If retriable errors are encountered during the rollout, the rollout
+                will paused by default and can be resumed by re-requesting this RUN
+                action.
           - arg_value: pause
             enum_value: ROLLOUT_ACTION_PAUSE
             help_text: |-
-              Pause the Rollout until it is resumed (i.e. RUN is requested).
+              Pause the rollout until it is resumed (that is, until the `run`
+              action is requested).
+            ALPHA:
+              help_text: |-
+                Pause the Rollout until it is resumed (i.e. RUN is requested).
           - arg_value: cancel
             enum_value: ROLLOUT_ACTION_CANCEL
             help_text: |-
-              Cancel the Rollout permanently.
+              Cancel the rollout permanently.
+            ALPHA:
+              help_text: Cancel the Rollout permanently.
     - arg_name: labels
       api_field: rollout.labels
       required: false
       repeated: true
       help_text: |-
-        The labels on the resource, which can be used for categorization.
-        similar to Kubernetes resource labels.
+        Labels on the resource, which can be used for categorization, similar
+        to Kubernetes resource labels.
+      ALPHA:
+        help_text: |-
+          The labels on the resource, which can be used for categorization.
+          similar to Kubernetes resource labels.
       spec:
       - api_field: key
       - api_field: value
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.rollouts

@@ -367,6 +367,19 @@
         help_text: |-
           Parsing of the Spec on create and update is strict, meaning that
           parsing errors in the spec contents will fail the API call.
+    - arg_name: deployments
+      help_text: |-
+        The deployments linked directly to this spec.
+        Format is
+        `projects/{project}/locations/{location}/deployments/{deployment}`
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.apihub.v1_resources:projects_locations_deployments
+      resource_method_params:
+        googleCloudApihubV1Spec.deployments: '{__relative_name__}'
+      required: false
+      repeated: true
+      clearable: true
   request:
     api_version: v1
     collection:

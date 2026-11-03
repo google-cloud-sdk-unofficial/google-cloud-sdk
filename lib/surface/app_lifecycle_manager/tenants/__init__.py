@@ -18,7 +18,37 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Saas(base.Group):
+  category = base.SAAS_CATEGORY
+  detailed_help = {
+      'brief': 'Manage App Lifecycle Manager tenants.',
+      'DESCRIPTION': """
+          Manage App Lifecycle Manager tenants. A tenant represents the
+          service producer side of an instance of the service that is created
+          based on a request from a consumer. A tenant usually maps one-to-one
+          to a resource given out to a service consumer.
+      """,
+      'EXAMPLES': """
+          To create a tenant named `my-tenant` for the SaaS offering `my-saas`
+          in location `us-central1`, run:
+
+            $ {command} create my-tenant --location=us-central1 --saas=my-saas
+
+          To list the names of all tenants in location `us-central1`, run:
+
+            $ {command} list --location=us-central1 --format="value(name)"
+
+          To describe the tenant named `my-tenant` in location `us-central1`,
+          run:
+
+            $ {command} describe my-tenant --location=us-central1
+      """,
+  }
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SaasAlpha(base.Group):
   category = base.SAAS_CATEGORY
   detailed_help = {'brief': 'Manage App Lifecycle Manager tenants.'}

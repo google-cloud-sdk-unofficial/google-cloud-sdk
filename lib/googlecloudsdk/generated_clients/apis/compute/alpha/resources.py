@@ -178,7 +178,7 @@ class Collections(enum.Enum):
       '{+folder}/global/operations/{operation}',
       {
           '':
-              'folders/{foldersId}/global/operations/{operation}',
+              'folders/{folder}/global/operations/{operation}',
       },
       ['folder', 'operation'],
       True
@@ -1183,7 +1183,7 @@ class Collections(enum.Enum):
       '{+folder}/zones/{zone}/operations/{operation}',
       {
           '':
-              'folders/{foldersId}/zones/{zone}/operations/{operation}',
+              'folders/{folder}/zones/{zone}/operations/{operation}',
       },
       ['folder', 'zone', 'operation'],
       True
@@ -1200,7 +1200,7 @@ class Collections(enum.Enum):
       '{+organization}/zones/{zone}/operations/{operation}',
       {
           '':
-              'organizations/{organizationsId}/zones/{zone}/operations/'
+              'organizations/{organization}/zones/{zone}/operations/'
               '{operation}',
       },
       ['organization', 'zone', 'operation'],

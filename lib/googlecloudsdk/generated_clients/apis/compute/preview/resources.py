@@ -140,6 +140,26 @@ class Collections(enum.Enum):
       ['folder', 'globalVmExtensionPolicy'],
       True
   )
+  FOLDERROLLOUTPLANS = (
+      'folderRolloutPlans',
+      '{+folder}/global/rolloutPlans/{rolloutPlan}',
+      {
+          '':
+              'folders/{folder}/global/rolloutPlans/{rolloutPlan}',
+      },
+      ['folder', 'rolloutPlan'],
+      True
+  )
+  FOLDERROLLOUTS = (
+      'folderRollouts',
+      '{+folder}/global/rollouts/{rollout}',
+      {
+          '':
+              'folders/{folder}/global/rollouts/{rollout}',
+      },
+      ['folder', 'rollout'],
+      True
+  )
   FOLDERZONEVMEXTENSIONPOLICIES = (
       'folderZoneVmExtensionPolicies',
       '{+folder}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
@@ -184,7 +204,7 @@ class Collections(enum.Enum):
       '{+folder}/global/operations/{operation}',
       {
           '':
-              'folders/{foldersId}/global/operations/{operation}',
+              'folders/{folder}/global/operations/{operation}',
       },
       ['folder', 'operation'],
       True
@@ -1074,7 +1094,7 @@ class Collections(enum.Enum):
       '{+folder}/zones/{zone}/operations/{operation}',
       {
           '':
-              'folders/{foldersId}/zones/{zone}/operations/{operation}',
+              'folders/{folder}/zones/{zone}/operations/{operation}',
       },
       ['folder', 'zone', 'operation'],
       True
@@ -1091,7 +1111,7 @@ class Collections(enum.Enum):
       '{+organization}/zones/{zone}/operations/{operation}',
       {
           '':
-              'organizations/{organizationsId}/zones/{zone}/operations/'
+              'organizations/{organization}/zones/{zone}/operations/'
               '{operation}',
       },
       ['organization', 'zone', 'operation'],

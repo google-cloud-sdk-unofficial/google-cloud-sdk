@@ -91,7 +91,10 @@ KERNEL_PANIC_PATTERNS = [
 KERNEL_PANIC_MESSAGE = (
     'The VM is experiencing a kernel panic. This problem is specific to your '
     'VM and its workload, so you may need to investigate based on a "kernel '
-    'panic" error in your serial console logs.\n')
+    'panic" error in your serial console logs. '
+    'For troubleshooting steps, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/'
+    'troubleshooting-linux-boot-issues#kernel-panic\n')
 
 
 # /etc/fstab: a device/filesystem entry could not be mounted -> emergency mode.
@@ -105,9 +108,10 @@ FSTAB_MESSAGE = (
     'The VM dropped into emergency mode because a device or filesystem listed '
     'in /etc/fstab could not be mounted. Identify the failing device (often a '
     'wrong or stale UUID) in the serial console logs, then comment out or fix '
-    'the entry in /etc/fstab from a rescue environment. For instructions on '
-    'setting up a rescue environment, see: '
-    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+    'the entry in /etc/fstab from a rescue environment. '
+    'For troubleshooting steps, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/'
+    'troubleshooting-linux-boot-issues#fstab\n')
 
 GRUB_PATTERNS = [
     r'error:.*(?:grub\.cfg|vmlinuz|initrd|initramfs).* not found',
@@ -122,8 +126,10 @@ GRUB_MESSAGE = (
     'kernel image (for example a missing /boot/grub/grub.cfg or vmlinuz) and '
     'stopped at the GRUB shell. Reinstall GRUB and regenerate its config from '
     'a rescue environment (grub-install + update-grub, or grub2-mkconfig on '
-    'RHEL-family images). For instructions on setting up a rescue environment, '
-    'see: https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+    'RHEL-family images). '
+    'For troubleshooting steps, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/'
+    'troubleshooting-linux-boot-issues#grub\n')
 
 INITRAMFS_PATTERNS = [
     r'dracut-initqueue\[\d+\]:.*timeout',
@@ -138,9 +144,10 @@ INITRAMFS_MESSAGE = (
     'timeout waiting for the root device, a /sysroot mount failure, or a drop '
     'to the initramfs shell). Verify the root= kernel parameter and root '
     'device UUID, and rebuild the initramfs from a rescue environment '
-    '(update-initramfs -u on Debian-family, dracut -f on RHEL-family). For '
-    'instructions on setting up a rescue environment, see: '
-    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+    '(update-initramfs -u on Debian-family, dracut -f on RHEL-family). '
+    'For troubleshooting steps, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/'
+    'troubleshooting-linux-boot-issues#initramfs\n')
 
 FILESYSTEM_PATTERNS = [
     r'Bad magic number in super-block',
@@ -154,9 +161,10 @@ FILESYSTEM_MESSAGE = (
     'A filesystem on the VM is corrupt (for example a bad superblock or '
     'ext4/XFS/Btrfs corruption). Run a filesystem check on the unmounted disk '
     'from a rescue environment (fsck for ext, xfs_repair for XFS). If the disk '
-    'is unrecoverable, restore it from a snapshot. For instructions on '
-    'setting up a rescue environment, see: '
-    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+    'is unrecoverable, restore it from a snapshot. '
+    'For troubleshooting steps, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/'
+    'troubleshooting-linux-boot-issues#filesystem-corruption\n')
 
 SELINUX_PATTERNS = [
     r'Failed to load SELinux policy',
@@ -166,9 +174,10 @@ SELINUX_MESSAGE = (
     'The VM failed to boot because SELinux could not load its policy and init '
     'froze. From a rescue environment, trigger a relabel (touch /.autorelabel) '
     'or temporarily disable SELinux (add selinux=0 to the kernel command '
-    'line), then investigate /etc/selinux. For instructions on '
-    'setting up a rescue environment, see: '
-    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+    'line), then investigate /etc/selinux. '
+    'For troubleshooting steps, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/'
+    'troubleshooting-linux-boot-issues#selinux\n')
 
 SWITCHROOT_PATTERNS = [
     r'Failed to switch root',
@@ -180,9 +189,10 @@ SWITCHROOT_MESSAGE = (
     'The VM mounted its root filesystem but could not hand off to init '
     '(missing or broken /sbin/init, or a failed switch_root). From a rescue '
     'environment, verify /sbin/init exists and its shared libraries are '
-    'intact, and reinstall systemd if it is broken. For instructions on '
-    'setting up a rescue environment, see: '
-    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+    'intact, and reinstall systemd if it is broken. '
+    'For troubleshooting steps, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/'
+    'troubleshooting-linux-boot-issues#init-failure\n')
 
 # Root filesystem remounted read-only after disk errors. This is the
 # kernel's runtime response to a failing disk (errors=remount-ro),
@@ -222,9 +232,10 @@ DISK_FULL_MESSAGE = (
     'from writing SSH keys and block logins. Resize the boot disk '
     '(gcloud compute disks resize DISK_NAME --zone=ZONE '
     '--size=NEW_SIZE_GB, then restart the VM so the filesystem '
-    'expands), or free space from a rescue environment. For '
-    'instructions on setting up a rescue environment, see: '
-    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+    'expands), or free space from a rescue environment. '
+    'For troubleshooting steps, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/'
+    'troubleshooting-disk-full-resize#inaccessible-vm\n')
 
 # The kernel out-of-memory killer ran. If it killed sshd or the guest
 # agent, SSH fails while the VM reports RUNNING.
@@ -298,7 +309,7 @@ WINDOWS_BOOT_MANAGER_MESSAGE = (
     'identifies the specific cause. Repair the boot configuration offline by '
     'attaching the boot disk to a recovery VM: '
     'https://cloud.google.com/compute/docs/troubleshooting/'
-    'troubleshooting-windows#offline-repair\n')
+    'troubleshooting-windows-boot-issues#boot-manager\n')
 
 
 BootFinding = collections.namedtuple('BootFinding', ['cause', 'message'])

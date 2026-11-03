@@ -1,21 +1,39 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
-    brief: Describe a Release
-    description: Describe a Release
+    brief: Describe a release.
+    description: |-
+      Display the details of an App Lifecycle Manager release.
     examples: |-
-      To describe the Release, run:
+      To describe the release named `my-release` in location `us-central1`, run:
 
-      $ {command}
+        $ {command} my-release --location=us-central1
+
+      To display only the unit kind and blueprint of the release named
+      `my-release` in location `us-central1`, run:
+
+        $ {command} my-release --location=us-central1 --format="yaml(unitKind,blueprint)"
+  ALPHA:
+    help_text:
+      brief: Describe a Release
+      description: Describe a Release
+      examples: |-
+        To describe the Release, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        Release to describe.
+      ALPHA:
+        help_text: Name of the resource
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:release
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.releases

@@ -1337,6 +1337,292 @@ class EdgecontainerProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class EdgecontainerProjectsLocationsRegionalRolloutsGetRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRegionalRolloutsGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the RegionalRollout to retrieve.
+      Format: projects/{project}/locations/{location}/regionalRollouts/{region
+      al_rollout}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsRegionalRolloutsListRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRegionalRolloutsListRequest object.
+
+  Fields:
+    filter: Optional. Filter expression to restrict the returned
+      RegionalRollouts, following AIP-160. Examples: * `state =
+      REGIONAL_ROLLOUT_STATE_RUNNING AND labels.env = "prod"` * `labels.env:*`
+      matches RegionalRollouts that have the `env` label. To test whether a
+      label is present, use `labels.:*`; `labels:` is not supported.
+    orderBy: Optional. The order of the results. Results are always ordered by
+      resource name, so the only supported value is `name`, which is also the
+      default.
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. The next_page_token value returned from a previous
+      List request, if any.
+    parent: Required. The parent resource name. Format:
+      projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class EdgecontainerProjectsLocationsRegionalRolloutsWavesUnitsGetRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRegionalRolloutsWavesUnitsGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the RolloutWaveUnit to retrieve.
+      Format: projects/{project}/locations/{location}/regionalRollouts/{region
+      al_rollout}/waves/{wave}/units/{unit}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsRegionalRolloutsWavesUnitsListRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRegionalRolloutsWavesUnitsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filter expression to restrict the returned
+      RolloutWaveUnits, following AIP-160. Example: `wave_number > 1 AND state
+      = STATE_FAILED`.
+    orderBy: Optional. The order of the results. Results are ordered by
+      resource name, so the only supported value is `name`, which is also the
+      default. When `parent` uses `-` wildcards, ordering is best effort.
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. The next_page_token value returned from a previous
+      List request, if any.
+    parent: Required. The parent resource name. Format: projects/{project}/loc
+      ations/{location}/regionalRollouts/{regional_rollout}/waves/{wave} Use
+      `-` as the regional_rollout to list units across all RegionalRollouts in
+      the location, and `-` as the wave to list units across all waves.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class EdgecontainerProjectsLocationsRolloutTemplatesCreateRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutTemplatesCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource name where this RolloutTemplate will
+      be created. Format: projects/{project}/locations/{location}
+    rolloutTemplateId: Required. The user-specified ID to use for the
+      RolloutTemplate.
+    uiprRolloutTemplate: A UiprRolloutTemplate resource to be passed as the
+      request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  rolloutTemplateId = _messages.StringField(2)
+  uiprRolloutTemplate = _messages.MessageField('UiprRolloutTemplate', 3)
+
+
+class EdgecontainerProjectsLocationsRolloutTemplatesDeleteRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutTemplatesDeleteRequest object.
+
+  Fields:
+    name: Required. The resource name of the RolloutTemplate to delete.
+      Format: projects/{project}/locations/{location}/rolloutTemplates/{rollou
+      t_template}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsRolloutTemplatesGetRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutTemplatesGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the RolloutTemplate to retrieve.
+      Format: projects/{project}/locations/{location}/rolloutTemplates/{rollou
+      t_template}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsRolloutTemplatesListRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutTemplatesListRequest object.
+
+  Fields:
+    filter: Optional. Filter expression to restrict the returned
+      RolloutTemplates.
+    orderBy: Optional. Sort key and direction for ordering the results.
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. The next_page_token value returned from a previous
+      List request, if any.
+    parent: Required. The parent resource name. Format:
+      projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class EdgecontainerProjectsLocationsRolloutTemplatesPatchRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutTemplatesPatchRequest object.
+
+  Fields:
+    name: Identifier. The name of the rollout template. Format:
+      projects/{project}/locations/{location}/rolloutTemplates/{rolloutTemplat
+      e}
+    uiprRolloutTemplate: A UiprRolloutTemplate resource to be passed as the
+      request body.
+    updateMask: Optional. Field mask specifying which fields of the
+      RolloutTemplate to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  uiprRolloutTemplate = _messages.MessageField('UiprRolloutTemplate', 2)
+  updateMask = _messages.StringField(3)
+
+
+class EdgecontainerProjectsLocationsRolloutTemplatesRollbackRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutTemplatesRollbackRequest object.
+
+  Fields:
+    name: Required. The resource name of the RolloutTemplate to restore.
+      Format: projects/{project}/locations/{location}/rolloutTemplates/{rollou
+      t_template}
+    uiprRollbackRolloutTemplateRequest: A UiprRollbackRolloutTemplateRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  uiprRollbackRolloutTemplateRequest = _messages.MessageField('UiprRollbackRolloutTemplateRequest', 2)
+
+
+class EdgecontainerProjectsLocationsRolloutsApproveRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutsApproveRequest object.
+
+  Fields:
+    name: Required. The resource name of the Rollout to approve. Format:
+      projects/{project}/locations/{location}/rollouts/{rollout}
+    uiprApproveRolloutRequest: A UiprApproveRolloutRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  uiprApproveRolloutRequest = _messages.MessageField('UiprApproveRolloutRequest', 2)
+
+
+class EdgecontainerProjectsLocationsRolloutsCancelRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutsCancelRequest object.
+
+  Fields:
+    name: Required. The resource name of the Rollout to cancel. Format:
+      projects/{project}/locations/{location}/rollouts/{rollout}
+    uiprCancelRolloutRequest: A UiprCancelRolloutRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  uiprCancelRolloutRequest = _messages.MessageField('UiprCancelRolloutRequest', 2)
+
+
+class EdgecontainerProjectsLocationsRolloutsCreateRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutsCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource name where this Rollout will be
+      created. Format: projects/{project}/locations/{location}
+    rolloutId: Required. The user-specified ID to use for the Rollout.
+    uiprRollout: A UiprRollout resource to be passed as the request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  rolloutId = _messages.StringField(2)
+  uiprRollout = _messages.MessageField('UiprRollout', 3)
+
+
+class EdgecontainerProjectsLocationsRolloutsDeleteRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutsDeleteRequest object.
+
+  Fields:
+    name: Required. The resource name of the Rollout to delete. Format:
+      projects/{project}/locations/{location}/rollouts/{rollout}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsRolloutsGetRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutsGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the Rollout to retrieve. Format:
+      projects/{project}/locations/{location}/rollouts/{rollout}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsRolloutsListRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutsListRequest object.
+
+  Fields:
+    filter: Optional. Filter expression to restrict the returned Rollouts.
+    orderBy: Optional. Sort key and direction for ordering the results.
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. The next_page_token value returned from a previous
+      List request, if any.
+    parent: Required. The parent resource name. Format:
+      projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class EdgecontainerProjectsLocationsRolloutsPauseRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutsPauseRequest object.
+
+  Fields:
+    name: Required. The resource name of the Rollout to pause. Format:
+      projects/{project}/locations/{location}/rollouts/{rollout}
+    uiprPauseRolloutRequest: A UiprPauseRolloutRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  uiprPauseRolloutRequest = _messages.MessageField('UiprPauseRolloutRequest', 2)
+
+
+class EdgecontainerProjectsLocationsRolloutsResumeRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsRolloutsResumeRequest object.
+
+  Fields:
+    name: Required. The resource name of the Rollout to resume. Format:
+      projects/{project}/locations/{location}/rollouts/{rollout}
+    uiprResumeRolloutRequest: A UiprResumeRolloutRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  uiprResumeRolloutRequest = _messages.MessageField('UiprResumeRolloutRequest', 2)
+
+
 class EdgecontainerProjectsLocationsServiceAccountsCreateRequest(_messages.Message):
   r"""A EdgecontainerProjectsLocationsServiceAccountsCreateRequest object.
 
@@ -3391,6 +3677,887 @@ class TimeWindow(_messages.Message):
 
   endTime = _messages.StringField(1)
   startTime = _messages.StringField(2)
+
+
+class UiprApproveRolloutRequest(_messages.Message):
+  r"""Request message for ApproveRollout."""
+
+
+class UiprCancelRolloutRequest(_messages.Message):
+  r"""Request message for CancelRollout.
+
+  Fields:
+    reason: Optional. Human-readable reason for cancelling the Rollout.
+  """
+
+  reason = _messages.StringField(1)
+
+
+class UiprLabelSelector(_messages.Message):
+  r"""A label selector is a label query over a set of resources. An empty
+  label selector matches all objects.
+
+  Messages:
+    MatchLabelsValue: Optional. Match_labels is a map of {key,value} pairs.
+      Each {key,value} pair must match an existing label key and value exactly
+      in order to satisfy the match.
+
+  Fields:
+    matchExpressions: Optional. Match_expressions is a list of set
+      expressions. Each set expression specifies a label key, operator, and a
+      list of values. The expressions are combined using logical AND.
+    matchLabels: Optional. Match_labels is a map of {key,value} pairs. Each
+      {key,value} pair must match an existing label key and value exactly in
+      order to satisfy the match.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MatchLabelsValue(_messages.Message):
+    r"""Optional. Match_labels is a map of {key,value} pairs. Each {key,value}
+    pair must match an existing label key and value exactly in order to
+    satisfy the match.
+
+    Messages:
+      AdditionalProperty: An additional property for a MatchLabelsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type MatchLabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MatchLabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  matchExpressions = _messages.MessageField('UiprSetExpression', 1, repeated=True)
+  matchLabels = _messages.MessageField('MatchLabelsValue', 2)
+
+
+class UiprListRegionalRolloutsResponse(_messages.Message):
+  r"""Response message for ListRegionalRollouts.
+
+  Fields:
+    nextPageToken: A token to retrieve the next page of results, or empty if
+      there are no more results.
+    regionalRollouts: The list of RegionalRollout resources.
+    unreachable: Unordered list. Locations that could not be reached when
+      collecting RegionalRollouts. Currently never populated: each request
+      reads a single location.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  regionalRollouts = _messages.MessageField('UiprRegionalRollout', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class UiprListRolloutTemplatesResponse(_messages.Message):
+  r"""Response message for ListRolloutTemplates.
+
+  Fields:
+    nextPageToken: A token to retrieve the next page of results, or empty if
+      there are no more results.
+    rolloutTemplates: The list of RolloutTemplate resources.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  rolloutTemplates = _messages.MessageField('UiprRolloutTemplate', 2, repeated=True)
+
+
+class UiprListRolloutWaveUnitsResponse(_messages.Message):
+  r"""Response message for ListRolloutWaveUnits.
+
+  Fields:
+    nextPageToken: A token to retrieve the next page of results, or empty if
+      there are no more results.
+    rolloutWaveUnits: The list of RolloutWaveUnit resources.
+    unreachable: Unordered list. Locations that could not be reached when
+      collecting RolloutWaveUnits. Currently never populated: each request
+      reads a single location.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  rolloutWaveUnits = _messages.MessageField('UiprRolloutWaveUnit', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class UiprListRolloutsResponse(_messages.Message):
+  r"""Response message for ListRollouts.
+
+  Fields:
+    nextPageToken: A token to retrieve the next page of results, or empty if
+      there are no more results.
+    rollouts: The list of Rollout resources.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  rollouts = _messages.MessageField('UiprRollout', 2, repeated=True)
+
+
+class UiprOperationMetadata(_messages.Message):
+  r"""Long-running operation metadata for UIPR API methods.
+
+  Fields:
+    apiVersion: Output only. API version used to start the operation.
+    createTime: Output only. The time the operation was created.
+    endTime: Output only. The time the operation finished running.
+    requestedCancellation: Output only. Identifies whether the user has
+      requested cancellation of the operation.
+    statusMessage: Output only. Human-readable status of the operation, if
+      any.
+    target: Output only. Server-defined resource path for the target of the
+      operation.
+    verb: Output only. The verb executed by the operation.
+    warnings: Output only. Warnings that do not block the operation, but still
+      hold relevant information for the end user to receive.
+  """
+
+  apiVersion = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  endTime = _messages.StringField(3)
+  requestedCancellation = _messages.BooleanField(4)
+  statusMessage = _messages.StringField(5)
+  target = _messages.StringField(6)
+  verb = _messages.StringField(7)
+  warnings = _messages.StringField(8, repeated=True)
+
+
+class UiprPauseRolloutRequest(_messages.Message):
+  r"""Request message for PauseRollout.
+
+  Fields:
+    reason: Optional. Human-readable reason for pausing the Rollout.
+  """
+
+  reason = _messages.StringField(1)
+
+
+class UiprRegionalRollout(_messages.Message):
+  r"""RegionalRollout represents a regional rollout resource which is a child
+  of the GlobalRollout resource.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the rollout.
+    UnitKindValueValuesEnum: Output only. The kind of unit that the rollout is
+      associated with, copied from the Global rollout. This is not editable by
+      the user.
+
+  Messages:
+    LabelsValue: Optional. Labels for this Rollout.
+
+  Fields:
+    createTime: Output only. The time the rollout was created.
+    description: Output only. Description of the rollout, copied from the
+      global rollout. This is not editable by the user.
+    displayName: Optional. User-provided name of the rollout.
+    etag: Optional. Etag of the Regional Rollout. Ex. abc1234
+    globalRollout: Required. The name of the global rollout that this rollout
+      is associated with. Format:
+      projects/{project}/locations/{location}/rollouts/{rollout}
+    labels: Optional. Labels for this Rollout.
+    name: Identifier. The name of the rollout. Format: Projects/{project}/loca
+      tions/{location}/regionalRollouts/{regional_rollout}
+    reason: Output only. The reason for the state of the rollout. Ex. "User
+      initiated pause of the global rollout."
+    scheduledStartTime: Optional. The scheduled start time of the rollout.
+    state: Output only. The state of the rollout.
+    targetRolloutVersion: Required. The target rollout version for this
+      regional rollout. Ex. "1.10.0"
+    uid: Output only. Google-generated UID for this resource. This is unique
+      across all Regional Rollout resources. If a Regional Rollout resource is
+      deleted and another resource with the same name is created, it gets a
+      different Uuid.
+    unitKind: Output only. The kind of unit that the rollout is associated
+      with, copied from the Global rollout. This is not editable by the user.
+    updateTime: Output only. The time the rollout was last updated.
+    waves: Optional. The waves in the regional rollout.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the rollout.
+
+    Values:
+      REGIONAL_ROLLOUT_STATE_UNSPECIFIED: Unspecified regional rollout state.
+      REGIONAL_ROLLOUT_STATE_DRAFT: The rollout is in draft state.
+      REGIONAL_ROLLOUT_STATE_SCHEDULED: The rollout is scheduled.
+      REGIONAL_ROLLOUT_STATE_RUNNING: The rollout is running.
+      REGIONAL_ROLLOUT_STATE_PAUSING: The rollout is pausing.
+      REGIONAL_ROLLOUT_STATE_SYSTEM_PAUSED: The rollout is system paused.
+      REGIONAL_ROLLOUT_STATE_PAUSED: The rollout is user paused.
+      REGIONAL_ROLLOUT_STATE_RESUMING: The rollout is resuming.
+      REGIONAL_ROLLOUT_STATE_CANCELLING: The rollout is cancelling.
+      REGIONAL_ROLLOUT_STATE_CANCELLED: The rollout is cancelled.
+      REGIONAL_ROLLOUT_STATE_COMPLETED: The rollout is completed.
+      REGIONAL_ROLLOUT_STATE_DELETING: The rollout is deleting.
+      REGIONAL_ROLLOUT_STATE_DELETED: The rollout is deleted.
+    """
+    REGIONAL_ROLLOUT_STATE_UNSPECIFIED = 0
+    REGIONAL_ROLLOUT_STATE_DRAFT = 1
+    REGIONAL_ROLLOUT_STATE_SCHEDULED = 2
+    REGIONAL_ROLLOUT_STATE_RUNNING = 3
+    REGIONAL_ROLLOUT_STATE_PAUSING = 4
+    REGIONAL_ROLLOUT_STATE_SYSTEM_PAUSED = 5
+    REGIONAL_ROLLOUT_STATE_PAUSED = 6
+    REGIONAL_ROLLOUT_STATE_RESUMING = 7
+    REGIONAL_ROLLOUT_STATE_CANCELLING = 8
+    REGIONAL_ROLLOUT_STATE_CANCELLED = 9
+    REGIONAL_ROLLOUT_STATE_COMPLETED = 10
+    REGIONAL_ROLLOUT_STATE_DELETING = 11
+    REGIONAL_ROLLOUT_STATE_DELETED = 12
+
+  class UnitKindValueValuesEnum(_messages.Enum):
+    r"""Output only. The kind of unit that the rollout is associated with,
+    copied from the Global rollout. This is not editable by the user.
+
+    Values:
+      UNIT_KIND_UNSPECIFIED: Unspecified unit kind.
+      PRODUCT_BUNDLE: Product bundle unit. Control surface: Product Bundle
+        (PB) Unit Service (https://edgecontainer.googleapis.com/v1/).
+    """
+    UNIT_KIND_UNSPECIFIED = 0
+    PRODUCT_BUNDLE = 1
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels for this Rollout.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  globalRollout = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  reason = _messages.StringField(8)
+  scheduledStartTime = _messages.StringField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  targetRolloutVersion = _messages.StringField(11)
+  uid = _messages.StringField(12)
+  unitKind = _messages.EnumField('UnitKindValueValuesEnum', 13)
+  updateTime = _messages.StringField(14)
+  waves = _messages.MessageField('UiprWave', 15, repeated=True)
+
+
+class UiprRegionalRolloutSummary(_messages.Message):
+  r"""A summary of the regional rollout. Used for aggregation of rollout
+  results to evaluate to continue with the rollout or not.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the regional rollout.
+
+  Fields:
+    regionalRollout: Output only. The name of the regional rollout. Format:
+      Projects/{project}/locations/{location}/regionalRollouts/{regionalRollou
+      t}
+    state: Output only. The state of the regional rollout.
+    waveSummaries: Output only. A summary of the waves in the regional
+      rollout.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the regional rollout.
+
+    Values:
+      REGIONAL_ROLLOUT_STATE_UNSPECIFIED: Unspecified regional rollout state.
+      REGIONAL_ROLLOUT_STATE_DRAFT: The rollout is in draft state.
+      REGIONAL_ROLLOUT_STATE_SCHEDULED: The rollout is scheduled.
+      REGIONAL_ROLLOUT_STATE_RUNNING: The rollout is running.
+      REGIONAL_ROLLOUT_STATE_PAUSING: The rollout is pausing.
+      REGIONAL_ROLLOUT_STATE_SYSTEM_PAUSED: The rollout is system paused.
+      REGIONAL_ROLLOUT_STATE_PAUSED: The rollout is user paused.
+      REGIONAL_ROLLOUT_STATE_RESUMING: The rollout is resuming.
+      REGIONAL_ROLLOUT_STATE_CANCELLING: The rollout is cancelling.
+      REGIONAL_ROLLOUT_STATE_CANCELLED: The rollout is cancelled.
+      REGIONAL_ROLLOUT_STATE_COMPLETED: The rollout is completed.
+      REGIONAL_ROLLOUT_STATE_DELETING: The rollout is deleting.
+      REGIONAL_ROLLOUT_STATE_DELETED: The rollout is deleted.
+    """
+    REGIONAL_ROLLOUT_STATE_UNSPECIFIED = 0
+    REGIONAL_ROLLOUT_STATE_DRAFT = 1
+    REGIONAL_ROLLOUT_STATE_SCHEDULED = 2
+    REGIONAL_ROLLOUT_STATE_RUNNING = 3
+    REGIONAL_ROLLOUT_STATE_PAUSING = 4
+    REGIONAL_ROLLOUT_STATE_SYSTEM_PAUSED = 5
+    REGIONAL_ROLLOUT_STATE_PAUSED = 6
+    REGIONAL_ROLLOUT_STATE_RESUMING = 7
+    REGIONAL_ROLLOUT_STATE_CANCELLING = 8
+    REGIONAL_ROLLOUT_STATE_CANCELLED = 9
+    REGIONAL_ROLLOUT_STATE_COMPLETED = 10
+    REGIONAL_ROLLOUT_STATE_DELETING = 11
+    REGIONAL_ROLLOUT_STATE_DELETED = 12
+
+  regionalRollout = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+  waveSummaries = _messages.MessageField('UiprWaveSummary', 3, repeated=True)
+
+
+class UiprResumeRolloutRequest(_messages.Message):
+  r"""Request message for ResumeRollout.
+
+  Fields:
+    offset: Optional. Duration offset before resuming rollout execution.
+  """
+
+  offset = _messages.StringField(1)
+
+
+class UiprRollbackRolloutTemplateRequest(_messages.Message):
+  r"""Request message for RollbackRolloutTemplate.
+
+  Fields:
+    revisionId: Required. The revision ID to restore the RolloutTemplate to.
+  """
+
+  revisionId = _messages.StringField(1)
+
+
+class UiprRollout(_messages.Message):
+  r"""Rollout represents a rollout resource.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the rollout.
+    UnitKindValueValuesEnum: Required. The unit kind associated with this
+      rollout.
+
+  Messages:
+    LabelsValue: Optional. Labels for this Rollout.
+
+  Fields:
+    autoApprove: Optional. Whether the rollout should automatically approve
+      and start running.
+    createTime: Output only. The time the rollout was created.
+    description: Optional. Description of the rollout.
+    displayName: Optional. User-provided name of the rollout.
+    endTime: Output only. The end time of the rollout.
+    etag: Optional. Etag of the Rollout. Ex. abc1234
+    labels: Optional. Labels for this Rollout.
+    name: Identifier. The name of the rollout. Format:
+      projects/{project}/locations/{location}/rollouts/{rollout}
+    regionalRolloutSummaries: Output only. The regional rollouts summary
+      associated with this global rollout.
+    rolloutTemplate: Required. Immutable. The rollout template associated with
+      this rollout. At creation time, the server resolves the template and
+      pins it to the specific active revision ID. Once created, this field is
+      IMMUTABLE to ensure historical rollouts remain anchored to their
+      creation-time template snapshot.
+    rolloutTemplateRevisionId: Output only. The revision ID of the rollout
+      template that was snapshotted at creation time.
+    scheduledStartTime: Optional. The scheduled start time of the rollout.
+    startTime: Output only. The start time of the rollout.
+    state: Output only. The state of the rollout.
+    stateReason: Output only. The reason for the rollout state. Ex. "Paused
+      due to exceeding error budget."
+    targetRolloutVersion: Required. The target rollout version for this global
+      rollout. Ex. "1.10.0"
+    unitKind: Required. The unit kind associated with this rollout.
+    updateTime: Output only. The time the rollout was last updated.
+    uuid: Output only. Google-generated UUID for this resource.
+    waveSummaries: Output only. A summary of the waves in the global rollout.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the rollout.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified global rollout state.
+      STATE_DRAFT: The rollout is in draft state.
+      STATE_REVIEWED: The rollout has been reviewed.
+      STATE_APPROVED: The rollout has been approved.
+      STATE_SCHEDULED: The rollout has been scheduled.
+      STATE_RUNNING: The rollout is running.
+      STATE_PAUSING: The rollout is pausing.
+      STATE_PAUSED: The rollout is paused.
+      STATE_RESUMING: The rollout is resuming.
+      STATE_CANCELLING: The rollout is cancelling.
+      STATE_CANCELLED: The rollout is cancelled.
+      STATE_COMPLETED: The rollout is completed.
+      STATE_DELETING: The rollout is deleting.
+      STATE_DELETED: The rollout is deleted.
+      STATE_STARTING: The rollout is starting.
+    """
+    STATE_UNSPECIFIED = 0
+    STATE_DRAFT = 1
+    STATE_REVIEWED = 2
+    STATE_APPROVED = 3
+    STATE_SCHEDULED = 4
+    STATE_RUNNING = 5
+    STATE_PAUSING = 6
+    STATE_PAUSED = 7
+    STATE_RESUMING = 8
+    STATE_CANCELLING = 9
+    STATE_CANCELLED = 10
+    STATE_COMPLETED = 11
+    STATE_DELETING = 12
+    STATE_DELETED = 13
+    STATE_STARTING = 14
+
+  class UnitKindValueValuesEnum(_messages.Enum):
+    r"""Required. The unit kind associated with this rollout.
+
+    Values:
+      UNIT_KIND_UNSPECIFIED: Unspecified unit kind.
+      PRODUCT_BUNDLE: Product bundle unit. Control surface: Product Bundle
+        (PB) Unit Service (https://edgecontainer.googleapis.com/v1/).
+    """
+    UNIT_KIND_UNSPECIFIED = 0
+    PRODUCT_BUNDLE = 1
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels for this Rollout.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  autoApprove = _messages.BooleanField(1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  endTime = _messages.StringField(5)
+  etag = _messages.StringField(6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  regionalRolloutSummaries = _messages.MessageField('UiprRegionalRolloutSummary', 9, repeated=True)
+  rolloutTemplate = _messages.StringField(10)
+  rolloutTemplateRevisionId = _messages.StringField(11)
+  scheduledStartTime = _messages.StringField(12)
+  startTime = _messages.StringField(13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  stateReason = _messages.StringField(15)
+  targetRolloutVersion = _messages.StringField(16)
+  unitKind = _messages.EnumField('UnitKindValueValuesEnum', 17)
+  updateTime = _messages.StringField(18)
+  uuid = _messages.StringField(19)
+  waveSummaries = _messages.MessageField('UiprWaveSummary', 20, repeated=True)
+
+
+class UiprRolloutConfig(_messages.Message):
+  r"""The rollout config for the rollout template.
+
+  Enums:
+    StragglerMigrationStrategyValueValuesEnum: Optional. The strategy for
+      migrating stragglers.
+
+  Fields:
+    errorBudgetPercent: Optional. The error budget percent for regional
+      rollout failures. If the failure rate of regional rollouts exceeds this
+      budget, the rollout is paused. Represents a percentage from 0 to 100.
+    labelSelector: Optional. The label selector for units to include in the
+      rollout. If empty, all units will be included.
+    stragglerMigrationStrategy: Optional. The strategy for migrating
+      stragglers.
+    waveTemplates: Optional. The waves to be created in the rollout.
+  """
+
+  class StragglerMigrationStrategyValueValuesEnum(_messages.Enum):
+    r"""Optional. The strategy for migrating stragglers.
+
+    Values:
+      STRAGGLER_MIGRATION_STRATEGY_UNSPECIFIED: Unspecified strategy. No
+        stragglers will be migrated.
+      STRAGGLER_MIGRATION_STRATEGY_NEXT_WAVE: Migrate stragglers to the next
+        wave.
+      STRAGGLER_MIGRATION_STRATEGY_LAST_WAVE: Migrate stragglers to the last
+        wave.
+    """
+    STRAGGLER_MIGRATION_STRATEGY_UNSPECIFIED = 0
+    STRAGGLER_MIGRATION_STRATEGY_NEXT_WAVE = 1
+    STRAGGLER_MIGRATION_STRATEGY_LAST_WAVE = 2
+
+  errorBudgetPercent = _messages.FloatField(1)
+  labelSelector = _messages.MessageField('UiprLabelSelector', 2)
+  stragglerMigrationStrategy = _messages.EnumField('StragglerMigrationStrategyValueValuesEnum', 3)
+  waveTemplates = _messages.MessageField('UiprWaveTemplate', 4, repeated=True)
+
+
+class UiprRolloutTemplate(_messages.Message):
+  r"""RolloutTemplate represents a rollout template resource.
+
+  Messages:
+    LabelsValue: Optional. Labels for this Rollout Template.
+
+  Fields:
+    createTime: Output only. The time the rollout template was created.
+    description: Optional. Description of the rollout template.
+    etag: Optional. Etag of the Rollout Template. Ex. abc1234
+    labels: Optional. Labels for this Rollout Template.
+    name: Identifier. The name of the rollout template. Format:
+      projects/{project}/locations/{location}/rolloutTemplates/{rolloutTemplat
+      e}
+    revisionCreateTime: Output only. The time the rollout template revision
+      was created.
+    revisionId: Output only. The revision ID of the rollout template. A new
+      revision is created whenever the rollout template is changed in any way.
+      The format is an 8-character hexadecimal string.
+    rolloutConfig: Optional. The rollout config for the rollout template.
+    uid: Output only. Google-generated UID for this resource. This is unique
+      across all Rollout Template resources. If a Rollout Template resource is
+      deleted and another resource with the same name is created, it gets a
+      different Uuid.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels for this Rollout Template.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  revisionCreateTime = _messages.StringField(6)
+  revisionId = _messages.StringField(7)
+  rolloutConfig = _messages.MessageField('UiprRolloutConfig', 8)
+  uid = _messages.StringField(9)
+
+
+class UiprRolloutWaveUnit(_messages.Message):
+  r"""RolloutWaveUnit represents a RWU resource.
+
+  Enums:
+    StateValueValuesEnum: Output only. The status of the upgrade of the unit
+      in that wave of the rollout.
+    UnitKindValueValuesEnum: Required. The unitkind that the RWU is associated
+      with.
+
+  Messages:
+    LabelsValue: Optional. Labels for this RWU.
+
+  Fields:
+    activeOperation: Output only. The active operation for the RWU upgrade.
+      Example: "projects/123456789/locations/us-central1/operations/123456789"
+    createTime: Output only. The time the RWU was created.
+    etag: Optional. Etag of the RWU. Ex. abc1234
+    labels: Optional. Labels for this RWU.
+    name: Identifier. The name of the RWU. Format: projects/{project}/location
+      s/{location}/regionalRollouts/{regional_rollout}/waves/{wave}/units/{uni
+      t}
+    previousAttempt: Output only. The name of the straggler RWU that this RWU
+      was converted from. Format: projects/{project}/locations/{location}/regi
+      onalRollouts/{regional_rollout}/waves/{wave}/units/{unit} This is only
+      set if the previous unit is a straggler unit.
+    reason: Optional. The reason for the status of the upgrade of the unit in
+      that wave of the rollout. Example: "Cluster overdue: Failed to upgrade
+      at the end of the wave"
+    regionalRollout: Required. The name of the regional rollout. Format: proje
+      cts/{project}/locations/{location}/regionalRollouts/{regional_rollout}
+    retryCount: Optional. The number of times the upgrade for this RWU has
+      been retried.
+    state: Output only. The status of the upgrade of the unit in that wave of
+      the rollout.
+    targetRolloutVersion: Required. The target rollout version for this RWU.
+      Ex. "1.10.0"
+    unit: Required. The resource name of the unit. Format depends on the
+      specific Unit Service implementation. For PB Unit Service, the format is
+      cluster resource name.
+    unitKind: Required. The unitkind that the RWU is associated with.
+    updateTime: Output only. The time the RWU was last updated.
+    uuid: Output only. Google-generated UUID for this resource.
+    waveNumber: Required. The wave number of the RWU.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The status of the upgrade of the unit in that wave of the
+    rollout.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified unit upgrade state.
+      STATE_PENDING: The unit is scheduled to be upgraded.
+      STATE_STARTED: The unit upgrade has started.
+      STATE_RUNNING: The unit upgrade is running.
+      STATE_RETRYABLE_ERROR: The unit upgrade has failed with a retryable
+        error. Will be retried.
+      STATE_PARTIALLY_SUCCEEDED: The unit upgrade has partially succeeded.
+        Will be retried.
+      STATE_COMPLETED: The unit upgrade has completed successfully.
+      STATE_FAILED: The unit upgrade has failed. Will not be retried.
+      STATE_STRAGGLER: The unit is a straggler. Upgrade of the unit failed
+        with retryable error And was scheduled to be upgraded in a future
+        wave.
+      STATE_CANCELLED: The unit upgrade has been cancelled.
+    """
+    STATE_UNSPECIFIED = 0
+    STATE_PENDING = 1
+    STATE_STARTED = 2
+    STATE_RUNNING = 3
+    STATE_RETRYABLE_ERROR = 4
+    STATE_PARTIALLY_SUCCEEDED = 5
+    STATE_COMPLETED = 6
+    STATE_FAILED = 7
+    STATE_STRAGGLER = 8
+    STATE_CANCELLED = 9
+
+  class UnitKindValueValuesEnum(_messages.Enum):
+    r"""Required. The unitkind that the RWU is associated with.
+
+    Values:
+      UNIT_KIND_UNSPECIFIED: Unspecified unit kind.
+      PRODUCT_BUNDLE: Product bundle unit. Control surface: Product Bundle
+        (PB) Unit Service (https://edgecontainer.googleapis.com/v1/).
+    """
+    UNIT_KIND_UNSPECIFIED = 0
+    PRODUCT_BUNDLE = 1
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels for this RWU.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  activeOperation = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  previousAttempt = _messages.StringField(6)
+  reason = _messages.StringField(7)
+  regionalRollout = _messages.StringField(8)
+  retryCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  targetRolloutVersion = _messages.StringField(11)
+  unit = _messages.StringField(12)
+  unitKind = _messages.EnumField('UnitKindValueValuesEnum', 13)
+  updateTime = _messages.StringField(14)
+  uuid = _messages.StringField(15)
+  waveNumber = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+
+
+class UiprSetExpression(_messages.Message):
+  r"""A set expression is a label key, operator, and a list of values.
+
+  Enums:
+    LabelOperatorValueValuesEnum: Required. The label operator for the set
+      expression.
+
+  Fields:
+    key: Required. The label key for the set expression.
+    labelOperator: Required. The label operator for the set expression.
+    values: Optional. The values for the set expression.
+  """
+
+  class LabelOperatorValueValuesEnum(_messages.Enum):
+    r"""Required. The label operator for the set expression.
+
+    Values:
+      LABEL_OPERATOR_UNSPECIFIED: Unspecified label operator.
+      LABEL_OPERATOR_IN: The label operator is IN.
+      LABEL_OPERATOR_NOT_IN: The label operator is NOT_IN.
+      LABEL_OPERATOR_EXISTS: The label operator is EXISTS.
+      LABEL_OPERATOR_NOT_EXISTS: The label operator is NOT_EXISTS.
+    """
+    LABEL_OPERATOR_UNSPECIFIED = 0
+    LABEL_OPERATOR_IN = 1
+    LABEL_OPERATOR_NOT_IN = 2
+    LABEL_OPERATOR_EXISTS = 3
+    LABEL_OPERATOR_NOT_EXISTS = 4
+
+  key = _messages.StringField(1)
+  labelOperator = _messages.EnumField('LabelOperatorValueValuesEnum', 2)
+  values = _messages.StringField(3, repeated=True)
+
+
+class UiprWave(_messages.Message):
+  r"""Wave represents the details of a single wave of the regional rollout.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the wave.
+
+  Fields:
+    childRollout: Output only. The name of the child rollout associated with
+      this wave.
+    endTime: Output only. The end time of the wave.
+    failedUnitCount: Output only. The number of failed units in the wave.
+    startTime: Output only. The start time of the wave.
+    state: Output only. The state of the wave.
+    totalUnitCount: Output only. The total number of units in the wave.
+    waveId: Output only. The wave number of the wave.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the wave.
+
+    Values:
+      WAVE_STATE_UNSPECIFIED: Unspecified wave state.
+      WAVE_STATE_PENDING: The wave is pending.
+      WAVE_STATE_RUNNING: The wave is running.
+      WAVE_STATE_PAUSING: The wave is pausing.
+      WAVE_STATE_SYSTEM_PAUSED: The wave is system paused.
+      WAVE_STATE_PAUSED: The wave is user paused.
+      WAVE_STATE_RESUMING: The wave is resuming.
+      WAVE_STATE_COMPLETING: The wave is completing.
+      WAVE_STATE_COMPLETED: The wave is completed.
+      WAVE_STATE_CANCELLED: The wave is cancelled.
+    """
+    WAVE_STATE_UNSPECIFIED = 0
+    WAVE_STATE_PENDING = 1
+    WAVE_STATE_RUNNING = 2
+    WAVE_STATE_PAUSING = 3
+    WAVE_STATE_SYSTEM_PAUSED = 4
+    WAVE_STATE_PAUSED = 5
+    WAVE_STATE_RESUMING = 6
+    WAVE_STATE_COMPLETING = 7
+    WAVE_STATE_COMPLETED = 8
+    WAVE_STATE_CANCELLED = 9
+
+  childRollout = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  failedUnitCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  startTime = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
+  totalUnitCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  waveId = _messages.StringField(7)
+
+
+class UiprWaveSummary(_messages.Message):
+  r"""A summary of the waves in the rollout.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the wave.
+
+  Fields:
+    endTime: Output only. The end time of the wave.
+    failedUnitCount: Output only. The number of failed units in the wave.
+    startTime: Output only. The start time of the wave.
+    state: Output only. The state of the wave.
+    totalUnitCount: Output only. The total number of units in the wave.
+    waveId: Output only. The wave number of the wave. Ex. "wave-1"
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the wave.
+
+    Values:
+      WAVE_STATE_UNSPECIFIED: Unspecified wave state.
+      WAVE_STATE_PENDING: The wave is pending.
+      WAVE_STATE_RUNNING: The wave is running.
+      WAVE_STATE_PAUSING: The wave is pausing.
+      WAVE_STATE_SYSTEM_PAUSED: The wave is system paused.
+      WAVE_STATE_PAUSED: The wave is user paused.
+      WAVE_STATE_RESUMING: The wave is resuming.
+      WAVE_STATE_COMPLETING: The wave is completing.
+      WAVE_STATE_COMPLETED: The wave is completed.
+      WAVE_STATE_CANCELLED: The wave is cancelled.
+    """
+    WAVE_STATE_UNSPECIFIED = 0
+    WAVE_STATE_PENDING = 1
+    WAVE_STATE_RUNNING = 2
+    WAVE_STATE_PAUSING = 3
+    WAVE_STATE_SYSTEM_PAUSED = 4
+    WAVE_STATE_PAUSED = 5
+    WAVE_STATE_RESUMING = 6
+    WAVE_STATE_COMPLETING = 7
+    WAVE_STATE_COMPLETED = 8
+    WAVE_STATE_CANCELLED = 9
+
+  endTime = _messages.StringField(1)
+  failedUnitCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  startTime = _messages.StringField(3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  totalUnitCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  waveId = _messages.StringField(6)
+
+
+class UiprWaveTemplate(_messages.Message):
+  r"""A wave template defines a wave in the rollout.
+
+  Fields:
+    duration: Optional. The duration of the wave. If not set, the wave will
+      last until all Regional Rollouts in the wave are complete.
+    labelSelector: Optional. The label selector for units to include in the
+      wave. If empty, all units will be included.
+    name: Optional. The name of the wave template, will be propagated to the
+      wave. If not set, the wave number will be used as the name.
+    rolloutUpperBoundPercent: Optional. Rollout upper bound percentage of the
+      total number of units.
+  """
+
+  duration = _messages.StringField(1)
+  labelSelector = _messages.MessageField('UiprLabelSelector', 2)
+  name = _messages.StringField(3)
+  rolloutUpperBoundPercent = _messages.FloatField(4)
 
 
 class UnmanagedKafkaConfig(_messages.Message):

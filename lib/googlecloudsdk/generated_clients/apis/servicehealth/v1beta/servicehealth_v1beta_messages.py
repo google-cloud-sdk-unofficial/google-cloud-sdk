@@ -255,13 +255,35 @@ class EventImpact(_messages.Message):
   r"""Represents the Google Cloud products and locations impacted by the
   event.
 
+  Enums:
+    StateValueValuesEnum: Output only. The impact is affected or resolved.
+      Output only.
+
   Fields:
+    endTime: Output only. The end time of the impact.
     location: Location impacted by the event.
     product: Google Cloud product impacted by the event.
+    startTime: Output only. The start time of the impact.
+    state: Output only. The impact is affected or resolved. Output only.
   """
 
-  location = _messages.MessageField('Location', 1)
-  product = _messages.MessageField('Product', 2)
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The impact is affected or resolved. Output only.
+
+    Values:
+      STATE_UNSPECIFIED: Indicates an unspecified impact state.
+      AFFECTED: Indicates the impact is affected.
+      RESOLVED: Indicates the impact is resolved or no longer active.
+    """
+    STATE_UNSPECIFIED = 0
+    AFFECTED = 1
+    RESOLVED = 2
+
+  endTime = _messages.StringField(1)
+  location = _messages.MessageField('Location', 2)
+  product = _messages.MessageField('Product', 3)
+  startTime = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
 
 
 class EventUpdate(_messages.Message):

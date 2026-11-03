@@ -5217,18 +5217,19 @@ class WeeklyMaintenanceWindow(_messages.Message):
   r"""Time window specified for weekly operations.
 
   Enums:
-    DayValueValuesEnum: Optional. Allows to define schedule that runs
-      specified day of the week.
+    DayValueValuesEnum: Optional. The day of the week for the maintenance
+      window. This field is required. You can't use `DAY_OF_WEEK_UNSPECIFIED`.
 
   Fields:
-    day: Optional. Allows to define schedule that runs specified day of the
-      week.
-    startTime: Optional. Start time of the window in UTC.
+    day: Optional. The day of the week for the maintenance window. This field
+      is required. You can't use `DAY_OF_WEEK_UNSPECIFIED`.
+    startTime: Optional. The start time of the maintenance window in UTC. When
+      you specify a maintenance window, `start_time` is required.
   """
 
   class DayValueValuesEnum(_messages.Enum):
-    r"""Optional. Allows to define schedule that runs specified day of the
-    week.
+    r"""Optional. The day of the week for the maintenance window. This field
+    is required. You can't use `DAY_OF_WEEK_UNSPECIFIED`.
 
     Values:
       DAY_OF_WEEK_UNSPECIFIED: The day of the week is unspecified.
@@ -5261,6 +5262,8 @@ class ZoneDistributionConfig(_messages.Message):
       MULTI_ZONE.
 
   Fields:
+    activeZones: Output only. The exact list of zones where the instance
+      currently has active VMs.
     mode: Optional. Current zone distribution mode. Defaults to MULTI_ZONE.
     zone: Optional. Defines zone where all resources will be allocated with
       SINGLE_ZONE mode. Ignored for MULTI_ZONE mode.
@@ -5283,9 +5286,10 @@ class ZoneDistributionConfig(_messages.Message):
     MULTI_ZONE = 1
     SINGLE_ZONE = 2
 
-  mode = _messages.EnumField('ModeValueValuesEnum', 1)
-  zone = _messages.StringField(2)
-  zones = _messages.StringField(3, repeated=True)
+  activeZones = _messages.StringField(1, repeated=True)
+  mode = _messages.EnumField('ModeValueValuesEnum', 2)
+  zone = _messages.StringField(3)
+  zones = _messages.StringField(4, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(

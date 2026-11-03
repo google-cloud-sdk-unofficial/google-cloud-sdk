@@ -46,7 +46,6 @@ class SupportedFeatures:
       support_preemption_notice_duration,
       support_instance_flexibility_policy,
       support_workload_identity_config,
-      support_identity_type,
       support_instance_selection_min_cpu_platform,
       support_vsock_mode=False,
       support_expose_host_topology=False,
@@ -76,7 +75,6 @@ class SupportedFeatures:
         policy is supported.
       support_workload_identity_config: bool, whether workload identity config
         is supported.
-      support_identity_type: bool, whether identity type is supported.
       support_instance_selection_min_cpu_platform: bool, whether min CPU
         platform is supported.
       support_vsock_mode: bool, whether vsock mode is supported.
@@ -104,7 +102,6 @@ class SupportedFeatures:
         support_instance_flexibility_policy
     )
     self.support_workload_identity_config = support_workload_identity_config
-    self.support_identity_type = support_identity_type
     self.support_instance_selection_min_cpu_platform = (
         support_instance_selection_min_cpu_platform
     )
@@ -566,7 +563,6 @@ def CreateBulkInsertInstanceResource(
       args,
       compute_client.messages,
       supported_features.support_workload_identity_config,
-      supported_features.support_identity_type,
   )
 
   instance_properties = compute_client.messages.InstanceProperties(

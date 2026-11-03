@@ -195,7 +195,7 @@ class AccesscontextmanagerV1alpha(base_api.BaseApiClient):
     )
 
     def ReplaceAll(self, request, global_params=None):
-      r"""Replaces all existing access levels in an access policy with the access levels provided. This is done atomically. The long-running operation from this RPC has a successful status after all replacements propagate to long-lasting storage. If the replacement contains errors, an error response is returned for the first error encountered. Upon error, the replacement is cancelled, and existing access levels are not affected. The Operation.response field contains ReplaceAccessLevelsResponse. Removing access levels contained in existing service perimeters result in an error.
+      r"""Replaces all existing access levels in an access policy with the access levels provided. This is done atomically. The long-running operation from this RPC has a successful status after all replacements propagate to long-lasting storage. If the replacement contains errors, an error response is returned for the first error encountered. Upon error, the replacement is cancelled, and existing access levels are not affected. The `Operation.response` field contains `ReplaceAccessLevelsResponse`. Removing access levels contained in existing service perimeters results in an error.
 
       Args:
         request: (AccesscontextmanagerAccessPoliciesAccessLevelsReplaceAllRequest) input message
@@ -259,7 +259,7 @@ class AccesscontextmanagerV1alpha(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates an authorized orgs desc. The long-running operation from this RPC has a successful status after the authorized orgs desc propagates to long-lasting storage. If a authorized orgs desc contains errors, an error response is returned for the first error encountered. The name of this `AuthorizedOrgsDesc` will be assigned during creation.
+      r"""Creates an authorized orgs desc. The long-running operation from this RPC has a successful status after the authorized orgs desc propagates to long-lasting storage. If an authorized orgs desc contains errors, an error response is returned for the first error encountered. The name of this `AuthorizedOrgsDesc` will be assigned during creation.
 
       Args:
         request: (AccesscontextmanagerAccessPoliciesAuthorizedOrgsDescsCreateRequest) input message
@@ -367,7 +367,7 @@ class AccesscontextmanagerV1alpha(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates an authorized orgs desc. The long-running operation from this RPC has a successful status after the authorized orgs desc propagates to long-lasting storage. If a authorized orgs desc contains errors, an error response is returned for the first error encountered. Only the organization list in `AuthorizedOrgsDesc` can be updated. The name, authorization_type, asset_type and authorization_direction cannot be updated.
+      r"""Updates an authorized orgs desc. The long-running operation from this RPC has a successful status after the authorized orgs desc propagates to long-lasting storage. If an authorized orgs desc contains errors, an error response is returned for the first error encountered. Only the organization list in `AuthorizedOrgsDesc` can be updated. The `name`, `authorization_type`, `asset_type`, and `authorization_direction` cannot be updated.
 
       Args:
         request: (AccesscontextmanagerAccessPoliciesAuthorizedOrgsDescsPatchRequest) input message
@@ -404,7 +404,7 @@ class AccesscontextmanagerV1alpha(base_api.BaseApiClient):
           }
 
     def Commit(self, request, global_params=None):
-      r"""Commits the dry-run specification for all the service perimeters in an access policy. A commit operation on a service perimeter involves copying its `spec` field to the `status` field of the service perimeter. Only service perimeters with `use_explicit_dry_run_spec` field set to true are affected by a commit operation. The long-running operation from this RPC has a successful status after the dry-run specifications for all the service perimeters have been committed. If a commit fails, it causes the long-running operation to return an error response and the entire commit operation is cancelled. When successful, the Operation.response field contains CommitServicePerimetersResponse. The `dry_run` and the `spec` fields are cleared after a successful commit operation.
+      r"""Commits the dry-run specification for all the service perimeters in an access policy. A commit operation on a service perimeter involves copying its `spec` field to the `status` field of the service perimeter. Only service perimeters with `use_explicit_dry_run_spec` field set to true are affected by a commit operation. The long-running operation from this RPC has a successful status after the dry-run specifications for all the service perimeters have been committed. If a commit fails, it causes the long-running operation to return an error response and the entire commit operation is cancelled. When successful, the `Operation.response` field contains `CommitServicePerimetersResponse`. The `dry_run` and the `spec` fields are cleared after a successful commit operation.
 
       Args:
         request: (AccesscontextmanagerAccessPoliciesServicePerimetersCommitRequest) input message
@@ -566,7 +566,7 @@ class AccesscontextmanagerV1alpha(base_api.BaseApiClient):
     )
 
     def ReplaceAll(self, request, global_params=None):
-      r"""Replace all existing service perimeters in an access policy with the service perimeters provided. This is done atomically. The long-running operation from this RPC has a successful status after all replacements propagate to long-lasting storage. Replacements containing errors result in an error response for the first error encountered. Upon an error, replacements are cancelled and existing service perimeters are not affected. The Operation.response field contains ReplaceServicePerimetersResponse.
+      r"""Replaces all existing service perimeters in an access policy with the service perimeters provided. This is done atomically. The long-running operation from this RPC has a successful status after all replacements propagate to long-lasting storage. Replacements containing errors result in an error response for the first error encountered. Upon an error, replacements are cancelled and existing service perimeters are not affected. The `Operation.response` field contains `ReplaceServicePerimetersResponse`.
 
       Args:
         request: (AccesscontextmanagerAccessPoliciesServicePerimetersReplaceAllRequest) input message
@@ -854,7 +854,7 @@ class AccesscontextmanagerV1alpha(base_api.BaseApiClient):
           }
 
     def LookupConfiguredServicePerimeter(self, request, global_params=None):
-      r"""Looks up the configured service perimeter for a given resource Format: ['projects/{projectNumber}', 'folders/{folderNumber}'].
+      r"""Looks up the configured service perimeter for a given resource. Format: `['projects/{projectNumber}', 'folders/{folderNumber}']`.
 
       Args:
         request: (AccesscontextmanagerFoldersLookupConfiguredServicePerimeterRequest) input message
@@ -1119,7 +1119,7 @@ class AccesscontextmanagerV1alpha(base_api.BaseApiClient):
           }
 
     def LookupConfiguredServicePerimeter(self, request, global_params=None):
-      r"""Looks up the configured service perimeter for a given resource Format: ['projects/{projectNumber}', 'folders/{folderNumber}'].
+      r"""Looks up the configured service perimeter for a given resource. Format: `['projects/{projectNumber}', 'folders/{folderNumber}']`.
 
       Args:
         request: (AccesscontextmanagerProjectsLookupConfiguredServicePerimeterRequest) input message
@@ -1156,7 +1156,7 @@ class AccesscontextmanagerV1alpha(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get a VPS-SC Supported Service by name.
+      r"""Gets a VPC-SC Supported Service by name.
 
       Args:
         request: (AccesscontextmanagerServicesGetRequest) input message

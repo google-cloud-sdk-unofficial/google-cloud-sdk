@@ -51,7 +51,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 
-
 # --- Constants ---
 
 _OPERATIONS_COLLECTION = 'aiplatform.projects.locations.operations'
@@ -118,8 +117,10 @@ _FLAG_TO_MASKS = {
 }
 
 _BACKEND_FIELD_PATTERNS = (
-    r'spec\.[a-zA-Z0-9_.]+',
-    r'traffic_config(?:\.[a-zA-Z0-9_.]*)?',
+    r'spec\.[a-zA-Z0-9_.]+(?:\[\d+\][a-zA-Z0-9_.]*)*',
+    r'traffic_config(?:\.[a-zA-Z0-9_.]*)?(?:\[\d+\][a-zA-Z0-9_.]*)*',
+    r'encryption_spec(?:\.[a-zA-Z0-9_.]*)?',
+    r'kms_key_name',
     r'secret_env',
     r'env',
     r'display_name',
@@ -128,7 +129,9 @@ _BACKEND_FIELD_PATTERNS = (
 )
 _FIELD_REGEX = '|'.join(_BACKEND_FIELD_PATTERNS)
 _UNQUOTED_FIELD_REGEX = (
-    r'spec\.[a-zA-Z0-9_.]+|traffic_config(?:\.[a-zA-Z0-9_.]*)?'
+    r'spec\.[a-zA-Z0-9_.]+(?:\[\d+\][a-zA-Z0-9_.]*)*'
+    r'|traffic_config(?:\.[a-zA-Z0-9_.]*)?(?:\[\d+\][a-zA-Z0-9_.]*)*'
+    r'|encryption_spec(?:\.[a-zA-Z0-9_.]*)?'
 )
 
 _BACKEND_ERROR_FIELD_RE = re.compile(
@@ -244,6 +247,7 @@ _UPDATE_ONLY_FLAGS = (
     '--update-secret-env-vars',
     '--remove-secret-env-vars',
     '--clear-secret-env-vars',
+    '--clear-dns-peering-configs',
     '--update-labels',
     '--remove-labels',
     '--clear-labels',
@@ -349,9 +353,7 @@ def ValidateUpdateArgs(args: Any, for_deploy: bool = False) -> None:
 
 def ValidateUpdateTrafficArgs(args: Any) -> None:
   """Validates flags when updating traffic for an agent runtime."""
-  ValidateTrafficSplitToRevisions(
-      args.to_revisions, flag_name='--to-revisions'
-  )
+  ValidateTrafficSplitToRevisions(args.to_revisions, flag_name='--to-revisions')
 
 
 # --- API Execution Helpers ---
@@ -366,7 +368,8 @@ def _CandidatesForField(field: str) -> list[str]:
   Returns:
     Sorted list of candidate flag destination names.
   """
-  if field in ('labels', 'labels_diff'):
+  field = re.sub(r'\[\d+\]', '', field)
+  if field == 'labels':
     return ['update_labels', 'remove_labels', 'clear_labels', 'labels']
   if field in (
       'encryption_spec',
@@ -378,6 +381,19 @@ def _CandidatesForField(field: str) -> list[str]:
     return ['use_agent_identity']
   if field == 'spec.service_account':
     return ['service_account', 'default_service_account']
+  if field == 'spec.source_code_spec.python_spec.entrypoint_module':
+    return ['entrypoint_module']
+  if field == 'spec.source_code_spec.python_spec.entrypoint_object':
+    return ['entrypoint_object']
+  if field == 'spec.source_code_spec.python_spec.requirements_file':
+    return ['requirements_file']
+  if field in (
+      'spec.source_code_spec.python_spec.version',
+      'spec.source_code_spec.python_spec.python_version',
+  ):
+    return ['python_version']
+  if field.startswith('spec.source_code_spec.image_spec.build_args'):
+    return ['build_args']
   matches = set()
   for flag, masks in _FLAG_TO_MASKS.items():
     for mask in masks:
@@ -616,7 +632,11 @@ def _GetUpdateAndWait(
         asynchronous=asynchronous,
         cmd_args=args,
     )
-    log.UpdatedResource(runtime_ref.reasoningEnginesId, kind='agent runtime')
+    log.UpdatedResource(
+        runtime_ref.reasoningEnginesId,
+        kind='agent runtime',
+        is_async=asynchronous,
+    )
     return response
 
 
@@ -637,7 +657,9 @@ def UpdateRuntime(
       asynchronous=asynchronous,
       has_labels_update=has_labels_update,
       build_fn=lambda builder, existing: builder.BuildForUpdate(
-          args, existing_runtime=existing
+          args,
+          existing_runtime=existing,
+          runtime_name=runtime_ref.RelativeName(),
       ),
   )
 
@@ -808,6 +830,7 @@ class AgentRuntimeBuilder:
       self,
       args,
       existing_runtime: Any = None,
+      runtime_name: str | None = None,
   ) -> Any:
     """Builds the `ReasoningEngine` message for updating an existing runtime.
 
@@ -815,6 +838,8 @@ class AgentRuntimeBuilder:
       args: The parsed command-line arguments namespace.
       existing_runtime: The existing `ReasoningEngine` fetched from the API,
         used to preserve or mutate existing fields (such as etag, labels, env).
+      runtime_name: The relative resource name of the runtime, used to expand
+        short revision IDs into full revision resource names.
 
     Returns:
       A `GoogleCloudAiplatformV1beta1ReasoningEngine` message for the update.
@@ -830,6 +855,8 @@ class AgentRuntimeBuilder:
         trafficConfig=self._TrafficConfig(
             always_latest=bool(args.traffic_split_always_latest),
             percent_by_revision=args.traffic_split_to_revisions,
+            runtime_name=runtime_name
+            or (existing_runtime.name if existing_runtime else None),
         ),
     )
 
@@ -934,7 +961,7 @@ class AgentRuntimeBuilder:
     identity_type = None
     if args.use_agent_identity:
       identity_type = spec_cls.IdentityTypeValueValuesEnum.AGENT_IDENTITY
-    elif args.default_service_account:
+    elif args.service_account or args.default_service_account:
       identity_type = spec_cls.IdentityTypeValueValuesEnum.SERVICE_ACCOUNT
     service_account = args.service_account
 
@@ -998,11 +1025,11 @@ class AgentRuntimeBuilder:
   def _Spec(self, args) -> Any:
     """Builds `ReasoningEngine.spec`."""
     spec_cls = self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpec
-    identity_type = (
-        spec_cls.IdentityTypeValueValuesEnum.AGENT_IDENTITY
-        if args.use_agent_identity
-        else None
-    )
+    identity_type = None
+    if args.use_agent_identity:
+      identity_type = spec_cls.IdentityTypeValueValuesEnum.AGENT_IDENTITY
+    elif args.service_account or args.default_service_account:
+      identity_type = spec_cls.IdentityTypeValueValuesEnum.SERVICE_ACCOUNT
     service_account = args.service_account
 
     return _BuildIfAny(
@@ -1059,24 +1086,27 @@ class AgentRuntimeBuilder:
     if args.source is None:
       return None
 
+    inline_source = self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpecSourceCodeSpecInlineSource(
+        sourceArchive=_SourceArchive(args.source)
+    )
+
     python_spec = None
+    image_spec = None
     if any((
         args.entrypoint_module,
         args.entrypoint_object,
         args.requirements_file,
         args.python_version,
     )):
-      python_spec = (
-          self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpecSourceCodeSpecPythonSpec(
-              entrypointModule=args.entrypoint_module,
-              entrypointObject=args.entrypoint_object,
-              requirementsFile=args.requirements_file,
-              version=args.python_version,
-          )
+      python_spec = self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpecSourceCodeSpecPythonSpec(
+          entrypointModule=args.entrypoint_module,
+          entrypointObject=args.entrypoint_object,
+          requirementsFile=args.requirements_file,
+          version=args.python_version,
       )
-
-    image_spec = None
-    if not python_spec:
+    elif getattr(args, 'build_args', None) or os.path.isfile(
+        os.path.join(args.source, 'Dockerfile')
+    ):
       image_spec_cls = (
           self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpecSourceCodeSpecImageSpec
       )
@@ -1086,12 +1116,10 @@ class AgentRuntimeBuilder:
           else None
       )
       image_spec = image_spec_cls(buildArgs=build_args)
-
-    inline_source = (
-        self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpecSourceCodeSpecInlineSource(
-            sourceArchive=_SourceArchive(args.source)
-        )
-    )
+    else:
+      python_spec = (
+          self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpecSourceCodeSpecPythonSpec()
+      )
 
     return _BuildIfAny(
         self._messages.GoogleCloudAiplatformV1beta1ReasoningEngineSpecSourceCodeSpec,
@@ -1107,10 +1135,8 @@ class AgentRuntimeBuilder:
     )
     agent_server_mode = None
     if args.agent_server_mode is not None:
-      agent_server_mode = (
-          deployment_spec_cls.AgentServerModeValueValuesEnum(
-              args.agent_server_mode.upper()
-          )
+      agent_server_mode = deployment_spec_cls.AgentServerModeValueValuesEnum(
+          args.agent_server_mode.upper()
       )
     resource_limits = {
         key: value
@@ -1177,6 +1203,9 @@ class AgentRuntimeBuilder:
     keep_alive_probe = self._KeepAliveProbe(
         args, existing_dep=existing_dep, is_update=True
     )
+    psc_interface_config = self._PscInterfaceConfig(
+        args, existing_dep=existing_dep, is_update=True
+    )
 
     return _BuildIfAny(
         deployment_spec_cls,
@@ -1187,7 +1216,7 @@ class AgentRuntimeBuilder:
         keepAliveProbe=keep_alive_probe,
         maxInstances=args.max_instances,
         minInstances=args.min_instances,
-        pscInterfaceConfig=self._PscInterfaceConfig(args),
+        pscInterfaceConfig=psc_interface_config,
         resourceLimits=resource_limits,
         secretEnv=secret_env,
     )
@@ -1230,11 +1259,25 @@ class AgentRuntimeBuilder:
       )
     return secret_envs
 
-  def _PscInterfaceConfig(self, args) -> Any:
+  def _PscInterfaceConfig(
+      self, args, existing_dep: Any = None, is_update: bool = False
+  ) -> Any:
     """Builds `deployment_spec.psc_interface_config`."""
-    if getattr(args, 'clear_dns_peering_configs', False):
+    has_clear_dns = bool(getattr(args, 'clear_dns_peering_configs', False))
+    has_dns = bool(args.dns_peering_configs)
+    has_network_attachment = args.network_attachment is not None
+    if is_update and not (has_clear_dns or has_dns or has_network_attachment):
+      return None
+
+    existing_psc = existing_dep.pscInterfaceConfig if existing_dep else None
+    network_attachment = _Coalesce(
+        args.network_attachment,
+        existing_psc.networkAttachment if existing_psc else None,
+    )
+
+    if has_clear_dns:
       dns_peering_configs = []
-    elif args.dns_peering_configs:
+    elif has_dns:
       dns_peering_config_cls = (
           self._messages.GoogleCloudAiplatformV1beta1DnsPeeringConfig
       )
@@ -1251,7 +1294,7 @@ class AgentRuntimeBuilder:
     return _BuildIfAny(
         self._messages.GoogleCloudAiplatformV1beta1PscInterfaceConfig,
         dnsPeeringConfigs=dns_peering_configs,
-        networkAttachment=args.network_attachment,
+        networkAttachment=network_attachment,
     )
 
   def _AgentGatewayConfig(

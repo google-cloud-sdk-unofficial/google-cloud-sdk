@@ -241,7 +241,7 @@
     collection:
     - agentregistry.projects.locations.skills
     modify_request_hooks:
-    - googlecloudsdk.command_lib.agent_registry.util:SetDisplayNameAndDefaultsInCreate
+    - googlecloudsdk.command_lib.agent_registry.util:SetDisplayNameAndDefaultsInCreate:api_version=v1alpha
   async:
     collection:
     - agentregistry.projects.locations.operations

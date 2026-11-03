@@ -27,6 +27,9 @@ CRM_STAGING_GLOBAL_API = (
     'https://staging-cloudresourcemanager.sandbox.googleapis.com/')
 CRM_STAGING_REGIONAL_SUFFIX = (
     'stagqual-cloudresourcemanager.sandbox.googleapis.com/')
+CRM_STAGING_MTLS_REGIONAL_SUFFIX = (
+    # gcloud-disable-gdu-domain
+    'stagqual-cloudresourcemanager.mtls.sandbox.googleapis.com/')
 
 # A few zones are too long to fit into the API name character limit,
 # so we truncated them.
@@ -54,11 +57,24 @@ def CrmEndpointOverrides(location):
   endpoint_property = getattr(properties.VALUES.api_endpoint_overrides,
                               CRM_API_NAME)
   old_endpoint = endpoint_property.Get()
-  is_staging_env = old_endpoint and (CRM_STAGING_REGIONAL_SUFFIX in old_endpoint
-                                     or CRM_STAGING_GLOBAL_API == old_endpoint)
+  is_staging_mtls = old_endpoint and (
+      CRM_STAGING_MTLS_REGIONAL_SUFFIX.rstrip('/') in old_endpoint
+  )
+  is_staging_env = old_endpoint and (
+      CRM_STAGING_REGIONAL_SUFFIX in old_endpoint
+      or CRM_STAGING_GLOBAL_API == old_endpoint
+  )
   try:
     if location and location != 'global':
-      if is_staging_env:
+      if is_staging_mtls:
+        location = LOCATION_MAPPING.get(location, location)
+        endpoint_property.Set(
+            _DeriveCrmRegionalEndpoint(
+                'https://' + CRM_STAGING_MTLS_REGIONAL_SUFFIX,
+                location.replace('-', ''),
+            )
+        )
+      elif is_staging_env:
         # Staging endpoints are formatted differently from other envs due to
         # length; manually set the correct staging regional endpoint value.
         location = LOCATION_MAPPING.get(location, location)

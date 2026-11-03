@@ -30,13 +30,12 @@ DETAILED_HELP = {
 
         Use one of the following options to create a cluster:
         - [Preferred] Use granular flags to define cluster specs.
-        - Use --config flag with cluster specs in JSON format.
-        - Use --quickstart-cluster or --reference-architecture to apply pre-configured templates.
+        - Use --reference-architecture to apply pre-configured templates.
 
-        ## QUICKSTART CLUSTER AND REFERENCE ARCHITECTURES
-        Quickstart cluster and reference architectures allow you to quickly provision clusters with pre-defined configurations for compute, storage, and orchestrator.
+        ## REFERENCE ARCHITECTURES
+        Reference architectures allow you to quickly provision clusters with pre-defined configurations for compute, storage, and orchestrator.
 
-        *quickstart* (applied when using `--quickstart-cluster`):
+        *quickstart* (applied when using `--reference-architecture=quickstart`):
         - Compute: 2x a3-megagpu-8g nodes (Flex Start, max duration 7 days).
         - Login Node: 1x n2-standard-16 node.
         - Storage: 36TB Lustre storage (scratch disk).
@@ -88,17 +87,9 @@ DETAILED_HELP = {
         --slurm-default-partition=partition0 \
         --format=json
 
-        To create a cluster `my-cluster` in location `us-central1` with config in JSON string format run the following example:
-
-        $ {command} my-cluster --location=us-central1 --config='{"key": "value"}'
-
-        Or create a JSON file `my-cluster-config.json` with the cluster specs and run the following file example:
-
-        $ {command} my-cluster --location=us-central1 --config=my-cluster-config.json
-
         To create a cluster `my-cluster` in location `us-central1` using the quickstart setup with default cluster parameters, run the following example:
 
-        $ {command} my-cluster --location=us-central1 --quickstart-cluster --create-network=name=network0
+        $ {command} my-cluster --location=us-central1 --reference-architecture=quickstart --create-network=name=network0
 
         To create a cluster `my-cluster` in location `us-central1` using a pre-defined reference architecture choice (such as `g4-flex-start`), run the following example:
 
@@ -124,14 +115,9 @@ class Create(base.CreateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     api_version = api_utils.GetApiVersion(cls.ReleaseTrack())
     utils.AddClusterNameArgToParser(parser=parser, api_version=api_version)
-    group = parser.add_group(
-        help="Cluster configuration for provisioning.",
-        mutex=True,
-        required=True,
-    )
-    flags.AddConfig(parser=group, api_version=api_version)
-    flag_group = group.add_group(
+    flag_group = parser.add_group(
         help="Flag Configurations to define cluster spec.",
+        required=True,
     )
     flags.AddDescription(parser=flag_group, api_version=api_version)
     flags.AddLabels(parser=flag_group, api_version=api_version)
@@ -153,11 +139,9 @@ class Create(base.CreateCommand):
     flags.AddNetworkProject(
         parser=network_source_group, api_version=api_version
     )
-    ref_arch_group = flag_group.add_group(mutex=True)
     flags.AddReferenceArchitecture(
-        parser=ref_arch_group, api_version=api_version
+        parser=flag_group, api_version=api_version
     )
-    flags.AddQuickstartCluster(parser=ref_arch_group)
     flags.AddCreateFilestores(parser=flag_group, api_version=api_version)
     flags.AddFilestores(parser=flag_group, api_version=api_version)
     flags.AddCreateGcsBuckets(parser=flag_group, api_version=api_version)
@@ -193,9 +177,7 @@ class Create(base.CreateCommand):
       flags.AddSlurmTaskEpilogBashScripts(
           parser=slurm_group, api_version=api_version
       )
-      slurm_config_group = slurm_group.add_group(mutex=True)
-      flags.AddSlurmConfig(parser=slurm_config_group, api_version=api_version)
-      flags.AddSlurmConfFile(parser=slurm_config_group, api_version=api_version)
+      flags.AddSlurmConfig(parser=slurm_group, api_version=api_version)
       flags.AddEnableSlurmHealthCheck(
           parser=slurm_group, api_version=api_version
       )
@@ -225,10 +207,7 @@ class Create(base.CreateCommand):
     cluster_util = utils.ClusterUtil(args=args, message_module=messages)
     cluster_ref = cluster_util.cluster_ref
 
-    if args.IsSpecified("config"):
-      cluster = cluster_util.MakeClusterFromConfig()
-    else:
-      cluster = cluster_util.MakeCluster()
+    cluster = cluster_util.MakeCluster()
 
     operation = client.projects_locations_clusters.Create(
         messages.HypercomputeclusterProjectsLocationsClustersCreateRequest(

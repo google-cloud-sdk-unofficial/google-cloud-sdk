@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Cloud Datastream connection profiles API."""
-
+"""Cloud Datastream streams API."""
 
 import json
 from googlecloudsdk.api_lib.datastream import exceptions as ds_exceptions
@@ -667,15 +666,14 @@ class StreamsClient:
     """Updates a stream.
 
     Args:
-      name: str, the reference of the stream to
-          update.
+      name: str, the reference of the stream to update.
       release_track: Some arguments are added based on the command release
         track.
-      args: argparse.Namespace, The arguments that this command was
-          invoked with.
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
 
     Returns:
-      Operation: the operation for updating the connection profile.
+      Operation: the operation for updating the stream.
     """
     validate_only = args.validate_only
     force = args.force

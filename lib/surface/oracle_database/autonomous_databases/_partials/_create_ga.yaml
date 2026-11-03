@@ -192,6 +192,10 @@
             help_text: |-
               Autonomous Database with the Oracle APEX Application Development workload
               type.
+          - arg_value: lh
+            enum_value: LH
+            help_text: |-
+              Autonomous Database with the Lakehouse workload type.
         - arg_name: properties-db-edition
           api_field: autonomousDatabase.properties.dbEdition
           required: false

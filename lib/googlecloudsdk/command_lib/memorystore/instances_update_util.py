@@ -29,3 +29,32 @@ def UpdateAuthMode(unused_instance_ref, args, patch_request):
       ]
       patch_request.updateMask = ','.join(mask_fields)
   return patch_request
+
+
+def UpdateZonalFailureEmulationSpec(unused_instance_ref, args, patch_request):
+  """Hook to fix zonal failure emulation spec in the memorystore instance update mask."""
+
+  mask = patch_request.updateMask
+  mask_fields = set(mask.split(',')) if mask else set()
+
+  # Collapse granular zonal_failure_emulation_spec fields to top-level
+  # zonal_failure_emulation_spec as the server only expects top-level fields
+  # in the update mask.
+  new_mask_fields = set()
+  for f in mask_fields:
+    if f in (
+        'zonalFailureEmulationSpec',
+        'zonal_failure_emulation_spec',
+    ) or f.startswith(
+        ('zonalFailureEmulationSpec.', 'zonal_failure_emulation_spec.')
+    ):
+      new_mask_fields.add('zonal_failure_emulation_spec')
+    else:
+      new_mask_fields.add(f)
+
+  if args.IsSpecified('clear_zonal_failure_emulation_spec'):
+    patch_request.instance.zonalFailureEmulationSpec = None
+    new_mask_fields.add('zonal_failure_emulation_spec')
+
+  patch_request.updateMask = ','.join(sorted(new_mask_fields))
+  return patch_request

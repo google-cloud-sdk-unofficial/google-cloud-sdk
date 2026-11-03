@@ -1,21 +1,42 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Delete a Unit Kind
-    description: Delete a Unit Kind
-    examples: |-
-      To delete the Unit Kind, run:
+    brief: Delete a unit kind.
+    description: |-
+      Delete an App Lifecycle Manager unit kind.
 
-      $ {command}
+      The command prompts for confirmation before the unit kind is deleted.
+    examples: |-
+      To delete the unit kind named `my-unit-kind` in location `us-central1`,
+      run:
+
+        $ {command} my-unit-kind --location=us-central1
+
+      To delete the unit kind named `my-unit-kind` in location `us-central1`
+      without a confirmation prompt, run:
+
+        $ {command} my-unit-kind --location=us-central1 --quiet
+  ALPHA:
+    help_text:
+      brief: Delete a Unit Kind
+      description: Delete a Unit Kind
+      examples: |-
+        To delete the Unit Kind, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        Unit kind to delete.
+      ALPHA:
+        help_text: Name of the resource
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:unit_kind
       required: true
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.unitKinds

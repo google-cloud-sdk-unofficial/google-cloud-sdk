@@ -18,6 +18,8 @@
 - release_tracks:
   - BETA
   auto_generated: true
+  hints:
+    read_only: false
   help_text:
     brief: Delete an auth provider.
     description: Delete a single auth provider.

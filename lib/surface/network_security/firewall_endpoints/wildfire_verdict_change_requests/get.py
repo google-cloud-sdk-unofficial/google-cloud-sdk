@@ -24,7 +24,9 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Get(base.DescribeCommand):
   """Get a WildFire Verdict Change Request."""
 
@@ -33,6 +35,10 @@ class Get(base.DescribeCommand):
         To get a WildFire Verdict Change Request with name `req-123` and endpoint `organizations/1234/locations/us-central1-a/firewallEndpoints/my-endpoint`:
 
           $ {command} req-123 --endpoint=organizations/1234/locations/us-central1-a/firewallEndpoints/my-endpoint
+
+        To get a WildFire Verdict Change Request with name `req-123` for a project-level endpoint `projects/my-project/locations/us-central1-a/firewallEndpoints/my-endpoint`:
+
+          $ {command} req-123 --endpoint=projects/my-project/locations/us-central1-a/firewallEndpoints/my-endpoint
         """,
   }
 
@@ -58,8 +64,14 @@ class Get(base.DescribeCommand):
     concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)
 
   def Run(self, args):
-    client = wildfire_verdict_change_requests_api.Client(self.ReleaseTrack())
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
+    project_scoped = (
+        endpoint_ref.concept_type.name
+        == activation_flags.PROJECT_ENDPOINT_RESOURCE_COLLECTION
+    )
+    client = wildfire_verdict_change_requests_api.Client(
+        self.ReleaseTrack(), project_scoped
+    )
     request_name = (
         endpoint_ref.result.RelativeName()
         + '/wildfireVerdictChangeRequests/'

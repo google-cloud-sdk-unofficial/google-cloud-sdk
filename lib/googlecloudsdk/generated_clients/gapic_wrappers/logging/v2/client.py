@@ -15,10 +15,6 @@
 #
 """Logging gRPC client. This class is automatically generated."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 import contextlib
 
 from googlecloudsdk.core import gapic_util
@@ -58,5 +54,15 @@ class GapicWrapperClient(object):
     self._exit_stack.enter_context(self.metrics)
     return self
 
+  def close(self):
+    if hasattr(self, '_exit_stack'):
+      self._exit_stack.close()
+
   def __exit__(self, exc_type, exc_value, traceback):
-    self._exit_stack.close()
+    self.close()
+
+  def __del__(self):
+    try:
+      self.close()
+    except Exception:
+      pass

@@ -60,8 +60,8 @@ class StreamObjectsClient:
     """Lookup a stream object.
 
     Args:
-      project_id:
-      stream_id:
+      project_id: str, the project ID that owns the stream.
+      stream_id: str, the ID of the stream that contains the object.
       args: argparse.Namespace, The arguments that this command was invoked
         with.
 

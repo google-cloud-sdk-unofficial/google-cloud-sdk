@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities and CLI tree walker for listing read-only commands."""
+"""Utilities and CLI tree walker for listing read-only commands.
+
+WARNING: This module and `gcloud meta list-readonly-commands` are experimental
+and not for production use.
+"""
 
 import sys
 

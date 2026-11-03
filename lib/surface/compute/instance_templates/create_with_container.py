@@ -48,7 +48,6 @@ def _Args(
     support_flex_start=False,
     support_skip_guest_os_shutdown=False,
     support_workload_identity_config=False,
-    support_identity_type=False,
     support_vsock_mode=False,
 ):
   """Add flags shared by all release tracks."""
@@ -147,9 +146,7 @@ def _Args(
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
   if support_workload_identity_config:
-    instances_flags.AddWorkloadIdentityConfigArgs(
-        parser, support_identity_type=support_identity_type
-    )
+    instances_flags.AddWorkloadIdentityConfigArgs(parser)
   if support_vsock_mode:
     instances_flags.AddVsockModeArgs(parser)
 
@@ -182,7 +179,6 @@ class CreateWithContainer(base.CreateCommand):
   _support_disk_labels = False
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
-  _support_identity_type = False
   _support_vsock_mode = False
 
   @staticmethod
@@ -199,7 +195,6 @@ class CreateWithContainer(base.CreateCommand):
         support_ipv6_only=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
-        support_identity_type=False,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION
@@ -441,10 +436,7 @@ class CreateWithContainer(base.CreateCommand):
     )
     workload_identity_config = (
         instance_utils.CreateWorkloadIdentityConfigMessage(
-            args,
-            client.messages,
-            self._support_workload_identity_config,
-            self._support_identity_type,
+            args, client.messages, self._support_workload_identity_config
         )
     )
 
@@ -513,7 +505,6 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_disk_labels = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
-  _support_identity_type = False
 
   @staticmethod
   def Args(parser):
@@ -530,7 +521,6 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
-        support_identity_type=False,
         support_vsock_mode=False,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -605,10 +595,7 @@ class CreateWithContainerBeta(CreateWithContainer):
     )
     workload_identity_config = (
         instance_utils.CreateWorkloadIdentityConfigMessage(
-            args,
-            client.messages,
-            self._support_workload_identity_config,
-            self._support_identity_type,
+            args, client.messages, self._support_workload_identity_config
         )
     )
 
@@ -679,7 +666,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_ipv6_only = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
-  _support_identity_type = True
   _support_vsock_mode = True
 
   @staticmethod
@@ -697,7 +683,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
-        support_identity_type=True,
         support_vsock_mode=True,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
@@ -772,10 +757,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     )
     workload_identity_config = (
         instance_utils.CreateWorkloadIdentityConfigMessage(
-            args,
-            client.messages,
-            self._support_workload_identity_config,
-            self._support_identity_type,
+            args, client.messages, self._support_workload_identity_config
         )
     )
 

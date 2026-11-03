@@ -20,3 +20,10 @@ deployment:
     attribute_name: deployment
     help: GSAO deployment name
   disable_auto_completers: false
+
+chat_app_config:
+  name: Chat app configuration
+  collection: gsuiteaddons.projects.chatAppConfig
+  attributes:
+  - *project
+  disable_auto_completers: false

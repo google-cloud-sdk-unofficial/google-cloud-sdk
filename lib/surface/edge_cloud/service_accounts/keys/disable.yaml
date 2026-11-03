@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: Disable a service account key for a service account on a Google Distributed Cloud zone.
     description: Disable a service account key for a service account on a Google Distributed Cloud zone.

@@ -1093,6 +1093,25 @@ class Empty(_messages.Message):
   """
 
 
+class ExportPscConfig(_messages.Message):
+  r"""Configuration for more granular control of Private Service Connect
+
+  connection propagation. This allows enabling or disabling connection
+  propagation for specific types of Private Service Connect endpoints.
+
+  Fields:
+    globalGoogleApis: Optional. Controls whether Private Service Connect
+      endpoints for global Google APIs should be propagated. The default value
+      is false.
+    publishedServicesAndRegionalGoogleApis: Optional. Controls whether Private
+      Service Connect endpoints for regional ILBs and regional Google APIs
+      should be propagated. Default value is true if export_psc is true.
+      Otherwise, the default value is false.
+  """
+
+  globalGoogleApis = _messages.BooleanField(1)
+  publishedServicesAndRegionalGoogleApis = _messages.BooleanField(2)
+
 
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
@@ -1708,6 +1727,7 @@ class Group(_messages.Message):
 
 class Hub(_messages.Message):
   r"""A Network Connectivity Center hub is a global management resource to
+
   which you attach spokes. A single hub can contain spokes from multiple
   regions. However, if any of a hub's spokes use the site-to-site data
   transfer feature, the resources associated with those spokes must all be in
@@ -1743,6 +1763,8 @@ class Hub(_messages.Message):
       propagation is enabled for the hub. If true, Private Service Connect
       endpoints in VPC spokes attached to the hub are made accessible to other
       VPC spokes attached to the hub. The default value is false.
+    exportPscConfig: Optional. Config for more granular control of Private
+      Service Connect transitivity.
     labels: Optional labels in key-value pair format. For more information
       about labels, see [Requirements for
       labels](https://cloud.google.com/resource-manager/docs/creating-
@@ -1878,16 +1900,17 @@ class Hub(_messages.Message):
   description = _messages.StringField(2)
   exchangePupi = _messages.BooleanField(3)
   exportPsc = _messages.BooleanField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  policyMode = _messages.EnumField('PolicyModeValueValuesEnum', 7)
-  presetTopology = _messages.EnumField('PresetTopologyValueValuesEnum', 8)
-  routeTables = _messages.StringField(9, repeated=True)
-  routingVpcs = _messages.MessageField('RoutingVPC', 10, repeated=True)
-  spokeSummary = _messages.MessageField('SpokeSummary', 11)
-  state = _messages.EnumField('StateValueValuesEnum', 12)
-  uniqueId = _messages.StringField(13)
-  updateTime = _messages.StringField(14)
+  exportPscConfig = _messages.MessageField('ExportPscConfig', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  policyMode = _messages.EnumField('PolicyModeValueValuesEnum', 8)
+  presetTopology = _messages.EnumField('PresetTopologyValueValuesEnum', 9)
+  routeTables = _messages.StringField(10, repeated=True)
+  routingVpcs = _messages.MessageField('RoutingVPC', 11, repeated=True)
+  spokeSummary = _messages.MessageField('SpokeSummary', 12)
+  state = _messages.EnumField('StateValueValuesEnum', 13)
+  uniqueId = _messages.StringField(14)
+  updateTime = _messages.StringField(15)
 
 
 class HubStatusEntry(_messages.Message):
@@ -6489,8 +6512,9 @@ class Route(_messages.Message):
     FAILED = 11
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The route's type. Its type is determined by the
-    properties of its IP address range.
+    r"""Output only. The route's type.
+
+    Its type is determined by the properties of its IP address range.
 
     Values:
       ROUTE_TYPE_UNSPECIFIED: No route type information specified
@@ -6501,11 +6525,14 @@ class Route(_messages.Message):
       DYNAMIC_ROUTE: The route leads to a destination in a dynamic route.
         Dynamic routes are derived from Border Gateway Protocol (BGP)
         advertisements received from an NCC hybrid spoke.
+      PSC_GLOBAL_GAPI: The route leads to a destination within the Private
+        Service Connect Global Google API range of the VPC network.
     """
     ROUTE_TYPE_UNSPECIFIED = 0
     VPC_PRIMARY_SUBNET = 1
     VPC_SECONDARY_SUBNET = 2
     DYNAMIC_ROUTE = 3
+    PSC_GLOBAL_GAPI = 4
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):

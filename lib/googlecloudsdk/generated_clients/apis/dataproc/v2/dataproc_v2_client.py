@@ -40,6 +40,9 @@ class DataprocV2(base_api.BaseApiClient):
     self.projects_locations_environments_revisions = self.ProjectsLocationsEnvironmentsRevisionsService(self)
     self.projects_locations_environments = self.ProjectsLocationsEnvironmentsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_runs = self.ProjectsLocationsRunsService(self)
+    self.projects_locations_workloads_runs = self.ProjectsLocationsWorkloadsRunsService(self)
+    self.projects_locations_workloads = self.ProjectsLocationsWorkloadsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -394,6 +397,549 @@ class DataprocV2(base_api.BaseApiClient):
         request_field='',
         request_type_name='DataprocProjectsLocationsOperationsListRequest',
         response_type_name='ListOperationsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRunsService(base_api.BaseApiService):
+    """Service class for the projects_locations_runs resource."""
+
+    _NAME = 'projects_locations_runs'
+
+    def __init__(self, client):
+      super(DataprocV2.ProjectsLocationsRunsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Cancels an active or unfinished Run.
+
+      Args:
+        request: (DataprocProjectsLocationsRunsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/runs/{runsId}:cancel',
+        http_method='POST',
+        method_id='dataproc.projects.locations.runs.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:cancel',
+        request_field='cancelRunRequest',
+        request_type_name='DataprocProjectsLocationsRunsCancelRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Create(self, request, global_params=None):
+      r"""Creates a Run.
+
+      Args:
+        request: (DataprocProjectsLocationsRunsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/runs',
+        http_method='POST',
+        method_id='dataproc.projects.locations.runs.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId'],
+        relative_path='v2/{+parent}/runs',
+        request_field='run',
+        request_type_name='DataprocProjectsLocationsRunsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a Run.
+
+      Args:
+        request: (DataprocProjectsLocationsRunsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/runs/{runsId}',
+        http_method='DELETE',
+        method_id='dataproc.projects.locations.runs.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsRunsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a Run by resource name.
+
+      Args:
+        request: (DataprocProjectsLocationsRunsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Run) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/runs/{runsId}',
+        http_method='GET',
+        method_id='dataproc.projects.locations.runs.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsRunsGetRequest',
+        response_type_name='Run',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Runs in a given location.
+
+      Args:
+        request: (DataprocProjectsLocationsRunsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListRunsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/runs',
+        http_method='GET',
+        method_id='dataproc.projects.locations.runs.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v2/{+parent}/runs',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsRunsListRequest',
+        response_type_name='ListRunsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsWorkloadsRunsService(base_api.BaseApiService):
+    """Service class for the projects_locations_workloads_runs resource."""
+
+    _NAME = 'projects_locations_workloads_runs'
+
+    def __init__(self, client):
+      super(DataprocV2.ProjectsLocationsWorkloadsRunsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Cancels an active or unfinished Workload Run.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsRunsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}/runs/{runsId}:cancel',
+        http_method='POST',
+        method_id='dataproc.projects.locations.workloads.runs.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:cancel',
+        request_field='cancelWorkloadRunRequest',
+        request_type_name='DataprocProjectsLocationsWorkloadsRunsCancelRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a Workload Run.Performs a hard delete of the specified workload run. Active runs cannot be deleted; they must be canceled or reach a terminal state before deletion.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsRunsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}/runs/{runsId}',
+        http_method='DELETE',
+        method_id='dataproc.projects.locations.workloads.runs.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsWorkloadsRunsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a Workload Run by resource name.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsRunsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Run) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}/runs/{runsId}',
+        http_method='GET',
+        method_id='dataproc.projects.locations.workloads.runs.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsWorkloadsRunsGetRequest',
+        response_type_name='Run',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Runs in a given workload.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsRunsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListWorkloadRunsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}/runs',
+        http_method='GET',
+        method_id='dataproc.projects.locations.workloads.runs.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'showDeleted'],
+        relative_path='v2/{+parent}/runs',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsWorkloadsRunsListRequest',
+        response_type_name='ListWorkloadRunsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsWorkloadsService(base_api.BaseApiService):
+    """Service class for the projects_locations_workloads resource."""
+
+    _NAME = 'projects_locations_workloads'
+
+    def __init__(self, client):
+      super(DataprocV2.ProjectsLocationsWorkloadsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a workload.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads',
+        http_method='POST',
+        method_id='dataproc.projects.locations.workloads.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'workloadId'],
+        relative_path='v2/{+parent}/workloads',
+        request_field='workload',
+        request_type_name='DataprocProjectsLocationsWorkloadsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a workload.Performs a soft delete, transitioning the workload to DELETED state and retaining it for 30 days. Once soft-deleted, no new runs (scheduled or on-demand) will be triggered.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}',
+        http_method='DELETE',
+        method_id='dataproc.projects.locations.workloads.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'requestId'],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsWorkloadsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Disable(self, request, global_params=None):
+      r"""Disables a workload. Transitions workload state from ACTIVE to DISABLED. Halts future run submissions without canceling active runs.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsDisableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Disable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Disable.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}:disable',
+        http_method='POST',
+        method_id='dataproc.projects.locations.workloads.disable',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:disable',
+        request_field='disableWorkloadRequest',
+        request_type_name='DataprocProjectsLocationsWorkloadsDisableRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Enable(self, request, global_params=None):
+      r"""Enables a workload. Transitions workload state from DISABLED back to ACTIVE, re-enabling run submissions.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsEnableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Enable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Enable.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}:enable',
+        http_method='POST',
+        method_id='dataproc.projects.locations.workloads.enable',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:enable',
+        request_field='enableWorkloadRequest',
+        request_type_name='DataprocProjectsLocationsWorkloadsEnableRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Expunge(self, request, global_params=None):
+      r"""ExpungeWorkload triggers immediate permanent deletion of a workload.An expunged workload cannot be undeleted, and this operation is irreversible.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsExpungeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Expunge')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Expunge.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}:expunge',
+        http_method='POST',
+        method_id='dataproc.projects.locations.workloads.expunge',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:expunge',
+        request_field='expungeWorkloadRequest',
+        request_type_name='DataprocProjectsLocationsWorkloadsExpungeRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the resource representation for a workload.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Workload) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}',
+        http_method='GET',
+        method_id='dataproc.projects.locations.workloads.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsWorkloadsGetRequest',
+        response_type_name='Workload',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists workloads in a project.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListWorkloadsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads',
+        http_method='GET',
+        method_id='dataproc.projects.locations.workloads.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken', 'showDeleted'],
+        relative_path='v2/{+parent}/workloads',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsWorkloadsListRequest',
+        response_type_name='ListWorkloadsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a workload.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}',
+        http_method='PATCH',
+        method_id='dataproc.projects.locations.workloads.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v2/{+name}',
+        request_field='workload',
+        request_type_name='DataprocProjectsLocationsWorkloadsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Run(self, request, global_params=None):
+      r"""Executes a registered, deployed workload.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsRunRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Run')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Run.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}:run',
+        http_method='POST',
+        method_id='dataproc.projects.locations.workloads.run',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:run',
+        request_field='runWorkloadRequest',
+        request_type_name='DataprocProjectsLocationsWorkloadsRunRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Undelete(self, request, global_params=None):
+      r"""Restores a soft-deleted workload.
+
+      Args:
+        request: (DataprocProjectsLocationsWorkloadsUndeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Undelete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Undelete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/workloads/{workloadsId}:undelete',
+        http_method='POST',
+        method_id='dataproc.projects.locations.workloads.undelete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:undelete',
+        request_field='undeleteWorkloadRequest',
+        request_type_name='DataprocProjectsLocationsWorkloadsUndeleteRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

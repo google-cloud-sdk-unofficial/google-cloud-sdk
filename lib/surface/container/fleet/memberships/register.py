@@ -42,9 +42,28 @@ DOCKER_CREDENTIAL_FILE_FLAG = '--docker-credential-file'
 
 
 def _ValidateConnectAgentCredentialFlags(args):
+  """Validates that Connect agent credential flags are set when required.
+
+  Connect agent credentials are not required when the Connect agent is not
+  installed, i.e. when `--membership-type=READ_ONLY` is specified or
+  `--install-connect-agent` is explicitly set to false.
+
+  Args:
+    args: The parsed command-line arguments.
+
+  Raises:
+    exceptions.Error: If the Connect agent will be installed but neither
+      `--enable-workload-identity` nor `--service-account-key-file` is
+      specified.
+  """
   enable_workload_identity = getattr(args, 'enable_workload_identity', False)
-  skip_connect_agent = (args.IsSpecified('install_connect_agent') and
-                        not args.install_connect_agent)
+  skip_connect_agent = (
+      getattr(args, 'membership_type', None) == 'READ_ONLY'
+      or (
+          args.IsSpecified('install_connect_agent')
+          and not args.install_connect_agent
+      )
+  )
   if (
       not skip_connect_agent
       and not args.service_account_key_file
@@ -341,6 +360,17 @@ class Register(base.CreateCommand):
           network-accessible to the gcloud client running this command.
           """),
     )
+    parser.add_argument(
+        '--membership-type',
+        type=str,
+        choices=['READ_ONLY'],
+        hidden=True,
+        help=(
+            'The type of the membership. `READ_ONLY` means the membership '
+            'supports only READ_ONLY features i.e. can view cluster '
+            'information but no mutating operations.'
+        ),
+    )
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
@@ -360,9 +390,10 @@ class Register(base.CreateCommand):
     elif hub_util.LocationFromGKEArgs(args):
       location = hub_util.LocationFromGKEArgs(args)
 
-    gke_cluster_resource_link, gke_cluster_uri = gke_util.GetGKEClusterResoureLinkAndURI(
-        gke_uri=args.GetValue('gke_uri'),
-        gke_cluster=args.GetValue('gke_cluster'))
+    gke_cluster_resource_link, gke_cluster_uri = (
+        gke_util.GetGKEClusterResoureLinkAndURI(
+            gke_uri=args.GetValue('gke_uri'),
+            gke_cluster=args.GetValue('gke_cluster')))
     manifest_path = args.GetValue('manifest_output_file')
     if (
         gke_cluster_resource_link
@@ -374,16 +405,39 @@ class Register(base.CreateCommand):
           ' together with "install-connect-agent".  '
       )
 
+    membership_type = getattr(args, 'membership_type', None)
+
+    if membership_type == 'READ_ONLY':
+      if gke_cluster_resource_link:
+        raise exceptions.Error(
+            '--membership-type=READ_ONLY is not supported for GKE clusters.'
+        )
+      if getattr(args, 'install_connect_agent', False):
+        raise exceptions.Error(
+            '--membership-type=READ_ONLY cannot be used with '
+            '--install-connect-agent.'
+        )
+
     # Register GKE cluster with simple Add-to-Hub API call. Connect agent will
     # not get installed. And Kubernetes Client is not needed.
     if gke_cluster_resource_link and not args.GetValue('install_connect_agent'):
       return self._RegisterGKEWithoutConnectAgent(
-          gke_cluster_resource_link, gke_cluster_uri, project, location, args
+          gke_cluster_resource_link,
+          gke_cluster_uri,
+          project,
+          location,
+          args,
       )
 
     # Register non-GKE cluster, or GKE with --install-connect-agent.
     # It will require a kube client.
     _ValidateConnectAgentCredentialFlags(args)
+    skip_cluster_mutations = membership_type == 'READ_ONLY'
+    skip_connect_agent = skip_cluster_mutations or (
+        args.IsSpecified('install_connect_agent')
+        and not args.install_connect_agent
+    )
+
     with kube_util.KubernetesClient(
         api_adapter=api_adapter,
         gke_uri=getattr(args, 'gke_uri', None),
@@ -398,7 +452,8 @@ class Register(base.CreateCommand):
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
     ) as kube_client:
-      kube_client.CheckClusterAdminPermissions()
+      if not skip_cluster_mutations:
+        kube_client.CheckClusterAdminPermissions()
       kube_util.ValidateClusterIdentifierFlags(kube_client, args)
       if self.ReleaseTrack() is not base.ReleaseTrack.GA:
         flags.VerifyGetCredentialsFlags(args)
@@ -504,14 +559,17 @@ class Register(base.CreateCommand):
         resource_name = api_util.MembershipRef(project, location,
                                                args.MEMBERSHIP_NAME)
         try:
-          self._VerifyClusterExclusivity(kube_client, parent, membership_id)
-          obj = api_util.CreateMembership(project, args.MEMBERSHIP_NAME,
-                                          location, gke_cluster_self_link, uuid,
-                                          self.ReleaseTrack(), issuer_url,
-                                          private_keyset_json,
-                                          api_server_version)
+          if not skip_cluster_mutations:
+            self._VerifyClusterExclusivity(kube_client, parent, membership_id)
+          obj = api_util.CreateMembership(
+              project, args.MEMBERSHIP_NAME, location,
+              gke_cluster_self_link, uuid, self.ReleaseTrack(),
+              issuer_url, private_keyset_json, api_server_version,
+              membership_type)
           # Generate CRD Manifest should only be called afer create/update.
-          self._InstallOrUpdateExclusivityArtifacts(kube_client, resource_name)
+          if not skip_cluster_mutations:
+            self._InstallOrUpdateExclusivityArtifacts(
+                kube_client, resource_name)
         except apitools_exceptions.HttpConflictError as e:
           # If the error is not due to the object already existing, re-raise.
           error = core_api_exceptions.HttpErrorPayload(e)
@@ -579,8 +637,9 @@ class Register(base.CreateCommand):
                 issuer_url=issuer_url,
                 oidc_jwks=private_keyset_json)
             # Generate CRD Manifest should only be called afer create/update.
-            self._InstallOrUpdateExclusivityArtifacts(kube_client,
-                                                      resource_name)
+            if not skip_cluster_mutations:
+              self._InstallOrUpdateExclusivityArtifacts(kube_client,
+                                                        resource_name)
             log.status.Print(
                 'Updated the membership [{}] for the cluster [{}]'.format(
                     resource_name, args.MEMBERSHIP_NAME))
@@ -588,7 +647,8 @@ class Register(base.CreateCommand):
             raise exceptions.Error(
                 'Error in updating the membership [{}]:{}'.format(
                     resource_name, e))
-        elif not args.IsSpecified('install_connect_agent'):
+        elif not skip_cluster_mutations and not args.IsSpecified(
+            'install_connect_agent'):
           console_io.PromptContinue(
               message='A membership [{}] for the cluster [{}] already exists. '
               'Continuing will reinstall the Connect agent deployment to use a '
@@ -602,10 +662,7 @@ class Register(base.CreateCommand):
 
       # Attempt to update the existing agent deployment, or install a new agent
       # if necessary.
-      if (args.IsSpecified('install_connect_agent') and
-          not args.install_connect_agent):
-        pass
-      else:
+      if not skip_connect_agent:
         try:
           agent_util.DeployConnectAgent(
               kube_client,
@@ -720,7 +777,12 @@ class Register(base.CreateCommand):
     kube_client.ApplyMembership(res.crdManifest, res.crManifest)
 
   def _RegisterGKEWithoutConnectAgent(
-      self, gke_cluster_resource_link, gke_cluster_uri, project, location, args
+      self,
+      gke_cluster_resource_link,
+      gke_cluster_uri,
+      project,
+      location,
+      args,
   ):
     """Register a GKE cluster without installing Connect agent."""
     issuer_url = None

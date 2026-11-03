@@ -175,3 +175,38 @@ def AddTableResourceArg(
       f'The {table_type} Table {verb}.',
       required=True,
   ).AddToParser(parser)
+
+
+def GetViewResourceSpec():
+  """Gets the resource spec for a BigLake Iceberg view."""
+  return concepts.ResourceSpec(
+      'biglake.iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.views',
+      resource_name='view',
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      catalogsId=concepts.ResourceParameterAttributeConfig(
+          'catalog', 'The Iceberg Catalog for the resource.'
+      ),
+      namespacesId=concepts.ResourceParameterAttributeConfig(
+          'namespace', 'The Iceberg Namespace for the resource.'
+      ),
+      viewsId=concepts.ResourceParameterAttributeConfig(
+          'view', 'The Iceberg View for the resource.'
+      ),
+  )
+
+
+def AddViewResourceArg(parser, verb, positional=True):
+  """Adds a resource argument for a BigLake Iceberg view.
+
+  Args:
+    parser: The argparse parser.
+    verb: The verb to describe the resource, e.g., "to describe".
+    positional: Whether the argument should be positional or a flag.
+  """
+  resource_spec = GetViewResourceSpec()
+  concept_parsers.ConceptParser.ForResource(
+      'view' if positional else '--view',
+      resource_spec,
+      f'The Iceberg View {verb}.',
+      required=True,
+  ).AddToParser(parser)

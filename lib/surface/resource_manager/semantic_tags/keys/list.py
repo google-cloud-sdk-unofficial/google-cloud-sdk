@@ -14,37 +14,13 @@
 # limitations under the License.
 """List command for Resource Manager Semantic Tag Keys."""
 
+from googlecloudsdk.api_lib.resource_manager import semantic_tags
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.resource_manager import endpoint_utils as endpoints
 from googlecloudsdk.command_lib.resource_manager.semantic_tags import keys_catalog
-from googlecloudsdk.core.resource import resource_expr_rewrite
+from googlecloudsdk.command_lib.resource_manager.semantic_tags import utils
 from googlecloudsdk.core.resource import resource_projection_spec
-
-
-class _ParentKeyFilterRewriter(resource_expr_rewrite.Backend):
-  """Filter expression rewriter for ListSemanticTagKeys."""
-
-  def __init__(self, location: str = 'global', **kwargs):
-    super().__init__(**kwargs)
-    self._location = location
-    self.parent_key: str | None = None
-    self.has_parent_key_filter: bool = False
-
-  def RewriteTerm(self, key: str, op: str, operand, key_type):
-    del key_type  # Unused.
-    if key.lower() not in ('parentsemantictagkey', 'parent_semantic_tag_key'):
-      return None
-    self.has_parent_key_filter = True
-    if op != '=' or isinstance(operand, list):
-      return None
-    raw_val = str(operand)
-    if raw_val:
-      self.parent_key = keys_catalog.NormalizeSemanticTagKey(
-          raw_val, self._location, arg_name='--filter'
-      )
-    else:
-      self.parent_key = ''
-    return f'parent_semantic_tag_key = "{self.parent_key}"'
 
 
 @base.DefaultUniverseOnly
@@ -87,10 +63,13 @@ class List(base.ListCommand):
         metavar='KEY',
         help=(
             'Filter results to immediate child Semantic Tag Keys of the'
-            ' specified parent key. Accepts the full resource name'
-            ' (`projects/gcp-semantic-tags-catalog/locations/{location}/'
-            'semanticTagKeys/{key}`) or the key ID shorthand (for example,'
-            ' `placement`).'
+            ' specified parent key. Accepts the key ID (for example,'
+            ' `placement`), `semanticTagKeys/{key}`,'
+            ' `locations/{location}/semanticTagKeys/{key}`, or the full'
+            ' resource name (`projects/gcp-semantic-tags-catalog/locations/'
+            '{location}/semanticTagKeys/{key}`). Shorter forms use the'
+            ' `--location` value and the Google Cloud Semantic Tags Catalog'
+            ' project.'
         ),
     )
     parser.add_argument(
@@ -134,30 +113,29 @@ class List(base.ListCommand):
     defaults = resource_projection_spec.ProjectionSpec(
         symbols=display_info.transforms, aliases=display_info.aliases
     )
-    rewriter = _ParentKeyFilterRewriter(location=location)
-    args.filter, _ = rewriter.Rewrite(args.filter, defaults=defaults)
+    rewriter = utils.SemanticTagKeysFilterRewriter(location=location)
+    args.filter, server_filter = rewriter.Rewrite(
+        args.filter, defaults=defaults
+    )
 
-    expected_parent = rewriter.parent_key
     if args.IsSpecified('parent_key'):
-      if rewriter.has_parent_key_filter:
+      if server_filter or rewriter.has_key_filter:
         raise calliope_exceptions.InvalidArgumentException(
             '--parent-key',
             'Cannot specify both `--parent-key` and `parentSemanticTagKey` in'
             ' `--filter`.',
         )
-      if not args.parent_key:
-        expected_parent = ''
-      else:
-        expected_parent = keys_catalog.NormalizeSemanticTagKey(
+      parent_key = ''
+      if args.parent_key:
+        parent_key = keys_catalog.NormalizeSemanticTagKey(
             args.parent_key, location, arg_name='--parent-key'
         )
+      server_filter = f'parent_semantic_tag_key = "{parent_key}"'
 
-    entries = keys_catalog.GetHardcodedSemanticTagKeys(location)
-    results = []
-    for item in entries:
-      if expected_parent is not None and (
-          item.get('parentSemanticTagKey', '') != expected_parent
-      ):
-        continue
-      results.append(keys_catalog.ApplyView(item, args.view))
-    return results
+    with endpoints.CrmEndpointOverrides(location):
+      return semantic_tags.ListSemanticTagKeys(
+          parent=f'{keys_catalog.GetCatalogParent()}/locations/{location}',
+          filter_expr=server_filter,
+          view=args.view,
+          page_size=args.page_size,
+      )

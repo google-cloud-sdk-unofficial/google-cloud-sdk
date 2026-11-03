@@ -17,12 +17,12 @@ class AccessRule(_messages.Message):
 
   Enums:
     AccessModeValueValuesEnum: Optional. The access mode for the access rule
-      nodemap. Default is READ_WRITE.
+      nodemap. Default is `READ_WRITE`.
     SquashModeValueValuesEnum: Required. Squash mode for the access rule.
 
   Fields:
     accessMode: Optional. The access mode for the access rule nodemap. Default
-      is READ_WRITE.
+      is `READ_WRITE`.
     ipAddressRanges: Required. The IP address ranges to which to apply this
       access rule. Accepts non-overlapping CIDR ranges (e.g.,
       `192.168.1.0/24`) and IP addresses (e.g., `192.168.1.0`).
@@ -31,19 +31,22 @@ class AccessRule(_messages.Message):
       can be only a single directory at most. If no directory is mentioned,
       then the root directory will be accessible.
     name: Required. The name of the access rule policy group. Must be 16
-      characters or less and include only alphanumeric characters or '_'.
+      characters or less and include only alphanumeric characters or
+      underscores.
     squashGid: Optional. Squash GID for the access rule. If the squash mode
-      for this rule is ROOT_SQUASH, root users matching the ip_address_ranges
-      are squashed to this GID. Defaults to 0 (no root squash).
+      for this rule is `ROOT_SQUASH`, root users matching the
+      `ip_address_ranges` are squashed to this GID. Defaults to 0 (no root
+      squash).
     squashMode: Required. Squash mode for the access rule.
     squashUid: Optional. Squash UID for the access rule. If the squash mode
-      for this rule is ROOT_SQUASH, root users matching the ip_address_ranges
-      are squashed to this UID. Defaults to 0 (no root squash).
+      for this rule is `ROOT_SQUASH`, root users matching the
+      `ip_address_ranges` are squashed to this UID. Defaults to 0 (no root
+      squash).
   """
 
   class AccessModeValueValuesEnum(_messages.Enum):
     r"""Optional. The access mode for the access rule nodemap. Default is
-    READ_WRITE.
+    `READ_WRITE`.
 
     Values:
       ACCESS_MODE_UNSPECIFIED: Unspecified access mode.
@@ -59,18 +62,20 @@ class AccessRule(_messages.Message):
 
     Values:
       SQUASH_MODE_UNSPECIFIED: Unspecified squash mode.
-      NO_SQUASH: Squash is disabled. If set inside an AccessRule, root users
-        matching the ip_ranges are not squashed. If set as the
-        default_squash_mode, root squash is disabled for this instance. If the
-        default squash mode is `NO_SQUASH`, do not set the default_squash_uid
-        or default_squash_gid, or an `invalid argument` error is returned.
+      NO_SQUASH: Squash is disabled. If set inside an `AccessRule`, root users
+        matching the `ip_address_ranges` are not squashed. If set as the
+        `default_squash_mode`, root squash is disabled for this instance. If
+        the default squash mode is `NO_SQUASH`, do not set the
+        `default_squash_uid` or `default_squash_gid`, or an `invalid argument`
+        error is returned.
       ROOT_SQUASH: Root user squash is enabled. Not supported inside an
-        AccessRule. If set as the default_squash_mode, root users not matching
-        any of the access_rules are squashed to the default_squash_uid and
-        default_squash_gid.
-      ALL_USERS_SQUASH: All users squashed to the squash_uid and squash_gid
-        for the access rule. If this is for the default_squash_mode, then the
-        default_squash_uid and default_squash_gid will be squashed.
+        `AccessRule`. If set as the `default_squash_mode`, root users not
+        matching any of the `access_rules` are squashed to the
+        `default_squash_uid` and `default_squash_gid`.
+      ALL_USERS_SQUASH: All users squashed to the `squash_uid` and
+        `squash_gid` for the access rule. If this is for the
+        `default_squash_mode`, then the `default_squash_uid` and
+        `default_squash_gid` will be squashed.
     """
     SQUASH_MODE_UNSPECIFIED = 0
     NO_SQUASH = 1
@@ -116,18 +121,20 @@ class AccessRulesOptions(_messages.Message):
 
     Values:
       SQUASH_MODE_UNSPECIFIED: Unspecified squash mode.
-      NO_SQUASH: Squash is disabled. If set inside an AccessRule, root users
-        matching the ip_ranges are not squashed. If set as the
-        default_squash_mode, root squash is disabled for this instance. If the
-        default squash mode is `NO_SQUASH`, do not set the default_squash_uid
-        or default_squash_gid, or an `invalid argument` error is returned.
+      NO_SQUASH: Squash is disabled. If set inside an `AccessRule`, root users
+        matching the `ip_address_ranges` are not squashed. If set as the
+        `default_squash_mode`, root squash is disabled for this instance. If
+        the default squash mode is `NO_SQUASH`, do not set the
+        `default_squash_uid` or `default_squash_gid`, or an `invalid argument`
+        error is returned.
       ROOT_SQUASH: Root user squash is enabled. Not supported inside an
-        AccessRule. If set as the default_squash_mode, root users not matching
-        any of the access_rules are squashed to the default_squash_uid and
-        default_squash_gid.
-      ALL_USERS_SQUASH: All users squashed to the squash_uid and squash_gid
-        for the access rule. If this is for the default_squash_mode, then the
-        default_squash_uid and default_squash_gid will be squashed.
+        `AccessRule`. If set as the `default_squash_mode`, root users not
+        matching any of the `access_rules` are squashed to the
+        `default_squash_uid` and `default_squash_gid`.
+      ALL_USERS_SQUASH: All users squashed to the `squash_uid` and
+        `squash_gid` for the access rule. If this is for the
+        `default_squash_mode`, then the `default_squash_uid` and
+        `default_squash_gid` will be squashed.
     """
     SQUASH_MODE_UNSPECIFIED = 0
     NO_SQUASH = 1
@@ -515,7 +522,7 @@ class Instance(_messages.Message):
       upgraded to. If this field is empty, the instance is already running the
       latest available release.
     capacityGib: Required. The storage capacity of the instance in gibibytes
-      (GiB). Allowed values depend on the `perUnitStorageThroughput`. See
+      (GiB). Allowed values depend on the `per_unit_storage_throughput`. See
       [Performance tiers](https://docs.cloud.google.com/managed-
       lustre/docs/performance-tiers) for specific minimums, maximums, and step
       sizes for each performance tier.
@@ -623,7 +630,7 @@ class Instance(_messages.Message):
       STOPPED: The instance is stopped.
       UPDATING: The instance is being updated.
       SUSPENDED: The instance is suspended due to an issue related to Cloud
-        KMS. The details are available in state_reason.
+        KMS. The details are available in `state_reason`.
       BACKING_UP: The instance is being backed up.
       MAINTENANCE: The instance is under maintenance.
     """
@@ -1434,9 +1441,9 @@ class MaintenanceExclusionWindow(_messages.Message):
       date is inclusive.
     startDate: Required. Start date of the exclusion period in UTC time zone.
       This date is inclusive.
-    time: Required. Time in UTC when the exclusion window starts on start_date
-      and ends on end_date. This can be: * Full time OR * All zeros for
-      00:00:00 UTC
+    time: Required. Time in UTC when the exclusion window starts on
+      `start_date` and ends on `end_date`. This can be: * Full time OR * All
+      zeros for 00:00:00 UTC.
   """
 
   endDate = _messages.MessageField('Date', 1)
@@ -1826,9 +1833,9 @@ class Reschedule(_messages.Message):
 
   Fields:
     rescheduleType: Required. The type of rescheduling.
-    scheduleTime: Optional. Required if reschedule_type is BY_TIME. Timestamp
-      when the maintenance shall be rescheduled to. This time must be within
-      28 days of the original scheduled maintenance start time.
+    scheduleTime: Optional. Required if `reschedule_type` is `BY_TIME`.
+      Timestamp when the maintenance shall be rescheduled to. This time must
+      be within 28 days of the original scheduled maintenance start time.
   """
 
   class RescheduleTypeValueValuesEnum(_messages.Enum):
@@ -1836,7 +1843,7 @@ class Reschedule(_messages.Message):
 
     Values:
       RESCHEDULE_TYPE_UNSPECIFIED: Unspecified schedule type.
-      IMMEDIATE: Apply update immediately
+      IMMEDIATE: Apply update immediately.
       NEXT_AVAILABLE_WINDOW: Reschedule to the next available window.
       BY_TIME: Reschedule to a specific time.
     """

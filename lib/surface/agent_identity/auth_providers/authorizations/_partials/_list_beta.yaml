@@ -18,6 +18,8 @@
 - release_tracks:
   - BETA
   auto_generated: true
+  hints:
+    read_only: true
   help_text:
     brief: List authorizations.
     description: List authorizations for a given auth provider in a project and location.

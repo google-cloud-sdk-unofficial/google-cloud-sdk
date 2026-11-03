@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.resource_manager.semantic_tags import utils
 from googlecloudsdk.core.resource import resource_projection_spec
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
@@ -90,12 +89,13 @@ class List(base.ListCommand):
     defaults = resource_projection_spec.ProjectionSpec(
         symbols=display_info.transforms, aliases=display_info.aliases
     )
-    args.filter, server_filter = utils.SemanticTagValuesFilterRewriter(
-        location=location
-    ).Rewrite(args.filter, defaults=defaults)
+    rewriter = utils.SemanticTagValuesFilterRewriter(location=location)
+    args.filter, server_filter = rewriter.Rewrite(
+        args.filter, defaults=defaults
+    )
 
     if args.IsSpecified('key') and args.key:
-      if server_filter:
+      if server_filter or rewriter.has_key_filter:
         raise calliope_exceptions.InvalidArgumentException(
             '--key',
             'Cannot specify both `--key` and `semanticTagKey` in `--filter`.',

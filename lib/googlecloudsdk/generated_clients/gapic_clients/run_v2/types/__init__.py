@@ -134,6 +134,7 @@ from .traffic_target import (
     TrafficTargetAllocationType,
 )
 from .vendor_settings import (
+    AmbientNetworking,
     BinaryAuthorization,
     BuildConfig,
     CpuScaling,
@@ -145,6 +146,7 @@ from .vendor_settings import (
     VpcAccess,
     WorkerPoolScaling,
     WorkloadIdentityConfig,
+    AmbientScope,
     EncryptionKeyRevocationAction,
     ExecutionEnvironment,
     FunctionalType,
@@ -249,6 +251,7 @@ __all__ = (
     'TrafficTarget',
     'TrafficTargetStatus',
     'TrafficTargetAllocationType',
+    'AmbientNetworking',
     'BinaryAuthorization',
     'BuildConfig',
     'CpuScaling',
@@ -260,6 +263,7 @@ __all__ = (
     'VpcAccess',
     'WorkerPoolScaling',
     'WorkloadIdentityConfig',
+    'AmbientScope',
     'EncryptionKeyRevocationAction',
     'ExecutionEnvironment',
     'FunctionalType',

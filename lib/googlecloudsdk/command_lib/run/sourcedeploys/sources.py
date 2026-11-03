@@ -162,6 +162,7 @@ def Upload(
     source_bucket=None,
     archive_type=ArchiveType.ZIP,
     respect_gitignore=True,
+    check_source_bucket_via_list=False,
 ):
   """Uploads a source to a staging bucket.
 
@@ -174,13 +175,17 @@ def Upload(
     archive_type: The type of archive to upload.
     respect_gitignore: boolean, whether the users .gitignore file should be
       respected when creating the achive to upload.
+    check_source_bucket_via_list: Whether to check source bucket existence in
+      the project via List before creating it.
 
   Returns:
     storage_v1_messages.Object, The written GCS object.
   """
   gcs_client = storage_api.StorageClient(location=region)
 
-  bucket_name = _GetOrCreateBucket(gcs_client, region, source_bucket)
+  bucket_name = _GetOrCreateBucket(
+      gcs_client, region, source_bucket, check_source_bucket_via_list
+  )
   object_name = _GetObject(source, resource_ref, archive_type)
   log.debug(f'Uploading source to {_GCS_PREFIX}{bucket_name}/{object_name}')
 
@@ -284,7 +289,9 @@ def GetGsutilUri(source) -> str:
   return source_path
 
 
-def _GetOrCreateBucket(gcs_client, region, bucket_name=None):
+def _GetOrCreateBucket(
+    gcs_client, region, bucket_name=None, check_source_bucket_via_list=False
+):
   """Gets or Creates bucket used to store sources."""
   using_default_bucket = bucket_name is None
   bucket = bucket_name or _GetDefaultBucketName(region)
@@ -306,15 +313,26 @@ def _GetOrCreateBucket(gcs_client, region, bucket_name=None):
 
   try:
     log.debug(f'Creating bucket {bucket} in region {region}')
-    gcs_client.CreateBucketIfNotExists(
-        bucket,
-        location=region,
-        # To throw an error if bucket belongs to a different project.
-        check_ownership=True,
-        cors=cors,
-        enable_uniform_level_access=True,
-        labels=labels,
-    )
+    if check_source_bucket_via_list:
+      # CreateBucketIfNotListed always checks ownership, and throws an error if
+      # the bucket belongs to a different project.
+      gcs_client.CreateBucketIfNotListed(
+          bucket,
+          location=region,
+          cors=cors,
+          enable_uniform_level_access=True,
+          labels=labels,
+      )
+    else:
+      gcs_client.CreateBucketIfNotExists(
+          bucket,
+          location=region,
+          # To throw an error if bucket belongs to a different project.
+          check_ownership=True,
+          cors=cors,
+          enable_uniform_level_access=True,
+          labels=labels,
+      )
     return bucket
   except (
       api_exceptions.HttpForbiddenError,
@@ -332,15 +350,26 @@ def _GetOrCreateBucket(gcs_client, region, bucket_name=None):
           f'Failed to provision {bucket}, retrying with {bucket} in region'
           f' {region}'
       )
-      gcs_client.CreateBucketIfNotExists(
-          random_bucket,
-          location=region,
-          # To throw an error if bucket belongs to a different project.
-          check_ownership=True,
-          cors=cors,
-          enable_uniform_level_access=True,
-          labels=labels,
-      )
+      if check_source_bucket_via_list:
+        # CreateBucketIfNotListed always checks ownership, and throws an error
+        # if the bucket belongs to a different project.
+        gcs_client.CreateBucketIfNotListed(
+            random_bucket,
+            location=region,
+            cors=cors,
+            enable_uniform_level_access=True,
+            labels=labels,
+        )
+      else:
+        gcs_client.CreateBucketIfNotExists(
+            random_bucket,
+            location=region,
+            # To throw an error if bucket belongs to a different project.
+            check_ownership=True,
+            cors=cors,
+            enable_uniform_level_access=True,
+            labels=labels,
+        )
       return random_bucket
     raise e
 

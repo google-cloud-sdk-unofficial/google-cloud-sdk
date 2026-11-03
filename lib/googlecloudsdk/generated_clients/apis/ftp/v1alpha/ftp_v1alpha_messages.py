@@ -183,8 +183,9 @@ class FtpProjectsLocationsServersCreateRequest(_messages.Message):
     server: A Server resource to be passed as the request body.
     serverId: Required. A unique ID for the server. Must start with a
       lowercase letter, and end with a lowercase letter or number. Can contain
-      lowercase letters, numbers, and hyphens. Maximum length is 30
-      characters.
+      lowercase letters, numbers, and hyphens. Can't begin with the prefix
+      `goog` or contain the string `google`, including close misspellings such
+      as `g00gle`. Maximum length is 30 characters.
   """
 
   parent = _messages.StringField(1, required=True)

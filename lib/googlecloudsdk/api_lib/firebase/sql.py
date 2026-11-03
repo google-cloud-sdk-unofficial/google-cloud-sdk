@@ -70,9 +70,25 @@ class SqlClient:
       self,
       client: base_api.BaseApiClient | None = None,
       messages: types.ModuleType | None = None,
+      cloud_sql_client: base_api.BaseApiClient | None = None,
+      cloud_sql_messages: types.ModuleType | None = None,
   ) -> None:
     self.client = client or firebase_util.GetSqlClientInstance()
     self.messages = messages or firebase_util.GetSqlMessagesModule()
+    self._cloud_sql_client = cloud_sql_client
+    self._cloud_sql_messages = cloud_sql_messages
+
+  @property
+  def cloud_sql_client(self) -> base_api.BaseApiClient:
+    if self._cloud_sql_client is None:
+      self._cloud_sql_client = firebase_util.GetCloudSqlClientInstance()
+    return self._cloud_sql_client
+
+  @property
+  def cloud_sql_messages(self) -> types.ModuleType:
+    if self._cloud_sql_messages is None:
+      self._cloud_sql_messages = firebase_util.GetCloudSqlMessagesModule()
+    return self._cloud_sql_messages
 
   def ListLocations(
       self, project_id: str, page_size: int | None = None
@@ -106,8 +122,8 @@ class SqlClient:
       service_id: str,
       location: str,
       project_id: str,
-      cloud_sql_instance: str,
-      cloud_sql_database: str,
+      cloud_sql_instance: str | None = None,
+      cloud_sql_database: str | None = None,
       sql_source_dir: str | None = None,
   ) -> Any:
     """Creates a Firebase SQL Connect service.
@@ -116,17 +132,38 @@ class SqlClient:
       service_id: str, ID of the service to create.
       location: str, Google Cloud region (e.g. us-central1).
       project_id: str, Google Cloud project ID.
-      cloud_sql_instance: str, Cloud SQL instance ID or resource name.
-      cloud_sql_database: str, Cloud SQL database ID.
+      cloud_sql_instance: str or None, Cloud SQL instance ID or resource name.
+        Defaults to service_id if omitted along with cloud_sql_database.
+      cloud_sql_database: str or None, Cloud SQL database ID. Defaults to
+        service_id if omitted along with cloud_sql_instance.
       sql_source_dir: str or None, path to local directory with .sql files.
 
     Returns:
       The created Service resource message.
 
     Raises:
-      core_exceptions.Error: If arguments or local directories are invalid.
+      core_exceptions.Error: If arguments or local directories are invalid, or
+        if a Cloud SQL instance with the same name as service_id already exists
+        when cloud_sql_instance is omitted.
       firebase_exceptions.HttpException: If the API returns an HTTP error.
     """
+    if bool(cloud_sql_instance) != bool(cloud_sql_database):
+      raise core_exceptions.Error(
+          'Both --cloud-sql-instance-id and --cloud-sql-database-id must be'
+          ' specified together, or both omitted.'
+      )
+
+    sql_source = (
+        self._LoadSqlSource(sql_source_dir) if sql_source_dir else None
+    )
+
+    if not cloud_sql_instance:
+      self._CheckCloudSqlInstanceNotExists(
+          project_id=project_id, instance_id=service_id
+      )
+      cloud_sql_instance = service_id
+      cloud_sql_database = service_id
+
     parent = _FormatLocationName(project_id, location)
     service_name = _FormatServiceName(project_id, location, service_id)
     service = self.messages.Service(
@@ -142,8 +179,8 @@ class SqlClient:
         ],
     )
 
-    if sql_source_dir:
-      service.sqlSource = self._LoadSqlSource(sql_source_dir)
+    if sql_source:
+      service.sqlSource = sql_source
 
     request = (
         self.messages.FirebasedataconnectProjectsLocationsServicesCreateRequest(
@@ -212,6 +249,34 @@ class SqlClient:
         result[key] = introspected[key]
 
     return result
+
+  def _CheckCloudSqlInstanceNotExists(
+      self, project_id: str, instance_id: str
+  ) -> None:
+    """Checks that no Cloud SQL instance with instance_id exists."""
+    project = project_id.removeprefix('projects/')
+    request = self.cloud_sql_messages.SqlInstancesGetRequest(
+        project=project,
+        instance=instance_id,
+    )
+    instance = None
+    try:
+      instance = self.cloud_sql_client.instances.Get(request)
+    except apitools_exceptions.HttpNotFoundError:
+      return
+    except apitools_exceptions.HttpError as e:
+      firebase_util.HandleHttpError(e)
+
+    if instance:
+      raise core_exceptions.Error(
+          'Unable to create a new Cloud SQL instance for the new service'
+          f' because an instance with the same name [{instance_id}] already'
+          ' exists. To reuse that instance, explicitly specify'
+          f' --cloud-sql-instance-id={instance_id} with'
+          ' --cloud-sql-database-id set to the name of the database to link or'
+          ' create. Or, rerun with a different SERVICE name to create a new'
+          ' instance (named after the SERVICE to be created).'
+      )
 
   def _BuildSchema(
       self,

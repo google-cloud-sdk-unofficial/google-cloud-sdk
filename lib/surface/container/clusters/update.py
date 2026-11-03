@@ -131,7 +131,9 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {gcepdcsidriver}=ENABLED|DISABLED
 {gcpfilestoredriver}=ENABLED|DISABLED
 {gcsfusecsidriver}=ENABLED|DISABLED
-{nodereadinesscontroller}=ENABLED|DISABLED""".format(
+{nodereadinesscontroller}=ENABLED|DISABLED
+
+The {configconnector} add-on lags behind the latest open-source release by 12 months or more. For the latest version, CustomResourceDefinition of Google Cloud resources, and independent upgrades, install the self-managed Config Connector Operator instead: https://cloud.google.com/config-connector/docs/how-to/install-manually#switch-add-on.""".format(
             hpa=api_adapter.HPA,
             ingress=api_adapter.INGRESS,
             dashboard=api_adapter.DASHBOARD,
@@ -196,7 +198,9 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {gcepdcsidriver}=ENABLED|DISABLED
 {gcpfilestoredriver}=ENABLED|DISABLED
 {gcsfusecsidriver}=ENABLED|DISABLED
-{nodereadinesscontroller}=ENABLED|DISABLED""".format(
+{nodereadinesscontroller}=ENABLED|DISABLED
+
+The {configconnector} add-on lags behind the latest open-source release by 12 months or more. For the latest version, CustomResourceDefinition of Google Cloud resources, and independent upgrades, install the self-managed Config Connector Operator instead: https://cloud.google.com/config-connector/docs/how-to/install-manually#switch-add-on.""".format(
             hpa=api_adapter.HPA,
             ingress=api_adapter.INGRESS,
             dashboard=api_adapter.DASHBOARD,
@@ -257,7 +261,9 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {gcepdcsidriver}=ENABLED|DISABLED
 {gcpfilestoredriver}=ENABLED|DISABLED
 {gcsfusecsidriver}=ENABLED|DISABLED
-{nodereadinesscontroller}=ENABLED|DISABLED""".format(
+{nodereadinesscontroller}=ENABLED|DISABLED
+
+The {configconnector} add-on lags behind the latest open-source release by 12 months or more. For the latest version, CustomResourceDefinition of Google Cloud resources, and independent upgrades, install the self-managed Config Connector Operator instead: https://cloud.google.com/config-connector/docs/how-to/install-manually#switch-add-on.""".format(
             hpa=api_adapter.HPA,
             ingress=api_adapter.INGRESS,
             dashboard=api_adapter.DASHBOARD,
@@ -504,6 +510,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True, is_update=True)
+    flags.AddDataplaneEbpfHostRoutingFlag(group, hidden=True)
     flags.AddAutopilotGeneralProfileFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
@@ -698,6 +705,9 @@ class Update(base.UpdateCommand):
     )
     opts.enable_slice_controller = args.enable_slice_controller
     opts.dataplane_v2 = args.enable_dataplane_v2
+    opts.enable_dataplane_ebpf_host_routing = (
+        args.enable_dataplane_ebpf_host_routing
+    )
     opts.autopilot_general_profile = args.autopilot_general_profile
     opts.enable_agent_sandbox = getattr(args, 'enable_agent_sandbox', None)
     opts.jwt_authenticator_config = getattr(
@@ -1350,6 +1360,7 @@ class UpdateBeta(Update):
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True, is_update=True)
+    flags.AddDataplaneEbpfHostRoutingFlag(group, hidden=True)
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
@@ -1559,6 +1570,9 @@ class UpdateBeta(Update):
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2
+    opts.enable_dataplane_ebpf_host_routing = (
+        args.enable_dataplane_ebpf_host_routing
+    )
     opts.enable_ambient_networking = args.enable_ambient_networking
     opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
@@ -1797,6 +1811,7 @@ class UpdateAlpha(Update):
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True, is_update=True)
+    flags.AddDataplaneEbpfHostRoutingFlag(group, hidden=True)
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
@@ -2005,6 +2020,9 @@ class UpdateAlpha(Update):
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2
+    opts.enable_dataplane_ebpf_host_routing = (
+        args.enable_dataplane_ebpf_host_routing
+    )
     opts.enable_ambient_networking = args.enable_ambient_networking
     opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics

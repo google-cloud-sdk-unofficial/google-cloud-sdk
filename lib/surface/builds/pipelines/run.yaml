@@ -35,6 +35,9 @@
       pipelineRun.pipeline: '{__relative_name__}'
 
   # Adds --async. When omitted, polls the returned operation to completion.
+  # TODO(b/573758811): Poll PipelineRun stage transitions (PENDING -> RUNNING ->
+  # terminal) and stream stage build logs when --async is omitted, similar to
+  # `gcloud builds submit`.
   async:
     collection: cloudbuild.projects.locations.operations
     api_version: v1

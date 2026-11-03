@@ -428,14 +428,20 @@ class GoogleCloudOsconfigV2alphaOrchestrationScopeResourceHierarchySelector(_mes
   r"""Selector containing Cloud Resource Manager resource hierarchy nodes.
 
   Fields:
+    excludedFolders: Optional. Names of the folders excluded from scope.
+      Format: `folders/{folder_id}`
+    excludedProjects: Optional. Names of the projects excluded from scope.
+      Format: `projects/{project_number}`
     includedFolders: Optional. Names of the folders in scope. Format:
       `folders/{folder_id}`
     includedProjects: Optional. Names of the projects in scope. Format:
       `projects/{project_number}`
   """
 
-  includedFolders = _messages.StringField(1, repeated=True)
-  includedProjects = _messages.StringField(2, repeated=True)
+  excludedFolders = _messages.StringField(1, repeated=True)
+  excludedProjects = _messages.StringField(2, repeated=True)
+  includedFolders = _messages.StringField(3, repeated=True)
+  includedProjects = _messages.StringField(4, repeated=True)
 
 
 class GoogleCloudOsconfigV2alphaOrchestrationScopeSelector(_messages.Message):

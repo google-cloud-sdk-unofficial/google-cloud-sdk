@@ -68,23 +68,23 @@ class BuildStatus(proto.Message):
     Attributes:
         status (str):
             The status of the build.
-        error (str):
-            The error code of the build.
         message (str):
             The message details of the build.
+        cloud_build_log_url (str):
+            The log URL for the Cloud Build execution.
     """
 
     status: str = proto.Field(
         proto.STRING,
         number=1,
     )
-    error: str = proto.Field(
-        proto.STRING,
-        number=2,
-    )
     message: str = proto.Field(
         proto.STRING,
         number=3,
+    )
+    cloud_build_log_url: str = proto.Field(
+        proto.STRING,
+        number=4,
     )
 
 

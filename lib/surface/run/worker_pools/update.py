@@ -285,9 +285,9 @@ class AlphaUpdate(BetaUpdate):
     flags.AddWorkerPoolClearCpuUtilizationFlag(parser)
     flags.AddWorkerPoolMinInstancesFlag(parser)
     flags.AddWorkerPoolMaxInstancesFlag(parser)
-    flags.AddWorkerPoolAddPubsubSubscriptionFlag(parser, hidden=True)
-    flags.AddWorkerPoolRemovePubsubSubscriptionFlag(parser, hidden=True)
-    flags.AddWorkerPoolClearPubsubSubscriptionsFlag(parser, hidden=True)
+    flags.AddWorkerPoolAddPubsubSubscriptionFlag(parser)
+    flags.AddWorkerPoolRemovePubsubSubscriptionFlag(parser)
+    flags.AddWorkerPoolClearPubsubSubscriptionsFlag(parser)
     flags.AddVpcConnectorArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -353,6 +353,20 @@
           - api_field: values
             help_text: |-
               The attribute values in case attribute data type is string or JSON.
+    - arg_name: deployments
+      help_text: |-
+        The deployments linked directly to this API operation.
+        For an operation generated from a spec, set the link on the parent spec
+        with `gcloud apihub apis versions specs create --deployments` instead.
+        Format is
+        `projects/{project}/locations/{location}/deployments/{deployment}`
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.apihub.v1_resources:projects_locations_deployments
+      resource_method_params:
+        googleCloudApihubV1ApiOperation.deployments: '{__relative_name__}'
+      required: false
+      repeated: true
   request:
     api_version: v1
     collection:

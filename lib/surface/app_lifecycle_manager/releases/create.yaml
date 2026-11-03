@@ -1,20 +1,43 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: false
   help_text:
-    brief: Create a Release
-    description: Create a Release
-    examples: |-
-      To create the Release, run:
+    brief: Create a release.
+    description: |-
+      Create an App Lifecycle Manager release.
 
-      $ {command}
+      A release is a new version to be propagated and deployed to units. It
+      includes a pointer to a blueprint, which is an Open Container Initiative
+      (OCI) image stored in Artifact Registry or another OCI registry.
+    examples: |-
+      To create a release named `my-release` for the unit kind `my-unit-kind` in
+      location `us-central1` from a blueprint in Artifact Registry, run:
+
+        $ {command} my-release --location=us-central1 --unit-kind=my-unit-kind --blueprint-package=us-central1-docker.pkg.dev/my-project/my-repo/my-blueprint:v2
+
+      To create a release named `my-release` that units can upgrade to only
+      from the release `my-old-release`, with a default value for the input
+      variable `instance_name` and the label `env=prod`, run:
+
+        $ {command} my-release --location=us-central1 --unit-kind=my-unit-kind --blueprint-package=us-central1-docker.pkg.dev/my-project/my-repo/my-blueprint:v2 --upgradeable-from-releases=my-old-release --input-variable-defaults=variable=instance_name,value=my-instance,type=string --labels=env=prod
+  ALPHA:
+    help_text:
+      brief: Create a Release
+      description: Create a Release
+      examples: |-
+        To create the Release, run:
+
+        $ {command}
   arguments:
     params:
     - help_text: |-
-        Identifier. The resource name (full URI of the resource) following the standard naming
-        scheme:
+        Release to create.
+      ALPHA:
+        help_text: |-
+          Identifier. The resource name (full URI of the resource) following the standard naming
+          scheme:
 
-          "projects/{project}/locations/{location}/releases/{release}"
+            "projects/{project}/locations/{location}/releases/{release}"
       is_positional: true
       is_primary_resource: true
       request_id_field: releaseId
@@ -22,8 +45,12 @@
       required: true
     - arg_name: unit-kind
       help_text: |-
-        Reference to the UnitKind this Release corresponds to (required and
-        immutable once created).
+        Unit kind that this release corresponds to. The unit kind is required
+        and cannot be changed after the release is created.
+      ALPHA:
+        help_text: |-
+          Reference to the UnitKind this Release corresponds to (required and
+          immutable once created).
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:unit_kind
       resource_method_params:
@@ -33,56 +60,91 @@
         api_field: release.blueprint
         required: true
         help_text: |-
-          Blueprints are OCI Images that contain all of the artifacts needed to
-          provision a unit. Metadata such as, type of the engine used to actuate the
-          blueprint (e.g. terraform, helm etc) and version will come from the image
-          manifest. If the hostname is omitted, it will be assumed to be the regional
-          path to Artifact Registry (eg. us-east1-docker.pkg.dev).
+          Blueprint of the release. Blueprints are OCI images that contain all
+          the artifacts needed to provision a unit. Metadata, such as the type
+          of actuation engine (for example, Terraform) and the version, comes
+          from the image manifest. If the hostname is omitted, the regional
+          path to Artifact Registry (for example, `us-east1-docker.pkg.dev`) is
+          assumed.
+        ALPHA:
+          help_text: |-
+            Blueprints are OCI Images that contain all of the artifacts needed to
+            provision a unit. Metadata such as, type of the engine used to actuate the
+            blueprint (e.g. terraform, helm etc) and version will come from the image
+            manifest. If the hostname is omitted, it will be assumed to be the regional
+            path to Artifact Registry (eg. us-east1-docker.pkg.dev).
         params:
         - arg_name: blueprint-package
           api_field: release.blueprint.package
           required: true
           repeated: false
           help_text: |-
-            URI to a blueprint used by the Unit.
+            URI of the blueprint used by the unit. The blueprint package cannot
+            be changed after the release is created.
+          ALPHA:
+            help_text: URI to a blueprint used by the Unit.
     - arg_name: upgradeable-from-releases
       api_field: release.releaseRequirements.upgradeableFromReleases
       required: false
       repeated: true
       help_text: |-
-        A list of releases from which a unit can be upgraded to this one
-        (optional). If left empty no constraints will be applied. When provided,
-        unit upgrade requests to this release will check and enforce this
-        constraint.
+        Releases from which a unit can be upgraded to this release. If empty,
+        no constraints are applied. If provided, unit upgrade requests to this
+        release check and enforce this constraint.
+      ALPHA:
+        help_text: |-
+          A list of releases from which a unit can be upgraded to this one
+          (optional). If left empty no constraints will be applied. When provided,
+          unit upgrade requests to this release will check and enforce this
+          constraint.
     - arg_name: input-variable-defaults
       api_field: release.inputVariableDefaults
       required: false
       repeated: true
       help_text: |-
-        Mapping of input variables to default values. Maximum 100
+        Mapping of input variables to default values. A maximum of 100 input
+        variables can be specified.
+      ALPHA:
+        help_text: Mapping of input variables to default values. Maximum 100
       spec:
       - api_field: variable
         required: true
         help_text: |-
-          Name of the variable from actuation configs.
+          Name of the variable from the actuation configuration.
+        ALPHA:
+          help_text: |-
+            Name of the variable from actuation configs.
       - api_field: type
         help_text: |-
-          Name of a supported variable type. Supported types are string, int, bool.
+          Name of a supported variable type. Supported types are `string`,
+          `int`, `bool`, `struct`, and `list`.
+        ALPHA:
+          help_text: |-
+            Name of a supported variable type. Supported types are string, int, bool.
       - api_field: value
         help_text: |-
-          String encoded value for the variable.
+          String-encoded value for the variable. Values of type `struct` or
+          `list` must be JSON-encoded strings.
+        ALPHA:
+          help_text: String encoded value for the variable.
     - arg_name: labels
       api_field: release.labels
       required: false
       repeated: true
       help_text: |-
-        The labels on the resource, which can be used for categorization.
-        similar to Kubernetes resource labels.
+        Labels on the resource, which can be used for categorization, similar
+        to Kubernetes resource labels.
+      ALPHA:
+        help_text: |-
+          The labels on the resource, which can be used for categorization.
+          similar to Kubernetes resource labels.
       spec:
       - api_field: key
       - api_field: value
   request:
     api_version: v1beta1
+    GA:
+      api_version: v1
     collection:
     - saasservicemgmt.projects.locations.releases
     modify_request_hooks:

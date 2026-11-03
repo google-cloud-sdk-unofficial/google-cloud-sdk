@@ -1301,6 +1301,104 @@ class CloneAddressGroupItemsRequest(_messages.Message):
   sourceAddressGroup = _messages.StringField(2)
 
 
+class CostPerTokenPolicy(_messages.Message):
+  r"""Defines per-model overrides for default token consumption costs.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels for the resource.
+
+  Fields:
+    costOverrides: Required. List of per-model cost overrides configured in
+      this policy.
+    createTime: Output only. The time when the policy was created.
+    description: Optional. Human-readable description of the policy.
+    labels: Optional. User-defined labels for the resource.
+    name: Identifier. The canonical resource name of the CostPerTokenPolicy.
+      Format: `projects/{project}/locations/{location}/costPerTokenPolicies/{c
+      ost_per_token_policy}`
+    target: Required. Data plane target to which this cost policy is attached.
+    updateTime: Output only. The time when the policy was last updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels for the resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  costOverrides = _messages.MessageField('CostPerTokenPolicyCostOverride', 1, repeated=True)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  target = _messages.MessageField('CostPerTokenPolicyTarget', 6)
+  updateTime = _messages.StringField(7)
+
+
+class CostPerTokenPolicyCostOverride(_messages.Message):
+  r"""Per-model override for default token consumption costs.
+
+  Fields:
+    costDiscount: Optional. Percentage discount (0.0 to 1.0) applied on the
+      default cost for tokens matching this model.
+    costPerToken: Optional. Alternate cost per token in USD for tokens
+      matching this model.
+    model: Required. Model name.
+    modelProviderEndpoints: Required. Provider API services
+  """
+
+  costDiscount = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  costPerToken = _messages.MessageField('CostPerTokenPolicyCostPerToken', 2)
+  model = _messages.StringField(3)
+  modelProviderEndpoints = _messages.StringField(4, repeated=True)
+
+
+class CostPerTokenPolicyCostPerToken(_messages.Message):
+  r"""Alternate cost per token in USD for a model.
+
+  Fields:
+    cachedTokenCost: Optional. Cost in USD per cached token.
+    inputTokenCost: Optional. Cost in USD per input token.
+    outputTokenCost: Optional. Cost in USD per output token.
+  """
+
+  cachedTokenCost = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  inputTokenCost = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  outputTokenCost = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+
+
+class CostPerTokenPolicyTarget(_messages.Message):
+  r"""Specifies the data plane target to which this cost policy should attach.
+
+  Fields:
+    resources: Optional. The reference to the target resource to which this
+      policy should attach. Exactly one of `resources` or `scope` must be set.
+      For Agent Gateway resources, specify the full resource name in the
+      format: `//networkservices.googleapis.com/projects/{project}/locations/{
+      location}/agentGateways/{agent_gateway}` Limited to 1 resource.
+  """
+
+  resources = _messages.StringField(1, repeated=True)
+
+
 class CreateDomainListEntryRequest(_messages.Message):
   r"""Message for creating a DomainListEntry.
 
@@ -1440,7 +1538,7 @@ class DnsArmorSecurityPolicy(_messages.Message):
   Fields:
     createTime: Output only. Create time of the resource.
     description: Optional. Free-text description of the resource. Maximum
-      length: 1024 characters.
+      length: 1024 Unicode characters (code points).
     etag: An opaque tag indicating the current version of the policy.
     labels: Optional. Labels as key value pairs.
     loggingEnabled: Optional. Whether Cloud Logging is enabled for this
@@ -1514,7 +1612,7 @@ class DnsArmorSecurityPolicyAssociation(_messages.Message):
   Fields:
     createTime: Output only. Create time of the resource.
     description: Optional. Free-text description of the resource. Maximum
-      length: 1024 characters.
+      length: 1024 Unicode characters (code points).
     dnsArmorSecurityPolicy: Required. Security policy associated with the
       network. Format: projects/{project}/locations/{location}/dnsArmorSecurit
       yPolicies/{dns_armor_security_policy}
@@ -1604,7 +1702,7 @@ class DnsArmorSecurityPolicyRule(_messages.Message):
       `action` is `BLOCK`. Required if and only if `action` is `BLOCK`.
     createTime: Output only. Create time of the resource.
     description: Optional. Free-text description of the resource. Maximum
-      length: 1024 characters.
+      length: 1024 Unicode characters (code points).
     domainList: Required. Referenced domain list for this rule. Format:
       projects/{project}/locations/{location}/domainLists/{domain_list}
     etag: An opaque tag indicating the current version of the rule.
@@ -1850,10 +1948,11 @@ class DomainList(_messages.Message):
   Fields:
     createTime: Output only. Create time of the resource.
     description: Optional. Free-text description of the resource. Maximum
-      length: 1024 characters.
+      length: 1024 Unicode characters (code points).
     etag: An opaque tag indicating the current version of the list.
-    gcsUri: Optional. Input only. Cloud Storage URI containing domain list
-      entries for import during creation. Format: gs://{bucket}/{path}
+    gcsUri: Optional. Input only. Immutable. Cloud Storage URI containing
+      domain list entries for import during creation. Format:
+      gs://{bucket}/{path}
     labels: Optional. Labels as key value pairs.
     name: Identifier. Name of the DomainList resource. Format:
       projects/{project}/locations/{location}/domainLists/{domain_list}
@@ -3675,6 +3774,21 @@ class ListClientTlsPoliciesResponse(_messages.Message):
 
   clientTlsPolicies = _messages.MessageField('ClientTlsPolicy', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+
+
+class ListCostPerTokenPoliciesResponse(_messages.Message):
+  r"""Response message for ListCostPerTokenPolicies.
+
+  Fields:
+    costPerTokenPolicies: The list of CostPerTokenPolicy instances.
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  costPerTokenPolicies = _messages.MessageField('CostPerTokenPolicy', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListDnsArmorSecurityPoliciesResponse(_messages.Message):
@@ -6803,6 +6917,78 @@ class NetworksecurityProjectsLocationsClientTlsPoliciesTestIamPermissionsRequest
 
   googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
   resource = _messages.StringField(2, required=True)
+
+
+class NetworksecurityProjectsLocationsCostPerTokenPoliciesCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsCostPerTokenPoliciesCreateRequest
+  object.
+
+  Fields:
+    costPerTokenPolicy: A CostPerTokenPolicy resource to be passed as the
+      request body.
+    costPerTokenPolicyId: Required. The ID to use for the CostPerTokenPolicy.
+    parent: Required. The parent resource name where this policy will be
+      created.
+  """
+
+  costPerTokenPolicy = _messages.MessageField('CostPerTokenPolicy', 1)
+  costPerTokenPolicyId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworksecurityProjectsLocationsCostPerTokenPoliciesDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsCostPerTokenPoliciesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the CostPerTokenPolicy to delete.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsCostPerTokenPoliciesGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsCostPerTokenPoliciesGetRequest object.
+
+  Fields:
+    name: Required. The name of the CostPerTokenPolicy to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsCostPerTokenPoliciesListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsCostPerTokenPoliciesListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. The maximum number of policies to return.
+    pageToken: Optional. A page token, received from a previous
+      `ListCostPerTokenPolicies` call.
+    parent: Required. The parent resource name.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworksecurityProjectsLocationsCostPerTokenPoliciesPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsCostPerTokenPoliciesPatchRequest
+  object.
+
+  Fields:
+    costPerTokenPolicy: A CostPerTokenPolicy resource to be passed as the
+      request body.
+    name: Identifier. The canonical resource name of the CostPerTokenPolicy.
+      Format: `projects/{project}/locations/{location}/costPerTokenPolicies/{c
+      ost_per_token_policy}`
+    updateMask: Optional. The list of fields to update.
+  """
+
+  costPerTokenPolicy = _messages.MessageField('CostPerTokenPolicy', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class NetworksecurityProjectsLocationsDnsArmorSecurityPoliciesCreateRequest(_messages.Message):
@@ -12933,22 +13119,14 @@ class TokenAggregationPolicyTarget(_messages.Message):
   r"""Specifies the data plane target to which this policy should attach.
 
   Fields:
-    scope: Optional. Specifies the scope of resources to which this policy
-      should attach.
+    resources: Optional. List of resource names to which this policy should
+      attach. Currently only AI Application resources are supported, in the
+      format:
+      `projects/{project}/locations/{location}/applications/{application}`.
+      Limited to 1 resource.
   """
 
-  scope = _messages.MessageField('TokenAggregationPolicyTargetScope', 1)
-
-
-class TokenAggregationPolicyTargetScope(_messages.Message):
-  r"""Specifies the scope of resources to which this binding should attach.
-
-  Fields:
-    parent: Required. Parent resource name specification, in the format:
-      `projects/{project_number}`.
-  """
-
-  parent = _messages.StringField(1)
+  resources = _messages.StringField(1, repeated=True)
 
 
 class TokenAggregationRule(_messages.Message):
@@ -13095,22 +13273,14 @@ class TokenBudgetPolicyTarget(_messages.Message):
   attach.
 
   Fields:
-    scope: Optional. Specifies the scope of resources to which this policy
-      should attach.
+    resources: Optional. List of full resource names to which this budget
+      policy should attach. Currently only AI Application resources are
+      supported, in the format:
+      `projects/{project}/locations/{location}/applications/{application}`.
+      Limited to 1 resource.
   """
 
-  scope = _messages.MessageField('TokenBudgetPolicyTargetScope', 1)
-
-
-class TokenBudgetPolicyTargetScope(_messages.Message):
-  r"""Specifies the scope of resources to which this binding should attach.
-
-  Fields:
-    parent: Required. Parent resource name specification, in the format:
-      `projects/{project_number}`.
-  """
-
-  parent = _messages.StringField(1)
+  resources = _messages.StringField(1, repeated=True)
 
 
 class TokenBudgetPolicyTokenPool(_messages.Message):

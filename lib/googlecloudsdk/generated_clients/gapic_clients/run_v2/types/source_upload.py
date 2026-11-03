@@ -34,6 +34,11 @@ __protobuf__ = proto.module(
 class UploadSourceRequest(proto.Message):
     r"""The request message for the UploadSource method.
 
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
     .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
 
     Attributes:
@@ -43,6 +48,21 @@ class UploadSourceRequest(proto.Message):
             ``projects/*/locations/*``.
         service (str):
             The name of Cloud Run Service upload source
+            archive will be used for.
+
+            This field is a member of `oneof`_ ``target``.
+        worker_pool (str):
+            The name of Cloud Run Worker Pool upload
+            source archive will be used for.
+
+            This field is a member of `oneof`_ ``target``.
+        job (str):
+            The name of Cloud Run Job upload source
+            archive will be used for.
+
+            This field is a member of `oneof`_ ``target``.
+        instance (str):
+            The name of Cloud Run Instance upload source
             archive will be used for.
 
             This field is a member of `oneof`_ ``target``.
@@ -59,6 +79,21 @@ class UploadSourceRequest(proto.Message):
     service: str = proto.Field(
         proto.STRING,
         number=2,
+        oneof='target',
+    )
+    worker_pool: str = proto.Field(
+        proto.STRING,
+        number=7,
+        oneof='target',
+    )
+    job: str = proto.Field(
+        proto.STRING,
+        number=8,
+        oneof='target',
+    )
+    instance: str = proto.Field(
+        proto.STRING,
+        number=9,
         oneof='target',
     )
     encryption_key: str = proto.Field(

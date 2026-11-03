@@ -85,11 +85,17 @@ class Update(base.UpdateCommand):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+@base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
+class UpdatePreview(Update):
   """Update a Compute Engine global VM extension policy."""
 
   @classmethod
   def Args(cls, parser):
-    super(UpdateAlpha, cls).Args(parser)
+    super(UpdatePreview, cls).Args(parser)
     vm_extension_policies_flags.AddScopeFlags(parser)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdatePreview):
+  """Update a Compute Engine global VM extension policy."""

@@ -15,7 +15,6 @@
 """Flags and helpers for the Datastream related commands."""
 
 
-
 def AddDisplayNameFlag(parser):
   """Adds a --display-name flag to the given parser."""
   help_text = """Friendly name for the private connection."""
@@ -29,8 +28,8 @@ def AddNetworkAttachmentFlag(parser):
       required=True,
       type=str,
       help=(
-          'Full URI of the network attachment that datastream will connect to.'
-          'For example, this would be of the form:'
+          'Full URI of the network attachment that datastream will connect to. '
+          'For example, this would be of the form: '
           '`network-attachment=projects/test-project/regions/us-central1/networkAttachments/my-na`'
       ),
   )
@@ -44,6 +43,6 @@ def AddValidateOnlyFlag(parser):
       action='store_true',
       help=(
           'If set, the request will retrieve the project id to allow in the '
-          ' network attachment Datastream will connect to.'
+          'network attachment Datastream will connect to.'
       ),
   )
