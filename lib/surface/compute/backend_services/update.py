@@ -182,7 +182,13 @@ class UpdateHelper(object):
             scope_flags_usage=compute_flags.ScopeFlagsUsage
             .USE_EXISTING_SCOPE_FLAGS,
             short_help_text=(
-                'The security policy that will be set for this {0}.')))
+                'The name or URI of the Google Cloud Armor security policy to '
+                'attach to this backend service. It is formatted as a simple '
+                'string containing the policy name or its full resource URL. '
+                'Applying the policy enforces predefined access controls and '
+                'traffic filtering rules on incoming requests to the backend '
+                'service.\n\n'
+            )))
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     cls.EDGE_SECURITY_POLICY_ARG = (
         security_policy_flags.EdgeSecurityPolicyArgumentForTargetResource(

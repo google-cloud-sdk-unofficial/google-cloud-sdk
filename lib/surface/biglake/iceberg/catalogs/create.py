@@ -16,6 +16,7 @@
 
 import textwrap
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.biglake import arguments
@@ -97,8 +98,38 @@ def _BuildFederatedCatalogMessage(args, messages, release_track=None):
         workday_catalog_info=messages.WorkdayCatalogInfo(
             base_url=args.workday_base_url,
             tenant=args.workday_tenant,
+            api_client_client_id=getattr(
+                args, 'workday_api_client_client_id', None
+            ),
         ),
     )
+  elif args.federated_catalog_type == 'generic':
+    custom_headers = None
+    if getattr(args, 'custom_headers', None):
+      custom_headers = encoding.DictToAdditionalPropertyMessage(
+          args.custom_headers,
+          messages.GenericIcebergCatalogInfo.CustomHeadersValue,
+      )
+    generic_iceberg_catalog_info = messages.GenericIcebergCatalogInfo(
+        base_url=args.catalog_url,
+        warehouse=args.warehouse,
+        custom_headers=custom_headers,
+    )
+    federated_catalog_options = messages.FederatedCatalogOptions(
+        service_directory_name=getattr(args, 'service_directory_name', None),
+        metadata_service_directory_name=metadata_service_directory_name,
+        trust_config=getattr(args, 'trust_config', None),
+        generic_iceberg_catalog_info=generic_iceberg_catalog_info,
+    )
+    if args.auth_type == 'secret-based':
+      federated_catalog_options.secret_name = args.secret_name
+      generic_iceberg_catalog_info.oauth2_server_url = getattr(
+          args, 'oauth2_server_url', None
+      )
+    elif args.auth_type == 'oidc':
+      generic_iceberg_catalog_info.oidc_audience = getattr(
+          args, 'oidc_audience', None
+      )
   else:
     federated_catalog_options = messages.FederatedCatalogOptions(
         metadata_service_directory_name=metadata_service_directory_name,
@@ -141,8 +172,10 @@ class CreateCatalog(base.CreateCommand):
   _support_glue_catalog = True
   _support_snowflake_catalog = True
   _support_workday_catalog = True
+  _support_workday_api_client_client_id = False
   _support_unity_service_principal_application_id = True
   _support_identity_mode = True
+  _support_generic_iceberg_federation = False
 
   @classmethod
   def Args(cls, parser):
@@ -163,6 +196,7 @@ class CreateCatalog(base.CreateCommand):
           parser,
           support_snowflake=cls._support_snowflake_catalog,
           support_workday=cls._support_workday_catalog,
+          support_generic_iceberg_federation=cls._support_generic_iceberg_federation,
       )
     if cls._support_glue_catalog:
       arguments.AddGlueCatalogArgs(parser)
@@ -170,6 +204,10 @@ class CreateCatalog(base.CreateCommand):
       arguments.AddSnowflakeCatalogArgs(parser)
     if cls._support_workday_catalog:
       arguments.AddWorkdayCatalogArgs(parser)
+    if cls._support_workday_api_client_client_id:
+      arguments.AddWorkdayApiClientClientIdArg(parser)
+    if cls._support_generic_iceberg_federation:
+      arguments.AddGenericIcebergCatalogArgs(parser, hidden=True)
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
     if cls._support_metadata_service_directory_name:
@@ -249,6 +287,8 @@ class CreateCatalog(base.CreateCommand):
 class CreateBeta(CreateCatalog):
   """Create a BigLake Iceberg REST catalog."""
 
+  _support_workday_api_client_client_id = True
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
@@ -256,3 +296,4 @@ class CreateAlpha(CreateBeta):
 
   _support_metadata_service_directory_name = True
   _support_identity_mode = True
+  _support_generic_iceberg_federation = True

@@ -58,6 +58,8 @@
       - arg_value: disabled
       processor: googlecloudsdk.command_lib.biglake.delta_sharing:ParseCrossCloudCache
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Create a BigLake Delta Sharing catalog.
     description: |

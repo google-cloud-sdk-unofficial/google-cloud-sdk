@@ -169,11 +169,11 @@ def GenerateDataDiscoverySpec(args: parser_extensions.Namespace):
       datadiscoveryspec.storageConfig.csvOptions.headerRows = int(
           args.csv_header_row_count
       )
-    except ValueError:
+    except ValueError as exc:
       raise ValueError(
           'csv_header_row_count must be an integer, but got'
           f' {args.csv_header_row_count}'
-      )
+      ) from exc
   if args.IsKnownAndSpecified('csv_quote_character'):
     datadiscoveryspec.storageConfig.csvOptions.quote = args.csv_quote_character
   if args.IsKnownAndSpecified('csv_encoding'):
@@ -213,9 +213,17 @@ def GenerateDataDocumentationSpec(
       else None
   )
 
+  sql_dialect = None
+  if args.IsKnownAndSpecified('sql_dialect'):
+    sql_dialect_enum = (
+        module.GoogleCloudDataplexV1DataDocumentationSpec
+        .SqlDialectValueValuesEnum
+    )
+    sql_dialect = sql_dialect_enum(args.sql_dialect)
   return module.GoogleCloudDataplexV1DataDocumentationSpec(
       catalogPublishingEnabled=catalog_publishing_enabled,
       customInstructions=custom_instructions,
+      sqlDialect=sql_dialect,
   )
 
 
@@ -377,6 +385,11 @@ def GenerateUpdateMask(args: parser_extensions.Namespace):
       and args.clear_custom_instructions
   ):
     update_mask.append('dataDocumentationSpec.customInstructions')
+  if (
+      args.IsKnownAndSpecified('sql_dialect')
+      and args.scan_type == 'DOCUMENTATION'
+  ):
+    update_mask.append('dataDocumentationSpec.sqlDialect')
   return update_mask
 
 

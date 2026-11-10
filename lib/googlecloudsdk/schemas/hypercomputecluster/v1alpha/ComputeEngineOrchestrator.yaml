@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha ComputeEngineOrchestrator export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  existingInstances:
+    description: |-
+      Existing instances that will be governed by the orchestrator. Keys must
+      conform to [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034)
+      (lower-case, alphanumeric, and at most 63 characters).
+    $ref: ExistingInstancesValue.yaml
+  managedInstanceGroups:
+    description: |-
+      Managed instance groups that should be created by the orchestrator. Keys
+      must conform to [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034)
+      (lower-case, alphanumeric, and at most 63 characters).
+    $ref: ManagedInstanceGroupsValue.yaml

@@ -328,7 +328,6 @@ class _SectionApiEndpointOverrides(_Section):
     self.orgpolicy = self._Add('orgpolicy', command='gcloud org-policies')
     self.osconfig = self._Add('osconfig', hidden=True)
     self.oslogin = self._Add('oslogin', hidden=True)
-    self.parallelstore = self._Add('parallelstore', hidden=True)
     self.parametermanager = self._Add(
         'parametermanager', command='gcloud parameter-manager', hidden=True
     )

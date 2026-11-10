@@ -90,6 +90,41 @@
       - api_field: conditionValue
         help_text: |-
           The value of the parameter for the condition.
+    - arg_name: cloud-control-configs
+      api_field: designCenterPolicy.cloudControlConfigs
+      required: false
+      repeated: true
+      hidden: true
+      help_text: |-
+        Parameter values for the cloud controls of the policy's framework, grouped
+        by cloud control. Only honored when framework parameter support is enabled
+        for the project; ignored otherwise.
+
+        The values are saved with the application template and are not returned on
+        the policy. On update, they replace the saved values. If they are empty,
+        the saved values are cleared if `cloud_control_configs` is named in the
+        update mask. Otherwise, the saved values are kept, unless the policy's
+        framework changes.
+      clearable: true
+      spec:
+      - api_field: cloudControl
+        resource_pattern: organizations/{organization}/locations/{location}/cloudControls/{cloud_control}
+        help_text: |-
+          Resource name of the cloud control that these parameter values apply to.
+          Format:
+          organizations/{organization}/locations/{location}/cloudControls/{cloud_control}
+          or projects/{project}/locations/{location}/cloudControls/{cloud_control}
+      - api_field: parameters
+        help_text: |-
+          Parameter values for this specific control.
+        spec:
+        - api_field: key
+          help_text: |-
+            The key of the parameter.
+        - api_field: value
+          type: arg_json
+          help_text: |-
+            The value of the parameter.
   request:
     api_version: v1
     collection:

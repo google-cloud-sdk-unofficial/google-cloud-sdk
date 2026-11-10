@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.addresses import flags as addresses_flags
+from googlecloudsdk.command_lib.compute.network_attachments import flags as network_attachments_flags
 from googlecloudsdk.command_lib.util import completers
 
 FORWARDING_RULES_OVERVIEW = """
@@ -120,6 +121,43 @@ class ForwardingRulesCompleter(completers.MultiResourceCompleter):
             ForwardingRulesGlobalCompleter, ForwardingRulesZonalCompleter
         ],
         **kwargs)
+
+
+def AddNetworkAttachment(parser, required=False):
+  """Adds the network-attachment flag."""
+  parser.add_argument(
+      '--network-attachment',
+      required=required,
+      completer=network_attachments_flags.NetworkAttachmentsCompleter,
+      help="""\
+      Regional network attachment resource in which the forwarding rule should be
+      created.
+      """,
+  )
+
+
+def AddNetworkAttachmentGroup(parser):
+  """Adds network attachment and service class ID flags in an argument group."""
+  group = parser.add_group(help="""\
+      Flags for creating a forwarding rule with a network attachment.
+      """)
+  AddNetworkAttachment(group, required=True)
+  AddServiceClassId(group)
+
+
+def AddServiceClassId(parser):
+  """Adds the service-class-id flag."""
+  parser.add_argument(
+      '--service-class-id',
+      help="""\
+      Regional Service Class ID of the producer service associated with the
+      forwarding rule.
+
+      This is used in conjunction with `--network-attachment` to authorize forwarding rule
+      creation based on the service class. Can only be specified if
+      `--network-attachment` is also specified.
+      """,
+  )
 
 
 def ForwardingRuleArgument(required=True):

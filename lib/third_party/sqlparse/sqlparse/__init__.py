@@ -8,23 +8,18 @@
 """Parse SQL statements."""
 
 # Setup namespace
-from typing import Any, Generator, IO, List, Optional, Tuple, Union
+from collections.abc import Generator
+from typing import IO, Any
 
-from sqlparse import sql
-from sqlparse import cli
-from sqlparse import engine
-from sqlparse import tokens
-from sqlparse import filters
-from sqlparse import formatter
+from sqlparse import cli, engine, filters, formatter, sql, tokens
 
-
-__version__ = "0.5.5"
-__all__ = ["engine", "filters", "formatter", "sql", "tokens", "cli"]
+__version__ = "0.6.0"
+__all__ = ["cli", "engine", "filters", "formatter", "sql", "tokens"]
 
 
 def parse(
-    sql: str, encoding: Optional[str] = None
-) -> Tuple[sql.Statement, ...]:
+    sql: str, encoding: str | None = None
+) -> tuple[sql.Statement, ...]:
     """Parse sql and return a list of statements.
 
     :param sql: A string containing one or more SQL statements.
@@ -35,7 +30,7 @@ def parse(
 
 
 def parsestream(
-    stream: Union[str, IO[str]], encoding: Optional[str] = None
+    stream: str | IO[str], encoding: str | None = None
 ) -> Generator[sql.Statement, None, None]:
     """Parses sql statements from file-like object.
 
@@ -48,7 +43,7 @@ def parsestream(
     return stack.run(stream, encoding)
 
 
-def format(sql: str, encoding: Optional[str] = None, **options: Any) -> str:
+def format(sql: str, encoding: str | None = None, **options: Any) -> str:
     """Format *sql* according to *options*.
 
     Available options are documented in :ref:`formatting`.
@@ -66,8 +61,8 @@ def format(sql: str, encoding: Optional[str] = None, **options: Any) -> str:
 
 
 def split(
-    sql: str, encoding: Optional[str] = None, strip_semicolon: bool = False
-) -> List[str]:
+    sql: str, encoding: str | None = None, strip_semicolon: bool = False
+) -> list[str]:
     """Split *sql* into single statements.
 
     :param sql: A string containing one or more SQL statements.

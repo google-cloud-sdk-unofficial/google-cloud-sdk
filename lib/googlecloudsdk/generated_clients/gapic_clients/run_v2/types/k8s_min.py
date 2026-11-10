@@ -721,8 +721,8 @@ class NFSVolumeSource(proto.Message):
 
 
 class GCSVolumeSource(proto.Message):
-    r"""Represents a volume backed by a Cloud Storage bucket using
-    Cloud Storage FUSE.
+    r"""Represents a volume backed by a Cloud Storage bucket (mounted
+    via Cloud Storage FUSE or as a block device disk).
 
     Attributes:
         bucket (str):

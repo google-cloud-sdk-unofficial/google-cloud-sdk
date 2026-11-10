@@ -467,33 +467,6 @@ class BeyondcorpV1alpha(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
-    def Create(self, request, global_params=None):
-      r"""Creates a new AppConnection in a given project and location.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsAppConnectionsCreateRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('Create')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Create.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/appConnections',
-        http_method='POST',
-        method_id='beyondcorp.projects.locations.appConnections.create',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=['appConnectionId', 'requestId', 'validateOnly'],
-        relative_path='v1alpha/{+parent}/appConnections',
-        request_field='googleCloudBeyondcorpAppconnectionsV1alphaAppConnection',
-        request_type_name='BeyondcorpProjectsLocationsAppConnectionsCreateRequest',
-        response_type_name='GoogleLongrunningOperation',
-        supports_download=False,
-    )
-
     def Delete(self, request, global_params=None):
       r"""Deletes a single AppConnection.
 
@@ -602,33 +575,6 @@ class BeyondcorpV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
-    def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single AppConnection.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsAppConnectionsPatchRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('Patch')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Patch.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/appConnections/{appConnectionsId}',
-        http_method='PATCH',
-        method_id='beyondcorp.projects.locations.appConnections.patch',
-        ordered_params=['name'],
-        path_params=['name'],
-        query_params=['allowMissing', 'requestId', 'updateMask', 'validateOnly'],
-        relative_path='v1alpha/{+name}',
-        request_field='googleCloudBeyondcorpAppconnectionsV1alphaAppConnection',
-        request_type_name='BeyondcorpProjectsLocationsAppConnectionsPatchRequest',
-        response_type_name='GoogleLongrunningOperation',
-        supports_download=False,
-    )
-
     def Resolve(self, request, global_params=None):
       r"""Resolves AppConnections details for a given AppConnector. An internal method called by a connector to find AppConnections to connect to.
 
@@ -719,33 +665,6 @@ class BeyondcorpV1alpha(base_api.BaseApiClient):
       super(BeyondcorpV1alpha.ProjectsLocationsAppConnectorsService, self).__init__(client)
       self._upload_configs = {
           }
-
-    def Create(self, request, global_params=None):
-      r"""Creates a new AppConnector in a given project and location.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsAppConnectorsCreateRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('Create')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Create.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/appConnectors',
-        http_method='POST',
-        method_id='beyondcorp.projects.locations.appConnectors.create',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=['appConnectorId', 'requestId', 'validateOnly'],
-        relative_path='v1alpha/{+parent}/appConnectors',
-        request_field='googleCloudBeyondcorpAppconnectorsV1alphaAppConnector',
-        request_type_name='BeyondcorpProjectsLocationsAppConnectorsCreateRequest',
-        response_type_name='GoogleLongrunningOperation',
-        supports_download=False,
-    )
 
     def Delete(self, request, global_params=None):
       r"""Deletes a single AppConnector.
@@ -855,60 +774,6 @@ class BeyondcorpV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
-    def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single AppConnector.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsAppConnectorsPatchRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('Patch')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Patch.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/appConnectors/{appConnectorsId}',
-        http_method='PATCH',
-        method_id='beyondcorp.projects.locations.appConnectors.patch',
-        ordered_params=['name'],
-        path_params=['name'],
-        query_params=['requestId', 'updateMask', 'validateOnly'],
-        relative_path='v1alpha/{+name}',
-        request_field='googleCloudBeyondcorpAppconnectorsV1alphaAppConnector',
-        request_type_name='BeyondcorpProjectsLocationsAppConnectorsPatchRequest',
-        response_type_name='GoogleLongrunningOperation',
-        supports_download=False,
-    )
-
-    def ReportStatus(self, request, global_params=None):
-      r"""Report status for a given connector.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsAppConnectorsReportStatusRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('ReportStatus')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    ReportStatus.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/appConnectors/{appConnectorsId}:reportStatus',
-        http_method='POST',
-        method_id='beyondcorp.projects.locations.appConnectors.reportStatus',
-        ordered_params=['appConnector'],
-        path_params=['appConnector'],
-        query_params=[],
-        relative_path='v1alpha/{+appConnector}:reportStatus',
-        request_field='googleCloudBeyondcorpAppconnectorsV1alphaReportStatusRequest',
-        request_type_name='BeyondcorpProjectsLocationsAppConnectorsReportStatusRequest',
-        response_type_name='GoogleLongrunningOperation',
-        supports_download=False,
-    )
-
     def ResolveInstanceConfig(self, request, global_params=None):
       r"""Gets instance configuration for a given AppConnector. An internal method called by a AppConnector to get its container config.
 
@@ -999,33 +864,6 @@ class BeyondcorpV1alpha(base_api.BaseApiClient):
       super(BeyondcorpV1alpha.ProjectsLocationsAppGatewaysService, self).__init__(client)
       self._upload_configs = {
           }
-
-    def Create(self, request, global_params=None):
-      r"""Creates a new AppGateway in a given project and location.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsAppGatewaysCreateRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('Create')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Create.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/appGateways',
-        http_method='POST',
-        method_id='beyondcorp.projects.locations.appGateways.create',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=['appGatewayId', 'requestId', 'validateOnly'],
-        relative_path='v1alpha/{+parent}/appGateways',
-        request_field='appGateway',
-        request_type_name='BeyondcorpProjectsLocationsAppGatewaysCreateRequest',
-        response_type_name='GoogleLongrunningOperation',
-        supports_download=False,
-    )
 
     def Delete(self, request, global_params=None):
       r"""Deletes a single AppGateway.
@@ -1381,33 +1219,6 @@ class BeyondcorpV1alpha(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
-    def Create(self, request, global_params=None):
-      r"""Creates a new Connection in a given project and location.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsConnectionsCreateRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('Create')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Create.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/connections',
-        http_method='POST',
-        method_id='beyondcorp.projects.locations.connections.create',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=['connectionId', 'requestId', 'validateOnly'],
-        relative_path='v1alpha/{+parent}/connections',
-        request_field='connection',
-        request_type_name='BeyondcorpProjectsLocationsConnectionsCreateRequest',
-        response_type_name='GoogleLongrunningOperation',
-        supports_download=False,
-    )
-
     def Delete(self, request, global_params=None):
       r"""Deletes a single Connection.
 
@@ -1516,33 +1327,6 @@ class BeyondcorpV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
-    def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single Connection.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsConnectionsPatchRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('Patch')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Patch.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}',
-        http_method='PATCH',
-        method_id='beyondcorp.projects.locations.connections.patch',
-        ordered_params=['name'],
-        path_params=['name'],
-        query_params=['allowMissing', 'requestId', 'updateMask', 'validateOnly'],
-        relative_path='v1alpha/{+name}',
-        request_field='connection',
-        request_type_name='BeyondcorpProjectsLocationsConnectionsPatchRequest',
-        response_type_name='GoogleLongrunningOperation',
-        supports_download=False,
-    )
-
     def Resolve(self, request, global_params=None):
       r"""Resolves connections details for a given connector. An internal method called by a connector to find connections to connect to.
 
@@ -1606,33 +1390,6 @@ class BeyondcorpV1alpha(base_api.BaseApiClient):
       super(BeyondcorpV1alpha.ProjectsLocationsConnectorsService, self).__init__(client)
       self._upload_configs = {
           }
-
-    def Create(self, request, global_params=None):
-      r"""Creates a new Connector in a given project and location.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsConnectorsCreateRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('Create')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Create.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/connectors',
-        http_method='POST',
-        method_id='beyondcorp.projects.locations.connectors.create',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=['connectorId', 'requestId', 'validateOnly'],
-        relative_path='v1alpha/{+parent}/connectors',
-        request_field='connector',
-        request_type_name='BeyondcorpProjectsLocationsConnectorsCreateRequest',
-        response_type_name='GoogleLongrunningOperation',
-        supports_download=False,
-    )
 
     def Delete(self, request, global_params=None):
       r"""Deletes a single Connector.
@@ -1739,60 +1496,6 @@ class BeyondcorpV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='BeyondcorpProjectsLocationsConnectorsListRequest',
         response_type_name='ListConnectorsResponse',
-        supports_download=False,
-    )
-
-    def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single Connector.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsConnectorsPatchRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('Patch')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    Patch.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/connectors/{connectorsId}',
-        http_method='PATCH',
-        method_id='beyondcorp.projects.locations.connectors.patch',
-        ordered_params=['name'],
-        path_params=['name'],
-        query_params=['requestId', 'updateMask', 'validateOnly'],
-        relative_path='v1alpha/{+name}',
-        request_field='connector',
-        request_type_name='BeyondcorpProjectsLocationsConnectorsPatchRequest',
-        response_type_name='GoogleLongrunningOperation',
-        supports_download=False,
-    )
-
-    def ReportStatus(self, request, global_params=None):
-      r"""Report status for a given connector.
-
-      Args:
-        request: (BeyondcorpProjectsLocationsConnectorsReportStatusRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (GoogleLongrunningOperation) The response message.
-      """
-      config = self.GetMethodConfig('ReportStatus')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    ReportStatus.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/connectors/{connectorsId}:reportStatus',
-        http_method='POST',
-        method_id='beyondcorp.projects.locations.connectors.reportStatus',
-        ordered_params=['connector'],
-        path_params=['connector'],
-        query_params=[],
-        relative_path='v1alpha/{+connector}:reportStatus',
-        request_field='reportStatusRequest',
-        request_type_name='BeyondcorpProjectsLocationsConnectorsReportStatusRequest',
-        response_type_name='GoogleLongrunningOperation',
         supports_download=False,
     )
 

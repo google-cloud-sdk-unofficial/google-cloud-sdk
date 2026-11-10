@@ -125,14 +125,15 @@ def get_digesters(source_resource, destination_resource):
       else None
   )
   capabilities = api_factory.get_capabilities(provider, bucket_name)
-  check_hashes = properties.CheckHashes(
-      properties.VALUES.storage.check_hashes.Get())
+  check_hashes = properties.VALUES.storage.CheckHashes(
+      properties.VALUES.storage.check_hashes.Get()
+  )
 
   # If the API supports appendable uploads, we should use CRC32C only.
   if cloud_api.Capability.APPENDABLE_UPLOAD in capabilities:
     fast_crc32c_util.log_or_raise_crc32c_issues()
     if (
-        check_hashes == properties.CheckHashes.ALWAYS
+        check_hashes == properties.VALUES.storage.CheckHashes.ALWAYS
         or fast_crc32c_util.check_if_will_use_fast_crc32c()
     ):
       return {
@@ -142,8 +143,10 @@ def get_digesters(source_resource, destination_resource):
       }
     return {}
 
-  if (cloud_api.Capability.CLIENT_SIDE_HASH_VALIDATION in capabilities or
-      check_hashes == properties.CheckHashes.NEVER):
+  if (
+      cloud_api.Capability.CLIENT_SIDE_HASH_VALIDATION in capabilities
+      or check_hashes == properties.VALUES.storage.CheckHashes.NEVER
+  ):
     return {}
   return {hash_util.HashAlgorithm.MD5: hashing.get_md5()}
 

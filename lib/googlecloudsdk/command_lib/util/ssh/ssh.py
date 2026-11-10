@@ -707,10 +707,15 @@ def ValidateCertificate(
   def IsCertValid(cert):
     time_format = '%Y-%m-%dT%H:%M:%S'
     match = re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', cert)
-    if not match:
+    # Without a parseable start and end time, treat the certificate as
+    # invalid so that it gets re-signed.
+    if len(match) < 2:
       return
-    start = datetime.datetime.strptime(match[0], time_format)
-    end = datetime.datetime.strptime(match[1], time_format)
+    try:
+      start = datetime.datetime.strptime(match[0], time_format)
+      end = datetime.datetime.strptime(match[1], time_format)
+    except ValueError:
+      return
     now = datetime.datetime.now()
     oslogin_state.signed_ssh_key = now > start and now < end
 

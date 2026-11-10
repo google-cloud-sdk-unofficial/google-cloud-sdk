@@ -184,6 +184,7 @@ class Client:
       wildfire_analysis_profile=None,
       custom_mirroring_profile=None,
       custom_intercept_profile=None,
+      scm_profile=None,
       labels=None,
   ):
     """Calls the Create Security Profile Group API."""
@@ -202,6 +203,8 @@ class Client:
       security_profile_group.customMirroringProfile = custom_mirroring_profile
     if hasattr(security_profile_group, 'customInterceptProfile'):
       security_profile_group.customInterceptProfile = custom_intercept_profile
+    if hasattr(security_profile_group, 'scmProfile'):
+      security_profile_group.scmProfile = scm_profile
 
     api_request = self._create_request(
         parent=parent,
@@ -218,6 +221,7 @@ class Client:
       url_filtering_profile,
       wildfire_analysis_profile,
       update_mask,
+      scm_profile=None,
       labels=None,
   ):
     """Calls the Patch Security Profile Group API.
@@ -230,6 +234,8 @@ class Client:
       url_filtering_profile: The URL filtering profile to associate.
       wildfire_analysis_profile: The WildFire analysis profile to associate.
       update_mask: A comma-separated string of fields to update.
+      scm_profile: The SCM profile to associate, or None if not specified or
+        being cleared.
       labels: A dictionary of user-defined labels for the security profile
         group.
 
@@ -247,6 +253,8 @@ class Client:
       security_profile_group.urlFilteringProfile = url_filtering_profile
     if hasattr(security_profile_group, 'wildfireAnalysisProfile'):
       security_profile_group.wildfireAnalysisProfile = wildfire_analysis_profile
+    if hasattr(security_profile_group, 'scmProfile'):
+      security_profile_group.scmProfile = scm_profile
 
     api_request = self._patch_request(
         name=security_profile_group_name,

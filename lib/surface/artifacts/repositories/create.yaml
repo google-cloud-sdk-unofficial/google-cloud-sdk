@@ -254,6 +254,8 @@
     - googlecloudsdk.command_lib.artifacts.util:AddRegistryBaseToRepositoryInfo
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
 
   help_text:
     brief: |

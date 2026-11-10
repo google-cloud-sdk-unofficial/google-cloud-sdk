@@ -15,7 +15,9 @@
 """Constants for billing properties."""
 
 # Sentinel values for billing/quota_project property.
+# LINT.IfChange(billing_quota_project)
 CURRENT_PROJECT = 'CURRENT_PROJECT'
+# LINT.ThenChange(../definitions/billing.yaml:billing_quota_project)
 CURRENT_PROJECT_WITH_FALLBACK = 'CURRENT_PROJECT_WITH_FALLBACK'
 LEGACY_QUOTA_PROJECT = 'LEGACY'
 LEGACY = LEGACY_QUOTA_PROJECT  # Alias for backward compatibility

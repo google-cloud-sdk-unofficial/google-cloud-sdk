@@ -1641,9 +1641,12 @@ class ScanConfig(_messages.Message):
 
   Fields:
     secretScanConfig: Optional. Configuration for secret scanning.
+    vulnerabilityScanConfig: Optional. Configuration for vulnerability
+      scanning.
   """
 
   secretScanConfig = _messages.MessageField('SecretScanConfig', 1)
+  vulnerabilityScanConfig = _messages.MessageField('VulnerabilityScanConfig', 2)
 
 
 class SecretScanConfig(_messages.Message):
@@ -3059,6 +3062,16 @@ class UnresolvePullRequestCommentsResponse(_messages.Message):
   """
 
   pullRequestComments = _messages.MessageField('PullRequestComment', 1, repeated=True)
+
+
+class VulnerabilityScanConfig(_messages.Message):
+  r"""Configuration for vulnerability scanning.
+
+  Fields:
+    enabled: Optional. Enables vulnerability scanning for the repository.
+  """
+
+  enabled = _messages.BooleanField(1)
 
 
 class WorkforceIdentityFederationConfig(_messages.Message):

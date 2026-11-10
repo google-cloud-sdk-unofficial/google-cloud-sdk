@@ -3973,8 +3973,12 @@ class WarmPool(_messages.Message):
       between number of concurrent requests per second (QPS) and warm pool
       size to avoid the latency overhead incurred by cold starts. Minimum pool
       size is 1.
-    serviceAccount: Required. Service Producer owned SA(eg: ALM P4SA) that
-      will be attached to the warmed pool.
+    serviceAccount: Optional. Service account that the warm pool's workers run
+      as. If not set, Infra Manager's worker service agent for the project
+      (`service-{project_number}@gcp-sa-config-
+      worker.iam.gserviceaccount.com`) is used. Grant it
+      `roles/iam.serviceAccountTokenCreator` on the deployments' service
+      accounts.
     state: Output only. Current state of the warm pool.
     updateTime: Output only. Time when the warm pool was last modified.
   """

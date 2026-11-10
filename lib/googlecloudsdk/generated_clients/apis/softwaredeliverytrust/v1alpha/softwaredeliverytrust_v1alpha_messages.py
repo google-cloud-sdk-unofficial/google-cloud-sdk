@@ -23,10 +23,10 @@ class Attestation(_messages.Message):
   Fields:
     attestationPayload: Required. The raw attestation payload wrapped in a
       standard DSSE envelope where payload is an in-toto attestation. Hard-
-      capped at 4 MiB for MVP. Note: To avoid duplicating large payloads in
-      Long Running Operation (LRO) metadata storage, this field is omitted
-      from the `Attestation` returned in the `CreateAttestation` LRO response
-      and is populated by `GetAttestation` and `ListAttestations`.
+      capped at 4 MiB for MVP. This field is omitted from the `Attestation`
+      returned in the `CreateAttestation` Long Running Operation (LRO)
+      response and in `ListAttestations` responses, and is only populated by
+      `GetAttestation`.
     createTime: Output only. Ingestion timestamp of the attestation.
     envelopePredicateType: Output only. Format of the envelope. Example:
       "application/vnd.in-toto+json".
@@ -38,7 +38,6 @@ class Attestation(_messages.Message):
       "82a15998df9a8...fa9b"}.
     predicateType: Output only. Type of claim asserted. Example:
       "https://slsa.dev/provenance/v1".
-    signerConfig: Output only. Deprecated: Use `Authority` resources instead.
     subjects: Output only. The artifacts described by this attestation.
     verificationTime: Output only. Timestamp when the attestation DSSE
       envelope signature was cryptographically verified during ingestion. If
@@ -79,9 +78,8 @@ class Attestation(_messages.Message):
   name = _messages.StringField(4)
   payloadDigest = _messages.MessageField('PayloadDigestValue', 5)
   predicateType = _messages.StringField(6)
-  signerConfig = _messages.MessageField('SignerConfig', 7)
-  subjects = _messages.MessageField('Subject', 8, repeated=True)
-  verificationTime = _messages.StringField(9)
+  subjects = _messages.MessageField('Subject', 7, repeated=True)
+  verificationTime = _messages.StringField(8)
 
 
 class Attestor(_messages.Message):
@@ -205,7 +203,9 @@ class ListAttestationsResponse(_messages.Message):
   r"""Response message for ListAttestations.
 
   Fields:
-    attestations: List of attestations matching the request.
+    attestations: List of attestations matching the request. Each returned
+      `Attestation` omits `attestation_payload`; use `GetAttestation` to
+      retrieve the raw payload.
     nextPageToken: Token to retrieve the next page of results.
   """
 
@@ -800,18 +800,6 @@ class Settings(_messages.Message):
   binaryAuthorizationConfig = _messages.MessageField('BinaryAuthorizationConfig', 1)
   name = _messages.StringField(2)
   updateTime = _messages.StringField(3)
-
-
-class SignerConfig(_messages.Message):
-  r"""Deprecated: Use `Authority` resources instead.
-
-  Fields:
-    kmsKeyId: Identifier of the KMS cryptographic key used for verification.
-      Example: "projects/my-kms-project/locations/us-central1/keyRings/my-
-      ring/cryptoKeys/my-key/cryptoKeyVersions/1".
-  """
-
-  kmsKeyId = _messages.StringField(1)
 
 
 class SoftwaredeliverytrustProjectsLocationsAttestationsCreateRequest(_messages.Message):

@@ -250,8 +250,9 @@ def AddMetadataArgs(parser, required=False):
       file.
 
       *startup-script-url*::: Same as ``startup-script'' except that
-      the script contents are pulled from a publicly-accessible
-      location on the web.
+      the script contents are pulled from a Cloud Storage location
+      (e.g., ``gs://bucket/file.sh'' or
+      ``https://storage.googleapis.com/bucket/file.sh'').
 
 
       For startup scripts on Windows instances, the following metadata keys

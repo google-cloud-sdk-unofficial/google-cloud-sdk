@@ -8,7 +8,7 @@
 from sqlparse import sql
 from sqlparse import tokens as T
 from sqlparse.exceptions import SQLParseError
-from sqlparse.utils import recurse, imt
+from sqlparse.utils import imt, recurse
 
 # Maximum recursion depth for grouping operations to prevent DoS attacks
 # Set to None to disable limit (not recommended for untrusted input)
@@ -234,12 +234,7 @@ def group_comparison(tlist):
         return token.ttype == T.Operator.Comparison
 
     def valid(token):
-        if imt(token, t=ttypes, i=sqlcls):
-            return True
-        elif token and token.is_keyword and token.normalized == 'NULL':
-            return True
-        else:
-            return False
+        return bool(imt(token, t=ttypes, i=sqlcls) or (token and token.is_keyword and token.normalized == 'NULL'))
 
     def post(tlist, pidx, tidx, nidx):
         return pidx, nidx
@@ -339,9 +334,14 @@ def group_comments(tlist):
     while token:
         eidx, end = tlist.token_not_matching(
             lambda tk: imt(tk, t=T.Comment) or tk.is_newline, idx=tidx)
-        if end is not None:
-            eidx, end = tlist.token_prev(eidx, skip_ws=False)
-            tlist.group_tokens(sql.Comment, tidx, eidx)
+        if end is None:
+            # From tidx onward everything is comment/newline: there is no
+            # terminator to group against, and every later start would hit
+            # the same dead end. Stop instead of re-scanning the tail once
+            # per remaining comment token (which is O(n**2)).
+            break
+        eidx, end = tlist.token_prev(eidx, skip_ws=False)
+        tlist.group_tokens(sql.Comment, tidx, eidx)
 
         tidx, token = tlist.token_next_by(t=T.Comment, idx=tidx)
 
@@ -386,7 +386,7 @@ def group_functions(tlist):
             has_create = True
         if tmp_token.value.upper() == 'TABLE':
             has_table = True
-        if tmp_token.value == 'AS':
+        if tmp_token.value.upper() == 'AS':
             has_as = True
     if has_create and has_table and not has_as:
         return

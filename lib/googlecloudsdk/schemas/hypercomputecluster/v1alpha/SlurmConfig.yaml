@@ -1,0 +1,295 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha SlurmConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  accountingStorageEnforceFlags:
+    description: |-
+      Flags to control the level of association to impose on job submissions. By
+      default no flags are set. Corresponds to AccountingStorageEnforce.
+    type: array
+    items:
+      type: string
+      enum:
+      - ACCOUNTING_STORAGE_ENFORCE_FLAG_UNSPECIFIED
+      - ALL
+      - ASSOCIATIONS
+      - LIMITS
+      - NOJOBS
+      - NOSTEPS
+      - QOS
+      - SAFE
+      - WCKEYS
+  accountingStorageTres:
+    description: |-
+      Comma-separated list of additional resources you wish to track on the
+      cluster in Slurm accounting. gres/gpu and gres/tpu are always tracked
+      by default, in addition to standard resources tracked per SchedMD
+      documentation. For more details, see the Slurm documentation for
+      AccountingStorageTRES:
+      https://slurm.schedmd.com/tres.html#AccountingStorageTRES
+    type: string
+  additionalSettings:
+    description: |-
+      Additional [slurm.conf](https://slurm.schedmd.com/slurm.conf.html)
+      settings. Keys and values are injected directly into slurm.conf
+      without any semantic validation.
+    $ref: AdditionalSettingsValue.yaml
+  defMemPerCpu:
+    description: |-
+      Default real memory size available per allocated CPU in megabytes. For
+      more details, see the Slurm documentation for
+    type: string
+  enforcePartLimits:
+    description: |-
+      Enforces partition limits at job submission and/or run time. For more
+      details, see the Slurm documentation for EnforcePartLimits:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_EnforcePartLimits
+    type: string
+  fairShareDampeningFactor:
+    description: |-
+      Dampens the effect of tree structure of associations in fairshare
+      calculation. For more details, see the Slurm documentation for
+      FairShareDampeningFactor:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_FairShareDampeningFactor
+    type: string
+  firstJobId:
+    description: |-
+      The job ID to be used for the first job submitted to Slurm after the
+      system starts. For more details, see the Slurm documentation for
+      FirstJobId: https://slurm.schedmd.com/slurm.conf.html#OPT_FirstJobId
+    type: string
+  healthCheckInterval:
+    description: |-
+      The interval in seconds between executions of HealthCheckProgram. If
+      provided, must be > 0. To disable health checks, use
+      disable_health_check_program instead.
+    type: integer
+  healthCheckNodeState:
+    description: |-
+      The node state to check for. Allowed values are "ALLOC", "ANY",
+      "CYCLE", "IDLE", "NONDRAINED_IDLE", "MIXED", and "START_ONLY".
+      Multiple state values may be specified with a comma separator.
+    type: string
+  healthCheckProgram:
+    description: |-
+      The fully-qualified path to the health check program to be executed.
+    type: string
+  jobRequeue:
+    description: |-
+      Controls the default ability for batch jobs to be requeued. For more
+      details, see the Slurm documentation for JobRequeue:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_JobRequeue
+    type: string
+  overTimeLimit:
+    description: |-
+      Number of minutes by which a job can exceed its time limit before
+      being canceled. For more details, see the Slurm documentation for
+      OverTimeLimit:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_OverTimeLimit
+    type: string
+  preemptExemptTime:
+    description: |-
+      Specifies minimum run time of jobs before they are considered for
+      preemption.
+    type: string
+  preemptMode:
+    description: |-
+      Specifies the mechanism used to preempt jobs or enable gang
+      scheduling.
+    type: array
+    items:
+      type: string
+      enum:
+      - CANCEL
+      - GANG
+      - 'OFF'
+      - PREEMPT_MODE_UNSPECIFIED
+      - PRIORITY
+      - REQUEUE
+      - SUSPEND
+      - WITHIN
+  preemptParameters:
+    description: |-
+      Parameters used to control various preemption behaviors. For more
+      details, see the Slurm documentation for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PreemptParameters
+    $ref: PreemptParameters.yaml
+  preemptType:
+    description: |-
+      Specifies the plugin used to identify which jobs can be preempted
+      in order to start a pending job.
+    type: string
+    enum:
+    - PREEMPT_NONE
+    - PREEMPT_PARTITION_PRIO
+    - PREEMPT_QOS
+    - PREEMPT_TYPE_UNSPECIFIED
+  priorityCalcPeriod:
+    description: |-
+      The period of time in seconds between recalculations of job
+      priority. For more details, see the Slurm documentation for
+      PriorityCalcPeriod:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityCalcPeriod
+    type: string
+  priorityDecayHalfLife:
+    description: |-
+      The period of time in days, hours, minutes, or seconds across
+      which historical usage will be decayed. For more details, see the
+      Slurm documentation for PriorityDecayHalfLife: https://slurm.sched
+      md.com/slurm.conf.html#OPT_PriorityDecayHalfLife
+    type: string
+  priorityFavorSmall:
+    description: |-
+      Specifies that small jobs should be given priority over large
+      jobs. For more details, see the Slurm documentation for
+      PriorityFavorSmall:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityFavorSmall
+    type: string
+  priorityFlags:
+    description: |-
+      Flags which modify priority factor calculation. Multiple comma-
+      separated values can be provided together as a single string. For
+      more details, see the Slurm documentation for PriorityFlags:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityFlags
+    type: string
+  priorityMaxAge:
+    description: |-
+      Specifies the time period across which the age factor is scaled up
+      to 1.0. For more details, see the Slurm documentation for
+      PriorityMaxAge:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityMaxAge
+    type: string
+  priorityType:
+    description: |-
+      Specifies the plugin to be used in establishing a job's scheduling
+      priority. Set this value to "priority/multifactor" to enable the
+      Multifactor Job Priority Plugin.
+    type: string
+    enum:
+    - PRIORITY_BASIC
+    - PRIORITY_MULTIFACTOR
+    - PRIORITY_TYPE_UNSPECIFIED
+  priorityUsageResetPeriod:
+    description: |-
+      Period of time after which usage is reset to zero for all users.
+      For more details, see the Slurm documentation for
+      PriorityUsageResetPeriod: https://slurm.schedmd.com/slurm.conf.htm
+      l#OPT_PriorityUsageResetPeriod
+    type: string
+  priorityWeightAge:
+    description: |-
+      An unsigned integer that scales the contribution of the age
+      factor.
+    type: integer
+  priorityWeightAssoc:
+    description: |-
+      An unsigned integer that scales the contribution of the
+      association factor.
+    type: integer
+  priorityWeightFairshare:
+    description: |-
+      An unsigned integer that scales the contribution of the fair-share
+      factor.
+    type: integer
+  priorityWeightJobSize:
+    description: |-
+      An unsigned integer that scales the contribution of the job size
+      factor.
+    type: integer
+  priorityWeightPartition:
+    description: |-
+      An unsigned integer that scales the contribution of the partition
+      factor.
+    type: integer
+  priorityWeightQos:
+    description: |-
+      An unsigned integer that scales the contribution of the quality of
+      service factor.
+    type: integer
+  priorityWeightTres:
+    description: |-
+      A comma-separated list of TRES Types and weights that sets the
+      degree that each TRES Type contributes to the job's priority.
+    type: string
+  prologEpilogTimeout:
+    description: |-
+      The interval Slurm waits for Prolog and Epilog before terminating
+      them. Default is 65534 seconds. Corresponds to
+      PrologEpilogTimeout.
+    type: string
+  prologFlags:
+    description: |-
+      Flags to control the Prolog behavior. By default no flags are set.
+      Corresponds to PrologFlags.
+    type: array
+    items:
+      type: string
+      enum:
+      - ALLOC
+      - CONTAIN
+      - DEFER_BATCH
+      - FORCE_REQUEUE_ON_FAIL
+      - NO_HOLD
+      - PROLOG_FLAG_UNSPECIFIED
+      - RUN_IN_JOB
+      - SERIAL
+      - X11
+  requeueExitCodes:
+    description: |-
+      Enables automatic requeue for batch jobs which exit with the
+      specified values. Default is empty. Corresponds to
+      RequeueExit.
+    type: array
+    items:
+      type: integer
+  requeueHoldExitCodes:
+    description: |-
+      Enables automatic requeue for batch jobs which exit with
+      the specified values, with these jobs being held until
+      released manually by the user. Default is empty.
+      Corresponds to RequeueExitHold.
+    type: array
+    items:
+      type: integer
+  schedulerParameters:
+    description: |-
+      Parameters used to control various scheduling
+      behaviors. For more details, see the Slurm
+      documentation for SchedulerParameters: https://slurm.s
+      chedmd.com/slurm.conf.html#OPT_SchedulerParameters
+    $ref: SchedulerParameters.yaml
+  selectTypeParameters:
+    description: |-
+      Parameters used to control various resource allocation
+      behaviors. Multiple comma-separated values can be
+      provided together as a single string. Note that
+      `SelectType` is set to `select/cons_tres`, so only
+      parameters that correspond to that algorithm are
+      supported. If unspecified, the default is
+      `CR_Core_Memory`. For more details, see the Slurm
+      documentation for SelectTypeParameters: https://slurm.
+      schedmd.com/slurm.conf.html#OPT_SelectTypeParameters
+    type: string

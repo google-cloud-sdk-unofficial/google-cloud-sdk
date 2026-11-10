@@ -739,6 +739,10 @@ def AddSlurmNodeSets(
         For example --{name} id=ns1,computeId=c1,type=gke
         For example --{name} id=ns1,computeId=c1,type=gke,container-resource-labels="k1=v1",container-startup-script="echo hello"
 
+        To configure the accelerator topology of the VMs in a nodeset (for
+        example, a TPU slice), use resourcePolicyConfig.
+        For example --{name} id=ns1,computeId=c1,staticNodeCount=2,resourcePolicyConfig="{{acceleratorTopology=2x4}}"
+
         Defaults:
         - type: gce
 
@@ -750,6 +754,9 @@ def AddSlurmNodeSets(
         - bootDisk.storagePools:
           - At most 1 storage pool is supported.
           - storagePools: The name of the storage pool to use, in the format zones/us-central1-a/storagePools/pool1.
+        - resourcePolicyConfig.acceleratorTopology:
+          - The topology of the interconnected accelerators of the VMs in the
+            nodeset, in the format AxB or AxBxC, where A, B, and C are integers.
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to define slurm cluster nodeset config.
@@ -783,6 +790,10 @@ def AddSlurmNodeSets(
 
           To update a node set backed by GKE, use container-resource-labels or container-startup-script.
           For example --{update_flag_name} id=ns1,type=gke,container-resource-labels="k1=v1",container-startup-script="echo hello"
+
+          To update the accelerator topology of a node set, use
+          resourcePolicyConfig. To clear it, use resourcePolicyConfig="{{}}".
+          For example --{update_flag_name} id=ns1,resourcePolicyConfig="{{acceleratorTopology=2x4}}"
         """)
     beta_update_help = textwrap.dedent(f"""
           Parameters to define and update slurm cluster nodeset config.

@@ -2029,6 +2029,17 @@ class ConnectionPoolConfig(_messages.Message):
   poolerScalingType = _messages.EnumField('PoolerScalingTypeValueValuesEnum', 6)
 
 
+class ConnectionsCount(_messages.Message):
+  r"""Connections count policy for the autoscaler.
+
+  Fields:
+    targetCount: Optional. The target number of connections for the autoscaler
+      to scale the instance to.
+  """
+
+  targetCount = _messages.IntegerField(1)
+
+
 class ContinuousBackupConfig(_messages.Message):
   r"""ContinuousBackupConfig describes the continuous backups recovery
   configurations of a cluster.
@@ -3540,6 +3551,8 @@ class Policy(_messages.Message):
   r"""Policy for the autoscaler.
 
   Fields:
+    connectionsCount: Optional. Connections count policy for the autoscaler.
+      If not set, the autoscaler will not use connection count for scaling.
     coolDownPeriodSec: The period of time in seconds after a new node is
       created before the autoscaler will incorporate its resource usage (e.g.
       CPU utilization) into the autoscaling recommendation algorithm.
@@ -3549,10 +3562,11 @@ class Policy(_messages.Message):
     maxNodeCount: Maximum number of nodes for the autoscaler.
   """
 
-  coolDownPeriodSec = _messages.IntegerField(1)
-  cpuUtilization = _messages.MessageField('CpuUtilization', 2)
-  enabled = _messages.BooleanField(3)
-  maxNodeCount = _messages.IntegerField(4)
+  connectionsCount = _messages.MessageField('ConnectionsCount', 1)
+  coolDownPeriodSec = _messages.IntegerField(2)
+  cpuUtilization = _messages.MessageField('CpuUtilization', 3)
+  enabled = _messages.BooleanField(4)
+  maxNodeCount = _messages.IntegerField(5)
 
 
 class PrimaryConfig(_messages.Message):

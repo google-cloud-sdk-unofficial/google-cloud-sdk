@@ -1,0 +1,45 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 TokenBudgetPolicyTokenPool export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- budget
+- id
+- tokenGroupMemberships
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  budget:
+    description: Budget and quota definition for this pool.
+    $ref: TokenBudgetPolicyBudget.yaml
+  id:
+    description: |-
+      Identifier / Name of the token pool (e.g., "premium-pool", "Default").
+    type: string
+  tokenGroupMemberships:
+    description: |-
+      Token group names assigned to this pool (e.g. ["Engineering", "Finance",
+      "Marketing"]).
+    type: array
+    items:
+      type: string

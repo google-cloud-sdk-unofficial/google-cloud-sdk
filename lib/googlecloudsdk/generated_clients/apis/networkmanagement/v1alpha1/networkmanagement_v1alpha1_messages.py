@@ -818,6 +818,129 @@ class NetworkPath(_messages.Message):
   updateTime = _messages.StringField(16)
 
 
+class NetworkmanagementOrganizationsLocationsGetOrganizationCloudNetworkInsightsConfigRequest(_messages.Message):
+  r"""A NetworkmanagementOrganizationsLocationsGetOrganizationCloudNetworkInsi
+  ghtsConfigRequest object.
+
+  Fields:
+    name: Required. Name of the resource. Format: `organizations/{organization
+      }/locations/{location}/organizationCloudNetworkInsightsConfig`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkmanagementOrganizationsLocationsGetRequest(_messages.Message):
+  r"""A NetworkmanagementOrganizationsLocationsGetRequest object.
+
+  Fields:
+    name: Resource name for the location.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkmanagementOrganizationsLocationsListRequest(_messages.Message):
+  r"""A NetworkmanagementOrganizationsLocationsListRequest object.
+
+  Fields:
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
+    filter: A filter to narrow down results to a preferred subset. The
+      filtering language accepts strings like `"displayName=tokyo"`, and is
+      documented in more detail in [AIP-160](https://google.aip.dev/160).
+    includeUnrevealedLocations: If true, the returned list will include
+      locations which are not yet revealed.
+    name: The resource that owns the locations collection, if applicable.
+    pageSize: The maximum number of results to return. If not set, the service
+      selects a default.
+    pageToken: A page token received from the `next_page_token` field in the
+      response. Send that page token to receive the subsequent page.
+  """
+
+  extraLocationTypes = _messages.StringField(1, repeated=True)
+  filter = _messages.StringField(2)
+  includeUnrevealedLocations = _messages.BooleanField(3)
+  name = _messages.StringField(4, required=True)
+  pageSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(6)
+
+
+class NetworkmanagementOrganizationsLocationsOperationsCancelRequest(_messages.Message):
+  r"""A NetworkmanagementOrganizationsLocationsOperationsCancelRequest object.
+
+  Fields:
+    cancelOperationRequest: A CancelOperationRequest resource to be passed as
+      the request body.
+    name: The name of the operation resource to be cancelled.
+  """
+
+  cancelOperationRequest = _messages.MessageField('CancelOperationRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkmanagementOrganizationsLocationsOperationsDeleteRequest(_messages.Message):
+  r"""A NetworkmanagementOrganizationsLocationsOperationsDeleteRequest object.
+
+  Fields:
+    name: The name of the operation resource to be deleted.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkmanagementOrganizationsLocationsOperationsGetRequest(_messages.Message):
+  r"""A NetworkmanagementOrganizationsLocationsOperationsGetRequest object.
+
+  Fields:
+    name: The name of the operation resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkmanagementOrganizationsLocationsOperationsListRequest(_messages.Message):
+  r"""A NetworkmanagementOrganizationsLocationsOperationsListRequest object.
+
+  Fields:
+    filter: The standard list filter.
+    name: The name of the operation's parent resource.
+    pageSize: The standard list page size.
+    pageToken: The standard list page token.
+    returnPartialSuccess: When set to `true`, operations that are reachable
+      are returned as normal, and those that are unreachable are returned in
+      the ListOperationsResponse.unreachable field. This can only be `true`
+      when reading across collections. For example, when `parent` is set to
+      `"projects/example/locations/-"`. This field is not supported by default
+      and will result in an `UNIMPLEMENTED` error if set unless explicitly
+      documented otherwise in service or product specific documentation.
+  """
+
+  filter = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  returnPartialSuccess = _messages.BooleanField(5)
+
+
+class NetworkmanagementOrganizationsLocationsUpdateOrganizationCloudNetworkInsightsConfigRequest(_messages.Message):
+  r"""A NetworkmanagementOrganizationsLocationsUpdateOrganizationCloudNetworkI
+  nsightsConfigRequest object.
+
+  Fields:
+    name: Identifier. Name of the resource. Format: `organizations/{organizati
+      on}/locations/{location}/organizationCloudNetworkInsightsConfig`
+    organizationCloudNetworkInsightsConfig: A
+      OrganizationCloudNetworkInsightsConfig resource to be passed as the
+      request body.
+    updateMask: Optional. Mask of fields to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  organizationCloudNetworkInsightsConfig = _messages.MessageField('OrganizationCloudNetworkInsightsConfig', 2)
+  updateMask = _messages.StringField(3)
+
+
 class NetworkmanagementProjectsLocationsAppliancesGetRequest(_messages.Message):
   r"""A NetworkmanagementProjectsLocationsAppliancesGetRequest object.
 
@@ -1064,11 +1187,15 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
   PointsDownloadInstallScriptRequest object.
 
   Enums:
+    CloudDeploymentTypeValueValuesEnum: Optional. The deployment type for
+      Cloud Monitoring Points.
     MonitoringPointTypeValueValuesEnum: Required. The type of the monitoring
       point.
 
   Fields:
     _password: Optional. Password for logging into the MonitoringPoint.
+    cloudDeploymentType: Optional. The deployment type for Cloud Monitoring
+      Points.
     hostname: Required. The hostname of the MonitoringPoint, e.g. "test-vm"
     monitoringPointType: Required. The type of the monitoring point.
     ntpServerAddress: Optional. Network Time Protocol a user can configure. If
@@ -1099,6 +1226,24 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
       network configuration parameters to devices connecting to a network.
   """
 
+  class CloudDeploymentTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The deployment type for Cloud Monitoring Points.
+
+    Values:
+      CLOUD_DEPLOYMENT_TYPE_UNSPECIFIED: Default value. If unspecified,
+        defaults to `TERRAFORM` for `GCE_VM`, `BICEP` for `AZURE_VM`, and
+        `CLOUD_FORMATION` for `AWS_EC2`.
+      TERRAFORM: Deploys using Terraform.
+      CLOUD_FORMATION: Deploys using AWS Cloud Formation. Supported only for
+        `AWS_EC2` deployments.
+      BICEP: Deploys using Azure Bicep. Supported only for `AZURE_VM`
+        deployments.
+    """
+    CLOUD_DEPLOYMENT_TYPE_UNSPECIFIED = 0
+    TERRAFORM = 1
+    CLOUD_FORMATION = 2
+    BICEP = 3
+
   class MonitoringPointTypeValueValuesEnum(_messages.Enum):
     r"""Required. The type of the monitoring point.
 
@@ -1124,21 +1269,22 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
     AWS_EC2 = 7
 
   _password = _messages.StringField(1)
-  hostname = _messages.StringField(2)
-  monitoringPointType = _messages.EnumField('MonitoringPointTypeValueValuesEnum', 3)
-  ntpServerAddress = _messages.StringField(4)
-  ntpServerSecondaryAddress = _messages.StringField(5)
-  parent = _messages.StringField(6, required=True)
-  privateConnectivityEnabled = _messages.BooleanField(7)
-  staticIpAddress_dnsServerAddress = _messages.StringField(8)
-  staticIpAddress_dnsServerSecondaryAddress = _messages.StringField(9)
-  staticIpAddress_domain = _messages.StringField(10)
-  staticIpAddress_gatewayAddress = _messages.StringField(11)
-  staticIpAddress_ipAddress = _messages.StringField(12)
-  staticIpAddress_netmask = _messages.StringField(13)
-  timeZone_id = _messages.StringField(14)
-  timeZone_version = _messages.StringField(15)
-  useDhcp = _messages.BooleanField(16)
+  cloudDeploymentType = _messages.EnumField('CloudDeploymentTypeValueValuesEnum', 2)
+  hostname = _messages.StringField(3)
+  monitoringPointType = _messages.EnumField('MonitoringPointTypeValueValuesEnum', 4)
+  ntpServerAddress = _messages.StringField(5)
+  ntpServerSecondaryAddress = _messages.StringField(6)
+  parent = _messages.StringField(7, required=True)
+  privateConnectivityEnabled = _messages.BooleanField(8)
+  staticIpAddress_dnsServerAddress = _messages.StringField(9)
+  staticIpAddress_dnsServerSecondaryAddress = _messages.StringField(10)
+  staticIpAddress_domain = _messages.StringField(11)
+  staticIpAddress_gatewayAddress = _messages.StringField(12)
+  staticIpAddress_ipAddress = _messages.StringField(13)
+  staticIpAddress_netmask = _messages.StringField(14)
+  timeZone_id = _messages.StringField(15)
+  timeZone_version = _messages.StringField(16)
+  useDhcp = _messages.BooleanField(17)
 
 
 class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadRecreateInstallScriptRequest(_messages.Message):
@@ -1255,6 +1401,19 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsLi
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersQueryOrgCloudNetworkInsightsConfigRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersQueryOrgCl
+  oudNetworkInsightsConfigRequest object.
+
+  Fields:
+    parent: Required. Parent value for
+      QueryOrgCloudNetworkInsightsConfigRequest. Format:
+      `projects/{project}/locations/{location}`
+  """
+
+  parent = _messages.StringField(1, required=True)
 
 
 class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersWebPathsGetRequest(_messages.Message):
@@ -1485,6 +1644,60 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
+class OrganizationCloudNetworkInsightsConfig(_messages.Message):
+  r"""Message describing OrganizationCloudNetworkInsightsConfig singleton
+  resource.
+
+  Enums:
+    CrossProjectSharingValueValuesEnum: Optional. Whether Cloud Network
+      Insights shares information across the projects of this organization. If
+      not specified, defaults to DISABLED.
+
+  Fields:
+    authorizedProjects: Optional. The projects in this organization that Cloud
+      Network Insights can share information with. Each project must belong to
+      this organization. At most 100 projects can be specified. Format:
+      `projects/{project_number}`
+    createTime: Output only. The time the
+      OrganizationCloudNetworkInsightsConfig was created.
+    crossProjectSharing: Optional. Whether Cloud Network Insights shares
+      information across the projects of this organization. If not specified,
+      defaults to DISABLED.
+    name: Identifier. Name of the resource. Format: `organizations/{organizati
+      on}/locations/{location}/organizationCloudNetworkInsightsConfig`
+    updateTime: Output only. The time the
+      OrganizationCloudNetworkInsightsConfig was updated.
+  """
+
+  class CrossProjectSharingValueValuesEnum(_messages.Enum):
+    r"""Optional. Whether Cloud Network Insights shares information across the
+    projects of this organization. If not specified, defaults to DISABLED.
+
+    Values:
+      CROSS_PROJECT_SHARING_UNSPECIFIED: Default value. If not specified,
+        defaults to DISABLED.
+      ENABLED: Information about resources in any project of this organization
+        can be shared with the projects in `authorized_projects`. Anyone with
+        Cloud Network Insights permissions in an authorized project can see
+        this information, even without permissions in the project that owns
+        the resource. Also, anyone who can view any project in this
+        organization can see which projects are authorized.
+      DISABLED: No information is shared across projects: Cloud Network
+        Insights in each project uses only information about that project's
+        own resources, and doesn't show which projects are authorized.
+        `authorized_projects` is kept, but has no effect.
+    """
+    CROSS_PROJECT_SHARING_UNSPECIFIED = 0
+    ENABLED = 1
+    DISABLED = 2
+
+  authorizedProjects = _messages.StringField(1, repeated=True)
+  createTime = _messages.StringField(2)
+  crossProjectSharing = _messages.EnumField('CrossProjectSharingValueValuesEnum', 3)
+  name = _messages.StringField(4)
+  updateTime = _messages.StringField(5)
+
+
 class OutOfBandDeploymentConfig(_messages.Message):
   r"""Config used to deploy an out of band appliance topology.
 
@@ -1576,6 +1789,18 @@ class ProviderTag(_messages.Message):
   category = _messages.StringField(1)
   resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 2)
   value = _messages.StringField(3)
+
+
+class QueryOrgCloudNetworkInsightsConfigResponse(_messages.Message):
+  r"""Message for response to querying the organization-level Cloud Network
+  Insights configuration.
+
+  Fields:
+    organizationCloudNetworkInsightsConfig: Effective organization-level Cloud
+      Network Insights configuration.
+  """
+
+  organizationCloudNetworkInsightsConfig = _messages.MessageField('OrganizationCloudNetworkInsightsConfig', 1)
 
 
 class StandardQueryParameters(_messages.Message):

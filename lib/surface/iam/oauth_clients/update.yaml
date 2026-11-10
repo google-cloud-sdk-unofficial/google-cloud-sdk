@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: Update an OAuth client.
     description: |
@@ -47,3 +49,5 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.allowed_grant_types
     - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.allowed_scopes
     - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.allowed_redirect_uris
+    - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.clearable_allowed_custom_claims
+    - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.clearable_user_type

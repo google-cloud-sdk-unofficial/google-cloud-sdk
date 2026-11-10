@@ -988,7 +988,7 @@ UrlMap = _reflection.GeneratedProtocolMessageType('UrlMap', (_message.Message,),
           Action to take when users access resources that require
           authentication. Defaults to ``redirect``.
       redirect_http_response_code:
-          \ ``30x`` code to use when performing redirects for the
+          \\ ``30x`` code to use when performing redirects for the
           ``secure`` field. Defaults to ``302``.
   """,
   # @@protoc_insertion_point(class_scope:google.appengine.v1alpha.UrlMap)

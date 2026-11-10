@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import ssh_utils
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
@@ -45,13 +46,14 @@ def _GetProjectNumberFromWorkloadJson(
     str, The project number.
 
   Raises:
-    ValueError: If the project number is not found in the workload JSON.
+    exceptions.ConfigurationError: If the project number is not found in the
+      workload JSON.
   """
   project_number = workload_json.get(constants.METADATA, {}).get(
       constants.NAMESPACE
   )
   if not project_number:
-    raise ValueError("Project number not found in workload.")
+    raise exceptions.ConfigurationError("Project number not found in workload.")
   return project_number
 
 
@@ -62,7 +64,7 @@ def _ValidateSSHEnabled(workload_json: dict[str, Any]) -> None:
     workload_json: dict, The JSON representation of the Cloud Run workload.
 
   Raises:
-    ValueError: If the workload has SSH disabled.
+    exceptions.ConfigurationError: If the workload has SSH disabled.
   """
   ssh_enabled = (
       workload_json.get(constants.METADATA, {})
@@ -70,7 +72,7 @@ def _ValidateSSHEnabled(workload_json: dict[str, Any]) -> None:
       .get(k8s_object.SSH_ENABLED_ANNOTATION)
   )
   if ssh_enabled != "true":
-    raise ValueError(
+    raise exceptions.ConfigurationError(
         "SSH is not enabled for this deployment. Use the --ssh flag to enable"
         " SSH for this deployment."
     )
@@ -184,8 +186,10 @@ class Ssh:
       str, The revision name.
 
     Raises:
-      ValueError: If the revision is invalid, or if there is a traffic split and
-        the user does not specify a revision when prompted.
+      exceptions.NoActiveRevisionsError: If the service has no revisions
+        serving traffic.
+      exceptions.ArgumentError: If the revision is invalid, or if there is a
+        traffic split and the user cannot be prompted to select a revision.
     """
     revisions_serving_traffic = workload_json.get(constants.STATUS, {}).get(
         constants.TRAFFIC, []
@@ -197,12 +201,14 @@ class Ssh:
     ]
 
     if not active_revisions:
-      raise ValueError("No serving revisions found for the service.")
+      raise exceptions.NoActiveRevisionsError(
+          "No serving revisions found for the service."
+      )
 
     if self.revision and self.revision in active_revisions:
       return self.revision
     if self.revision:
-      raise ValueError(
+      raise exceptions.ArgumentError(
           f"Revision {self.revision} is invalid, or it is not serving"
           " traffic. Please specify one of the following revisions:"
           f" {active_revisions} using the --revision flag."
@@ -211,7 +217,7 @@ class Ssh:
     # The user did not specify a revision, and there is a traffic split.
     if len(active_revisions) > 1:
       if not console_io.CanPrompt():
-        raise ValueError(
+        raise exceptions.ArgumentError(
             "There is a traffic split. Please specify a revision from the"
             f" following list: {active_revisions} using the --revision flag."
         )
@@ -240,7 +246,15 @@ class Ssh:
     )
 
   def _GetWorkloadJson(self):
-    """Retrieves the JSON representation of the Cloud Run workload."""
+    """Retrieves the JSON representation of the Cloud Run workload.
+
+    Returns:
+      dict, The JSON representation of the Cloud Run workload.
+
+    Raises:
+      exceptions.ConfigurationError: If the workload cannot be described or
+        its description cannot be parsed.
+    """
     command = execution_utils.ArgsForGcloud()
 
     track_prefix = (
@@ -271,10 +285,17 @@ class Ssh:
     try:
       output = subprocess.check_output(command, stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
-      raise ValueError(
-          f"Error describing deployment: {e.stderr.decode('utf-8')}"
+      stderr = e.stderr.decode("utf-8", errors="replace")
+      raise exceptions.ConfigurationError(
+          f"Error describing deployment: {stderr}"
       ) from e
-    return json.loads(output)
+    try:
+      return json.loads(output)
+    # ValueError covers both malformed JSON and non-UTF-8 output.
+    except ValueError as e:
+      raise exceptions.ConfigurationError(
+          f"Error parsing deployment description: {e}"
+      ) from e
 
   def _GetServiceAccountFromWorkloadJson(
       self, workload_json: dict[str, Any]
@@ -288,7 +309,8 @@ class Ssh:
       A str, the service account name.
 
     Raises:
-      ValueError: If the service account is not found in the workload JSON.
+      exceptions.ServiceAccountError: If the service account is not found in
+        the workload JSON.
     """
     if self.workload_type == constants.WorkloadType.INSTANCE:
       service_account = workload_json.get(constants.SPEC, {}).get(
@@ -302,7 +324,9 @@ class Ssh:
           constants.SERVICE_ACCOUNT_NAME
       )
     if not service_account:
-      raise ValueError("Service account not found for workload.")
+      raise exceptions.ServiceAccountError(
+          "Service account not found for workload."
+      )
     return service_account
 
   def HostKeyAlias(self):

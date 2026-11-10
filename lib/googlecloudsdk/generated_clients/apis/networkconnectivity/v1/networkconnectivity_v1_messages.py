@@ -1093,9 +1093,9 @@ class Empty(_messages.Message):
   """
 
 
+
 class ExportPscConfig(_messages.Message):
   r"""Configuration for more granular control of Private Service Connect
-
   connection propagation. This allows enabling or disabling connection
   propagation for specific types of Private Service Connect endpoints.
 
@@ -1727,7 +1727,6 @@ class Group(_messages.Message):
 
 class Hub(_messages.Message):
   r"""A Network Connectivity Center hub is a global management resource to
-
   which you attach spokes. A single hub can contain spokes from multiple
   regions. However, if any of a hub's spokes use the site-to-site data
   transfer feature, the resources associated with those spokes must all be in
@@ -6512,9 +6511,8 @@ class Route(_messages.Message):
     FAILED = 11
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The route's type.
-
-    Its type is determined by the properties of its IP address range.
+    r"""Output only. The route's type. Its type is determined by the
+    properties of its IP address range.
 
     Values:
       ROUTE_TYPE_UNSPECIFIED: No route type information specified

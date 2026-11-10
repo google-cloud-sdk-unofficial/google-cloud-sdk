@@ -501,7 +501,12 @@ def Apply(
     tf_version_full_name = (
         f'projects/{project}/locations/{location}/terraformVersions/{tf_version}'
     )
-    _DisplayObsoleteTfVersionMessage(messages, tf_version_full_name, tf_version)
+    try:
+      tf_version_obj = configmanager_util.GetTfVersion(tf_version_full_name)
+      _DisplayObsoleteTfVersionMessage(messages, tf_version_obj, tf_version)
+      _DisplayPaidTfVersionMessage(tf_version)
+    except apitools_exceptions.HttpError:
+      pass
 
   if is_creating_deployment:
     op = _CreateDeploymentOp(deployment, deployment_full_name)
@@ -881,9 +886,13 @@ def _CleanupGCSStagingObjectsNotInUse(
     return
 
   op = configmanager_util.ListRevisions(deployment_full_name)
+  if not op or not op.revisions:
+    return
   revisions = sorted(
       op.revisions, key=lambda x: GetRevisionNumber(x.name), reverse=True
   )
+  if not revisions:
+    return
 
   # discard gcsSource in latest revision from being deleted
   lastest_revision = revisions[0]
@@ -1264,18 +1273,23 @@ def _GetTerraformVersionFromTfConstraint(tf_version_constraint):
   return None
 
 
-def _DisplayObsoleteTfVersionMessage(
-    messages, tf_version_full_name, tf_version
-):
+def _DisplayPaidTfVersionMessage(tf_version):
+  """Checks if TF version is a paid version and displays a warning."""
+  if tuple(int(x) for x in tf_version.split('.')) >= (1, 6, 0):
+    log.warning(
+        'Terraform version %s is a paid version and will incur charges'
+        ' for deployments. To avoid charges, use an earlier supported'
+        ' version (such as 1.5.7)',
+        tf_version,
+    )
+
+
+def _DisplayObsoleteTfVersionMessage(messages, tf_version_obj, tf_version):
   """Checks if TF version is obsolete/deprecated and displays a warning."""
-  try:
-    tf_version_obj = configmanager_util.GetTfVersion(tf_version_full_name)
-    if tf_version_obj.state in [
-        messages.TerraformVersion.StateValueValuesEnum.DEPRECATED,
-        messages.TerraformVersion.StateValueValuesEnum.OBSOLETE,
-    ]:
-      log.warning(
-          'Terraform version %s is %s.', tf_version, tf_version_obj.state
-      )
-  except apitools_exceptions.HttpError:
-    pass
+  if tf_version_obj.state in [
+      messages.TerraformVersion.StateValueValuesEnum.DEPRECATED,
+      messages.TerraformVersion.StateValueValuesEnum.OBSOLETE,
+  ]:
+    log.warning(
+        'Terraform version %s is %s.', tf_version, tf_version_obj.state
+    )

@@ -15,12 +15,19 @@
 - release_tracks:
   - ALPHA
   auto_generated: false
-  hidden: true
   help_text:
     brief: Stop continuous profiling for a machine learning run.
-    description: Stop continuous profiling for a machine learning run.
+    description: |-
+      Stop continuous profiling on all profiler targets of a machine learning
+      run.
+
+      After continuous profiling stops, the profiler targets no longer record
+      trace data into their in-memory buffers, and snapshots can't be
+      captured. Snapshots that were already captured as profiler sessions
+      aren't affected.
     examples: |-
-      To stop continuous profiling for a machine learning run, run:
+      To stop continuous profiling for the machine learning run `my-run` in
+      `us-central1`, run:
 
           $ {command} --machine-learning-run=my-run --location=us-central1
 

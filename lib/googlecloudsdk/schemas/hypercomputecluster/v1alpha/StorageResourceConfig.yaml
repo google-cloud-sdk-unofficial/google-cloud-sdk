@@ -1,0 +1,62 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha StorageResourceConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  existingBucket:
+    description: |-
+      Immutable. If set, indicates that an existing Cloud Storage bucket should
+      be imported.
+    $ref: ExistingBucketConfig.yaml
+  existingFilestore:
+    description: |-
+      Immutable. If set, indicates that an existing Filestore instance should be
+      imported.
+    $ref: ExistingFilestoreConfig.yaml
+  existingLustre:
+    description: |-
+      Immutable. If set, indicates that an existing Managed Lustre instance
+      should be imported.
+    $ref: ExistingLustreConfig.yaml
+  existingNfs:
+    description: |-
+      Immutable. If set, indicates that an existing NFS share should be
+      imported.
+    $ref: ExistingNfsConfig.yaml
+  newBucket:
+    description: |-
+      Immutable. If set, indicates that a new Cloud Storage bucket should be
+      created.
+    $ref: NewBucketConfig.yaml
+  newFilestore:
+    description: |-
+      Immutable. If set, indicates that a new Filestore instance should be
+      created.
+    $ref: NewFilestoreConfig.yaml
+  newLustre:
+    description: |-
+      Immutable. If set, indicates that a new Managed Lustre instance should be
+      created.
+    $ref: NewLustreConfig.yaml

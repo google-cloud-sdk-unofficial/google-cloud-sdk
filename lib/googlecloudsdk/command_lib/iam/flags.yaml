@@ -72,6 +72,67 @@ oauth_client:
     arg_name: allowed-redirect-uris
     help_text: |-
       A list of redirect uris that is allowed for redirecting when the authorization is completed.
+  allowed_custom_claims: &oauth_client_allowed_custom_claims
+    api_field: oauthClient.allowedCustomClaims
+    arg_name: allowed-custom-claims
+    hidden: true
+    type: googlecloudsdk.command_lib.iam.hooks:ArgList:min_length=1,max_length=100
+    processor: googlecloudsdk.command_lib.iam.hooks:CreateCustomClaimsList
+    help_text: |-
+      A list of custom claim keys that the OAuth client is allowed to receive. Only the custom
+      claims in this list, as mapped by the workforce identity pool provider's attribute mapping,
+      are returned for the OAuth client. If the OAuth client has no allowed custom claims
+      configured, no custom claims are returned. Setting this flag replaces any existing custom
+      claims configuration of the OAuth client.
+
+      At most 100 keys can be specified, and each key cannot exceed 100 characters.
+  clear_allowed_custom_claims: &oauth_client_clear_allowed_custom_claims
+    api_field: oauthClient.allowedCustomClaims
+    arg_name: clear-allowed-custom-claims
+    hidden: true
+    action: store_true
+    processor: googlecloudsdk.command_lib.iam.hooks:ClearFlag
+    help_text: |-
+      Clear the list of allowed custom claims of the OAuth client.
+  clearable_allowed_custom_claims:
+    group:
+      hidden: true
+      mutex: true
+      params:
+      - *oauth_client_clear_allowed_custom_claims
+      - *oauth_client_allowed_custom_claims
+  user_type: &oauth_client_user_type
+    api_field: oauthClient.userType
+    arg_name: user-type
+    hidden: true
+    choices:
+    - arg_value: in-org
+      enum_value: IN_ORG
+    - arg_value: cross-org
+      enum_value: CROSS_ORG
+    help_text: |-
+      The intended user scope of the OAuth client.
+
+      Use `in-org` for an OAuth client that is only used by users of the organization that owns
+      the OAuth client.
+
+      Use `cross-org` for an OAuth client that is also used by users of other organizations. This
+      value is restricted to allowlisted Google Cloud services.
+  clear_user_type: &oauth_client_clear_user_type
+    api_field: oauthClient.userType
+    arg_name: clear-user-type
+    hidden: true
+    action: store_true
+    processor: googlecloudsdk.command_lib.iam.hooks:ClearUserType
+    help_text: |-
+      Clear the user type of the OAuth client, resetting it to its default.
+  clearable_user_type:
+    group:
+      hidden: true
+      mutex: true
+      params:
+      - *oauth_client_clear_user_type
+      - *oauth_client_user_type
 
 oauth_client_credential:
   display_name:

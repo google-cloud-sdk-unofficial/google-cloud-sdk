@@ -383,6 +383,16 @@ class CreateServiceAccountRequest(_messages.Message):
   serviceAccount = _messages.MessageField('ServiceAccount', 2)
 
 
+class CustomClaimsList(_messages.Message):
+  r"""A wrapper message for a list of custom claims.
+
+  Fields:
+    claims: Optional. The list of custom claim keys.
+  """
+
+  claims = _messages.StringField(1, repeated=True)
+
+
 class DisableServiceAccountKeyRequest(_messages.Message):
   r"""The service account key disable request."""
 
@@ -4474,8 +4484,12 @@ class OauthClient(_messages.Message):
       public or private. For private clients, the client secret can be managed
       using the dedicated OauthClientCredential resource.
     StateValueValuesEnum: Output only. The state of the OauthClient.
+    UserTypeValueValuesEnum: Optional. The user type of the OauthClient. If
+      not specified, defaults to `USER_TYPE_UNSPECIFIED`.
 
   Fields:
+    allowedCustomClaims: Optional. A specific list of custom claims that are
+      allowed to be returned.
     allowedGrantTypes: Optional. The list of OAuth grant types is allowed for
       the OauthClient.
     allowedRedirectUris: Required. The list of redirect uris that is allowed
@@ -4503,6 +4517,8 @@ class OauthClient(_messages.Message):
       the OauthClient. If not set, the default value is false. Public clients
       must set this field to true.
     state: Output only. The state of the OauthClient.
+    userType: Optional. The user type of the OauthClient. If not specified,
+      defaults to `USER_TYPE_UNSPECIFIED`.
   """
 
   class AllowedGrantTypesValueListEntryValuesEnum(_messages.Enum):
@@ -4545,18 +4561,33 @@ class OauthClient(_messages.Message):
     ACTIVE = 1
     DELETED = 2
 
-  allowedGrantTypes = _messages.EnumField('AllowedGrantTypesValueListEntryValuesEnum', 1, repeated=True)
-  allowedRedirectUris = _messages.StringField(2, repeated=True)
-  allowedScopes = _messages.StringField(3, repeated=True)
-  clientId = _messages.StringField(4)
-  clientType = _messages.EnumField('ClientTypeValueValuesEnum', 5)
-  description = _messages.StringField(6)
-  disabled = _messages.BooleanField(7)
-  displayName = _messages.StringField(8)
-  expireTime = _messages.StringField(9)
-  name = _messages.StringField(10)
-  pkceEnforced = _messages.BooleanField(11)
-  state = _messages.EnumField('StateValueValuesEnum', 12)
+  class UserTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The user type of the OauthClient. If not specified, defaults
+    to `USER_TYPE_UNSPECIFIED`.
+
+    Values:
+      USER_TYPE_UNSPECIFIED: Represents unpopulated or legacy client state.
+      IN_ORG: Intended for in-org users only.
+      CROSS_ORG: Intended for cross-org users.
+    """
+    USER_TYPE_UNSPECIFIED = 0
+    IN_ORG = 1
+    CROSS_ORG = 2
+
+  allowedCustomClaims = _messages.MessageField('CustomClaimsList', 1)
+  allowedGrantTypes = _messages.EnumField('AllowedGrantTypesValueListEntryValuesEnum', 2, repeated=True)
+  allowedRedirectUris = _messages.StringField(3, repeated=True)
+  allowedScopes = _messages.StringField(4, repeated=True)
+  clientId = _messages.StringField(5)
+  clientType = _messages.EnumField('ClientTypeValueValuesEnum', 6)
+  description = _messages.StringField(7)
+  disabled = _messages.BooleanField(8)
+  displayName = _messages.StringField(9)
+  expireTime = _messages.StringField(10)
+  name = _messages.StringField(11)
+  pkceEnforced = _messages.BooleanField(12)
+  state = _messages.EnumField('StateValueValuesEnum', 13)
+  userType = _messages.EnumField('UserTypeValueValuesEnum', 14)
 
 
 class OauthClientCredential(_messages.Message):

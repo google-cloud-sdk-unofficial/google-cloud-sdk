@@ -92,21 +92,37 @@ def AddTableRegisterArgs(parser):
   )
 
 
-def AddKmsKeyResourceArg(parser, resource='catalog'):
+def AddKmsKeyResourceArg(parser, resource='catalog', clearable=False):
   """Adds argument for Cloud KMS key."""
+  target_parser = (
+      parser.add_mutually_exclusive_group(required=False)
+      if clearable
+      else parser
+  )
   kms_resource_args.AddKmsKeyResourceArg(
-      parser,
+      target_parser,
       resource,
       permission_info=(
-          'The BigQuery encryption service account'
-          ' (bq-<project_number>@bigquery-encryption.iam.gserviceaccount.com)'
+          'The Lakehouse encryption service account'
+          ' (lh-<project_number>@gcp-sa-lakehouse.iam.gserviceaccount.com)'
           " must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
       ),
   )
+  if clearable:
+    target_parser.add_argument(
+        '--clear-kms-key',
+        action='store_true',
+        help=(
+            f'Clear the Cloud KMS key for the {resource} and revert to'
+            ' Google-managed encryption.'
+        ),
+    )
 
 
 def GetAndValidateKmsKeyName(args):
   """Parse the KMS key resource arg and return the fully qualified resource name."""
+  if args.IsKnownAndSpecified('clear_kms_key') and args.clear_kms_key:
+    return ''
   kms_ref = args.CONCEPTS.kms_key.Parse()
   if kms_ref:
     return kms_ref.RelativeName()
@@ -118,6 +134,8 @@ def GetAndValidateKmsKeyName(args):
           'combination of --kms-project, --kms-location, --kms-keyring and '
           '--kms-key to specify the key ID in pieces.',
       )
+  if args.IsSpecified('kms_key'):
+    return ''
   return None
 
 
@@ -216,7 +234,10 @@ def AddViewCreateArgs(parser):
 
 
 def AddFederatedCatalogArgs(
-    parser, support_snowflake=False, support_workday=False
+    parser,
+    support_snowflake=False,
+    support_workday=False,
+    support_generic_iceberg_federation=False,
 ):
   """Adds arguments for federated catalogs."""
   choices = ['unity', 'glue']
@@ -225,6 +246,9 @@ def AddFederatedCatalogArgs(
     choices.append('snowflake')
   if support_workday:
     choices.append('workday')
+  if support_generic_iceberg_federation:
+    choices.append('generic')
+    hidden_choices.append('generic')
 
   parser.add_argument(
       '--federated-catalog-type',
@@ -398,6 +422,18 @@ def AddSnowflakeCatalogArgs(parser):
   AddSnowflakeRoleArg(parser)
 
 
+def AddWorkdayApiClientClientIdArg(parser):
+  """Adds Workday API client client ID argument."""
+  parser.add_argument(
+      '--workday-api-client-client-id',
+      help=(
+          'The client ID of the Workday API Client used to access Workday Data'
+          ' Lake in the OIDC authentication flow. With OIDC, the secret-name'
+          ' argument is not used.'
+      ),
+  )
+
+
 def AddWorkdayCatalogArgs(parser):
   """Adds arguments for Workday catalogs."""
   parser.add_argument(
@@ -407,6 +443,79 @@ def AddWorkdayCatalogArgs(parser):
   parser.add_argument(
       '--workday-tenant',
       help='The Workday tenant name.',
+  )
+
+
+def AddGenericIcebergCatalogArgs(parser, hidden=True, is_update=False):
+  """Adds arguments for generic Iceberg REST catalogs."""
+  group = parser.add_group(
+      hidden=hidden,
+      help='Arguments for generic Iceberg REST catalogs.',
+  )
+  if not is_update:
+    group.add_argument(
+        '--catalog-url',
+        required=True,
+        hidden=hidden,
+        help='Base URL of the Iceberg REST Catalog endpoint.',
+    )
+    group.add_argument(
+        '--warehouse',
+        required=True,
+        hidden=hidden,
+        help='Warehouse name in the remote Iceberg REST Catalog.',
+    )
+  group.add_argument(
+      '--custom-headers',
+      metavar='HEADER=VALUE',
+      type=arg_parsers.ArgDict(),
+      hidden=hidden,
+      help=(
+          'Custom headers to append to the request when calling the remote'
+          ' catalog.'
+      ),
+  )
+  if not is_update:
+    group.add_argument(
+        '--auth-type',
+        required=True,
+        choices={
+            'secret-based': (
+                'Authenticate with the remote catalog using credentials stored'
+                ' in Secret Manager.'
+            ),
+            'oidc': (
+                'Authenticate with the remote catalog using an OpenID Connect'
+                ' (OIDC) token.'
+            ),
+        },
+        hidden=hidden,
+        help='Authentication type for the generic Iceberg REST catalog.',
+    )
+    group.add_argument(
+        '--oidc-audience',
+        hidden=hidden,
+        help=(
+            'Audience claim (aud) to include in the generated OpenID Connect'
+            ' (OIDC) token.'
+        ),
+    )
+  group.add_argument(
+      '--oauth2-server-url',
+      hidden=hidden,
+      help=(
+          'OAuth2 server URL (Token Endpoint) used to obtain an access'
+          ' token when authenticating with the remote catalog.'
+      ),
+  )
+  group.add_argument(
+      '--trust-config',
+      hidden=hidden,
+      help=(
+          'Reference to the Certificate Manager TrustConfig resource used to'
+          ' verify the TLS certificate of the remote catalog, in the format'
+          ' `projects/{project}/locations/{location}/trustConfigs/{trust_config}`.'
+      ),
   )
 
 

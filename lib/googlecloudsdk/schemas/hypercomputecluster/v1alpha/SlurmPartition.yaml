@@ -1,0 +1,49 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha SlurmPartition export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- id
+- nodeSetIds
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  config:
+    description: Slurm configuration for the partition.
+    $ref: SlurmPartitionConfig.yaml
+  exclusive:
+    description: 'Unstable: Contact hypercompute-service-eng@ before using.'
+    type: boolean
+  id:
+    description: |-
+      ID of the partition, which is how users will identify it. Must conform to
+      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
+    type: string
+  nodeSetIds:
+    description: |-
+      IDs of the nodesets that make up this partition. Values must match
+      SlurmNodeSet.id.
+    type: array
+    items:
+      type: string

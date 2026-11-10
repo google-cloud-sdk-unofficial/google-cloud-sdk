@@ -128,6 +128,7 @@ class Deploy(base.Command):
     flags.AddWorkerPoolScalingFlag(parser, release_track=cls.ReleaseTrack())
     flags.AddInstancesFlag(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
+    flags.AddVpcConnectorArgs(parser)
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
@@ -581,7 +582,6 @@ class AlphaDeploy(BetaDeploy):
     flags.AddWorkerPoolAddPubsubSubscriptionFlag(parser)
     flags.AddWorkerPoolRemovePubsubSubscriptionFlag(parser)
     flags.AddWorkerPoolClearPubsubSubscriptionsFlag(parser)
-    flags.AddVpcConnectorArgs(parser)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

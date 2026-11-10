@@ -1338,9 +1338,10 @@ class FederatedCatalogOptions(_messages.Message):
       the location must match the catalog's location. If the version is not
       specified, the latest version is used. This field is not used when googl
       e.cloud.biglake.v1main.IcebergCatalog.FederatedCatalogOptions.UnityCatal
-      ogInfo.service_principal_application_id or google.cloud.biglake.v1main.I
-      cebergCatalog.FederatedCatalogOptions.SnowflakeCatalogInfo.snowflake_rol
-      e is set.
+      ogInfo.service_principal_application_id, google.cloud.biglake.v1main.Ice
+      bergCatalog.FederatedCatalogOptions.SnowflakeCatalogInfo.snowflake_role,
+      or google.cloud.biglake.v1main.IcebergCatalog.FederatedCatalogOptions.Wo
+      rkdayCatalogInfo.api_client_client_id is set.
     service_directory_name: Optional. The Service Directory resource name used
       to route transport layer traffic with the remote catalog (e.g. data file
       access in storage buckets) over a private network connection. Format: `p
@@ -1364,8 +1365,12 @@ class FederatedCatalogOptions(_messages.Message):
       configs.
     unity_catalog_info: Optional. Information specific to Databricks Unity
       Catalog.
-    user_identity_federation_oidc_claims: Output only. The OIDC claims emitted
-      in the ID token for User Identity Federation.
+    user_identity_federation_oidc: Output only. The OIDC configuration for
+      User Identity Federation.
+    user_identity_federation_oidc_claims: Output only. Deprecated: Use google.
+      cloud.biglake.v1main.IcebergCatalog.FederatedCatalogOptions.user_identit
+      y_federation_oidc instead. The OIDC claims emitted in the ID token for
+      User Identity Federation.
     workday_catalog_info: Optional. Information specific to Workday Data Lake.
   """
 
@@ -1399,8 +1404,9 @@ class FederatedCatalogOptions(_messages.Message):
   snowflake_catalog_info = _messages.MessageField('SnowflakeCatalogInfo', 11)
   trust_config = _messages.StringField(12)
   unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 13)
-  user_identity_federation_oidc_claims = _messages.MessageField('UserIdentityFederationOidcClaims', 14)
-  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 15)
+  user_identity_federation_oidc = _messages.MessageField('UserIdentityFederationOidc', 14)
+  user_identity_federation_oidc_claims = _messages.MessageField('UserIdentityFederationOidcClaims', 15)
+  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 16)
 
 
 class FieldSchema(_messages.Message):
@@ -2579,9 +2585,16 @@ class SnowflakeCatalogInfo(_messages.Message):
     account_identifier: Required. Immutable. The account identifier in
       Snowflake. For example, for the Snowflake deployment URL `https://myorg-
       myaccount.snowflakecomputing.com`, the account identifier is `myorg-
-      myaccount`.
-    snowflake_role: Optional. The Snowflake role name used to access Snowflake
-      Horizon Catalog in the Workload Identity Federation (OIDC)
+      myaccount`. The account identifier can contain letters, digits, and
+      underscores, with segments separated by hyphens (`-`) or dots (`.`).
+      This supports the organization-account format (for example, `myorg-
+      myaccount`), the legacy account locator format (for example,
+      `xy12345.us-east-1`), and private connectivity (PrivateLink) formats
+      (for example, `myorg-myaccount.privatelink` or `xy12345.us-
+      east-1.privatelink`). For more information, see
+      https://docs.snowflake.com/en/user-guide/admin-account-identifier.
+    snowflake_role: Optional. The Snowflake role used to scope access to
+      Snowflake Horizon Catalog in the Workload Identity Federation (OIDC)
       authentication flow.
     warehouse: Required. Immutable. The database name in Snowflake Horizon
       Catalog.
@@ -2967,10 +2980,30 @@ class UpdatePartitionRequest(_messages.Message):
   updateMask = _messages.StringField(2)
 
 
+class UserIdentityFederationOidc(_messages.Message):
+  r"""OIDC configuration used when `IDENTITY_MODE_USER_IDENTITY_FEDERATION` is
+  enabled. To enable user identity federation, users must configure their
+  remote catalog to trust tokens with these parameters.
+
+  Fields:
+    audience: Output only. The audience that this catalog expects in the
+      token.
+    issuer_url: Output only. The issuer URL of the identity provider.
+    jwks_url: Output only. The JSON Web Key Set (JWKS) URL that serves the
+      public keys used to verify the token. Only set for Snowflake Horizon
+      federated catalogs, where it is used as `EXTERNAL_OAUTH_JWS_KEYS_URL` in
+      the Snowflake security integration.
+  """
+
+  audience = _messages.StringField(1)
+  issuer_url = _messages.StringField(2)
+  jwks_url = _messages.StringField(3)
+
+
 class UserIdentityFederationOidcClaims(_messages.Message):
   r"""OIDC claims emitted in the ID token when
-  IDENTITY_MODE_USER_IDENTITY_FEDERATION is enabled. These values identify the
-  identity provider (issuer) and the intended recipient (audience) of the
+  `IDENTITY_MODE_USER_IDENTITY_FEDERATION` is enabled. These values identify
+  the identity provider (issuer) and the intended recipient (audience) of the
   token. To enable user identity federation, users must configure their remote
   catalog to trust this issuer and expect this audience.
 
@@ -2990,13 +3023,16 @@ class WorkdayCatalogInfo(_messages.Message):
   `https:///datalake/api/catalog/v1/config?warehouse=workday`.
 
   Fields:
+    api_client_client_id: Optional. The client ID of the Workday API Client
+      used to access Workday Data Lake in the OIDC authentication flow.
     base_url: Required. Immutable. The base URL of the Workday instance. For
       example, `impl-services1.wd12.myworkday.com` or `wd501.myworkday.com`.
     tenant: Required. Immutable. The Workday tenant name.
   """
 
-  base_url = _messages.StringField(1)
-  tenant = _messages.StringField(2)
+  api_client_client_id = _messages.StringField(1)
+  base_url = _messages.StringField(2)
+  tenant = _messages.StringField(3)
 
 
 encoding.AddCustomJsonFieldMapping(
@@ -3027,6 +3063,8 @@ encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'trust_config', 'trust-config')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'unity_catalog_info', 'unity-catalog-info')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'user_identity_federation_oidc', 'user-identity-federation-oidc')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'user_identity_federation_oidc_claims', 'user-identity-federation-oidc-claims')
 encoding.AddCustomJsonFieldMapping(
@@ -3112,7 +3150,13 @@ encoding.AddCustomJsonFieldMapping(
 encoding.AddCustomJsonFieldMapping(
     UnityCatalogInfo, 'service_principal_application_id', 'service-principal-application-id')
 encoding.AddCustomJsonFieldMapping(
+    UserIdentityFederationOidc, 'issuer_url', 'issuer-url')
+encoding.AddCustomJsonFieldMapping(
+    UserIdentityFederationOidc, 'jwks_url', 'jwks-url')
+encoding.AddCustomJsonFieldMapping(
     UserIdentityFederationOidcClaims, 'issuer_url', 'issuer-url')
+encoding.AddCustomJsonFieldMapping(
+    WorkdayCatalogInfo, 'api_client_client_id', 'api-client-client-id')
 encoding.AddCustomJsonFieldMapping(
     WorkdayCatalogInfo, 'base_url', 'base-url')
 encoding.AddCustomJsonFieldMapping(

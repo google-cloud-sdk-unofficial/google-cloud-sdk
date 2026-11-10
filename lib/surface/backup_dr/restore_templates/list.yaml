@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
   hidden: true
   help_text:
     brief: List Cloud Backup and DR restore templates.
@@ -31,7 +33,7 @@
   output:
     format: |
       table(
-        name.basename():label=TEMPLATE_ID:sort=1,
+        name:label=NAME:sort=1,
         resourceType,
         backupSelectionConfig.dataSource:label=DATA_SOURCE,
         state,

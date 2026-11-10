@@ -1951,10 +1951,13 @@ class Scope(_messages.Message):
       TYPE_UNSPECIFIED: Unspecified type.
       REGIONAL: Regional type.
       GLOBAL: Global type.
+      MULTI_REGIONAL: Multi-regional type.
     """
+
     TYPE_UNSPECIFIED = 0
     REGIONAL = 1
     GLOBAL = 2
+    MULTI_REGIONAL = 3
 
   type = _messages.EnumField('TypeValueValuesEnum', 1)
 

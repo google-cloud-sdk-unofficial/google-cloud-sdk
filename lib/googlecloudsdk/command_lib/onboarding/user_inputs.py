@@ -19,10 +19,13 @@ from __future__ import annotations
 from collections.abc import Sequence
 import dataclasses
 from typing import TYPE_CHECKING
+import urllib.parse
+import webbrowser
 
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.onboarding import exceptions as onboarding_exceptions
 from googlecloudsdk.command_lib.onboarding import telemetry
+from googlecloudsdk.command_lib.util import check_browser
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -230,6 +233,27 @@ _UNSUPPORTED_CLOUD_REGION_MESSAGE = (
 
 _PROJECT_MESSAGE = 'Please select the project to use:'
 _SINGLE_PROJECT_MESSAGE = 'One project found and selected: {project}.'
+
+_SESSION_NAME_PREFIX = 'sessions/'
+_DIRECT_START_BASE_URL = (
+    'https://console.cloud.google.com/onboarding/ui/direct-start'
+)
+_BROWSER_OPENED_MESSAGE = (
+    'Your browser has been opened to complete onboarding:\n\n'
+    '    {url}\n\n'
+    'If your browser did not open, copy and paste the URL above into your'
+    ' browser.'
+)
+_BROWSER_NOT_OPENED_MESSAGE = (
+    'Open the following URL in a browser to complete onboarding:\n\n'
+    '    {url}'
+)
+_BROWSER_REQUIRED_UNATTENDED_MESSAGE = (
+    'Additional information is required to complete onboarding in the'
+    ' browser, but prompting is disabled. Open the following URL in a'
+    ' browser to complete onboarding, or rerun the command interactively:\n'
+    '{url}'
+)
 
 
 def HandleUserInputToS(
@@ -534,3 +558,60 @@ def HandleUserInputSelectCloudRegion(
     decision = telemetry.DECISION_CONFIRMED
   telemetry.RecordEvent(telemetry.CLOUD_REGION_DECISION_KEY, decision)
   return regions[idx] if idx is not None else None
+
+
+def BuildBrowserOnboardingUrl(
+    session_id: str,
+    xp_id: str | None = None,
+) -> str:
+  """Builds the Cloud Console direct-start URL for an onboarding session.
+
+  Args:
+    session_id: The session resource name (e.g. `sessions/<uuid>`) or raw
+      session ID.
+    xp_id: Optional experience ID (`xpid`) for the onboarding session.
+
+  Returns:
+    The formatted direct-start URL string.
+  """
+  raw_session_id = session_id.removeprefix(_SESSION_NAME_PREFIX)
+  query_params: dict[str, str] = {'session_id': raw_session_id}
+  if xp_id:
+    query_params['xpid'] = xp_id
+  return f'{_DIRECT_START_BASE_URL}?{urllib.parse.urlencode(query_params)}'
+
+
+def HandleUserInputInBrowser(
+    session_id: str,
+    xp_id: str | None = None,
+) -> str:
+  """Prints the onboarding URL and opens it in a web browser if possible.
+
+  Args:
+    session_id: The session resource name (e.g. `sessions/<uuid>`) or raw
+      session ID.
+    xp_id: Optional experience ID (`xpid`) for the onboarding session.
+
+  Returns:
+    The direct-start URL that was displayed/opened.
+
+  Raises:
+    onboarding_exceptions.BrowserInputRequiredError: If prompts are disabled
+      (e.g. `--quiet` or a non-interactive terminal).
+  """
+  url = BuildBrowserOnboardingUrl(session_id, xp_id=xp_id)
+  if not console_io.CanPrompt():
+    raise onboarding_exceptions.BrowserInputRequiredError(
+        _BROWSER_REQUIRED_UNATTENDED_MESSAGE.format(url=url)
+    )
+
+  launched = False
+  if check_browser.ShouldLaunchBrowser(attempt_launch_browser=True):
+    try:
+      # `open_new_tab` returns False if no browser could be launched.
+      launched = bool(webbrowser.open_new_tab(url))
+    except (webbrowser.Error, OSError) as e:
+      log.debug('Failed to open web browser: %s', e)
+  message = _BROWSER_OPENED_MESSAGE if launched else _BROWSER_NOT_OPENED_MESSAGE
+  log.status.Print(message.format(url=url))
+  return url

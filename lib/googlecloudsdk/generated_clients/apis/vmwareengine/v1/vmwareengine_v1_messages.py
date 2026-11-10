@@ -4426,20 +4426,22 @@ class VmwareengineProjectsLocationsCapacityAllocationsListRequest(_messages.Mess
     filter: Optional. A filter expression that matches resources returned in
       the response. The expression must specify the field name, a comparison
       operator, and the value that you want to use for filtering. The value
-      must be a string, a number, or a boolean. For strings and numbers, the
-      comparison operator must be `=`, `!=`, `<`, `<=`, `>`, `>=`, or `:`. For
-      booleans, the comparison operator must be `=` or `!=`. For example, if
-      you are filtering a list of capacity allocations, you can exclude the
-      ones named `example-capacity-allocation` by specifying `name !=
-      "example-capacity-allocation"`. You can also filter on other fields. For
-      example, you could specify `machine_family = "standard-72"` to include
-      capacity allocations only if they have a matching machine family. To
-      filter on multiple expressions, provide each separate expression within
-      parentheses. For example: ``` (machine_family = "standard-72")
-      (allocated_capacity > 10) ``` By default, each expression is an `AND`
-      expression. However, you can include `AND` and `OR` expressions
-      explicitly. For example: ``` (machine_family = "standard-72") AND
-      (allocated_capacity > 10) OR (consumed_capacity_count > 0) ```
+      must be a string or a number. The comparison operator must be `=`, `!=`,
+      `>`, `>=`, `<`, or `<=`. The has operator `:` is also supported.
+      Supported fields include `name`, `display_name` (or `placement_group`),
+      `machine_family`, `allocated_capacity_count`, `consumed_capacity_count`,
+      and `connected_placement_group` (using `=`). For example, if you are
+      filtering a list of capacity allocations, you can exclude the ones named
+      `example-capacity-allocation` by specifying `name != "example-capacity-
+      allocation"`. You can also filter on other fields, such as machine
+      family (`"ve1"`, `"ve2"`, or `"ve3"`) or connected placement group: ```
+      machine_family = "ve1" connected_placement_group = "example-placement-
+      group" ``` To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ``` (machine_family = "ve1")
+      (allocated_capacity_count > 10) ``` By default, each expression is an
+      `AND` expression. However, you can include `AND`, `OR`, and `NOT`
+      expressions explicitly. For example: ``` ((machine_family = "ve1") AND
+      (allocated_capacity_count > 10)) OR (consumed_capacity_count > 0) ```
     orderBy: Optional. Sorts list results by a certain order. By default,
       returned results are ordered by `name` in ascending order. You can also
       sort results in descending order based on the `name` value using

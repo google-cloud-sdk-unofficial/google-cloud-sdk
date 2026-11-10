@@ -1301,6 +1301,24 @@ class CloneAddressGroupItemsRequest(_messages.Message):
   sourceAddressGroup = _messages.StringField(2)
 
 
+class ConfigureFirewallEndpointRequest(_messages.Message):
+  r"""Request message for updating a FirewallEndpoint's configuration.
+
+  Fields:
+    config: Required. The new firewall endpoint config to apply.
+    requestId: Optional. A unique request ID to identify requests. Specify a
+      unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid random UUID with the exception
+      that zero UUID is not supported
+      (`00000000-0000-0000-0000-000000000000`).
+  """
+
+  config = _messages.MessageField('FirewallEndpointConfig', 1)
+  requestId = _messages.StringField(2)
+
+
 class CostPerTokenPolicy(_messages.Message):
   r"""Defines per-model overrides for default token consumption costs.
 
@@ -1316,6 +1334,9 @@ class CostPerTokenPolicy(_messages.Message):
     name: Identifier. The canonical resource name of the CostPerTokenPolicy.
       Format: `projects/{project}/locations/{location}/costPerTokenPolicies/{c
       ost_per_token_policy}`
+    reconciling: Output only. Whether an operation on this policy is in
+      progress, i.e. the current state of the resource does not yet match the
+      user's intended state. See https://google.aip.dev/128#reconciliation.
     target: Required. Data plane target to which this cost policy is attached.
     updateTime: Output only. The time when the policy was last updated.
   """
@@ -1349,8 +1370,9 @@ class CostPerTokenPolicy(_messages.Message):
   description = _messages.StringField(3)
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
-  target = _messages.MessageField('CostPerTokenPolicyTarget', 6)
-  updateTime = _messages.StringField(7)
+  reconciling = _messages.BooleanField(6)
+  target = _messages.MessageField('CostPerTokenPolicyTarget', 7)
+  updateTime = _messages.StringField(8)
 
 
 class CostPerTokenPolicyCostOverride(_messages.Message):
@@ -2202,6 +2224,7 @@ class FirewallEndpoint(_messages.Message):
     createTime: Output only. Create time stamp.
     description: Optional. Description of the firewall endpoint. Max length
       2048 characters.
+    deviceInfo: Output only. Runtime device and policy info for the endpoint.
     endpointSettings: Optional. Settings for the endpoint.
     explicitPrivateServiceConnectAttachment: Output only. The resource name of
       the explicit PSC Attachment. Format:
@@ -2221,6 +2244,8 @@ class FirewallEndpoint(_messages.Message):
       per https://google.aip.dev/128.
     satisfiesPzi: Output only. [Output Only] Reserved for future use.
     satisfiesPzs: Output only. [Output Only] Reserved for future use.
+    scmInfo: Output only. Endpoint info related to SCM.
+    scmSettings: Optional. Settings for Strata Cloud Manager (SCM).
     state: Output only. Current state of the endpoint.
     thirdPartyEndpointSettings: Optional. Firewall endpoint settings for third
       party firewall endpoints.
@@ -2238,12 +2263,15 @@ class FirewallEndpoint(_messages.Message):
       ACTIVE: Processing configuration updates.
       DELETING: Being deleted.
       INACTIVE: Down or in an error state.
+      AWAITING_POLICY: Awaiting security policy from Strata Cloud Manager
+        (SCM).
     """
     STATE_UNSPECIFIED = 0
     CREATING = 1
     ACTIVE = 2
     DELETING = 3
     INACTIVE = 4
+    AWAITING_POLICY = 5
 
   class TypeValueValuesEnum(_messages.Enum):
     r"""Optional. Endpoint type.
@@ -2286,21 +2314,24 @@ class FirewallEndpoint(_messages.Message):
   billingProjectId = _messages.StringField(3)
   createTime = _messages.StringField(4)
   description = _messages.StringField(5)
-  endpointSettings = _messages.MessageField('FirewallEndpointEndpointSettings', 6)
-  explicitPrivateServiceConnectAttachment = _messages.StringField(7)
-  firstPartyEndpointSettings = _messages.MessageField('FirstPartyEndpointSettings', 8)
-  jumboFramesEnabled = _messages.BooleanField(9)
-  kmsKey = _messages.StringField(10)
-  labels = _messages.MessageField('LabelsValue', 11)
-  name = _messages.StringField(12)
-  reconciling = _messages.BooleanField(13)
-  satisfiesPzi = _messages.BooleanField(14)
-  satisfiesPzs = _messages.BooleanField(15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  thirdPartyEndpointSettings = _messages.MessageField('ThirdPartyEndpointSettings', 17)
-  type = _messages.EnumField('TypeValueValuesEnum', 18)
-  updateTime = _messages.StringField(19)
-  wildfireSettings = _messages.MessageField('FirewallEndpointWildfireSettings', 20)
+  deviceInfo = _messages.MessageField('FirewallEndpointDeviceInfo', 6)
+  endpointSettings = _messages.MessageField('FirewallEndpointEndpointSettings', 7)
+  explicitPrivateServiceConnectAttachment = _messages.StringField(8)
+  firstPartyEndpointSettings = _messages.MessageField('FirstPartyEndpointSettings', 9)
+  jumboFramesEnabled = _messages.BooleanField(10)
+  kmsKey = _messages.StringField(11)
+  labels = _messages.MessageField('LabelsValue', 12)
+  name = _messages.StringField(13)
+  reconciling = _messages.BooleanField(14)
+  satisfiesPzi = _messages.BooleanField(15)
+  satisfiesPzs = _messages.BooleanField(16)
+  scmInfo = _messages.MessageField('FirewallEndpointScmInfo', 17)
+  scmSettings = _messages.MessageField('FirewallEndpointScmSettings', 18)
+  state = _messages.EnumField('StateValueValuesEnum', 19)
+  thirdPartyEndpointSettings = _messages.MessageField('ThirdPartyEndpointSettings', 20)
+  type = _messages.EnumField('TypeValueValuesEnum', 21)
+  updateTime = _messages.StringField(22)
+  wildfireSettings = _messages.MessageField('FirewallEndpointWildfireSettings', 23)
 
 
 class FirewallEndpointAssociation(_messages.Message):
@@ -2399,6 +2430,70 @@ class FirewallEndpointAssociationReference(_messages.Message):
   network = _messages.StringField(2)
 
 
+class FirewallEndpointConfig(_messages.Message):
+  r"""FirewallEndpointConfig contains the rendered configuration payload.
+
+  Fields:
+    policyName: Optional. Policy name, e.g. folder ID from the external policy
+      manager.
+    xml: Optional. The raw XML representation of a PAN-OS firewall config.
+      Must be set when pushing a PAN-OS XML configuration.
+  """
+
+  policyName = _messages.StringField(1)
+  xml = _messages.StringField(2)
+
+
+class FirewallEndpointDeviceInfo(_messages.Message):
+  r"""Runtime device and policy information for the firewall endpoint.
+
+  Fields:
+    activatedApps: Output only. Any additional activated apps for this
+      endpoint.
+    antivirusContentVersion: Output only. The currently-running Antivirus
+      content version.
+    panOsVersion: Output only. The currently-running PAN-OS version.
+    policyName: Output only. The policy name, e.g. folder ID in the external
+      policy manager.
+    policyVersion: Output only. A locally unique identifier for the currently-
+      running policy version.
+    threatsContentVersion: Output only. The currently-running Threats content
+      version.
+  """
+
+  activatedApps = _messages.MessageField('FirewallEndpointDeviceInfoActivatedApp', 1, repeated=True)
+  antivirusContentVersion = _messages.StringField(2)
+  panOsVersion = _messages.StringField(3)
+  policyName = _messages.StringField(4)
+  policyVersion = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  threatsContentVersion = _messages.StringField(6)
+
+
+class FirewallEndpointDeviceInfoActivatedApp(_messages.Message):
+  r"""Information about an activated app.
+
+  Enums:
+    AppValueValuesEnum: Output only. The app that is activated.
+
+  Fields:
+    app: Output only. The app that is activated.
+  """
+
+  class AppValueValuesEnum(_messages.Enum):
+    r"""Output only. The app that is activated.
+
+    Values:
+      APP_UNSPECIFIED: Unused.
+      AI_RUNTIME_SECURITY: AI Runtime Security.
+      DATA_LOSS_PREVENTION: Data Loss Prevention.
+    """
+    APP_UNSPECIFIED = 0
+    AI_RUNTIME_SECURITY = 1
+    DATA_LOSS_PREVENTION = 2
+
+  app = _messages.EnumField('AppValueValuesEnum', 1)
+
+
 class FirewallEndpointEndpointSettings(_messages.Message):
   r"""Settings for the endpoint.
 
@@ -2478,6 +2573,148 @@ class FirewallEndpointEndpointSettings(_messages.Message):
   contentCloudRegion = _messages.EnumField('ContentCloudRegionValueValuesEnum', 1)
   httpPartialResponseBlocked = _messages.BooleanField(2)
   jumboFramesEnabled = _messages.BooleanField(3)
+
+
+class FirewallEndpointScmInfo(_messages.Message):
+  r"""Info for Strata Cloud Manager (SCM).
+
+  Fields:
+    activatedApps: Output only. Deprecated: Use the `activated_apps` field in
+      the `device_info` message instead. Any additional activated apps for
+      this endpoint.
+    antivirusContentVersion: Output only. Deprecated: Use the
+      `antivirus_content_version` field in the `device_info` message instead.
+      The currently-running Antivirus content version.
+    cspId: Output only. The ID of the Customer Support Portal (CSP) associated
+      with this endpoint.
+    panOsVersion: Output only. Deprecated: Use the `pan_os_version` field in
+      the `device_info` message instead. The currently-running PAN-OS version.
+    policyName: Output only. Deprecated: Use the `policy_name` field in the
+      `device_info` message instead. The "policy name", i.e. folder ID in SCM.
+    policyVersion: Output only. Deprecated: Use the `policy_version` field in
+      the `device_info` message instead. A locally unique identifier for the
+      currently-running policy version.
+    threatsContentVersion: Output only. Deprecated: Use the
+      `threats_content_version` field in the `device_info` message instead.
+      The currently-running Threats content version.
+    tsgId: Output only. The ID of the Tenant Service Group (TSG) containing
+      this endpoint.
+  """
+
+  activatedApps = _messages.MessageField('FirewallEndpointScmInfoActivatedApp', 1, repeated=True)
+  antivirusContentVersion = _messages.StringField(2)
+  cspId = _messages.StringField(3)
+  panOsVersion = _messages.StringField(4)
+  policyName = _messages.StringField(5)
+  policyVersion = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  threatsContentVersion = _messages.StringField(7)
+  tsgId = _messages.StringField(8)
+
+
+class FirewallEndpointScmInfoActivatedApp(_messages.Message):
+  r"""Information about an activated app.
+
+  Enums:
+    AppValueValuesEnum: Output only. The app that is activated.
+
+  Fields:
+    app: Output only. The app that is activated.
+  """
+
+  class AppValueValuesEnum(_messages.Enum):
+    r"""Output only. The app that is activated.
+
+    Values:
+      APP_UNSPECIFIED: Unused.
+      AI_RUNTIME_SECURITY: AI Runtime Security.
+      DATA_LOSS_PREVENTION: Data Loss Prevention.
+    """
+    APP_UNSPECIFIED = 0
+    AI_RUNTIME_SECURITY = 1
+    DATA_LOSS_PREVENTION = 2
+
+  app = _messages.EnumField('AppValueValuesEnum', 1)
+
+
+class FirewallEndpointScmSettings(_messages.Message):
+  r"""Settings for Strata Cloud Manager (SCM).
+
+  Enums:
+    ScmRegionValueValuesEnum: Optional. The region where Strata Cloud Manager
+      (SCM) will process data. Palo Alto Networks supports regions:
+      https://docs.paloaltonetworks.com/strata-cloud-
+      manager/aiops/about/regions-aiops-for-ngfw
+
+  Fields:
+    enabled: Optional. Indicates whether the endpoint is managed by SCM.
+    scmLabel: Optional. Label for the SCM configuration.
+    scmRegion: Optional. The region where Strata Cloud Manager (SCM) will
+      process data. Palo Alto Networks supports regions:
+      https://docs.paloaltonetworks.com/strata-cloud-
+      manager/aiops/about/regions-aiops-for-ngfw
+    scmRegistrationToken: Optional. Input only. The registration token used to
+      phone home to SCM.
+  """
+
+  class ScmRegionValueValuesEnum(_messages.Enum):
+    r"""Optional. The region where Strata Cloud Manager (SCM) will process
+    data. Palo Alto Networks supports regions:
+    https://docs.paloaltonetworks.com/strata-cloud-
+    manager/aiops/about/regions-aiops-for-ngfw
+
+    Values:
+      SCM_REGION_UNSPECIFIED: SCM region not specified.
+      CANADA: Canada.
+      UNITED_STATES: United States-Americas.
+      JAPAN: Japan.
+      SINGAPORE: Singapore.
+      UNITED_KINGDOM: United Kingdom.
+      AUSTRALIA: Australia.
+      GERMANY: Germany.
+      INDIA: India.
+      SWITZERLAND: Switzerland.
+      POLAND: Poland.
+      INDONESIA: Indonesia.
+      TAIWAN: Taiwan.
+      FRANCE: France.
+      QATAR: Qatar.
+      SOUTH_KOREA: South Korea.
+      ISRAEL: Israel.
+      SAUDI_ARABIA: Saudi Arabia.
+      SPAIN: Spain.
+      NETHERLANDS: Netherlands.
+      ITALY: Italy.
+      SOUTH_AFRICA: South Africa.
+      EUROPEAN_UNION: European Union.
+    """
+    SCM_REGION_UNSPECIFIED = 0
+    CANADA = 1
+    UNITED_STATES = 2
+    JAPAN = 3
+    SINGAPORE = 4
+    UNITED_KINGDOM = 5
+    AUSTRALIA = 6
+    GERMANY = 7
+    INDIA = 8
+    SWITZERLAND = 9
+    POLAND = 10
+    INDONESIA = 11
+    TAIWAN = 12
+    FRANCE = 13
+    QATAR = 14
+    SOUTH_KOREA = 15
+    ISRAEL = 16
+    SAUDI_ARABIA = 17
+    SPAIN = 18
+    NETHERLANDS = 19
+    ITALY = 20
+    SOUTH_AFRICA = 21
+    EUROPEAN_UNION = 22
+
+  enabled = _messages.BooleanField(1)
+  scmLabel = _messages.StringField(2)
+  scmRegion = _messages.EnumField('ScmRegionValueValuesEnum', 3)
+  scmRegistrationToken = _messages.StringField(4)
 
 
 class FirewallEndpointWildfireSettings(_messages.Message):
@@ -5634,6 +5871,23 @@ class NetworksecurityOrganizationsLocationsAddressGroupsTestIamPermissionsReques
   resource = _messages.StringField(2, required=True)
 
 
+class NetworksecurityOrganizationsLocationsFirewallEndpointsConfigureRequest(_messages.Message):
+  r"""A NetworksecurityOrganizationsLocationsFirewallEndpointsConfigureRequest
+  object.
+
+  Fields:
+    configureFirewallEndpointRequest: A ConfigureFirewallEndpointRequest
+      resource to be passed as the request body.
+    name: Required. The name of the FirewallEndpoint to update. Format: `organ
+      izations/{organization}/locations/{location}/firewallEndpoints/{firewall
+      _endpoint}` or `projects/{project}/locations/{location}/firewallEndpoint
+      s/{firewall_endpoint}`.
+  """
+
+  configureFirewallEndpointRequest = _messages.MessageField('ConfigureFirewallEndpointRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class NetworksecurityOrganizationsLocationsFirewallEndpointsCreateRequest(_messages.Message):
   r"""A NetworksecurityOrganizationsLocationsFirewallEndpointsCreateRequest
   object.
@@ -7815,6 +8069,23 @@ class NetworksecurityProjectsLocationsFirewallEndpointAssociationsPatchRequest(_
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsConfigureRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsConfigureRequest
+  object.
+
+  Fields:
+    configureFirewallEndpointRequest: A ConfigureFirewallEndpointRequest
+      resource to be passed as the request body.
+    name: Required. The name of the FirewallEndpoint to update. Format: `organ
+      izations/{organization}/locations/{location}/firewallEndpoints/{firewall
+      _endpoint}` or `projects/{project}/locations/{location}/firewallEndpoint
+      s/{firewall_endpoint}`.
+  """
+
+  configureFirewallEndpointRequest = _messages.MessageField('ConfigureFirewallEndpointRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class NetworksecurityProjectsLocationsFirewallEndpointsCreateRequest(_messages.Message):
@@ -12273,6 +12544,10 @@ class SSEGatewayReference(_messages.Message):
   updateTime = _messages.StringField(6)
 
 
+class ScmProfile(_messages.Message):
+  r"""ScmProfile defines the behavior for SCM profile type."""
+
+
 class SecurityProfile(_messages.Message):
   r"""SecurityProfile is a resource that defines the behavior for one of many
   ProfileTypes.
@@ -12299,6 +12574,7 @@ class SecurityProfile(_messages.Message):
     name: Immutable. Identifier. Name of the SecurityProfile resource. It
       matches pattern `projects|organizations/*/locations/{location}/securityP
       rofiles/{security_profile}`.
+    scmProfile: The SCM configuration for the SecurityProfile.
     threatPreventionProfile: The threat prevention configuration for the
       SecurityProfile.
     type: Immutable. The single ProfileType that the SecurityProfile resource
@@ -12321,6 +12597,7 @@ class SecurityProfile(_messages.Message):
       CUSTOM_INTERCEPT: Profile type for TPPI.
       URL_FILTERING: Profile type for URL filtering.
       WILDFIRE_ANALYSIS: Profile type for WildFire Analysis.
+      SCM: Profile type for SCM.
     """
     PROFILE_TYPE_UNSPECIFIED = 0
     THREAT_PREVENTION = 1
@@ -12328,6 +12605,7 @@ class SecurityProfile(_messages.Message):
     CUSTOM_INTERCEPT = 3
     URL_FILTERING = 4
     WILDFIRE_ANALYSIS = 5
+    SCM = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -12360,11 +12638,12 @@ class SecurityProfile(_messages.Message):
   etag = _messages.StringField(5)
   labels = _messages.MessageField('LabelsValue', 6)
   name = _messages.StringField(7)
-  threatPreventionProfile = _messages.MessageField('ThreatPreventionProfile', 8)
-  type = _messages.EnumField('TypeValueValuesEnum', 9)
-  updateTime = _messages.StringField(10)
-  urlFilteringProfile = _messages.MessageField('UrlFilteringProfile', 11)
-  wildfireAnalysisProfile = _messages.MessageField('WildfireAnalysisProfile', 12)
+  scmProfile = _messages.MessageField('ScmProfile', 8)
+  threatPreventionProfile = _messages.MessageField('ThreatPreventionProfile', 9)
+  type = _messages.EnumField('TypeValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
+  urlFilteringProfile = _messages.MessageField('UrlFilteringProfile', 12)
+  wildfireAnalysisProfile = _messages.MessageField('WildfireAnalysisProfile', 13)
 
 
 class SecurityProfileGroup(_messages.Message):
@@ -12391,6 +12670,8 @@ class SecurityProfileGroup(_messages.Message):
     name: Immutable. Identifier. Name of the SecurityProfileGroup resource. It
       matches pattern `projects|organizations/*/locations/{location}/securityP
       rofileGroups/{security_profile_group}`.
+    scmProfile: Optional. Reference to a SecurityProfile with the SCM
+      configuration.
     threatPreventionProfile: Optional. Reference to a SecurityProfile with the
       ThreatPrevention configuration.
     updateTime: Output only. Last resource update timestamp.
@@ -12432,10 +12713,11 @@ class SecurityProfileGroup(_messages.Message):
   etag = _messages.StringField(6)
   labels = _messages.MessageField('LabelsValue', 7)
   name = _messages.StringField(8)
-  threatPreventionProfile = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
-  urlFilteringProfile = _messages.StringField(11)
-  wildfireAnalysisProfile = _messages.StringField(12)
+  scmProfile = _messages.StringField(9)
+  threatPreventionProfile = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
+  urlFilteringProfile = _messages.StringField(12)
+  wildfireAnalysisProfile = _messages.StringField(13)
 
 
 class ServerTlsPolicy(_messages.Message):
@@ -13075,10 +13357,12 @@ class TokenAggregationPolicy(_messages.Message):
     name: Identifier. The canonical resource name of the
       TokenAggregationPolicy. Format: `projects/{project}/locations/{location}
       /tokenAggregationPolicies/{token_aggregation_policy}`
+    reconciling: Output only. Whether an operation on this policy is in
+      progress, i.e. the current state of the resource does not yet match the
+      user's intended state. See https://google.aip.dev/128#reconciliation.
     rules: Required. Ordered list of aggregation rules. Evaluated in order;
       first match wins.
-    target: Required. Full resource name of the project or AI App to which
-      this policy is attached.
+    target: Required. Data plane target to which this policy is attached.
     updateTime: Output only. The time when the policy was last updated.
   """
 
@@ -13110,20 +13394,21 @@ class TokenAggregationPolicy(_messages.Message):
   description = _messages.StringField(2)
   labels = _messages.MessageField('LabelsValue', 3)
   name = _messages.StringField(4)
-  rules = _messages.MessageField('TokenAggregationRule', 5, repeated=True)
-  target = _messages.MessageField('TokenAggregationPolicyTarget', 6)
-  updateTime = _messages.StringField(7)
+  reconciling = _messages.BooleanField(5)
+  rules = _messages.MessageField('TokenAggregationRule', 6, repeated=True)
+  target = _messages.MessageField('TokenAggregationPolicyTarget', 7)
+  updateTime = _messages.StringField(8)
 
 
 class TokenAggregationPolicyTarget(_messages.Message):
   r"""Specifies the data plane target to which this policy should attach.
 
   Fields:
-    resources: Optional. List of resource names to which this policy should
-      attach. Currently only AI Application resources are supported, in the
-      format:
-      `projects/{project}/locations/{location}/applications/{application}`.
-      Limited to 1 resource.
+    resources: Optional. The reference to the target resource to which this
+      policy should attach. Exactly one of `resources` or `scope` must be set.
+      For Agent Gateway resources, specify the full resource name in the
+      format: `//networkservices.googleapis.com/projects/{project}/locations/{
+      location}/agentGateways/{agent_gateway}` Limited to 1 resource.
   """
 
   resources = _messages.StringField(1, repeated=True)
@@ -13159,8 +13444,11 @@ class TokenBudgetPolicy(_messages.Message):
     name: Identifier. The canonical resource name of the TokenBudgetPolicy.
       Format: `projects/{project}/locations/{location}/tokenBudgetPolicies/{to
       ken_budget_policy}`
-    target: Required. Full resource name of the project to which this budget
-      policy is attached.
+    reconciling: Output only. Whether an operation on this policy is in
+      progress, i.e. the current state of the resource does not yet match the
+      user's intended state. See https://google.aip.dev/128#reconciliation.
+    target: Required. Data plane target to which this budget policy is
+      attached.
     tokenPools: Required. Token pools configured in this budget policy.
     updateTime: Output only. The time when the policy was last updated.
   """
@@ -13193,9 +13481,10 @@ class TokenBudgetPolicy(_messages.Message):
   description = _messages.StringField(2)
   labels = _messages.MessageField('LabelsValue', 3)
   name = _messages.StringField(4)
-  target = _messages.MessageField('TokenBudgetPolicyTarget', 5)
-  tokenPools = _messages.MessageField('TokenBudgetPolicyTokenPool', 6, repeated=True)
-  updateTime = _messages.StringField(7)
+  reconciling = _messages.BooleanField(5)
+  target = _messages.MessageField('TokenBudgetPolicyTarget', 6)
+  tokenPools = _messages.MessageField('TokenBudgetPolicyTokenPool', 7, repeated=True)
+  updateTime = _messages.StringField(8)
 
 
 class TokenBudgetPolicyBudget(_messages.Message):
@@ -13203,29 +13492,33 @@ class TokenBudgetPolicyBudget(_messages.Message):
   settings.
 
   Enums:
-    EnforcementValueValuesEnum: Optional. Enforcement behavior when budget is
-      exhausted. Defaults to STRICT.
+    EnforcementValueValuesEnum: Optional. Deprecated: Use `dry_run` instead.
+      Optional. Enforcement behavior when budget is exhausted. Defaults to
+      STRICT.
     ResetPeriodValueValuesEnum: Required. Frequency at which the token budget
       resets (e.g., DAILY).
 
   Fields:
     alertThreshold: Optional. Threshold percentage (0.0 to 1.0) to trigger
       alert notifications (e.g. 0.6 for 60%).
-    enforcement: Optional. Enforcement behavior when budget is exhausted.
-      Defaults to STRICT.
+    dryRun: Optional. Dry-run mode. If true, token limits are calculated for
+      observability without blocking requests (HTTP 429).
+    enforcement: Optional. Deprecated: Use `dry_run` instead. Optional.
+      Enforcement behavior when budget is exhausted. Defaults to STRICT.
     maxTokens: Required. Maximum number of raw tokens allowed per reset
       period.
     models: Optional. Specify this list to enforce budgets on specific models.
       Leave this empty to apply the budget to all models.
     resetPeriod: Required. Frequency at which the token budget resets (e.g.,
       DAILY).
-    validateOnly: Optional. Dry-run mode. If true, token limits are calculated
-      for observability without blocking requests (HTTP 429).
+    validateOnly: Optional. Deprecated: Use `dry_run` instead. Optional. Dry-
+      run mode. If true, token limits are calculated for observability without
+      blocking requests (HTTP 429).
   """
 
   class EnforcementValueValuesEnum(_messages.Enum):
-    r"""Optional. Enforcement behavior when budget is exhausted. Defaults to
-    STRICT.
+    r"""Optional. Deprecated: Use `dry_run` instead. Optional. Enforcement
+    behavior when budget is exhausted. Defaults to STRICT.
 
     Values:
       ENFORCEMENT_MODE_UNSPECIFIED: Default unspecified enforcement mode.
@@ -13248,11 +13541,12 @@ class TokenBudgetPolicyBudget(_messages.Message):
     DAILY = 1
 
   alertThreshold = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
-  enforcement = _messages.EnumField('EnforcementValueValuesEnum', 2)
-  maxTokens = _messages.IntegerField(3)
-  models = _messages.MessageField('TokenBudgetPolicyModelConfig', 4, repeated=True)
-  resetPeriod = _messages.EnumField('ResetPeriodValueValuesEnum', 5)
-  validateOnly = _messages.BooleanField(6)
+  dryRun = _messages.BooleanField(2)
+  enforcement = _messages.EnumField('EnforcementValueValuesEnum', 3)
+  maxTokens = _messages.IntegerField(4)
+  models = _messages.MessageField('TokenBudgetPolicyModelConfig', 5, repeated=True)
+  resetPeriod = _messages.EnumField('ResetPeriodValueValuesEnum', 6)
+  validateOnly = _messages.BooleanField(7)
 
 
 class TokenBudgetPolicyModelConfig(_messages.Message):
@@ -13273,11 +13567,11 @@ class TokenBudgetPolicyTarget(_messages.Message):
   attach.
 
   Fields:
-    resources: Optional. List of full resource names to which this budget
-      policy should attach. Currently only AI Application resources are
-      supported, in the format:
-      `projects/{project}/locations/{location}/applications/{application}`.
-      Limited to 1 resource.
+    resources: Optional. The reference to the target resource to which this
+      policy should attach. Exactly one of `resources` or `scope` must be set.
+      For Agent Gateway resources, specify the full resource name in the
+      format: `//networkservices.googleapis.com/projects/{project}/locations/{
+      location}/agentGateways/{agent_gateway}` Limited to 1 resource.
   """
 
   resources = _messages.StringField(1, repeated=True)

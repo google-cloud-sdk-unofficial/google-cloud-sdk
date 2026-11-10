@@ -160,6 +160,26 @@ def ToVpcEgressSettingEnum(value):
   return _VPC_EGRESS_SETTING_MAP[str(value)]
 
 
+def ToVpcEgressEnum(value):
+  """Converts a string to a VPC egress setting for the vpc_access field.
+
+  Shares the value map with ToVpcEgressSettingEnum, but reports errors against
+  the `vpc_egress` field name used by Direct VPC egress in app.yaml.
+
+  Args:
+    value: The egress setting (string).
+
+  Returns:
+    The corresponding enum value (string).
+  """
+  if str(value) not in _VPC_EGRESS_SETTING_MAP:
+    raise ValueError(
+        'vpc_egress must be one of: [%s]'
+        % ','.join(_VPC_EGRESS_SETTING_MAP.keys())
+    )
+  return _VPC_EGRESS_SETTING_MAP[str(value)]
+
+
 def EnumConverter(prefix):
   """Create conversion function which translates from string to enum value.
 

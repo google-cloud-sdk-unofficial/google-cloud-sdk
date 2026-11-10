@@ -26,11 +26,40 @@ class AgentModeConfig(_messages.Message):
   r"""Message describing the Agent Mode configuration.
 
   Enums:
+    LakehouseIntegrationValueValuesEnum: Optional. Desired lakehouse
+      integration of the cluster. When enabled, exports table metadata to a
+      Lakehouse runtime catalog, allowing analytical engines such as Managed
+      Service for Apache Spark and BigQuery to query operational tables
+      directly. Can only be enabled or disabled in the same request that
+      enables or disables agent mode.
     ModeValueValuesEnum: Optional. Desired agent mode of the cluster.
 
   Fields:
+    lakehouseIntegration: Optional. Desired lakehouse integration of the
+      cluster. When enabled, exports table metadata to a Lakehouse runtime
+      catalog, allowing analytical engines such as Managed Service for Apache
+      Spark and BigQuery to query operational tables directly. Can only be
+      enabled or disabled in the same request that enables or disables agent
+      mode.
     mode: Optional. Desired agent mode of the cluster.
   """
+
+  class LakehouseIntegrationValueValuesEnum(_messages.Enum):
+    r"""Optional. Desired lakehouse integration of the cluster. When enabled,
+    exports table metadata to a Lakehouse runtime catalog, allowing analytical
+    engines such as Managed Service for Apache Spark and BigQuery to query
+    operational tables directly. Can only be enabled or disabled in the same
+    request that enables or disables agent mode.
+
+    Values:
+      LAKEHOUSE_INTEGRATION_UNSPECIFIED: Lakehouse integration not specified.
+        Defaults to disabled.
+      LAKEHOUSE_INTEGRATION_DISABLED: Lakehouse integration disabled.
+      LAKEHOUSE_INTEGRATION_ENABLED: Lakehouse integration enabled.
+    """
+    LAKEHOUSE_INTEGRATION_UNSPECIFIED = 0
+    LAKEHOUSE_INTEGRATION_DISABLED = 1
+    LAKEHOUSE_INTEGRATION_ENABLED = 2
 
   class ModeValueValuesEnum(_messages.Enum):
     r"""Optional. Desired agent mode of the cluster.
@@ -44,7 +73,8 @@ class AgentModeConfig(_messages.Message):
     DISABLED = 1
     ENABLED = 2
 
-  mode = _messages.EnumField('ModeValueValuesEnum', 1)
+  lakehouseIntegration = _messages.EnumField('LakehouseIntegrationValueValuesEnum', 1)
+  mode = _messages.EnumField('ModeValueValuesEnum', 2)
 
 
 class AgentModeInfo(_messages.Message):
@@ -2444,6 +2474,17 @@ class ConnectionPoolConfig(_messages.Message):
   poolerScalingType = _messages.EnumField('PoolerScalingTypeValueValuesEnum', 6)
 
 
+class ConnectionsCount(_messages.Message):
+  r"""Connections count policy for the autoscaler.
+
+  Fields:
+    targetCount: Optional. The target number of connections for the autoscaler
+      to scale the instance to.
+  """
+
+  targetCount = _messages.IntegerField(1)
+
+
 class ContinuousBackupConfig(_messages.Message):
   r"""ContinuousBackupConfig describes the continuous backups recovery
   configurations of a cluster.
@@ -3407,6 +3448,7 @@ class Instance(_messages.Message):
       the name of the parent resource: *
       projects/{project}/locations/{region}/clusters/{cluster_id}
     networkConfig: Optional. Instance-level network configuration.
+    networkInfo: Output only. Instance-level network information.
     nodes: Output only. List of available read-only VMs in this instance,
       including the standby for a PRIMARY instance.
     observabilityConfig: Configuration for observability.
@@ -3678,23 +3720,24 @@ class Instance(_messages.Message):
   maintenanceVersionName = _messages.StringField(23)
   name = _messages.StringField(24)
   networkConfig = _messages.MessageField('InstanceNetworkConfig', 25)
-  nodes = _messages.MessageField('Node', 26, repeated=True)
-  observabilityConfig = _messages.MessageField('ObservabilityInstanceConfig', 27)
-  observabilityInstanceInfo = _messages.MessageField('ObservabilityInstanceInfo', 28)
-  outboundPublicIpAddresses = _messages.StringField(29, repeated=True)
-  pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 30)
-  pscInstanceInfo = _messages.MessageField('PscInstanceInfo', 31)
-  publicIpAddress = _messages.StringField(32)
-  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 33)
-  queryInsightsInfo = _messages.MessageField('QueryInsightsInstanceInfo', 34)
-  readPoolConfig = _messages.MessageField('ReadPoolConfig', 35)
-  reconciling = _messages.BooleanField(36)
-  satisfiesPzs = _messages.BooleanField(37)
-  state = _messages.EnumField('StateValueValuesEnum', 38)
-  uid = _messages.StringField(39)
-  updatePolicy = _messages.MessageField('UpdatePolicy', 40)
-  updateTime = _messages.StringField(41)
-  writableNode = _messages.MessageField('Node', 42)
+  networkInfo = _messages.MessageField('InstanceNetworkInfo', 26)
+  nodes = _messages.MessageField('Node', 27, repeated=True)
+  observabilityConfig = _messages.MessageField('ObservabilityInstanceConfig', 28)
+  observabilityInstanceInfo = _messages.MessageField('ObservabilityInstanceInfo', 29)
+  outboundPublicIpAddresses = _messages.StringField(30, repeated=True)
+  pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 31)
+  pscInstanceInfo = _messages.MessageField('PscInstanceInfo', 32)
+  publicIpAddress = _messages.StringField(33)
+  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 34)
+  queryInsightsInfo = _messages.MessageField('QueryInsightsInstanceInfo', 35)
+  readPoolConfig = _messages.MessageField('ReadPoolConfig', 36)
+  reconciling = _messages.BooleanField(37)
+  satisfiesPzs = _messages.BooleanField(38)
+  state = _messages.EnumField('StateValueValuesEnum', 39)
+  uid = _messages.StringField(40)
+  updatePolicy = _messages.MessageField('UpdatePolicy', 41)
+  updateTime = _messages.StringField(42)
+  writableNode = _messages.MessageField('Node', 43)
 
 
 class InstanceDowntimeStatus(_messages.Message):
@@ -3785,6 +3828,17 @@ class InstanceNetworkConfig(_messages.Message):
   enablePublicIp = _messages.BooleanField(4)
   network = _messages.StringField(5)
   publicDnsEnabled = _messages.BooleanField(6)
+
+
+class InstanceNetworkInfo(_messages.Message):
+  r"""Output-only metadata related to instance-level network information.
+
+  Fields:
+    publicDnsName: Output only. The DNS name of the instance for public
+      connectivity.
+  """
+
+  publicDnsName = _messages.StringField(1)
 
 
 class InstanceUpgradeDetails(_messages.Message):
@@ -4406,6 +4460,8 @@ class Policy(_messages.Message):
   r"""Policy for the autoscaler.
 
   Fields:
+    connectionsCount: Optional. Connections count policy for the autoscaler.
+      If not set, the autoscaler will not use connection count for scaling.
     coolDownPeriodSec: The period of time in seconds after a new node is
       created before the autoscaler will incorporate its resource usage (e.g.
       CPU utilization) into the autoscaling recommendation algorithm.
@@ -4415,10 +4471,11 @@ class Policy(_messages.Message):
     maxNodeCount: Maximum number of nodes for the autoscaler.
   """
 
-  coolDownPeriodSec = _messages.IntegerField(1)
-  cpuUtilization = _messages.MessageField('CpuUtilization', 2)
-  enabled = _messages.BooleanField(3)
-  maxNodeCount = _messages.IntegerField(4)
+  connectionsCount = _messages.MessageField('ConnectionsCount', 1)
+  coolDownPeriodSec = _messages.IntegerField(2)
+  cpuUtilization = _messages.MessageField('CpuUtilization', 3)
+  enabled = _messages.BooleanField(4)
+  maxNodeCount = _messages.IntegerField(5)
 
 
 class PrimaryConfig(_messages.Message):

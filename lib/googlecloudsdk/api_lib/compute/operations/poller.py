@@ -34,7 +34,7 @@ class OperationErrors(Error):
   def __init__(self, errors):
     use_construct_list = False
     for error in errors:
-      if utils.ShouldUseYaml(error):
+      if utils.ShouldUseYaml(error) or utils.HasHelpLinks(error):
         use_construct_list = True
         break
     if use_construct_list:

@@ -25,9 +25,9 @@
     brief: List Workspace Key Access configs.
     description: List Workspace Key Access configs in a given project and location.
     examples: |-
-      To list configs in `us-east1`, run:
+      To list configs, run:
 
-      $ {command} --location=us-east1
+      $ {command} --location=us
   arguments:
     params:
     - help_text: |-

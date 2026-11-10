@@ -21,6 +21,8 @@
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:location
 
 - release_tracks: [GA]
+  hints:
+    read_only: true
   help_text:
     brief: List all entry groups in a Data Catalog location.
     description: List all entries in a Data Catalog location.

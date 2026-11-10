@@ -21,6 +21,10 @@ class OnboardingError(exceptions.Error):
   """Base exception for onboarding errors."""
 
 
+class ExperienceDisabledError(OnboardingError):
+  """Raised when the onboarding experience is not enabled for the account."""
+
+
 class TermsOfServiceDeclinedError(OnboardingError):
   """Raised when required Terms of Service are declined."""
 
@@ -35,6 +39,14 @@ class CloudRegionNotSelectedError(OnboardingError):
 
 class UnsupportedUserInputError(OnboardingError):
   """Raised when a pending user input is not supported by the CLI."""
+
+
+class BrowserInputRequiredError(OnboardingError):
+  """Raised when browser input is required when prompts are disabled."""
+
+
+class SessionTimeoutError(OnboardingError):
+  """Raised when polling an onboarding session times out."""
 
 
 class SessionFailedError(OnboardingError):

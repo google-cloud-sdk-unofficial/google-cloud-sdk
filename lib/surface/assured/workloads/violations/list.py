@@ -42,6 +42,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List all Assured Workloads violations that belong to a assured workloads environment."""
 
@@ -60,4 +61,5 @@ class List(base.ListCommand):
           parent=message_util.CreateAssuredWorkloadsParent(
               args.organization, args.location, args.workload),
           limit=args.limit,
-          page_size=args.page_size)
+          page_size=args.page_size,
+          view=args.view)

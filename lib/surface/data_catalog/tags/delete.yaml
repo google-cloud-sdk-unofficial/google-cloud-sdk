@@ -21,6 +21,8 @@
       is_positional: true
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Delete a Data Catalog entry tag.
     description: Delete a Data Catalog entry tag.

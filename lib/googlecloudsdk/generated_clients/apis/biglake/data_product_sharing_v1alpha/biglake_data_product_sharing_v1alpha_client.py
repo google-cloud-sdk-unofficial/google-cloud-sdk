@@ -52,6 +52,33 @@ class BiglakeDataProductSharingV1alpha(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def ListPublishedShares(self, request, global_params=None):
+      r"""Lists shares published from BigLake to SAP BDC for the specified connection catalog.
+
+      Args:
+        request: (BiglakeDataproductsharingV1alphaProjectsCatalogsListPublishedSharesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPublishedSharesResponse) The response message.
+      """
+      config = self.GetMethodConfig('ListPublishedShares')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ListPublishedShares.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='dataproductsharing/v1alpha/projects/{projectsId}/catalogs/{catalogsId}:listPublishedShares',
+        http_method='GET',
+        method_id='biglake.dataproductsharing.v1alpha.projects.catalogs.listPublishedShares',
+        ordered_params=['connectionCatalog'],
+        path_params=['connectionCatalog'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='dataproductsharing/v1alpha/{+connectionCatalog}:listPublishedShares',
+        request_field='',
+        request_type_name='BiglakeDataproductsharingV1alphaProjectsCatalogsListPublishedSharesRequest',
+        response_type_name='ListPublishedSharesResponse',
+        supports_download=False,
+    )
+
     def PublishDataProduct(self, request, global_params=None):
       r"""Publishes a Knowledge Catalog Data Product or an Iceberg catalog to SAP BDC.
 

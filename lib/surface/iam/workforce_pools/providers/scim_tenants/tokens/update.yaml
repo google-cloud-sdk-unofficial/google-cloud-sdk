@@ -16,6 +16,8 @@
 # Implementation definition for gcloud iam workforce-pools providers scim-tenants tokens update
 
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: Update an IAM workforce identity pool provider SCIM tenant token.
     description: |

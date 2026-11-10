@@ -30,6 +30,19 @@ projects_locations:
     attribute_name: location
     help: The location id of the {resource} resource.
   disable_auto_completers: true
+projects_locations_cost_per_token_policies:
+  name: costPerTokenPolicy
+  plural_name: costPerTokenPolicies
+  collection: networksecurity.projects.locations.costPerTokenPolicies
+  request_id_field: costPerTokenPolicyId
+  attributes:
+  - *project
+  - *location
+  - &costPerTokenPolicy
+    parameter_name: costPerTokenPoliciesId
+    attribute_name: cost_per_token_policy
+    help: The costPerTokenPolicy id of the {resource} resource.
+  disable_auto_completers: false
 projects_locations_dns_threat_detectors:
   name: dnsThreatDetector
   plural_name: dnsThreatDetectors
@@ -78,6 +91,32 @@ projects_locations_rate_limit_policies:
     parameter_name: rateLimitPoliciesId
     attribute_name: rate_limit_policy
     help: The rateLimitPolicy id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_token_aggregation_policies:
+  name: tokenAggregationPolicy
+  plural_name: tokenAggregationPolicies
+  collection: networksecurity.projects.locations.tokenAggregationPolicies
+  request_id_field: tokenAggregationPolicyId
+  attributes:
+  - *project
+  - *location
+  - &tokenAggregationPolicy
+    parameter_name: tokenAggregationPoliciesId
+    attribute_name: token_aggregation_policy
+    help: The tokenAggregationPolicy id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_token_budget_policies:
+  name: tokenBudgetPolicy
+  plural_name: tokenBudgetPolicies
+  collection: networksecurity.projects.locations.tokenBudgetPolicies
+  request_id_field: tokenBudgetPolicyId
+  attributes:
+  - *project
+  - *location
+  - &tokenBudgetPolicy
+    parameter_name: tokenBudgetPoliciesId
+    attribute_name: token_budget_policy
+    help: The tokenBudgetPolicy id of the {resource} resource.
   disable_auto_completers: false
 projects_locations_ull_mirroring_collectors:
   name: ullMirroringCollector

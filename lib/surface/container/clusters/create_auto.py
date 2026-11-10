@@ -63,6 +63,7 @@ auto_flags = [
     'cpDiskEncryptionKey',
     'disableL4LbFirewallReconciliation',
     'granularNat',
+    'enableCdpf',
     'networkSuite',
     'hpaprofile',
     'enableIpAccess',

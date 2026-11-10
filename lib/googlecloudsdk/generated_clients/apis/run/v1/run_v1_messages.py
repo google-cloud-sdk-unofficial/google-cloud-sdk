@@ -588,6 +588,29 @@ class DomainMappingStatus(_messages.Message):
   url = _messages.StringField(5)
 
 
+class Egress(_messages.Message):
+  r"""Egress configuration for the sandbox.
+
+  Enums:
+    AllowedProtocolsValueListEntryValuesEnum:
+
+  Fields:
+    allowedProtocols: Optional. Protocols allowed for outbound traffic.
+  """
+
+  class AllowedProtocolsValueListEntryValuesEnum(_messages.Enum):
+    r"""AllowedProtocolsValueListEntryValuesEnum enum type.
+
+    Values:
+      ALLOWED_PROTOCOL_UNSPECIFIED: Unspecified. Must not be set explicitly.
+      ALL: Allows all outbound traffic.
+    """
+    ALLOWED_PROTOCOL_UNSPECIFIED = 0
+    ALL = 1
+
+  allowedProtocols = _messages.EnumField('AllowedProtocolsValueListEntryValuesEnum', 1, repeated=True)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -3882,6 +3905,20 @@ class OwnerReference(_messages.Message):
   uid = _messages.StringField(6)
 
 
+class PersistentVolumeSource(_messages.Message):
+  r"""Represents a persistent volume backed by Hyperdisk. The disk is
+  provisioned and managed by Cloud Run, and its data persists across instance
+  restarts.
+
+  Fields:
+    size: Optional. Disk capacity as a whole number of GiB with the "Gi"
+      suffix (e.g. "10Gi", "50Gi", "500Gi"). Defaults to "10Gi" if omitted on
+      create.
+  """
+
+  size = _messages.StringField(1)
+
+
 class Policy(_messages.Message):
   r"""An Identity and Access Management (IAM) policy, which specifies access
   controls for Google Cloud resources. A `Policy` is a collection of
@@ -5938,12 +5975,15 @@ class Sandbox(_messages.Message):
   r"""Settings for the secure sandbox environment.
 
   Fields:
+    egress: Optional. Egress configuration for the sandbox. If `egress` is
+      unset, egress is disabled.
     identity: Optional. The identity assigned to the sandbox. Keywords "none"
       and "passthrough" are reserved for standard platform identities. If not
       specified, the system defaults to "none".
   """
 
-  identity = _messages.StringField(1)
+  egress = _messages.MessageField('Egress', 1)
+  identity = _messages.StringField(2)
 
 
 class SandboxConfiguration(_messages.Message):
@@ -6619,6 +6659,7 @@ class Volume(_messages.Message):
     name: Volume's name. In Cloud Run Fully Managed, the name 'cloudsql' is
       reserved.
     nfs: A NFSVolumeSource attribute.
+    persistentVolume: Persistent storage backed by Hyperdisk.
     secret: The secret's value will be presented as the content of a file
       whose name is defined in the item path. If no items are defined, the
       name of the file is the secretName.
@@ -6629,7 +6670,8 @@ class Volume(_messages.Message):
   emptyDir = _messages.MessageField('EmptyDirVolumeSource', 3)
   name = _messages.StringField(4)
   nfs = _messages.MessageField('NFSVolumeSource', 5)
-  secret = _messages.MessageField('SecretVolumeSource', 6)
+  persistentVolume = _messages.MessageField('PersistentVolumeSource', 6)
+  secret = _messages.MessageField('SecretVolumeSource', 7)
 
 
 class VolumeMount(_messages.Message):

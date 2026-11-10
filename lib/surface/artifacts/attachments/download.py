@@ -15,6 +15,7 @@
 """Implements the command to download attachments from a repository."""
 
 
+import ntpath
 import os
 from urllib import parse
 
@@ -124,7 +125,7 @@ class Download(base.Command):
       except IndexError:
         default_file_name = file_id
       file_name = self.get_file_name(file, default_file_name)
-      final_path = os.path.join(args.destination, file_name)
+      final_path = self.resolve_destination_path(args.destination, file_name)
       download_util.Download(
           final_path,
           file,
@@ -136,6 +137,33 @@ class Download(base.Command):
       log.status.Print(
           'Successfully downloaded the file to {}'.format(args.destination)
       )
+
+  def resolve_destination_path(self, destination, file_name):
+    if (
+        not file_name
+        or not file_name.strip()
+        or file_name in ('.', '..')
+        or '/' in file_name
+        or '\\' in file_name
+        or '\x00' in file_name
+        or ntpath.splitdrive(file_name)[0]
+        or os.path.basename(file_name) != file_name
+    ):
+      raise ar_exceptions.InvalidInputValueError(
+          'Invalid attachment file name: {}'.format(file_name)
+      )
+    final_path = os.path.join(destination, file_name)
+    dest_real = os.path.realpath(os.path.expanduser(destination))
+    final_real = os.path.realpath(final_path)
+    try:
+      common_path = os.path.commonpath([dest_real, final_real])
+    except ValueError:
+      common_path = None
+    if common_path != dest_real or os.path.dirname(final_real) != dest_real:
+      raise ar_exceptions.InvalidInputValueError(
+          'Invalid attachment file name: {}'.format(file_name)
+      )
+    return final_path
 
   def get_file_name(self, file, default_file_name):
     client = requests.GetClient()

@@ -44,3 +44,4 @@ bundled-python3-unix: unavailable
 bundled-python3-alpine: unavailable
 spanner-cli: google-cloud-cli-spanner-cli
 sbom-extractor: google-cloud-cli-sbom-extractor
+gcloud-go: google-cloud-cli-go

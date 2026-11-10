@@ -500,3 +500,36 @@ def MakeUrl(resources, value, reservation_ref):
       project=reservation_ref.project,
       zone=reservation_ref.zone,
   ).SelfLink()
+
+
+TPU_VERSION_TO_VM_FAMILY = {
+    'V5E': 'VM_FAMILY_CLOUD_TPU_LITE_POD_SLICE_CT5LP',
+    'V5P': 'VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P',
+    'V6E': 'VM_FAMILY_CLOUD_TPU_LITE_POD_SLICE_CT6E',
+    'TPU7X': 'VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU7X',
+}
+
+
+def GetVmFamilyFromTpuVersion(tpu_version, vm_family_enum_class):
+  """Maps user-specified TPU version to the corresponding VmFamily enum value."""
+  if not tpu_version:
+    return None
+  normalized_version = tpu_version.upper()
+  if normalized_version not in TPU_VERSION_TO_VM_FAMILY:
+    raise exceptions.InvalidArgumentException(
+        '--tpu-version',
+        'Must specify a valid TPU version ({})'.format(
+            ', '.join(sorted(TPU_VERSION_TO_VM_FAMILY.keys()))
+        ),
+    )
+  enum_name = TPU_VERSION_TO_VM_FAMILY[normalized_version]
+  if not hasattr(vm_family_enum_class, enum_name):
+    raise exceptions.InvalidArgumentException(
+        '--tpu-version',
+        (
+            'TPU version {} is not supported for this command or API'
+            ' version.'.format(tpu_version)
+        ),
+    )
+  return getattr(vm_family_enum_class, enum_name)
+

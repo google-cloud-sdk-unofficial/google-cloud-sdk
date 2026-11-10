@@ -34,8 +34,6 @@ from googlecloudsdk.core.properties.parsers import PersistProperty
 from googlecloudsdk.core.properties.scope import InvalidScopeValueError
 from googlecloudsdk.core.properties.scope import Scope
 from googlecloudsdk.core.properties.sections.api_endpoint_overrides import _SectionApiEndpointOverrides
-from googlecloudsdk.core.properties.sections.storage import CheckHashes
-from googlecloudsdk.core.properties.sections.storage import StoragePreferredApi
 from googlecloudsdk.core.properties.types import _Property
 from googlecloudsdk.core.properties.types import _Section
 from googlecloudsdk.core.properties.universe import GetUniverseDomain

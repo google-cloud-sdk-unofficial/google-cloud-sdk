@@ -320,8 +320,19 @@ def _add_alpha_args(parser):
     parser (argparse.ArgumentParser): The parser to add the arguments to.
 
   """
-  # All alpha flags have been promoted. Hence a no-op.
-  del parser
+  parser.add_argument(
+      '--pause-hard-delete',
+      action=arg_parsers.StoreTrueFalseAction,
+      help=(
+          'Pauses hard deletion of soft-deleted objects in the bucket. While'
+          ' hard deletes are paused, soft-deleted objects are retained and can'
+          ' be restored even after their soft delete retention duration has'
+          ' elapsed. Soft delete must be enabled on the bucket to pause hard'
+          ' deletes, and hard deletes cannot be unpaused within 24 hours of'
+          ' being paused.'
+      ),
+      hidden=True,
+  )
 
 
 def _is_initial_bucket_metadata_needed(user_request_args):

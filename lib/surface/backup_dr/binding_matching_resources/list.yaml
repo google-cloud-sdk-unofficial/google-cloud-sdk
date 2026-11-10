@@ -1,4 +1,6 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: List Backup and DR binding matching resources.
@@ -13,6 +15,8 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     collection: backupdr.projects.locations.autoProtectionPolicies.bindings.matchingResources
     method: list
 

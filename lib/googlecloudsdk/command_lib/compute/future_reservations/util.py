@@ -202,22 +202,6 @@ def MakeAggregateReservationPropertiesMessage(
   if not tpu_version:
     return None
 
-  # Static mapping of TPU version to VM family.
-  tpu_version_to_vm_family = {
-      'V5E': (
-          messages.AllocationAggregateReservation.VmFamilyValueValuesEnum.VM_FAMILY_CLOUD_TPU_LITE_POD_SLICE_CT5LP
-      ),
-      'V5P': (
-          messages.AllocationAggregateReservation.VmFamilyValueValuesEnum.VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P
-      ),
-      'V6E': (
-          messages.AllocationAggregateReservation.VmFamilyValueValuesEnum.VM_FAMILY_CLOUD_TPU_LITE_POD_SLICE_CT6E
-      ),
-      'TPU7X': (
-          messages.AllocationAggregateReservation.VmFamilyValueValuesEnum.VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU7X
-      ),
-  }
-
   reserved_resources = []
   accelerator = (
       messages.AllocationAggregateReservationReservedResourceInfoAccelerator(
@@ -230,8 +214,9 @@ def MakeAggregateReservationPropertiesMessage(
       )
   )
   aggregate_reservation_properties = messages.AllocationAggregateReservation(
-      vmFamily=messages.AllocationAggregateReservation.VmFamilyValueValuesEnum(
-          tpu_version_to_vm_family[tpu_version]
+      vmFamily=reservation_util.GetVmFamilyFromTpuVersion(
+          tpu_version,
+          messages.AllocationAggregateReservation.VmFamilyValueValuesEnum,
       ),
       reservedResources=reserved_resources,
   )

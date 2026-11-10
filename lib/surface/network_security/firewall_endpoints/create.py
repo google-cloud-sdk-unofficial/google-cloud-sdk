@@ -115,6 +115,7 @@ class Create(base.CreateCommand):
       )
 
     kms_key = activation_flags.GetAndValidateKmsKeyName(args)
+    scm = activation_flags.GetAndValidateScmSettings(args, self.ReleaseTrack())
 
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)
@@ -146,6 +147,10 @@ class Create(base.CreateCommand):
         ),
         block_partial_http=getattr(args, 'block_partial_http', None),
         kms_key=kms_key,
+        enable_scm=scm.enabled if scm else None,
+        scm_registration_token=scm.registration_token if scm else None,
+        scm_label=scm.label if scm else None,
+        scm_region=scm.region if scm else None,
     )
     # Return the in-progress operation if async is requested.
     if is_async:
@@ -173,6 +178,7 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     super().Args(parser)
     activation_flags.AddTargetFirewallAttachmentArg(parser)
+    activation_flags.AddScmArgs(parser, cls.ReleaseTrack(), hidden=True)
 
   def Run(self, args):
     target_firewall_attachment = getattr(

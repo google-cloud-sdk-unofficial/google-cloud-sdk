@@ -282,6 +282,21 @@ class ComposerProjectsLocationsEnvironmentsGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class ComposerProjectsLocationsEnvironmentsHibernateRequest(_messages.Message):
+  r"""A ComposerProjectsLocationsEnvironmentsHibernateRequest object.
+
+  Fields:
+    hibernateEnvironmentRequest: A HibernateEnvironmentRequest resource to be
+      passed as the request body.
+    name: Required. The resource name of the environment to hibernate, in the
+      form:
+      "projects/{project}/locations/{location}/environments/{environment}"
+  """
+
+  hibernateEnvironmentRequest = _messages.MessageField('HibernateEnvironmentRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class ComposerProjectsLocationsEnvironmentsListRequest(_messages.Message):
   r"""A ComposerProjectsLocationsEnvironmentsListRequest object.
 
@@ -434,6 +449,21 @@ class ComposerProjectsLocationsEnvironmentsRestartWebServerRequest(_messages.Mes
 
   name = _messages.StringField(1, required=True)
   restartWebServerRequest = _messages.MessageField('RestartWebServerRequest', 2)
+
+
+class ComposerProjectsLocationsEnvironmentsResumeRequest(_messages.Message):
+  r"""A ComposerProjectsLocationsEnvironmentsResumeRequest object.
+
+  Fields:
+    name: Required. The resource name of the environment to resume, in the
+      form:
+      "projects/{project}/locations/{location}/environments/{environment}"
+    resumeEnvironmentRequest: A ResumeEnvironmentRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  resumeEnvironmentRequest = _messages.MessageField('ResumeEnvironmentRequest', 2)
 
 
 class ComposerProjectsLocationsEnvironmentsSaveSnapshotRequest(_messages.Message):
@@ -1219,6 +1249,10 @@ class FetchDatabasePropertiesResponse(_messages.Message):
   secondaryGceZone = _messages.StringField(3)
 
 
+class HibernateEnvironmentRequest(_messages.Message):
+  r"""Request to hibernate a Composer environment."""
+
+
 class IPAllocationPolicy(_messages.Message):
   r"""Configuration for controlling how IPs are allocated in the GKE cluster
   running the Apache Airflow software.
@@ -1956,6 +1990,10 @@ class RecoveryConfig(_messages.Message):
 
 class RestartWebServerRequest(_messages.Message):
   r"""Restart Airflow web server."""
+
+
+class ResumeEnvironmentRequest(_messages.Message):
+  r"""Request to resume a Composer environment."""
 
 
 class SaveSnapshotRequest(_messages.Message):

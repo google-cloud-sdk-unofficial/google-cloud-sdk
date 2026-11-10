@@ -25,10 +25,12 @@ def AddBaseArgs(parser):
   flags.AddInstance(parser)
   flags.AddUsername(parser)
   flags.AddHost(parser)
+  flags.AddUserView(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Get(base.DescribeCommand):
   """Retrieves information about a Cloud SQL user in a given instance."""
 
@@ -67,4 +69,9 @@ class Get(base.DescribeCommand):
             project=project_id,
             instance=args.instance,
             name=args.username,
-            host=args.host))
+            host=args.host,
+            view=flags.GetUserView(
+                args.view, sql_messages.SqlUsersGetRequest.ViewValueValuesEnum
+            ),
+        )
+    )

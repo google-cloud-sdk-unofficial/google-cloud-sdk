@@ -1,0 +1,48 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 CostPerTokenPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- costOverrides
+- target
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  costOverrides:
+    description: List of per-model cost overrides configured in this policy.
+    type: array
+    items:
+      $ref: CostPerTokenPolicyCostOverride.yaml
+  description:
+    description: Human-readable description of the policy.
+    type: string
+  labels:
+    description: User-defined labels for the resource.
+    $ref: LabelsValue.yaml
+  name:
+    description: |-
+      Identifier. The canonical resource name of the CostPerTokenPolicy.
+    type: string
+  target:
+    description: Data plane target to which this cost policy is attached.
+    $ref: CostPerTokenPolicyTarget.yaml

@@ -12,6 +12,381 @@ from apitools.base.py import extra_types
 package = 'dataproc'
 
 
+class AccessSparkApplicationEnvironmentInfoResponse(_messages.Message):
+  r"""Environment details of a Spark Application.
+
+  Fields:
+    applicationEnvironmentInfo: Details about the Environment that the
+      application is running in.
+  """
+
+  applicationEnvironmentInfo = _messages.MessageField('ApplicationEnvironmentInfo', 1)
+
+
+class AccessSparkApplicationJobResponse(_messages.Message):
+  r"""Details of a particular job associated with Spark Application.
+
+  Fields:
+    jobData: Data corresponding to a spark job.
+  """
+
+  jobData = _messages.MessageField('JobData', 1)
+
+
+class AccessSparkApplicationNativeBuildInfoResponse(_messages.Message):
+  r"""Details of Native Build Info for a Spark Application.
+
+  Fields:
+    buildInfo: Native Build Info Data.
+  """
+
+  buildInfo = _messages.MessageField('NativeBuildInfoUiData', 1)
+
+
+class AccessSparkApplicationNativeSqlQueryResponse(_messages.Message):
+  r"""Details of a query for a Spark Application.
+
+  Fields:
+    executionData: Native SQL Execution Data.
+  """
+
+  executionData = _messages.MessageField('NativeSqlExecutionUiData', 1)
+
+
+class AccessSparkApplicationResponse(_messages.Message):
+  r"""A summary of Spark Application.
+
+  Fields:
+    application: High level information corresponding to an application.
+  """
+
+  application = _messages.MessageField('ApplicationInfo', 1)
+
+
+class AccessSparkApplicationSqlQueryResponse(_messages.Message):
+  r"""Details of a query for a Spark Application.
+
+  Fields:
+    executionData: SQL Execution Data.
+  """
+
+  executionData = _messages.MessageField('SqlExecutionUiData', 1)
+
+
+class AccessSparkApplicationSqlSparkPlanGraphResponse(_messages.Message):
+  r"""SparkPlanGraph for a Spark Application execution limited to maximum
+  10000 clusters.
+
+  Fields:
+    sparkPlanGraph: SparkPlanGraph for a Spark Application execution.
+  """
+
+  sparkPlanGraph = _messages.MessageField('SparkPlanGraph', 1)
+
+
+class AccessSparkApplicationStageAttemptResponse(_messages.Message):
+  r"""Stage Attempt for a Stage of a Spark Application.
+
+  Fields:
+    stageData: Data corresponding to a stage.
+  """
+
+  stageData = _messages.MessageField('StageData', 1)
+
+
+class AccessSparkApplicationStageRddOperationGraphResponse(_messages.Message):
+  r"""RDD operation graph for a Spark Application Stage limited to maximum
+  10000 clusters.
+
+  Fields:
+    rddOperationGraph: RDD operation graph for a Spark Application Stage.
+  """
+
+  rddOperationGraph = _messages.MessageField('RddOperationGraph', 1)
+
+
+class AccessSparkApplicationStorageRddResponse(_messages.Message):
+  r"""RDD storage details for a Spark Application.
+
+  Fields:
+    rddStorageInfo: RDD storage details for a Spark Application.
+  """
+
+  rddStorageInfo = _messages.MessageField('RddStorageInfo', 1)
+
+
+class AccumulableInfo(_messages.Message):
+  r"""Information about a Spark accumulable (accumulator) variable.
+
+  Fields:
+    accumullableInfoId: The ID of the accumulable variable.
+    name: The name of the accumulable variable.
+    update: The update value applied to the accumulable variable.
+    value: The current accumulated value.
+  """
+
+  accumullableInfoId = _messages.IntegerField(1)
+  name = _messages.StringField(2)
+  update = _messages.StringField(3)
+  value = _messages.StringField(4)
+
+
+class ApplicationAttemptInfo(_messages.Message):
+  r"""Specific attempt of an application.
+
+  Fields:
+    appSparkVersion: The Spark version of the application.
+    attemptId: The attempt ID of the application.
+    completed: Whether the application attempt has completed.
+    durationMillis: The duration of the application attempt in milliseconds.
+    endTime: The time when the application attempt ended.
+    eventLogPath: The event log path for the application attempt.
+    lastUpdated: The time when the application attempt was last updated.
+    sparkUser: The user who submitted the Spark application.
+    startTime: The time when the application attempt started.
+  """
+
+  appSparkVersion = _messages.StringField(1)
+  attemptId = _messages.StringField(2)
+  completed = _messages.BooleanField(3)
+  durationMillis = _messages.IntegerField(4)
+  endTime = _messages.StringField(5)
+  eventLogPath = _messages.StringField(6)
+  lastUpdated = _messages.StringField(7)
+  sparkUser = _messages.StringField(8)
+  startTime = _messages.StringField(9)
+
+
+class ApplicationEnvironmentInfo(_messages.Message):
+  r"""Details about the Environment that the application is running in.
+
+  Messages:
+    ClasspathEntriesValue: Classpath entries for the application.
+    HadoopPropertiesValue: Hadoop configuration properties.
+    MetricsPropertiesValue: Metrics configuration properties.
+    SparkPropertiesValue: Spark configuration properties.
+    SystemPropertiesValue: System properties.
+
+  Fields:
+    classpathEntries: Classpath entries for the application.
+    hadoopProperties: Hadoop configuration properties.
+    metricsProperties: Metrics configuration properties.
+    resourceProfiles: Resource profiles configured for the application.
+    runtime: Information about the Spark runtime.
+    sparkProperties: Spark configuration properties.
+    systemProperties: System properties.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ClasspathEntriesValue(_messages.Message):
+    r"""Classpath entries for the application.
+
+    Messages:
+      AdditionalProperty: An additional property for a ClasspathEntriesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ClasspathEntriesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ClasspathEntriesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class HadoopPropertiesValue(_messages.Message):
+    r"""Hadoop configuration properties.
+
+    Messages:
+      AdditionalProperty: An additional property for a HadoopPropertiesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        HadoopPropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a HadoopPropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetricsPropertiesValue(_messages.Message):
+    r"""Metrics configuration properties.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetricsPropertiesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        MetricsPropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetricsPropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class SparkPropertiesValue(_messages.Message):
+    r"""Spark configuration properties.
+
+    Messages:
+      AdditionalProperty: An additional property for a SparkPropertiesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type SparkPropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a SparkPropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class SystemPropertiesValue(_messages.Message):
+    r"""System properties.
+
+    Messages:
+      AdditionalProperty: An additional property for a SystemPropertiesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        SystemPropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a SystemPropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  classpathEntries = _messages.MessageField('ClasspathEntriesValue', 1)
+  hadoopProperties = _messages.MessageField('HadoopPropertiesValue', 2)
+  metricsProperties = _messages.MessageField('MetricsPropertiesValue', 3)
+  resourceProfiles = _messages.MessageField('ResourceProfileInfo', 4, repeated=True)
+  runtime = _messages.MessageField('SparkRuntimeInfo', 5)
+  sparkProperties = _messages.MessageField('SparkPropertiesValue', 6)
+  systemProperties = _messages.MessageField('SystemPropertiesValue', 7)
+
+
+class ApplicationInfo(_messages.Message):
+  r"""High level information corresponding to an application.
+
+  Enums:
+    ApplicationContextIngestionStatusValueValuesEnum: The ingestion status of
+      the application context.
+    QuantileDataStatusValueValuesEnum: The status of quantile data computation
+      for the application.
+
+  Fields:
+    applicationContextIngestionStatus: The ingestion status of the application
+      context.
+    applicationId: The Spark application ID.
+    attempts: The list of attempts for the application.
+    coresGranted: The number of cores granted to the application.
+    coresPerExecutor: The number of cores allocated per executor.
+    maxCores: The maximum number of cores allocated to the application.
+    memoryPerExecutorMb: The memory in MB allocated per executor.
+    name: The name of the Spark application.
+    quantileDataStatus: The status of quantile data computation for the
+      application.
+  """
+
+  class ApplicationContextIngestionStatusValueValuesEnum(_messages.Enum):
+    r"""The ingestion status of the application context.
+
+    Values:
+      APPLICATION_CONTEXT_INGESTION_STATUS_UNSPECIFIED: The ingestion status
+        is unspecified.
+      APPLICATION_CONTEXT_INGESTION_STATUS_COMPLETED: The application context
+        ingestion has completed.
+    """
+    APPLICATION_CONTEXT_INGESTION_STATUS_UNSPECIFIED = 0
+    APPLICATION_CONTEXT_INGESTION_STATUS_COMPLETED = 1
+
+  class QuantileDataStatusValueValuesEnum(_messages.Enum):
+    r"""The status of quantile data computation for the application.
+
+    Values:
+      QUANTILE_DATA_STATUS_UNSPECIFIED: The quantile data status is
+        unspecified.
+      QUANTILE_DATA_STATUS_COMPLETED: The quantile data computation has
+        completed.
+      QUANTILE_DATA_STATUS_FAILED: The quantile data computation has failed.
+    """
+    QUANTILE_DATA_STATUS_UNSPECIFIED = 0
+    QUANTILE_DATA_STATUS_COMPLETED = 1
+    QUANTILE_DATA_STATUS_FAILED = 2
+
+  applicationContextIngestionStatus = _messages.EnumField('ApplicationContextIngestionStatusValueValuesEnum', 1)
+  applicationId = _messages.StringField(2)
+  attempts = _messages.MessageField('ApplicationAttemptInfo', 3, repeated=True)
+  coresGranted = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  coresPerExecutor = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  maxCores = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  memoryPerExecutorMb = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  name = _messages.StringField(8)
+  quantileDataStatus = _messages.EnumField('QuantileDataStatusValueValuesEnum', 9)
+
+
+class BuildInfo(_messages.Message):
+  r"""Native Build Info
+
+  Fields:
+    buildKey: Build key.
+    buildValue: Build value.
+  """
+
+  buildKey = _messages.StringField(1)
+  buildValue = _messages.StringField(2)
+
+
 class CancelRunRequest(_messages.Message):
   r"""A request to cancel a run.
 
@@ -34,6 +409,168 @@ class CancelWorkloadRunRequest(_messages.Message):
   """
 
   requestId = _messages.StringField(1)
+
+
+class ComputeClusterPlacement(_messages.Message):
+  r"""Configuration for executing a workload on an existing Compute Engine
+  Dataproc cluster.
+
+  Fields:
+    computeCluster: Required. The resource name of an existing Compute Engine
+      Dataproc cluster on which the workload runs. Format:
+      projects/{project}/regions/{region}/clusters/{cluster}
+    config: Optional. Per-workload runtime configuration or overrides merged
+      on top of the target cluster's configuration.
+  """
+
+  computeCluster = _messages.StringField(1)
+  config = _messages.MessageField('ComputeClusterRuntimeConfig', 2)
+
+
+class ComputeClusterPlacementOverride(_messages.Message):
+  r"""Per-run placement override for executing a workload on an existing
+  Compute Engine Dataproc cluster.
+
+  Fields:
+    computeCluster: Required. The resource name of an existing Compute Engine
+      Dataproc cluster on which the workload runs. Format:
+      projects/{project}/regions/{region}/clusters/{cluster}
+  """
+
+  computeCluster = _messages.StringField(1)
+
+
+class ComputeClusterRuntimeConfig(_messages.Message):
+  r"""Per-workload runtime configuration when executing on an existing Compute
+  Engine Dataproc cluster.
+
+  Messages:
+    PropertiesValue: Optional. Per-workload Spark and Hadoop properties merged
+      key-by-key on top of the target cluster's cluster-level properties for
+      this execution. Payload properties take precedence over properties
+      specified here.
+
+  Fields:
+    properties: Optional. Per-workload Spark and Hadoop properties merged key-
+      by-key on top of the target cluster's cluster-level properties for this
+      execution. Payload properties take precedence over properties specified
+      here.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PropertiesValue(_messages.Message):
+    r"""Optional. Per-workload Spark and Hadoop properties merged key-by-key
+    on top of the target cluster's cluster-level properties for this
+    execution. Payload properties take precedence over properties specified
+    here.
+
+    Messages:
+      AdditionalProperty: An additional property for a PropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  properties = _messages.MessageField('PropertiesValue', 1)
+
+
+class ComputeTuningConfigResponse(_messages.Message):
+  r"""Response for ComputeTuningConfig RPC.
+
+  Messages:
+    RecommendedPropertiesValue: Recommended Spark properties for the query
+      (e.g., {"spark.sql.shuffle.partitions": "500"}).
+
+  Fields:
+    recommendedProperties: Recommended Spark properties for the query (e.g.,
+      {"spark.sql.shuffle.partitions": "500"}).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class RecommendedPropertiesValue(_messages.Message):
+    r"""Recommended Spark properties for the query (e.g.,
+    {"spark.sql.shuffle.partitions": "500"}).
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        RecommendedPropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        RecommendedPropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a RecommendedPropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  recommendedProperties = _messages.MessageField('RecommendedPropertiesValue', 1)
+
+
+class ConsolidatedExecutorSummary(_messages.Message):
+  r"""Consolidated summary about executors used by the application.
+
+  Fields:
+    activeTasks: The total number of active tasks across executors.
+    completedTasks: The total number of completed tasks across executors.
+    count: The total number of executors included in the summary.
+    diskUsed: The total disk space used across executors in bytes.
+    failedTasks: The total number of failed tasks across executors.
+    isExcluded: The number of excluded executors.
+    maxMemory: The total maximum memory across executors in bytes.
+    memoryMetrics: Consolidated storage memory metrics across executors.
+    memoryUsed: The total memory used across executors in bytes.
+    rddBlocks: The total number of RDD blocks stored across executors.
+    totalCores: The total number of cores across executors.
+    totalDurationMillis: The total task duration in milliseconds across
+      executors.
+    totalGcTimeMillis: The total JVM garbage collection time in milliseconds
+      across executors.
+    totalInputBytes: The total input bytes read across executors.
+    totalShuffleRead: The total shuffle bytes read across executors.
+    totalShuffleWrite: The total shuffle bytes written across executors.
+    totalTasks: The total number of tasks across executors.
+  """
+
+  activeTasks = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  completedTasks = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  count = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  diskUsed = _messages.IntegerField(4)
+  failedTasks = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  isExcluded = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  maxMemory = _messages.IntegerField(7)
+  memoryMetrics = _messages.MessageField('MemoryMetrics', 8)
+  memoryUsed = _messages.IntegerField(9)
+  rddBlocks = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  totalCores = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  totalDurationMillis = _messages.IntegerField(12)
+  totalGcTimeMillis = _messages.IntegerField(13)
+  totalInputBytes = _messages.IntegerField(14)
+  totalShuffleRead = _messages.IntegerField(15)
+  totalShuffleWrite = _messages.IntegerField(16)
+  totalTasks = _messages.IntegerField(17, variant=_messages.Variant.INT32)
 
 
 class DataprocProjectsLocationsEnvironmentsCreateRequest(_messages.Message):
@@ -328,6 +865,826 @@ class DataprocProjectsLocationsRunsListRequest(_messages.Message):
   parent = _messages.StringField(4, required=True)
 
 
+class DataprocProjectsLocationsRunsSparkApplicationsAccessEnvironmentInfoRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsRunsSparkApplicationsAccessEnvironmentInfoRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsAccessJobRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsAccessJobRequest object.
+
+  Fields:
+    jobId: Required. Job ID to fetch data for.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  jobId = _messages.IntegerField(1)
+  name = _messages.StringField(2, required=True)
+  parent = _messages.StringField(3)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsAccessNativeBuildInfoRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsRunsSparkApplicationsAccessNativeBuildInfoRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsAccessNativeSqlQueryRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsRunsSparkApplicationsAccessNativeSqlQueryRequest
+  object.
+
+  Fields:
+    executionId: Required. Execution ID.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  executionId = _messages.IntegerField(1)
+  name = _messages.StringField(2, required=True)
+  parent = _messages.StringField(3)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsAccessRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsAccessRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsAccessSqlPlanRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsAccessSqlPlanRequest
+  object.
+
+  Fields:
+    executionId: Required. Execution ID.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  executionId = _messages.IntegerField(1)
+  name = _messages.StringField(2, required=True)
+  parent = _messages.StringField(3)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsAccessSqlQueryRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsAccessSqlQueryRequest
+  object.
+
+  Fields:
+    details: Optional. Lists/ hides details of Spark plan nodes. True is set
+      to list and false to hide.
+    executionId: Required. Execution ID.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    planDescription: Optional. Enables/ disables physical plan description on
+      demand.
+  """
+
+  details = _messages.BooleanField(1)
+  executionId = _messages.IntegerField(2)
+  name = _messages.StringField(3, required=True)
+  parent = _messages.StringField(4)
+  planDescription = _messages.BooleanField(5)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsAccessStageAttemptRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsRunsSparkApplicationsAccessStageAttemptRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageAttemptId: Required. Stage Attempt ID.
+    stageId: Required. Stage ID.
+    summaryMetricsMask: Optional. The list of summary metrics fields to
+      include. Empty list will default to skip all summary metrics fields.
+      Example, if the response should include TaskQuantileMetrics, the request
+      should have task_quantile_metrics in summary_metrics_mask field.
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+  stageAttemptId = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(4)
+  summaryMetricsMask = _messages.StringField(5)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsAccessStageRddGraphRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsRunsSparkApplicationsAccessStageRddGraphRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageId: Required. Stage ID.
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+  stageId = _messages.IntegerField(3)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsAccessStorageRddRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsAccessStorageRddRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    rddId: Required. RDD ID.
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+  rddId = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsComputeTuningConfigRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsRunsSparkApplicationsComputeTuningConfigRequest
+  object.
+
+  Fields:
+    executionId: Required. Spark execution ID for the query.
+    name: Required. The resource name of the Spark Application to retrieve
+      autotuning configuration for. Format: projects/{project}/locations/{loca
+      tion}/runs/{run}/sparkApplications/{spark_application} or projects/{proj
+      ect}/locations/{location}/workloads/{workload}/runs/{run}/sparkApplicati
+      ons/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    semanticQueryId: Required. Spark semantic query ID.
+  """
+
+  executionId = _messages.IntegerField(1)
+  name = _messages.StringField(2, required=True)
+  parent = _messages.StringField(3)
+  semanticQueryId = _messages.StringField(4)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSearchExecutorStageSummaryRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsSearchExecutorStageSumma
+  ryRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of executors to return in each
+      response. The service may return fewer than this. The default page size
+      is 10; the maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationExecutorStageSummary call. Provide this token to
+      retrieve the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageAttemptId: Required. Stage Attempt ID.
+    stageId: Required. Stage ID.
+  """
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4)
+  stageAttemptId = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(6)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSearchExecutorsRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsSearchExecutorsRequest
+  object.
+
+  Enums:
+    ExecutorStatusValueValuesEnum: Optional. Filter to select whether active/
+      dead or all executors should be selected.
+
+  Fields:
+    executorStatus: Optional. Filter to select whether active/ dead or all
+      executors should be selected.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of executors to return in each
+      response. The service may return fewer than this. The default page size
+      is 10; the maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationExecutors call. Provide this token to retrieve the
+      subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  class ExecutorStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. Filter to select whether active/ dead or all executors
+    should be selected.
+
+    Values:
+      EXECUTOR_STATUS_UNSPECIFIED: The executor status is unspecified.
+      EXECUTOR_STATUS_ACTIVE: The executor is active.
+      EXECUTOR_STATUS_DEAD: The executor is dead.
+    """
+    EXECUTOR_STATUS_UNSPECIFIED = 0
+    EXECUTOR_STATUS_ACTIVE = 1
+    EXECUTOR_STATUS_DEAD = 2
+
+  executorStatus = _messages.EnumField('ExecutorStatusValueValuesEnum', 1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSearchJobsRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsSearchJobsRequest
+  object.
+
+  Enums:
+    JobStatusValueValuesEnum: Optional. List only jobs in the specific state.
+
+  Fields:
+    jobStatus: Optional. List only jobs in the specific state.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of jobs to return in each response. The
+      service may return fewer than this. The default page size is 10; the
+      maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationJobs call. Provide this token to retrieve the
+      subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  class JobStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. List only jobs in the specific state.
+
+    Values:
+      JOB_EXECUTION_STATUS_UNSPECIFIED: The job execution status is
+        unspecified.
+      JOB_EXECUTION_STATUS_RUNNING: The job is currently running.
+      JOB_EXECUTION_STATUS_SUCCEEDED: The job has succeeded.
+      JOB_EXECUTION_STATUS_FAILED: The job has failed.
+      JOB_EXECUTION_STATUS_UNKNOWN: The job execution status is unknown.
+    """
+    JOB_EXECUTION_STATUS_UNSPECIFIED = 0
+    JOB_EXECUTION_STATUS_RUNNING = 1
+    JOB_EXECUTION_STATUS_SUCCEEDED = 2
+    JOB_EXECUTION_STATUS_FAILED = 3
+    JOB_EXECUTION_STATUS_UNKNOWN = 4
+
+  jobStatus = _messages.EnumField('JobStatusValueValuesEnum', 1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSearchNativeSqlQueriesRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsRunsSparkApplicationsSearchNativeSqlQueriesRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of queries to return in each response.
+      The service may return fewer than this. The default page size is 10; the
+      maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationNativeSqlQueries call. Provide this token to
+      retrieve the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSearchRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsSearchRequest object.
+
+  Enums:
+    ApplicationStatusValueValuesEnum: Optional. Search only applications in
+      the chosen state.
+
+  Fields:
+    applicationStatus: Optional. Search only applications in the chosen state.
+    maxEndTime: Optional. Latest end timestamp to list.
+    maxTime: Optional. Latest start timestamp to list.
+    minEndTime: Optional. Earliest end timestamp to list.
+    minTime: Optional. Earliest start timestamp to list.
+    pageSize: Optional. Maximum number of applications to return in each
+      response. The service may return fewer than this. The default page size
+      is 10; the maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplications call. Provide this token to retrieve the
+      subsequent page.
+    parent: Required. The resource name of the run to retrieve Spark
+      Applications for. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  class ApplicationStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. Search only applications in the chosen state.
+
+    Values:
+      APPLICATION_STATUS_UNSPECIFIED: The application status is unspecified.
+      APPLICATION_STATUS_RUNNING: The application is currently running.
+      APPLICATION_STATUS_COMPLETED: The application has completed.
+    """
+    APPLICATION_STATUS_UNSPECIFIED = 0
+    APPLICATION_STATUS_RUNNING = 1
+    APPLICATION_STATUS_COMPLETED = 2
+
+  applicationStatus = _messages.EnumField('ApplicationStatusValueValuesEnum', 1)
+  maxEndTime = _messages.StringField(2)
+  maxTime = _messages.StringField(3)
+  minEndTime = _messages.StringField(4)
+  minTime = _messages.StringField(5)
+  pageSize = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(7)
+  parent = _messages.StringField(8, required=True)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSearchSqlQueriesRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsSearchSqlQueriesRequest
+  object.
+
+  Fields:
+    details: Optional. Lists/ hides details of Spark plan nodes. True is set
+      to list and false to hide.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of queries to return in each response.
+      The service may return fewer than this. The default page size is 10; the
+      maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationSqlQueries call. Provide this token to retrieve
+      the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    planDescription: Optional. Enables/ disables physical plan description on
+      demand.
+  """
+
+  details = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5)
+  planDescription = _messages.BooleanField(6)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSearchStageAttemptTasksRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsRunsSparkApplicationsSearchStageAttemptTasksRequest
+  object.
+
+  Enums:
+    TaskStatusValueValuesEnum: Optional. List only tasks in the state.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of tasks to return in each response.
+      The service may return fewer than this. The default page size is 10; the
+      maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationStageAttemptTasks call. Provide this token to
+      retrieve the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    sortRuntime: Optional. Sort the tasks by runtime.
+    stageAttemptId: Required. Stage Attempt ID.
+    stageId: Required. Stage ID.
+    taskStatus: Optional. List only tasks in the state.
+  """
+
+  class TaskStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. List only tasks in the state.
+
+    Values:
+      TASK_STATUS_UNSPECIFIED: The task status is unspecified.
+      TASK_STATUS_RUNNING: The task is currently running.
+      TASK_STATUS_SUCCESS: The task completed successfully.
+      TASK_STATUS_FAILED: The task failed.
+      TASK_STATUS_KILLED: The task was killed.
+      TASK_STATUS_PENDING: The task is pending execution.
+    """
+    TASK_STATUS_UNSPECIFIED = 0
+    TASK_STATUS_RUNNING = 1
+    TASK_STATUS_SUCCESS = 2
+    TASK_STATUS_FAILED = 3
+    TASK_STATUS_KILLED = 4
+    TASK_STATUS_PENDING = 5
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4)
+  sortRuntime = _messages.BooleanField(5)
+  stageAttemptId = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(7)
+  taskStatus = _messages.EnumField('TaskStatusValueValuesEnum', 8)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSearchStageAttemptsRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsRunsSparkApplicationsSearchStageAttemptsRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of stage attempts (paging based on
+      stage_attempt_id) to return in each response. The service may return
+      fewer than this. The default page size is 10; the maximum page size is
+      100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationStageAttempts call. Provide this token to retrieve
+      the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageId: Required. Stage ID for which attempts are to be fetched.
+    summaryMetricsMask: Optional. The list of summary metrics fields to
+      include. Empty list will default to skip all summary metrics fields.
+      Example, if the response should include TaskQuantileMetrics, the request
+      should have task_quantile_metrics in summary_metrics_mask field.
+  """
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4)
+  stageId = _messages.IntegerField(5)
+  summaryMetricsMask = _messages.StringField(6)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSearchStagesRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsSearchStagesRequest
+  object.
+
+  Enums:
+    StageStatusValueValuesEnum: Optional. List only stages in the given state.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of stages (paging based on stage_id) to
+      return in each response. The service may return fewer than this. The
+      default page size is 10; the maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationStages call. Provide this token to retrieve the
+      subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageStatus: Optional. List only stages in the given state.
+    summaryMetricsMask: Optional. The list of summary metrics fields to
+      include. Empty list will default to skip all summary metrics fields.
+      Example, if the response should include TaskQuantileMetrics, the request
+      should have task_quantile_metrics in summary_metrics_mask field.
+  """
+
+  class StageStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. List only stages in the given state.
+
+    Values:
+      STAGE_STATUS_UNSPECIFIED: The stage status is unspecified.
+      STAGE_STATUS_ACTIVE: The stage is currently active.
+      STAGE_STATUS_COMPLETE: The stage has completed.
+      STAGE_STATUS_FAILED: The stage has failed.
+      STAGE_STATUS_PENDING: The stage is pending execution.
+      STAGE_STATUS_SKIPPED: The stage was skipped.
+    """
+    STAGE_STATUS_UNSPECIFIED = 0
+    STAGE_STATUS_ACTIVE = 1
+    STAGE_STATUS_COMPLETE = 2
+    STAGE_STATUS_FAILED = 3
+    STAGE_STATUS_PENDING = 4
+    STAGE_STATUS_SKIPPED = 5
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4)
+  stageStatus = _messages.EnumField('StageStatusValueValuesEnum', 5)
+  summaryMetricsMask = _messages.StringField(6)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSearchStorageRddsRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsSearchStorageRddsRequest
+  object.
+
+  Fields:
+    includeDataDistribution: Optional. Whether to include data distribution in
+      the response, false by default.
+    includePartitions: Optional. Whether to include partition info in the
+      response, false by default.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of RDDs to return in each response. The
+      service may return fewer than this. The default page size is 10; the
+      maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationStorageRdds call. Provide this token to retrieve
+      the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  includeDataDistribution = _messages.BooleanField(1)
+  includePartitions = _messages.BooleanField(2)
+  name = _messages.StringField(3, required=True)
+  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(5)
+  parent = _messages.StringField(6)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSummarizeExecutorsRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsRunsSparkApplicationsSummarizeExecutorsRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSummarizeJobsRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsSummarizeJobsRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSummarizeStageAttemptTasksRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsSummarizeStageAttemptTas
+  ksRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageAttemptId: Required. Stage Attempt ID.
+    stageId: Required. Stage ID.
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+  stageAttemptId = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(4)
+
+
+class DataprocProjectsLocationsRunsSparkApplicationsSummarizeStagesRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsRunsSparkApplicationsSummarizeStagesRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsServerlessRuntimeProfilesCreateRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsServerlessRuntimeProfilesCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource where this serverless runtime
+      profile will be created. Format: projects/{project}/locations/{location}
+    requestId: Optional. A unique identifier for this request. This value must
+      be a valid UUID4. This request is only idempotent if provided.
+    serverlessRuntimeProfile: A ServerlessRuntimeProfile resource to be passed
+      as the request body.
+    serverlessRuntimeProfileId: Required. The ID of the serverless runtime
+      profile to create. This value must be 4-63 characters long, and comply
+      with RFC1034: contain only lowercase letters, digits, and hyphens, start
+      with a letter, and not end with a hyphen.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  serverlessRuntimeProfile = _messages.MessageField('ServerlessRuntimeProfile', 3)
+  serverlessRuntimeProfileId = _messages.StringField(4)
+
+
+class DataprocProjectsLocationsServerlessRuntimeProfilesDeleteRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsServerlessRuntimeProfilesDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. The current etag of the serverless runtime profile. If
+      provided, the delete is only performed if the etag matches the
+      serverless runtime profile's current etag; otherwise the request fails
+      with an ABORTED error.
+    name: Required. The name of the serverless runtime profile to delete.
+      Format: projects/{project}/locations/{location}/serverlessRuntimeProfile
+      s/{serverless_runtime_profile}
+    requestId: Optional. A unique identifier for this request. This value must
+      be a valid UUID4. This request is only idempotent if provided.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class DataprocProjectsLocationsServerlessRuntimeProfilesGetRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsServerlessRuntimeProfilesGetRequest object.
+
+  Fields:
+    name: Required. The name of the serverless runtime profile to retrieve.
+      Format: projects/{project}/locations/{location}/serverlessRuntimeProfile
+      s/{serverless_runtime_profile}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataprocProjectsLocationsServerlessRuntimeProfilesListRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsServerlessRuntimeProfilesListRequest object.
+
+  Fields:
+    filter: Optional. A filter for the serverless runtime profiles to return
+      in the response.
+    orderBy: Optional. Field(s) on which to sort the list of serverless
+      runtime profiles.
+    pageSize: Optional. The maximum number of serverless runtime profiles to
+      return in each response. The service may return fewer than this
+      value.The default page size is 20; the maximum page size is 1000. Values
+      above 1000 are coerced to 1000.
+    pageToken: Optional. A page token received from a previous
+      ListServerlessRuntimeProfiles call. Provide this token to retrieve the
+      subsequent page.
+    parent: Required. The parent, which owns this collection of serverless
+      runtime profiles. Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class DataprocProjectsLocationsServerlessRuntimeProfilesPatchRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsServerlessRuntimeProfilesPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the serverless runtime profile.
+      Format: projects/{project}/locations/{location}/serverlessRuntimeProfile
+      s/{serverless_runtime_profile}
+    requestId: Optional. A unique identifier for this request. This value must
+      be a valid UUID4. This request is only idempotent if provided.
+    serverlessRuntimeProfile: A ServerlessRuntimeProfile resource to be passed
+      as the request body.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  serverlessRuntimeProfile = _messages.MessageField('ServerlessRuntimeProfile', 3)
+  updateMask = _messages.StringField(4)
+
+
 class DataprocProjectsLocationsWorkloadsCreateRequest(_messages.Message):
   r"""A DataprocProjectsLocationsWorkloadsCreateRequest object.
 
@@ -557,6 +1914,723 @@ class DataprocProjectsLocationsWorkloadsRunsListRequest(_messages.Message):
   showDeleted = _messages.BooleanField(5)
 
 
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessEnvironmentInfoRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessEnvironme
+  ntInfoRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessJobRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessJobRequest
+  object.
+
+  Fields:
+    jobId: Required. Job ID to fetch data for.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  jobId = _messages.IntegerField(1)
+  name = _messages.StringField(2, required=True)
+  parent = _messages.StringField(3)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessNativeBuildInfoRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessNativeBui
+  ldInfoRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessNativeSqlQueryRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessNativeSql
+  QueryRequest object.
+
+  Fields:
+    executionId: Required. Execution ID.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  executionId = _messages.IntegerField(1)
+  name = _messages.StringField(2, required=True)
+  parent = _messages.StringField(3)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessSqlPlanRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessSqlPlanRequest
+  object.
+
+  Fields:
+    executionId: Required. Execution ID.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  executionId = _messages.IntegerField(1)
+  name = _messages.StringField(2, required=True)
+  parent = _messages.StringField(3)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessSqlQueryRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessSqlQueryRequest
+  object.
+
+  Fields:
+    details: Optional. Lists/ hides details of Spark plan nodes. True is set
+      to list and false to hide.
+    executionId: Required. Execution ID.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    planDescription: Optional. Enables/ disables physical plan description on
+      demand.
+  """
+
+  details = _messages.BooleanField(1)
+  executionId = _messages.IntegerField(2)
+  name = _messages.StringField(3, required=True)
+  parent = _messages.StringField(4)
+  planDescription = _messages.BooleanField(5)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessStageAttemptRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessStageAtte
+  mptRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageAttemptId: Required. Stage Attempt ID.
+    stageId: Required. Stage ID.
+    summaryMetricsMask: Optional. The list of summary metrics fields to
+      include. Empty list will default to skip all summary metrics fields.
+      Example, if the response should include TaskQuantileMetrics, the request
+      should have task_quantile_metrics in summary_metrics_mask field.
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+  stageAttemptId = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(4)
+  summaryMetricsMask = _messages.StringField(5)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessStageRddGraphRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessStageRddG
+  raphRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageId: Required. Stage ID.
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+  stageId = _messages.IntegerField(3)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessStorageRddRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsAccessStorageRd
+  dRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    rddId: Required. RDD ID.
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+  rddId = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsComputeTuningConfigRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsComputeTuningCo
+  nfigRequest object.
+
+  Fields:
+    executionId: Required. Spark execution ID for the query.
+    name: Required. The resource name of the Spark Application to retrieve
+      autotuning configuration for. Format: projects/{project}/locations/{loca
+      tion}/runs/{run}/sparkApplications/{spark_application} or projects/{proj
+      ect}/locations/{location}/workloads/{workload}/runs/{run}/sparkApplicati
+      ons/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    semanticQueryId: Required. Spark semantic query ID.
+  """
+
+  executionId = _messages.IntegerField(1)
+  name = _messages.StringField(2, required=True)
+  parent = _messages.StringField(3)
+  semanticQueryId = _messages.StringField(4)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchExecutorStageSummaryRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchExecutorS
+  tageSummaryRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of executors to return in each
+      response. The service may return fewer than this. The default page size
+      is 10; the maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationExecutorStageSummary call. Provide this token to
+      retrieve the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageAttemptId: Required. Stage Attempt ID.
+    stageId: Required. Stage ID.
+  """
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4)
+  stageAttemptId = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(6)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchExecutorsRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchExecutors
+  Request object.
+
+  Enums:
+    ExecutorStatusValueValuesEnum: Optional. Filter to select whether active/
+      dead or all executors should be selected.
+
+  Fields:
+    executorStatus: Optional. Filter to select whether active/ dead or all
+      executors should be selected.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of executors to return in each
+      response. The service may return fewer than this. The default page size
+      is 10; the maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationExecutors call. Provide this token to retrieve the
+      subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  class ExecutorStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. Filter to select whether active/ dead or all executors
+    should be selected.
+
+    Values:
+      EXECUTOR_STATUS_UNSPECIFIED: The executor status is unspecified.
+      EXECUTOR_STATUS_ACTIVE: The executor is active.
+      EXECUTOR_STATUS_DEAD: The executor is dead.
+    """
+    EXECUTOR_STATUS_UNSPECIFIED = 0
+    EXECUTOR_STATUS_ACTIVE = 1
+    EXECUTOR_STATUS_DEAD = 2
+
+  executorStatus = _messages.EnumField('ExecutorStatusValueValuesEnum', 1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchJobsRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchJobsRequest
+  object.
+
+  Enums:
+    JobStatusValueValuesEnum: Optional. List only jobs in the specific state.
+
+  Fields:
+    jobStatus: Optional. List only jobs in the specific state.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of jobs to return in each response. The
+      service may return fewer than this. The default page size is 10; the
+      maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationJobs call. Provide this token to retrieve the
+      subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  class JobStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. List only jobs in the specific state.
+
+    Values:
+      JOB_EXECUTION_STATUS_UNSPECIFIED: The job execution status is
+        unspecified.
+      JOB_EXECUTION_STATUS_RUNNING: The job is currently running.
+      JOB_EXECUTION_STATUS_SUCCEEDED: The job has succeeded.
+      JOB_EXECUTION_STATUS_FAILED: The job has failed.
+      JOB_EXECUTION_STATUS_UNKNOWN: The job execution status is unknown.
+    """
+    JOB_EXECUTION_STATUS_UNSPECIFIED = 0
+    JOB_EXECUTION_STATUS_RUNNING = 1
+    JOB_EXECUTION_STATUS_SUCCEEDED = 2
+    JOB_EXECUTION_STATUS_FAILED = 3
+    JOB_EXECUTION_STATUS_UNKNOWN = 4
+
+  jobStatus = _messages.EnumField('JobStatusValueValuesEnum', 1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchNativeSqlQueriesRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchNativeSql
+  QueriesRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of queries to return in each response.
+      The service may return fewer than this. The default page size is 10; the
+      maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationNativeSqlQueries call. Provide this token to
+      retrieve the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchRequest
+  object.
+
+  Enums:
+    ApplicationStatusValueValuesEnum: Optional. Search only applications in
+      the chosen state.
+
+  Fields:
+    applicationStatus: Optional. Search only applications in the chosen state.
+    maxEndTime: Optional. Latest end timestamp to list.
+    maxTime: Optional. Latest start timestamp to list.
+    minEndTime: Optional. Earliest end timestamp to list.
+    minTime: Optional. Earliest start timestamp to list.
+    pageSize: Optional. Maximum number of applications to return in each
+      response. The service may return fewer than this. The default page size
+      is 10; the maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplications call. Provide this token to retrieve the
+      subsequent page.
+    parent: Required. The resource name of the run to retrieve Spark
+      Applications for. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  class ApplicationStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. Search only applications in the chosen state.
+
+    Values:
+      APPLICATION_STATUS_UNSPECIFIED: The application status is unspecified.
+      APPLICATION_STATUS_RUNNING: The application is currently running.
+      APPLICATION_STATUS_COMPLETED: The application has completed.
+    """
+    APPLICATION_STATUS_UNSPECIFIED = 0
+    APPLICATION_STATUS_RUNNING = 1
+    APPLICATION_STATUS_COMPLETED = 2
+
+  applicationStatus = _messages.EnumField('ApplicationStatusValueValuesEnum', 1)
+  maxEndTime = _messages.StringField(2)
+  maxTime = _messages.StringField(3)
+  minEndTime = _messages.StringField(4)
+  minTime = _messages.StringField(5)
+  pageSize = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(7)
+  parent = _messages.StringField(8, required=True)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchSqlQueriesRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchSqlQuerie
+  sRequest object.
+
+  Fields:
+    details: Optional. Lists/ hides details of Spark plan nodes. True is set
+      to list and false to hide.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of queries to return in each response.
+      The service may return fewer than this. The default page size is 10; the
+      maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationSqlQueries call. Provide this token to retrieve
+      the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    planDescription: Optional. Enables/ disables physical plan description on
+      demand.
+  """
+
+  details = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5)
+  planDescription = _messages.BooleanField(6)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchStageAttemptTasksRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchStageAtte
+  mptTasksRequest object.
+
+  Enums:
+    TaskStatusValueValuesEnum: Optional. List only tasks in the state.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of tasks to return in each response.
+      The service may return fewer than this. The default page size is 10; the
+      maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationStageAttemptTasks call. Provide this token to
+      retrieve the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    sortRuntime: Optional. Sort the tasks by runtime.
+    stageAttemptId: Required. Stage Attempt ID.
+    stageId: Required. Stage ID.
+    taskStatus: Optional. List only tasks in the state.
+  """
+
+  class TaskStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. List only tasks in the state.
+
+    Values:
+      TASK_STATUS_UNSPECIFIED: The task status is unspecified.
+      TASK_STATUS_RUNNING: The task is currently running.
+      TASK_STATUS_SUCCESS: The task completed successfully.
+      TASK_STATUS_FAILED: The task failed.
+      TASK_STATUS_KILLED: The task was killed.
+      TASK_STATUS_PENDING: The task is pending execution.
+    """
+    TASK_STATUS_UNSPECIFIED = 0
+    TASK_STATUS_RUNNING = 1
+    TASK_STATUS_SUCCESS = 2
+    TASK_STATUS_FAILED = 3
+    TASK_STATUS_KILLED = 4
+    TASK_STATUS_PENDING = 5
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4)
+  sortRuntime = _messages.BooleanField(5)
+  stageAttemptId = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(7)
+  taskStatus = _messages.EnumField('TaskStatusValueValuesEnum', 8)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchStageAttemptsRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchStageAtte
+  mptsRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of stage attempts (paging based on
+      stage_attempt_id) to return in each response. The service may return
+      fewer than this. The default page size is 10; the maximum page size is
+      100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationStageAttempts call. Provide this token to retrieve
+      the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageId: Required. Stage ID for which attempts are to be fetched.
+    summaryMetricsMask: Optional. The list of summary metrics fields to
+      include. Empty list will default to skip all summary metrics fields.
+      Example, if the response should include TaskQuantileMetrics, the request
+      should have task_quantile_metrics in summary_metrics_mask field.
+  """
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4)
+  stageId = _messages.IntegerField(5)
+  summaryMetricsMask = _messages.StringField(6)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchStagesRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchStagesRequest
+  object.
+
+  Enums:
+    StageStatusValueValuesEnum: Optional. List only stages in the given state.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of stages (paging based on stage_id) to
+      return in each response. The service may return fewer than this. The
+      default page size is 10; the maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationStages call. Provide this token to retrieve the
+      subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageStatus: Optional. List only stages in the given state.
+    summaryMetricsMask: Optional. The list of summary metrics fields to
+      include. Empty list will default to skip all summary metrics fields.
+      Example, if the response should include TaskQuantileMetrics, the request
+      should have task_quantile_metrics in summary_metrics_mask field.
+  """
+
+  class StageStatusValueValuesEnum(_messages.Enum):
+    r"""Optional. List only stages in the given state.
+
+    Values:
+      STAGE_STATUS_UNSPECIFIED: The stage status is unspecified.
+      STAGE_STATUS_ACTIVE: The stage is currently active.
+      STAGE_STATUS_COMPLETE: The stage has completed.
+      STAGE_STATUS_FAILED: The stage has failed.
+      STAGE_STATUS_PENDING: The stage is pending execution.
+      STAGE_STATUS_SKIPPED: The stage was skipped.
+    """
+    STAGE_STATUS_UNSPECIFIED = 0
+    STAGE_STATUS_ACTIVE = 1
+    STAGE_STATUS_COMPLETE = 2
+    STAGE_STATUS_FAILED = 3
+    STAGE_STATUS_PENDING = 4
+    STAGE_STATUS_SKIPPED = 5
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4)
+  stageStatus = _messages.EnumField('StageStatusValueValuesEnum', 5)
+  summaryMetricsMask = _messages.StringField(6)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchStorageRddsRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSearchStorageRd
+  dsRequest object.
+
+  Fields:
+    includeDataDistribution: Optional. Whether to include data distribution in
+      the response, false by default.
+    includePartitions: Optional. Whether to include partition info in the
+      response, false by default.
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    pageSize: Optional. Maximum number of RDDs to return in each response. The
+      service may return fewer than this. The default page size is 10; the
+      maximum page size is 100.
+    pageToken: Optional. A page token received from a previous
+      SearchSparkApplicationStorageRdds call. Provide this token to retrieve
+      the subsequent page.
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  includeDataDistribution = _messages.BooleanField(1)
+  includePartitions = _messages.BooleanField(2)
+  name = _messages.StringField(3, required=True)
+  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(5)
+  parent = _messages.StringField(6)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSummarizeExecutorsRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSummarizeExecut
+  orsRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSummarizeJobsRequest(_messages.Message):
+  r"""A
+  DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSummarizeJobsRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSummarizeStageAttemptTasksRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSummarizeStageA
+  ttemptTasksRequest object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+    stageAttemptId: Required. Stage Attempt ID.
+    stageId: Required. Stage ID.
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+  stageAttemptId = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(4)
+
+
+class DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSummarizeStagesRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsWorkloadsRunsSparkApplicationsSummarizeStages
+  Request object.
+
+  Fields:
+    name: Required. The resource name of the Spark Application. Format: projec
+      ts/{project}/locations/{location}/runs/{run}/sparkApplications/{spark_ap
+      plication} or projects/{project}/locations/{location}/workloads/{workloa
+      d}/runs/{run}/sparkApplications/{spark_application}
+    parent: Required. Parent (Run) resource reference. Format:
+      projects/{project}/locations/{location}/runs/{run} or
+      projects/{project}/locations/{location}/workloads/{workload}/runs/{run}
+  """
+
+  name = _messages.StringField(1, required=True)
+  parent = _messages.StringField(2)
+
+
 class DataprocProjectsLocationsWorkloadsUndeleteRequest(_messages.Message):
   r"""A DataprocProjectsLocationsWorkloadsUndeleteRequest object.
 
@@ -755,6 +2829,308 @@ class EnvironmentStatus(_messages.Message):
   baseVersion = _messages.StringField(1)
 
 
+class ExecutorMetrics(_messages.Message):
+  r"""Metrics recorded for an executor.
+
+  Messages:
+    MetricsValue: Executor metrics keyed by metric name.
+
+  Fields:
+    metrics: Executor metrics keyed by metric name.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetricsValue(_messages.Message):
+    r"""Executor metrics keyed by metric name.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetricsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetricsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetricsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.IntegerField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  metrics = _messages.MessageField('MetricsValue', 1)
+
+
+class ExecutorMetricsDistributions(_messages.Message):
+  r"""Quantile distributions of executor metrics for a stage.
+
+  Fields:
+    diskBytesSpilled: Quantile distribution of disk bytes spilled.
+    failedTasks: Quantile distribution of failed tasks count.
+    inputBytes: Quantile distribution of input bytes read.
+    inputRecords: Quantile distribution of input records read.
+    killedTasks: Quantile distribution of killed tasks count.
+    memoryBytesSpilled: Quantile distribution of memory bytes spilled.
+    outputBytes: Quantile distribution of output bytes written.
+    outputRecords: Quantile distribution of output records written.
+    peakMemoryMetrics: Quantile distributions of peak executor memory metrics.
+    quantiles: The quantile probabilities corresponding to the distribution
+      values.
+    shuffleRead: Quantile distribution of shuffle bytes read.
+    shuffleReadRecords: Quantile distribution of shuffle records read.
+    shuffleWrite: Quantile distribution of shuffle bytes written.
+    shuffleWriteRecords: Quantile distribution of shuffle records written.
+    succeededTasks: Quantile distribution of succeeded tasks count.
+    taskTimeMillis: Quantile distribution of task time in milliseconds.
+  """
+
+  diskBytesSpilled = _messages.FloatField(1, repeated=True)
+  failedTasks = _messages.FloatField(2, repeated=True)
+  inputBytes = _messages.FloatField(3, repeated=True)
+  inputRecords = _messages.FloatField(4, repeated=True)
+  killedTasks = _messages.FloatField(5, repeated=True)
+  memoryBytesSpilled = _messages.FloatField(6, repeated=True)
+  outputBytes = _messages.FloatField(7, repeated=True)
+  outputRecords = _messages.FloatField(8, repeated=True)
+  peakMemoryMetrics = _messages.MessageField('ExecutorPeakMetricsDistributions', 9)
+  quantiles = _messages.FloatField(10, repeated=True)
+  shuffleRead = _messages.FloatField(11, repeated=True)
+  shuffleReadRecords = _messages.FloatField(12, repeated=True)
+  shuffleWrite = _messages.FloatField(13, repeated=True)
+  shuffleWriteRecords = _messages.FloatField(14, repeated=True)
+  succeededTasks = _messages.FloatField(15, repeated=True)
+  taskTimeMillis = _messages.FloatField(16, repeated=True)
+
+
+class ExecutorPeakMetricsDistributions(_messages.Message):
+  r"""Quantile distributions of peak executor memory metrics.
+
+  Fields:
+    executorMetrics: Executor metrics at each quantile.
+    quantiles: The quantile probabilities corresponding to the distribution
+      values.
+  """
+
+  executorMetrics = _messages.MessageField('ExecutorMetrics', 1, repeated=True)
+  quantiles = _messages.FloatField(2, repeated=True)
+
+
+class ExecutorResourceRequest(_messages.Message):
+  r"""Resources used per executor used by the application.
+
+  Fields:
+    amount: The amount of the resource requested.
+    discoveryScript: The script used to discover the resource.
+    resourceName: The name of the requested resource.
+    vendor: The vendor of the requested resource.
+  """
+
+  amount = _messages.IntegerField(1)
+  discoveryScript = _messages.StringField(2)
+  resourceName = _messages.StringField(3)
+  vendor = _messages.StringField(4)
+
+
+class ExecutorStageSummary(_messages.Message):
+  r"""Executor resources consumed by a stage.
+
+  Fields:
+    diskBytesSpilled: Disk bytes spilled on this executor for the stage.
+    executorId: The ID of the executor.
+    failedTasks: The number of failed tasks on this executor for the stage.
+    inputBytes: Total input bytes read on this executor for the stage.
+    inputRecords: Total input records read on this executor for the stage.
+    isExcludedForStage: Whether this executor is excluded for the stage.
+    killedTasks: The number of killed tasks on this executor for the stage.
+    memoryBytesSpilled: Memory bytes spilled on this executor for the stage.
+    outputBytes: Total output bytes written on this executor for the stage.
+    outputRecords: Total output records written on this executor for the
+      stage.
+    peakMemoryMetrics: Peak memory metrics for this executor during the stage.
+    shuffleRead: Total shuffle bytes read on this executor for the stage.
+    shuffleReadRecords: Total shuffle records read on this executor for the
+      stage.
+    shuffleWrite: Total shuffle bytes written on this executor for the stage.
+    shuffleWriteRecords: Total shuffle records written on this executor for
+      the stage.
+    stageAttemptId: The attempt ID of the stage.
+    stageId: The ID of the stage.
+    succeededTasks: The number of succeeded tasks on this executor for the
+      stage.
+    taskTimeMillis: Total task execution time in milliseconds on this executor
+      for the stage.
+  """
+
+  diskBytesSpilled = _messages.IntegerField(1)
+  executorId = _messages.StringField(2)
+  failedTasks = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  inputBytes = _messages.IntegerField(4)
+  inputRecords = _messages.IntegerField(5)
+  isExcludedForStage = _messages.BooleanField(6)
+  killedTasks = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  memoryBytesSpilled = _messages.IntegerField(8)
+  outputBytes = _messages.IntegerField(9)
+  outputRecords = _messages.IntegerField(10)
+  peakMemoryMetrics = _messages.MessageField('ExecutorMetrics', 11)
+  shuffleRead = _messages.IntegerField(12)
+  shuffleReadRecords = _messages.IntegerField(13)
+  shuffleWrite = _messages.IntegerField(14)
+  shuffleWriteRecords = _messages.IntegerField(15)
+  stageAttemptId = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(17)
+  succeededTasks = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  taskTimeMillis = _messages.IntegerField(19)
+
+
+class ExecutorSummary(_messages.Message):
+  r"""Details about executors used by the application.
+
+  Messages:
+    AttributesValue: Additional attributes associated with the executor.
+    ExecutorLogsValue: Executor log URLs keyed by log type.
+    ResourcesValue: Resources allocated to the executor.
+
+  Fields:
+    activeTasks: The number of currently active tasks on the executor.
+    addTime: The time when the executor was added.
+    attributes: Additional attributes associated with the executor.
+    completedTasks: The number of completed tasks on the executor.
+    diskUsed: The amount of disk space used by the executor in bytes.
+    excludedInStages: Stage IDs in which this executor is excluded.
+    executorId: The ID of the executor.
+    executorLogs: Executor log URLs keyed by log type.
+    failedTasks: The number of failed tasks on the executor.
+    hostPort: The host and port of the executor.
+    isActive: Whether the executor is currently active.
+    isExcluded: Whether the executor is excluded from task scheduling.
+    maxMemory: The maximum memory available to the executor in bytes.
+    maxTasks: The maximum number of concurrent tasks the executor can run.
+    memoryMetrics: Storage memory metrics for the executor.
+    memoryUsed: The amount of memory used by the executor in bytes.
+    peakMemoryMetrics: Peak memory metrics for the executor.
+    rddBlocks: The number of RDD blocks stored on the executor.
+    removeReason: The reason the executor was removed, if applicable.
+    removeTime: The time when the executor was removed, if applicable.
+    resourceProfileId: The resource profile ID associated with the executor.
+    resources: Resources allocated to the executor.
+    totalCores: The total number of cores available on the executor.
+    totalDurationMillis: The total task execution duration in milliseconds.
+    totalGcTimeMillis: The total JVM garbage collection time in milliseconds.
+    totalInputBytes: The total input bytes read by the executor.
+    totalShuffleRead: The total shuffle bytes read by the executor.
+    totalShuffleWrite: The total shuffle bytes written by the executor.
+    totalTasks: The total number of tasks executed on the executor.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AttributesValue(_messages.Message):
+    r"""Additional attributes associated with the executor.
+
+    Messages:
+      AdditionalProperty: An additional property for a AttributesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type AttributesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AttributesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExecutorLogsValue(_messages.Message):
+    r"""Executor log URLs keyed by log type.
+
+    Messages:
+      AdditionalProperty: An additional property for a ExecutorLogsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type ExecutorLogsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExecutorLogsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResourcesValue(_messages.Message):
+    r"""Resources allocated to the executor.
+
+    Messages:
+      AdditionalProperty: An additional property for a ResourcesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ResourcesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResourcesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ResourceInformation attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ResourceInformation', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  activeTasks = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  addTime = _messages.StringField(2)
+  attributes = _messages.MessageField('AttributesValue', 3)
+  completedTasks = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  diskUsed = _messages.IntegerField(5)
+  excludedInStages = _messages.IntegerField(6, repeated=True)
+  executorId = _messages.StringField(7)
+  executorLogs = _messages.MessageField('ExecutorLogsValue', 8)
+  failedTasks = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  hostPort = _messages.StringField(10)
+  isActive = _messages.BooleanField(11)
+  isExcluded = _messages.BooleanField(12)
+  maxMemory = _messages.IntegerField(13)
+  maxTasks = _messages.IntegerField(14, variant=_messages.Variant.INT32)
+  memoryMetrics = _messages.MessageField('MemoryMetrics', 15)
+  memoryUsed = _messages.IntegerField(16)
+  peakMemoryMetrics = _messages.MessageField('ExecutorMetrics', 17)
+  rddBlocks = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  removeReason = _messages.StringField(19)
+  removeTime = _messages.StringField(20)
+  resourceProfileId = _messages.IntegerField(21, variant=_messages.Variant.INT32)
+  resources = _messages.MessageField('ResourcesValue', 22)
+  totalCores = _messages.IntegerField(23, variant=_messages.Variant.INT32)
+  totalDurationMillis = _messages.IntegerField(24)
+  totalGcTimeMillis = _messages.IntegerField(25)
+  totalInputBytes = _messages.IntegerField(26)
+  totalShuffleRead = _messages.IntegerField(27)
+  totalShuffleWrite = _messages.IntegerField(28)
+  totalTasks = _messages.IntegerField(29, variant=_messages.Variant.INT32)
+
+
 class ExpungeWorkloadRequest(_messages.Message):
   r"""A request to expunge (permanently delete) a workload.
 
@@ -772,8 +3148,181 @@ class ExpungeWorkloadRequest(_messages.Message):
   requestId = _messages.StringField(2)
 
 
+class FallbackReason(_messages.Message):
+  r"""Native SQL Execution Data
+
+  Fields:
+    fallbackNode: Fallback node information.
+    fallbackReason: Fallback to Spark reason.
+  """
+
+  fallbackNode = _messages.StringField(1)
+  fallbackReason = _messages.StringField(2)
+
+
+class InputMetrics(_messages.Message):
+  r"""Metrics about the input data read by the task.
+
+  Fields:
+    bytesRead: Total input bytes read by the task.
+    recordsRead: Total input records read by the task.
+  """
+
+  bytesRead = _messages.IntegerField(1)
+  recordsRead = _messages.IntegerField(2)
+
+
+class InputQuantileMetrics(_messages.Message):
+  r"""Quantile metrics for task input data.
+
+  Fields:
+    bytesRead: Quantiles of input bytes read.
+    recordsRead: Quantiles of input records read.
+  """
+
+  bytesRead = _messages.MessageField('Quantiles', 1)
+  recordsRead = _messages.MessageField('Quantiles', 2)
+
+
+class JobData(_messages.Message):
+  r"""Data corresponding to a spark job.
+
+  Enums:
+    StatusValueValuesEnum: The execution status of the job.
+
+  Messages:
+    KillTasksSummaryValue: Summary of killed tasks by reason.
+
+  Fields:
+    completionTime: The time when the job completed.
+    description: The description of the Spark job.
+    jobGroup: The job group ID associated with the job.
+    jobId: The unique ID of the Spark job.
+    killTasksSummary: Summary of killed tasks by reason.
+    name: The name of the Spark job.
+    numActiveStages: The number of active stages in the job.
+    numActiveTasks: The number of active tasks in the job.
+    numCompletedIndices: The number of completed task indices in the job.
+    numCompletedStages: The number of completed stages in the job.
+    numCompletedTasks: The number of completed tasks in the job.
+    numFailedStages: The number of failed stages in the job.
+    numFailedTasks: The number of failed tasks in the job.
+    numKilledTasks: The number of killed tasks in the job.
+    numSkippedStages: The number of skipped stages in the job.
+    numSkippedTasks: The number of skipped tasks in the job.
+    numTasks: The total number of tasks in the job.
+    skippedStages: The IDs of skipped stages in the job.
+    sqlExecutionId: The SQL execution ID associated with the job, if any.
+    stageIds: The stage IDs associated with the job.
+    status: The execution status of the job.
+    submissionTime: The time when the job was submitted.
+  """
+
+  class StatusValueValuesEnum(_messages.Enum):
+    r"""The execution status of the job.
+
+    Values:
+      JOB_EXECUTION_STATUS_UNSPECIFIED: The job execution status is
+        unspecified.
+      JOB_EXECUTION_STATUS_RUNNING: The job is currently running.
+      JOB_EXECUTION_STATUS_SUCCEEDED: The job has succeeded.
+      JOB_EXECUTION_STATUS_FAILED: The job has failed.
+      JOB_EXECUTION_STATUS_UNKNOWN: The job execution status is unknown.
+    """
+    JOB_EXECUTION_STATUS_UNSPECIFIED = 0
+    JOB_EXECUTION_STATUS_RUNNING = 1
+    JOB_EXECUTION_STATUS_SUCCEEDED = 2
+    JOB_EXECUTION_STATUS_FAILED = 3
+    JOB_EXECUTION_STATUS_UNKNOWN = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class KillTasksSummaryValue(_messages.Message):
+    r"""Summary of killed tasks by reason.
+
+    Messages:
+      AdditionalProperty: An additional property for a KillTasksSummaryValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        KillTasksSummaryValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a KillTasksSummaryValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A integer attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  completionTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  jobGroup = _messages.StringField(3)
+  jobId = _messages.IntegerField(4)
+  killTasksSummary = _messages.MessageField('KillTasksSummaryValue', 5)
+  name = _messages.StringField(6)
+  numActiveStages = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  numActiveTasks = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  numCompletedIndices = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  numCompletedStages = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  numCompletedTasks = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  numFailedStages = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  numFailedTasks = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  numKilledTasks = _messages.IntegerField(14, variant=_messages.Variant.INT32)
+  numSkippedStages = _messages.IntegerField(15, variant=_messages.Variant.INT32)
+  numSkippedTasks = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+  numTasks = _messages.IntegerField(17, variant=_messages.Variant.INT32)
+  skippedStages = _messages.IntegerField(18, repeated=True, variant=_messages.Variant.INT32)
+  sqlExecutionId = _messages.IntegerField(19)
+  stageIds = _messages.IntegerField(20, repeated=True)
+  status = _messages.EnumField('StatusValueValuesEnum', 21)
+  submissionTime = _messages.StringField(22)
+
+
+class JobsSummary(_messages.Message):
+  r"""Data related to Jobs page summary
+
+  Fields:
+    activeJobs: Number of active jobs
+    applicationId: Spark Application Id
+    attempts: Attempts info
+    completedJobs: Number of completed jobs
+    failedJobs: Number of failed jobs
+    schedulingMode: Spark Scheduling mode
+  """
+
+  activeJobs = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  applicationId = _messages.StringField(2)
+  attempts = _messages.MessageField('ApplicationAttemptInfo', 3, repeated=True)
+  completedJobs = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  failedJobs = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  schedulingMode = _messages.StringField(6)
+
+
 class KubernetesPlacement(_messages.Message):
   r"""Configuration for executing a workload on a Kubernetes cluster.
+
+  Fields:
+    config: Optional. Inline runtime and pod configuration or overrides merged
+      on top of the execution target's default configuration.
+    executionTarget: Required. The resource name of the Kubernetes execution
+      target on which the workload runs. Format: projects/{project}/locations/
+      {location}/attachments/{attachment}/virtualClusters/{virtual_cluster}
+  """
+
+  config = _messages.MessageField('KubernetesRuntimeConfig', 1)
+  executionTarget = _messages.StringField(2)
+
+
+class KubernetesPlacementOverride(_messages.Message):
+  r"""Per-run placement override for executing a workload on a Kubernetes
+  cluster.
 
   Fields:
     executionTarget: Required. The resource name of the Kubernetes execution
@@ -782,6 +3331,77 @@ class KubernetesPlacement(_messages.Message):
   """
 
   executionTarget = _messages.StringField(1)
+
+
+class KubernetesPodConfig(_messages.Message):
+  r"""Pod-level placement configuration for GKE driver or executor pods.
+
+  Fields:
+    computeClass: Optional. GKE compute class name.
+    nodePoolId: Optional. GKE node pool ID within the GKE cluster associated
+      with the execution target.
+  """
+
+  computeClass = _messages.StringField(1)
+  nodePoolId = _messages.StringField(2)
+
+
+class KubernetesRuntimeConfig(_messages.Message):
+  r"""Unified runtime and pod execution configuration for GKE Spark execution.
+
+  Messages:
+    PropertiesValue: Optional. Spark and runtime properties to set for
+      execution.Property keys are specified in prefix:property format (for
+      example, spark:spark.* or dataproc:dataproc.*, such as
+      spark:spark.executor.instances -> 4).
+
+  Fields:
+    containerImage: Optional. Custom Artifact Registry container image for the
+      Kubernetes runtime environment (for example, us-west1-docker.pkg.dev/my-
+      project/my-repo/spark-custom:latest). If unspecified, defaults to the
+      container image configured on the execution target, or the default
+      container image associated with the resolved version.
+    driverConfig: Optional. Pod configuration for the Spark driver pod.
+    executorConfig: Optional. Pod configuration for Spark executor pods.
+    properties: Optional. Spark and runtime properties to set for
+      execution.Property keys are specified in prefix:property format (for
+      example, spark:spark.* or dataproc:dataproc.*, such as
+      spark:spark.executor.instances -> 4).
+    version: Optional. Managed Spark version (for example, "2.3"). If
+      unspecified, defaults to the version configured on the execution target.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PropertiesValue(_messages.Message):
+    r"""Optional. Spark and runtime properties to set for execution.Property
+    keys are specified in prefix:property format (for example, spark:spark.*
+    or dataproc:dataproc.*, such as spark:spark.executor.instances -> 4).
+
+    Messages:
+      AdditionalProperty: An additional property for a PropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  containerImage = _messages.StringField(1)
+  driverConfig = _messages.MessageField('KubernetesPodConfig', 2)
+  executorConfig = _messages.MessageField('KubernetesPodConfig', 3)
+  properties = _messages.MessageField('PropertiesValue', 4)
+  version = _messages.StringField(5)
 
 
 class ListEnvironmentRevisionsResponse(_messages.Message):
@@ -841,6 +3461,20 @@ class ListRunsResponse(_messages.Message):
   runs = _messages.MessageField('Run', 2, repeated=True)
 
 
+class ListServerlessRuntimeProfilesResponse(_messages.Message):
+  r"""A list of ServerlessRuntimeProfiles.
+
+  Fields:
+    nextPageToken: A token, which can be sent as page_token, to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    serverlessRuntimeProfiles: The serverless runtime profiles from the
+      specified collection.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  serverlessRuntimeProfiles = _messages.MessageField('ServerlessRuntimeProfile', 2, repeated=True)
+
+
 class ListWorkloadRunsResponse(_messages.Message):
   r"""A list of workload runs.
 
@@ -865,6 +3499,54 @@ class ListWorkloadsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   workloads = _messages.MessageField('Workload', 2, repeated=True)
+
+
+class MemoryMetrics(_messages.Message):
+  r"""On-heap and off-heap storage memory metrics.
+
+  Fields:
+    totalOffHeapStorageMemory: Total off-heap storage memory in bytes.
+    totalOnHeapStorageMemory: Total on-heap storage memory in bytes.
+    usedOffHeapStorageMemory: Used off-heap storage memory in bytes.
+    usedOnHeapStorageMemory: Used on-heap storage memory in bytes.
+  """
+
+  totalOffHeapStorageMemory = _messages.IntegerField(1)
+  totalOnHeapStorageMemory = _messages.IntegerField(2)
+  usedOffHeapStorageMemory = _messages.IntegerField(3)
+  usedOnHeapStorageMemory = _messages.IntegerField(4)
+
+
+class NativeBuildInfoUiData(_messages.Message):
+  r"""UI data for native execution engine build information.
+
+  Fields:
+    buildClass: Build class of Native.
+    buildInfo: Build related details.
+  """
+
+  buildClass = _messages.StringField(1)
+  buildInfo = _messages.MessageField('BuildInfo', 2, repeated=True)
+
+
+class NativeSqlExecutionUiData(_messages.Message):
+  r"""Native SQL Execution Data
+
+  Fields:
+    description: Description of the execution.
+    executionId: Execution ID of the Native SQL Execution.
+    fallbackDescription: Description of the fallback.
+    fallbackNodeToReason: Fallback node to reason.
+    numFallbackNodes: Number of nodes fallen back to Spark.
+    numNativeNodes: Number of nodes in Native.
+  """
+
+  description = _messages.StringField(1)
+  executionId = _messages.IntegerField(2)
+  fallbackDescription = _messages.StringField(3)
+  fallbackNodeToReason = _messages.MessageField('FallbackReason', 4, repeated=True)
+  numFallbackNodes = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  numNativeNodes = _messages.IntegerField(6, variant=_messages.Variant.INT32)
 
 
 class Operation(_messages.Message):
@@ -1001,6 +3683,30 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
+class OutputMetrics(_messages.Message):
+  r"""Metrics about the data written by the task.
+
+  Fields:
+    bytesWritten: Total output bytes written by the task.
+    recordsWritten: Total output records written by the task.
+  """
+
+  bytesWritten = _messages.IntegerField(1)
+  recordsWritten = _messages.IntegerField(2)
+
+
+class OutputQuantileMetrics(_messages.Message):
+  r"""Quantile metrics for task output data.
+
+  Fields:
+    bytesWritten: Quantiles of output bytes written.
+    recordsWritten: Quantiles of output records written.
+  """
+
+  bytesWritten = _messages.MessageField('Quantiles', 1)
+  recordsWritten = _messages.MessageField('Quantiles', 2)
+
+
 class PackageRepository(_messages.Message):
   r"""A remote package repository endpoint with optional authentication.
 
@@ -1039,6 +3745,18 @@ class PySparkNotebookPayload(_messages.Message):
   Messages:
     ParamsValue: Optional. Mapping of parameter names to values to pass to the
       notebook during execution.
+    PropertiesValue: Optional. Spark configuration properties (for example,
+      spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+      spark.sql.shuffle.partitions -> 400) that are universal across compute
+      targets. Placement-specific properties (such as spark.serverless.*,
+      spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+      placement's runtime configuration.Properties are merged key-by-key
+      across three tiers in order of increasing precedence: 1. Target resource
+      defaults (ServerlessRuntimeProfile, ExecutionTarget, or Cluster
+      properties). 2. Placement runtime configuration properties
+      (ServerlessRuntimeConfig, KubernetesRuntimeConfig, or
+      ComputeClusterRuntimeConfig). 3. Payload properties (highest
+      precedence).
 
   Fields:
     archiveUris: Optional. Cloud Storage URIs (gs://...) of archives to be
@@ -1052,6 +3770,18 @@ class PySparkNotebookPayload(_messages.Message):
       notebook file to execute. Must be an .ipynb file.
     params: Optional. Mapping of parameter names to values to pass to the
       notebook during execution.
+    properties: Optional. Spark configuration properties (for example,
+      spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+      spark.sql.shuffle.partitions -> 400) that are universal across compute
+      targets. Placement-specific properties (such as spark.serverless.*,
+      spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+      placement's runtime configuration.Properties are merged key-by-key
+      across three tiers in order of increasing precedence: 1. Target resource
+      defaults (ServerlessRuntimeProfile, ExecutionTarget, or Cluster
+      properties). 2. Placement runtime configuration properties
+      (ServerlessRuntimeConfig, KubernetesRuntimeConfig, or
+      ComputeClusterRuntimeConfig). 3. Payload properties (highest
+      precedence).
     pythonFileUris: Optional. Cloud Storage URIs (gs://...) of Python files to
       pass to the PySpark framework. Supported file types: .py, .egg, and
       .zip.
@@ -1082,16 +3812,65 @@ class PySparkNotebookPayload(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PropertiesValue(_messages.Message):
+    r"""Optional. Spark configuration properties (for example,
+    spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+    spark.sql.shuffle.partitions -> 400) that are universal across compute
+    targets. Placement-specific properties (such as spark.serverless.*,
+    spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+    placement's runtime configuration.Properties are merged key-by-key across
+    three tiers in order of increasing precedence: 1. Target resource defaults
+    (ServerlessRuntimeProfile, ExecutionTarget, or Cluster properties). 2.
+    Placement runtime configuration properties (ServerlessRuntimeConfig,
+    KubernetesRuntimeConfig, or ComputeClusterRuntimeConfig). 3. Payload
+    properties (highest precedence).
+
+    Messages:
+      AdditionalProperty: An additional property for a PropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   archiveUris = _messages.StringField(1, repeated=True)
   fileUris = _messages.StringField(2, repeated=True)
   jarFileUris = _messages.StringField(3, repeated=True)
   notebookFileUri = _messages.StringField(4)
   params = _messages.MessageField('ParamsValue', 5)
-  pythonFileUris = _messages.StringField(6, repeated=True)
+  properties = _messages.MessageField('PropertiesValue', 6)
+  pythonFileUris = _messages.StringField(7, repeated=True)
 
 
 class PySparkPayload(_messages.Message):
   r"""A configuration for running an Apache PySpark workload.
+
+  Messages:
+    PropertiesValue: Optional. Spark configuration properties (for example,
+      spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+      spark.sql.shuffle.partitions -> 400) that are universal across compute
+      targets. Placement-specific properties (such as spark.serverless.*,
+      spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+      placement's runtime configuration.Properties are merged key-by-key
+      across three tiers in order of increasing precedence: 1. Target resource
+      defaults (ServerlessRuntimeProfile, ExecutionTarget, or Cluster
+      properties). 2. Placement runtime configuration properties
+      (ServerlessRuntimeConfig, KubernetesRuntimeConfig, or
+      ComputeClusterRuntimeConfig). 3. Payload properties (highest
+      precedence).
 
   Fields:
     archiveUris: Optional. Cloud Storage URIs (gs://...) of archives to be
@@ -1106,17 +3885,64 @@ class PySparkPayload(_messages.Message):
       to the classpath of the Spark driver and tasks.
     mainPythonFileUri: Required. The Cloud Storage URI (gs://...) of the main
       Python file to use as the Spark driver. Must be a .py file.
+    properties: Optional. Spark configuration properties (for example,
+      spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+      spark.sql.shuffle.partitions -> 400) that are universal across compute
+      targets. Placement-specific properties (such as spark.serverless.*,
+      spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+      placement's runtime configuration.Properties are merged key-by-key
+      across three tiers in order of increasing precedence: 1. Target resource
+      defaults (ServerlessRuntimeProfile, ExecutionTarget, or Cluster
+      properties). 2. Placement runtime configuration properties
+      (ServerlessRuntimeConfig, KubernetesRuntimeConfig, or
+      ComputeClusterRuntimeConfig). 3. Payload properties (highest
+      precedence).
     pythonFileUris: Optional. Cloud Storage URIs (gs://...) of Python files to
       pass to the PySpark framework. Supported file types: .py, .egg, and
       .zip.
   """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PropertiesValue(_messages.Message):
+    r"""Optional. Spark configuration properties (for example,
+    spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+    spark.sql.shuffle.partitions -> 400) that are universal across compute
+    targets. Placement-specific properties (such as spark.serverless.*,
+    spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+    placement's runtime configuration.Properties are merged key-by-key across
+    three tiers in order of increasing precedence: 1. Target resource defaults
+    (ServerlessRuntimeProfile, ExecutionTarget, or Cluster properties). 2.
+    Placement runtime configuration properties (ServerlessRuntimeConfig,
+    KubernetesRuntimeConfig, or ComputeClusterRuntimeConfig). 3. Payload
+    properties (highest precedence).
+
+    Messages:
+      AdditionalProperty: An additional property for a PropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   archiveUris = _messages.StringField(1, repeated=True)
   args = _messages.StringField(2, repeated=True)
   fileUris = _messages.StringField(3, repeated=True)
   jarFileUris = _messages.StringField(4, repeated=True)
   mainPythonFileUri = _messages.StringField(5)
-  pythonFileUris = _messages.StringField(6, repeated=True)
+  properties = _messages.MessageField('PropertiesValue', 6)
+  pythonFileUris = _messages.StringField(7, repeated=True)
 
 
 class PythonPackagesConfig(_messages.Message):
@@ -1134,6 +3960,267 @@ class PythonPackagesConfig(_messages.Message):
 
   packages = _messages.StringField(1, repeated=True)
   repository = _messages.MessageField('PackageRepository', 2)
+
+
+class Quantiles(_messages.Message):
+  r"""Quantile metrics data related to Tasks. Units can be seconds, bytes,
+  milliseconds, etc depending on the message type.
+
+  Fields:
+    count: Total count of tasks included in the quantile summary.
+    maximum: Maximum value of the metric across tasks.
+    minimum: Minimum value of the metric across tasks.
+    percentile25: 25th percentile value of the metric.
+    percentile50: 50th percentile (median) value of the metric.
+    percentile75: 75th percentile value of the metric.
+    sum: Sum of the metric across all tasks.
+  """
+
+  count = _messages.IntegerField(1)
+  maximum = _messages.IntegerField(2)
+  minimum = _messages.IntegerField(3)
+  percentile25 = _messages.IntegerField(4)
+  percentile50 = _messages.IntegerField(5)
+  percentile75 = _messages.IntegerField(6)
+  sum = _messages.IntegerField(7)
+
+
+class RddDataDistribution(_messages.Message):
+  r"""Details about RDD usage.
+
+  Fields:
+    address: The network address of the executor holding the RDD data.
+    diskUsed: Disk space used by the RDD on this executor in bytes.
+    memoryRemaining: Memory remaining on this executor in bytes.
+    memoryUsed: Memory used by the RDD on this executor in bytes.
+    offHeapMemoryRemaining: Off-heap memory remaining in bytes.
+    offHeapMemoryUsed: Off-heap memory used by the RDD in bytes.
+    onHeapMemoryRemaining: On-heap memory remaining in bytes.
+    onHeapMemoryUsed: On-heap memory used by the RDD in bytes.
+  """
+
+  address = _messages.StringField(1)
+  diskUsed = _messages.IntegerField(2)
+  memoryRemaining = _messages.IntegerField(3)
+  memoryUsed = _messages.IntegerField(4)
+  offHeapMemoryRemaining = _messages.IntegerField(5)
+  offHeapMemoryUsed = _messages.IntegerField(6)
+  onHeapMemoryRemaining = _messages.IntegerField(7)
+  onHeapMemoryUsed = _messages.IntegerField(8)
+
+
+class RddOperationCluster(_messages.Message):
+  r"""A grouping of nodes representing higher level constructs (stage, job
+  etc.).
+
+  Fields:
+    childClusters: Nested child clusters within this cluster.
+    childNodes: Child RDD operation nodes within this cluster.
+    name: The name of the RDD operation cluster.
+    rddClusterId: The ID of the RDD operation cluster.
+  """
+
+  childClusters = _messages.MessageField('RddOperationCluster', 1, repeated=True)
+  childNodes = _messages.MessageField('RddOperationNode', 2, repeated=True)
+  name = _messages.StringField(3)
+  rddClusterId = _messages.StringField(4)
+
+
+class RddOperationEdge(_messages.Message):
+  r"""A directed edge representing dependency between two RDDs.
+
+  Fields:
+    fromId: The source RDD node ID.
+    toId: The destination RDD node ID.
+  """
+
+  fromId = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  toId = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class RddOperationGraph(_messages.Message):
+  r"""Graph representing RDD dependencies. Consists of edges and a root
+  cluster.
+
+  Fields:
+    edges: Internal dependency edges within the graph.
+    incomingEdges: Incoming dependency edges into the stage.
+    outgoingEdges: Outgoing dependency edges from the stage.
+    rootCluster: The root cluster of the RDD operation graph.
+    stageId: The ID of the stage represented by the graph.
+  """
+
+  edges = _messages.MessageField('RddOperationEdge', 1, repeated=True)
+  incomingEdges = _messages.MessageField('RddOperationEdge', 2, repeated=True)
+  outgoingEdges = _messages.MessageField('RddOperationEdge', 3, repeated=True)
+  rootCluster = _messages.MessageField('RddOperationCluster', 4)
+  stageId = _messages.IntegerField(5)
+
+
+class RddOperationNode(_messages.Message):
+  r"""A node in the RDD operation graph. Corresponds to a single RDD.
+
+  Enums:
+    OutputDeterministicLevelValueValuesEnum: The output deterministic level of
+      the RDD.
+
+  Fields:
+    barrier: Whether the RDD is part of a barrier stage.
+    cached: Whether the RDD is cached.
+    callsite: The callsite where the RDD was created.
+    name: The name of the RDD operation node.
+    nodeId: The ID of the RDD operation node.
+    outputDeterministicLevel: The output deterministic level of the RDD.
+  """
+
+  class OutputDeterministicLevelValueValuesEnum(_messages.Enum):
+    r"""The output deterministic level of the RDD.
+
+    Values:
+      DETERMINISTIC_LEVEL_UNSPECIFIED: The deterministic level is unspecified.
+      DETERMINISTIC_LEVEL_DETERMINATE: The RDD output is deterministic and
+        ordered.
+      DETERMINISTIC_LEVEL_UNORDERED: The RDD output is deterministic but
+        unordered.
+      DETERMINISTIC_LEVEL_INDETERMINATE: The RDD output is indeterminate.
+    """
+    DETERMINISTIC_LEVEL_UNSPECIFIED = 0
+    DETERMINISTIC_LEVEL_DETERMINATE = 1
+    DETERMINISTIC_LEVEL_UNORDERED = 2
+    DETERMINISTIC_LEVEL_INDETERMINATE = 3
+
+  barrier = _messages.BooleanField(1)
+  cached = _messages.BooleanField(2)
+  callsite = _messages.StringField(3)
+  name = _messages.StringField(4)
+  nodeId = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  outputDeterministicLevel = _messages.EnumField('OutputDeterministicLevelValueValuesEnum', 6)
+
+
+class RddPartitionInfo(_messages.Message):
+  r"""Information about RDD partitions.
+
+  Fields:
+    blockName: The name of the RDD partition block.
+    diskUsed: Disk space used by the partition in bytes.
+    executors: The IDs of executors storing this partition.
+    memoryUsed: Memory used by the partition in bytes.
+    storageLevel: The storage level of the partition.
+  """
+
+  blockName = _messages.StringField(1)
+  diskUsed = _messages.IntegerField(2)
+  executors = _messages.StringField(3, repeated=True)
+  memoryUsed = _messages.IntegerField(4)
+  storageLevel = _messages.StringField(5)
+
+
+class RddStorageInfo(_messages.Message):
+  r"""Overall data about RDD storage.
+
+  Fields:
+    dataDistribution: Data distribution of the RDD across executors.
+    diskUsed: Total disk space used by the RDD in bytes.
+    memoryUsed: Total memory used by the RDD in bytes.
+    name: The name of the RDD.
+    numCachedPartitions: The number of cached partitions in the RDD.
+    numPartitions: The total number of partitions in the RDD.
+    partitions: Information about individual partitions of the RDD.
+    rddStorageId: The ID of the stored RDD.
+    storageLevel: The storage level of the RDD.
+  """
+
+  dataDistribution = _messages.MessageField('RddDataDistribution', 1, repeated=True)
+  diskUsed = _messages.IntegerField(2)
+  memoryUsed = _messages.IntegerField(3)
+  name = _messages.StringField(4)
+  numCachedPartitions = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  numPartitions = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  partitions = _messages.MessageField('RddPartitionInfo', 7, repeated=True)
+  rddStorageId = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  storageLevel = _messages.StringField(9)
+
+
+class ResourceInformation(_messages.Message):
+  r"""Information about a resource allocated to an executor.
+
+  Fields:
+    addresses: The addresses assigned to the resource.
+    name: The name of the resource.
+  """
+
+  addresses = _messages.StringField(1, repeated=True)
+  name = _messages.StringField(2)
+
+
+class ResourceProfileInfo(_messages.Message):
+  r"""Resource profile that contains information about all the resources
+  required by executors and tasks.
+
+  Messages:
+    ExecutorResourcesValue: The resources required per executor.
+    TaskResourcesValue: The resources required per task.
+
+  Fields:
+    executorResources: The resources required per executor.
+    resourceProfileId: The ID of the resource profile.
+    taskResources: The resources required per task.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExecutorResourcesValue(_messages.Message):
+    r"""The resources required per executor.
+
+    Messages:
+      AdditionalProperty: An additional property for a ExecutorResourcesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ExecutorResourcesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExecutorResourcesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ExecutorResourceRequest attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ExecutorResourceRequest', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TaskResourcesValue(_messages.Message):
+    r"""The resources required per task.
+
+    Messages:
+      AdditionalProperty: An additional property for a TaskResourcesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type TaskResourcesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TaskResourcesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A TaskResourceRequest attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('TaskResourceRequest', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  executorResources = _messages.MessageField('ExecutorResourcesValue', 1)
+  resourceProfileId = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  taskResources = _messages.MessageField('TaskResourcesValue', 3)
 
 
 class Run(_messages.Message):
@@ -1273,6 +4360,9 @@ class RunStatus(_messages.Message):
       (merging WorkloadConfig.parameter_declarations defaults with invocation
       RunWorkloadRequest.named_parameters, including any undeclared
       parameters).
+    stateMessages: Output only. Diagnostic messages associated with the
+      current state of the run, such as error details when state is FAILED or
+      runtime warnings.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1304,6 +4394,7 @@ class RunStatus(_messages.Message):
 
   args = _messages.StringField(1, repeated=True)
   namedParameters = _messages.MessageField('NamedParametersValue', 2)
+  stateMessages = _messages.MessageField('StateMessage', 3, repeated=True)
 
 
 class RunWorkloadRequest(_messages.Message):
@@ -1328,6 +4419,9 @@ class RunWorkloadRequest(_messages.Message):
       run.Applicable only to pyspark and spark_jar workloads. args must be
       empty when clear_args is set to true; specifying both non-empty args and
       clear_args = true returns 400 INVALID_ARGUMENT.
+    computeCluster: Optional. Executes on an existing Compute Engine Dataproc
+      cluster.
+    kubernetes: Optional. Executes on a Kubernetes cluster.
     namedParameters: Optional. Runtime named key-value parameters passed to
       the workload execution.Merged on top of
       WorkloadConfig.parameter_declarations default values. Both declared and
@@ -1336,6 +4430,7 @@ class RunWorkloadRequest(_messages.Message):
     requestId: Optional. A unique ID used to identify the request. Restricted
       to 36 ASCII characters. A random UUID is recommended. This request is
       only idempotent if a request_id is provided.
+    serverless: Optional. Executes on Dataproc Serverless (ephemeral per-run).
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1369,8 +4464,157 @@ class RunWorkloadRequest(_messages.Message):
 
   args = _messages.StringField(1, repeated=True)
   clearArgs = _messages.BooleanField(2)
-  namedParameters = _messages.MessageField('NamedParametersValue', 3)
-  requestId = _messages.StringField(4)
+  computeCluster = _messages.MessageField('ComputeClusterPlacementOverride', 3)
+  kubernetes = _messages.MessageField('KubernetesPlacementOverride', 4)
+  namedParameters = _messages.MessageField('NamedParametersValue', 5)
+  requestId = _messages.StringField(6)
+  serverless = _messages.MessageField('ServerlessPlacementOverride', 7)
+
+
+class SearchSparkApplicationExecutorStageSummaryResponse(_messages.Message):
+  r"""List of Executors associated with a Spark Application Stage.
+
+  Fields:
+    nextPageToken: This token is included in the response if there are more
+      results to fetch. To fetch additional results, provide this value as the
+      page_token in a subsequent
+      SearchSparkApplicationExecutorStageSummaryRequest.
+    sparkApplicationStageExecutors: Details about executors used by the
+      application stage.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sparkApplicationStageExecutors = _messages.MessageField('ExecutorStageSummary', 2, repeated=True)
+
+
+class SearchSparkApplicationExecutorsResponse(_messages.Message):
+  r"""List of Executors associated with a Spark Application.
+
+  Fields:
+    nextPageToken: This token is included in the response if there are more
+      results to fetch. To fetch additional results, provide this value as the
+      page_token in a subsequent SearchSparkApplicationExecutorsRequest.
+    sparkApplicationExecutors: Details about executors used by the
+      application.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sparkApplicationExecutors = _messages.MessageField('ExecutorSummary', 2, repeated=True)
+
+
+class SearchSparkApplicationJobsResponse(_messages.Message):
+  r"""A list of Jobs associated with a Spark Application.
+
+  Fields:
+    nextPageToken: This token is included in the response if there are more
+      results to fetch. To fetch additional results, provide this value as the
+      page_token in a subsequent SearchSparkApplicationJobsRequest.
+    sparkApplicationJobs: Data corresponding to a spark job.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sparkApplicationJobs = _messages.MessageField('JobData', 2, repeated=True)
+
+
+class SearchSparkApplicationNativeSqlQueriesResponse(_messages.Message):
+  r"""List of all Native SQL queries details for a Spark Application.
+
+  Fields:
+    nextPageToken: This token is included in the response if there are more
+      results to fetch. To fetch additional results, provide this value as the
+      page_token in a subsequent
+      SearchSparkApplicationNativeSqlQueriesRequest.
+    sparkApplicationNativeSqlQueries: Native SQL Execution Data.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sparkApplicationNativeSqlQueries = _messages.MessageField('NativeSqlExecutionUiData', 2, repeated=True)
+
+
+class SearchSparkApplicationSqlQueriesResponse(_messages.Message):
+  r"""List of all queries for a Spark Application.
+
+  Fields:
+    nextPageToken: This token is included in the response if there are more
+      results to fetch. To fetch additional results, provide this value as the
+      page_token in a subsequent SearchSparkApplicationSqlQueriesRequest.
+    sparkApplicationSqlQueries: SQL Execution Data.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sparkApplicationSqlQueries = _messages.MessageField('SqlExecutionUiData', 2, repeated=True)
+
+
+class SearchSparkApplicationStageAttemptTasksResponse(_messages.Message):
+  r"""List of tasks for a stage of a Spark Application.
+
+  Fields:
+    nextPageToken: This token is included in the response if there are more
+      results to fetch. To fetch additional results, provide this value as the
+      page_token in a subsequent
+      SearchSparkApplicationStageAttemptTasksRequest.
+    sparkApplicationStageAttemptTasks: Data corresponding to tasks created by
+      spark.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sparkApplicationStageAttemptTasks = _messages.MessageField('TaskData', 2, repeated=True)
+
+
+class SearchSparkApplicationStageAttemptsResponse(_messages.Message):
+  r"""A list of Stage Attempts for a Stage of a Spark Application.
+
+  Fields:
+    nextPageToken: This token is included in the response if there are more
+      results to fetch. To fetch additional results, provide this value as the
+      page_token in a subsequent SearchSparkApplicationStageAttemptsRequest.
+    sparkApplicationStageAttempts: Data corresponding to a stage attempts.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sparkApplicationStageAttempts = _messages.MessageField('StageData', 2, repeated=True)
+
+
+class SearchSparkApplicationStagesResponse(_messages.Message):
+  r"""A list of stages associated with a Spark Application.
+
+  Fields:
+    nextPageToken: This token is included in the response if there are more
+      results to fetch. To fetch additional results, provide this value as the
+      page_token in a subsequent SearchSparkApplicationStagesRequest.
+    sparkApplicationStages: Data corresponding to a stage.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sparkApplicationStages = _messages.MessageField('StageData', 2, repeated=True)
+
+
+class SearchSparkApplicationStorageRddsResponse(_messages.Message):
+  r"""List of RDD storage details for a Spark Application.
+
+  Fields:
+    nextPageToken: This token is included in the response if there are more
+      results to fetch. To fetch additional results, provide this value as the
+      page_token in a subsequent SearchSparkApplicationStorageRddsRequest.
+    rddStorageInfos: List of RDD storage details for a Spark Application.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  rddStorageInfos = _messages.MessageField('RddStorageInfo', 2, repeated=True)
+
+
+class SearchSparkApplicationsResponse(_messages.Message):
+  r"""A list of summary of Spark Applications.
+
+  Fields:
+    nextPageToken: This token is included in the response if there are more
+      results to fetch. To fetch additional results, provide this value as the
+      page_token in a subsequent SearchSparkApplicationsRequest.
+    sparkApplications: High level information corresponding to an application.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sparkApplications = _messages.MessageField('SparkApplication', 2, repeated=True)
 
 
 class ServerlessPlacement(_messages.Message):
@@ -1394,6 +4638,20 @@ class ServerlessPlacement(_messages.Message):
 
   config = _messages.MessageField('ServerlessRuntimeConfig', 1)
   serverlessRuntimeProfile = _messages.StringField(2)
+
+
+class ServerlessPlacementOverride(_messages.Message):
+  r"""Per-run placement override for executing a workload on Dataproc
+  Serverless.
+
+  Fields:
+    serverlessRuntimeProfile: Optional. Reference to a curated
+      ServerlessRuntimeProfile resource. If omitted, executes on Dataproc
+      Serverless without a profile reference. Format: projects/{project}/locat
+      ions/{location}/serverlessRuntimeProfiles/{serverless_runtime_profile}
+  """
+
+  serverlessRuntimeProfile = _messages.StringField(1)
 
 
 class ServerlessRuntimeConfig(_messages.Message):
@@ -1466,8 +4724,294 @@ class ServerlessRuntimeConfig(_messages.Message):
   version = _messages.StringField(9)
 
 
+class ServerlessRuntimeProfile(_messages.Message):
+  r"""A ServerlessRuntimeProfile is a reusable software and runtime blueprint
+  that defines the compute and infrastructure configuration settings dedicated
+  exclusively to Dataproc Serverless compute.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current lifecycle state of the
+      serverless runtime profile.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels for categorization.
+    TagsValue: Optional. Resource Manager tags. Keys and values can be either
+      in numeric format (tagKeys/{tag_key_id} -> tagValues/{tag_value_id}) or
+      in namespaced format ({org_id|project_id}/{tag_key_short_name} ->
+      {tag_value_short_name}).
+
+  Fields:
+    config: Required. The Serverless compute and infrastructure configuration
+      settings.
+    createTime: Output only. Creation timestamp.
+    description: Optional. Description of the serverless runtime profile.
+    displayName: Optional. Human-readable display name for the serverless
+      runtime profile.
+    etag: Etag for optimistic concurrency control.
+    labels: Optional. User-defined labels for categorization.
+    name: Identifier. The resource name of the serverless runtime profile.
+      Format: projects/{project}/locations/{location}/serverlessRuntimeProfile
+      s/{serverless_runtime_profile}
+    state: Output only. The current lifecycle state of the serverless runtime
+      profile.
+    tags: Optional. Resource Manager tags. Keys and values can be either in
+      numeric format (tagKeys/{tag_key_id} -> tagValues/{tag_value_id}) or in
+      namespaced format ({org_id|project_id}/{tag_key_short_name} ->
+      {tag_value_short_name}).
+    uid: Output only. Globally unique system identifier (CCFE UID).
+    updateTime: Output only. Last modification timestamp.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current lifecycle state of the serverless runtime
+    profile.
+
+    Values:
+      STATE_UNSPECIFIED: The profile state is unknown.
+      ACTIVE: The profile is active and ready to be used.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels for categorization.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Resource Manager tags. Keys and values can be either in
+    numeric format (tagKeys/{tag_key_id} -> tagValues/{tag_value_id}) or in
+    namespaced format ({org_id|project_id}/{tag_key_short_name} ->
+    {tag_value_short_name}).
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  config = _messages.MessageField('ServerlessRuntimeConfig', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  etag = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  tags = _messages.MessageField('TagsValue', 9)
+  uid = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
+
+
+class ShufflePushReadMetrics(_messages.Message):
+  r"""Push-based shuffle read metrics for a task.
+
+  Fields:
+    corruptMergedBlockChunks: Number of corrupt merged shuffle block chunks
+      encountered.
+    localMergedBlocksFetched: Number of local merged shuffle blocks fetched.
+    localMergedBytesRead: Total local merged shuffle bytes read.
+    localMergedChunksFetched: Number of local merged shuffle chunks fetched.
+    mergedFetchFallbackCount: Number of times merged shuffle fetch fell back
+      to regular fetch.
+    remoteMergedBlocksFetched: Number of remote merged shuffle blocks fetched.
+    remoteMergedBytesRead: Total remote merged shuffle bytes read.
+    remoteMergedChunksFetched: Number of remote merged shuffle chunks fetched.
+    remoteMergedReqsDuration: Duration of remote merged shuffle fetch
+      requests. TIME_OK=Matches Apache Spark and v1/spark_common.proto
+  """
+
+  corruptMergedBlockChunks = _messages.IntegerField(1)
+  localMergedBlocksFetched = _messages.IntegerField(2)
+  localMergedBytesRead = _messages.IntegerField(3)
+  localMergedChunksFetched = _messages.IntegerField(4)
+  mergedFetchFallbackCount = _messages.IntegerField(5)
+  remoteMergedBlocksFetched = _messages.IntegerField(6)
+  remoteMergedBytesRead = _messages.IntegerField(7)
+  remoteMergedChunksFetched = _messages.IntegerField(8)
+  remoteMergedReqsDuration = _messages.IntegerField(9)
+
+
+class ShufflePushReadQuantileMetrics(_messages.Message):
+  r"""Quantile metrics for push-based shuffle read data.
+
+  Fields:
+    corruptMergedBlockChunks: Quantiles of corrupt merged shuffle block
+      chunks.
+    localMergedBlocksFetched: Quantiles of local merged shuffle blocks
+      fetched.
+    localMergedBytesRead: Quantiles of local merged shuffle bytes read.
+    localMergedChunksFetched: Quantiles of local merged shuffle chunks
+      fetched.
+    mergedFetchFallbackCount: Quantiles of merged fetch fallback count.
+    remoteMergedBlocksFetched: Quantiles of remote merged shuffle blocks
+      fetched.
+    remoteMergedBytesRead: Quantiles of remote merged shuffle bytes read.
+    remoteMergedChunksFetched: Quantiles of remote merged shuffle chunks
+      fetched.
+    remoteMergedReqsDuration: Quantiles of remote merged shuffle request
+      duration.
+  """
+
+  corruptMergedBlockChunks = _messages.MessageField('Quantiles', 1)
+  localMergedBlocksFetched = _messages.MessageField('Quantiles', 2)
+  localMergedBytesRead = _messages.MessageField('Quantiles', 3)
+  localMergedChunksFetched = _messages.MessageField('Quantiles', 4)
+  mergedFetchFallbackCount = _messages.MessageField('Quantiles', 5)
+  remoteMergedBlocksFetched = _messages.MessageField('Quantiles', 6)
+  remoteMergedBytesRead = _messages.MessageField('Quantiles', 7)
+  remoteMergedChunksFetched = _messages.MessageField('Quantiles', 8)
+  remoteMergedReqsDuration = _messages.MessageField('Quantiles', 9)
+
+
+class ShuffleReadMetrics(_messages.Message):
+  r"""Shuffle data read by the task.
+
+  Fields:
+    fetchWaitTimeMillis: Time spent waiting to fetch shuffle blocks in
+      milliseconds.
+    localBlocksFetched: Number of local shuffle blocks fetched by the task.
+    localBytesRead: Total local shuffle bytes read by the task.
+    recordsRead: Total shuffle records read by the task.
+    remoteBlocksFetched: Number of remote shuffle blocks fetched by the task.
+    remoteBytesRead: Total remote shuffle bytes read by the task.
+    remoteBytesReadToDisk: Total remote shuffle bytes read to disk by the
+      task.
+    remoteReqsDuration: Duration of remote shuffle fetch requests for the
+      task. TIME_OK=Matches Apache Spark and v1/spark_common.proto
+    shufflePushReadMetrics: Push-based shuffle read metrics for the task.
+  """
+
+  fetchWaitTimeMillis = _messages.IntegerField(1)
+  localBlocksFetched = _messages.IntegerField(2)
+  localBytesRead = _messages.IntegerField(3)
+  recordsRead = _messages.IntegerField(4)
+  remoteBlocksFetched = _messages.IntegerField(5)
+  remoteBytesRead = _messages.IntegerField(6)
+  remoteBytesReadToDisk = _messages.IntegerField(7)
+  remoteReqsDuration = _messages.IntegerField(8)
+  shufflePushReadMetrics = _messages.MessageField('ShufflePushReadMetrics', 9)
+
+
+class ShuffleReadQuantileMetrics(_messages.Message):
+  r"""Quantile metrics for task shuffle read data.
+
+  Fields:
+    fetchWaitTimeMillis: Quantiles of shuffle fetch wait time in milliseconds.
+    localBlocksFetched: Quantiles of local shuffle blocks fetched.
+    readBytes: Quantiles of total shuffle bytes read.
+    readRecords: Quantiles of total shuffle records read.
+    remoteBlocksFetched: Quantiles of remote shuffle blocks fetched.
+    remoteBytesRead: Quantiles of remote shuffle bytes read.
+    remoteBytesReadToDisk: Quantiles of remote shuffle bytes read to disk.
+    remoteReqsDuration: Quantiles of remote shuffle request duration.
+    shufflePushReadMetrics: Quantile metrics for push-based shuffle read.
+    totalBlocksFetched: Quantiles of total shuffle blocks fetched.
+  """
+
+  fetchWaitTimeMillis = _messages.MessageField('Quantiles', 1)
+  localBlocksFetched = _messages.MessageField('Quantiles', 2)
+  readBytes = _messages.MessageField('Quantiles', 3)
+  readRecords = _messages.MessageField('Quantiles', 4)
+  remoteBlocksFetched = _messages.MessageField('Quantiles', 5)
+  remoteBytesRead = _messages.MessageField('Quantiles', 6)
+  remoteBytesReadToDisk = _messages.MessageField('Quantiles', 7)
+  remoteReqsDuration = _messages.MessageField('Quantiles', 8)
+  shufflePushReadMetrics = _messages.MessageField('ShufflePushReadQuantileMetrics', 9)
+  totalBlocksFetched = _messages.MessageField('Quantiles', 10)
+
+
+class ShuffleWriteMetrics(_messages.Message):
+  r"""Shuffle data written by task.
+
+  Fields:
+    bytesWritten: Total shuffle bytes written by the task.
+    recordsWritten: Total shuffle records written by the task.
+    writeTimeNanos: Time spent writing shuffle data in nanoseconds.
+  """
+
+  bytesWritten = _messages.IntegerField(1)
+  recordsWritten = _messages.IntegerField(2)
+  writeTimeNanos = _messages.IntegerField(3)
+
+
+class ShuffleWriteQuantileMetrics(_messages.Message):
+  r"""Quantile metrics for task shuffle write data.
+
+  Fields:
+    writeBytes: Quantiles of shuffle bytes written.
+    writeRecords: Quantiles of shuffle records written.
+    writeTimeNanos: Quantiles of shuffle write time in nanoseconds.
+  """
+
+  writeBytes = _messages.MessageField('Quantiles', 1)
+  writeRecords = _messages.MessageField('Quantiles', 2)
+  writeTimeNanos = _messages.MessageField('Quantiles', 3)
+
+
+class SparkApplication(_messages.Message):
+  r"""A summary of Spark Application
+
+  Fields:
+    application: Output only. High level information corresponding to an
+      application.
+    name: Identifier. Name of the spark application
+  """
+
+  application = _messages.MessageField('ApplicationInfo', 1)
+  name = _messages.StringField(2)
+
+
 class SparkJarPayload(_messages.Message):
   r"""A configuration for running an Apache Spark JAR workload.
+
+  Messages:
+    PropertiesValue: Optional. Spark configuration properties (for example,
+      spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+      spark.sql.shuffle.partitions -> 400) that are universal across compute
+      targets. Placement-specific properties (such as spark.serverless.*,
+      spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+      placement's runtime configuration.Properties are merged key-by-key
+      across three tiers in order of increasing precedence: 1. Target resource
+      defaults (ServerlessRuntimeProfile, ExecutionTarget, or Cluster
+      properties). 2. Placement runtime configuration properties
+      (ServerlessRuntimeConfig, KubernetesRuntimeConfig, or
+      ComputeClusterRuntimeConfig). 3. Payload properties (highest
+      precedence).
 
   Fields:
     archiveUris: Optional. Cloud Storage URIs (gs://...) of archives to be
@@ -1485,7 +5029,53 @@ class SparkJarPayload(_messages.Message):
       jar_file_uris.
     mainJarFileUri: Optional. The Cloud Storage URI (gs://...) of the jar file
       that contains the main class.
+    properties: Optional. Spark configuration properties (for example,
+      spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+      spark.sql.shuffle.partitions -> 400) that are universal across compute
+      targets. Placement-specific properties (such as spark.serverless.*,
+      spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+      placement's runtime configuration.Properties are merged key-by-key
+      across three tiers in order of increasing precedence: 1. Target resource
+      defaults (ServerlessRuntimeProfile, ExecutionTarget, or Cluster
+      properties). 2. Placement runtime configuration properties
+      (ServerlessRuntimeConfig, KubernetesRuntimeConfig, or
+      ComputeClusterRuntimeConfig). 3. Payload properties (highest
+      precedence).
   """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PropertiesValue(_messages.Message):
+    r"""Optional. Spark configuration properties (for example,
+    spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+    spark.sql.shuffle.partitions -> 400) that are universal across compute
+    targets. Placement-specific properties (such as spark.serverless.*,
+    spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+    placement's runtime configuration.Properties are merged key-by-key across
+    three tiers in order of increasing precedence: 1. Target resource defaults
+    (ServerlessRuntimeProfile, ExecutionTarget, or Cluster properties). 2.
+    Placement runtime configuration properties (ServerlessRuntimeConfig,
+    KubernetesRuntimeConfig, or ComputeClusterRuntimeConfig). 3. Payload
+    properties (highest precedence).
+
+    Messages:
+      AdditionalProperty: An additional property for a PropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   archiveUris = _messages.StringField(1, repeated=True)
   args = _messages.StringField(2, repeated=True)
@@ -1493,18 +5083,188 @@ class SparkJarPayload(_messages.Message):
   jarFileUris = _messages.StringField(4, repeated=True)
   mainClass = _messages.StringField(5)
   mainJarFileUri = _messages.StringField(6)
+  properties = _messages.MessageField('PropertiesValue', 7)
+
+
+class SparkPlanGraph(_messages.Message):
+  r"""A graph used for storing information of an executionPlan of DataFrame.
+
+  Fields:
+    edges: The directed edges connecting nodes in the Spark plan graph.
+    executionId: The SQL execution ID associated with the plan graph.
+    nodes: The nodes and clusters in the Spark plan graph.
+  """
+
+  edges = _messages.MessageField('SparkPlanGraphEdge', 1, repeated=True)
+  executionId = _messages.IntegerField(2)
+  nodes = _messages.MessageField('SparkPlanGraphNodeWrapper', 3, repeated=True)
+
+
+class SparkPlanGraphCluster(_messages.Message):
+  r"""Represents a tree of spark plan.
+
+  Messages:
+    MetadataValue: Additional metadata for the spark plan graph cluster.
+
+  Fields:
+    desc: The description of the plan cluster.
+    metadata: Additional metadata for the spark plan graph cluster.
+    metrics: SQL plan metrics recorded for this cluster.
+    name: The name of the plan cluster.
+    nodes: Child nodes or clusters contained within this cluster.
+    sparkPlanGraphClusterId: The unique ID of the cluster in the Spark plan
+      graph.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Additional metadata for the spark plan graph cluster.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  desc = _messages.StringField(1)
+  metadata = _messages.MessageField('MetadataValue', 2)
+  metrics = _messages.MessageField('SqlPlanMetric', 3, repeated=True)
+  name = _messages.StringField(4)
+  nodes = _messages.MessageField('SparkPlanGraphNodeWrapper', 5, repeated=True)
+  sparkPlanGraphClusterId = _messages.IntegerField(6)
+
+
+class SparkPlanGraphEdge(_messages.Message):
+  r"""Represents a directed edge in the spark plan tree from child to parent.
+
+  Fields:
+    fromId: The source plan node ID.
+    toId: The destination plan node ID.
+  """
+
+  fromId = _messages.IntegerField(1)
+  toId = _messages.IntegerField(2)
+
+
+class SparkPlanGraphNode(_messages.Message):
+  r"""Represents a node in the spark plan tree.
+
+  Messages:
+    MetadataValue: Additional metadata for the spark plan graph node.
+
+  Fields:
+    desc: The description of the plan node.
+    metadata: Additional metadata for the spark plan graph node.
+    metrics: SQL plan metrics recorded for this node.
+    name: The name of the plan node.
+    sparkPlanGraphNodeId: The unique ID of the node in the Spark plan graph.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Additional metadata for the spark plan graph node.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  desc = _messages.StringField(1)
+  metadata = _messages.MessageField('MetadataValue', 2)
+  metrics = _messages.MessageField('SqlPlanMetric', 3, repeated=True)
+  name = _messages.StringField(4)
+  sparkPlanGraphNodeId = _messages.IntegerField(5)
+
+
+class SparkPlanGraphNodeWrapper(_messages.Message):
+  r"""Wrapper user to represent either a node or a cluster.
+
+  Fields:
+    cluster: A cluster of nodes in the Spark plan graph.
+    node: A single node in the Spark plan graph.
+  """
+
+  cluster = _messages.MessageField('SparkPlanGraphCluster', 1)
+  node = _messages.MessageField('SparkPlanGraphNode', 2)
+
+
+class SparkRuntimeInfo(_messages.Message):
+  r"""Runtime environment information for Spark.
+
+  Fields:
+    javaHome: The Java home directory path.
+    javaVersion: The Java version used by the Spark runtime.
+    scalaVersion: The Scala version used by the Spark runtime.
+  """
+
+  javaHome = _messages.StringField(1)
+  javaVersion = _messages.StringField(2)
+  scalaVersion = _messages.StringField(3)
 
 
 class SparkSqlPayload(_messages.Message):
   r"""A configuration for running Apache Spark SQL queries as a workload.
 
   Messages:
+    PropertiesValue: Optional. Spark configuration properties (for example,
+      spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+      spark.sql.shuffle.partitions -> 400) that are universal across compute
+      targets. Placement-specific properties (such as spark.serverless.*,
+      spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+      placement's runtime configuration.Properties are merged key-by-key
+      across three tiers in order of increasing precedence: 1. Target resource
+      defaults (ServerlessRuntimeProfile, ExecutionTarget, or Cluster
+      properties). 2. Placement runtime configuration properties
+      (ServerlessRuntimeConfig, KubernetesRuntimeConfig, or
+      ComputeClusterRuntimeConfig). 3. Payload properties (highest
+      precedence).
     QueryVariablesValue: Optional. Mapping of query variable names to values
       (equivalent to the Spark SQL command: SET name="value";).
 
   Fields:
     jarFileUris: Optional. Cloud Storage URIs (gs://...) of jar files to be
       added to the Spark CLASSPATH.
+    properties: Optional. Spark configuration properties (for example,
+      spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+      spark.sql.shuffle.partitions -> 400) that are universal across compute
+      targets. Placement-specific properties (such as spark.serverless.*,
+      spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+      placement's runtime configuration.Properties are merged key-by-key
+      across three tiers in order of increasing precedence: 1. Target resource
+      defaults (ServerlessRuntimeProfile, ExecutionTarget, or Cluster
+      properties). 2. Placement runtime configuration properties
+      (ServerlessRuntimeConfig, KubernetesRuntimeConfig, or
+      ComputeClusterRuntimeConfig). 3. Payload properties (highest
+      precedence).
     queryFileUri: Optional. The Cloud Storage URI (gs://...) of the script
       that contains Spark SQL queries to execute.
     queryText: Optional. The Spark SQL query text to execute inline, without
@@ -1512,6 +5272,40 @@ class SparkSqlPayload(_messages.Message):
     queryVariables: Optional. Mapping of query variable names to values
       (equivalent to the Spark SQL command: SET name="value";).
   """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PropertiesValue(_messages.Message):
+    r"""Optional. Spark configuration properties (for example,
+    spark.executor.instances -> 10, spark.executor.memory -> 8g, or
+    spark.sql.shuffle.partitions -> 400) that are universal across compute
+    targets. Placement-specific properties (such as spark.serverless.*,
+    spark.kubernetes.*, yarn:*, or dataproc:*) must be configured in the
+    placement's runtime configuration.Properties are merged key-by-key across
+    three tiers in order of increasing precedence: 1. Target resource defaults
+    (ServerlessRuntimeProfile, ExecutionTarget, or Cluster properties). 2.
+    Placement runtime configuration properties (ServerlessRuntimeConfig,
+    KubernetesRuntimeConfig, or ComputeClusterRuntimeConfig). 3. Payload
+    properties (highest precedence).
+
+    Messages:
+      AdditionalProperty: An additional property for a PropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class QueryVariablesValue(_messages.Message):
@@ -1540,9 +5334,570 @@ class SparkSqlPayload(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   jarFileUris = _messages.StringField(1, repeated=True)
-  queryFileUri = _messages.StringField(2)
-  queryText = _messages.StringField(3)
-  queryVariables = _messages.MessageField('QueryVariablesValue', 4)
+  properties = _messages.MessageField('PropertiesValue', 2)
+  queryFileUri = _messages.StringField(3)
+  queryText = _messages.StringField(4)
+  queryVariables = _messages.MessageField('QueryVariablesValue', 5)
+
+
+class SpeculationStageSummary(_messages.Message):
+  r"""Details of the speculation task when speculative execution is enabled.
+
+  Fields:
+    numActiveTasks: The number of active speculative tasks in the stage.
+    numCompletedTasks: The number of completed speculative tasks in the stage.
+    numFailedTasks: The number of failed speculative tasks in the stage.
+    numKilledTasks: The number of killed speculative tasks in the stage.
+    numTasks: The total number of speculative tasks in the stage.
+    stageAttemptId: The attempt ID of the stage.
+    stageId: The ID of the stage.
+  """
+
+  numActiveTasks = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  numCompletedTasks = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  numFailedTasks = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  numKilledTasks = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  numTasks = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  stageAttemptId = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(7)
+
+
+class SqlExecutionUiData(_messages.Message):
+  r"""SQL Execution Data
+
+  Messages:
+    JobsValue: Spark jobs associated with the SQL execution, keyed by job ID.
+    MetricValuesValue: Metric values keyed by accumulator ID.
+    ModifiedConfigsValue: Modified Spark configurations for this SQL
+      execution.
+
+  Fields:
+    completionTime: The time when the SQL execution completed.
+    description: A short description of the SQL execution.
+    details: Detailed information about the SQL execution.
+    errorMessage: Error message if the SQL execution failed.
+    executionId: The unique ID of the SQL execution.
+    jobs: Spark jobs associated with the SQL execution, keyed by job ID.
+    metricValues: Metric values keyed by accumulator ID.
+    metricValuesIsNull: Whether metric values are null.
+    metrics: Metrics associated with the SQL execution plan.
+    modifiedConfigs: Modified Spark configurations for this SQL execution.
+    physicalPlanDescription: The physical execution plan description.
+    rootExecutionId: The root SQL execution ID.
+    stages: Stage IDs associated with the SQL execution.
+    submissionTime: The time when the SQL execution was submitted.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class JobsValue(_messages.Message):
+    r"""Spark jobs associated with the SQL execution, keyed by job ID.
+
+    Messages:
+      AdditionalProperty: An additional property for a JobsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type JobsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a JobsValue object.
+
+      Enums:
+        ValueValueValuesEnum:
+
+      Fields:
+        key: Name of the additional property.
+        value: A ValueValueValuesEnum attribute.
+      """
+
+      class ValueValueValuesEnum(_messages.Enum):
+        r"""ValueValueValuesEnum enum type.
+
+        Values:
+          JOB_EXECUTION_STATUS_UNSPECIFIED: The job execution status is
+            unspecified.
+          JOB_EXECUTION_STATUS_RUNNING: The job is currently running.
+          JOB_EXECUTION_STATUS_SUCCEEDED: The job has succeeded.
+          JOB_EXECUTION_STATUS_FAILED: The job has failed.
+          JOB_EXECUTION_STATUS_UNKNOWN: The job execution status is unknown.
+        """
+        JOB_EXECUTION_STATUS_UNSPECIFIED = 0
+        JOB_EXECUTION_STATUS_RUNNING = 1
+        JOB_EXECUTION_STATUS_SUCCEEDED = 2
+        JOB_EXECUTION_STATUS_FAILED = 3
+        JOB_EXECUTION_STATUS_UNKNOWN = 4
+
+      key = _messages.StringField(1)
+      value = _messages.EnumField('ValueValueValuesEnum', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetricValuesValue(_messages.Message):
+    r"""Metric values keyed by accumulator ID.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetricValuesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetricValuesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetricValuesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ModifiedConfigsValue(_messages.Message):
+    r"""Modified Spark configurations for this SQL execution.
+
+    Messages:
+      AdditionalProperty: An additional property for a ModifiedConfigsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type ModifiedConfigsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ModifiedConfigsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  completionTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  details = _messages.StringField(3)
+  errorMessage = _messages.StringField(4)
+  executionId = _messages.IntegerField(5)
+  jobs = _messages.MessageField('JobsValue', 6)
+  metricValues = _messages.MessageField('MetricValuesValue', 7)
+  metricValuesIsNull = _messages.BooleanField(8)
+  metrics = _messages.MessageField('SqlPlanMetric', 9, repeated=True)
+  modifiedConfigs = _messages.MessageField('ModifiedConfigsValue', 10)
+  physicalPlanDescription = _messages.StringField(11)
+  rootExecutionId = _messages.IntegerField(12)
+  stages = _messages.IntegerField(13, repeated=True)
+  submissionTime = _messages.StringField(14)
+
+
+class SqlPlanMetric(_messages.Message):
+  r"""Metrics related to SQL execution.
+
+  Fields:
+    accumulatorId: The accumulator ID backing the metric.
+    metricType: The type of the SQL plan metric.
+    name: The name of the SQL plan metric.
+  """
+
+  accumulatorId = _messages.IntegerField(1)
+  metricType = _messages.StringField(2)
+  name = _messages.StringField(3)
+
+
+class StageAttemptTasksSummary(_messages.Message):
+  r"""Data related to tasks summary for a Spark Stage Attempt
+
+  Fields:
+    applicationId: The Spark application ID.
+    numFailedTasks: The number of failed tasks in the stage attempt.
+    numKilledTasks: The number of killed tasks in the stage attempt.
+    numPendingTasks: The number of pending tasks in the stage attempt.
+    numRunningTasks: The number of running tasks in the stage attempt.
+    numSuccessTasks: The number of succeeded tasks in the stage attempt.
+    numTasks: The total number of tasks in the stage attempt.
+    stageAttemptId: The attempt ID of the stage.
+    stageId: The ID of the stage.
+  """
+
+  applicationId = _messages.StringField(1)
+  numFailedTasks = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  numKilledTasks = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  numPendingTasks = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  numRunningTasks = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  numSuccessTasks = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  numTasks = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  stageAttemptId = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(9)
+
+
+class StageData(_messages.Message):
+  r"""Data corresponding to a stage.
+
+  Enums:
+    StatusValueValuesEnum: The execution status of the stage.
+
+  Messages:
+    ExecutorSummaryValue: Executor stage summaries, keyed by executor ID.
+    KilledTasksSummaryValue: Summary of killed tasks in the stage by reason.
+    LocalityValue: Task locality summary for the stage.
+    TasksValue: Tasks belonging to the stage, keyed by task ID.
+
+  Fields:
+    accumulatorUpdates: Accumulator updates for the stage.
+    completionTime: The time when the stage completed.
+    description: The description of the stage.
+    details: Detailed stack trace or callsite information for the stage.
+    executorMetricsDistributions: Distributions of executor metrics for the
+      stage.
+    executorSummary: Executor stage summaries, keyed by executor ID.
+    failureReason: The reason for stage failure, if failed.
+    firstTaskLaunchedTime: The time when the first task in the stage was
+      launched.
+    isShufflePushEnabled: Whether push-based shuffle is enabled for the stage.
+    jobIds: The job IDs associated with the stage.
+    killedTasksSummary: Summary of killed tasks in the stage by reason.
+    locality: Task locality summary for the stage.
+    name: The name of the stage.
+    numActiveTasks: The number of active tasks in the stage.
+    numCompleteTasks: The number of completed tasks in the stage.
+    numCompletedIndices: The number of completed task indices in the stage.
+    numFailedTasks: The number of failed tasks in the stage.
+    numKilledTasks: The number of killed tasks in the stage.
+    numTasks: The total number of tasks in the stage.
+    parentStageIds: The IDs of parent stages.
+    peakExecutorMetrics: Peak executor metrics recorded during the stage.
+    rddIds: The RDD IDs associated with the stage.
+    resourceProfileId: The resource profile ID used by the stage.
+    schedulingPool: The scheduler pool to which the stage belongs.
+    shuffleMergersCount: The number of shuffle mergers used in the stage.
+    speculationSummary: Speculative execution summary for the stage.
+    stageAttemptId: The attempt ID of the stage.
+    stageId: The ID of the stage.
+    stageMetrics: Aggregated metrics for the stage.
+    status: The execution status of the stage.
+    submissionTime: The time when the stage was submitted.
+    taskQuantileMetrics: Summary metrics fields. These are included in
+      response only if present in summary_metrics_mask field in request
+    tasks: Tasks belonging to the stage, keyed by task ID.
+  """
+
+  class StatusValueValuesEnum(_messages.Enum):
+    r"""The execution status of the stage.
+
+    Values:
+      STAGE_STATUS_UNSPECIFIED: The stage status is unspecified.
+      STAGE_STATUS_ACTIVE: The stage is currently active.
+      STAGE_STATUS_COMPLETE: The stage has completed.
+      STAGE_STATUS_FAILED: The stage has failed.
+      STAGE_STATUS_PENDING: The stage is pending execution.
+      STAGE_STATUS_SKIPPED: The stage was skipped.
+    """
+    STAGE_STATUS_UNSPECIFIED = 0
+    STAGE_STATUS_ACTIVE = 1
+    STAGE_STATUS_COMPLETE = 2
+    STAGE_STATUS_FAILED = 3
+    STAGE_STATUS_PENDING = 4
+    STAGE_STATUS_SKIPPED = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExecutorSummaryValue(_messages.Message):
+    r"""Executor stage summaries, keyed by executor ID.
+
+    Messages:
+      AdditionalProperty: An additional property for a ExecutorSummaryValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type ExecutorSummaryValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExecutorSummaryValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ExecutorStageSummary attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ExecutorStageSummary', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class KilledTasksSummaryValue(_messages.Message):
+    r"""Summary of killed tasks in the stage by reason.
+
+    Messages:
+      AdditionalProperty: An additional property for a KilledTasksSummaryValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        KilledTasksSummaryValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a KilledTasksSummaryValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A integer attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LocalityValue(_messages.Message):
+    r"""Task locality summary for the stage.
+
+    Messages:
+      AdditionalProperty: An additional property for a LocalityValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LocalityValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LocalityValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.IntegerField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TasksValue(_messages.Message):
+    r"""Tasks belonging to the stage, keyed by task ID.
+
+    Messages:
+      AdditionalProperty: An additional property for a TasksValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TasksValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TasksValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A TaskData attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('TaskData', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  accumulatorUpdates = _messages.MessageField('AccumulableInfo', 1, repeated=True)
+  completionTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  details = _messages.StringField(4)
+  executorMetricsDistributions = _messages.MessageField('ExecutorMetricsDistributions', 5)
+  executorSummary = _messages.MessageField('ExecutorSummaryValue', 6)
+  failureReason = _messages.StringField(7)
+  firstTaskLaunchedTime = _messages.StringField(8)
+  isShufflePushEnabled = _messages.BooleanField(9)
+  jobIds = _messages.IntegerField(10, repeated=True)
+  killedTasksSummary = _messages.MessageField('KilledTasksSummaryValue', 11)
+  locality = _messages.MessageField('LocalityValue', 12)
+  name = _messages.StringField(13)
+  numActiveTasks = _messages.IntegerField(14, variant=_messages.Variant.INT32)
+  numCompleteTasks = _messages.IntegerField(15, variant=_messages.Variant.INT32)
+  numCompletedIndices = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+  numFailedTasks = _messages.IntegerField(17, variant=_messages.Variant.INT32)
+  numKilledTasks = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  numTasks = _messages.IntegerField(19, variant=_messages.Variant.INT32)
+  parentStageIds = _messages.IntegerField(20, repeated=True)
+  peakExecutorMetrics = _messages.MessageField('ExecutorMetrics', 21)
+  rddIds = _messages.IntegerField(22, repeated=True)
+  resourceProfileId = _messages.IntegerField(23, variant=_messages.Variant.INT32)
+  schedulingPool = _messages.StringField(24)
+  shuffleMergersCount = _messages.IntegerField(25, variant=_messages.Variant.INT32)
+  speculationSummary = _messages.MessageField('SpeculationStageSummary', 26)
+  stageAttemptId = _messages.IntegerField(27, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(28)
+  stageMetrics = _messages.MessageField('StageMetrics', 29)
+  status = _messages.EnumField('StatusValueValuesEnum', 30)
+  submissionTime = _messages.StringField(31)
+  taskQuantileMetrics = _messages.MessageField('TaskQuantileMetrics', 32)
+  tasks = _messages.MessageField('TasksValue', 33)
+
+
+class StageInputMetrics(_messages.Message):
+  r"""Metrics about the input read by the stage.
+
+  Fields:
+    bytesRead: Total input bytes read by the stage.
+    recordsRead: Total input records read by the stage.
+  """
+
+  bytesRead = _messages.IntegerField(1)
+  recordsRead = _messages.IntegerField(2)
+
+
+class StageMetrics(_messages.Message):
+  r"""Stage Level Aggregated Metrics
+
+  Fields:
+    diskBytesSpilled: Disk bytes spilled during the stage.
+    executorCpuTimeNanos: CPU time spent running tasks on executors in
+      nanoseconds.
+    executorDeserializeCpuTimeNanos: CPU time spent deserializing tasks on
+      executors in nanoseconds.
+    executorDeserializeTimeMillis: Time spent deserializing tasks on executors
+      in milliseconds.
+    executorRunTimeMillis: Time spent running tasks on executors in
+      milliseconds.
+    jvmGcTimeMillis: Time spent in JVM garbage collection in milliseconds.
+    memoryBytesSpilled: Memory bytes spilled during the stage.
+    peakExecutionMemoryBytes: Peak execution memory used in bytes.
+    resultSerializationTimeMillis: Time spent serializing task results in
+      milliseconds.
+    resultSize: Total size of task results in bytes.
+    stageInputMetrics: Input metrics for the stage.
+    stageOutputMetrics: Output metrics for the stage.
+    stageShuffleReadMetrics: Shuffle read metrics for the stage.
+    stageShuffleWriteMetrics: Shuffle write metrics for the stage.
+  """
+
+  diskBytesSpilled = _messages.IntegerField(1)
+  executorCpuTimeNanos = _messages.IntegerField(2)
+  executorDeserializeCpuTimeNanos = _messages.IntegerField(3)
+  executorDeserializeTimeMillis = _messages.IntegerField(4)
+  executorRunTimeMillis = _messages.IntegerField(5)
+  jvmGcTimeMillis = _messages.IntegerField(6)
+  memoryBytesSpilled = _messages.IntegerField(7)
+  peakExecutionMemoryBytes = _messages.IntegerField(8)
+  resultSerializationTimeMillis = _messages.IntegerField(9)
+  resultSize = _messages.IntegerField(10)
+  stageInputMetrics = _messages.MessageField('StageInputMetrics', 11)
+  stageOutputMetrics = _messages.MessageField('StageOutputMetrics', 12)
+  stageShuffleReadMetrics = _messages.MessageField('StageShuffleReadMetrics', 13)
+  stageShuffleWriteMetrics = _messages.MessageField('StageShuffleWriteMetrics', 14)
+
+
+class StageOutputMetrics(_messages.Message):
+  r"""Metrics about the output written by the stage.
+
+  Fields:
+    bytesWritten: Total output bytes written by the stage.
+    recordsWritten: Total output records written by the stage.
+  """
+
+  bytesWritten = _messages.IntegerField(1)
+  recordsWritten = _messages.IntegerField(2)
+
+
+class StageShufflePushReadMetrics(_messages.Message):
+  r"""Push-based shuffle read metrics for a stage.
+
+  Fields:
+    corruptMergedBlockChunks: Number of corrupt merged shuffle block chunks
+      encountered.
+    localMergedBlocksFetched: Number of local merged shuffle blocks fetched.
+    localMergedBytesRead: Total local merged shuffle bytes read.
+    localMergedChunksFetched: Number of local merged shuffle chunks fetched.
+    mergedFetchFallbackCount: Number of times merged shuffle fetch fell back
+      to regular fetch.
+    remoteMergedBlocksFetched: Number of remote merged shuffle blocks fetched.
+    remoteMergedBytesRead: Total remote merged shuffle bytes read.
+    remoteMergedChunksFetched: Number of remote merged shuffle chunks fetched.
+    remoteMergedReqsDuration: Duration of remote merged shuffle fetch
+      requests. TIME_OK=Matches Apache Spark and v1/spark_common.proto
+  """
+
+  corruptMergedBlockChunks = _messages.IntegerField(1)
+  localMergedBlocksFetched = _messages.IntegerField(2)
+  localMergedBytesRead = _messages.IntegerField(3)
+  localMergedChunksFetched = _messages.IntegerField(4)
+  mergedFetchFallbackCount = _messages.IntegerField(5)
+  remoteMergedBlocksFetched = _messages.IntegerField(6)
+  remoteMergedBytesRead = _messages.IntegerField(7)
+  remoteMergedChunksFetched = _messages.IntegerField(8)
+  remoteMergedReqsDuration = _messages.IntegerField(9)
+
+
+class StageShuffleReadMetrics(_messages.Message):
+  r"""Shuffle data read for the stage.
+
+  Fields:
+    bytesRead: Total shuffle bytes read.
+    fetchWaitTimeMillis: Time spent waiting to fetch shuffle blocks in
+      milliseconds.
+    localBlocksFetched: Number of local shuffle blocks fetched.
+    localBytesRead: Total local shuffle bytes read.
+    recordsRead: Total shuffle records read.
+    remoteBlocksFetched: Number of remote shuffle blocks fetched.
+    remoteBytesRead: Total remote shuffle bytes read.
+    remoteBytesReadToDisk: Total remote shuffle bytes read directly to disk.
+    remoteReqsDuration: Duration of remote shuffle fetch requests.
+      TIME_OK=Matches Apache Spark and v1/spark_common.proto
+    stageShufflePushReadMetrics: Push-based shuffle read metrics for the
+      stage.
+  """
+
+  bytesRead = _messages.IntegerField(1)
+  fetchWaitTimeMillis = _messages.IntegerField(2)
+  localBlocksFetched = _messages.IntegerField(3)
+  localBytesRead = _messages.IntegerField(4)
+  recordsRead = _messages.IntegerField(5)
+  remoteBlocksFetched = _messages.IntegerField(6)
+  remoteBytesRead = _messages.IntegerField(7)
+  remoteBytesReadToDisk = _messages.IntegerField(8)
+  remoteReqsDuration = _messages.IntegerField(9)
+  stageShufflePushReadMetrics = _messages.MessageField('StageShufflePushReadMetrics', 10)
+
+
+class StageShuffleWriteMetrics(_messages.Message):
+  r"""Shuffle data written for the stage.
+
+  Fields:
+    bytesWritten: Total shuffle bytes written by the stage.
+    recordsWritten: Total shuffle records written by the stage.
+    writeTimeNanos: Time spent writing shuffle data in nanoseconds.
+  """
+
+  bytesWritten = _messages.IntegerField(1)
+  recordsWritten = _messages.IntegerField(2)
+  writeTimeNanos = _messages.IntegerField(3)
+
+
+class StagesSummary(_messages.Message):
+  r"""Data related to Stages page summary
+
+  Fields:
+    applicationId: The Spark application ID.
+    numActiveStages: The number of active stages.
+    numCompletedStages: The number of completed stages.
+    numFailedStages: The number of failed stages.
+    numPendingStages: The number of pending stages.
+    numSkippedStages: The number of skipped stages.
+  """
+
+  applicationId = _messages.StringField(1)
+  numActiveStages = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  numCompletedStages = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  numFailedStages = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  numPendingStages = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  numSkippedStages = _messages.IntegerField(6, variant=_messages.Variant.INT32)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -1608,6 +5963,40 @@ class StandardQueryParameters(_messages.Message):
   upload_protocol = _messages.StringField(12)
 
 
+class StateMessage(_messages.Message):
+  r"""Diagnostic message (error, warning, or informational note) describing a
+  condition associated with the current resource state.
+
+  Enums:
+    SeverityValueValuesEnum: Output only. The severity of the message.
+
+  Fields:
+    message: Output only. Human-readable diagnostic message.
+    severity: Output only. The severity of the message.
+    type: Output only. Machine-readable identifier classifying the message
+      (for example, USER_APPLICATION_ERROR, QUOTA_EXCEEDED, SPOT_PREEMPTED, or
+      DEPENDENCY_CONFLICT).
+  """
+
+  class SeverityValueValuesEnum(_messages.Enum):
+    r"""Output only. The severity of the message.
+
+    Values:
+      SEVERITY_UNSPECIFIED: The severity is unspecified.
+      ERROR: Error-level severity.
+      WARNING: Warning-level severity.
+      INFO: Informational-level severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    ERROR = 1
+    WARNING = 2
+    INFO = 3
+
+  message = _messages.StringField(1)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 2)
+  type = _messages.StringField(3)
+
+
 class Status(_messages.Message):
   r"""The Status type defines a logical error model that is suitable for
   different programming environments, including REST APIs and RPC APIs. It is
@@ -1657,6 +6046,237 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
+
+
+class SummarizeSparkApplicationExecutorsResponse(_messages.Message):
+  r"""Consolidated summary of executors for a Spark Application.
+
+  Fields:
+    activeExecutorSummary: Consolidated summary for active executors.
+    applicationId: Spark Application Id.
+    deadExecutorSummary: Consolidated summary for dead executors.
+    totalExecutorSummary: Overall consolidated summary for all executors.
+  """
+
+  activeExecutorSummary = _messages.MessageField('ConsolidatedExecutorSummary', 1)
+  applicationId = _messages.StringField(2)
+  deadExecutorSummary = _messages.MessageField('ConsolidatedExecutorSummary', 3)
+  totalExecutorSummary = _messages.MessageField('ConsolidatedExecutorSummary', 4)
+
+
+class SummarizeSparkApplicationJobsResponse(_messages.Message):
+  r"""Summary of a Spark Application jobs.
+
+  Fields:
+    jobsSummary: Summary of a Spark Application Jobs.
+  """
+
+  jobsSummary = _messages.MessageField('JobsSummary', 1)
+
+
+class SummarizeSparkApplicationStageAttemptTasksResponse(_messages.Message):
+  r"""Summary of tasks for a Spark Application stage attempt.
+
+  Fields:
+    stageAttemptTasksSummary: Summary of tasks for a Spark Application Stage
+      Attempt.
+  """
+
+  stageAttemptTasksSummary = _messages.MessageField('StageAttemptTasksSummary', 1)
+
+
+class SummarizeSparkApplicationStagesResponse(_messages.Message):
+  r"""Summary of a Spark Application stages.
+
+  Fields:
+    stagesSummary: Summary of a Spark Application Stages.
+  """
+
+  stagesSummary = _messages.MessageField('StagesSummary', 1)
+
+
+class TaskData(_messages.Message):
+  r"""Data corresponding to tasks created by spark.
+
+  Messages:
+    ExecutorLogsValue: Executor log URLs for the task.
+
+  Fields:
+    accumulatorUpdates: Accumulator updates reported by the task.
+    attempt: The attempt number of the task.
+    durationMillis: The total duration of the task in milliseconds.
+    errorMessage: Error message if the task failed.
+    executorId: The ID of the executor running the task.
+    executorLogs: Executor log URLs for the task.
+    gettingResultTimeMillis: Time spent fetching the task result in
+      milliseconds.
+    hasMetrics: Whether task metrics are present.
+    host: The host where the task executed.
+    index: The index of the task within the stage.
+    launchTime: The time when the task was launched.
+    partitionId: The partition ID processed by the task.
+    resultFetchStart: The time when fetching the task result started.
+    schedulerDelayMillis: Scheduler delay for the task in milliseconds.
+    speculative: Whether the task was launched speculatively.
+    stageAttemptId: The attempt ID of the stage the task belongs to.
+    stageId: The ID of the stage the task belongs to.
+    status: The execution status of the task.
+    taskId: The unique ID of the task.
+    taskLocality: The locality level of the task execution.
+    taskMetrics: Execution metrics for the task.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExecutorLogsValue(_messages.Message):
+    r"""Executor log URLs for the task.
+
+    Messages:
+      AdditionalProperty: An additional property for a ExecutorLogsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type ExecutorLogsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExecutorLogsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  accumulatorUpdates = _messages.MessageField('AccumulableInfo', 1, repeated=True)
+  attempt = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  durationMillis = _messages.IntegerField(3)
+  errorMessage = _messages.StringField(4)
+  executorId = _messages.StringField(5)
+  executorLogs = _messages.MessageField('ExecutorLogsValue', 6)
+  gettingResultTimeMillis = _messages.IntegerField(7)
+  hasMetrics = _messages.BooleanField(8)
+  host = _messages.StringField(9)
+  index = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  launchTime = _messages.StringField(11)
+  partitionId = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  resultFetchStart = _messages.StringField(13)
+  schedulerDelayMillis = _messages.IntegerField(14)
+  speculative = _messages.BooleanField(15)
+  stageAttemptId = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+  stageId = _messages.IntegerField(17)
+  status = _messages.StringField(18)
+  taskId = _messages.IntegerField(19)
+  taskLocality = _messages.StringField(20)
+  taskMetrics = _messages.MessageField('TaskMetrics', 21)
+
+
+class TaskMetrics(_messages.Message):
+  r"""Executor Task Metrics
+
+  Fields:
+    diskBytesSpilled: Disk bytes spilled by the task.
+    executorCpuTimeNanos: CPU time spent running the task on the executor in
+      nanoseconds.
+    executorDeserializeCpuTimeNanos: CPU time spent deserializing the task on
+      the executor in nanoseconds.
+    executorDeserializeTimeMillis: Time spent deserializing the task on the
+      executor in milliseconds.
+    executorRunTimeMillis: Time spent running the task on the executor in
+      milliseconds.
+    inputMetrics: Input metrics for the task.
+    jvmGcTimeMillis: Time spent in JVM garbage collection during the task in
+      milliseconds.
+    memoryBytesSpilled: Memory bytes spilled by the task.
+    outputMetrics: Output metrics for the task.
+    peakExecutionMemoryBytes: Peak execution memory used by the task in bytes.
+    resultSerializationTimeMillis: Time spent serializing the task result in
+      milliseconds.
+    resultSize: Size of the task result in bytes.
+    shuffleReadMetrics: Shuffle read metrics for the task.
+    shuffleWriteMetrics: Shuffle write metrics for the task.
+  """
+
+  diskBytesSpilled = _messages.IntegerField(1)
+  executorCpuTimeNanos = _messages.IntegerField(2)
+  executorDeserializeCpuTimeNanos = _messages.IntegerField(3)
+  executorDeserializeTimeMillis = _messages.IntegerField(4)
+  executorRunTimeMillis = _messages.IntegerField(5)
+  inputMetrics = _messages.MessageField('InputMetrics', 6)
+  jvmGcTimeMillis = _messages.IntegerField(7)
+  memoryBytesSpilled = _messages.IntegerField(8)
+  outputMetrics = _messages.MessageField('OutputMetrics', 9)
+  peakExecutionMemoryBytes = _messages.IntegerField(10)
+  resultSerializationTimeMillis = _messages.IntegerField(11)
+  resultSize = _messages.IntegerField(12)
+  shuffleReadMetrics = _messages.MessageField('ShuffleReadMetrics', 13)
+  shuffleWriteMetrics = _messages.MessageField('ShuffleWriteMetrics', 14)
+
+
+class TaskQuantileMetrics(_messages.Message):
+  r"""Summary quantile metrics for tasks in a stage.
+
+  Fields:
+    diskBytesSpilled: Quantile metrics for disk bytes spilled.
+    durationMillis: Quantile metrics for task duration in milliseconds.
+    executorCpuTimeNanos: Quantile metrics for executor CPU time in
+      nanoseconds.
+    executorDeserializeCpuTimeNanos: Quantile metrics for executor deserialize
+      CPU time in nanoseconds.
+    executorDeserializeTimeMillis: Quantile metrics for executor deserialize
+      time in milliseconds.
+    executorRunTimeMillis: Quantile metrics for executor run time in
+      milliseconds.
+    gettingResultTimeMillis: Quantile metrics for time spent getting task
+      result in milliseconds.
+    inputMetrics: Quantile metrics for task input.
+    jvmGcTimeMillis: Quantile metrics for JVM garbage collection time in
+      milliseconds.
+    memoryBytesSpilled: Quantile metrics for memory bytes spilled.
+    outputMetrics: Quantile metrics for task output.
+    peakExecutionMemoryBytes: Quantile metrics for peak execution memory in
+      bytes.
+    resultSerializationTimeMillis: Quantile metrics for result serialization
+      time in milliseconds.
+    resultSize: Quantile metrics for task result size in bytes.
+    schedulerDelayMillis: Quantile metrics for scheduler delay in
+      milliseconds.
+    shuffleReadMetrics: Quantile metrics for task shuffle read.
+    shuffleWriteMetrics: Quantile metrics for task shuffle write.
+  """
+
+  diskBytesSpilled = _messages.MessageField('Quantiles', 1)
+  durationMillis = _messages.MessageField('Quantiles', 2)
+  executorCpuTimeNanos = _messages.MessageField('Quantiles', 3)
+  executorDeserializeCpuTimeNanos = _messages.MessageField('Quantiles', 4)
+  executorDeserializeTimeMillis = _messages.MessageField('Quantiles', 5)
+  executorRunTimeMillis = _messages.MessageField('Quantiles', 6)
+  gettingResultTimeMillis = _messages.MessageField('Quantiles', 7)
+  inputMetrics = _messages.MessageField('InputQuantileMetrics', 8)
+  jvmGcTimeMillis = _messages.MessageField('Quantiles', 9)
+  memoryBytesSpilled = _messages.MessageField('Quantiles', 10)
+  outputMetrics = _messages.MessageField('OutputQuantileMetrics', 11)
+  peakExecutionMemoryBytes = _messages.MessageField('Quantiles', 12)
+  resultSerializationTimeMillis = _messages.MessageField('Quantiles', 13)
+  resultSize = _messages.MessageField('Quantiles', 14)
+  schedulerDelayMillis = _messages.MessageField('Quantiles', 15)
+  shuffleReadMetrics = _messages.MessageField('ShuffleReadQuantileMetrics', 16)
+  shuffleWriteMetrics = _messages.MessageField('ShuffleWriteQuantileMetrics', 17)
+
+
+class TaskResourceRequest(_messages.Message):
+  r"""Resources used per task created by the application.
+
+  Fields:
+    amount: The amount of the resource requested per task.
+    resourceName: The name of the requested resource.
+  """
+
+  amount = _messages.FloatField(1)
+  resourceName = _messages.StringField(2)
 
 
 class UndeleteWorkloadRequest(_messages.Message):
@@ -1787,13 +6407,25 @@ class Workload(_messages.Message):
 class WorkloadConfig(_messages.Message):
   r"""The execution configuration of a workload.
 
+  Enums:
+    PlacementOverridePolicyValueValuesEnum: Optional. Policy controlling
+      whether callers of RunWorkload may override the target placement for
+      individual runs via RunWorkloadRequest.placement_override. Defaults to
+      DISALLOW (placement is locked to the workload's configured placement).
+
   Fields:
+    computeCluster: Optional. Executes on an existing Compute Engine Dataproc
+      cluster.
     kubernetes: Optional. Executes on a Kubernetes cluster.
     parameterDeclarations: Optional. Formal input parameter declarations for
       this workload.Declares expected named parameters, their descriptions,
       and optional default values. Any declaration without a default_value is
       required at run launch. Callers of RunWorkload may also supply
       undeclared parameters in RunWorkloadRequest.named_parameters.
+    placementOverridePolicy: Optional. Policy controlling whether callers of
+      RunWorkload may override the target placement for individual runs via
+      RunWorkloadRequest.placement_override. Defaults to DISALLOW (placement
+      is locked to the workload's configured placement).
     pyspark: Optional. PySpark workload configuration.
     pysparkNotebook: Optional. PySpark notebook workload configuration.
     serverless: Optional. Execute on Dataproc Serverless (ephemeral per-run).
@@ -1801,13 +6433,35 @@ class WorkloadConfig(_messages.Message):
     sparkSql: Optional. Spark SQL workload configuration.
   """
 
-  kubernetes = _messages.MessageField('KubernetesPlacement', 1)
-  parameterDeclarations = _messages.MessageField('ParameterDeclaration', 2, repeated=True)
-  pyspark = _messages.MessageField('PySparkPayload', 3)
-  pysparkNotebook = _messages.MessageField('PySparkNotebookPayload', 4)
-  serverless = _messages.MessageField('ServerlessPlacement', 5)
-  sparkJar = _messages.MessageField('SparkJarPayload', 6)
-  sparkSql = _messages.MessageField('SparkSqlPayload', 7)
+  class PlacementOverridePolicyValueValuesEnum(_messages.Enum):
+    r"""Optional. Policy controlling whether callers of RunWorkload may
+    override the target placement for individual runs via
+    RunWorkloadRequest.placement_override. Defaults to DISALLOW (placement is
+    locked to the workload's configured placement).
+
+    Values:
+      PLACEMENT_OVERRIDE_POLICY_UNSPECIFIED: Default value. Treated as
+        DISALLOW (placement overrides are rejected).
+      DISALLOW: Disallows per-run placement overrides on RunWorkload. Any
+        RunWorkloadRequest with placement_override set is rejected with 400
+        INVALID_ARGUMENT.
+      ALLOW_REFERENCE_ONLY: Allows callers of RunWorkload to override only the
+        target placement resource or profile reference for individual runs via
+        RunWorkloadRequest.placement_override.
+    """
+    PLACEMENT_OVERRIDE_POLICY_UNSPECIFIED = 0
+    DISALLOW = 1
+    ALLOW_REFERENCE_ONLY = 2
+
+  computeCluster = _messages.MessageField('ComputeClusterPlacement', 1)
+  kubernetes = _messages.MessageField('KubernetesPlacement', 2)
+  parameterDeclarations = _messages.MessageField('ParameterDeclaration', 3, repeated=True)
+  placementOverridePolicy = _messages.EnumField('PlacementOverridePolicyValueValuesEnum', 4)
+  pyspark = _messages.MessageField('PySparkPayload', 5)
+  pysparkNotebook = _messages.MessageField('PySparkNotebookPayload', 6)
+  serverless = _messages.MessageField('ServerlessPlacement', 7)
+  sparkJar = _messages.MessageField('SparkJarPayload', 8)
+  sparkSql = _messages.MessageField('SparkSqlPayload', 9)
 
 
 encoding.AddCustomJsonFieldMapping(

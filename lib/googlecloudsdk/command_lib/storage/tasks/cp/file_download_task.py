@@ -54,7 +54,7 @@ def _should_perform_sliced_download(source_resource, destination_resource):
   if (
       not source_resource.crc32c_hash
       and properties.VALUES.storage.check_hashes.Get()
-      != properties.CheckHashes.NEVER.value
+      != properties.VALUES.storage.CheckHashes.NEVER.value
   ):
     # Do not perform sliced download if hash validation is not possible.
     return False

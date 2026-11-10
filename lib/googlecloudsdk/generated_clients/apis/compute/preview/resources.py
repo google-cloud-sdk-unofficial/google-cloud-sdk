@@ -486,6 +486,14 @@ class Collections(enum.Enum):
       ['project', 'firewallPolicy'],
       True
   )
+  NETWORKLOCATIONBINDINGS = (
+      'networkLocationBindings',
+      'projects/{project}/regions/{region}/networkLocationBindings/'
+      '{networkLocationBinding}',
+      {},
+      ['project', 'region', 'networkLocationBinding'],
+      True
+  )
   NETWORKPROFILES = (
       'networkProfiles',
       'projects/{project}/global/networkProfiles/{networkProfile}',

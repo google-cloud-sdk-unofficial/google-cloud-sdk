@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
   hidden: true
   help_text:
     brief: List restore verification plans in a project.
@@ -30,7 +32,7 @@
   output:
     format: |
       table(
-        name.basename():label=PLAN_ID:sort=1,
+        name:label=NAME:sort=1,
         schedule,
         timeZone,
         state,

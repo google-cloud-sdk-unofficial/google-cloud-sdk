@@ -16,6 +16,7 @@
 
 
 import argparse
+import collections
 import ipaddress
 import re
 
@@ -168,12 +169,22 @@ _ENVIRONMENT_SIZE_MAPPING = {
     'ENVIRONMENT_SIZE_EXTRA_LARGE': 'extra-large',
 }
 
+_ENVIRONMENT_SIZE_MAPPING_BETA = {
+    'ENVIRONMENT_SIZE_UNSPECIFIED': 'unspecified',
+    'ENVIRONMENT_SIZE_SMALL': 'small',
+    'ENVIRONMENT_SIZE_MEDIUM': 'medium',
+    'ENVIRONMENT_SIZE_LARGE': 'large',
+    'ENVIRONMENT_SIZE_EXTRA_LARGE': 'extra-large',
+    'ENVIRONMENT_SIZE_X_EXTRA_LARGE': 'x-extra-large',
+}
+
 _ENVIRONMENT_SIZE_MAPPING_ALPHA = {
     'ENVIRONMENT_SIZE_UNSPECIFIED': 'unspecified',
     'ENVIRONMENT_SIZE_SMALL': 'small',
     'ENVIRONMENT_SIZE_MEDIUM': 'medium',
     'ENVIRONMENT_SIZE_LARGE': 'large',
-    'ENVIRONMENT_SIZE_EXTRA_LARGE': 'extra-large'
+    'ENVIRONMENT_SIZE_EXTRA_LARGE': 'extra-large',
+    'ENVIRONMENT_SIZE_X_EXTRA_LARGE': 'x-extra-large',
 }
 
 AIRFLOW_CONFIGS_FLAG_GROUP_DESCRIPTION = (
@@ -972,7 +983,8 @@ ENVIRONMENT_SIZE_BETA = arg_utils.ChoiceEnumMapper(
     message_enum=api_util.GetMessagesModule(
         release_track=base.ReleaseTrack.BETA
     ).EnvironmentConfig.EnvironmentSizeValueValuesEnum,
-    custom_mappings=_ENVIRONMENT_SIZE_MAPPING,
+    custom_mappings=_ENVIRONMENT_SIZE_MAPPING_BETA,
+    hidden_choices=['x-extra-large'],
 )
 
 ENVIRONMENT_SIZE_ALPHA = arg_utils.ChoiceEnumMapper(
@@ -985,6 +997,7 @@ ENVIRONMENT_SIZE_ALPHA = arg_utils.ChoiceEnumMapper(
         release_track=base.ReleaseTrack.ALPHA
     ).EnvironmentConfig.EnvironmentSizeValueValuesEnum,
     custom_mappings=_ENVIRONMENT_SIZE_MAPPING_ALPHA,
+    hidden_choices=['x-extra-large'],
 )
 
 CLOUD_RUN_FUNCTIONS_ROUTING_BETA = arg_utils.ChoiceEnumMapper(
@@ -2142,25 +2155,45 @@ AIRFLOW_RBAC_CONFIG_FROM_FILE = base.Argument(
     """,
 )
 
+
+class AirflowRbacBindingArgDict(arg_parsers.ArgDict):
+  """ArgDict that rejects repeated keys, which ArgDict would silently drop."""
+
+  def __init__(self):
+    super().__init__(
+        spec={
+            key: str
+            for key in ('role', 'user', 'group', 'service_account', 'principal')
+        }
+    )
+
+  def __call__(self, arg_value):
+    if isinstance(arg_value, str):
+      keys = collections.Counter(
+          item.split('=', 1)[0].strip()
+          for item in arg_parsers.ArgList()(arg_value)
+      )
+      duplicates = sorted(key for key, count in keys.items() if count > 1)
+      if duplicates:
+        raise arg_parsers.ArgumentTypeError(
+            'Duplicate key [{}] in binding flag. Each flag accepts one role and'
+            ' at most one member of each type; repeat the flag to specify'
+            ' more.'.format(', '.join(duplicates))
+        )
+    return super().__call__(arg_value)
+
+
 AIRFLOW_RBAC_BINDING = base.Argument(
     '--airflow-rbac-binding',
     action='append',
-    type=arg_parsers.ArgDict(
-        spec={
-            'role': str,
-            'user': str,
-            'group': str,
-            'service_account': str,
-            'principal': str,
-        }
-    ),
+    type=AirflowRbacBindingArgDict(),
     metavar=(
         'role=ROLE,[user=USER],[group=GROUP],[service_account=SERVICE_ACCOUNT],'
         '[principal=PRINCIPAL]'
     ),
     help="""\
     A role-to-member binding to configure. This flag can be repeated to grant
-    multiple roles or members.
+    multiple roles or members of the same type.
 
     *role*::: The Airflow RBAC role name (for example, `Admin`, `Op`, `User`,
     `Viewer`, or a custom role).
@@ -2189,22 +2222,14 @@ CLEAR_AIRFLOW_RBAC_CONFIG_FLAG = base.Argument(
 UPDATE_AIRFLOW_RBAC_BINDING_FLAG = base.Argument(
     '--update-airflow-rbac-binding',
     action='append',
-    type=arg_parsers.ArgDict(
-        spec={
-            'role': str,
-            'user': str,
-            'group': str,
-            'service_account': str,
-            'principal': str,
-        }
-    ),
+    type=AirflowRbacBindingArgDict(),
     metavar=(
         'role=ROLE,[user=USER],[group=GROUP],[service_account=SERVICE_ACCOUNT],'
         '[principal=PRINCIPAL]'
     ),
     help="""\
     A role-to-member binding to grant or update. This flag can be repeated to
-    grant multiple roles or members.
+    grant multiple roles or members of the same type.
 
     *role*::: The Airflow RBAC role name (for example, `Admin`, `Op`, `User`,
     `Viewer`, or a custom role).
@@ -2224,22 +2249,14 @@ UPDATE_AIRFLOW_RBAC_BINDING_FLAG = base.Argument(
 REMOVE_AIRFLOW_RBAC_BINDING_FLAG = base.Argument(
     '--remove-airflow-rbac-binding',
     action='append',
-    type=arg_parsers.ArgDict(
-        spec={
-            'role': str,
-            'user': str,
-            'group': str,
-            'service_account': str,
-            'principal': str,
-        }
-    ),
+    type=AirflowRbacBindingArgDict(),
     metavar=(
         'role=ROLE,[user=USER],[group=GROUP],[service_account=SERVICE_ACCOUNT],'
         '[principal=PRINCIPAL]'
     ),
     help="""\
     A role-to-member binding to remove. This flag can be repeated to revoke
-    multiple roles or members.
+    multiple roles or members of the same type.
 
     *role*::: The Airflow RBAC role name from which to remove members.
 

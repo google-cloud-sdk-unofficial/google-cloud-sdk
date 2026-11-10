@@ -24,6 +24,31 @@ DOCS_URL = 'https://cloud.google.com/'
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
+  ORGANIZATIONS = (
+      'organizations',
+      'organizations/{organizationsId}',
+      {},
+      ['organizationsId'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS = (
+      'organizations.locations',
+      'organizations/{organizationsId}/locations/{locationsId}',
+      {},
+      ['organizationsId', 'locationsId'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS_OPERATIONS = (
+      'organizations.locations.operations',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}/'
+              'operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS = (
       'projects',
       'projects/{projectsId}',
@@ -70,28 +95,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/appGateways/'
               '{appGatewaysId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_CLIENTCONNECTORSERVICES = (
-      'projects.locations.clientConnectorServices',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'clientConnectorServices/{clientConnectorServicesId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_CLIENTGATEWAYS = (
-      'projects.locations.clientGateways',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/clientGateways/'
-              '{clientGatewaysId}',
       },
       ['name'],
       True

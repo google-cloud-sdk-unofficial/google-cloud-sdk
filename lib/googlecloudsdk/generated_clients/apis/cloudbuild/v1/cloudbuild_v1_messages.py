@@ -101,6 +101,23 @@ class ApproveBuildRequest(_messages.Message):
   approvalResult = _messages.MessageField('ApprovalResult', 1)
 
 
+class AptArtifact(_messages.Message):
+  r"""APT packages to upload to an Artifact Registry repository upon
+  successful completion of all build steps.
+
+  Fields:
+    paths: Required. Path globs used to match `.deb` files in the build's
+      workspace. Each matched file is uploaded separately.
+    repositoryUri: Required. URI of the Artifact Registry repository, in the
+      form "https://$REGION-apt.pkg.dev/$PROJECT/$REPOSITORY", for example
+      "https://us-apt.pkg.dev/my-project/my-repo". Unlike the APT source URL,
+      it has no "/projects/" path segment.
+  """
+
+  paths = _messages.StringField(1, repeated=True)
+  repositoryUri = _messages.StringField(2)
+
+
 class ArtifactObjects(_messages.Message):
   r"""Files in the workspace to upload to Cloud Storage upon successful
   completion of all build steps.
@@ -141,6 +158,10 @@ class Artifacts(_messages.Message):
   completion of all build steps.
 
   Fields:
+    aptArtifacts: Optional. A list of APT packages to be uploaded to Artifact
+      Registry upon successful completion of all build steps. The build
+      service account credentials will be used to perform the upload. If any
+      packages fail to be pushed, the build is marked FAILURE.
     genericArtifacts: Optional. A list of generic artifacts to be uploaded to
       Artifact Registry upon successful completion of all build steps. If any
       artifacts fail to be pushed, the build is marked FAILURE.
@@ -181,17 +202,23 @@ class Artifacts(_messages.Message):
       objects fail to be pushed, the build is marked FAILURE.
     volumes: Optional. List of volumes to mount into the artifacts upload
       process.
+    yumArtifacts: Optional. A list of YUM packages to be uploaded to Artifact
+      Registry upon successful completion of all build steps. The build
+      service account credentials will be used to perform the upload. If any
+      packages fail to be pushed, the build is marked FAILURE.
   """
 
-  genericArtifacts = _messages.MessageField('GenericArtifact', 1, repeated=True)
-  goModules = _messages.MessageField('GoModule', 2, repeated=True)
-  images = _messages.StringField(3, repeated=True)
-  mavenArtifacts = _messages.MessageField('MavenArtifact', 4, repeated=True)
-  npmPackages = _messages.MessageField('NpmPackage', 5, repeated=True)
-  objects = _messages.MessageField('ArtifactObjects', 6)
-  oci = _messages.MessageField('Oci', 7, repeated=True)
-  pythonPackages = _messages.MessageField('PythonPackage', 8, repeated=True)
-  volumes = _messages.MessageField('Volume', 9, repeated=True)
+  aptArtifacts = _messages.MessageField('AptArtifact', 1, repeated=True)
+  genericArtifacts = _messages.MessageField('GenericArtifact', 2, repeated=True)
+  goModules = _messages.MessageField('GoModule', 3, repeated=True)
+  images = _messages.StringField(4, repeated=True)
+  mavenArtifacts = _messages.MessageField('MavenArtifact', 5, repeated=True)
+  npmPackages = _messages.MessageField('NpmPackage', 6, repeated=True)
+  objects = _messages.MessageField('ArtifactObjects', 7)
+  oci = _messages.MessageField('Oci', 8, repeated=True)
+  pythonPackages = _messages.MessageField('PythonPackage', 9, repeated=True)
+  volumes = _messages.MessageField('Volume', 10, repeated=True)
+  yumArtifacts = _messages.MessageField('YumArtifact', 11, repeated=True)
 
 
 class Autoscale(_messages.Message):
@@ -1103,9 +1130,6 @@ class BuildSecurityPolicy(_messages.Message):
     enableTcaEnforcement: Output only. Immutable. Determines whether
       additional restrictions needed to run TCA builds will be enabled on the
       instance or not for Trusted Pools in TBI.
-    networkAllowedUrlPrefix: Optional. URL prefixes that are allowed to be
-      accessed during the build. If using redirects, the final URL must be in
-      this list. If this field is empty, all URL prefixes are allowed.
     workflowType: Optional. Immutable. Determines whether this instance
       handles presubmit or postsubmit builds. Default is
       WORKFLOW_TYPE_POSTSUBMIT.
@@ -1141,8 +1165,7 @@ class BuildSecurityPolicy(_messages.Message):
   bcidLevel = _messages.EnumField('BcidLevelValueValuesEnum', 1)
   enableNetworkEnforcement = _messages.BooleanField(2)
   enableTcaEnforcement = _messages.BooleanField(3)
-  networkAllowedUrlPrefix = _messages.StringField(4, repeated=True)
-  workflowType = _messages.EnumField('WorkflowTypeValueValuesEnum', 5)
+  workflowType = _messages.EnumField('WorkflowTypeValueValuesEnum', 4)
 
 
 class BuildStage(_messages.Message):
@@ -2699,14 +2722,18 @@ class CloudbuildProjectsLocationsPipelinesDeleteRequest(_messages.Message):
   Fields:
     etag: The etag of the Pipeline. If this is provided, it must match the
       server's etag.
+    force: Optional. If set to `true`, any child resources of this Pipeline
+      (such as PipelineTriggers) will also be deleted. Otherwise, the request
+      will only work if the Pipeline has no children.
     name: Required. Format:
       `projects/{project}/locations/{location}/pipelines/{pipeline}`
     validateOnly: When true, the query is validated only, but not executed.
   """
 
   etag = _messages.StringField(1)
-  name = _messages.StringField(2, required=True)
-  validateOnly = _messages.BooleanField(3)
+  force = _messages.BooleanField(2)
+  name = _messages.StringField(3, required=True)
+  validateOnly = _messages.BooleanField(4)
 
 
 class CloudbuildProjectsLocationsPipelinesGetRequest(_messages.Message):
@@ -6023,6 +6050,10 @@ class Results(_messages.Message):
     pythonPackages: Python artifacts uploaded to Artifact Registry at the end
       of the build.
     resourceUsage: Output only. Aggregated metrics for the build.
+    uploadedAptArtifacts: Output only. APT packages uploaded to Artifact
+      Registry at the end of the build.
+    uploadedYumArtifacts: Output only. YUM packages uploaded to Artifact
+      Registry at the end of the build.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -6065,6 +6096,8 @@ class Results(_messages.Message):
   ociArtifacts = _messages.MessageField('UploadedOCIArtifact', 12, repeated=True)
   pythonPackages = _messages.MessageField('UploadedPythonPackage', 13, repeated=True)
   resourceUsage = _messages.MessageField('BuildResourceUsage', 14)
+  uploadedAptArtifacts = _messages.MessageField('UploadedAptArtifact', 15, repeated=True)
+  uploadedYumArtifacts = _messages.MessageField('UploadedYumArtifact', 16, repeated=True)
 
 
 class RetryBuildRequest(_messages.Message):
@@ -6806,6 +6839,27 @@ class UpdateWorkerPoolOperationMetadata(_messages.Message):
   workerPool = _messages.StringField(4)
 
 
+class UploadedAptArtifact(_messages.Message):
+  r"""An APT package uploaded to Artifact Registry using the AptArtifact
+  directive.
+
+  Fields:
+    artifactRegistryVersion: Output only. Resource name of the package version
+      in Artifact Registry. Ex:
+      projects/p1/locations/us/repositories/r1/packages/pkg/versions/1.0-1
+    fileHashes: Output only. Hash types and values of the APT package.
+    pushTiming: Output only. Stores timing information for pushing the
+      specified package.
+    uri: Output only. URI of the uploaded package. Ex: https://us-
+      apt.pkg.dev/projects/p1/pool/r1/pkg_1.0-1_amd64_.deb
+  """
+
+  artifactRegistryVersion = _messages.StringField(1)
+  fileHashes = _messages.MessageField('FileHashes', 2)
+  pushTiming = _messages.MessageField('TimeSpan', 3)
+  uri = _messages.StringField(4)
+
+
 class UploadedGenericArtifact(_messages.Message):
   r"""A generic artifact uploaded to Artifact Registry using the
   GenericArtifact directive.
@@ -6952,6 +7006,27 @@ class UploadedPythonPackage(_messages.Message):
   """
 
   artifactRegistryPackage = _messages.StringField(1)
+  fileHashes = _messages.MessageField('FileHashes', 2)
+  pushTiming = _messages.MessageField('TimeSpan', 3)
+  uri = _messages.StringField(4)
+
+
+class UploadedYumArtifact(_messages.Message):
+  r"""A YUM package uploaded to Artifact Registry using the YumArtifact
+  directive.
+
+  Fields:
+    artifactRegistryVersion: Output only. Resource name of the package version
+      in Artifact Registry. Ex:
+      projects/p1/locations/us/repositories/r1/packages/pkg/versions/0:1-1
+    fileHashes: Output only. Hash types and values of the YUM package.
+    pushTiming: Output only. Stores timing information for pushing the
+      specified package.
+    uri: Output only. URI of the uploaded package. Ex: https://us-
+      yum.pkg.dev/projects/p1/r1/Packages/-pkg-1-1.x86_64.rpm
+  """
+
+  artifactRegistryVersion = _messages.StringField(1)
   fileHashes = _messages.MessageField('FileHashes', 2)
   pushTiming = _messages.MessageField('TimeSpan', 3)
   uri = _messages.StringField(4)
@@ -7250,6 +7325,23 @@ class WorkerPool(_messages.Message):
   trustedPoolConfig = _messages.MessageField('TrustedPoolConfig', 11)
   uid = _messages.StringField(12)
   updateTime = _messages.StringField(13)
+
+
+class YumArtifact(_messages.Message):
+  r"""YUM packages to upload to an Artifact Registry repository upon
+  successful completion of all build steps.
+
+  Fields:
+    paths: Required. Path globs used to match `.rpm` files in the build's
+      workspace. Each matched file is uploaded separately.
+    repositoryUri: Required. URI of the Artifact Registry repository, in the
+      form "https://$REGION-yum.pkg.dev/$PROJECT/$REPOSITORY", for example
+      "https://us-yum.pkg.dev/my-project/my-repo". Unlike the YUM baseurl, it
+      has no "/projects/" path segment.
+  """
+
+  paths = _messages.StringField(1, repeated=True)
+  repositoryUri = _messages.StringField(2)
 
 
 encoding.AddCustomJsonFieldMapping(

@@ -18,6 +18,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
+  hints:
+    read_only: false
   help_text:
     brief: Delete a binding connection.
     description: Remove an existing binding connection between a source agent and a target resource or auth provider.

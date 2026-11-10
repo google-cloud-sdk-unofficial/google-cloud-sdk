@@ -677,6 +677,8 @@ class BigLakeConfiguration(_messages.Message):
   Enums:
     FileFormatValueValuesEnum: Optional. The file format the table data is
       stored in.
+    MetadataExportModeValueValuesEnum: Optional. The type of Metadata Export
+      for BigLake Managed Tables.
     TableFormatValueValuesEnum: Optional. The table format the metadata only
       snapshots are stored in.
 
@@ -687,6 +689,8 @@ class BigLakeConfiguration(_messages.Message):
       or
       `projects/{project}/locations/{location}/connections/{connection_id}".
     fileFormat: Optional. The file format the table data is stored in.
+    metadataExportMode: Optional. The type of Metadata Export for BigLake
+      Managed Tables.
     storageUri: Optional. The fully qualified location prefix of the external
       folder where table data is stored. The '*' wildcard character is not
       allowed. The URI should be in the format `gs://bucket/path_to_table/`
@@ -704,6 +708,19 @@ class BigLakeConfiguration(_messages.Message):
     FILE_FORMAT_UNSPECIFIED = 0
     PARQUET = 1
 
+  class MetadataExportModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The type of Metadata Export for BigLake Managed Tables.
+
+    Values:
+      METADATA_EXPORT_MODE_UNSPECIFIED: No export type specified. This will
+        default to ASYNC.
+      ASYNC: Async export mode.
+      MANUAL: Manual metadata export.
+    """
+    METADATA_EXPORT_MODE_UNSPECIFIED = 0
+    ASYNC = 1
+    MANUAL = 2
+
   class TableFormatValueValuesEnum(_messages.Enum):
     r"""Optional. The table format the metadata only snapshots are stored in.
 
@@ -716,8 +733,9 @@ class BigLakeConfiguration(_messages.Message):
 
   connectionId = _messages.StringField(1)
   fileFormat = _messages.EnumField('FileFormatValueValuesEnum', 2)
-  storageUri = _messages.StringField(3)
-  tableFormat = _messages.EnumField('TableFormatValueValuesEnum', 4)
+  metadataExportMode = _messages.EnumField('MetadataExportModeValueValuesEnum', 3)
+  storageUri = _messages.StringField(4)
+  tableFormat = _messages.EnumField('TableFormatValueValuesEnum', 5)
 
 
 class BigQueryModelTraining(_messages.Message):

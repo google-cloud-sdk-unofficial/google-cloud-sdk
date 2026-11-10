@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: false
+  help_text:
     brief: delete an Image Import resource.
     description: |
       {command} deletes an Image Import resource.

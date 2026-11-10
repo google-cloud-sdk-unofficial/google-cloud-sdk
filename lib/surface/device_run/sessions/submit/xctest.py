@@ -182,6 +182,17 @@ class XcTest(base.Command):
         ),
     )
     parser.add_argument(
+        '--app-privacy-report',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=(
+            "Whether to collect Apple's App Privacy Report during the test"
+            ' run. The report records app activity, such as network and domain'
+            ' requests and access to sensitive resources like the camera,'
+            ' photos, or location. The report is written to'
+            ' `AppActivityReport.ndjson` in the execution output directory.'
+        ),
+    )
+    parser.add_argument(
         '--locale',
         type=str,
         help=(
@@ -345,6 +356,13 @@ class XcTest(base.Command):
           )
       )
       device_actions.append(video_action)
+
+    if args.app_privacy_report:
+      device_actions.append(
+          messages.DeviceAction(
+              iosAppPrivacyReport=messages.IosAppPrivacyReportDeviceAction()
+          )
+      )
 
     if args.locale:
       locale_action = messages.DeviceAction(

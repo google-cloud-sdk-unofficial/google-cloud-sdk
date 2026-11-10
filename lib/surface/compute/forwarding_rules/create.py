@@ -32,7 +32,12 @@ import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
 
-def _Args(parser, support_all_protocol, support_external_passthrough):
+def _Args(
+    parser,
+    support_all_protocol,
+    support_external_passthrough,
+    support_network_attachment=False,
+):
   """Add the flags to create a forwarding rule."""
 
   flags.AddCreateArgs(
@@ -41,6 +46,8 @@ def _Args(parser, support_all_protocol, support_external_passthrough):
       include_target_service_attachment=True,
       include_external_passthrough=support_external_passthrough,
   )
+  if support_network_attachment:
+    flags.AddNetworkAttachmentGroup(parser)
   flags.AddIPProtocols(parser, support_all_protocol)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
@@ -81,6 +88,7 @@ class CreateHelper(object):
       support_all_protocol,
       support_sd_registration_for_regional,
       support_external_passthrough,
+      support_network_attachment=False,
   ):
     self._holder = holder
     self._support_all_protocol = support_all_protocol
@@ -88,12 +96,22 @@ class CreateHelper(object):
         support_sd_registration_for_regional
     )
     self._support_external_passthrough = support_external_passthrough
+    self._support_network_attachment = support_network_attachment
 
   @classmethod
-  def Args(cls, parser, support_all_protocol, support_external_passthrough):
+  def Args(
+      cls,
+      parser,
+      support_all_protocol,
+      support_external_passthrough,
+      support_network_attachment=False,
+  ):
     """Inits the class args for supported features."""
     cls.FORWARDING_RULE_ARG = _Args(
-        parser, support_all_protocol, support_external_passthrough
+        parser,
+        support_all_protocol,
+        support_external_passthrough,
+        support_network_attachment=support_network_attachment,
     )
 
   def ConstructProtocol(self, messages, args):
@@ -158,6 +176,14 @@ class CreateHelper(object):
           serviceDirectoryRegion=region, namespace=namespace)
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
+    if self._support_network_attachment:
+      if args.IsSpecified('network_attachment'):
+        raise exceptions.BadArgumentException(
+            '--network-attachment',
+            '[--network-attachment] may not be specified for global forwarding'
+            ' rules.',
+        )
+
     # All global forwarding rules must use EXTERNAL or INTERNAL_SELF_MANAGED
     # schemes presently.
     load_balancing_scheme = _GetLoadBalancingScheme(
@@ -398,6 +424,32 @@ class CreateHelper(object):
 
     self._ProcessCommonArgs(client, resources, args, forwarding_rule_ref,
                             forwarding_rule)
+
+    if self._support_network_attachment:
+      if args.IsSpecified('network_attachment'):
+        if args.IsSpecified('network') or args.IsSpecified('subnet'):
+          raise exceptions.InvalidArgumentException(
+              '--network-attachment',
+              '--network-attachment cannot be specified with --network or'
+              ' --subnet.',
+          )
+        if args.IsSpecified('target_instance'):
+          raise exceptions.InvalidArgumentException(
+              '--network-attachment',
+              '--network-attachment cannot be specified with'
+              ' --target-instance.',
+          )
+        network_attachment_ref = resources.Parse(
+            args.network_attachment,
+            collection='compute.networkAttachments',
+            params={
+                'project': forwarding_rule_ref.project,
+                'region': forwarding_rule_ref.region,
+            },
+        )
+        forwarding_rule.networkAttachment = network_attachment_ref.SelfLink()
+      if args.IsSpecified('service_class_id'):
+        forwarding_rule.serviceClassId = args.service_class_id
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
 
@@ -649,11 +701,15 @@ class Create(base.CreateCommand):
   _support_all_protocol = False
   _support_sd_registration_for_regional = False
   _support_external_passthrough = False
+  _support_network_attachment = False
 
   @classmethod
   def Args(cls, parser):
     CreateHelper.Args(
-        parser, cls._support_all_protocol, cls._support_external_passthrough
+        parser,
+        cls._support_all_protocol,
+        cls._support_external_passthrough,
+        support_network_attachment=cls._support_network_attachment,
     )
 
   def Run(self, args):
@@ -663,6 +719,7 @@ class Create(base.CreateCommand):
         self._support_all_protocol,
         self._support_sd_registration_for_regional,
         self._support_external_passthrough,
+        support_network_attachment=self._support_network_attachment,
     ).Run(args)
 
 
@@ -672,6 +729,7 @@ class CreateBeta(Create):
   _support_all_protocol = False
   _support_sd_registration_for_regional = True
   _support_external_passthrough = True
+  _support_network_attachment = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -680,6 +738,7 @@ class CreateAlpha(CreateBeta):
   _support_all_protocol = True
   _support_sd_registration_for_regional = True
   _support_external_passthrough = True
+  _support_network_attachment = True
 
 
 Create.detailed_help = {

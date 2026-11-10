@@ -119,8 +119,7 @@ class SequenceTextWrapper(textwrap.TextWrapper):
         # Build a mapping from stripped text positions to original text positions.
         #
         # Track where each character ENDS so that sequences between characters
-        # attach to the following text (not preceding text). This ensures sequences
-        # aren't lost when whitespace is dropped.
+        # attach to the following text, keeping them when whitespace is dropped.
         #
         # char_end[i] = position in original text right after the i-th stripped char
         char_end: list[int] = []
@@ -197,15 +196,17 @@ class SequenceTextWrapper(textwrap.TextWrapper):
         """
         Wrap chunks into lines using sequence-aware width.
 
-        Override TextWrapper._wrap_chunks to use _width instead of len. Follows stdlib's algorithm:
+        Override TextWrapper._wrap_chunks to measure with _width. Follows stdlib's algorithm:
         greedily fill lines, handle long words.  Also handle OSC hyperlink processing. When
         hyperlinks span multiple lines, each line gets complete open/close sequences with matching
         id parameters for hover underlining continuity per OSC 8 spec.
         """
         # pylint: disable=too-many-branches,too-many-statements,too-complex,too-many-locals
         # pylint: disable=too-many-nested-blocks
-        # the hyperlink code in particular really pushes the complexity rating of this method.
-        # preferring to keep it "all in one method" because of so much local state and manipulation.
+        # The hyperlink code pushes the complexity rating of this method.  It stays in one method
+        # because of the shared local state.
+        if self.width <= 0:
+            raise ValueError('invalid width %r (must be > 0)' % self.width)
         if not chunks:
             return []
 
@@ -248,7 +249,7 @@ class SequenceTextWrapper(textwrap.TextWrapper):
 
             # Drop leading whitespace (except at very start)
             # When dropping, transfer any sequences to the next chunk.
-            # Only drop if there's actual whitespace text, not if it's only sequences.
+            # Only drop when actual whitespace text is present.
             stripped = self._strip_sequences(chunks[-1])
             if self.drop_whitespace and lines and stripped and not stripped.strip():
                 sequences = self._extract_sequences(chunks[-1])
@@ -279,7 +280,7 @@ class SequenceTextWrapper(textwrap.TextWrapper):
 
             # Drop trailing whitespace
             # When dropping, transfer any sequences to the previous chunk.
-            # Only drop if there's actual whitespace text, not if it's only sequences.
+            # Only drop when actual whitespace text is present.
             stripped_last = self._strip_sequences(current_line[-1]) if current_line else ''
             if (self.drop_whitespace and current_line and
                     stripped_last and not stripped_last.strip()):
@@ -352,6 +353,8 @@ class SequenceTextWrapper(textwrap.TextWrapper):
                     # (matches CPython #140627 fix behavior)
                     if self.drop_whitespace:
                         line_content = line_content.rstrip()
+                        if not line_content:
+                            continue
                     lines.append(indent + line_content)
                     is_first_line = False
                 else:
@@ -422,30 +425,29 @@ class SequenceTextWrapper(textwrap.TextWrapper):
         if self.break_long_words:
             break_at_hyphen = False
             hyphen_end = 0
+            # End of the prefix that fits within space_left by display width.
+            prefix_end = self._find_break_position(chunk, space_left)
 
-            # Handle break_on_hyphens: find last hyphen within space_left
+            # Handle break_on_hyphens: find last hyphen in the portion that fits.
             if self.break_on_hyphens:
-                # Strip sequences to find hyphen in logical text
-                stripped = self._strip_sequences(chunk)
-                if len(stripped) > space_left:
-                    # Find last hyphen in the portion that fits
-                    hyphen_pos = stripped.rfind('-', 0, space_left)
-                    if hyphen_pos > 0 and any(c != '-' for c in stripped[:hyphen_pos]):
-                        # Map back to original position including sequences
-                        hyphen_end = self._map_stripped_pos_to_original(chunk, hyphen_pos + 1)
-                        break_at_hyphen = True
+                stripped = self._strip_sequences(chunk[:prefix_end])
+                hyphen_pos = stripped.rfind('-')
+                if hyphen_pos > 0 and any(c != '-' for c in stripped[:hyphen_pos]):
+                    # Map back to original position including sequences
+                    hyphen_end = self._map_stripped_pos_to_original(chunk, hyphen_pos + 1)
+                    break_at_hyphen = True
 
             # Break at grapheme boundaries to avoid splitting multi-codepoint characters
             if break_at_hyphen:
                 actual_end = hyphen_end
             else:
-                actual_end = self._find_break_position(chunk, space_left)
-                # If no progress possible (e.g., wide char exceeds line width),
-                # force at least one grapheme to avoid infinite loop.
-                # Only force when cur_line is empty; if line has content,
-                # appending nothing is safe and the line will be committed.
-                if actual_end == 0 and not cur_line:
-                    actual_end = self._find_first_grapheme_end(chunk)
+                actual_end = prefix_end
+                # Include first visible unit when break would take only leading sequences.
+                if not cur_line and (
+                        actual_end == 0
+                        or (actual_end < len(chunk)
+                            and self._width(chunk[:actual_end]) == 0)):
+                    actual_end = self._find_first_visible_break(chunk)
             cur_line.append(chunk[:actual_end])
             reversed_chunks[-1] = chunk[actual_end:]
 
@@ -500,9 +502,15 @@ class SequenceTextWrapper(textwrap.TextWrapper):
         # exceeds and we return from within the loop. Type checker requires this.
         return idx  # pragma: no cover
 
-    def _find_first_grapheme_end(self, text: str) -> int:
-        """Find the end position of the first grapheme."""
-        return len(next(iter_graphemes(text)))
+    def _find_first_visible_break(self, text: str) -> int:
+        """End of leading escape sequences plus the first grapheme."""
+        idx = 0
+        while idx < len(text) and text[idx] == '\x1b':
+            match = ZERO_WIDTH_PATTERN.match(text, idx)
+            if match is None:
+                break
+            idx = match.end()
+        return idx + len(next(iter_graphemes(text, start=idx)))
 
     def _rstrip_visible(self, text: str) -> str:
         """Strip trailing visible whitespace, preserving trailing sequences."""
@@ -543,8 +551,8 @@ def wrap(text: str, width: int = 70, *,
     r"""
     Wrap text to fit within given width, returning a list of wrapped lines.
 
-    Like :func:`textwrap.wrap`, but measures width in display cells rather than
-    characters, correctly handling wide characters, combining marks, and terminal
+    Like :func:`textwrap.wrap`, but measures width in display cells, correctly
+    handling wide characters, combining marks, and terminal
     escape sequences.
 
     :param text: Text to wrap, may contain terminal sequences.
@@ -604,6 +612,13 @@ def wrap(text: str, width: int = 70, *,
         >>> [line for para in text.split('\n')
         ...  for line in (wrap(para, 40) if para else [''])]
         ['First line.', 'Second line.']
+
+    .. note::
+
+       Segmentation follows UAX #29 grapheme clusters. Tamil, Kannada and Sinhala may break in the
+       middle of a conjunct and fall short of ``width``. Correct rendering of these languages is
+       not specified by unicode.org standards, and no terminal emulator or editor handles them
+       legibly, so this library function makes no attempt at accommodating them.
 
     .. seealso::
 

@@ -7,16 +7,15 @@
 
 """SQL Lexer"""
 import re
-from threading import Lock
 
 # This code is based on the SqlLexer in pygments.
 # http://pygments.org/
 # It's separated from the rest of pygments to increase performance
 # and to allow some customizations.
-
 from io import TextIOBase
+from threading import Lock
 
-from sqlparse import tokens, keywords
+from sqlparse import keywords, tokens
 from sqlparse.utils import consume
 
 
@@ -131,11 +130,25 @@ class Lexer:
                 except UnicodeDecodeError:
                     text = text.decode('unicode-escape')
         else:
-            raise TypeError("Expected text or file-like object, got {!r}".
-                            format(type(text)))
+            raise TypeError(f"Expected text or file-like object, got {type(text)!r}")
+
+        delimited_spans = keywords.find_delimited_spans(text)
+        span_openers = delimited_spans.openers
 
         iterable = enumerate(text)
         for pos, char in iterable:
+            # Only positions the lexer actually reaches may open a
+            # dollar-quoted literal or a multiline comment; a delimiter
+            # inside a string literal or behind a "--" comment is skipped
+            # along with its surrounding token and never resolved.
+            if pos in span_openers:
+                resolved = delimited_spans.resolve(pos)
+                if resolved is not None:
+                    end, ttype = resolved
+                    yield ttype, text[pos:end]
+                    consume(iterable, end - pos - 1)
+                    continue
+
             for rexmatch, action in self._SQL_REGEX:
                 m = rexmatch(text, pos)
 

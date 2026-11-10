@@ -100,28 +100,53 @@ class PipelineIdFromFileFallthrough(deps.ArgFallthrough):
     return pipeline_config.ExtractPipelineId(path)
 
 
-def PipelineAttributeConfig():
+def PipelineAttributeConfig(from_file=False):
+  """Returns the attribute config for a pipeline ID.
+
+  Args:
+    from_file: bool, whether the ID may fall through to `name` in the pipeline
+      definition file named by --file.
+
+  Returns:
+    concepts.ResourceParameterAttributeConfig, the pipeline attribute config.
+  """
+  help_text = 'The ID of the {resource}.'
+  fallthroughs = []
+  if from_file:
+    help_text += (
+        ' If omitted, it is read from `name` in the pipeline definition file.'
+    )
+    fallthroughs.append(PipelineIdFromFileFallthrough())
   return concepts.ResourceParameterAttributeConfig(
       name='pipeline',
-      fallthroughs=[PipelineIdFromFileFallthrough()],
-      help_text=(
-          'The ID of the {resource}. If omitted, it is read from '
-          '`name` in the pipeline definition file.'
-      ))
+      fallthroughs=fallthroughs,
+      help_text=help_text,
+  )
 
 
-def GetPipelineResourceSpec():
+def GetPipelineResourceSpec(from_file=False):
+  """Returns the resource spec for a Cloud Build pipeline.
+
+  Args:
+    from_file: bool, whether the pipeline ID may fall through to `name` in the
+      pipeline definition file named by --file.
+
+  Returns:
+    concepts.ResourceSpec, the pipeline resource spec.
+  """
   return concepts.ResourceSpec(
       'cloudbuild.projects.locations.pipelines',
       api_version='v1',
       resource_name='pipeline',
       projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
       locationsId=RegionAttributeConfig(),
-      pipelinesId=PipelineAttributeConfig(),
+      pipelinesId=PipelineAttributeConfig(from_file),
       disable_auto_completers=False)
 
 
-def AddPipelineResourceArg(parser, verb, positional=True, required=True):
+def AddPipelineResourceArg(
+    parser, verb, positional=True, required=True, from_file=False
+):
   """Adds a pipeline resource argument to the parser.
 
   Args:
@@ -130,11 +155,14 @@ def AddPipelineResourceArg(parser, verb, positional=True, required=True):
       such as 'to apply'.
     positional: bool, whether the anchor is a positional argument.
     required: bool, whether the resource must resolve. The anchor is still
-      accepted as an optional positional, because it has a fallthrough.
+      accepted as an optional positional when `from_file` is True, because it
+      has a fallthrough.
+    from_file: bool, whether the pipeline ID may fall through to `name` in the
+      pipeline definition file named by --file.
   """
   concept_parsers.ConceptParser.ForResource(
       'pipeline' if positional else '--pipeline',
-      GetPipelineResourceSpec(),
+      GetPipelineResourceSpec(from_file),
       'The Cloud Build pipeline {}.'.format(verb),
       required=required).AddToParser(parser)
 

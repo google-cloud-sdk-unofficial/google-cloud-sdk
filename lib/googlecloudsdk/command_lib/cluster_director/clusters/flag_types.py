@@ -320,6 +320,10 @@ class FlagTypes:
                   spec=self._GetSlurmNodeConfigSpec(),
                   enable_shorthand=True,
               ),
+              "resourcePolicyConfig": arg_parsers.ArgObject(
+                  spec={"acceleratorTopology": str},
+                  enable_shorthand=True,
+              ),
               "computeInstance": arg_parsers.ArgObject(
                   spec={
                       "startupScript": str,
@@ -433,6 +437,7 @@ class FlagTypes:
         "acceleratorTopology": str,
         "enablePublicIps": bool,
         "startupScript": arg_parsers.ArgObject(),
+        "startupScriptTimeout": str,
         "bootDisk": self.GetProtoBootDiskType(),
         "storageConfigs": STORAGE_CONFIG,
     }

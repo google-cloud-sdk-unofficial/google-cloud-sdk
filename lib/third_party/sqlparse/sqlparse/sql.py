@@ -18,8 +18,11 @@ class NameAliasMixin:
 
     def get_real_name(self):
         """Returns the real name (object name) of this identifier."""
-        # a.b
-        dot_idx, _ = self.token_next_by(m=(T.Punctuation, '.'))
+        # a.b.c -> real name is the component after the *last* dot
+        dot_idx = None
+        for idx, tok in enumerate(self.tokens):
+            if tok.match(T.Punctuation, '.'):
+                dot_idx = idx
         return self._get_first_name(dot_idx, real_name=True)
 
     def get_alias(self):
@@ -44,8 +47,16 @@ class Token:
     the type of the token.
     """
 
-    __slots__ = ('value', 'ttype', 'parent', 'normalized', 'is_keyword',
-                 'is_group', 'is_whitespace', 'is_newline')
+    __slots__ = (
+        'is_group',
+        'is_keyword',
+        'is_newline',
+        'is_whitespace',
+        'normalized',
+        'parent',
+        'ttype',
+        'value',
+    )
 
     def __init__(self, ttype, value):
         value = str(value)
@@ -110,10 +121,7 @@ class Token:
             flag = re.IGNORECASE if self.is_keyword else 0
             values = (re.compile(v, flag) for v in values)
 
-            for pattern in values:
-                if pattern.search(self.normalized):
-                    return True
-            return False
+            return any(pattern.search(self.normalized) for pattern in values)
 
         if self.is_keyword:
             values = (v.upper() for v in values)
@@ -159,7 +167,7 @@ class TokenList(Token):
     def __init__(self, tokens=None):
         self.tokens = tokens or []
         [setattr(token, 'parent', self) for token in self.tokens]
-        super().__init__(None, str(self))
+        super().__init__(None, ''.join(token.value for token in self.tokens))
         self.is_group = True
 
     def __str__(self):
@@ -267,7 +275,7 @@ class TokenList(Token):
 
     def token_not_matching(self, funcs, idx):
         funcs = (funcs,) if not isinstance(funcs, (list, tuple)) else funcs
-        funcs = [lambda tk: not func(tk) for func in funcs]
+        funcs = [lambda tk, func=func: not func(tk) for func in funcs]
         return self._token_matching(funcs, idx)
 
     def token_matching(self, funcs, idx):
@@ -322,7 +330,7 @@ class TokenList(Token):
             grp = start
             grp.tokens.extend(subtokens)
             del self.tokens[start_idx + 1:end_idx]
-            grp.value = str(start)
+            grp.value += ''.join(token.value for token in subtokens)
         else:
             subtokens = self.tokens[start_idx:end_idx]
             grp = grp_cls(subtokens)
@@ -583,10 +591,7 @@ class Case(TokenList):
 
         for token in self.tokens:
             # Set mode from the current statement
-            if token.match(T.Keyword, 'CASE'):
-                continue
-
-            elif skip_ws and token.ttype in T.Whitespace:
+            if token.match(T.Keyword, 'CASE') or (skip_ws and token.ttype in T.Whitespace):
                 continue
 
             elif token.match(T.Keyword, 'WHEN'):

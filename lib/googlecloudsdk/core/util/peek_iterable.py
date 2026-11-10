@@ -37,6 +37,8 @@ class Peeker(object):
   def __init__(self, iterable):
     self._iterable = iterable
     self._peek = self._Peek()
+    # TODO(b/570015909): _Peek sets _peek_seen for an empty iterator, but this
+    # resets it, so iterating an empty Peeker yields a phantom None item.
     self._peek_seen = False
 
   def __iter__(self):
@@ -44,6 +46,8 @@ class Peeker(object):
 
   def _Peek(self):
     """Peeks the first item from the iterable."""
+    # TODO(b/570015554): A TypeError raised by the iterator itself is caught as
+    # if the object were not an iterator, so the iterator becomes the item.
     try:
       # Object is a generator or iterator.
       return next(self._iterable)
@@ -69,6 +73,8 @@ class Peeker(object):
     if not self._peek_seen:
       self._peek_seen = True
       return self._peek
+    # TODO(b/570015554): A TypeError raised by the iterator itself is caught as
+    # if the object were not an iterator, so the iteration silently stops.
     try:
       # Object is a generator or iterator.
       return next(self._iterable)
@@ -174,6 +180,9 @@ class Tapper(object):
     if self._injected:
       self._injected = False
       return self._injected_value
+    # TODO(b/570015554): A TypeError raised by the iterator itself, including
+    # the tap of an inner Tapper, is caught as if the object were not an
+    # iterator, so the iterator is returned as an item.
     try:
       # Object is a generator or iterator.
       return next(self._iterable)

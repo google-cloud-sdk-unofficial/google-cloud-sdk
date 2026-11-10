@@ -11981,6 +11981,30 @@ class GoogleCloudDialogflowV2CesToolSpec(_messages.Message):
     cesTool: Optional. Format: `projects//locations//apps//tools/`.
     confirmationRequirement: Optional. Indicates whether the tool requires
       human confirmation.
+    parameterOverrides: Optional. Only applicable for CompanionAgent.
+      Overrides for the tool's input parameters. When the tool is called, each
+      listed parameter is set to the value found in the ingested context
+      references, populating it if omitted by the model or replacing any value
+      predicted by the model. Duplicate entries for the same `parameter_name`
+      are disallowed and rejected during Companion Agent validation.
+    proactiveEnabled: Optional. Only applicable for CompanionAgent. Indicates
+      whether the tool is enabled in proactive mode. All tools are enabled in
+      proactive mode by default. To disable a tool in proactive mode, set this
+      field to false. NOTE: At least one of `proactive_enabled` or
+      `reactive_enabled` should be true else the tool will be ignored.
+    reactiveEnabled: Optional. Only applicable for CompanionAgent. Indicates
+      whether the tool is enabled in reactive mode. Currently supported tools
+      are: - CX Agent Studio GoogleSearchTool: Represents a tool to perform
+      Google web searches for grounding. See:
+      https://docs.cloud.google.com/customer-engagement-ai/conversational-
+      agents/ps/tool/search) - CX Agent Studio DataStoreTool: Tool to retrieve
+      from Vertex AI Search datastore or engine for grounding. See:
+      https://docs.cloud.google.com/customer-engagement-ai/conversational-
+      agents/ps/tool/data-store) All tools are disabled in reactive mode by
+      default. To enable a tool in reactive mode, set this field to true.
+      NOTE: - At least one of `reactive_enabled` or `proactive_enabled` should
+      be true else the tool will be ignored. - CompanionAgent config will
+      throw an error if any unsupported tool is enabled in reactive mode.
   """
 
   class ConfirmationRequirementValueValuesEnum(_messages.Enum):
@@ -11998,6 +12022,9 @@ class GoogleCloudDialogflowV2CesToolSpec(_messages.Message):
 
   cesTool = _messages.StringField(1)
   confirmationRequirement = _messages.EnumField('ConfirmationRequirementValueValuesEnum', 2)
+  parameterOverrides = _messages.MessageField('GoogleCloudDialogflowV2ParameterOverride', 3, repeated=True)
+  proactiveEnabled = _messages.BooleanField(4)
+  reactiveEnabled = _messages.BooleanField(5)
 
 
 class GoogleCloudDialogflowV2ClearSuggestionFeatureConfigOperationMetadata(_messages.Message):
@@ -15736,6 +15763,16 @@ class GoogleCloudDialogflowV2InputAudioConfig(_messages.Message):
     ModelVariantValueValuesEnum: Which variant of the Speech model to use.
 
   Fields:
+    alternativeLanguageCodes: Optional. A list of up to 3 additional
+      [BCP-47](https://www.rfc-editor.org/rfc/bcp/bcp47.txt) language tags,
+      listing possible alternative languages of the supplied audio. See
+      [Language
+      Support](https://cloud.google.com/dialogflow/docs/reference/language)
+      for a list of the currently supported language codes. If alternative
+      languages are listed, recognition result will contain recognition in the
+      most likely language detected including the main language_code. The
+      recognition result will include the language tag of the language
+      detected in the audio. Extra language codes will be ignored.
     audioEncoding: Required. Audio encoding of the audio content to process.
     disableInterimInputTranscripts: Optional. Disables emission of interim
       input transcriptions when set to `true`.
@@ -15879,23 +15916,24 @@ class GoogleCloudDialogflowV2InputAudioConfig(_messages.Message):
     USE_STANDARD = 2
     USE_ENHANCED = 3
 
-  audioEncoding = _messages.EnumField('AudioEncodingValueValuesEnum', 1)
-  disableInterimInputTranscripts = _messages.BooleanField(2)
-  disableNoSpeechRecognizedEvent = _messages.BooleanField(3)
-  enableAutomaticPunctuation = _messages.BooleanField(4)
-  enableVoiceActivityEvents = _messages.BooleanField(5)
-  enableWordInfo = _messages.BooleanField(6)
-  geminiAsrConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig', 7)
-  languageCode = _messages.StringField(8)
-  model = _messages.StringField(9)
-  modelVariant = _messages.EnumField('ModelVariantValueValuesEnum', 10)
-  optOutConformerModelMigration = _messages.BooleanField(11)
-  phraseHints = _messages.StringField(12, repeated=True)
-  phraseSets = _messages.StringField(13, repeated=True)
-  sampleRateHertz = _messages.IntegerField(14, variant=_messages.Variant.INT32)
-  singleUtterance = _messages.BooleanField(15)
-  speechContexts = _messages.MessageField('GoogleCloudDialogflowV2SpeechContext', 16, repeated=True)
-  useGeminiAsr = _messages.BooleanField(17)
+  alternativeLanguageCodes = _messages.StringField(1, repeated=True)
+  audioEncoding = _messages.EnumField('AudioEncodingValueValuesEnum', 2)
+  disableInterimInputTranscripts = _messages.BooleanField(3)
+  disableNoSpeechRecognizedEvent = _messages.BooleanField(4)
+  enableAutomaticPunctuation = _messages.BooleanField(5)
+  enableVoiceActivityEvents = _messages.BooleanField(6)
+  enableWordInfo = _messages.BooleanField(7)
+  geminiAsrConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig', 8)
+  languageCode = _messages.StringField(9)
+  model = _messages.StringField(10)
+  modelVariant = _messages.EnumField('ModelVariantValueValuesEnum', 11)
+  optOutConformerModelMigration = _messages.BooleanField(12)
+  phraseHints = _messages.StringField(13, repeated=True)
+  phraseSets = _messages.StringField(14, repeated=True)
+  sampleRateHertz = _messages.IntegerField(15, variant=_messages.Variant.INT32)
+  singleUtterance = _messages.BooleanField(16)
+  speechContexts = _messages.MessageField('GoogleCloudDialogflowV2SpeechContext', 17, repeated=True)
+  useGeminiAsr = _messages.BooleanField(18)
 
 
 class GoogleCloudDialogflowV2InputConfig(_messages.Message):
@@ -17795,6 +17833,28 @@ class GoogleCloudDialogflowV2OutputAudioConfig(_messages.Message):
   synthesizeSpeechConfig = _messages.MessageField('GoogleCloudDialogflowV2SynthesizeSpeechConfig', 3)
 
 
+class GoogleCloudDialogflowV2ParameterOverride(_messages.Message):
+  r"""Overrides a tool input parameter with a value from the ingested context
+  references, populating it if omitted by the model or replacing any value
+  predicted by the model. Only applicable for CompanionAgent.
+
+  Fields:
+    contextReferenceKey: Required. The key of the context reference in
+      ingested context references.
+    fieldPath: Optional. The path into the JSON object of the latest content
+      ingested under `context_reference_key` (e.g. `email` or `user.email`).
+      If omitted, the entire content under `context_reference_key` is used. If
+      the path cannot be resolved when the tool is called, the value predicted
+      by the model is used (or omitted if the model did not predict it).
+    parameterName: Required. The name of the tool input parameter to override,
+      as defined in the tool's input schema. For example, `user_email`.
+  """
+
+  contextReferenceKey = _messages.StringField(1)
+  fieldPath = _messages.StringField(2)
+  parameterName = _messages.StringField(3)
+
+
 class GoogleCloudDialogflowV2Participant(_messages.Message):
   r"""Represents a conversation participant (human agent, virtual agent, end-
   user).
@@ -19620,6 +19680,12 @@ class GoogleCloudDialogflowV2SpeechToTextConfig(_messages.Message):
       language does not exist, then it would emit an error.
 
   Fields:
+    alternativeLanguageCodes: Optional. Defines the list of other language
+      codes in addition to the one provided by the conversation profile that
+      may be detected as the language code for the utterances over the
+      conversation. See [Language
+      Support](https://cloud.google.com/dialogflow/docs/reference/language)
+      for a list of the currently supported language codes.
     audioEncoding: Audio encoding of the audio content to process.
     disableInterimInputTranscripts: Optional. Disables emission of interim
       input transcriptions when set to `true`.
@@ -19754,17 +19820,18 @@ class GoogleCloudDialogflowV2SpeechToTextConfig(_messages.Message):
     USE_STANDARD = 2
     USE_ENHANCED = 3
 
-  audioEncoding = _messages.EnumField('AudioEncodingValueValuesEnum', 1)
-  disableInterimInputTranscripts = _messages.BooleanField(2)
-  enableWordInfo = _messages.BooleanField(3)
-  geminiAsrConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig', 4)
-  languageCode = _messages.StringField(5)
-  model = _messages.StringField(6)
-  phraseSets = _messages.StringField(7, repeated=True)
-  sampleRateHertz = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  speechModelVariant = _messages.EnumField('SpeechModelVariantValueValuesEnum', 9)
-  useGeminiAsr = _messages.BooleanField(10)
-  useTimeoutBasedEndpointing = _messages.BooleanField(11)
+  alternativeLanguageCodes = _messages.StringField(1, repeated=True)
+  audioEncoding = _messages.EnumField('AudioEncodingValueValuesEnum', 2)
+  disableInterimInputTranscripts = _messages.BooleanField(3)
+  enableWordInfo = _messages.BooleanField(4)
+  geminiAsrConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig', 5)
+  languageCode = _messages.StringField(6)
+  model = _messages.StringField(7)
+  phraseSets = _messages.StringField(8, repeated=True)
+  sampleRateHertz = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  speechModelVariant = _messages.EnumField('SpeechModelVariantValueValuesEnum', 10)
+  useGeminiAsr = _messages.BooleanField(11)
+  useTimeoutBasedEndpointing = _messages.BooleanField(12)
 
 
 class GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig(_messages.Message):
@@ -21514,6 +21581,20 @@ class GoogleCloudDialogflowV2ToolsetTool(_messages.Message):
       human confirmation.
     operationId: Optional. The operationId field of the OpenAPI endpoint. The
       operationId must be present in the toolset's definition.
+    parameterOverrides: Optional. Only applicable for CompanionAgent.
+      Overrides for the tool's input parameters. When the tool is called, each
+      listed parameter is set to the value found in the ingested context
+      references, populating it if omitted by the model or replacing any value
+      predicted by the model. Duplicate entries for the same `parameter_name`
+      are disallowed and rejected during Companion Agent validation.
+    proactiveEnabled: Optional. Indicates whether the toolset tool is enabled
+      in proactive mode. Only applicable for CompanionAgent. NOTE: At least
+      one of `proactive_enabled` or `reactive_enabled` should be `true` else
+      the toolset tool will be ignored.
+    reactiveEnabled: Optional. Indicates whether the toolset tool is enabled
+      in reactive mode. Only applicable for CompanionAgent. NOTE: - At least
+      one of `reactive` or `proactive` should be `true` else the toolset tool
+      will be ignored.
     toolset: Required. The name of the toolset to retrieve the schema for.
       Format:
       `projects/{project}/locations/{location}/apps/{app}/toolsets/{toolset}`
@@ -21534,7 +21615,10 @@ class GoogleCloudDialogflowV2ToolsetTool(_messages.Message):
 
   confirmationRequirement = _messages.EnumField('ConfirmationRequirementValueValuesEnum', 1)
   operationId = _messages.StringField(2)
-  toolset = _messages.StringField(3)
+  parameterOverrides = _messages.MessageField('GoogleCloudDialogflowV2ParameterOverride', 3, repeated=True)
+  proactiveEnabled = _messages.BooleanField(4)
+  reactiveEnabled = _messages.BooleanField(5)
+  toolset = _messages.StringField(6)
 
 
 class GoogleCloudDialogflowV2TrainAgentRequest(_messages.Message):

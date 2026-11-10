@@ -40,7 +40,7 @@ class Startup(base.TopicCommand):
   You can ONLY consider using the CLOUDSDK_PYTHON environment variable when you
   are on:
 
-  - *Linux*: Installing from a versioned archives (`*.tar.gz*`) on ARM or x86
+  - *Linux*: Installing from a versioned archives (`*.tar.gz*`) on 32-bit x86
   architectures where Python is NOT included as part of the installation, gcloud
   will search for a compatible Python on your system PATH (looking for python3
   then python). You can set the `CLOUDSDK_PYTHON` environment variable to the

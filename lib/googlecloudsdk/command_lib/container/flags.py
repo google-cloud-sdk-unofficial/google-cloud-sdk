@@ -2064,6 +2064,8 @@ If unspecified, ephemeral storage is backed by the boot disk.
 Examples:
 
   $ {{command}} {0} --ephemeral-storage-local-ssd count=2
+  $ {{command}} {0} --ephemeral-storage-local-ssd count=2,capacity=2000GB
+  $ {{command}} {0} --ephemeral-storage-local-ssd capacity=2000GB
 
 'count' specifies the number of local SSDs to use to back ephemeral
 storage. Local SSDs use NVMe interfaces. For first- and second-generation
@@ -2071,13 +2073,15 @@ machine types, a nonzero count field is required for local ssd to be configured.
 For third-generation machine types, the count field is optional because the count
 is inferred from the machine type.
 
+'capacity' specifies the capacity set aside for ephemeral storage when using
+mixed Local SSD modes. The remaining capacity is raw block.
+
 See https://cloud.google.com/compute/docs/disks/local-ssd for more information.
 """.format(
       'node-pool-1 --cluster=example cluster'
       if for_node_pool
       else 'example_cluster'
   )
-  # TODO(b/549320796): Document capacity sub-property upon launch.
   parser.add_argument(
       '--ephemeral-storage-local-ssd',
       help=help_text,
@@ -6022,6 +6026,8 @@ topologyManager                        | specify topology manager policy and sco
 podPidsLimit                           | integer (The value must be greater than or equal to 1024 and less than 4194304.)
 containerLogMaxSize                    | positive number plus unit suffix (e.g., '100Mi', '0.2Gi'. The value must be between 10Mi and 500Mi, inclusive.)
 containerLogMaxFiles                   | integer (The value must be between [2, 10].)
+containerLogMaxWorkers                 | integer (The value must be between [1, 10].)
+containerLogMonitorInterval            | interval (e.g., '10s', '60s'. The value must be between 3s and 300s, inclusive.)
 imageGcLowThresholdPercent             | integer (The value must be between [10, 85], and lower than imageGcHighThresholdPercent.)
 imageGcHighThresholdPercent            | integer (The value must be between [10, 85], and greater than imageGcLowThresholdPercent.)
 imageMinimumGcAge                      | interval (e.g., '100s', '1m'. The value must be less than '2m'.)
@@ -6457,19 +6463,38 @@ Examples:
 
 def AddEnableAmbientNetworkingFlag(parser, hidden=False, is_update=False):
   """Adds the --enable-ambient-networking flag to the parser."""
-  help_text = """\
-  Enable Ambient Networking on the cluster.
-  """
   if is_update:
     parser.add_argument(
         '--enable-ambient-networking',
+        action=arg_parsers.StoreTrueFalseAction,
+        help='Enable or disable ambient networking on the cluster.',
+        hidden=hidden,
+    )
+  else:
+    parser.add_argument(
+        '--enable-ambient-networking',
+        action='store_true',
+        default=None,
+        help='Enable ambient networking on the cluster.',
+        hidden=hidden,
+    )
+
+
+def AddEnableCDPFFlag(parser, hidden=True, is_update=False):
+  """Adds the --enable-cdpf flag to the parser."""
+  help_text = """\
+  Enable Custom Dataplane Functions (CDPF) on the cluster.
+  """
+  if is_update:
+    parser.add_argument(
+        '--enable-cdpf',
         action=arg_parsers.StoreTrueFalseAction,
         help=help_text,
         hidden=hidden,
     )
   else:
     parser.add_argument(
-        '--enable-ambient-networking',
+        '--enable-cdpf',
         action='store_true',
         default=None,
         help=help_text,
@@ -7206,7 +7231,7 @@ def AddNodePoolEnablePrivateNodes(parser):
   )
 
 
-def AddNodePoolDatapathProviderFlags(parser, hidden=True):
+def AddNodePoolDatapathProviderFlags(parser, hidden=False):
   """Adds node pool datapath provider flags to parser."""
   parser.add_argument(
       '--datapath-provider',
@@ -7217,7 +7242,7 @@ def AddNodePoolDatapathProviderFlags(parser, hidden=True):
           'dataplane-v1': 'LEGACY_DATAPATH',
       },
       hidden=hidden,
-      help="""Specifies the datapath provider for the cluster.""",
+      help="""Specifies the datapath provider for the node pool.""",
   )
 
 

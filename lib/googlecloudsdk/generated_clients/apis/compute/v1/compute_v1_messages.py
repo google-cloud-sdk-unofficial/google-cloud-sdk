@@ -42721,7 +42721,8 @@ class ConfidentialInstanceConfig(_messages.Message):
     confidentialParavisorConfig: Defines a set of Confidential Paravisor
       (SVSM) options.
     enableConfidentialCompute: Defines whether the instance should have
-      confidential compute enabled.
+      confidential compute enabled. When enabled, the technology used defaults
+      to  AMD SEV unless confidentialInstanceType is specified.
   """
 
   class ConfidentialInstanceTypeValueValuesEnum(_messages.Enum):
@@ -42752,33 +42753,39 @@ class ConfidentialParavisorConfig(_messages.Message):
   r"""A set of Confidential Paravisor (SVSM) options.
 
   Enums:
-    ConfidentialTpmTypeValueValuesEnum:
-    SevSnpIrqModeValueValuesEnum:
+    ConfidentialTpmTypeValueValuesEnum: Defines the type of TPM to use for the
+      confidential instance.
+    SevSnpIrqModeValueValuesEnum: Defines the IRQ mode to use for the
+      confidential instance.
 
   Fields:
-    confidentialTpmType: A ConfidentialTpmTypeValueValuesEnum attribute.
-    sevSnpIrqMode: A SevSnpIrqModeValueValuesEnum attribute.
+    confidentialTpmType: Defines the type of TPM to use for the confidential
+      instance.
+    sevSnpIrqMode: Defines the IRQ mode to use for the confidential instance.
   """
 
   class ConfidentialTpmTypeValueValuesEnum(_messages.Enum):
-    r"""ConfidentialTpmTypeValueValuesEnum enum type.
+    r"""Defines the type of TPM to use for the confidential instance.
 
     Values:
-      CONFIDENTIAL_TPM_TYPE_UNSPECIFIED: <no description>
-      EPHEMERAL: <no description>
-      NO_CC_TPM: <no description>
+      CONFIDENTIAL_TPM_TYPE_UNSPECIFIED: No TPM type specified. Do not use
+        this value.
+      EPHEMERAL: An ephemeral vTPM running in the paravisor (SVSM).
+      NO_CC_TPM: No confidential computing vTPM is used in the paravisor
+        (SVSM).
     """
     CONFIDENTIAL_TPM_TYPE_UNSPECIFIED = 0
     EPHEMERAL = 1
     NO_CC_TPM = 2
 
   class SevSnpIrqModeValueValuesEnum(_messages.Enum):
-    r"""SevSnpIrqModeValueValuesEnum enum type.
+    r"""Defines the IRQ mode to use for the confidential instance.
 
     Values:
-      RESTRICTED: <no description>
-      SEV_SNP_IRQ_MODE_UNSPECIFIED: <no description>
-      UNRESTRICTED: <no description>
+      RESTRICTED: Restricted interrupt injection.
+      SEV_SNP_IRQ_MODE_UNSPECIFIED: No IRQ mode specified. Do not use this
+        value.
+      UNRESTRICTED: Unrestricted interrupt injection.
     """
     RESTRICTED = 0
     SEV_SNP_IRQ_MODE_UNSPECIFIED = 1
@@ -94949,7 +94956,8 @@ class Snapshot(_messages.Message):
   Enums:
     ArchitectureValueValuesEnum: Output only. [Output Only] The architecture
       of the snapshot. Valid values are ARM64 or X86_64.
-    SnapshotTypeValueValuesEnum: Indicates the type of the snapshot.
+    SnapshotTypeValueValuesEnum: Indicates the type of the snapshot. Valid
+      values are ARCHIVE or STANDARD. The default is STANDARD.
     StatusValueValuesEnum: Output only. [Output Only] The status of the
       snapshot. This can beCREATING, DELETING, FAILED,READY, or UPLOADING.
     StorageBytesStatusValueValuesEnum: Output only. [Deprecated] Instead,
@@ -95044,7 +95052,8 @@ class Snapshot(_messages.Message):
       is restricted.
     snapshotGroupName: Output only. [Output only] The snapshot group that this
       snapshot belongs to. The usage of snapshot group feature is restricted.
-    snapshotType: Indicates the type of the snapshot.
+    snapshotType: Indicates the type of the snapshot. Valid values are ARCHIVE
+      or STANDARD. The default is STANDARD.
     sourceDisk: The source disk used to create this snapshot.
     sourceDiskEncryptionKey: The customer-supplied encryption key of the
       source disk. Required if the source disk is protected by a customer-
@@ -95105,11 +95114,14 @@ class Snapshot(_messages.Message):
     X86_64 = 2
 
   class SnapshotTypeValueValuesEnum(_messages.Enum):
-    r"""Indicates the type of the snapshot.
+    r"""Indicates the type of the snapshot. Valid values are ARCHIVE or
+    STANDARD. The default is STANDARD.
 
     Values:
-      ARCHIVE: <no description>
-      STANDARD: <no description>
+      ARCHIVE: Indicates an archive snapshot, which is recommended for long-
+        term retention and compliance.
+      STANDARD: Indicates a standard snapshot, which is recommended for
+        frequent restores.
     """
     ARCHIVE = 0
     STANDARD = 1
@@ -101846,9 +101858,9 @@ class TargetHttpsProxy(_messages.Message):
       SSL Certificates or up to 100 Certificate Manager Certificates.
       Certificate Manager Certificates accepted formats are:        - //certif
       icatemanager.googleapis.com/projects/{project}/locations/{location}/cert
-      ificates/{resourceName}.    - https://certificatemanager.googleapis.com/
-      v1alpha1/projects/{project}/locations/{location}/certificates/{resourceN
-      ame}.
+      ificates/{resourceName}.    - https://certificatemanager.{universeDomain
+      }/v1alpha1/projects/{project}/locations/{location}/certificates/{resourc
+      eName}.
     sslPolicy: URL of SslPolicy resource that will be associated with the
       TargetHttpsProxy resource. If not set, the TargetHttpsProxy resource has
       no SSL policy configured.

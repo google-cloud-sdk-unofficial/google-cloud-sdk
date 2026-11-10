@@ -136,6 +136,8 @@
         - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:schema_from_file
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: false
   help_text:
     brief: Create a Data Catalog entry.
     description: Create a Data Catalog entry.

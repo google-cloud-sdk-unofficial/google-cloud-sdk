@@ -13,7 +13,7 @@ class VectorsearchV1beta(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://vectorsearch.mtls.googleapis.com/'
 
   _PACKAGE = 'vectorsearch'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/vectorsearch', 'https://www.googleapis.com/auth/vectorsearch.readonly']
   _VERSION = 'v1beta'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'
@@ -799,7 +799,7 @@ class VectorsearchV1beta(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a new DataStore in a given project and location.
+      r"""Creates a new DataStore in a given project and location. The DataStore's backing Collection (see `DataStore.collection_name`) is created with it. The request fails with `FAILED_PRECONDITION` if a Collection with that ID already exists, for example one kept when an earlier DataStore with the same ID was deleted without `backing_collection_deleted`.
 
       Args:
         request: (VectorsearchProjectsLocationsDataStoresCreateRequest) input message
@@ -880,7 +880,7 @@ class VectorsearchV1beta(base_api.BaseApiClient):
     )
 
     def ImportDocuments(self, request, global_params=None):
-      r"""Initiates a Long-Running Operation to import Documents into a DataStore. `ImportDocuments`, `PurgeDocuments` and `UpdateDataStore` run one at a time per DataStore. While one runs, one more can wait; any further request fails with `ABORTED` until the running operation finishes. To import many files, list them in one request's `gcs_source.input_uris` rather than sending parallel requests.
+      r"""Initiates a Long-Running Operation to import Documents into a DataStore. A file that was already imported successfully is skipped unless its Cloud Storage object has been overwritten since or, for `SOURCE_FORMAT_DOCUMENT_JSON`, its metadata has changed. Files that failed in an earlier import are processed again. Individual files that can't be imported are reported in the error report (see `ImportOutputConfig.error_gcs_prefix`) rather than failing the whole import. `ImportDocuments`, `PurgeDocuments` and `UpdateDataStore` run one at a time per DataStore. While one runs, one more can wait; any further request fails with `ABORTED` until the running operation finishes. To import many files, list them all in `input_uris` of one request rather than sending parallel requests.
 
       Args:
         request: (VectorsearchProjectsLocationsDataStoresImportDocumentsRequest) input message

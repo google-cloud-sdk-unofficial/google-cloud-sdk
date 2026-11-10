@@ -197,7 +197,7 @@ def GetEffectiveTokenUriFromCreds(cred_json, key='token_uri'):
   # default/mTLS host, use the token_uri from the credentials JSON.
   if (
       cred_json.get(key)
-      and cred_json.get(key) != properties.VALUES.auth.DEFAULT_TOKEN_HOST
+      and cred_json.get(key) != properties.VALUES.auth.token_host.default
       and cred_json.get(key) != properties.VALUES.auth.mtls_token_host.Get()
   ):
     return cred_json.get(key)

@@ -14,6 +14,8 @@
 # limitations under the License.
 - release_tracks:
   - ALPHA
+  hints:
+    read_only: true
   auto_generated: false
   help_text:
     brief: List machine learning runs

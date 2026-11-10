@@ -45,6 +45,9 @@ properties:
       pattern `projects|organizations/*/locations/{location}/securityP
       rofiles/{security_profile}`.
     type: string
+  scmProfile:
+    description: The SCM configuration for the SecurityProfile.
+    $ref: ScmProfile.yaml
   threatPreventionProfile:
     description: The threat prevention configuration for the SecurityProfile.
     $ref: ThreatPreventionProfile.yaml
@@ -57,6 +60,7 @@ properties:
     - CUSTOM_INTERCEPT
     - CUSTOM_MIRRORING
     - PROFILE_TYPE_UNSPECIFIED
+    - SCM
     - THREAT_PREVENTION
     - URL_FILTERING
     - WILDFIRE_ANALYSIS

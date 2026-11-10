@@ -2183,10 +2183,12 @@ class Finding(_messages.Message):
   Fields:
     category: Optional. Category of the finding.
     createTime: Output only. Create time.
+    detail: Optional. Detailed description of the finding.
     files: Optional. File associated with the finding.
     findingClass: Optional. Class of the finding.
     name: Identifier. Resource name of the Finding. Format:
       `projects/{project}/locations/{location}/findings/{finding}`.
+    resource: Optional. The resource that the finding is associated with.
     severity: Optional. Severity of the finding.
     uid: Output only. Universally unique identifier (UUID4) for the Finding.
     updateTime: Output only. Update time.
@@ -2228,12 +2230,14 @@ class Finding(_messages.Message):
 
   category = _messages.StringField(1)
   createTime = _messages.StringField(2)
-  files = _messages.MessageField('File', 3, repeated=True)
-  findingClass = _messages.EnumField('FindingClassValueValuesEnum', 4)
-  name = _messages.StringField(5)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 6)
-  uid = _messages.StringField(7)
-  updateTime = _messages.StringField(8)
+  detail = _messages.StringField(3)
+  files = _messages.MessageField('File', 4, repeated=True)
+  findingClass = _messages.EnumField('FindingClassValueValuesEnum', 5)
+  name = _messages.StringField(6)
+  resource = _messages.StringField(7)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 8)
+  uid = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class Frontmatter(_messages.Message):
@@ -3271,6 +3275,45 @@ class Publisher(_messages.Message):
   verifiedPrefix = _messages.StringField(6)
 
 
+class ScanResult(_messages.Message):
+  r"""Scan result of the skill revision.
+
+  Enums:
+    ScanStateValueValuesEnum: Output only. The state of the vulnerability
+      check.
+
+  Fields:
+    errorMessage: Output only. The error message if the scan failed.
+    findings: Output only. The finding resource names for the skill revision.
+    scanState: Output only. The state of the vulnerability check.
+    scanTime: Output only. The time when the scan was completed.
+  """
+
+  class ScanStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the vulnerability check.
+
+    Values:
+      SCAN_STATE_UNSPECIFIED: Should not be used.
+      FAILED: The underlying scanning system failed to execute the scan.
+      UNSUPPORTED_FORMAT: The uploaded artifact format is unsupported by the
+        scanning system.
+      SUCCEEDED: The scan has completed successfully.
+      DISABLED: The scan was disabled.
+      RUNNING: The scan is running.
+    """
+    SCAN_STATE_UNSPECIFIED = 0
+    FAILED = 1
+    UNSUPPORTED_FORMAT = 2
+    SUCCEEDED = 3
+    DISABLED = 4
+    RUNNING = 5
+
+  errorMessage = _messages.StringField(1)
+  findings = _messages.StringField(2, repeated=True)
+  scanState = _messages.EnumField('ScanStateValueValuesEnum', 3)
+  scanTime = _messages.StringField(4)
+
+
 class ScanningConfig(_messages.Message):
   r"""Configuration for scanning of the skill.
 
@@ -3738,6 +3781,7 @@ class SkillRevision(_messages.Message):
     gcsSource: Optional. Immutable. Cloud Storage object generation URI.
     name: Identifier. Resource name of the SkillRevision. Format: `projects/{p
       roject}/locations/{location}/skills/{skill}/revisions/{revision}`
+    scanResult: Output only. Scan result of the skill revision.
     sha256Hash: Output only. Cryptographic SHA-256 integrity and deduplication
       digest of the payload zip.
     sizeBytes: Output only. Size of the compiled zip payload in bytes (assists
@@ -3768,10 +3812,11 @@ class SkillRevision(_messages.Message):
   frontmatter = _messages.MessageField('Frontmatter', 3)
   gcsSource = _messages.MessageField('GcsSource', 4)
   name = _messages.StringField(5)
-  sha256Hash = _messages.StringField(6)
-  sizeBytes = _messages.IntegerField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  uid = _messages.StringField(9)
+  scanResult = _messages.MessageField('ScanResult', 6)
+  sha256Hash = _messages.StringField(7)
+  sizeBytes = _messages.IntegerField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  uid = _messages.StringField(10)
 
 
 class Source(_messages.Message):

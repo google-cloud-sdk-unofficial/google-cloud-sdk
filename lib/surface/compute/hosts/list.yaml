@@ -37,7 +37,6 @@
       help_text: |
         Name of the reservation block the hosts are associated with. This argument requires `--reservation` to be specified.
     - arg_name: reservation-subblock
-      release_tracks: [ALPHA]
       required: false
       help_text: |
         Name of the reservation subblock the hosts are associated with. This argument requires `--reservation` and `--reservation-block` to be specified.

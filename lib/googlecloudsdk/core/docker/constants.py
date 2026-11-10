@@ -134,5 +134,9 @@ DEFAULT_REGISTRIES_TO_AUTHENTICATE = ([DEFAULT_REGISTRY] +
 ALL_SUPPORTED_REGISTRIES = (
     DEFAULT_REGISTRIES_TO_AUTHENTICATE + REGIONAL_AR_REGISTRIES +
     LAUNCHER_REGISTRIES + MIRROR_REGISTRIES + [KUBERNETES_READ_ONLY])
+# LINT.IfChange(default_devshell_image)
 DEFAULT_DEVSHELL_IMAGE = (DEFAULT_REGISTRY + '/dev_con/cloud-dev-common:prod')
+# LINT.ThenChange(../properties/definitions/devshell.yaml:default_devshell_image)
+# LINT.IfChange(metadata_image)
 METADATA_IMAGE = DEFAULT_REGISTRY + '/google_appengine/faux-metadata:latest'
+# LINT.ThenChange(../properties/definitions/devshell.yaml:metadata_image)

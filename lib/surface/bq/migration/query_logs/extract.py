@@ -15,7 +15,9 @@
 """Implements command to extract query logs from a source data warehouse."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.bq.migration import cloud_extractor
 from googlecloudsdk.command_lib.bq.migration import extractor_flags
+from googlecloudsdk.command_lib.bq.migration import local_extractor
 
 
 @base.RegionalEndpointsSupported
@@ -25,6 +27,10 @@ from googlecloudsdk.command_lib.bq.migration import extractor_flags
 class Extract(base.Command):
   """Extract query logs from a source data warehouse."""
 
+  detailed_help = extractor_flags.GetDetailedHelp(
+      extractor_flags.ExtractType.QUERY_LOGS
+  )
+
   @staticmethod
   def Args(parser):
     extractor_flags.AddExtractorFlags(
@@ -32,5 +38,10 @@ class Extract(base.Command):
     )
 
   def Run(self, args):
-    # TODO: b/540961765 - Implement execution logic
-    pass
+    if args.run_mode == 'local':
+      return local_extractor.Run(
+          args, extract_type=extractor_flags.ExtractType.QUERY_LOGS
+      )
+    return cloud_extractor.Run(
+        args, extract_type=extractor_flags.ExtractType.QUERY_LOGS
+    )

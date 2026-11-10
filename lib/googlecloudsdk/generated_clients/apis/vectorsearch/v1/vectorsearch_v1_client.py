@@ -13,7 +13,7 @@ class VectorsearchV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://vectorsearch.mtls.googleapis.com/'
 
   _PACKAGE = 'vectorsearch'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/vectorsearch', 'https://www.googleapis.com/auth/vectorsearch.readonly']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

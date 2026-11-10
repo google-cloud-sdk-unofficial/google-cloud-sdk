@@ -55,13 +55,9 @@ apis:
     v1:
       discovery_doc: beyondcorp_v1.json
       default: false
-      skip:
-        bug: b/574347878
     v1alpha:
       discovery_doc: beyondcorp_v1alpha.json
       default: true
-      skip:
-        bug: b/574346555
   accessapproval:
     v1:
       discovery_doc: accessapproval_v1.json
@@ -1845,38 +1841,6 @@ apis:
       default: true
       unelidable_request_methods:
       - orgpolicy.organizations.customConstraints.patch
-  parallelstore:
-    v1alpha:
-      discovery_doc: parallelstore_v1alpha.json
-      default: true
-      resources:
-        projects.networks:
-          path: projects/{projectsId}/global/networks/{networksId}
-        projects.regions.addresses:
-          path:
-            projects/{projectsId}/regions/{regionsId}/addresses/{addressesId}
-        projects.serviceAccounts:
-          path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
-    v1beta:
-      discovery_doc: parallelstore_v1beta.json
-      resources:
-        projects.networks:
-          path: projects/{projectsId}/global/networks/{networksId}
-        projects.regions.addresses:
-          path:
-            projects/{projectsId}/regions/{regionsId}/addresses/{addressesId}
-        projects.serviceAccounts:
-          path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
-    v1:
-      discovery_doc: parallelstore_v1.json
-      resources:
-        projects.networks:
-          path: projects/{projectsId}/global/networks/{networksId}
-        projects.regions.addresses:
-          path:
-            projects/{projectsId}/regions/{regionsId}/addresses/{addressesId}
-        projects.serviceAccounts:
-          path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
   policytroubleshooter:
     v1beta:
       enable_mtls: true
@@ -2025,12 +1989,6 @@ apis:
   sasportal:
     v1alpha1:
       discovery_doc: sasportal_v1alpha1.json
-  seclm:
-    v1:
-      discovery_doc: seclm_v1.json
-      default: true
-    v1alpha:
-      discovery_doc: seclm_v1alpha.json
   secretmanager:
     v1:
       discovery_doc: secretmanager_v1.json
@@ -3107,9 +3065,6 @@ canonical_surfaces:
   oslogin:
     name: oslogin
     hidden: true
-  parallelstore:
-    name: parallelstore
-    hidden: true
   policyanalyzer:
     name: policyanalyzer
     command: policy-intelligence
@@ -3180,10 +3135,6 @@ canonical_surfaces:
   sddc:
     name: sddc
     command: vmware sddc
-  seclm:
-    name: seclm
-    command: seclm
-    hidden: true
   secrets:
     name: secretmanager
     command: secrets

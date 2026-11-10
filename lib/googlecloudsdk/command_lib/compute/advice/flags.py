@@ -16,10 +16,21 @@
 
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.reservations import flags as reservation_flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
+
+
+def GetMachineType(required=True):
+  """Gets the --machine-type flag."""
+  help_text = """\
+  The predefined machine type for which you want to view the future availability. Custom machine types aren't supported.
+
+  Different reservation types restrict the available machine series. To review the machine series and types that each reservation type supports, see https://docs.cloud.google.com/compute/docs/instances/choose-reservation-type#comparison
+  """
+  return base.Argument("--machine-type", required=required, help=help_text)
 
 
 def AddRegionFlag(parser):
@@ -144,7 +155,7 @@ def AddSkuPropertiesFlags(accelerator_properties_group):
       """)
 
   # add --machine-type
-  reservation_flags.GetMachineType(True).AddToParser(instance_properties_group)
+  GetMachineType(True).AddToParser(instance_properties_group)
 
   # add --vm-count
   vm_count_flag = reservation_flags.GetVmCountFlag(True)
@@ -172,7 +183,14 @@ def AddAggregatePropertiesFlags(accelerator_properties_group):
         """)
 
   # add --tpu-version
-  reservation_flags.GetTpuVersion(True).AddToParser(aggregate_properties_group)
+  tpu_version_flag = reservation_flags.GetTpuVersion(True)
+  # TPU7X is not self-service in Advice Calendar Mode as per b/510330441.
+  tpu_version_flag.kwargs["choices"] = {
+      k: v
+      for k, v in tpu_version_flag.kwargs["choices"].items()
+      if k != "TPU7X"
+  }
+  tpu_version_flag.AddToParser(aggregate_properties_group)
 
   # add --chip-count
   chip_count_flag = reservation_flags.GetChipCount(True)
@@ -221,7 +239,7 @@ def AddDeploymentTypeFlag(parser):
   # deployment-type flag from the Future Reservations.
 
   help_text = """\
-  The deployment type for the reserved capacity.
+  The deployment type for the reserved capacity, specified as a string enum. The accepted value is `DENSE`, which specifies that the reservation blocks are physically allocated densely in the cluster.
   """
   parser.add_argument(
       "--deployment-type",

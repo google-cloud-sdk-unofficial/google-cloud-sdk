@@ -102,6 +102,7 @@ class Update(base.Command):
     flags.AddWorkerPoolScalingFlag(parser, release_track=cls.ReleaseTrack())
     flags.AddInstancesFlag(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
+    flags.AddVpcConnectorArgs(parser)
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
@@ -288,7 +289,6 @@ class AlphaUpdate(BetaUpdate):
     flags.AddWorkerPoolAddPubsubSubscriptionFlag(parser)
     flags.AddWorkerPoolRemovePubsubSubscriptionFlag(parser)
     flags.AddWorkerPoolClearPubsubSubscriptionsFlag(parser)
-    flags.AddVpcConnectorArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

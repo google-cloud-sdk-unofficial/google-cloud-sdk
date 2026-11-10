@@ -43,9 +43,13 @@ class Create(base.CreateCommand):
       'DESCRIPTION': '{description}',
       'EXAMPLES': (
           """\
-        To create a restore template `my-template` in location `us-central1`, run:
+        To create a restore template `my-template` in location `us-central1` for a Compute Engine instance, run:
 
-          $ {command} my-template --location=us-central1 --resource-type="compute.googleapis.com/Instance" --data-source="projects/my-project/locations/us-central1/backupVaults/my-vault/dataSources/my-ds" --restore-properties='{"name": "test-vm", "machineType": "e2-medium"}'
+          $ {command} my-template --location=us-central1 --resource-type="compute.googleapis.com/Instance" --data-source="projects/my-project/locations/us-central1/backupVaults/my-vault/dataSources/my-ds" --restore-properties='{"project": "my-project", "zone": "us-central1-a", "resource": {"name": "test-vm-{EXECUTION_ID}"}}'
+
+        To create a restore template `my-template` from a restore properties file, run:
+
+          $ {command} my-template --location=us-central1 --resource-type="compute.googleapis.com/Instance" --data-source="projects/my-project/locations/us-central1/backupVaults/my-vault/dataSources/my-ds" --restore-properties=path/to/restore_properties.json
         """  # gcloud-disable-gdu-domain
       ),
   }

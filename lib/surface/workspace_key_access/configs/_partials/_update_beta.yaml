@@ -26,11 +26,12 @@
     examples: |-
       To replace the admin emails of config `my-config`, run:
 
-      $ {command} my-config --location=us-east1 --admin-emails=admin2@example.com
+      $ {command} my-config --location=us --admin-emails=admin2@example.com
   arguments:
     params:
     - help_text: |-
-        Identifier. name of resource
+        Identifier. The resource name of the Config.
+        Format: `projects/{project}/locations/{location}/configs/{config}`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.workspace_key_access.v1beta_resources:projects_locations_configs
@@ -40,7 +41,7 @@
       required: false
       repeated: true
       help_text: |-
-        Labels as key value pairs
+        Labels as key-value pairs.
       clearable: true
       spec:
       - api_field: key
@@ -50,7 +51,7 @@
       required: false
       repeated: true
       help_text: |-
-        Annotations as key value pairs
+        Annotations as key-value pairs.
       clearable: true
       spec:
       - api_field: key
@@ -60,7 +61,7 @@
       required: false
       repeated: true
       help_text: |-
-        Tag bindings as key value pairs
+        Tag bindings as key-value pairs.
       clearable: true
       spec:
       - api_field: key
@@ -70,7 +71,7 @@
       required: false
       repeated: true
       help_text: |-
-        Email addresses of administrators for this workspace configuration.
+        Email addresses of administrators for this Workspace Key Access config.
     - arg_name: idp-configs
       api_field: config.idpConfigs
       required: false

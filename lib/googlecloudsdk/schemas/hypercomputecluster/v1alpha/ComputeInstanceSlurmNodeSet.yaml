@@ -1,0 +1,47 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha ComputeInstanceSlurmNodeSet export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  bootDisk:
+    description: Boot disk for the compute instance
+    $ref: BootDisk.yaml
+  labels:
+    description: |-
+      [Labels](https://cloud.google.com/compute/docs/labeling- resources) that
+      should be applied to each VM instance in the nodeset.
+    $ref: LabelsValue.yaml
+  startupScript:
+    description: |-
+      [Startup script](https://cloud.google.com/compute/docs/instances/startup-
+      scripts/linux) to be run on each VM instance in the nodeset. Max 256KB.
+    type: string
+  startupScriptTimeout:
+    description: |-
+      The maximum time to wait for the startup script to complete. If the script
+      exceeds this duration, the instance setup will be considered failed. This
+      value must be positive. If this value is unset, a default timeout of 5
+      minutes (300 seconds) will be used by the system.
+    type: string

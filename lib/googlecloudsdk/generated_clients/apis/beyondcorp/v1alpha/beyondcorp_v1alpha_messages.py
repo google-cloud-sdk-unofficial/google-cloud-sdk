@@ -564,40 +564,6 @@ class BeyondcorpOrganizationsLocationsSubscriptionsRestartRequest(_messages.Mess
   requestId = _messages.StringField(2)
 
 
-class BeyondcorpProjectsLocationsAppConnectionsCreateRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsAppConnectionsCreateRequest object.
-
-  Fields:
-    appConnectionId: Optional. User-settable AppConnection resource ID. * Must
-      start with a letter. * Must contain between 4-63 characters from
-      `/a-z-/`. * Must end with a number or a letter.
-    googleCloudBeyondcorpAppconnectionsV1alphaAppConnection: A
-      GoogleCloudBeyondcorpAppconnectionsV1alphaAppConnection resource to be
-      passed as the request body.
-    parent: Required. The resource project name of the AppConnection location
-      using the form: `projects/{project_id}/locations/{location_id}`
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if the original operation with
-      the same request ID was received, and if so, will ignore the second
-      request. This prevents clients from accidentally creating duplicate
-      commitments. The request ID must be a valid UUID with the exception that
-      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  appConnectionId = _messages.StringField(1)
-  googleCloudBeyondcorpAppconnectionsV1alphaAppConnection = _messages.MessageField('GoogleCloudBeyondcorpAppconnectionsV1alphaAppConnection', 2)
-  parent = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
-  validateOnly = _messages.BooleanField(5)
-
-
 class BeyondcorpProjectsLocationsAppConnectionsDeleteRequest(_messages.Message):
   r"""A BeyondcorpProjectsLocationsAppConnectionsDeleteRequest object.
 
@@ -687,44 +653,6 @@ class BeyondcorpProjectsLocationsAppConnectionsListRequest(_messages.Message):
   parent = _messages.StringField(5, required=True)
 
 
-class BeyondcorpProjectsLocationsAppConnectionsPatchRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsAppConnectionsPatchRequest object.
-
-  Fields:
-    allowMissing: Optional. If set as true, will create the resource if it is
-      not found.
-    googleCloudBeyondcorpAppconnectionsV1alphaAppConnection: A
-      GoogleCloudBeyondcorpAppconnectionsV1alphaAppConnection resource to be
-      passed as the request body.
-    name: Required. Unique resource name of the AppConnection. The name is
-      ignored when creating a AppConnection.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if the original operation with
-      the same request ID was received, and if so, will ignore the second
-      request. This prevents clients from accidentally creating duplicate
-      commitments. The request ID must be a valid UUID with the exception that
-      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Required. Mask of fields to update. At least one path must be
-      supplied in this field. The elements of the repeated paths field may
-      only include these fields from [BeyondCorp.AppConnection]: * `labels` *
-      `display_name` * `application_endpoint` * `connectors`
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  allowMissing = _messages.BooleanField(1)
-  googleCloudBeyondcorpAppconnectionsV1alphaAppConnection = _messages.MessageField('GoogleCloudBeyondcorpAppconnectionsV1alphaAppConnection', 2)
-  name = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
-  updateMask = _messages.StringField(5)
-  validateOnly = _messages.BooleanField(6)
-
-
 class BeyondcorpProjectsLocationsAppConnectionsResolveRequest(_messages.Message):
   r"""A BeyondcorpProjectsLocationsAppConnectionsResolveRequest object.
 
@@ -781,40 +709,6 @@ class BeyondcorpProjectsLocationsAppConnectionsTestIamPermissionsRequest(_messag
 
   googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
   resource = _messages.StringField(2, required=True)
-
-
-class BeyondcorpProjectsLocationsAppConnectorsCreateRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsAppConnectorsCreateRequest object.
-
-  Fields:
-    appConnectorId: Optional. User-settable AppConnector resource ID. * Must
-      start with a letter. * Must contain between 4-63 characters from
-      `/a-z-/`. * Must end with a number or a letter.
-    googleCloudBeyondcorpAppconnectorsV1alphaAppConnector: A
-      GoogleCloudBeyondcorpAppconnectorsV1alphaAppConnector resource to be
-      passed as the request body.
-    parent: Required. The resource project name of the AppConnector location
-      using the form: `projects/{project_id}/locations/{location_id}`
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  appConnectorId = _messages.StringField(1)
-  googleCloudBeyondcorpAppconnectorsV1alphaAppConnector = _messages.MessageField('GoogleCloudBeyondcorpAppconnectorsV1alphaAppConnector', 2)
-  parent = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
-  validateOnly = _messages.BooleanField(5)
 
 
 class BeyondcorpProjectsLocationsAppConnectorsDeleteRequest(_messages.Message):
@@ -906,56 +800,6 @@ class BeyondcorpProjectsLocationsAppConnectorsListRequest(_messages.Message):
   parent = _messages.StringField(5, required=True)
 
 
-class BeyondcorpProjectsLocationsAppConnectorsPatchRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsAppConnectorsPatchRequest object.
-
-  Fields:
-    googleCloudBeyondcorpAppconnectorsV1alphaAppConnector: A
-      GoogleCloudBeyondcorpAppconnectorsV1alphaAppConnector resource to be
-      passed as the request body.
-    name: Required. Unique resource name of the AppConnector. The name is
-      ignored when creating a AppConnector.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Required. Mask of fields to update. At least one path must be
-      supplied in this field. The elements of the repeated paths field may
-      only include these fields from [BeyondCorp.AppConnector]: * `labels` *
-      `display_name`
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  googleCloudBeyondcorpAppconnectorsV1alphaAppConnector = _messages.MessageField('GoogleCloudBeyondcorpAppconnectorsV1alphaAppConnector', 1)
-  name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-  updateMask = _messages.StringField(4)
-  validateOnly = _messages.BooleanField(5)
-
-
-class BeyondcorpProjectsLocationsAppConnectorsReportStatusRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsAppConnectorsReportStatusRequest object.
-
-  Fields:
-    appConnector: Required. BeyondCorp Connector name using the form:
-      `projects/{project_id}/locations/{location_id}/connectors/{connector}`
-    googleCloudBeyondcorpAppconnectorsV1alphaReportStatusRequest: A
-      GoogleCloudBeyondcorpAppconnectorsV1alphaReportStatusRequest resource to
-      be passed as the request body.
-  """
-
-  appConnector = _messages.StringField(1, required=True)
-  googleCloudBeyondcorpAppconnectorsV1alphaReportStatusRequest = _messages.MessageField('GoogleCloudBeyondcorpAppconnectorsV1alphaReportStatusRequest', 2)
-
-
 class BeyondcorpProjectsLocationsAppConnectorsResolveInstanceConfigRequest(_messages.Message):
   r"""A BeyondcorpProjectsLocationsAppConnectorsResolveInstanceConfigRequest
   object.
@@ -1000,38 +844,6 @@ class BeyondcorpProjectsLocationsAppConnectorsTestIamPermissionsRequest(_message
 
   googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
   resource = _messages.StringField(2, required=True)
-
-
-class BeyondcorpProjectsLocationsAppGatewaysCreateRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsAppGatewaysCreateRequest object.
-
-  Fields:
-    appGateway: A AppGateway resource to be passed as the request body.
-    appGatewayId: Optional. User-settable AppGateway resource ID. * Must start
-      with a letter. * Must contain between 4-63 characters from `/a-z-/`. *
-      Must end with a number or a letter.
-    parent: Required. The resource project name of the AppGateway location
-      using the form: `projects/{project_id}/locations/{location_id}`
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  appGateway = _messages.MessageField('AppGateway', 1)
-  appGatewayId = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
-  validateOnly = _messages.BooleanField(5)
 
 
 class BeyondcorpProjectsLocationsAppGatewaysDeleteRequest(_messages.Message):
@@ -1279,38 +1091,6 @@ class BeyondcorpProjectsLocationsApplicationsTestIamPermissionsRequest(_messages
   resource = _messages.StringField(2, required=True)
 
 
-class BeyondcorpProjectsLocationsConnectionsCreateRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsConnectionsCreateRequest object.
-
-  Fields:
-    connection: A Connection resource to be passed as the request body.
-    connectionId: Optional. User-settable connection resource ID. * Must start
-      with a letter. * Must contain between 4-63 characters from `/a-z-/`. *
-      Must end with a number or a letter.
-    parent: Required. The resource project name of the connection location
-      using the form: `projects/{project_id}/locations/{location_id}`
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  connection = _messages.MessageField('Connection', 1)
-  connectionId = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
-  validateOnly = _messages.BooleanField(5)
-
-
 class BeyondcorpProjectsLocationsConnectionsDeleteRequest(_messages.Message):
   r"""A BeyondcorpProjectsLocationsConnectionsDeleteRequest object.
 
@@ -1400,42 +1180,6 @@ class BeyondcorpProjectsLocationsConnectionsListRequest(_messages.Message):
   parent = _messages.StringField(5, required=True)
 
 
-class BeyondcorpProjectsLocationsConnectionsPatchRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsConnectionsPatchRequest object.
-
-  Fields:
-    allowMissing: Optional. If set as true, will create the resource if it is
-      not found.
-    connection: A Connection resource to be passed as the request body.
-    name: Required. Unique resource name of the connection. The name is
-      ignored when creating a connection.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Required. Mask of fields to update. At least one path must be
-      supplied in this field. The elements of the repeated paths field may
-      only include these fields from [BeyondCorp.Connection]: * `labels` *
-      `display_name` * `application_endpoint` * `connectors`
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  allowMissing = _messages.BooleanField(1)
-  connection = _messages.MessageField('Connection', 2)
-  name = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
-  updateMask = _messages.StringField(5)
-  validateOnly = _messages.BooleanField(6)
-
-
 class BeyondcorpProjectsLocationsConnectionsResolveRequest(_messages.Message):
   r"""A BeyondcorpProjectsLocationsConnectionsResolveRequest object.
 
@@ -1474,38 +1218,6 @@ class BeyondcorpProjectsLocationsConnectionsSetIamPolicyRequest(_messages.Messag
 
   googleIamV1SetIamPolicyRequest = _messages.MessageField('GoogleIamV1SetIamPolicyRequest', 1)
   resource = _messages.StringField(2, required=True)
-
-
-class BeyondcorpProjectsLocationsConnectorsCreateRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsConnectorsCreateRequest object.
-
-  Fields:
-    connector: A Connector resource to be passed as the request body.
-    connectorId: Optional. User-settable connector resource ID. * Must start
-      with a letter. * Must contain between 4-63 characters from `/a-z-/`. *
-      Must end with a number or a letter.
-    parent: Required. The resource project name of the connector location
-      using the form: `projects/{project_id}/locations/{location_id}`
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  connector = _messages.MessageField('Connector', 1)
-  connectorId = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
-  validateOnly = _messages.BooleanField(5)
 
 
 class BeyondcorpProjectsLocationsConnectorsDeleteRequest(_messages.Message):
@@ -1597,53 +1309,6 @@ class BeyondcorpProjectsLocationsConnectorsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
-
-
-class BeyondcorpProjectsLocationsConnectorsPatchRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsConnectorsPatchRequest object.
-
-  Fields:
-    connector: A Connector resource to be passed as the request body.
-    name: Required. Unique resource name of the connector. The name is ignored
-      when creating a connector.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Required. Mask of fields to update. At least one path must be
-      supplied in this field. The elements of the repeated paths field may
-      only include these fields from [BeyondCorp.Connector]: * `labels` *
-      `display_name`
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  connector = _messages.MessageField('Connector', 1)
-  name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-  updateMask = _messages.StringField(4)
-  validateOnly = _messages.BooleanField(5)
-
-
-class BeyondcorpProjectsLocationsConnectorsReportStatusRequest(_messages.Message):
-  r"""A BeyondcorpProjectsLocationsConnectorsReportStatusRequest object.
-
-  Fields:
-    connector: Required. BeyondCorp Connector name using the form:
-      `projects/{project_id}/locations/{location_id}/connectors/{connector}`
-    reportStatusRequest: A ReportStatusRequest resource to be passed as the
-      request body.
-  """
-
-  connector = _messages.StringField(1, required=True)
-  reportStatusRequest = _messages.MessageField('ReportStatusRequest', 2)
 
 
 class BeyondcorpProjectsLocationsConnectorsResolveInstanceConfigRequest(_messages.Message):
@@ -3427,31 +3092,6 @@ class GoogleCloudBeyondcorpAppconnectorsV1alphaRemoteAgentDetails(_messages.Mess
   r"""RemoteAgentDetails reflects the details of a remote agent."""
 
 
-class GoogleCloudBeyondcorpAppconnectorsV1alphaReportStatusRequest(_messages.Message):
-  r"""Request report the connector status.
-
-  Fields:
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    resourceInfo: Required. Resource info of the connector.
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  requestId = _messages.StringField(1)
-  resourceInfo = _messages.MessageField('GoogleCloudBeyondcorpAppconnectorsV1alphaResourceInfo', 2)
-  validateOnly = _messages.BooleanField(3)
-
-
 class GoogleCloudBeyondcorpAppconnectorsV1alphaResolveInstanceConfigResponse(_messages.Message):
   r"""Response message for BeyondCorp.ResolveInstanceConfig.
 
@@ -5208,31 +4848,6 @@ class PrincipalInfo(_messages.Message):
 
 class RemoteAgentDetails(_messages.Message):
   r"""RemoteAgentDetails reflects the details of a remote agent."""
-
-
-class ReportStatusRequest(_messages.Message):
-  r"""Request report the connector status.
-
-  Fields:
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    resourceInfo: Required. Resource info of the connector.
-    validateOnly: Optional. If set, validates request by executing a dry-run
-      which would not alter the resource in any way.
-  """
-
-  requestId = _messages.StringField(1)
-  resourceInfo = _messages.MessageField('ResourceInfo', 2)
-  validateOnly = _messages.BooleanField(3)
 
 
 class ResolveConnectionsResponse(_messages.Message):

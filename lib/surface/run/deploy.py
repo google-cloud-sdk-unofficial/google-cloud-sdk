@@ -1333,6 +1333,7 @@ class BetaDeploy(Deploy):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     flags.AddSshFlag(parser)
+    flags.AddPublicFlag(parser)
 
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)

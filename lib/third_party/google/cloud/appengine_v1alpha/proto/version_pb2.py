@@ -1656,7 +1656,7 @@ EndpointsApiService = _reflection.GeneratedProtocolMessageType('EndpointsApiServ
   'DESCRIPTOR' : _ENDPOINTSAPISERVICE,
   '__module__' : 'google.cloud.appengine_v1alpha.proto.version_pb2'
   ,
-  '__doc__': """\ `Cloud Endpoints <https://cloud.google.com/endpoints>`__
+  '__doc__': """\\ `Cloud Endpoints <https://cloud.google.com/endpoints>`__
   configuration. The Endpoints API Service provides tooling for serving
   Open API and gRPC endpoints via an NGINX proxy. Only valid for App
   Engine Flexible environment deployments.  The fields here refer to the

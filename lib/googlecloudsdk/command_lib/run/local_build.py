@@ -192,11 +192,14 @@ def RunUniversalMaker(
     if result.returncode != 0:
       raise LocalBuildFailedError(
           'Local build execution failed. Please check the build logs at'
-          ' file://{}.\nTo deploy this application without a local build, use'
-          ' standard source deployment (e.g., remove --local-build from your'
-          ' command) for a server-side Cloud Build, or build your container'
-          ' image locally using Docker/Pack and deploy it using --image.'
-          .format(log_file_path)
+          ' file://{}.\nTo deploy this application without a local build on a'
+          ' standard billed project (with Cloud Build and Artifact Registry'
+          ' enabled; not supported on Starter Tier projects), use standard'
+          ' source deployment (e.g., remove --local-build from your command)'
+          ' for a server-side Cloud Build, or build your container image'
+          ' locally using Docker/Pack and deploy it using --image.'.format(
+              log_file_path
+          )
       )
 
     output_json_path = os.path.join(temp_dir, 'build_output.json')

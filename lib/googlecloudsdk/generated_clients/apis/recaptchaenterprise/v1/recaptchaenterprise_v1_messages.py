@@ -471,10 +471,10 @@ class GoogleCloudRecaptchaenterpriseV1Bot(_messages.Message):
       SEARCH_INDEXER * mediaboard - CONTENT_SCRAPER * marker-io - AI_AGENT *
       anchor-browser - AI_AGENT * shopify - AI_AGENT * stackscope -
       CONTENT_SCRAPER * manus - AI_AGENT * kernel-sh - AI_AGENT * zvelo -
-      SEARCH_INDEXER Ensure that your applications can handle identifier
-      values not explicitly listed here. Deprecated values might take some
-      time to stop showing up in responses. New values can be pushed so this
-      list should be taken as non exhaustive.
+      SEARCH_INDEXER * meta-muse - AI_AGENT Ensure that your applications can
+      handle identifier values not explicitly listed here. Deprecated values
+      might take some time to stop showing up in responses. New values can be
+      pushed so this list should be taken as non exhaustive.
   """
 
   class BotTypeValueValuesEnum(_messages.Enum):
@@ -1098,6 +1098,12 @@ class GoogleCloudRecaptchaenterpriseV1Key(_messages.Message):
   Messages:
     LabelsValue: Optional. See [Creating and managing labels]
       (https://cloud.google.com/recaptcha/docs/labels).
+    TagsValue: Optional. Input only. Immutable. Contains tag keys/values
+      directly bound to this resource. For example:
+      "123456789012/environment": "production", "123456789012/costCenter":
+      "marketing" Where `123456789012` is the organization ID. For more
+      information, see [Tags](https://cloud.google.com/iam/docs/tags-access-
+      control).
 
   Fields:
     androidSettings: Settings for keys that can be used by Android apps.
@@ -1111,6 +1117,11 @@ class GoogleCloudRecaptchaenterpriseV1Key(_messages.Message):
       (https://cloud.google.com/recaptcha/docs/labels).
     name: Identifier. The resource name for the Key in the format
       `projects/{project}/keys/{key}`.
+    tags: Optional. Input only. Immutable. Contains tag keys/values directly
+      bound to this resource. For example: "123456789012/environment":
+      "production", "123456789012/costCenter": "marketing" Where
+      `123456789012` is the organization ID. For more information, see
+      [Tags](https://cloud.google.com/iam/docs/tags-access-control).
     testingOptions: Optional. Options for user acceptance testing.
     universalSettings: Settings for keys that are configured through their
       Policy.
@@ -1143,6 +1154,34 @@ class GoogleCloudRecaptchaenterpriseV1Key(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Contains tag keys/values directly
+    bound to this resource. For example: "123456789012/environment":
+    "production", "123456789012/costCenter": "marketing" Where `123456789012`
+    is the organization ID. For more information, see
+    [Tags](https://cloud.google.com/iam/docs/tags-access-control).
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   androidSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1AndroidKeySettings', 1)
   createTime = _messages.StringField(2)
   displayName = _messages.StringField(3)
@@ -1150,10 +1189,11 @@ class GoogleCloudRecaptchaenterpriseV1Key(_messages.Message):
   iosSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1IOSKeySettings', 5)
   labels = _messages.MessageField('LabelsValue', 6)
   name = _messages.StringField(7)
-  testingOptions = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1TestingOptions', 8)
-  universalSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1UniversalKeySettings', 9)
-  wafSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1WafSettings', 10)
-  webSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1WebKeySettings', 11)
+  tags = _messages.MessageField('TagsValue', 8)
+  testingOptions = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1TestingOptions', 9)
+  universalSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1UniversalKeySettings', 10)
+  wafSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1WafSettings', 11)
+  webSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1WebKeySettings', 12)
 
 
 class GoogleCloudRecaptchaenterpriseV1ListFirewallPoliciesResponse(_messages.Message):
@@ -1351,16 +1391,19 @@ class GoogleCloudRecaptchaenterpriseV1ProtectedEndpoint(_messages.Message):
     action: Required. Action name to be used for token generation for this
       endpoint. The action name can only contain alphanumeric characters,
       slashes, and underscores.
-    path: Required. URI path of the API endpoint to protect. Must start with
-      '/'. Supports glob characters '*' to match a single path segment and
-      '**' to match multiple path segments. Standalone root catch-alls ('/*'
-      and '/**') are invalid because it can negatively impact performance to
-      trigger reCAPTCHA on every single request to your backend. Matching is
-      evaluated against the URL path only (domain, scheme, and query
-      parameters are ignored). Examples: - `/login` matches `/login`,
-      `https://example.com/login`, and `/login?query=1`, but not
-      `/login/step1`. - `/products/*` matches `/products/123`, but not
-      `/products/123/456`. - `/content/**` matches
+    path: Required. The URI path of the API endpoint to protect. The path is
+      case-sensitive and must meet the following criteria: * Be unique, start
+      with `/`, and contain 1 to 200 characters without consecutive slashes
+      (`//`). * Include at least one non-wildcard segment. For example, cannot
+      be `/`, `/*`, `/**`, or `/*/`. * Wildcards must occupy complete
+      segments: `*` matches a single segment. For example, `/api/*/login` or
+      `/api/*` are valid; `/api/login*` is invalid, and `**` matches multiple
+      segments as the final segment only. For example, `/api/**` is valid;
+      `/api/**/login` is invalid. Matching is evaluated against the URL path
+      only. Domain, scheme, and query parameters are ignored. Examples: *
+      `/login` matches `/login`, `https://example.com/login`, and
+      `/login?query=1`, but not `/login/step1`. * `/products/*` matches
+      `/products/123`, but not `/products/123/456`. * `/content/**` matches
       `/content/articles/2024/01/01`.
   """
 
@@ -1515,10 +1558,14 @@ class GoogleCloudRecaptchaenterpriseV1RiskAnalysis(_messages.Message):
       CHALLENGE_TYPE_UNSPECIFIED: Default unspecified type.
       CHALLENGE_TYPE_VISUAL: A visual challenge.
       CHALLENGE_TYPE_AUDIO: An audio challenge.
+      CHALLENGE_TYPE_QR_CODE: A challenge requiring mobile device
+        verification, completed by scanning a QR code on desktop or clicking a
+        verification button directly on a mobile device.
     """
     CHALLENGE_TYPE_UNSPECIFIED = 0
     CHALLENGE_TYPE_VISUAL = 1
     CHALLENGE_TYPE_AUDIO = 2
+    CHALLENGE_TYPE_QR_CODE = 3
 
   class ReasonsValueListEntryValuesEnum(_messages.Enum):
     r"""ReasonsValueListEntryValuesEnum enum type.

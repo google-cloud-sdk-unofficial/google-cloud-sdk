@@ -88,7 +88,7 @@ def AddImagesGroup(parser, hidden=False):
   images_group.add_argument(
       '--images',
       metavar='NAME=TAG',
-      type=arg_parsers.ArgDict(),
+      type=arg_parsers.ArgDict(key_type=str.strip, value_type=str.strip),
       hidden=hidden,
       help=textwrap.dedent("""\
       Reference to a collection of individual image name to image full path replacements.

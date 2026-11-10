@@ -18,6 +18,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: false
+  hints:
+    read_only: false
   help_text:
     brief: Create skillRevisions
     description: Create a skillRevision

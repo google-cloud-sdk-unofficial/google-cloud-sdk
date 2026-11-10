@@ -3429,7 +3429,9 @@ class Volume(_messages.Message):
     StateValueValuesEnum: Optional. The state of the volume. This field is
       caller-settable via `UpdateVolume` to transition a volume from `HOT` to
       `COLD` (freezing the volume). In `CreateVolume`, this field is output-
-      only and initialized to `HOT`.
+      only: the volume is created as `HOT` when `ip_acls` is non-empty. When
+      `ip_acls` is empty, the volume may be created `WARM` with no
+      `mount_point` until `ip_acls` are set with `UpdateVolume`.
 
   Messages:
     LabelsValue: Optional. Resource labels to represent user provided
@@ -3448,15 +3450,19 @@ class Volume(_messages.Message):
     quotaMib: Optional. The maximum size of the volume in mebibytes (MiB).
     state: Optional. The state of the volume. This field is caller-settable
       via `UpdateVolume` to transition a volume from `HOT` to `COLD` (freezing
-      the volume). In `CreateVolume`, this field is output-only and
-      initialized to `HOT`.
+      the volume). In `CreateVolume`, this field is output-only: the volume is
+      created as `HOT` when `ip_acls` is non-empty. When `ip_acls` is empty,
+      the volume may be created `WARM` with no `mount_point` until `ip_acls`
+      are set with `UpdateVolume`.
   """
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Optional. The state of the volume. This field is caller-settable via
     `UpdateVolume` to transition a volume from `HOT` to `COLD` (freezing the
-    volume). In `CreateVolume`, this field is output-only and initialized to
-    `HOT`.
+    volume). In `CreateVolume`, this field is output-only: the volume is
+    created as `HOT` when `ip_acls` is non-empty. When `ip_acls` is empty, the
+    volume may be created `WARM` with no `mount_point` until `ip_acls` are set
+    with `UpdateVolume`.
 
     Values:
       STATE_UNSPECIFIED: The state of the volume is unknown.

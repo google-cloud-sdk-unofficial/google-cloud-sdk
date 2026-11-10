@@ -18,6 +18,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: false
+  hints:
+    read_only: true
   hidden: true
   help_text:
     brief: Get details of an AI Application.

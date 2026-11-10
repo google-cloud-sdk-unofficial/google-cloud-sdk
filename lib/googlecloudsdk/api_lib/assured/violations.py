@@ -38,7 +38,7 @@ class ViolationsClient(object):
     self._release_track = release_track
     self._service = self.client.organizations_locations_workloads_violations
 
-  def List(self, parent, limit=None, page_size=100):
+  def List(self, parent, limit=None, page_size=100, view=None):
     """List all Assured Workloads violations belonging to the given workload.
 
     Args:
@@ -48,12 +48,17 @@ class ViolationsClient(object):
       limit: int or None, the total number of results to return.
       page_size: int, the number of entries in each batch (affects requests
         made, but not the yielded results).
+      view: str or None, the violation view for fetching violations.
 
     Returns:
       A list of all Assured Workloads violations belonging to a given workload.
     """
+    view_enum = message_util.ParseViolationView(
+        view,
+        self.messages.AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest.ViewValueValuesEnum,
+    )
     list_req = self.messages.AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest(
-        parent=parent, pageSize=page_size
+        parent=parent, pageSize=page_size, view=view_enum
     )
     return list_pager.YieldFromList(
         self._service,
@@ -64,19 +69,24 @@ class ViolationsClient(object):
         batch_size_attribute=None,
     )
 
-  def Describe(self, name):
+  def Describe(self, name, view=None):
     """Describe an existing Assured Workloads compliance violation.
 
     Args:
       name: str, the name for the Assured Workloads Violation being described in
         the form:
         organizations/{ORG_ID}/locations/{LOCATION}/workloads/{WORKLOAD_ID}/violations/{VIOLATION_ID}.
+      view: str or None, the violation view for fetching the violation.
 
     Returns:
       Specified Assured Workloads Violation.
     """
+    view_enum = message_util.ParseViolationView(
+        view,
+        self.messages.AssuredworkloadsOrganizationsLocationsWorkloadsViolationsGetRequest.ViewValueValuesEnum,
+    )
     describe_req = self.messages.AssuredworkloadsOrganizationsLocationsWorkloadsViolationsGetRequest(
-        name=name
+        name=name, view=view_enum
     )
     return self.client.organizations_locations_workloads_violations.Get(
         describe_req
@@ -87,6 +97,7 @@ class ViolationsClient(object):
       name,
       comment,
       acknowledge_type=None,
+      view=None,
   ):
     """Acknowledge an existing Assured Workloads compliance violation.
 
@@ -100,12 +111,13 @@ class ViolationsClient(object):
         is one of: SINGLE_VIOLATION - to acknowledge specified violation,
         EXISTING_CHILD_RESOURCE_VIOLATIONS - to acknowledge specified org policy
         violation and all associated child resource violations.
+      view: str or None, the violation view for acknowledging the violation.
 
     Returns:
       Specified Assured Workloads Violation.
     """
     acknowledgement_req = message_util.CreateAcknowledgeRequest(
-        name, comment, acknowledge_type, self._release_track
+        name, comment, acknowledge_type, self._release_track, view=view
     )
     return self.client.organizations_locations_workloads_violations.Acknowledge(
         acknowledgement_req

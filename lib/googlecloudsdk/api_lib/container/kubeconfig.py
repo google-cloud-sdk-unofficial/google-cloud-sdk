@@ -517,7 +517,7 @@ def _ExecAuthPlugin(impersonate_service_account=None):
   """
 
   use_application_default_credentials = (
-      properties.VALUES.container.use_app_default_credentials.GetBool()
+      properties.VALUES.container.use_application_default_credentials.GetBool()
   )
   command = _GetGkeGcloudPluginCommandAndPrintWarning()
 
@@ -570,7 +570,7 @@ def _AuthProvider(
   provider = {'name': name}
   if (
       name == 'gcp'
-      and not properties.VALUES.container.use_app_default_credentials.GetBool()
+      and not properties.VALUES.container.use_application_default_credentials.GetBool()
   ):
     bin_name = 'gcloud'
     if platforms.OperatingSystem.IsWindows():

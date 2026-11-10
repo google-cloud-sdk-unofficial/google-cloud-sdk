@@ -54,7 +54,7 @@ class WorkspacekeyaccessV1alpha(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a new WorkspaceConfig in a given project and location.
+      r"""Creates a new Config in a given project and location.
 
       Args:
         request: (WorkspacekeyaccessProjectsLocationsConfigsCreateRequest) input message
@@ -81,7 +81,7 @@ class WorkspacekeyaccessV1alpha(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single WorkspaceConfig.
+      r"""Deletes a single Config.
 
       Args:
         request: (WorkspacekeyaccessProjectsLocationsConfigsDeleteRequest) input message
@@ -108,7 +108,7 @@ class WorkspacekeyaccessV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single WorkspaceConfig.
+      r"""Gets details of a single Config.
 
       Args:
         request: (WorkspacekeyaccessProjectsLocationsConfigsGetRequest) input message
@@ -135,7 +135,7 @@ class WorkspacekeyaccessV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists WorkspaceConfigs in a given project and location.
+      r"""Lists Configs in a given project and location.
 
       Args:
         request: (WorkspacekeyaccessProjectsLocationsConfigsListRequest) input message
@@ -162,7 +162,7 @@ class WorkspacekeyaccessV1alpha(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single WorkspaceConfig.
+      r"""Updates the parameters of a single Config.
 
       Args:
         request: (WorkspacekeyaccessProjectsLocationsConfigsPatchRequest) input message
@@ -199,7 +199,7 @@ class WorkspacekeyaccessV1alpha(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a new KeyServiceEndpoint in a given project and location.
+      r"""Creates a new Endpoint in a given project and location.
 
       Args:
         request: (WorkspacekeyaccessProjectsLocationsEndpointsCreateRequest) input message
@@ -225,8 +225,62 @@ class WorkspacekeyaccessV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Disable(self, request, global_params=None):
+      r"""Disables a single Endpoint. After a successful transition, the state of the Endpoint will be `DISABLED`. This method can be legally called from the `ACTIVE` state. When transitioned into `DISABLED` state, the subscription will be terminated or paused for this Endpoint.
+
+      Args:
+        request: (WorkspacekeyaccessProjectsLocationsEndpointsDisableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Disable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Disable.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/endpoints/{endpointsId}:disable',
+        http_method='POST',
+        method_id='workspacekeyaccess.projects.locations.endpoints.disable',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:disable',
+        request_field='disableEndpointRequest',
+        request_type_name='WorkspacekeyaccessProjectsLocationsEndpointsDisableRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Enable(self, request, global_params=None):
+      r"""Enables a single Endpoint. After a successful transition, the state of the Endpoint will be `ACTIVE`. This method can be legally called if the Endpoint is in the `DISABLED` state. When transitioned into `ACTIVE` state, the subscription will be started or resumed for this Endpoint.
+
+      Args:
+        request: (WorkspacekeyaccessProjectsLocationsEndpointsEnableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Enable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Enable.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/endpoints/{endpointsId}:enable',
+        http_method='POST',
+        method_id='workspacekeyaccess.projects.locations.endpoints.enable',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:enable',
+        request_field='enableEndpointRequest',
+        request_type_name='WorkspacekeyaccessProjectsLocationsEndpointsEnableRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
-      r"""Gets details of a single KeyServiceEndpoint.
+      r"""Gets details of a single Endpoint.
 
       Args:
         request: (WorkspacekeyaccessProjectsLocationsEndpointsGetRequest) input message
@@ -253,7 +307,7 @@ class WorkspacekeyaccessV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists KeyServiceEndpoints in a given project and location.
+      r"""Lists Endpoints in a given project and location.
 
       Args:
         request: (WorkspacekeyaccessProjectsLocationsEndpointsListRequest) input message
@@ -280,7 +334,7 @@ class WorkspacekeyaccessV1alpha(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single KeyServiceEndpoint.
+      r"""Updates the parameters of a single Endpoint.
 
       Args:
         request: (WorkspacekeyaccessProjectsLocationsEndpointsPatchRequest) input message

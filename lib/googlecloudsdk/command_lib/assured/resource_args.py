@@ -70,3 +70,37 @@ def GetOperationResourceSpec():
       operationsId=OperationAttributeConfig(),
       locationsId=LocationAttributeConfig(),
       organizationsId=OrganizationAttributeConfig())
+
+
+def ComplianceReportAttributeConfig():
+  """Returns the attribute config for a framework compliance report."""
+  return concepts.ResourceParameterAttributeConfig(
+      name='compliance-report',
+      help_text=(
+          'The Data Boundary framework compliance report for the {resource}.'
+      ),
+  )
+
+
+def GetDataBoundaryLocationResourceSpec():
+  """Data Boundary location under an organization."""
+  # Folder and project scopes will be added once the API supports them.
+  return concepts.ResourceSpec(
+      'assuredworkloads.organizations.locations',
+      resource_name='location',
+      locationsId=LocationAttributeConfig(),
+      organizationsId=OrganizationAttributeConfig(),
+      disable_auto_completers=True,
+  )
+
+
+def GetComplianceReportResourceSpec():
+  """Data Boundary framework compliance report under an organization."""
+  return concepts.ResourceSpec(
+      'assuredworkloads.organizations.locations.dbFrameworkComplianceReports',
+      resource_name='compliance report',
+      dbFrameworkComplianceReportsId=ComplianceReportAttributeConfig(),
+      locationsId=LocationAttributeConfig(),
+      organizationsId=OrganizationAttributeConfig(),
+      disable_auto_completers=True,
+  )

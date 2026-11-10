@@ -3345,7 +3345,7 @@ class MeridianDatasetSchema(_messages.Message):
 
 
 class MeridianModel(_messages.Message):
-  r"""Meridian model schema. Next ID: 24
+  r"""Meridian model schema. Next ID: 25
 
   Enums:
     ComputationBackendValueValuesEnum:
@@ -3374,6 +3374,8 @@ class MeridianModel(_messages.Message):
     priorTfpDistributions: A PriorTfpDistributions attribute.
     reachScaled: A TensorProto attribute.
     reviewSummary: A ReviewSummaryResults attribute.
+    schemaVersion: Version of the `mmm-proto-schema` package used to serialize
+      this model, in semantic version format (e.g. "1.6.0").
   """
 
   class ComputationBackendValueValuesEnum(_messages.Enum):
@@ -3419,6 +3421,7 @@ class MeridianModel(_messages.Message):
   priorTfpDistributions = _messages.MessageField('PriorTfpDistributions', 17)
   reachScaled = _messages.MessageField('TensorProto', 18)
   reviewSummary = _messages.MessageField('ReviewSummaryResults', 19)
+  schemaVersion = _messages.StringField(20)
 
 
 class MeridianProjectsLocationsGetRequest(_messages.Message):

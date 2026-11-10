@@ -24,9 +24,9 @@
     brief: List Workspace Key Access endpoints.
     description: List Workspace Key Access endpoints in a given project and location.
     examples: |-
-      To list endpoints in `us-east1`, run:
+      To list endpoints, run:
 
-      $ {command} --location=us-east1
+      $ {command} --location=us
   arguments:
     params:
     - help_text: |-

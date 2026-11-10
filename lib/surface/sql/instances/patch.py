@@ -68,11 +68,16 @@ def _PrintAndConfirmWarningMessage(args, database_version):
       args.active_directory_mode is not None,
   ])
 
+  msdtc_enabled_changed = (
+      'msdtc_enabled' in args and args.msdtc_enabled is not None
+  )
+
   if any([
       args.tier,
       args.enable_database_replication is not None,
       active_directory_config_changed,
       insights_query_length_changed,
+      msdtc_enabled_changed,
   ]):
     continue_msg = ('WARNING: This patch modifies a value that requires '
                     'your instance to be restarted. Submitting this patch '
@@ -459,12 +464,12 @@ def AddBetaArgs(parser):
   unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
+  flags.AddMsdtcEnabled(parser)
+  flags.AddMsdtcRpcAuthMode(parser)
 
 
 def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
-  flags.AddMsdtcEnabled(parser, hidden=True)
-  flags.AddMsdtcRpcAuthMode(parser, hidden=True)
   flags.AddMsdtcHostMappings(parser, hidden=True)
   flags.AddSemiManagedSqlServer(parser, hidden=True)
   flags.AddEnforceCmekLogEncryptionAtSource(parser, hidden=True)

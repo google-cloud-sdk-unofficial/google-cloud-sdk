@@ -15,10 +15,14 @@
 """Constants for regional properties."""
 
 # User properties.
+# LINT.IfChange(regional_endpoint_mode)
 GLOBAL = 'global'
 REGIONAL = 'regional'
 REGIONAL_PREFERRED = 'regional-preferred'
+# LINT.ThenChange(../definitions/regional.yaml:regional_endpoint_mode)
 
 # Command / group support level annotations.
+# LINT.IfChange(regional_endpoint_compatibility)
 SUPPORTED = 'supported'
 REQUIRED = 'required'
+# LINT.ThenChange(../definitions/regional.yaml:regional_endpoint_compatibility)

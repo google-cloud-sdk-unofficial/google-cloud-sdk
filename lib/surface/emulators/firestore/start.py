@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.emulators import firestore_util
 from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.command_lib.util import java
-from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -146,25 +145,6 @@ class Start(base.Command):
         ),
     )
 
-  # TODO(b/534870972): Remove this warning after updating to Java 25.
-  def LogJavaVersionWarning(self):
-    """Log a warning message notifying users about Java version change.
-
-    Log the warning when the installed JRE has an earlier version than Java 25.
-    """
-    try:
-      java.RequireJavaInstalled(firestore_util.FIRESTORE_TITLE, min_version=25)
-    except java.JavaVersionError:
-      log.warning(
-          'Cloud Firestore Emulator support for Java JRE version 21 will be '
-          'dropped after gcloud command-line tool release 576.0.0. Please '
-          'upgrade to Java JRE version 25 or higher to continue using the '
-          'latest Cloud Firestore Emulator.')
-    except java.JavaError:
-      # A JRE could not be found. Not logging the warning since the user will
-      # not be able to start an emulator anyways.
-      pass
-
   def Run(self, args):
     if not args.host_port:
       args.host_port = arg_parsers.HostPort.Parse(
@@ -175,7 +155,6 @@ class Start(base.Command):
     args.edition = args.edition or 'standard'
     firestore_util.ValidateStartArgs(args)
 
-    self.LogJavaVersionWarning()
-    java.RequireJavaInstalled(firestore_util.FIRESTORE_TITLE, min_version=21)
+    java.RequireJavaInstalled(firestore_util.FIRESTORE_TITLE, min_version=25)
     with firestore_util.StartFirestoreEmulator(args) as proc:
       util.PrefixOutput(proc, 'firestore')

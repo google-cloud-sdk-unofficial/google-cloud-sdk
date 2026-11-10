@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+  hints:
+    read_only: true
+  help_text:
+    brief: Describe a Google Compute Engine accelerator pod controller.
+    description: Describe a Google Compute Engine accelerator pod controller.
+    examples: |
+      To describe an accelerator pod controller named `my-apc` in zone `us-east5-staginga`:
+
+        $ {command} my-apc --zone=us-east5-staginga
+
+  request:
+    ALPHA:
+      api_version: alpha
+    collection: compute.acceleratorPodControllers
+    method: get
+
+  arguments:
+    resource:
+      help_text: The name of the accelerator pod controller to describe.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:accelerator_pod_controller
+      is_positional: true

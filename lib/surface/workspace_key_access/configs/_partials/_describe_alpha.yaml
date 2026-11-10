@@ -25,13 +25,14 @@
     brief: Describe a Workspace Key Access config.
     description: Show details of a Workspace Key Access config.
     examples: |-
-      To describe config `my-config` in `us-east1`, run:
+      To describe config `my-config`, run:
 
-      $ {command} my-config --location=us-east1
+      $ {command} my-config --location=us
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        The resource name of the Config to retrieve.
+        Format: `projects/{project}/locations/{location}/configs/{config}`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.workspace_key_access.v1alpha_resources:projects_locations_configs

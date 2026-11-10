@@ -21,6 +21,7 @@ from typing import Any
 
 from googlecloudsdk.api_lib.run import metric_names
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import config_changes as run_config_changes
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.sourcedeploys import deployer
@@ -30,6 +31,7 @@ from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_m
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import vendor_settings
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import worker_pool as worker_pool_objects
 
 
@@ -342,6 +344,11 @@ class WorkerPoolsOperations(object):
     else:
       worker_pool = prefetch or self.GetWorkerPool(worker_pool_ref)
     metric_name = metric_names.UPDATE_WORKER_POOL
+    was_manual_scaling = (
+        worker_pool is not None
+        and worker_pool.scaling.scaling_mode
+        == vendor_settings.WorkerPoolScaling.ScalingMode.MANUAL
+    )
     if worker_pool is None:
       # WorkerPool does not exist, create it.
       worker_pool = worker_pool_objects.WorkerPool(
@@ -350,6 +357,16 @@ class WorkerPoolsOperations(object):
       metric_name = metric_names.CREATE_WORKER_POOL
     # Apply config changes to the WorkerPool.
     worker_pool = config_changes_mod.WithChanges(worker_pool, config_changes)
+    # TODO(b/578931641): Remove once the control plane sets scaling weights for
+    # in-place MANUAL -> AUTOMATIC updates.
+    if (
+        was_manual_scaling
+        and worker_pool.scaling.scaling_mode
+        == vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
+        and not run_config_changes.AdjustsTemplate(config_changes)
+    ):
+      force_new_revision = True
+      worker_pool.template.revision = ''
     worker_pools = self._client.worker
     upsert_request = self._client.types.UpdateWorkerPoolRequest(
         worker_pool=worker_pool,

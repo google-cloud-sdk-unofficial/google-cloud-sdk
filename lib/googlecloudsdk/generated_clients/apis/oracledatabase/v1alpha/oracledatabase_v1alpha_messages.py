@@ -11345,9 +11345,9 @@ class SqlResult(_messages.Message):
   r"""SqlResult represents the result for the execution of a sql statement.
 
   Fields:
-    affectedRowCount: Optional. The number of rows affected by DML statements
-      (e.g., INSERT, UPDATE, DELETE, MERGE). Unset or 0 for SELECT / DDL
-      statements.
+    affectedRowCount: Output only. The number of rows affected by DML
+      statements (e.g., INSERT, UPDATE, DELETE, MERGE). Unset or 0 for SELECT
+      / DDL statements.
     columns: List of columns included in the result, including data type.
     rows: Rows returned by the SQL statement.
   """

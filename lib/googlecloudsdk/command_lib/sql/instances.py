@@ -362,6 +362,16 @@ def _ShowReplicationLagMaxSecondsForRecreateWarning():
   )
 
 
+def _ShowMsdtcTurnOffRpcSecurityWarning():
+  log.warning(
+      'With --msdtc-rpc-auth-mode=turn-off-rpc-security, MSDTC accepts RPC '
+      'calls without verifying the identity of the caller, so any client that '
+      'can reach the instance can send MSDTC RPC calls to it. Use this mode '
+      'only on a trusted network, and use VPC firewall rules to limit which '
+      'clients can reach TCP ports 135 and 51999 on the instance.'
+  )
+
+
 class _BaseInstances(object):
   """Common utility functions for sql instance commands."""
 
@@ -628,6 +638,11 @@ class _BaseInstances(object):
       settings.msdtcRpcAuthMode = _ParseMsdtcRpcAuthMode(
           sql_messages, args.msdtc_rpc_auth_mode
       )
+      if (
+          settings.msdtcRpcAuthMode
+          == sql_messages.Settings.MsdtcRpcAuthModeValueValuesEnum.TURN_OFF_RPC_SECURITY
+      ):
+        _ShowMsdtcTurnOffRpcSecurityWarning()
 
     if args.IsKnownAndSpecified('enable_auto_upgrade_minor_version'):
       settings.autoUpgradeEnabled = True

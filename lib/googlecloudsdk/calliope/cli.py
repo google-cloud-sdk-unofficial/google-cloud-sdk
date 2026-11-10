@@ -29,7 +29,6 @@ from googlecloudsdk.calliope import backend
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import command_loading
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.calliope import namespace_serializer
 from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.calliope import property_actions
@@ -593,12 +592,12 @@ class CLILoader(object):
         '--configuration',
         metavar='CONFIGURATION',
         category=calliope_base.COMMONLY_USED_FLAGS,
-        help="""\
-        File name of the configuration to use for this command invocation.
-        For more information on how to use configurations, run:
-        `gcloud topic configurations`.  You can also use the {0} environment
-        variable to set the equivalent of this flag for a terminal
-        session.""".format(config.CLOUDSDK_ACTIVE_CONFIG_NAME),
+        help=(
+            'Named configuration to use for this command invocation. To set'
+            ' the equivalent of this flag for a terminal session, you can also'
+            ' use the {0} environment variable. For more information on how to'
+            ' use configurations, run: `gcloud topic configurations`.'
+        ).format(config.CLOUDSDK_ACTIVE_CONFIG_NAME),
     )
 
     top_element.ai.add_argument(
@@ -606,7 +605,11 @@ class CLILoader(object):
         choices=log.OrderedVerbosityNames(),
         default=log.DEFAULT_VERBOSITY_STRING,
         category=calliope_base.COMMONLY_USED_FLAGS,
-        help='Override the default verbosity for this command.',
+        help=(
+            'Sets the verbosity level for this command invocation. This'
+            ' overrides the default verbosity level and the configured'
+            ' `core/verbosity` property.'
+        ),
         action=property_actions.StoreProperty(properties.VALUES.core.verbosity),
     )
 
@@ -925,6 +928,16 @@ class CLI(object):
     """
     return self.__top_element.IsValidSubPath(cmd)
 
+  def IsNamespaceSerializable(self):
+    """Checks if the namespace can be serialized to JSON."""
+    dump_to_path = encoding.GetEncodedValue(
+        os.environ, 'GCLOUD_DUMP_NAMESPACE_TO'
+    )
+    dump_to_stdout = (
+        encoding.GetEncodedValue(os.environ, 'PARITY_DUMP_NAMESPACE') == '1'
+    )
+    return dump_to_path or dump_to_stdout
+
   def Execute(self, args=None, call_arg_complete=True):
     """Execute the CLI tool with the given arguments.
 
@@ -1012,7 +1025,11 @@ class CLI(object):
       # -h|--help|--document are dispatched by parse_args and never get here.
 
       return self._RunCommand(
-          calliope_command, args, command_path_string, specified_arg_names
+          calliope_command,
+          args,
+          command_path_string,
+          specified_arg_names,
+          serialize_namespace=self.IsNamespaceSerializable(),
       )
 
     except core_exceptions.DryRunError as exc:
@@ -1127,6 +1144,9 @@ class CLI(object):
       # above is deliberately left ahead of this call so that a command which
       # Python rejects post-parse still reports that failure.
       if serialize_namespace:
+        # pylint: disable=g-import-not-at-top
+        from googlecloudsdk.calliope import namespace_serializer
+        # pylint: enable=g-import-not-at-top
         namespace_serializer.HandleNamespaceSerialization(
             args, calliope_command
         )

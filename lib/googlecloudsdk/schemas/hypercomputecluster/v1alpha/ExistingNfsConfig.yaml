@@ -1,0 +1,41 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha ExistingNfsConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- remoteMount
+- serverIpAddress
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  mountOptions:
+    description: |-
+      Immutable. Options to mount the NFS share, as expected by fs_mntops field
+      infstab(5), for example: "rw,vers=4.1,nconnect=2,noatime".
+    type: string
+  remoteMount:
+    description: Immutable. Remote mount path of the NFS share.
+    type: string
+  serverIpAddress:
+    description: Immutable. Server IP address of the NFS share.
+    type: string

@@ -347,8 +347,8 @@ def _GetOrCreateBucket(
     if using_default_bucket:
       random_bucket = _GetRandomBucketName()
       log.debug(
-          f'Failed to provision {bucket}, retrying with {bucket} in region'
-          f' {region}'
+          f'Failed to provision {bucket}, retrying with {random_bucket}'
+          f' in region {region}'
       )
       if check_source_bucket_via_list:
         # CreateBucketIfNotListed always checks ownership, and throws an error

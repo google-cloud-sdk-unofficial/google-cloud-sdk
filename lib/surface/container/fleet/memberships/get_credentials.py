@@ -99,7 +99,9 @@ class GetCredentials(gateway.GetCredentialsCommand):
     membership_name = resources.ParseMembershipArg(args)
     location = fleet_util.MembershipLocation(membership_name)
     membership_id = fleet_util.MembershipShortname(membership_name)
-    use_adc = properties.VALUES.container.use_app_default_credentials.GetBool()
+    use_adc = (
+        properties.VALUES.container.use_application_default_credentials.GetBool()
+    )
 
     if args.use_client_side_generation:
       self.RunGetCredentials(membership_id, location)

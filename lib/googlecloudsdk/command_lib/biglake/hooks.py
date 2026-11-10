@@ -20,9 +20,16 @@ from googlecloudsdk.calliope import exceptions
 def ValidateCatalogUpdateArgs(ref, args, req):
   """Checks that at least one update flag is specified."""
   del ref
-  if not (args.IsSpecified('description')):
+  if not (
+      args.IsSpecified('description')
+      or args.IsKnownAndSpecified('kms_key')
+      or args.IsKnownAndSpecified('clear_kms_key')
+  ):
+    required_args = ['--description']
+    if hasattr(args, 'kms_key'):
+      required_args.extend(['--kms-key', '--clear-kms-key'])
     raise exceptions.MinimumArgumentException(
-        ['--description'],
+        required_args,
         'At least one argument is required to update the catalog',
     )
   return req

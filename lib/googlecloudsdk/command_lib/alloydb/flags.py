@@ -449,6 +449,29 @@ def AddConnectionPoolingMaxPreparedStatements(parser):
   )
 
 
+def AddConnectionPoolingAuthproxyPoolerScalingType(parser):
+  """Adds --connection-pooling-authproxy-pooler-scaling-type flag.
+
+  Args:
+    parser: The current argparse parser to add this to.
+  """
+  choices = {
+      'NONE': 'No pooler is enabled.',
+      'MACHINE_SIZED': (
+          'The number of poolers is automatically determined by the service'
+          ' based on the VM size.'
+      ),
+  }
+  parser.add_argument(
+      '--connection-pooling-authproxy-pooler-scaling-type',
+      choices=choices,
+      type=arg_utils.ChoiceToEnumName,
+      required=False,
+      default=None,
+      help='The scaling type of the AuthProxy connection pooler.',
+  )
+
+
 def AddEnablePrivateServiceConnect(parser):
   """Adds the `--enable-private-service-connect` flag to the parser."""
   parser.add_argument(
@@ -1532,7 +1555,7 @@ def AddObservabilityConfigQueryPlansPerMinute(parser):
   parser.add_argument(
       '--observability-config-query-plans-per-minute',
       required=False,
-      type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=20),
+      type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=200),
       help="""Number of query plans to sample every minute.
         Default value is 20. Allowed range: 0 to 200.""",
   )
@@ -2674,6 +2697,14 @@ def _AddAutoscalerFlags(group):
       type=str,
       default=None,
       help='Description for the autoscaler schedule.',
+  )
+
+  group.add_argument(
+      '--autoscaler-target-connections-count',
+      required=False,
+      type=int,
+      default=None,
+      help='Target connections count for the autoscaler.',
   )
 
 

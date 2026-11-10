@@ -50,4 +50,4 @@ def export_image(
         destination_repository=destination_repository,
     )
   except exceptions.Error as e:
-    raise exceptions.Error(f'Failed to export image: {e!r}') from e
+    raise exceptions.Error(f'Failed to export image: {e}') from e

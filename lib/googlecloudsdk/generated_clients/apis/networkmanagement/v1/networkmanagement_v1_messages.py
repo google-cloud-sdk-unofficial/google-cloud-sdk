@@ -3763,11 +3763,15 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
   PointsDownloadInstallScriptRequest object.
 
   Enums:
+    CloudDeploymentTypeValueValuesEnum: Optional. The deployment type for
+      Cloud Monitoring Points.
     MonitoringPointTypeValueValuesEnum: Required. The type of the monitoring
       point.
 
   Fields:
     _password: Optional. Password for logging into the MonitoringPoint.
+    cloudDeploymentType: Optional. The deployment type for Cloud Monitoring
+      Points.
     hostname: Required. The hostname of the MonitoringPoint, e.g. "test-vm"
     monitoringPointType: Required. The type of the monitoring point.
     ntpServerAddress: Optional. Network Time Protocol a user can configure. If
@@ -3798,6 +3802,24 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
       network configuration parameters to devices connecting to a network.
   """
 
+  class CloudDeploymentTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The deployment type for Cloud Monitoring Points.
+
+    Values:
+      CLOUD_DEPLOYMENT_TYPE_UNSPECIFIED: Default value. If unspecified,
+        defaults to `TERRAFORM` for `GCE_VM`, `BICEP` for `AZURE_VM`, and
+        `CLOUD_FORMATION` for `AWS_EC2`.
+      TERRAFORM: Deploys using Terraform.
+      CLOUD_FORMATION: Deploys using AWS Cloud Formation. Supported only for
+        `AWS_EC2` deployments.
+      BICEP: Deploys using Azure Bicep. Supported only for `AZURE_VM`
+        deployments.
+    """
+    CLOUD_DEPLOYMENT_TYPE_UNSPECIFIED = 0
+    TERRAFORM = 1
+    CLOUD_FORMATION = 2
+    BICEP = 3
+
   class MonitoringPointTypeValueValuesEnum(_messages.Enum):
     r"""Required. The type of the monitoring point.
 
@@ -3824,21 +3846,22 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
     AWS_EC2 = 7
 
   _password = _messages.StringField(1)
-  hostname = _messages.StringField(2)
-  monitoringPointType = _messages.EnumField('MonitoringPointTypeValueValuesEnum', 3)
-  ntpServerAddress = _messages.StringField(4)
-  ntpServerSecondaryAddress = _messages.StringField(5)
-  parent = _messages.StringField(6, required=True)
-  privateConnectivityEnabled = _messages.BooleanField(7)
-  staticIpAddress_dnsServerAddress = _messages.StringField(8)
-  staticIpAddress_dnsServerSecondaryAddress = _messages.StringField(9)
-  staticIpAddress_domain = _messages.StringField(10)
-  staticIpAddress_gatewayAddress = _messages.StringField(11)
-  staticIpAddress_ipAddress = _messages.StringField(12)
-  staticIpAddress_netmask = _messages.StringField(13)
-  timeZone_id = _messages.StringField(14)
-  timeZone_version = _messages.StringField(15)
-  useDhcp = _messages.BooleanField(16)
+  cloudDeploymentType = _messages.EnumField('CloudDeploymentTypeValueValuesEnum', 2)
+  hostname = _messages.StringField(3)
+  monitoringPointType = _messages.EnumField('MonitoringPointTypeValueValuesEnum', 4)
+  ntpServerAddress = _messages.StringField(5)
+  ntpServerSecondaryAddress = _messages.StringField(6)
+  parent = _messages.StringField(7, required=True)
+  privateConnectivityEnabled = _messages.BooleanField(8)
+  staticIpAddress_dnsServerAddress = _messages.StringField(9)
+  staticIpAddress_dnsServerSecondaryAddress = _messages.StringField(10)
+  staticIpAddress_domain = _messages.StringField(11)
+  staticIpAddress_gatewayAddress = _messages.StringField(12)
+  staticIpAddress_ipAddress = _messages.StringField(13)
+  staticIpAddress_netmask = _messages.StringField(14)
+  timeZone_id = _messages.StringField(15)
+  timeZone_version = _messages.StringField(16)
+  useDhcp = _messages.BooleanField(17)
 
 
 class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadRecreateInstallScriptRequest(_messages.Message):

@@ -1,0 +1,43 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1 ComputeResourceConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  newFlexStartInstances:
+    description: |-
+      Immutable. If set, indicates that this resource should use flex-start VMs.
+    $ref: NewFlexStartInstancesConfig.yaml
+  newOnDemandInstances:
+    description: |-
+      Immutable. If set, indicates that this resource should use on-demand VMs.
+    $ref: NewOnDemandInstancesConfig.yaml
+  newReservedInstances:
+    description: |-
+      Immutable. If set, indicates that this resource should use reserved VMs.
+    $ref: NewReservedInstancesConfig.yaml
+  newSpotInstances:
+    description: |-
+      Immutable. If set, indicates that this resource should use spot VMs.
+    $ref: NewSpotInstancesConfig.yaml

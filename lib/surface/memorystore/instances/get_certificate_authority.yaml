@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: Get certificate authority details of a Memorystore instance.
     description: Get certificate authority details of a Memorystore instance.

@@ -181,6 +181,16 @@ SCHEMA = s.Message(
         name=s.Value(converter=c.ToJsonString),
         egress_setting=s.Value(converter=c.ToVpcEgressSettingEnum),
     ),
+    vpc_access=s.Message(
+        network_interface=s.Message(
+            'network_interfaces',
+            converter=lambda x: [x],
+            network=s.Value(converter=c.ToJsonString),
+            subnet=s.Value(converter=c.ToJsonString),
+            tags=s.RepeatedField(element=s.Value(converter=c.ToJsonString)),
+        ),
+        vpc_egress=s.Value(converter=c.ToVpcEgressEnum),
+    ),
     app_engine_bundled_services=s.RepeatedField(
         element=s.Value(converter=c.ToBundledServiceTypeEnum)
     ),

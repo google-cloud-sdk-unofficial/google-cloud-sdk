@@ -20,6 +20,5 @@ from googlecloudsdk.calliope import base
 @base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-@base.Hidden
 class Migration(base.Group):
   """Manage BigQuery Migration Service resources."""

@@ -95,7 +95,7 @@ class Ssh(base.Command):
       )
     command_list = args.command.split(' ') if args.command else ['bash -l']
     project = properties.VALUES.core.project.Get()
-    connection_info = util.PrepareEnvironment(args)
+    connection_info = util.PrepareEnvironmentNoKey(args)
     if args.authorize_session:
       util.AuthorizeEnvironment()
     if not connection_info.web_host:
@@ -127,17 +127,15 @@ class Ssh(base.Command):
     def _ssh_connect(port: int, project: str, use_key: bool, use_tunnel: bool):
       """Attempts to connect to Cloud Shell via SSH."""
 
-      connection_info = (
-          util.PrepareEnvironment(args)
-          if use_key
-          else util.PrepareEnvironmentNoKey(args)
+      conn_info = (
+          util.PrepareEnvironment(args) if use_key else connection_info
       )
-      target = 'localhost' if use_tunnel else connection_info.host
+      target = 'localhost' if use_tunnel else conn_info.host
 
       command = ssh.SSHCommand(
-          remote=ssh.Remote(host=target, user=connection_info.user),
+          remote=ssh.Remote(host=target, user=conn_info.user),
           port=str(port),
-          identity_file=connection_info.key if use_key else None,
+          identity_file=conn_info.key if use_key else None,
           remote_command=([f'DEVSHELL_PROJECT_ID={project}'] if project else [])
           + command_list,
           extra_flags=args.ssh_flag,
@@ -157,11 +155,11 @@ class Ssh(base.Command):
         log.Print(
             ' '.join([
                 shlex.quote(elem)
-                for elem in command.Build(connection_info.ssh_env)
+                for elem in command.Build(conn_info.ssh_env)
             ])
         )
         return
-      self._RunCommand(command, connection_info.ssh_env, args)
+      self._RunCommand(command, conn_info.ssh_env, args)
       return
 
     # 1. Attempt TCP tunnel noauth login to port 22

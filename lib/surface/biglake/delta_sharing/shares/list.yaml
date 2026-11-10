@@ -32,6 +32,8 @@
         originalName:label=ORIGINAL_NAME
       )
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: List BigLake Delta Sharing shares.
     description: |

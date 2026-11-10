@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA]
+  hints:
+    read_only: false
+
+  help_text:
+    brief: Delete a Google Compute Engine accelerator pod controller.
+    description: Delete a Google Compute Engine accelerator pod controller.
+    examples: |
+      To delete an accelerator pod controller named `my-apc` in zone `us-east5-staginga`:
+
+        $ {command} my-apc --zone=us-east5-staginga
+
+  request:
+    ALPHA:
+      api_version: alpha
+    collection: compute.acceleratorPodControllers
+    method: delete
+
+  arguments:
+    resource:
+      help_text: The name of the accelerator pod controller to delete.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:accelerator_pod_controller
+      is_positional: true
+
+  async:
+    collection: compute.zoneOperations
+    method: wait
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']

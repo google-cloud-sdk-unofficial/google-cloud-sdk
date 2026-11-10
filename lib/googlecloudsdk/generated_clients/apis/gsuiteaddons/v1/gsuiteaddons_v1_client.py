@@ -52,7 +52,7 @@ class GsuiteaddonsV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""[Developer Preview](https://developers.google.com/workspace/preview): Gets the Chat app configuration of a project. Only Chat apps built as Google Workspace add-ons are supported. Each Google Cloud project has exactly one Chat app configuration. Requires the `gsuiteaddons.chatAppConfigs.get` and `chat.bots.get` IAM permissions on the project.
+      r"""[Developer Preview](https://developers.google.com/workspace/preview): Gets the Chat app configuration of a project. Only Chat apps built as Google Workspace add-ons are supported. Each Google Cloud project has exactly one Chat app configuration. Requires authenticating and authorizing with user credentials and the `gsuiteaddons.chatAppConfigs.get` and `chat.bots.get` IAM permissions on the project.
 
       Args:
         request: (GsuiteaddonsProjectsChatAppConfigGetRequest) input message
@@ -79,7 +79,7 @@ class GsuiteaddonsV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""[Developer Preview](https://developers.google.com/workspace/preview): Updates the Chat app configuration of a project. Only Chat apps built as Google Workspace add-ons are supported. Each Google Cloud project has exactly one Chat app configuration. Requires the `gsuiteaddons.chatAppConfigs.update` and `chat.bots.update` IAM permissions on the project.
+      r"""[Developer Preview](https://developers.google.com/workspace/preview): Updates the Chat app configuration of a project. Only Chat apps built as Google Workspace add-ons are supported. Each Google Cloud project has exactly one Chat app configuration. Requires authenticating and authorizing with user credentials and the `gsuiteaddons.chatAppConfigs.update`, `chat.bots.update` and `chat.bots.get` IAM permissions on the project.
 
       Args:
         request: (GsuiteaddonsProjectsChatAppConfigPatchRequest) input message

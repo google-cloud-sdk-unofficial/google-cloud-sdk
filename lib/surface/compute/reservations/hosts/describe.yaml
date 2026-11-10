@@ -1,4 +1,6 @@
 release_tracks: [ALPHA, BETA, GA]
+hints:
+  read_only: true
 help_text:
   brief: Describe a Google Compute Engine host in a reservation.
   description: |
@@ -32,7 +34,6 @@ arguments:
     help_text: |
       Name of the reservation block the host is associated with. This argument requires `--reservation` to be specified.
   - arg_name: reservation-subblock
-    release_tracks: [ALPHA]
     required: false
     help_text: |
       Name of the reservation subblock the host is associated with. This argument requires `--reservation` and `--reservation-block` to be specified.

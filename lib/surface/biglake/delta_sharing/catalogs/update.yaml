@@ -28,9 +28,20 @@
           parameter_name: catalogsId
           help: The Delta Sharing Catalog for the resource.
     params:
-    - arg_name: kms-key
-      api_field: deltaSharingCatalog.encryptionConfig.kmsKeyName
-      help_text: Cloud KMS key name for encryption of resources in the catalog.
+    - group:
+        mutex: true
+        params:
+        - arg_name: kms-key
+          api_field: deltaSharingCatalog.encryptionConfig.kmsKeyName
+          help_text: Cloud KMS key name for encryption of resources in the catalog.
+        - arg_name: clear-kms-key
+          api_field: deltaSharingCatalog.encryptionConfig.kmsKeyName
+          action: store_true
+          default: null
+          choices:
+          - arg_value: true
+            enum_value: ''
+          help_text: Clear the Cloud KMS key for the catalog and revert to Google-managed encryption.
     - arg_name: connector-endpoint
       api_field: deltaSharingCatalog.sapConfig.sapBdcEnrollmentConfig.connectorEndpoint
       help_text: The SAP BDC Connector Endpoint.
@@ -89,9 +100,20 @@
           parameter_name: catalogsId
           help: The Delta Sharing Catalog for the resource.
     params:
-    - arg_name: kms-key
-      api_field: deltaSharingCatalog.encryptionConfig.kmsKeyName
-      help_text: Cloud KMS key name for encryption of resources in the catalog.
+    - group:
+        mutex: true
+        params:
+        - arg_name: kms-key
+          api_field: deltaSharingCatalog.encryptionConfig.kmsKeyName
+          help_text: Cloud KMS key name for encryption of resources in the catalog.
+        - arg_name: clear-kms-key
+          api_field: deltaSharingCatalog.encryptionConfig.kmsKeyName
+          action: store_true
+          default: null
+          choices:
+          - arg_value: true
+            enum_value: ''
+          help_text: Clear the Cloud KMS key for the catalog and revert to Google-managed encryption.
     - arg_name: connector-endpoint
       api_field: deltaSharingCatalog.sapConfig.sapBdcEnrollmentConfig.connectorEndpoint
       help_text: The SAP BDC Connector Endpoint.

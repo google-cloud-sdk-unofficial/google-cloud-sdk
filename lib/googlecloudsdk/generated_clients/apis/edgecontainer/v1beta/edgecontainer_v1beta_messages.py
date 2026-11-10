@@ -2296,12 +2296,17 @@ class MaintenancePolicy(_messages.Message):
       emergency maintenance should not occur in these windows. Each exclusion
       has a unique name and may be active or expired. The max number of
       maintenance exclusions allowed at a given time is 3.
+    timeZone: Optional. Specifies the time zone to be used in interpreting the
+      maintenance window. The time zone must be a valid time zone name from
+      the IANA Time Zone Database (https://en.wikipedia.org/wiki/Tz_database).
+      If not specified, `UTC` will be used by default.
     window: Specifies the maintenance window in which maintenance may be
       performed.
   """
 
   maintenanceExclusions = _messages.MessageField('MaintenanceExclusionWindow', 1, repeated=True)
-  window = _messages.MessageField('MaintenanceWindow', 2)
+  timeZone = _messages.StringField(2)
+  window = _messages.MessageField('MaintenanceWindow', 3)
 
 
 class MaintenanceWindow(_messages.Message):

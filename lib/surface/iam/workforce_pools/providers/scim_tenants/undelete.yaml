@@ -16,6 +16,8 @@
 # Implementation definition for gcloud iam workforce-pools providers scim-tenants undelete
 
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: Undelete an IAM workforce identity pool provider SCIM tenant.
     description: |

@@ -71,7 +71,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the finding summary by category for a given scope.
+      r"""Lists summaries of the active findings in a Data Boundary scope (an organization, folder, or project), with one summary for each finding category.
 
       Args:
         request: (AssuredworkloadsFoldersLocationsDbFindingSummariesListRequest) input message
@@ -108,7 +108,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the control compliance summary for a given scope.
+      r"""Lists the compliance summaries of the controls in a framework compliance report.
 
       Args:
         request: (AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest) input message
@@ -145,7 +145,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def Aggregate(self, request, global_params=None):
-      r"""Gets the aggregated compliance report over time for a given scope.
+      r"""Gets daily compliance reports over a time range for a framework that's deployed in a Data Boundary scope.
 
       Args:
         request: (AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsAggregateRequest) input message
@@ -172,7 +172,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
     )
 
     def Fetch(self, request, global_params=None):
-      r"""Fetches the framework compliance report for a given scope.
+      r"""Fetches the current compliance report for a framework that's deployed in a Data Boundary scope (an organization, folder, or project). The report includes the number of passing, failing, and not assessed controls in the framework.
 
       Args:
         request: (AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsFetchRequest) input message
@@ -209,7 +209,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the framework compliance summary for a given scope.
+      r"""Lists the compliance summaries of the frameworks that are deployed in a Data Boundary scope (an organization, folder, or project).
 
       Args:
         request: (AssuredworkloadsFoldersLocationsDbFrameworkComplianceSummariesListRequest) input message
@@ -266,7 +266,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the finding summary by category for a given scope.
+      r"""Lists summaries of the active findings in a Data Boundary scope (an organization, folder, or project), with one summary for each finding category.
 
       Args:
         request: (AssuredworkloadsOrganizationsLocationsDbFindingSummariesListRequest) input message
@@ -303,7 +303,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the control compliance summary for a given scope.
+      r"""Lists the compliance summaries of the controls in a framework compliance report.
 
       Args:
         request: (AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest) input message
@@ -340,7 +340,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def Aggregate(self, request, global_params=None):
-      r"""Gets the aggregated compliance report over time for a given scope.
+      r"""Gets daily compliance reports over a time range for a framework that's deployed in a Data Boundary scope.
 
       Args:
         request: (AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsAggregateRequest) input message
@@ -367,7 +367,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
     )
 
     def Fetch(self, request, global_params=None):
-      r"""Fetches the framework compliance report for a given scope.
+      r"""Fetches the current compliance report for a framework that's deployed in a Data Boundary scope (an organization, folder, or project). The report includes the number of passing, failing, and not assessed controls in the framework.
 
       Args:
         request: (AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsFetchRequest) input message
@@ -404,7 +404,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the framework compliance summary for a given scope.
+      r"""Lists the compliance summaries of the frameworks that are deployed in a Data Boundary scope (an organization, folder, or project).
 
       Args:
         request: (AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceSummariesListRequest) input message
@@ -596,7 +596,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Retrieves Assured Workload Violation based on ID.
+      r"""Retrieves an Assured Workloads violation by its resource name.
 
       Args:
         request: (AssuredworkloadsOrganizationsLocationsWorkloadsViolationsGetRequest) input message
@@ -933,7 +933,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the finding summary by category for a given scope.
+      r"""Lists summaries of the active findings in a Data Boundary scope (an organization, folder, or project), with one summary for each finding category.
 
       Args:
         request: (AssuredworkloadsProjectsLocationsDbFindingSummariesListRequest) input message
@@ -970,7 +970,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the control compliance summary for a given scope.
+      r"""Lists the compliance summaries of the controls in a framework compliance report.
 
       Args:
         request: (AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest) input message
@@ -1007,7 +1007,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def Aggregate(self, request, global_params=None):
-      r"""Gets the aggregated compliance report over time for a given scope.
+      r"""Gets daily compliance reports over a time range for a framework that's deployed in a Data Boundary scope.
 
       Args:
         request: (AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsAggregateRequest) input message
@@ -1034,7 +1034,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
     )
 
     def Fetch(self, request, global_params=None):
-      r"""Fetches the framework compliance report for a given scope.
+      r"""Fetches the current compliance report for a framework that's deployed in a Data Boundary scope (an organization, folder, or project). The report includes the number of passing, failing, and not assessed controls in the framework.
 
       Args:
         request: (AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsFetchRequest) input message
@@ -1071,7 +1071,7 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the framework compliance summary for a given scope.
+      r"""Lists the compliance summaries of the frameworks that are deployed in a Data Boundary scope (an organization, folder, or project).
 
       Args:
         request: (AssuredworkloadsProjectsLocationsDbFrameworkComplianceSummariesListRequest) input message

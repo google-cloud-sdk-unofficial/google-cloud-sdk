@@ -141,7 +141,7 @@ class FilePartUploadTask(file_part_task.FilePartTask):
         cloud_api.Capability.CLIENT_SIDE_HASH_VALIDATION not in api.capabilities
         or self._source_resource.storage_url.is_stream
         or properties.VALUES.storage.check_hashes.Get()
-        == properties.CheckHashes.NEVER.value
+        == properties.VALUES.storage.CheckHashes.NEVER.value
     ):
       return
     stop_offset = (
@@ -166,7 +166,7 @@ class FilePartUploadTask(file_part_task.FilePartTask):
       fast_crc32c_util.log_or_raise_crc32c_issues()
       if (
           properties.VALUES.storage.check_hashes.Get()
-          == properties.CheckHashes.ALWAYS.value
+          == properties.VALUES.storage.CheckHashes.ALWAYS.value
           or fast_crc32c_util.check_if_will_use_fast_crc32c()
       ):
         digesters[hash_util.HashAlgorithm.CRC32C] = (

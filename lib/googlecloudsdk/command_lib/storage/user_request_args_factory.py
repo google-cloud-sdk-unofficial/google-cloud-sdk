@@ -107,6 +107,7 @@ class _UserBucketArgs(_UserResourceArgs):
       enable_per_object_retention=None,
       enable_hierarchical_namespace=None,
       encryption_enforcement_file_path=None,
+      hard_delete_pause=None,
       ip_filter_file_path=None,
       labels_file_path=None,
       labels_to_append=None,
@@ -145,6 +146,7 @@ class _UserBucketArgs(_UserResourceArgs):
     self.enable_per_object_retention = enable_per_object_retention
     self.enable_hierarchical_namespace = enable_hierarchical_namespace
     self.encryption_enforcement_file_path = encryption_enforcement_file_path
+    self.hard_delete_pause = hard_delete_pause
     self.ip_filter_file_path = ip_filter_file_path
     self.labels_file_path = labels_file_path
     self.labels_to_append = labels_to_append
@@ -189,6 +191,7 @@ class _UserBucketArgs(_UserResourceArgs):
         == other.enable_hierarchical_namespace
         and self.encryption_enforcement_file_path
         == other.encryption_enforcement_file_path
+        and self.hard_delete_pause == other.hard_delete_pause
         and self.ip_filter_file_path == other.ip_filter_file_path
         and self.labels_file_path == other.labels_file_path
         and self.labels_to_append == other.labels_to_append
@@ -443,6 +446,7 @@ def get_user_request_args_from_command_args(args, metadata_type=None):
           enable_hierarchical_namespace=getattr(
               args, 'enable_hierarchical_namespace', None
           ),
+          hard_delete_pause=getattr(args, 'pause_hard_delete', None),
           ip_filter_file_path=ip_filter_file_path,
           labels_file_path=labels_file_path,
           labels_to_append=labels_to_append,

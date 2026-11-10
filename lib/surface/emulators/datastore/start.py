@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.emulators import datastore_util
 from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.command_lib.util import java
-from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -76,25 +75,6 @@ To start a local datastore emulator, run:
         'Reads are always strongly consistent and --consistency flag may not '
         'be specified.')
 
-  # TODO(b/534870972): Remove this warning after updating to Java 25.
-  def LogJavaVersionWarning(self):
-    """Log a warning message notifying users about Java version change.
-
-    Log the warning when the installed JRE has an earlier version than Java 25.
-    """
-    try:
-      java.RequireJavaInstalled(datastore_util.DATASTORE_TITLE, min_version=25)
-    except java.JavaVersionError:
-      log.warning(
-          'Cloud Datastore Emulator support for Java JRE version 21 will be '
-          'dropped after gcloud command-line tool release 576.0.0. Please '
-          'upgrade to Java JRE version 25 or higher to continue using the '
-          'latest Cloud Datastore Emulator.')
-    except java.JavaError:
-      # A JRE could not be found. Not logging the warning since the user will
-      # not be able to start an emulator anyways.
-      pass
-
   def Run(self, args):
     if not args.host_port:
       args.host_port = arg_parsers.HostPort.Parse(
@@ -102,8 +82,7 @@ To start a local datastore emulator, run:
     args.host_port.host = args.host_port.host or 'localhost'
     args.host_port.port = args.host_port.port or '8081'
 
-    self.LogJavaVersionWarning()
-    java.RequireJavaInstalled(datastore_util.DATASTORE_TITLE, min_version=21)
+    java.RequireJavaInstalled(datastore_util.DATASTORE_TITLE, min_version=25)
     datastore_util.PrepareGCDDataDir(args)
     with datastore_util.StartGCDEmulator(args) as proc:
       datastore_util.WriteGCDEnvYaml(args)

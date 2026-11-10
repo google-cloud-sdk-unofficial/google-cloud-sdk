@@ -1,0 +1,71 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 TokenBudgetPolicyBudget export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- maxTokens
+- resetPeriod
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  alertThreshold:
+    description: |-
+      Threshold percentage (0.0 to 1.0) to trigger alert notifications (e.g. 0.6
+      for 60%).
+    type: number
+  dryRun:
+    description: |-
+      Dry-run mode. If true, token limits are calculated for observability
+      without blocking requests (HTTP 429).
+    type: boolean
+  enforcement:
+    description: |-
+      Deprecated: Use `dry_run` instead. Optional. Enforcement behavior when
+      budget is exhausted. Defaults to STRICT.
+    type: string
+    enum:
+    - ALERT_ONLY
+    - ENFORCEMENT_MODE_UNSPECIFIED
+    - STRICT
+  maxTokens:
+    description: Maximum number of raw tokens allowed per reset period.
+    type: integer
+  models:
+    description: |-
+      Specify this list to enforce budgets on specific models. Leave this empty
+      to apply the budget to all models.
+    type: array
+    items:
+      $ref: TokenBudgetPolicyModelConfig.yaml
+  resetPeriod:
+    description: Frequency at which the token budget resets (e.g., DAILY).
+    type: string
+    enum:
+    - DAILY
+    - RESET_PERIOD_UNSPECIFIED
+  validateOnly:
+    description: |-
+      Deprecated: Use `dry_run` instead. Optional. Dry- run mode. If true,
+      token limits are calculated for observability without blocking
+      requests (HTTP 429).
+    type: boolean

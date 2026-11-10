@@ -27,14 +27,24 @@ from urllib import parse as urllib_parse
 import uuid
 
 from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration import errors
+from googlecloudsdk.core import ecp_proxy_manager
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import requests as creds_requests
 from googlecloudsdk.core.util import encoding
 
 # gcloud-disable-gdu-domain
 DEFAULT_ENDPOINT = "https://staging-orchestration.sandbox.googleapis.com"
+# Used instead of `DEFAULT_ENDPOINT` with certificate-based access, whose
+# credentials only the mTLS endpoint accepts.
+# gcloud-disable-gdu-domain
+DEFAULT_MTLS_ENDPOINT = (
+    "https://staging-orchestration.mtls.sandbox.googleapis.com"
+)
+# Overrides the endpoint as is, so with certificate-based access it must be an
+# mTLS endpoint too.
 ENDPOINT_ENV_VAR = "ORCHESTRATION_ENDPOINT"
-API_VERSION = "v1alpha"
+API_VERSION = "v1beta"
 _DEFAULT_POLL_INTERVAL_SECONDS = 5
 
 _HTTP_STATUS_TO_RPC_CODE = types.MappingProxyType({
@@ -89,7 +99,7 @@ class OrchestrationClient:
         via `creds_requests.GetSession()` if None.
     """
     custom_endpoint = encoding.GetEncodedValue(os.environ, ENDPOINT_ENV_VAR)
-    self._base_url = _NormalizeBaseUrl(custom_endpoint or DEFAULT_ENDPOINT)
+    self._base_url = _NormalizeBaseUrl(custom_endpoint or _GetDefaultEndpoint())
     self._poll_interval_seconds = poll_interval_seconds
     self._session = session
 
@@ -114,7 +124,7 @@ class OrchestrationClient:
     Args:
       parent: Parent location resource name (`projects/<p>/locations/<l>`).
       pipeline_id: Pipeline identifier to create under `parent`.
-      body: Pipeline resource fields (`versionId`, `spec`, etc.).
+      body: Pipeline resource fields (`spec`, `execution_identity`, etc.).
       request_id: Optional idempotency UUID; omitted from the request if None.
 
     Returns:
@@ -269,7 +279,10 @@ class OrchestrationClient:
       response = self._http_session.request(
           method, url, data=data, headers=headers
       )
-    except OSError as e:
+    # `requests.exceptions.RequestException` is an `OSError`, but with
+    # certificate-based access the session's local ECP proxy adapter wraps
+    # transport and proxy failures in `ECPProxyError`, which is not.
+    except (OSError, ecp_proxy_manager.ECPProxyError) as e:
       raise errors.OrchestrationApiError(f"{method} {url} failed: {e}") from e
 
     status_code = int(response.status_code)
@@ -283,6 +296,18 @@ class OrchestrationClient:
           f"{method} {url} failed: {message}", code=code
       )
     return body_text
+
+
+def _GetDefaultEndpoint() -> str:
+  """Returns `DEFAULT_MTLS_ENDPOINT` if gcloud uses certificate-based access."""
+  context_aware_properties = properties.VALUES.context_aware
+  # Same rule as gcloud's generated clients of APIs that support mTLS.
+  if (
+      context_aware_properties.always_use_mtls_endpoint.GetBool()
+      or context_aware_properties.use_client_certificate.GetBool()
+  ):
+    return DEFAULT_MTLS_ENDPOINT
+  return DEFAULT_ENDPOINT
 
 
 def _NormalizeBaseUrl(endpoint: str, api_version: str = API_VERSION) -> str:

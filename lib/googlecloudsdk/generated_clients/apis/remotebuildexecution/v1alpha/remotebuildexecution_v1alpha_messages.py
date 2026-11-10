@@ -2276,7 +2276,8 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance(_messages.Message):
       CAS.
     casPermissions: Optional. Permissions for which instances are allowed to
       use this instance as their CAS.
-    casRelations: Specify parent or child instances of `this` instance.
+    casRelations: Deprecated: Use `cas_instance` and `cas_permissions`
+      instead. Specify parent or child instances of `this` instance.
       Configurations will be rejected if: -- If `this` instance is not
       allowlisted for `ENABLE_DATA_READS_FROM_PARENT` and this list specifies
       parent instances. -- If `this` instance is not allowlisted for
@@ -2451,7 +2452,8 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaPermittedInstances(_messages
 
 
 class GoogleDevtoolsRemotebuildexecutionAdminV1alphaRelationship(_messages.Message):
-  r"""Defines the relationship with another RBE instance.
+  r"""Deprecated: Use `cas_instance` and `cas_permissions` instead. Defines
+  the relationship with another RBE instance.
 
   Enums:
     RelationValueValuesEnum: Specify the relationship between `instance` and

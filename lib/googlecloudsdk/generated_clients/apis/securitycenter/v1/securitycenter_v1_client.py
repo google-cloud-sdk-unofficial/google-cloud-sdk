@@ -111,7 +111,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization's assets and groups them by their specified properties.
+      r"""Filters an organization's assets and groups them by their specified properties. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.assets.group`.
 
       Args:
         request: (SecuritycenterFoldersAssetsGroupRequest) input message
@@ -138,7 +138,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization's assets.
+      r"""Lists an organization's assets. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.assets.list`.
 
       Args:
         request: (SecuritycenterFoldersAssetsListRequest) input message
@@ -165,7 +165,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks.
+      r"""Updates security marks. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterFoldersAssetsUpdateSecurityMarksRequest) input message
@@ -202,7 +202,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a BigQuery export.
+      r"""Creates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.create` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is specified): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterFoldersBigQueryExportsCreateRequest) input message
@@ -229,7 +229,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing BigQuery export.
+      r"""Deletes an existing BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.delete`.
 
       Args:
         request: (SecuritycenterFoldersBigQueryExportsDeleteRequest) input message
@@ -256,7 +256,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a BigQuery export.
+      r"""Gets a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.get`.
 
       Args:
         request: (SecuritycenterFoldersBigQueryExportsGetRequest) input message
@@ -283,7 +283,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned.
+      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.list`.
 
       Args:
         request: (SecuritycenterFoldersBigQueryExportsListRequest) input message
@@ -310,7 +310,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a BigQuery export.
+      r"""Updates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `big_query_export.name` field: - `securitycenter.bigQueryExports.update` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is updated): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterFoldersBigQueryExportsPatchRequest) input message
@@ -347,7 +347,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a resident Event Threat Detection custom module at the scope of the given Resource Manager parent, and also creates inherited custom modules for all descendants of the given parent. These modules are enabled by default.
+      r"""Creates a resident Event Threat Detection custom module at the scope of the given Resource Manager parent, and also creates inherited custom modules for all descendants of the given parent. These modules are enabled by default. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.create`.
 
       Args:
         request: (SecuritycenterFoldersEventThreatDetectionSettingsCustomModulesCreateRequest) input message
@@ -374,7 +374,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes the specified Event Threat Detection custom module and all of its descendants in the Resource Manager hierarchy. This method is only supported for resident custom modules.
+      r"""Deletes the specified Event Threat Detection custom module and all of its descendants in the Resource Manager hierarchy. This method is only supported for resident custom modules. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectioncustommodules.delete`.
 
       Args:
         request: (SecuritycenterFoldersEventThreatDetectionSettingsCustomModulesDeleteRequest) input message
@@ -401,7 +401,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an Event Threat Detection custom module.
+      r"""Gets an Event Threat Detection custom module. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectioncustommodules.get`.
 
       Args:
         request: (SecuritycenterFoldersEventThreatDetectionSettingsCustomModulesGetRequest) input message
@@ -428,7 +428,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all Event Threat Detection custom modules for the given Resource Manager parent. This includes resident modules defined at the scope of the parent along with modules inherited from ancestors.
+      r"""Lists all Event Threat Detection custom modules for the given Resource Manager parent. This includes resident modules defined at the scope of the parent along with modules inherited from ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.list`.
 
       Args:
         request: (SecuritycenterFoldersEventThreatDetectionSettingsCustomModulesListRequest) input message
@@ -455,7 +455,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def ListDescendant(self, request, global_params=None):
-      r"""Lists all resident Event Threat Detection custom modules under the given Resource Manager parent and its descendants.
+      r"""Lists all resident Event Threat Detection custom modules under the given Resource Manager parent and its descendants. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.list`.
 
       Args:
         request: (SecuritycenterFoldersEventThreatDetectionSettingsCustomModulesListDescendantRequest) input message
@@ -482,7 +482,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the Event Threat Detection custom module with the given name based on the given update mask. Updating the enablement state is supported for both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name or configuration of a module is supported for resident modules only. The type of a module cannot be changed.
+      r"""Updates the Event Threat Detection custom module with the given name based on the given update mask. Updating the enablement state is supported for both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name or configuration of a module is supported for resident modules only. The type of a module cannot be changed. # IAM Permissions Requires the following IAM permission on the `event_threat_detection_custom_module.name` field: - `securitycenter.eventthreatdetectioncustommodules.update`.
 
       Args:
         request: (SecuritycenterFoldersEventThreatDetectionSettingsCustomModulesPatchRequest) input message
@@ -519,7 +519,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Gets an effective Event Threat Detection custom module at the given level.
+      r"""Gets an effective Event Threat Detection custom module at the given level. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.effectiveeventthreatdetectioncustommodules.get`.
 
       Args:
         request: (SecuritycenterFoldersEventThreatDetectionSettingsEffectiveCustomModulesGetRequest) input message
@@ -546,7 +546,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all effective Event Threat Detection custom modules for the given parent. This includes resident modules defined at the scope of the parent along with modules inherited from its ancestors.
+      r"""Lists all effective Event Threat Detection custom modules for the given parent. This includes resident modules defined at the scope of the parent along with modules inherited from its ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.effectiveeventthreatdetectioncustommodules.list`.
 
       Args:
         request: (SecuritycenterFoldersEventThreatDetectionSettingsEffectiveCustomModulesListRequest) input message
@@ -583,7 +583,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def ValidateCustomModule(self, request, global_params=None):
-      r"""Validates the given Event Threat Detection custom module.
+      r"""Validates the given Event Threat Detection custom module. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.validate`.
 
       Args:
         request: (SecuritycenterFoldersEventThreatDetectionSettingsValidateCustomModuleRequest) input message
@@ -620,7 +620,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def BulkMute(self, request, global_params=None):
-      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. The parent can be either an organization, folder or project. The findings matched by the filter will be muted after the LRO is done.
+      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. The parent can be either an organization, folder or project. The findings matched by the filter will be muted after the LRO is done. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.bulkMuteUpdate`.
 
       Args:
         request: (SecuritycenterFoldersFindingsBulkMuteRequest) input message
@@ -657,7 +657,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config.
+      r"""Deletes an existing mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterFoldersLocationsMuteConfigsDeleteRequest) input message
@@ -684,7 +684,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config.
+      r"""Gets a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterFoldersLocationsMuteConfigsGetRequest) input message
@@ -711,7 +711,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config.
+      r"""Updates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterFoldersLocationsMuteConfigsPatchRequest) input message
@@ -758,7 +758,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a mute config.
+      r"""Creates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.create`.
 
       Args:
         request: (SecuritycenterFoldersMuteConfigsCreateRequest) input message
@@ -785,7 +785,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config.
+      r"""Deletes an existing mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterFoldersMuteConfigsDeleteRequest) input message
@@ -812,7 +812,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config.
+      r"""Gets a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterFoldersMuteConfigsGetRequest) input message
@@ -839,7 +839,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists mute configs.
+      r"""Lists mute configs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.list`.
 
       Args:
         request: (SecuritycenterFoldersMuteConfigsListRequest) input message
@@ -866,7 +866,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config.
+      r"""Updates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterFoldersMuteConfigsPatchRequest) input message
@@ -903,7 +903,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a notification config.
+      r"""Creates a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.create` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is specified): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterFoldersNotificationConfigsCreateRequest) input message
@@ -930,7 +930,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a notification config.
+      r"""Deletes a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.delete`.
 
       Args:
         request: (SecuritycenterFoldersNotificationConfigsDeleteRequest) input message
@@ -957,7 +957,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a notification config.
+      r"""Gets a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.get`.
 
       Args:
         request: (SecuritycenterFoldersNotificationConfigsGetRequest) input message
@@ -984,7 +984,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists notification configs.
+      r"""Lists notification configs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.list`.
 
       Args:
         request: (SecuritycenterFoldersNotificationConfigsListRequest) input message
@@ -1011,7 +1011,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r""" Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter.
+      r""" Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter # IAM Permissions Requires the following IAM permission on the `notification_config.name` field: - `securitycenter.notificationconfig.update` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is updated): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterFoldersNotificationConfigsPatchRequest) input message
@@ -1048,7 +1048,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a resident SecurityHealthAnalyticsCustomModule at the scope of the given CRM parent, and also creates inherited SecurityHealthAnalyticsCustomModules for all CRM descendants of the given parent. These modules are enabled by default.
+      r"""Creates a resident SecurityHealthAnalyticsCustomModule at the scope of the given CRM parent, and also creates inherited SecurityHealthAnalyticsCustomModules for all CRM descendants of the given parent. These modules are enabled by default. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.create`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsCustomModulesCreateRequest) input message
@@ -1075,7 +1075,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes the specified SecurityHealthAnalyticsCustomModule and all of its descendants in the CRM hierarchy. This method is only supported for resident custom modules.
+      r"""Deletes the specified SecurityHealthAnalyticsCustomModule and all of its descendants in the CRM hierarchy. This method is only supported for resident custom modules. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticscustommodules.delete`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsCustomModulesDeleteRequest) input message
@@ -1102,7 +1102,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Retrieves a SecurityHealthAnalyticsCustomModule.
+      r"""Retrieves a SecurityHealthAnalyticsCustomModule. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticscustommodules.get`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsCustomModulesGetRequest) input message
@@ -1129,7 +1129,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Returns a list of all SecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors.
+      r"""Returns a list of all SecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.list`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsCustomModulesListRequest) input message
@@ -1156,7 +1156,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def ListDescendant(self, request, global_params=None):
-      r"""Returns a list of all resident SecurityHealthAnalyticsCustomModules under the given CRM parent and all of the parent's CRM descendants.
+      r"""Returns a list of all resident SecurityHealthAnalyticsCustomModules under the given CRM parent and all of the parent's CRM descendants. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.list`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsCustomModulesListDescendantRequest) input message
@@ -1183,7 +1183,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the SecurityHealthAnalyticsCustomModule under the given name based on the given update mask. Updating the enablement state is supported on both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name and custom config of a module is supported on resident modules only.
+      r"""Updates the SecurityHealthAnalyticsCustomModule under the given name based on the given update mask. Updating the enablement state is supported on both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name and custom config of a module is supported on resident modules only. # IAM Permissions Requires the following IAM permission on the `security_health_analytics_custom_module.name` field: - `securitycenter.securityhealthanalyticscustommodules.update`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsCustomModulesPatchRequest) input message
@@ -1210,7 +1210,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Simulate(self, request, global_params=None):
-      r"""Simulates a given SecurityHealthAnalyticsCustomModule and Resource.
+      r"""Simulates a given SecurityHealthAnalyticsCustomModule and Resource. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.simulate`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsCustomModulesSimulateRequest) input message
@@ -1237,7 +1237,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Test(self, request, global_params=None):
-      r"""Tests a specified or given SecurityHealthAnalyticsCustomModule.
+      r"""Tests a specified or given SecurityHealthAnalyticsCustomModule. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticscustommodules.test`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsCustomModulesTestRequest) input message
@@ -1274,7 +1274,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Retrieves an EffectiveSecurityHealthAnalyticsCustomModule.
+      r"""Retrieves an EffectiveSecurityHealthAnalyticsCustomModule. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.effectivesecurityhealthanalyticscustommodules.get`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsEffectiveCustomModulesGetRequest) input message
@@ -1301,7 +1301,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Returns a list of all EffectiveSecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors.
+      r"""Returns a list of all EffectiveSecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.effectivesecurityhealthanalyticscustommodules.list`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsEffectiveCustomModulesListRequest) input message
@@ -1348,7 +1348,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Patch(self, request, global_params=None):
-      r"""Updates external system. This is for a given finding.
+      r"""Updates external system. This is for a given finding. # IAM Permissions Requires the following IAM permission on the resource specified in the `external_system.name` field: - `securitycenter.findingexternalsystems.update`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsExternalSystemsPatchRequest) input message
@@ -1385,7 +1385,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization or source's findings and groups them by their specified properties. To group across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings, /v1/folders/{folder_id}/sources/-/findings, /v1/projects/{project_id}/sources/-/findings.
+      r"""Filters an organization or source's findings and groups them by their specified properties. To group across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings, /v1/folders/{folder_id}/sources/-/findings, /v1/projects/{project_id}/sources/-/findings # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.group`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsGroupRequest) input message
@@ -1412,7 +1412,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings.
+      r"""Lists an organization or source's findings. To list across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsListRequest) input message
@@ -1439,7 +1439,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Creates or updates a finding. The corresponding source must exist for a finding creation to succeed.
+      r"""Creates or updates a finding. The corresponding source must exist for a finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `finding.name` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsPatchRequest) input message
@@ -1466,7 +1466,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def SetMute(self, request, global_params=None):
-      r"""Updates the mute state of a finding.
+      r"""Updates the mute state of a finding. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setMute`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsSetMuteRequest) input message
@@ -1493,7 +1493,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def SetState(self, request, global_params=None):
-      r"""Updates the state of a finding.
+      r"""Updates the state of a finding. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setState`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsSetStateRequest) input message
@@ -1520,7 +1520,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks.
+      r"""Updates security marks. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsUpdateSecurityMarksRequest) input message
@@ -1557,7 +1557,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists all sources belonging to an organization.
+      r"""Lists all sources belonging to an organization. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.sources.list`.
 
       Args:
         request: (SecuritycenterFoldersSourcesListRequest) input message
@@ -1604,7 +1604,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization's assets and groups them by their specified properties.
+      r"""Filters an organization's assets and groups them by their specified properties. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.assets.group`.
 
       Args:
         request: (SecuritycenterOrganizationsAssetsGroupRequest) input message
@@ -1631,7 +1631,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization's assets.
+      r"""Lists an organization's assets. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.assets.list`.
 
       Args:
         request: (SecuritycenterOrganizationsAssetsListRequest) input message
@@ -1658,7 +1658,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def RunDiscovery(self, request, global_params=None):
-      r"""Runs asset discovery. The discovery is tracked with a long-running operation. This API can only be called with limited frequency for an organization. If it is called too frequently the caller will receive a TOO_MANY_REQUESTS error.
+      r"""Runs asset discovery. The discovery is tracked with a long-running operation. This API can only be called with limited frequency for an organization. If it is called too frequently the caller will receive a TOO_MANY_REQUESTS error. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.assets.runDiscovery`.
 
       Args:
         request: (SecuritycenterOrganizationsAssetsRunDiscoveryRequest) input message
@@ -1685,7 +1685,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks.
+      r"""Updates security marks. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterOrganizationsAssetsUpdateSecurityMarksRequest) input message
@@ -1722,7 +1722,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the attack paths for a set of simulation results or valued resources and filter.
+      r"""Lists the attack paths for a set of simulation results or valued resources and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.attackpaths.list`.
 
       Args:
         request: (SecuritycenterOrganizationsAttackPathsListRequest) input message
@@ -1759,7 +1759,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a BigQuery export.
+      r"""Creates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.create` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is specified): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterOrganizationsBigQueryExportsCreateRequest) input message
@@ -1786,7 +1786,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing BigQuery export.
+      r"""Deletes an existing BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsBigQueryExportsDeleteRequest) input message
@@ -1813,7 +1813,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a BigQuery export.
+      r"""Gets a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.get`.
 
       Args:
         request: (SecuritycenterOrganizationsBigQueryExportsGetRequest) input message
@@ -1840,7 +1840,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned.
+      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.list`.
 
       Args:
         request: (SecuritycenterOrganizationsBigQueryExportsListRequest) input message
@@ -1867,7 +1867,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a BigQuery export.
+      r"""Updates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `big_query_export.name` field: - `securitycenter.bigQueryExports.update` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is updated): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterOrganizationsBigQueryExportsPatchRequest) input message
@@ -1904,7 +1904,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a resident Event Threat Detection custom module at the scope of the given Resource Manager parent, and also creates inherited custom modules for all descendants of the given parent. These modules are enabled by default.
+      r"""Creates a resident Event Threat Detection custom module at the scope of the given Resource Manager parent, and also creates inherited custom modules for all descendants of the given parent. These modules are enabled by default. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.create`.
 
       Args:
         request: (SecuritycenterOrganizationsEventThreatDetectionSettingsCustomModulesCreateRequest) input message
@@ -1931,7 +1931,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes the specified Event Threat Detection custom module and all of its descendants in the Resource Manager hierarchy. This method is only supported for resident custom modules.
+      r"""Deletes the specified Event Threat Detection custom module and all of its descendants in the Resource Manager hierarchy. This method is only supported for resident custom modules. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectioncustommodules.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsEventThreatDetectionSettingsCustomModulesDeleteRequest) input message
@@ -1958,7 +1958,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an Event Threat Detection custom module.
+      r"""Gets an Event Threat Detection custom module. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectioncustommodules.get`.
 
       Args:
         request: (SecuritycenterOrganizationsEventThreatDetectionSettingsCustomModulesGetRequest) input message
@@ -1985,7 +1985,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all Event Threat Detection custom modules for the given Resource Manager parent. This includes resident modules defined at the scope of the parent along with modules inherited from ancestors.
+      r"""Lists all Event Threat Detection custom modules for the given Resource Manager parent. This includes resident modules defined at the scope of the parent along with modules inherited from ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.list`.
 
       Args:
         request: (SecuritycenterOrganizationsEventThreatDetectionSettingsCustomModulesListRequest) input message
@@ -2012,7 +2012,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def ListDescendant(self, request, global_params=None):
-      r"""Lists all resident Event Threat Detection custom modules under the given Resource Manager parent and its descendants.
+      r"""Lists all resident Event Threat Detection custom modules under the given Resource Manager parent and its descendants. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.list`.
 
       Args:
         request: (SecuritycenterOrganizationsEventThreatDetectionSettingsCustomModulesListDescendantRequest) input message
@@ -2039,7 +2039,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the Event Threat Detection custom module with the given name based on the given update mask. Updating the enablement state is supported for both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name or configuration of a module is supported for resident modules only. The type of a module cannot be changed.
+      r"""Updates the Event Threat Detection custom module with the given name based on the given update mask. Updating the enablement state is supported for both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name or configuration of a module is supported for resident modules only. The type of a module cannot be changed. # IAM Permissions Requires the following IAM permission on the `event_threat_detection_custom_module.name` field: - `securitycenter.eventthreatdetectioncustommodules.update`.
 
       Args:
         request: (SecuritycenterOrganizationsEventThreatDetectionSettingsCustomModulesPatchRequest) input message
@@ -2076,7 +2076,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Gets an effective Event Threat Detection custom module at the given level.
+      r"""Gets an effective Event Threat Detection custom module at the given level. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.effectiveeventthreatdetectioncustommodules.get`.
 
       Args:
         request: (SecuritycenterOrganizationsEventThreatDetectionSettingsEffectiveCustomModulesGetRequest) input message
@@ -2103,7 +2103,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all effective Event Threat Detection custom modules for the given parent. This includes resident modules defined at the scope of the parent along with modules inherited from its ancestors.
+      r"""Lists all effective Event Threat Detection custom modules for the given parent. This includes resident modules defined at the scope of the parent along with modules inherited from its ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.effectiveeventthreatdetectioncustommodules.list`.
 
       Args:
         request: (SecuritycenterOrganizationsEventThreatDetectionSettingsEffectiveCustomModulesListRequest) input message
@@ -2140,7 +2140,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def ValidateCustomModule(self, request, global_params=None):
-      r"""Validates the given Event Threat Detection custom module.
+      r"""Validates the given Event Threat Detection custom module. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.validate`.
 
       Args:
         request: (SecuritycenterOrganizationsEventThreatDetectionSettingsValidateCustomModuleRequest) input message
@@ -2177,7 +2177,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def BulkMute(self, request, global_params=None):
-      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. The parent can be either an organization, folder or project. The findings matched by the filter will be muted after the LRO is done.
+      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. The parent can be either an organization, folder or project. The findings matched by the filter will be muted after the LRO is done. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.bulkMuteUpdate`.
 
       Args:
         request: (SecuritycenterOrganizationsFindingsBulkMuteRequest) input message
@@ -2214,7 +2214,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config.
+      r"""Deletes an existing mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsMuteConfigsDeleteRequest) input message
@@ -2241,7 +2241,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config.
+      r"""Gets a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsMuteConfigsGetRequest) input message
@@ -2268,7 +2268,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config.
+      r"""Updates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsMuteConfigsPatchRequest) input message
@@ -2315,7 +2315,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a mute config.
+      r"""Creates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.create`.
 
       Args:
         request: (SecuritycenterOrganizationsMuteConfigsCreateRequest) input message
@@ -2342,7 +2342,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config.
+      r"""Deletes an existing mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsMuteConfigsDeleteRequest) input message
@@ -2369,7 +2369,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config.
+      r"""Gets a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterOrganizationsMuteConfigsGetRequest) input message
@@ -2396,7 +2396,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists mute configs.
+      r"""Lists mute configs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.list`.
 
       Args:
         request: (SecuritycenterOrganizationsMuteConfigsListRequest) input message
@@ -2423,7 +2423,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config.
+      r"""Updates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterOrganizationsMuteConfigsPatchRequest) input message
@@ -2460,7 +2460,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a notification config.
+      r"""Creates a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.create` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is specified): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterOrganizationsNotificationConfigsCreateRequest) input message
@@ -2487,7 +2487,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a notification config.
+      r"""Deletes a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsNotificationConfigsDeleteRequest) input message
@@ -2514,7 +2514,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a notification config.
+      r"""Gets a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.get`.
 
       Args:
         request: (SecuritycenterOrganizationsNotificationConfigsGetRequest) input message
@@ -2541,7 +2541,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists notification configs.
+      r"""Lists notification configs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.list`.
 
       Args:
         request: (SecuritycenterOrganizationsNotificationConfigsListRequest) input message
@@ -2568,7 +2568,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r""" Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter.
+      r""" Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter # IAM Permissions Requires the following IAM permission on the `notification_config.name` field: - `securitycenter.notificationconfig.update` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is updated): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterOrganizationsNotificationConfigsPatchRequest) input message
@@ -2723,7 +2723,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def BatchCreate(self, request, global_params=None):
-      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to difference resource values for use by the attack path simulation.
+      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to difference resource values for use by the attack path simulation. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.create`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsBatchCreateRequest) input message
@@ -2750,7 +2750,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a ResourceValueConfig.
+      r"""Deletes a ResourceValueConfig. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.resourcevalueconfigs.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsDeleteRequest) input message
@@ -2777,7 +2777,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a ResourceValueConfig.
+      r"""Gets a ResourceValueConfig. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.resourcevalueconfigs.get`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsGetRequest) input message
@@ -2804,7 +2804,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all ResourceValueConfigs.
+      r"""Lists all ResourceValueConfigs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.list`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsListRequest) input message
@@ -2831,7 +2831,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates an existing ResourceValueConfigs with new rules.
+      r"""Updates an existing ResourceValueConfigs with new rules. # IAM Permissions Requires the following IAM permission on the `resource_value_config.name` field: - `securitycenter.resourcevalueconfigs.update`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsPatchRequest) input message
@@ -2868,7 +2868,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a resident SecurityHealthAnalyticsCustomModule at the scope of the given CRM parent, and also creates inherited SecurityHealthAnalyticsCustomModules for all CRM descendants of the given parent. These modules are enabled by default.
+      r"""Creates a resident SecurityHealthAnalyticsCustomModule at the scope of the given CRM parent, and also creates inherited SecurityHealthAnalyticsCustomModules for all CRM descendants of the given parent. These modules are enabled by default. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.create`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsCustomModulesCreateRequest) input message
@@ -2895,7 +2895,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes the specified SecurityHealthAnalyticsCustomModule and all of its descendants in the CRM hierarchy. This method is only supported for resident custom modules.
+      r"""Deletes the specified SecurityHealthAnalyticsCustomModule and all of its descendants in the CRM hierarchy. This method is only supported for resident custom modules. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticscustommodules.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsCustomModulesDeleteRequest) input message
@@ -2922,7 +2922,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Retrieves a SecurityHealthAnalyticsCustomModule.
+      r"""Retrieves a SecurityHealthAnalyticsCustomModule. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticscustommodules.get`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsCustomModulesGetRequest) input message
@@ -2949,7 +2949,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Returns a list of all SecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors.
+      r"""Returns a list of all SecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsCustomModulesListRequest) input message
@@ -2976,7 +2976,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def ListDescendant(self, request, global_params=None):
-      r"""Returns a list of all resident SecurityHealthAnalyticsCustomModules under the given CRM parent and all of the parent's CRM descendants.
+      r"""Returns a list of all resident SecurityHealthAnalyticsCustomModules under the given CRM parent and all of the parent's CRM descendants. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsCustomModulesListDescendantRequest) input message
@@ -3003,7 +3003,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the SecurityHealthAnalyticsCustomModule under the given name based on the given update mask. Updating the enablement state is supported on both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name and custom config of a module is supported on resident modules only.
+      r"""Updates the SecurityHealthAnalyticsCustomModule under the given name based on the given update mask. Updating the enablement state is supported on both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name and custom config of a module is supported on resident modules only. # IAM Permissions Requires the following IAM permission on the `security_health_analytics_custom_module.name` field: - `securitycenter.securityhealthanalyticscustommodules.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsCustomModulesPatchRequest) input message
@@ -3030,7 +3030,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Simulate(self, request, global_params=None):
-      r"""Simulates a given SecurityHealthAnalyticsCustomModule and Resource.
+      r"""Simulates a given SecurityHealthAnalyticsCustomModule and Resource. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.simulate`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsCustomModulesSimulateRequest) input message
@@ -3057,7 +3057,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Test(self, request, global_params=None):
-      r"""Tests a specified or given SecurityHealthAnalyticsCustomModule.
+      r"""Tests a specified or given SecurityHealthAnalyticsCustomModule. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticscustommodules.test`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsCustomModulesTestRequest) input message
@@ -3094,7 +3094,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Retrieves an EffectiveSecurityHealthAnalyticsCustomModule.
+      r"""Retrieves an EffectiveSecurityHealthAnalyticsCustomModule. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.effectivesecurityhealthanalyticscustommodules.get`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsEffectiveCustomModulesGetRequest) input message
@@ -3121,7 +3121,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Returns a list of all EffectiveSecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors.
+      r"""Returns a list of all EffectiveSecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.effectivesecurityhealthanalyticscustommodules.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsEffectiveCustomModulesListRequest) input message
@@ -3168,7 +3168,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the attack paths for a set of simulation results or valued resources and filter.
+      r"""Lists the attack paths for a set of simulation results or valued resources and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.attackpaths.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsAttackExposureResultsAttackPathsListRequest) input message
@@ -3205,7 +3205,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the valued resources for a set of simulation results and filter.
+      r"""Lists the valued resources for a set of simulation results and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.valuedresources.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsAttackExposureResultsValuedResourcesListRequest) input message
@@ -3252,7 +3252,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the attack paths for a set of simulation results or valued resources and filter.
+      r"""Lists the attack paths for a set of simulation results or valued resources and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.attackpaths.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsAttackPathsListRequest) input message
@@ -3289,7 +3289,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the attack paths for a set of simulation results or valued resources and filter.
+      r"""Lists the attack paths for a set of simulation results or valued resources and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.attackpaths.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsValuedResourcesAttackPathsListRequest) input message
@@ -3326,7 +3326,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get the valued resource by name.
+      r"""Gets the valued resource by name. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.valuedresources.get`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsValuedResourcesGetRequest) input message
@@ -3353,7 +3353,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists the valued resources for a set of simulation results and filter.
+      r"""Lists the valued resources for a set of simulation results and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.valuedresources.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsValuedResourcesListRequest) input message
@@ -3390,7 +3390,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get the simulation by name or the latest simulation for the given organization.
+      r"""Gets the simulation by name or the latest simulation for the given organization. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.simulations.get`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsGetRequest) input message
@@ -3427,7 +3427,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Patch(self, request, global_params=None):
-      r"""Updates external system. This is for a given finding.
+      r"""Updates external system. This is for a given finding. # IAM Permissions Requires the following IAM permission on the resource specified in the `external_system.name` field: - `securitycenter.findingexternalsystems.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsExternalSystemsPatchRequest) input message
@@ -3464,7 +3464,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a finding. The corresponding source must exist for finding creation to succeed.
+      r"""Creates a finding. The corresponding source must exist for finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsCreateRequest) input message
@@ -3491,7 +3491,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization or source's findings and groups them by their specified properties. To group across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings, /v1/folders/{folder_id}/sources/-/findings, /v1/projects/{project_id}/sources/-/findings.
+      r"""Filters an organization or source's findings and groups them by their specified properties. To group across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings, /v1/folders/{folder_id}/sources/-/findings, /v1/projects/{project_id}/sources/-/findings # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.group`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsGroupRequest) input message
@@ -3518,7 +3518,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings.
+      r"""Lists an organization or source's findings. To list across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsListRequest) input message
@@ -3545,7 +3545,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Creates or updates a finding. The corresponding source must exist for a finding creation to succeed.
+      r"""Creates or updates a finding. The corresponding source must exist for a finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `finding.name` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsPatchRequest) input message
@@ -3572,7 +3572,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def SetMute(self, request, global_params=None):
-      r"""Updates the mute state of a finding.
+      r"""Updates the mute state of a finding. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setMute`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsSetMuteRequest) input message
@@ -3599,7 +3599,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def SetState(self, request, global_params=None):
-      r"""Updates the state of a finding.
+      r"""Updates the state of a finding. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setState`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsSetStateRequest) input message
@@ -3626,7 +3626,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks.
+      r"""Updates security marks. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsUpdateSecurityMarksRequest) input message
@@ -3663,7 +3663,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a source.
+      r"""Creates a source. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.sources.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesCreateRequest) input message
@@ -3690,7 +3690,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a source.
+      r"""Gets a source. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.sources.get`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesGetRequest) input message
@@ -3717,7 +3717,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def GetIamPolicy(self, request, global_params=None):
-      r"""Gets the access control policy on the specified Source.
+      r"""Gets the access control policy on the specified Source. # IAM Permissions Requires the following IAM permission on the resource specified in the `resource` field: - `securitycenter.sources.getIamPolicy`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesGetIamPolicyRequest) input message
@@ -3744,7 +3744,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all sources belonging to an organization.
+      r"""Lists all sources belonging to an organization. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.sources.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesListRequest) input message
@@ -3771,7 +3771,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a source.
+      r"""Updates a source. # IAM Permissions Requires the following IAM permission on the resource specified in the `source.name` field: - `securitycenter.sources.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesPatchRequest) input message
@@ -3798,7 +3798,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def SetIamPolicy(self, request, global_params=None):
-      r"""Sets the access control policy on the specified Source.
+      r"""Sets the access control policy on the specified Source. # IAM Permissions Requires the following IAM permission on the resource specified in the `resource` field: - `securitycenter.sources.setIamPolicy`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesSetIamPolicyRequest) input message
@@ -3862,7 +3862,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the valued resources for a set of simulation results and filter.
+      r"""Lists the valued resources for a set of simulation results and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.valuedresources.list`.
 
       Args:
         request: (SecuritycenterOrganizationsValuedResourcesListRequest) input message
@@ -3899,7 +3899,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def GetOrganizationSettings(self, request, global_params=None):
-      r"""Gets the settings for an organization.
+      r"""Gets the settings for an organization. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.organizationsettings.get`.
 
       Args:
         request: (SecuritycenterOrganizationsGetOrganizationSettingsRequest) input message
@@ -3926,7 +3926,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def UpdateOrganizationSettings(self, request, global_params=None):
-      r"""Updates an organization's settings.
+      r"""Updates an organization's settings. # IAM Permissions Requires the following IAM permission on the `organization_settings.name` field: - `securitycenter.organizationsettings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsUpdateOrganizationSettingsRequest) input message
@@ -3963,7 +3963,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization's assets and groups them by their specified properties.
+      r"""Filters an organization's assets and groups them by their specified properties. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.assets.group`.
 
       Args:
         request: (SecuritycenterProjectsAssetsGroupRequest) input message
@@ -3990,7 +3990,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization's assets.
+      r"""Lists an organization's assets. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.assets.list`.
 
       Args:
         request: (SecuritycenterProjectsAssetsListRequest) input message
@@ -4017,7 +4017,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks.
+      r"""Updates security marks. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterProjectsAssetsUpdateSecurityMarksRequest) input message
@@ -4054,7 +4054,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a BigQuery export.
+      r"""Creates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.create` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is specified): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterProjectsBigQueryExportsCreateRequest) input message
@@ -4081,7 +4081,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing BigQuery export.
+      r"""Deletes an existing BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.delete`.
 
       Args:
         request: (SecuritycenterProjectsBigQueryExportsDeleteRequest) input message
@@ -4108,7 +4108,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a BigQuery export.
+      r"""Gets a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.get`.
 
       Args:
         request: (SecuritycenterProjectsBigQueryExportsGetRequest) input message
@@ -4135,7 +4135,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned.
+      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.list`.
 
       Args:
         request: (SecuritycenterProjectsBigQueryExportsListRequest) input message
@@ -4162,7 +4162,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a BigQuery export.
+      r"""Updates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `big_query_export.name` field: - `securitycenter.bigQueryExports.update` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is updated): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterProjectsBigQueryExportsPatchRequest) input message
@@ -4199,7 +4199,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a resident Event Threat Detection custom module at the scope of the given Resource Manager parent, and also creates inherited custom modules for all descendants of the given parent. These modules are enabled by default.
+      r"""Creates a resident Event Threat Detection custom module at the scope of the given Resource Manager parent, and also creates inherited custom modules for all descendants of the given parent. These modules are enabled by default. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.create`.
 
       Args:
         request: (SecuritycenterProjectsEventThreatDetectionSettingsCustomModulesCreateRequest) input message
@@ -4226,7 +4226,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes the specified Event Threat Detection custom module and all of its descendants in the Resource Manager hierarchy. This method is only supported for resident custom modules.
+      r"""Deletes the specified Event Threat Detection custom module and all of its descendants in the Resource Manager hierarchy. This method is only supported for resident custom modules. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectioncustommodules.delete`.
 
       Args:
         request: (SecuritycenterProjectsEventThreatDetectionSettingsCustomModulesDeleteRequest) input message
@@ -4253,7 +4253,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an Event Threat Detection custom module.
+      r"""Gets an Event Threat Detection custom module. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectioncustommodules.get`.
 
       Args:
         request: (SecuritycenterProjectsEventThreatDetectionSettingsCustomModulesGetRequest) input message
@@ -4280,7 +4280,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all Event Threat Detection custom modules for the given Resource Manager parent. This includes resident modules defined at the scope of the parent along with modules inherited from ancestors.
+      r"""Lists all Event Threat Detection custom modules for the given Resource Manager parent. This includes resident modules defined at the scope of the parent along with modules inherited from ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.list`.
 
       Args:
         request: (SecuritycenterProjectsEventThreatDetectionSettingsCustomModulesListRequest) input message
@@ -4307,7 +4307,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def ListDescendant(self, request, global_params=None):
-      r"""Lists all resident Event Threat Detection custom modules under the given Resource Manager parent and its descendants.
+      r"""Lists all resident Event Threat Detection custom modules under the given Resource Manager parent and its descendants. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.list`.
 
       Args:
         request: (SecuritycenterProjectsEventThreatDetectionSettingsCustomModulesListDescendantRequest) input message
@@ -4334,7 +4334,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the Event Threat Detection custom module with the given name based on the given update mask. Updating the enablement state is supported for both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name or configuration of a module is supported for resident modules only. The type of a module cannot be changed.
+      r"""Updates the Event Threat Detection custom module with the given name based on the given update mask. Updating the enablement state is supported for both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name or configuration of a module is supported for resident modules only. The type of a module cannot be changed. # IAM Permissions Requires the following IAM permission on the `event_threat_detection_custom_module.name` field: - `securitycenter.eventthreatdetectioncustommodules.update`.
 
       Args:
         request: (SecuritycenterProjectsEventThreatDetectionSettingsCustomModulesPatchRequest) input message
@@ -4371,7 +4371,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Gets an effective Event Threat Detection custom module at the given level.
+      r"""Gets an effective Event Threat Detection custom module at the given level. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.effectiveeventthreatdetectioncustommodules.get`.
 
       Args:
         request: (SecuritycenterProjectsEventThreatDetectionSettingsEffectiveCustomModulesGetRequest) input message
@@ -4398,7 +4398,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all effective Event Threat Detection custom modules for the given parent. This includes resident modules defined at the scope of the parent along with modules inherited from its ancestors.
+      r"""Lists all effective Event Threat Detection custom modules for the given parent. This includes resident modules defined at the scope of the parent along with modules inherited from its ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.effectiveeventthreatdetectioncustommodules.list`.
 
       Args:
         request: (SecuritycenterProjectsEventThreatDetectionSettingsEffectiveCustomModulesListRequest) input message
@@ -4435,7 +4435,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def ValidateCustomModule(self, request, global_params=None):
-      r"""Validates the given Event Threat Detection custom module.
+      r"""Validates the given Event Threat Detection custom module. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.eventthreatdetectioncustommodules.validate`.
 
       Args:
         request: (SecuritycenterProjectsEventThreatDetectionSettingsValidateCustomModuleRequest) input message
@@ -4472,7 +4472,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def BulkMute(self, request, global_params=None):
-      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. The parent can be either an organization, folder or project. The findings matched by the filter will be muted after the LRO is done.
+      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. The parent can be either an organization, folder or project. The findings matched by the filter will be muted after the LRO is done. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.bulkMuteUpdate`.
 
       Args:
         request: (SecuritycenterProjectsFindingsBulkMuteRequest) input message
@@ -4509,7 +4509,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config.
+      r"""Deletes an existing mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterProjectsLocationsMuteConfigsDeleteRequest) input message
@@ -4536,7 +4536,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config.
+      r"""Gets a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterProjectsLocationsMuteConfigsGetRequest) input message
@@ -4563,7 +4563,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config.
+      r"""Updates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterProjectsLocationsMuteConfigsPatchRequest) input message
@@ -4610,7 +4610,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a mute config.
+      r"""Creates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.create`.
 
       Args:
         request: (SecuritycenterProjectsMuteConfigsCreateRequest) input message
@@ -4637,7 +4637,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config.
+      r"""Deletes an existing mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterProjectsMuteConfigsDeleteRequest) input message
@@ -4664,7 +4664,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config.
+      r"""Gets a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterProjectsMuteConfigsGetRequest) input message
@@ -4691,7 +4691,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists mute configs.
+      r"""Lists mute configs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.list`.
 
       Args:
         request: (SecuritycenterProjectsMuteConfigsListRequest) input message
@@ -4718,7 +4718,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config.
+      r"""Updates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterProjectsMuteConfigsPatchRequest) input message
@@ -4755,7 +4755,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a notification config.
+      r"""Creates a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.create` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is specified): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterProjectsNotificationConfigsCreateRequest) input message
@@ -4782,7 +4782,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a notification config.
+      r"""Deletes a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.delete`.
 
       Args:
         request: (SecuritycenterProjectsNotificationConfigsDeleteRequest) input message
@@ -4809,7 +4809,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a notification config.
+      r"""Gets a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.get`.
 
       Args:
         request: (SecuritycenterProjectsNotificationConfigsGetRequest) input message
@@ -4836,7 +4836,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists notification configs.
+      r"""Lists notification configs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.list`.
 
       Args:
         request: (SecuritycenterProjectsNotificationConfigsListRequest) input message
@@ -4863,7 +4863,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r""" Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter.
+      r""" Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter # IAM Permissions Requires the following IAM permission on the `notification_config.name` field: - `securitycenter.notificationconfig.update` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is updated): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterProjectsNotificationConfigsPatchRequest) input message
@@ -4900,7 +4900,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a resident SecurityHealthAnalyticsCustomModule at the scope of the given CRM parent, and also creates inherited SecurityHealthAnalyticsCustomModules for all CRM descendants of the given parent. These modules are enabled by default.
+      r"""Creates a resident SecurityHealthAnalyticsCustomModule at the scope of the given CRM parent, and also creates inherited SecurityHealthAnalyticsCustomModules for all CRM descendants of the given parent. These modules are enabled by default. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.create`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsCustomModulesCreateRequest) input message
@@ -4927,7 +4927,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes the specified SecurityHealthAnalyticsCustomModule and all of its descendants in the CRM hierarchy. This method is only supported for resident custom modules.
+      r"""Deletes the specified SecurityHealthAnalyticsCustomModule and all of its descendants in the CRM hierarchy. This method is only supported for resident custom modules. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticscustommodules.delete`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsCustomModulesDeleteRequest) input message
@@ -4954,7 +4954,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Retrieves a SecurityHealthAnalyticsCustomModule.
+      r"""Retrieves a SecurityHealthAnalyticsCustomModule. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticscustommodules.get`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsCustomModulesGetRequest) input message
@@ -4981,7 +4981,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Returns a list of all SecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors.
+      r"""Returns a list of all SecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.list`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsCustomModulesListRequest) input message
@@ -5008,7 +5008,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def ListDescendant(self, request, global_params=None):
-      r"""Returns a list of all resident SecurityHealthAnalyticsCustomModules under the given CRM parent and all of the parent's CRM descendants.
+      r"""Returns a list of all resident SecurityHealthAnalyticsCustomModules under the given CRM parent and all of the parent's CRM descendants. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.list`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsCustomModulesListDescendantRequest) input message
@@ -5035,7 +5035,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the SecurityHealthAnalyticsCustomModule under the given name based on the given update mask. Updating the enablement state is supported on both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name and custom config of a module is supported on resident modules only.
+      r"""Updates the SecurityHealthAnalyticsCustomModule under the given name based on the given update mask. Updating the enablement state is supported on both resident and inherited modules (though resident modules cannot have an enablement state of "inherited"). Updating the display name and custom config of a module is supported on resident modules only. # IAM Permissions Requires the following IAM permission on the `security_health_analytics_custom_module.name` field: - `securitycenter.securityhealthanalyticscustommodules.update`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsCustomModulesPatchRequest) input message
@@ -5062,7 +5062,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Simulate(self, request, global_params=None):
-      r"""Simulates a given SecurityHealthAnalyticsCustomModule and Resource.
+      r"""Simulates a given SecurityHealthAnalyticsCustomModule and Resource. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.securityhealthanalyticscustommodules.simulate`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsCustomModulesSimulateRequest) input message
@@ -5089,7 +5089,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Test(self, request, global_params=None):
-      r"""Tests a specified or given SecurityHealthAnalyticsCustomModule.
+      r"""Tests a specified or given SecurityHealthAnalyticsCustomModule. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticscustommodules.test`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsCustomModulesTestRequest) input message
@@ -5126,7 +5126,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Retrieves an EffectiveSecurityHealthAnalyticsCustomModule.
+      r"""Retrieves an EffectiveSecurityHealthAnalyticsCustomModule. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.effectivesecurityhealthanalyticscustommodules.get`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsEffectiveCustomModulesGetRequest) input message
@@ -5153,7 +5153,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Returns a list of all EffectiveSecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors.
+      r"""Returns a list of all EffectiveSecurityHealthAnalyticsCustomModules for the given parent. This includes resident modules defined at the scope of the parent, and inherited modules, inherited from CRM ancestors. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.effectivesecurityhealthanalyticscustommodules.list`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsEffectiveCustomModulesListRequest) input message
@@ -5200,7 +5200,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Patch(self, request, global_params=None):
-      r"""Updates external system. This is for a given finding.
+      r"""Updates external system. This is for a given finding. # IAM Permissions Requires the following IAM permission on the resource specified in the `external_system.name` field: - `securitycenter.findingexternalsystems.update`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsExternalSystemsPatchRequest) input message
@@ -5237,7 +5237,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization or source's findings and groups them by their specified properties. To group across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings, /v1/folders/{folder_id}/sources/-/findings, /v1/projects/{project_id}/sources/-/findings.
+      r"""Filters an organization or source's findings and groups them by their specified properties. To group across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings, /v1/folders/{folder_id}/sources/-/findings, /v1/projects/{project_id}/sources/-/findings # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.group`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsGroupRequest) input message
@@ -5264,7 +5264,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings.
+      r"""Lists an organization or source's findings. To list across all sources provide a `-` as the source id. Example: /v1/organizations/{organization_id}/sources/-/findings # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsListRequest) input message
@@ -5291,7 +5291,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Creates or updates a finding. The corresponding source must exist for a finding creation to succeed.
+      r"""Creates or updates a finding. The corresponding source must exist for a finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `finding.name` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsPatchRequest) input message
@@ -5318,7 +5318,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def SetMute(self, request, global_params=None):
-      r"""Updates the mute state of a finding.
+      r"""Updates the mute state of a finding. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setMute`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsSetMuteRequest) input message
@@ -5345,7 +5345,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def SetState(self, request, global_params=None):
-      r"""Updates the state of a finding.
+      r"""Updates the state of a finding. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setState`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsSetStateRequest) input message
@@ -5372,7 +5372,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks.
+      r"""Updates security marks. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsUpdateSecurityMarksRequest) input message
@@ -5409,7 +5409,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists all sources belonging to an organization.
+      r"""Lists all sources belonging to an organization. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.sources.list`.
 
       Args:
         request: (SecuritycenterProjectsSourcesListRequest) input message

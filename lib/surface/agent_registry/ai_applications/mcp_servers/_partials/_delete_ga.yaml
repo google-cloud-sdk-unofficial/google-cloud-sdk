@@ -18,6 +18,8 @@
 - release_tracks:
   - GA
   auto_generated: false
+  hints:
+    read_only: false
   hidden: true
   help_text:
     brief: Remove an MCP Server from an AI Application.

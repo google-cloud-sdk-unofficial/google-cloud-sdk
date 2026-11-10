@@ -1,0 +1,67 @@
+- release_tracks: [ALPHA]
+  hints:
+    read_only: false
+
+  help_text:
+    brief: Create a Google Compute Engine accelerator pod controller.
+    description: Create a Google Compute Engine accelerator pod controller.
+    examples: |
+      To create an accelerator pod controller named `my-apc` in zone `us-east5-staginga` with target reservation sub-block:
+
+        $ {command} my-apc \
+            --zone=us-east5-staginga \
+            --target=projects/my-project/zones/us-east5-staginga/reservations/my-res/reservationBlocks/my-block/reservationSubBlocks/my-subblock
+
+      To create an accelerator pod controller with a switch monitoring management interface:
+
+        $ {command} my-apc \
+            --zone=us-east5-staginga \
+            --target=projects/my-project/zones/us-east5-staginga/reservations/my-res/reservationBlocks/my-block/reservationSubBlocks/my-subblock \
+            --management-interface=key=gnmi-nvswitch-0,type=TYPE_NVLINK_SWITCH_MONITORING,network=projects/my-project/global/networks/my-net,subnetwork=projects/my-project/regions/us-east5/subnetworks/my-sub,ipv4-address=10.0.0.1
+
+  request:
+    ALPHA:
+      api_version: alpha
+    collection: compute.acceleratorPodControllers
+    method: insert
+    regional_endpoint_compatibility: SUPPORTED
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.accelerator_pod_controllers.flags:modify_create_request
+
+  arguments:
+    resource:
+      help_text: The name of the accelerator pod controller to create.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:accelerator_pod_controller
+      is_positional: true
+
+    params:
+    - arg_name: target
+      api_field: acceleratorPodController.target
+      required: true
+      help_text: |
+        The target accelerator domain this controller manages (e.g. a Reservation Sub-block URI).
+
+    - arg_name: description
+      api_field: acceleratorPodController.description
+      help_text: |
+        An optional description of this resource.
+
+    - arg_name: management-interface
+      type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+      metavar: KEY=VALUE
+      help_text: |
+        Management interface configuration for the accelerator pod controller.
+        Can be specified multiple times. Keys include `key`, `type`, `network`, `subnetwork`,
+        `ipv4-address`, `ipv6-address`, and `trust-config`.
+
+    - arg_name: management-interfaces-file
+      help_text: |
+        Path to a YAML or JSON file containing management interface configurations.
+
+  async:
+    collection: compute.zoneOperations
+    method: wait
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']

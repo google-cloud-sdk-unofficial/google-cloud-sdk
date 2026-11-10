@@ -20,6 +20,7 @@ from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute.network_attachments import flags as network_attachments_flags
 from googlecloudsdk.command_lib.network_security import completers as network_security_completers
 from googlecloudsdk.command_lib.network_services import completers as network_services_completers
 from googlecloudsdk.command_lib.util import completers
@@ -268,10 +269,7 @@ def AddSubsettingPolicy(parser):
       type=lambda x: x.replace('-', '_').upper(),
       default='NONE',
       help="""\
-      Specifies the algorithm used for subsetting.
-      Default value is NONE which implies that subsetting is disabled.
-      For Layer 4 Internal Load Balancing, if subsetting is enabled,
-      only the algorithm CONSISTENT_HASH_SUBSETTING can be specified.
+      The algorithm used for subsetting, provided as a single string keyword rather than a complex object. The accepted values are `NONE` and `CONSISTENT_HASH_SUBSETTING`. The default value is `NONE`, which implies that subsetting is disabled. For Layer 4 internal load balancing, if subsetting is enabled, only the `CONSISTENT_HASH_SUBSETTING` algorithm can be specified.
       """)
 
 
@@ -335,7 +333,9 @@ def AddExternalMigration(parser):
       required=False,
       action='store_true',
       default=None,
-      help='Clears current state of external managed migration.',
+      help="""\
+      The administrative trigger that clears the current state of an external managed migration for the backend service. When specified, this parameter removes the in-progress migration status, allowing a stalled or interrupted transition to an external managed load balancer to be safely restarted or aborted. It does not accept any values and operates independently of other migration flags.
+      """,
   )
   parser.add_argument(
       '--external-managed-migration-testing-percentage',
@@ -391,7 +391,7 @@ def AddLocalityLbPolicy(parser, is_update=False):
       type=lambda x: x.replace('-', '_').upper(),
       default=None,
       help="""\
-      The load balancing algorithm used within the scope of the locality.
+      The load balancing algorithm used within the scope of the locality, specified as a single string enum value. This algorithm determines how traffic is distributed among the backend endpoints. The accepted values are `INVALID_LB_POLICY`, `ROUND_ROBIN`, `LEAST_REQUEST`, `RING_HASH`, `RANDOM`, `ORIGINAL_DESTINATION`, `MAGLEV`, `WEIGHTED_MAGLEV`, `WEIGHTED_ROUND_ROBIN`, and `WEIGHTED_GCP_RENDEZVOUS`.
       """,
   )
 
@@ -401,7 +401,7 @@ def AddLocalityLbPolicy(parser, is_update=False):
         action='store_true',
         default=None,
         help="""\
-        Removes the locality load balancing policy from the backend service.
+        A boolean flag that removes the locality load-balancing policy from the backend service. When specified, this operation clears any previously configured custom policy algorithm (such as `MAGLEV`, `ROUND_ROBIN`, or `LEAST_REQUEST`) and reverts the backend service to its default load-balancing behavior. This flag does not accept any value arguments.
         """,
     )
 
@@ -591,7 +591,7 @@ def AddCustomRequestHeaders(parser, remove_all_flag=False, default=None):
         action='store_true',
         default=default,
         help="""\
-        Remove all custom request headers for the backend service.
+        A boolean flag that permanently removes all previously configured user-defined HTTP request headers from the backend service. When specified, this operation completely clears the list of custom headers so they are no longer appended to incoming requests before they are forwarded by the load balancer to the backend instances.
         """)
 
 
@@ -671,11 +671,7 @@ def AddCacheKeyQueryStringList(parser):
       metavar='QUERY_STRING',
       default=None,
       help="""\
-      Specifies a comma separated list of query string parameters to include
-      in cache keys. All other parameters will be excluded. Either specify
-      --cache-key-query-string-whitelist or --cache-key-query-string-blacklist,
-      not both. '&' and '=' will be percent encoded and not treated as
-      delimiters. Can only be applied for global resources.
+      A comma-separated list of query string parameters (for example, `campaign,source`) to include in cache keys. All other query parameters will be excluded from the cache key. This flag is mutually exclusive with `--cache-key-query-string-blacklist`. The characters `&` and `=` are percent-encoded and are not treated as delimiters. This configuration can only be applied to global resources.
       """)
   cache_key_query_string_list.add_argument(
       '--cache-key-query-string-blacklist',
@@ -683,11 +679,7 @@ def AddCacheKeyQueryStringList(parser):
       metavar='QUERY_STRING',
       default=None,
       help="""\
-      Specifies a comma separated list of query string parameters to exclude
-      in cache keys. All other parameters will be included. Either specify
-      --cache-key-query-string-whitelist or --cache-key-query-string-blacklist,
-      not both. '&' and '=' will be percent encoded and not treated as
-      delimiters. Can only be applied for global resources.
+      A comma-separated list of query string parameters to exclude from cache keys (for example, `session_id,utm_campaign`). All other parameters will be included in the cache key. This flag cannot be specified if `--cache-key-query-string-whitelist` is also used. The `&` and `=` characters within the specified parameters will be percent-encoded and are not treated as list delimiters. This configuration can only be applied to global backend resources.
       """)
 
 
@@ -722,6 +714,9 @@ def HealthCheckArgument(required=False):
       plural=True,
       required=required,
       global_collection='compute.healthChecks',
+      global_help_text="""\
+      The geographic scope designation for the associated health checks. When this boolean presence flag is included, the backend service treats the specified health checks as global resources rather than regional resources. This flag does not accept a value and is required when updating or attaching health checks that were created in the global scope.
+      """,
       regional_collection='compute.regionHealthChecks',
       short_help="""\
       Specifies a list of health check objects for checking the health of
@@ -819,10 +814,7 @@ def GetHealthCheckUris(args, resource_resolver, resource_parser):
 
 
 SERVICE_LB_POLICY_HELP = """\
-Service load balancing policy to be applied to this backend service.
-Can only be set if load balancing scheme is EXTERNAL_MANAGED,
-INTERNAL_MANAGED, or INTERNAL_SELF_MANAGED. Only available for global backend
-services.
+The name or URI of the service load balancing policy to apply to this backend service, specified as a single string identifier rather than a complex configuration object or list. This policy can only be configured if the load balancing scheme is `EXTERNAL_MANAGED`, `INTERNAL_MANAGED`, or `INTERNAL_SELF_MANAGED`. The policy is exclusively available for global backend services and will be rejected if applied to a regional resource.
 """
 
 
@@ -844,8 +836,10 @@ def AddServiceLoadBalancingPolicy(parser, required=False, is_update=False):
         required=False,
         action='store_true',
         default=None,
-        help='No service load balancing policies should be attached '
-        'to the backend service.')
+        help="""\
+        A configuration option that detaches all existing service load balancing policies from the backend service. As a standalone boolean flag, it requires no arguments or complex formatting. When specified, this operation clears any previously configured policies so the backend service no longer uses them for traffic distribution. This flag cannot be combined with `--service-lb-policy`.
+        """,
+    )
 
 
 SERVICE_BINDINGS_HELP = """\
@@ -1461,6 +1455,43 @@ def AddNetwork(parser):
   NETWORK_ARG.AddArgument(parser)
 
 
+def AddNetworkAttachment(parser, required=False):
+  """Adds the network-attachment flag."""
+  parser.add_argument(
+      '--network-attachment',
+      required=required,
+      completer=network_attachments_flags.NetworkAttachmentsCompleter,
+      help="""\
+      Regional network attachment resource in which the backend service should be
+      created.
+      """,
+  )
+
+
+def AddNetworkAttachmentGroup(parser):
+  """Adds network attachment and service class ID flags in an argument group."""
+  group = parser.add_group(help="""\
+      Flags for creating a backend service with a network attachment.
+      """)
+  AddNetworkAttachment(group, required=True)
+  AddServiceClassId(group)
+
+
+def AddServiceClassId(parser):
+  """Adds the service-class-id flag."""
+  parser.add_argument(
+      '--service-class-id',
+      help="""\
+      Regional Service Class ID of the producer service associated with the
+      backend service.
+
+      This is used in conjunction with `--network-attachment` to authorize backend service
+      creation based on the service class. Can only be specified if
+      `--network-attachment` is also specified.
+      """,
+  )
+
+
 def AddBackendServiceTlsSettings(
     parser,
     add_clear_argument=False,
@@ -1520,7 +1551,9 @@ def AddBackendServiceTlsSettings(
         required=False,
         action='store_true',
         default=None,
-        help='Clears currently set backend service TLS settings.',
+        help="""\
+        A boolean flag that permanently removes all currently configured Transport Layer Security (TLS) settings from the backend service. When specified, this operation clears custom TLS connection configurations, such as client certificate validation policies, reverting the backend service communication to its default connection behavior.
+        """,
     )
 
 
@@ -1551,12 +1584,8 @@ def AddBackendServiceCustomMetrics(parser, add_clear_argument=False):
       help=help_text,
   )
   help_text_file = """\
-  File path to json file with custom metrics that are used for
-  WEIGHTED_ROUND_ROBIN locality load balancing policy.
-
-  Example:
-
-    $ {command} --custom-metrics-file='customMetric.json'"""
+  The path to a JSON or YAML file, an inline JSON array, or a shorthand key-value list defining the custom metrics used for the `WEIGHTED_ROUND_ROBIN` locality load balancing policy. Each custom metric object requires a `name` (string) and accepts an optional `dryRun` (boolean) parameter. When providing a file path, the file must contain a JSON or YAML array representing these metric objects.
+  """
   group.add_argument(
       '--custom-metrics-file',
       metavar='CUSTOM_METRICS',
@@ -1577,7 +1606,9 @@ def AddBackendServiceCustomMetrics(parser, add_clear_argument=False):
         required=False,
         action='store_true',
         default=None,
-        help='Clears current list of CUSTOM_METRICS.',
+        help="""\
+        A boolean flag that permanently clears the current list of custom metrics configured for the backend service. When specified, this action removes all previously defined custom metrics utilized for load balancing or capacity evaluation, resetting the metrics configuration to an empty state.
+        """,
     )
 
 

@@ -5,6 +5,15 @@
     brief: Create a BigLake Hive catalog.
     description: |
       Creates a BigLake Hive catalog.
+    GA:
+      examples: |-
+        To create a BigLake Hive catalog named `my-catalog` in Cloud Storage bucket `gs://my-bucket` which is in region `us-central1`, run:
+
+          $ {command} my-catalog --location-uri=gs://my-bucket --primary-location=us-central1
+
+        To create a BigLake Hive catalog named `my-catalog` in Cloud Storage bucket `gs://my-bucket` which is in region `us-central1` and has description `My new catalog`, run:
+
+          $ {command} my-catalog --location-uri=gs://my-bucket --primary-location=us-central1 --description="My new catalog"
     examples: |-
       To create a BigLake Hive catalog named `my-catalog` in Cloud Storage bucket `gs://my-bucket` which is in region `us-central1`, run:
 
@@ -14,15 +23,31 @@
 
         $ {command} my-catalog --location-uri=gs://my-bucket --primary-location=us-central1 --description="My new catalog"
 
+      To create a BigLake Hive catalog named `my-catalog` encrypted with Cloud KMS key `projects/my-project/locations/us-central1/keyRings/my-key-ring/cryptoKeys/my-key`, run:
+
+        $ {command} my-catalog --location-uri=gs://my-bucket --primary-location=us-central1 --kms-key=projects/my-project/locations/us-central1/keyRings/my-key-ring/cryptoKeys/my-key
+
   request:
-    collection: biglake.hive.v1.projects.catalogs
-    api_version: v1
+    ALPHA:
+      collection: biglake.hive.v1beta.projects.catalogs
+      api_version: v1beta
+    BETA:
+      collection: biglake.hive.v1beta.projects.catalogs
+      api_version: v1beta
+    GA:
+      collection: biglake.hive.v1.projects.catalogs
+      api_version: v1
     method: create
 
   arguments:
     params:
     - arg_name: catalog
-      resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_catalog
+      ALPHA:
+        resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_catalog_v1beta
+      BETA:
+        resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_catalog_v1beta
+      GA:
+        resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_catalog
       required: true
       is_positional: true
       is_primary_resource: true
@@ -44,3 +69,9 @@
       required: true
       help_text: |
         Google Cloud region that specifies where the catalog metadata is stored, e.g. us-central1.
+    - arg_name: kms-key
+      release_tracks: [ALPHA, BETA]
+      api_field: hiveCatalog.encryptionConfig.kmsKeyName
+      help_text: |
+        Cloud KMS key name used to encrypt cached data fetched from the catalog.
+        Format: projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}

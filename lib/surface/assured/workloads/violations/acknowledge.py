@@ -34,6 +34,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Acknowledge(base.UpdateCommand):
   """Acknowledge an existing Assured Workloads compliance violation."""
 
@@ -55,10 +56,12 @@ class Acknowledge(base.UpdateCommand):
       if self.ReleaseTrack() == ReleaseTrack.GA:
         return client.Acknowledge(
             name=violation,
-            comment=args.comment
+            comment=args.comment,
+            view=args.view,
         )
       return client.Acknowledge(
           name=violation,
           comment=args.comment,
           acknowledge_type=args.acknowledge_type,
+          view=args.view,
       )

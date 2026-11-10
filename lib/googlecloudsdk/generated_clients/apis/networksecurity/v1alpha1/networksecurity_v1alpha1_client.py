@@ -476,6 +476,33 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Configure(self, request, global_params=None):
+      r"""Updates the firewall config for an organization-level endpoint. This can only be called for endpoints managed by an external policy manager (such as SCM). This custom method is locked down to be callable only by authorized partners. Returns the updated FirewallEndpoint on success. Returns a standard google.rpc.Status message on failure. The status message will contain a detailed error message from any failed commits.
+
+      Args:
+        request: (NetworksecurityOrganizationsLocationsFirewallEndpointsConfigureRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Configure')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Configure.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/organizations/{organizationsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}:configure',
+        http_method='POST',
+        method_id='networksecurity.organizations.locations.firewallEndpoints.configure',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:configure',
+        request_field='configureFirewallEndpointRequest',
+        request_type_name='NetworksecurityOrganizationsLocationsFirewallEndpointsConfigureRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
       r"""Creates a new FirewallEndpoint in a given organization and location.
 
@@ -3729,6 +3756,33 @@ class NetworksecurityV1alpha1(base_api.BaseApiClient):
       super(NetworksecurityV1alpha1.ProjectsLocationsFirewallEndpointsService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def Configure(self, request, global_params=None):
+      r"""Updates the firewall config for a project-level endpoint. This can only be called for endpoints managed by an external policy manager (such as SCM). This custom method is locked down to be callable only by authorized partners. Returns the updated FirewallEndpoint on success. Returns a standard google.rpc.Status message on failure. The status message will contain a detailed error message from any failed commits.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsFirewallEndpointsConfigureRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Configure')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Configure.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/firewallEndpoints/{firewallEndpointsId}:configure',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.firewallEndpoints.configure',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:configure',
+        request_field='configureFirewallEndpointRequest',
+        request_type_name='NetworksecurityProjectsLocationsFirewallEndpointsConfigureRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
     def Create(self, request, global_params=None):
       r"""Creates a new FirewallEndpoint in a given project and location.

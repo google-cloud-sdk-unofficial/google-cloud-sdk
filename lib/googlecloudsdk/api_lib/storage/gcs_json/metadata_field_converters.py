@@ -193,6 +193,34 @@ def process_default_storage_class(default_storage_class):
   return default_storage_class
 
 
+def process_hard_delete_pause(existing_soft_delete_policy, hard_delete_pause):
+  """Converts hard_delete_pause boolean to Apitools object.
+
+  Args:
+    existing_soft_delete_policy (Bucket.SoftDeletePolicyValue|None): Soft
+      delete policy to add the hard delete pause setting to. Its other fields,
+      such as the retention duration, are preserved.
+    hard_delete_pause (bool): True to pause hard deletion of soft-deleted
+      objects, False to unpause it.
+
+  Returns:
+    Bucket.SoftDeletePolicyValue with the hard delete pause setting applied.
+  """
+  messages = apis.GetMessagesModule('storage', 'v1')
+  if existing_soft_delete_policy:
+    result_soft_delete_policy = existing_soft_delete_policy
+  else:
+    result_soft_delete_policy = messages.Bucket.SoftDeletePolicyValue()
+
+  # Only "enabled" is settable. "effectiveTime" is output only.
+  result_soft_delete_policy.hardDeletePause = (
+      messages.Bucket.SoftDeletePolicyValue.HardDeletePauseValue(
+          enabled=hard_delete_pause
+      )
+  )
+  return result_soft_delete_policy
+
+
 def process_hierarchical_namespace(enabled=None):
   """Converts Heirarchical Namespace boolean to Apitools object."""
   messages = apis.GetMessagesModule('storage', 'v1')

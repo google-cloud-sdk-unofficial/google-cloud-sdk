@@ -651,7 +651,7 @@ def AddBuildWorkerPoolMutexGroup(parser):
   mutex_group.add_argument(
       '--build-worker-pool',
       help="""\
-        Name of the Cloud Build Custom Worker Pool that should be used to build
+        Name of the Cloud Build private pool that should be used to build
         the function. The format of this field is
         `projects/${PROJECT}/locations/${LOCATION}/workerPools/${WORKERPOOL}`
         where ${PROJECT} is the project id and ${LOCATION} is the location where
@@ -663,7 +663,7 @@ def AddBuildWorkerPoolMutexGroup(parser):
       '--clear-build-worker-pool',
       action='store_true',
       help="""\
-        Clears the Cloud Build Custom Worker Pool field.
+        Clears the Cloud Build private pool field.
       """,
   )
 

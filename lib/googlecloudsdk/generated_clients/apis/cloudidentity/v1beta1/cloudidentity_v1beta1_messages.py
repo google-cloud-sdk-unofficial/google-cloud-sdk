@@ -4273,6 +4273,8 @@ class Membership(_messages.Message):
       SHARED_DRIVE: Represents Shared drive.
       CBCM_BROWSER: Represents a CBCM-managed Chrome Browser type.
       CHROME_OS_DEVICE: Represents a ChromeOS-managed ChromeOS device type.
+      PERSONAL_AGENT: Represents a Personal Agent type.
+      COWORKER_AGENT: Represents a Coworker Agent type.
       OTHER: Represents other type.
     """
     TYPE_UNSPECIFIED = 0
@@ -4282,7 +4284,9 @@ class Membership(_messages.Message):
     SHARED_DRIVE = 4
     CBCM_BROWSER = 5
     CHROME_OS_DEVICE = 6
-    OTHER = 7
+    PERSONAL_AGENT = 7
+    COWORKER_AGENT = 8
+    OTHER = 9
 
   createTime = _messages.StringField(1)
   deliverySetting = _messages.EnumField('DeliverySettingValueValuesEnum', 2)

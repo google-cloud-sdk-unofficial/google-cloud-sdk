@@ -423,6 +423,7 @@ class Update(base.UpdateCommand):
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
+    flags.AddEnableAmbientNetworkingFlag(group, is_update=True)
     flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddLoggingVariantFlag(group)
@@ -472,6 +473,7 @@ class Update(base.UpdateCommand):
     flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddGranularNatFlag(group, hidden=True, is_update=True)
+    flags.AddEnableCDPFFlag(group, hidden=True, is_update=True)
     flags.AddNetworkSuiteFlag(group, hidden=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
@@ -509,7 +511,7 @@ class Update(base.UpdateCommand):
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group)
-    flags.AddDataplaneV2Flag(group, hidden=True, is_update=True)
+    flags.AddDataplaneV2Flag(group, is_update=True)
     flags.AddDataplaneEbpfHostRoutingFlag(group, hidden=True)
     flags.AddAutopilotGeneralProfileFlag(group)
 
@@ -662,6 +664,7 @@ class Update(base.UpdateCommand):
         args.enable_l4_lb_firewall_reconciliation
     )
     opts.enable_granular_nat = args.enable_granular_nat
+    opts.enable_cdpf = args.enable_cdpf
     opts.network_suite = args.network_suite
     opts.tier = args.tier
     opts.enable_ip_access = args.enable_ip_access
@@ -708,6 +711,7 @@ class Update(base.UpdateCommand):
     opts.enable_dataplane_ebpf_host_routing = (
         args.enable_dataplane_ebpf_host_routing
     )
+    opts.enable_ambient_networking = args.enable_ambient_networking
     opts.autopilot_general_profile = args.autopilot_general_profile
     opts.enable_agent_sandbox = getattr(args, 'enable_agent_sandbox', None)
     opts.jwt_authenticator_config = getattr(
@@ -1359,7 +1363,7 @@ class UpdateBeta(Update):
     flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
-    flags.AddDataplaneV2Flag(group, hidden=True, is_update=True)
+    flags.AddDataplaneV2Flag(group, is_update=True)
     flags.AddDataplaneEbpfHostRoutingFlag(group, hidden=True)
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
@@ -1416,6 +1420,7 @@ class UpdateBeta(Update):
     flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddGranularNatFlag(group, hidden=True, is_update=True)
+    flags.AddEnableCDPFFlag(group, hidden=True, is_update=True)
     flags.AddNetworkSuiteFlag(group, hidden=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
@@ -1670,6 +1675,7 @@ class UpdateBeta(Update):
         args.enable_l4_lb_firewall_reconciliation
     )
     opts.enable_granular_nat = args.enable_granular_nat
+    opts.enable_cdpf = args.enable_cdpf
     opts.network_suite = args.network_suite
     opts.tier = args.tier
     opts.enable_ip_access = args.enable_ip_access
@@ -1810,7 +1816,7 @@ class UpdateAlpha(Update):
     flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
-    flags.AddDataplaneV2Flag(group, hidden=True, is_update=True)
+    flags.AddDataplaneV2Flag(group, is_update=True)
     flags.AddDataplaneEbpfHostRoutingFlag(group, hidden=True)
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
@@ -1866,6 +1872,7 @@ class UpdateAlpha(Update):
     flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddGranularNatFlag(group, hidden=True, is_update=True)
+    flags.AddEnableCDPFFlag(group, hidden=True, is_update=True)
     flags.AddNetworkSuiteFlag(group, hidden=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
@@ -2116,6 +2123,7 @@ class UpdateAlpha(Update):
         args.enable_l4_lb_firewall_reconciliation
     )
     opts.enable_granular_nat = args.enable_granular_nat
+    opts.enable_cdpf = args.enable_cdpf
     opts.network_suite = args.network_suite
     opts.tier = args.tier
     opts.enable_ip_access = args.enable_ip_access

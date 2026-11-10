@@ -5,7 +5,8 @@
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
 
-from sqlparse import sql, tokens as T
+from sqlparse import sql
+from sqlparse import tokens as T
 
 
 class OutputFilter:
@@ -21,7 +22,7 @@ class OutputFilter:
     def process(self, stmt):
         self.count += 1
         if self.count > 1:
-            varname = '{f.varname}{f.count}'.format(f=self)
+            varname = f'{self.varname}{self.count}'
         else:
             varname = self.varname
 
@@ -61,9 +62,11 @@ class OutputPythonFilter(OutputFilter):
                     yield sql.Token(T.Whitespace, after_lb)
                 continue
 
-            # Token has escape chars
-            elif "'" in token.value:
-                token.value = token.value.replace("'", "\\'")
+            # Escape backslashes before quotes so a backslash preceding a
+            # quote cannot break out of the generated string literal
+            # (GHSA-3496-9g83-7v6x).
+            else:
+                token.value = token.value.replace('\\', '\\\\').replace("'", "\\'")
 
             # Put the token
             yield sql.Token(T.Text, token.value)
@@ -110,9 +113,11 @@ class OutputPHPFilter(OutputFilter):
                     yield sql.Token(T.Whitespace, after_lb)
                 continue
 
-            # Token has escape chars
-            elif '"' in token.value:
-                token.value = token.value.replace('"', '\\"')
+            # Escape backslashes before quotes so a backslash preceding a
+            # quote cannot break out of the generated string literal
+            # (GHSA-3496-9g83-7v6x).
+            else:
+                token.value = token.value.replace('\\', '\\\\').replace('"', '\\"')
 
             # Put the token
             yield sql.Token(T.Text, token.value)

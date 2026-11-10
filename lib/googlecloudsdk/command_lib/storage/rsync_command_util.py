@@ -315,7 +315,7 @@ def _compute_hashes_and_return_match(source_resource, destination_resource):
     return False
 
   check_hashes = properties.VALUES.storage.check_hashes.Get()
-  if check_hashes == properties.CheckHashes.NEVER.value:
+  if check_hashes == properties.VALUES.storage.CheckHashes.NEVER.value:
     return True
 
   for resource in (source_resource, destination_resource):
@@ -378,7 +378,8 @@ def _compute_hashes_and_return_match(source_resource, destination_resource):
         not fast_crc32c_util.check_if_will_use_fast_crc32c(
             install_if_missing=True
         )
-        and check_hashes == properties.CheckHashes.IF_FAST_ELSE_SKIP.value
+        and check_hashes
+        == properties.VALUES.storage.CheckHashes.IF_FAST_ELSE_SKIP.value
     ):
       return True
     compare_crc32c = True

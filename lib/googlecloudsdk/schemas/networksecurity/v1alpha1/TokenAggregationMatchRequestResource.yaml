@@ -1,0 +1,40 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 TokenAggregationMatchRequestResource export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  agents:
+    description: |-
+      List of Agent URNs or SPIFFE IDs (e.g., agent:projects-123456789:...).
+    type: array
+    items:
+      type: string
+  applications:
+    description: |-
+      List of Application IDs in App Registry (e.g.,
+      //apphub.googleapis.com/...).
+    type: array
+    items:
+      type: string

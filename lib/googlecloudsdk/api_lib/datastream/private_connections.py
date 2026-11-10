@@ -17,6 +17,7 @@
 
 from googlecloudsdk.api_lib.datastream import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import resources
 
 
@@ -38,8 +39,12 @@ class PrivateConnectionsClient:
 
   def _GetPrivateConnection(self, private_connection_id, release_track, args):
     """Returns a private connection object."""
+    labels = labels_util.ParseCreateArgs(
+        args, self._messages.PrivateConnection.LabelsValue
+    )
     private_connection_obj = self._messages.PrivateConnection(
-        name=private_connection_id, labels={}, displayName=args.display_name)
+        name=private_connection_id, labels=labels, displayName=args.display_name
+    )
 
     if hasattr(args, 'network_attachment') and args.network_attachment:
       private_connection_obj.pscInterfaceConfig = (

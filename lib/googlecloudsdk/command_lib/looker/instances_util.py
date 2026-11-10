@@ -188,3 +188,43 @@ def ValidateReleaseChannelConfig(
         'for instances in the RAPID release channel.',
     )
   return request
+
+
+def ValidateOAuthConfig(
+    unused_instance_ref: Any, args: Any, request: Any
+) -> Any:
+  """Validates OAuth configuration when Google auth is enabled.
+
+  Args:
+    unused_instance_ref: googlecloudsdk.core.resources.Resource, The reference
+      to the instance.
+    args: argparse.Namespace, The arguments passed to the command.
+    request: messages.LookerProjectsLocationsInstancesCreateRequest, The request
+      to be sent to the API.
+
+  Returns:
+    messages.LookerProjectsLocationsInstancesCreateRequest, The request.
+
+  Raises:
+    exceptions.RequiredArgumentException: If Google auth is enabled and
+      oauth-client-id or oauth-client-secret is not specified.
+  """
+  instance = request.instance
+  auth_type = getattr(instance, 'authType', None)
+  if auth_type is not None:
+    google_auth_enabled = bool(auth_type.googleAuthEnabled)
+    workforce_auth_enabled = bool(auth_type.workforceAuthEnabled)
+    if not google_auth_enabled and not workforce_auth_enabled:
+      google_auth_enabled = not args.IsSpecified('google_auth_enabled')
+  else:
+    google_auth_enabled = True
+
+  if google_auth_enabled and (
+      not args.IsSpecified('oauth_client_id')
+      or not args.IsSpecified('oauth_client_secret')
+  ):
+    raise exceptions.RequiredArgumentException(
+        '--oauth-client-id --oauth-client-secret',
+        'Both must be specified when Google auth is enabled.',
+    )
+  return request

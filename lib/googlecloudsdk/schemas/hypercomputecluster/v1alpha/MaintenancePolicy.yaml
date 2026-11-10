@@ -1,0 +1,37 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha MaintenancePolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  windows:
+    description: |-
+      Periods during which the system may perform maintenance operations on the
+      cluster that might carry a risk of disruption. The system will make a
+      best-effort attempt to only perform maintenance within these windows. If
+      no windows are specified, the system may perform maintenance at any time.
+      All windows must have same start_time and duration.
+    type: array
+    items:
+      $ref: MaintenanceWindow.yaml

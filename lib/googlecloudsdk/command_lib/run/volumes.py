@@ -16,11 +16,13 @@
 
 import abc
 import argparse
-from typing import TypedDict
+import types as builtin_types
+from typing import Any, TypedDict
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
+from googlecloudsdk.generated_clients.apis.run.v1 import run_v1_messages
 
 _supported_volume_types = {}
 
@@ -30,8 +32,10 @@ VolumeDict = TypedDict(
         'name': str,
         'type': str,
         'read-only': str,
+        'readonly': str,
         'bucket': str,
         'location': str,
+        'size': str,
         'size-limit': str,
         'dynamic-mounting': str,
         'mount-options': str,
@@ -569,6 +573,104 @@ class _GcsVolume(_VolumeType):
       source.bucket = '_'
     else:
       source.bucket = volume['bucket']
+    return types.Volume(
+        name=volume['name'],
+        gcs=source,
+    )
+
+
+@_registered_volume_type
+class _CloudStorageDiskVolume(_VolumeType):
+  """Volume Type representing a GCS-backed block disk volume."""
+
+  @classmethod
+  def release_tracks(cls) -> list[base.ReleaseTrack]:
+    return [base.ReleaseTrack.ALPHA]
+
+  @classmethod
+  def name(cls) -> str:
+    return 'cloud-storage-disk'
+
+  @classmethod
+  def help(cls) -> str:
+    return (
+        'A volume representing a Cloud Storage bucket mounted as a block disk.'
+    )
+
+  @classmethod
+  def required_fields(cls, release_track: base.ReleaseTrack) -> dict[str, str]:
+    return {
+        'bucket': 'the name of the bucket to use as the source of this volume'
+    }
+
+  @classmethod
+  def optional_fields(cls, release_track: base.ReleaseTrack) -> dict[str, str]:
+    return {
+        'name': (
+            'The name of the volume. A name will be generated if the'
+            ' `mount-path` flag is specified. A name is required if'
+            ' `mount-path` is not specified.'
+        ),
+        'mount-path': (
+            'The path at which the volume should be mounted. The `mount-path`'
+            ' parameter is only supported for single container services which'
+            ' do not make use of the --container flag. For multi-container'
+            ' services, specify the `mount-path` parameter under the'
+            ' --add-volume-mount flag.'
+        ),
+        'readonly': (
+            'A boolean. If true, this volume will be read-only from all mounts.'
+        ),
+        'size': (
+            'A quantity representing the amount of disk space allocated to'
+            ' this volume, such as "10Gi" or "100G". Defaults to 10Gi if'
+            ' omitted.'
+        ),
+    }
+
+  @classmethod
+  def fill_volume(
+      cls,
+      volume: VolumeDict,
+      new_vol: run_v1_messages.Volume,
+      messages: builtin_types.ModuleType,
+  ) -> None:
+    src = messages.CSIVolumeSource(
+        # gcloud-disable-gdu-domain
+        driver='gcsfuse.run.googleapis.com',
+        readOnly=_is_readonly(volume),
+    )
+    src.volumeAttributes = messages.CSIVolumeSource.VolumeAttributesValue()
+    src.volumeAttributes.additionalProperties.append(
+        messages.CSIVolumeSource.VolumeAttributesValue.AdditionalProperty(
+            key='bucketName', value=volume['bucket']
+        )
+    )
+    src.volumeAttributes.additionalProperties.append(
+        messages.CSIVolumeSource.VolumeAttributesValue.AdditionalProperty(
+            key='mountType', value='DISK'
+        )
+    )
+    if 'size' in volume:
+      src.volumeAttributes.additionalProperties.append(
+          messages.CSIVolumeSource.VolumeAttributesValue.AdditionalProperty(
+              key='size', value=volume['size']
+          )
+      )
+    new_vol.csi = src
+
+  @classmethod
+  def create_volume_v2(
+      cls, volume: VolumeDict, types: builtin_types.ModuleType
+  ) -> Any:
+    source = types.GCSVolumeSource(
+        bucket=volume['bucket'],
+        read_only=_is_readonly(volume),
+    )
+    if hasattr(source, 'mount_type'):
+      source.mount_type = types.GCSVolumeSource.MountType.DISK
+    if 'size' in volume and hasattr(source, 'size'):
+      source.size = volume['size']
     return types.Volume(
         name=volume['name'],
         gcs=source,

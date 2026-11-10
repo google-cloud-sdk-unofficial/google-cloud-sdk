@@ -1546,10 +1546,15 @@ class CustomerManagedCertificateConfig(_messages.Message):
 
     Values:
       INTENT_UNSPECIFIED: Unspecified intent.
-      PG_LOGICAL: Setting up for pg_logical extension.
+      PG_LOGICAL: Configures customer-managed certificates for pg_logical
+        extension to achieve mTLS authentication.
+      NATIVE_REPLICATION: Configures customer-managed certificates for built-
+        in PostgreSQL native replication to achieve mTLS authentication.
+        Supported for Cloud SQL for PostgreSQL 10 and later.
     """
     INTENT_UNSPECIFIED = 0
     PG_LOGICAL = 1
+    NATIVE_REPLICATION = 2
 
   bundle = _messages.StringField(1)
   customerManagedCertificates = _messages.MessageField('CustomerManagedCertificate', 2, repeated=True)
@@ -5722,7 +5727,7 @@ class Result(_messages.Message):
       CREDENTIALS_LEAKED: The username and password combination was exposed in
         a public data breach. Change the password as soon as possible.
       AUDIT_SKIPPED: The credential audit was skipped, for example, because
-        the password is not eligible for the audit.
+        the password is longer than 1000 bytes.
       AUDIT_FAILED: The credential audit failed to complete due to an error.
         You can change the password to trigger the audit again.
     """
@@ -5799,7 +5804,8 @@ class SecurityFinding(_messages.Message):
     firstDetectTime: Output only. The time when the finding was first
       detected.
     lastDetectTime: Output only. The time when the finding was most recently
-      detected.
+      detected. If the finding is closed, this is the time when the finding
+      was closed.
     result: Output only. The result of the security finding, specific to its
       type.
     state: Output only. The state of the security finding.
@@ -6036,6 +6042,11 @@ class Settings(_messages.Message):
       more information, see [Overview of the High Availability
       Configuration](https://cloud.google.com/sql/docs/mysql/high-
       availability).
+    ConnectTunnelAccessValueValuesEnum: Optional. Controls whether to allow
+      connecting to the instance using the managed connect tunnel. When
+      `ENABLED`, authorized users can connect to the instance through the
+      managed connect tunnel. When `DISABLED` (the default), connections
+      through the managed connect tunnel are rejected.
     ConnectorEnforcementValueValuesEnum: Specifies if connections must use
       Cloud SQL connectors. Option values include the following:
       `NOT_REQUIRED` (Cloud SQL instances can be connected without Cloud SQL
@@ -6093,6 +6104,11 @@ class Settings(_messages.Message):
       availability).
     backupConfiguration: The daily backup configuration for the instance.
     collation: The name of server Instance collation.
+    connectTunnelAccess: Optional. Controls whether to allow connecting to the
+      instance using the managed connect tunnel. When `ENABLED`, authorized
+      users can connect to the instance through the managed connect tunnel.
+      When `DISABLED` (the default), connections through the managed connect
+      tunnel are rejected.
     connectionPoolConfig: Optional. The managed connection pooling
       configuration for the instance.
     connectorEnforcement: Specifies if connections must use Cloud SQL
@@ -6245,6 +6261,26 @@ class Settings(_messages.Message):
     SQL_AVAILABILITY_TYPE_UNSPECIFIED = 0
     ZONAL = 1
     REGIONAL = 2
+
+  class ConnectTunnelAccessValueValuesEnum(_messages.Enum):
+    r"""Optional. Controls whether to allow connecting to the instance using
+    the managed connect tunnel. When `ENABLED`, authorized users can connect
+    to the instance through the managed connect tunnel. When `DISABLED` (the
+    default), connections through the managed connect tunnel are rejected.
+
+    Values:
+      CONNECT_TUNNEL_ACCESS_UNSPECIFIED: Unspecified, effectively the same as
+        `DISABLED`.
+      DISABLED: Disallow connecting to the instance using the managed connect
+        tunnel.
+      ENABLED: Allow connecting to the instance using the managed connect
+        tunnel. This allows authorized users to connect to the instance
+        through the managed connect tunnel without configuring network peering
+        or authorized networks.
+    """
+    CONNECT_TUNNEL_ACCESS_UNSPECIFIED = 0
+    DISABLED = 1
+    ENABLED = 2
 
   class ConnectorEnforcementValueValuesEnum(_messages.Enum):
     r"""Specifies if connections must use Cloud SQL connectors. Option values
@@ -6413,54 +6449,55 @@ class Settings(_messages.Message):
   availabilityType = _messages.EnumField('AvailabilityTypeValueValuesEnum', 8)
   backupConfiguration = _messages.MessageField('BackupConfiguration', 9)
   collation = _messages.StringField(10)
-  connectionPoolConfig = _messages.MessageField('ConnectionPoolConfig', 11)
-  connectorEnforcement = _messages.EnumField('ConnectorEnforcementValueValuesEnum', 12)
-  crashSafeReplicationEnabled = _messages.BooleanField(13)
-  dataApiAccess = _messages.EnumField('DataApiAccessValueValuesEnum', 14)
-  dataCacheConfig = _messages.MessageField('DataCacheConfig', 15)
-  dataDiskProvisionedIops = _messages.IntegerField(16)
-  dataDiskProvisionedThroughput = _messages.IntegerField(17)
-  dataDiskSizeGb = _messages.IntegerField(18)
-  dataDiskType = _messages.EnumField('DataDiskTypeValueValuesEnum', 19)
-  databaseFlags = _messages.MessageField('DatabaseFlags', 20, repeated=True)
-  databaseReplicationEnabled = _messages.BooleanField(21)
-  dbAlignedAtomicWritesConfig = _messages.MessageField('DbAlignedAtomicWritesConfig', 22)
-  deletionProtectionEnabled = _messages.BooleanField(23)
-  denyMaintenancePeriods = _messages.MessageField('DenyMaintenancePeriod', 24, repeated=True)
-  edition = _messages.EnumField('EditionValueValuesEnum', 25)
-  enableDataplexIntegration = _messages.BooleanField(26)
-  enableGoogleMlIntegration = _messages.BooleanField(27)
-  entraidConfig = _messages.MessageField('SqlServerEntraIdConfig', 28)
-  finalBackupConfig = _messages.MessageField('FinalBackupConfig', 29)
-  flexibilityPolicy = _messages.MessageField('FlexibilityPolicy', 30)
-  hostMappings = _messages.MessageField('HostMapping', 31, repeated=True)
-  initialUsersConfig = _messages.MessageField('InitialUsersConfig', 32)
-  insightsConfig = _messages.MessageField('InsightsConfig', 33)
-  instanceVersion = _messages.StringField(34)
-  ipConfiguration = _messages.MessageField('IpConfiguration', 35)
-  kind = _messages.StringField(36)
-  locationPreference = _messages.MessageField('LocationPreference', 37)
-  maintenanceVersion = _messages.StringField(38)
-  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 39)
-  msdtcEnabled = _messages.BooleanField(40)
-  msdtcRpcAuthMode = _messages.EnumField('MsdtcRpcAuthModeValueValuesEnum', 41)
-  passwordValidationPolicy = _messages.MessageField('PasswordValidationPolicy', 42)
-  performanceCaptureConfig = _messages.MessageField('PerformanceCaptureConfig', 43)
-  pricingPlan = _messages.EnumField('PricingPlanValueValuesEnum', 44)
-  readPoolAutoScaleConfig = _messages.MessageField('ReadPoolAutoScaleConfig', 45)
-  recreateReplicasOnPrimaryCrash = _messages.BooleanField(46)
-  replicationLagMaxSeconds = _messages.IntegerField(47, variant=_messages.Variant.INT32)
-  replicationType = _messages.EnumField('ReplicationTypeValueValuesEnum', 48)
-  retainBackupsOnDelete = _messages.BooleanField(49)
-  settingsVersion = _messages.IntegerField(50)
-  sqlServerAuditConfig = _messages.MessageField('SqlServerAuditConfig', 51)
-  sqlServerPasswordValidationPolicy = _messages.MessageField('SqlServerPasswordValidationPolicy', 52)
-  storageAutoResize = _messages.BooleanField(53)
-  storageAutoResizeLimit = _messages.IntegerField(54)
-  tier = _messages.StringField(55)
-  timeZone = _messages.StringField(56)
-  uncMappings = _messages.MessageField('UncMapping', 57, repeated=True)
-  userLabels = _messages.MessageField('UserLabelsValue', 58)
+  connectTunnelAccess = _messages.EnumField('ConnectTunnelAccessValueValuesEnum', 11)
+  connectionPoolConfig = _messages.MessageField('ConnectionPoolConfig', 12)
+  connectorEnforcement = _messages.EnumField('ConnectorEnforcementValueValuesEnum', 13)
+  crashSafeReplicationEnabled = _messages.BooleanField(14)
+  dataApiAccess = _messages.EnumField('DataApiAccessValueValuesEnum', 15)
+  dataCacheConfig = _messages.MessageField('DataCacheConfig', 16)
+  dataDiskProvisionedIops = _messages.IntegerField(17)
+  dataDiskProvisionedThroughput = _messages.IntegerField(18)
+  dataDiskSizeGb = _messages.IntegerField(19)
+  dataDiskType = _messages.EnumField('DataDiskTypeValueValuesEnum', 20)
+  databaseFlags = _messages.MessageField('DatabaseFlags', 21, repeated=True)
+  databaseReplicationEnabled = _messages.BooleanField(22)
+  dbAlignedAtomicWritesConfig = _messages.MessageField('DbAlignedAtomicWritesConfig', 23)
+  deletionProtectionEnabled = _messages.BooleanField(24)
+  denyMaintenancePeriods = _messages.MessageField('DenyMaintenancePeriod', 25, repeated=True)
+  edition = _messages.EnumField('EditionValueValuesEnum', 26)
+  enableDataplexIntegration = _messages.BooleanField(27)
+  enableGoogleMlIntegration = _messages.BooleanField(28)
+  entraidConfig = _messages.MessageField('SqlServerEntraIdConfig', 29)
+  finalBackupConfig = _messages.MessageField('FinalBackupConfig', 30)
+  flexibilityPolicy = _messages.MessageField('FlexibilityPolicy', 31)
+  hostMappings = _messages.MessageField('HostMapping', 32, repeated=True)
+  initialUsersConfig = _messages.MessageField('InitialUsersConfig', 33)
+  insightsConfig = _messages.MessageField('InsightsConfig', 34)
+  instanceVersion = _messages.StringField(35)
+  ipConfiguration = _messages.MessageField('IpConfiguration', 36)
+  kind = _messages.StringField(37)
+  locationPreference = _messages.MessageField('LocationPreference', 38)
+  maintenanceVersion = _messages.StringField(39)
+  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 40)
+  msdtcEnabled = _messages.BooleanField(41)
+  msdtcRpcAuthMode = _messages.EnumField('MsdtcRpcAuthModeValueValuesEnum', 42)
+  passwordValidationPolicy = _messages.MessageField('PasswordValidationPolicy', 43)
+  performanceCaptureConfig = _messages.MessageField('PerformanceCaptureConfig', 44)
+  pricingPlan = _messages.EnumField('PricingPlanValueValuesEnum', 45)
+  readPoolAutoScaleConfig = _messages.MessageField('ReadPoolAutoScaleConfig', 46)
+  recreateReplicasOnPrimaryCrash = _messages.BooleanField(47)
+  replicationLagMaxSeconds = _messages.IntegerField(48, variant=_messages.Variant.INT32)
+  replicationType = _messages.EnumField('ReplicationTypeValueValuesEnum', 49)
+  retainBackupsOnDelete = _messages.BooleanField(50)
+  settingsVersion = _messages.IntegerField(51)
+  sqlServerAuditConfig = _messages.MessageField('SqlServerAuditConfig', 52)
+  sqlServerPasswordValidationPolicy = _messages.MessageField('SqlServerPasswordValidationPolicy', 53)
+  storageAutoResize = _messages.BooleanField(54)
+  storageAutoResizeLimit = _messages.IntegerField(55)
+  tier = _messages.StringField(56)
+  timeZone = _messages.StringField(57)
+  uncMappings = _messages.MessageField('UncMapping', 58, repeated=True)
+  userLabels = _messages.MessageField('UserLabelsValue', 59)
 
 
 class SourceRole(_messages.Message):

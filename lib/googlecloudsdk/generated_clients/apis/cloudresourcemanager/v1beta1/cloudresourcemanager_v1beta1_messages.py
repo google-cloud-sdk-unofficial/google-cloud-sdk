@@ -876,6 +876,9 @@ class Project(_messages.Message):
 
   Enums:
     LifecycleStateValueValuesEnum: The Project lifecycle state. Read-only.
+    ManagementTypeValueValuesEnum: Output only. The type of Management
+      Project. This field is only populated if `is_management_project` is
+      `true`.
 
   Messages:
     LabelsValue: The labels associated with this Project. Label keys must be
@@ -907,6 +910,8 @@ class Project(_messages.Message):
       characters being disallowed. Example: `"environment" : "dev"` Read-
       write.
     lifecycleState: The Project lifecycle state. Read-only.
+    managementType: Output only. The type of Management Project. This field is
+      only populated if `is_management_project` is `true`.
     name: The optional user-assigned display name of the Project. When present
       it must be between 4 to 30 characters. Allowed characters are: lowercase
       and uppercase letters, numbers, hyphen, single-quote, double-quote,
@@ -941,6 +946,21 @@ class Project(_messages.Message):
     ACTIVE = 1
     DELETE_REQUESTED = 2
     DELETE_IN_PROGRESS = 3
+
+  class ManagementTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of Management Project. This field is only
+    populated if `is_management_project` is `true`.
+
+    Values:
+      MANAGEMENT_TYPE_UNSPECIFIED: Unspecified type.
+      SELF_MANAGED: The Management Project is a self-managed project that
+        constitutes its own boundary.
+      HUB: The Management Project is a hub project that manages resources
+        across a boundary.
+    """
+    MANAGEMENT_TYPE_UNSPECIFIED = 0
+    SELF_MANAGED = 1
+    HUB = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -978,10 +998,11 @@ class Project(_messages.Message):
   isManagementProject = _messages.BooleanField(3)
   labels = _messages.MessageField('LabelsValue', 4)
   lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 5)
-  name = _messages.StringField(6)
-  parent = _messages.MessageField('ResourceId', 7)
-  projectId = _messages.StringField(8)
-  projectNumber = _messages.IntegerField(9)
+  managementType = _messages.EnumField('ManagementTypeValueValuesEnum', 6)
+  name = _messages.StringField(7)
+  parent = _messages.MessageField('ResourceId', 8)
+  projectId = _messages.StringField(9)
+  projectNumber = _messages.IntegerField(10)
 
 
 class ProjectCreationStatus(_messages.Message):

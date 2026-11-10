@@ -7274,12 +7274,19 @@ class Rollout(_messages.Message):
         reached its end of support.
       PARTIAL_PATCH: A patch upgrade for a subset of clusters on a given minor
         version.
+      DOWNGRADE: A full-sequence downgrade rollout. Applies only to node
+        version downgrades.
+      PARTIAL_PATCH_DOWNGRADE: A patch downgrade for a subset of clusters on a
+        given minor version. This downgrade intent applies to control plane
+        and node pool versions.
     """
     ROLLOUT_INTENT_UNSPECIFIED = 0
     REGULAR_UPGRADE = 1
     CONTROL_PLANE_PATCH_ENFORCEMENT = 2
     END_OF_SUPPORT_ENFORCEMENT = 3
     PARTIAL_PATCH = 4
+    DOWNGRADE = 5
+    PARTIAL_PATCH_DOWNGRADE = 6
 
   class StateReasonTypeValueValuesEnum(_messages.Enum):
     r"""Output only. StateReasonType specifies the reason type of the Rollout

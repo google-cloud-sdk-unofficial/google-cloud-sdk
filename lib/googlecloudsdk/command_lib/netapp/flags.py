@@ -607,3 +607,16 @@ def AddEndTrialArgs(parser, release_track):
   )
 
   AddResourceAsyncFlag(parser)
+
+
+def GetInventoryViewArg(messages):
+  """Adds the Inventory View arg to the arg parser."""
+  return arg_utils.ChoiceEnumMapper(
+      '--view',
+      messages.NetappProjectsLocationsGetInventoryRequest.ViewValueValuesEnum,
+      custom_mappings={
+          'INVENTORY_VIEW_BASIC': 'basic',
+          'INVENTORY_VIEW_FULL': 'full',
+      },
+      help_str='The view of the inventory to return.',
+  )

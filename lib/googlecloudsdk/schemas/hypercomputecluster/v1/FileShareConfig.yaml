@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1 FileShareConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- capacityGb
+- fileShare
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  capacityGb:
+    description: |-
+      Size of the filestore in GB. Must be between 1024 and 102400, and must
+      meet scalability requirements described at
+      https://cloud.google.com/filestore/docs/service-tiers.
+    type: integer
+  fileShare:
+    description: Filestore share location
+    type: string

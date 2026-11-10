@@ -111,14 +111,26 @@ def HydrateNamespace(calliope_command, payload: Payload):
   ns = parser_extensions.Namespace()
   ns._SetParser(parser)  # pylint: disable=protected-access
 
+  option_actions = getattr(parser, '_option_string_actions', None)
+  if not isinstance(option_actions, dict):
+    option_actions = {}
+
+  specified_args = ns.GetSpecifiedArgsDict()
+
   for flag in payload.flags:
-    setattr(ns, flag.dest, flag.value)
+    if flag.is_set or not hasattr(ns, flag.dest):
+      setattr(ns, flag.dest, flag.value)
     if flag.is_set:
-      ns._specified_args[flag.dest] = flag.cli_flag_name  # pylint: disable=protected-access
+      cli_name = flag.cli_flag_name
+      action = option_actions.get(cli_name)
+      if action and action.option_strings:
+        cli_name = action.option_strings[0]
+      specified_args[flag.dest] = cli_name
 
   for arg in payload.args:
-    setattr(ns, arg.dest, arg.value)
+    if arg.is_set or not hasattr(ns, arg.dest):
+      setattr(ns, arg.dest, arg.value)
     if arg.is_set:
-      ns._specified_args[arg.dest] = arg.name  # pylint: disable=protected-access
+      specified_args[arg.dest] = arg.name
 
   return ns

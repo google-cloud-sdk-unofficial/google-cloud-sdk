@@ -9,9 +9,11 @@ help_text:
   ALPHA:
     examples: |
       Create a multicast group producer activation with the name 'my-multicast-group-producer-activation',
-      multicast-producer-association 'path-to-mpa', multicast-group 'path-to-mg' and location 'zone'.
+      multicast-producer-association 'path-to-mpa',
+      multicast-group-range-activation 'path-to-mg-range-activation',
+      and location 'zone'.
 
-      $ {command} my-multicast-group-producer-activation --multicast-producer-association=path-to-mpa --multicast-group=path-to-mg --location=zone
+      $ {command} my-multicast-group-producer-activation --multicast-producer-association=path-to-mpa --multicast-group-range-activation=path-to-mg-range-activation --location=zone
   BETA:
     examples: |
       Create a multicast group producer activation with the name 'my-multicast-group-producer-activation',
@@ -30,10 +32,6 @@ arguments:
     api_field: multicastGroupProducerActivation.multicastProducerAssociation
     help_text: The multicast producer association to be used.
     required: true
-  - arg_name:  multicast-group
-    api_field: multicastGroupProducerActivation.multicastGroup
-    release_tracks: [ALPHA]
-    help_text: The multicast group to be used.
   - arg_name:  multicast-group-range-activation
     api_field: multicastGroupProducerActivation.multicastGroupRangeActivation
     help_text: The multicast group range activation to be used.

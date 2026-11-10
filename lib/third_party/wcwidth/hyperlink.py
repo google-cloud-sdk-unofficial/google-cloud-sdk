@@ -42,7 +42,7 @@ class HyperlinkParams(typing.NamedTuple):
         Example::
 
             >>> HyperlinkParams.parse('\x1b]8;;http://example.com\x07')
-            HyperlinkParams(url='http://example.com', params='', terminator='\\x07')
+            HyperlinkParams(url='http://example.com', params='', terminator='\x07')
         """
         m = HYPERLINK_OPEN_RE.match(seq)
         if m is None:
@@ -79,7 +79,7 @@ class Hyperlink(typing.NamedTuple):
         close_end)`` or ``(-1, -1)`` if not found.
 
         Per the OSC 8 specification, terminal emulators treat hyperlinks as a
-        state attribute, not as nested HTML anchors.  A close sequence closes
+        state attribute.  A close sequence closes
         the current hyperlink regardless of how many open sequences preceded it.
         """
         m = HYPERLINK_CLOSE_RE.search(text, open_end)

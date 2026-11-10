@@ -1,0 +1,69 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha PreemptParameters export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  minExemptPriority:
+    description: |-
+      Priority threshold below which jobs are eligible for preemption. For more
+      details, see the Slurm documentation for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_min_exempt_priority
+    type: string
+  reclaimLicenses:
+    description: |-
+      Preempt to reclaim licenses. For more details, see the Slurm documentation
+      for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_reclaim_licenses
+    type: boolean
+  reorderCount:
+    description: |-
+      Number of reorder attempts. For more details, see the Slurm documentation
+      for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_reorder_count
+    type: string
+  sendUserSignal:
+    description: |-
+      Send --signal at preemption. For more details, see the Slurm documentation
+      for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_send_user_signal
+    type: boolean
+  strictOrder:
+    description: |-
+      Reorder tested job to front (cons_tres). For more details, see the Slurm
+      documentation for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_strict_order
+    type: boolean
+  suspendGraceTime:
+    description: |-
+      Grace period (seconds) for job suspension under PreemptMode=SUSPEND. For
+      more details, see the Slurm documentation for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_suspend_grace_time
+    type: string
+  youngestFirst:
+    description: |-
+      Preempt younger jobs first. For more details, see the Slurm documentation
+      for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_youngest_first
+    type: boolean

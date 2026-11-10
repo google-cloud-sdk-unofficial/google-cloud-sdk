@@ -280,6 +280,7 @@ def CreateApplicationFlags(parser, release_track=base.ReleaseTrack.ALPHA):
       choices={
           'REGIONAL': 'Represents a regional application',
           'GLOBAL': 'Represents a global application',
+          'MULTI_REGIONAL': 'Represents a multi-regional application',
       },
       help='Scope of the Application',
       required=True,

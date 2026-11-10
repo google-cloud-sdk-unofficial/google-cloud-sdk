@@ -279,8 +279,10 @@ def _AuthProvider(name='gcp'):
     $ export CLOUDSDK_CONTAINER_USE_APPLICATION_DEFAULT_CREDENTIALS=true.
   """
   provider = {'name': name}
-  if (name == 'gcp' and not
-      properties.VALUES.container.use_app_default_credentials.GetBool()):
+  if (
+      name == 'gcp'
+      and not properties.VALUES.container.use_application_default_credentials.GetBool()
+  ):
     bin_name = 'gcloud'
     if platforms.OperatingSystem.IsWindows():
       bin_name = 'gcloud.cmd'

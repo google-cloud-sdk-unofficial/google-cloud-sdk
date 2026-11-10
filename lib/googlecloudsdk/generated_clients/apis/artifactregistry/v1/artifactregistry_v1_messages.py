@@ -1451,13 +1451,9 @@ class Behavior(_messages.Message):
       missing an underlying file). The operation metadata and response will
       contain a list of skipped version errors that can be inspected for
       details on the failure(s).
-    maxVersionAgeDays: Optional. If set, only versions updated or created
-      within the specified number of days (24-hour periods) up to the
-      operation's start time will be copied. If unset or set to 0, all
-      versions will be copied. This field provides a convenient way to speed
-      up regular repository copies. For example, after an initial full copy
-      operation, this field can be set in recurring calls (e.g., from a cron
-      job) to copy only recent artifacts, rather than the entire repository.
+    maxVersionAgeDays: Optional. Prefer `version_filter.updated_within`
+      instead. If set, behaves exactly as `version_filter.updated_within` with
+      the equivalent duration.
     versionFilter: Optional. Limits which versions are copied by age. Cannot
       be combined with max_version_age_days.
   """
@@ -3372,20 +3368,46 @@ class PrewarmPlatform(_messages.Message):
 
 
 class PrewarmedArtifact(_messages.Message):
-  r"""PrewarmedArtifact represents a streamed artifact. This is not a request
-  message, so field_behavior annotations are not required.
+  r"""PrewarmedArtifact represents a streamed artifact.
+
+  Enums:
+    StateValueValuesEnum: Output only. The caching state of the prewarmed
+      artifact.
 
   Fields:
+    createTime: Output only. The time the artifact was first prewarmed.
+    errorMessage: Output only. The error message if the state is `FAILED`.
     expirationTime: The expiration time of the prewarmed artifact.
     location: The location of the prewarmed artifact.
+    sizeBytes: Output only. The compressed size of the prewarmed artifact in
+      bytes. This is the size counted against the prewarm storage quota.
+    state: Output only. The caching state of the prewarmed artifact.
     uri: URL to access the image. Example: us-west4-docker.pkg.dev/test-
       project/test-repo/nginx@sha256:e9954c1fc875017be1c3e36eca16be2d9e9bccc4b
       f072163515467d6a823c7cf
   """
 
-  expirationTime = _messages.StringField(1)
-  location = _messages.StringField(2)
-  uri = _messages.StringField(3)
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The caching state of the prewarmed artifact.
+
+    Values:
+      STATE_UNSPECIFIED: State not specified.
+      CACHING: The artifact is currently being cached.
+      ACTIVE: The artifact is cached and ready for streaming.
+      FAILED: Caching the artifact failed. See `error_message` for details.
+    """
+    STATE_UNSPECIFIED = 0
+    CACHING = 1
+    ACTIVE = 2
+    FAILED = 3
+
+  createTime = _messages.StringField(1)
+  errorMessage = _messages.StringField(2)
+  expirationTime = _messages.StringField(3)
+  location = _messages.StringField(4)
+  sizeBytes = _messages.IntegerField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  uri = _messages.StringField(7)
 
 
 class ProjectConfig(_messages.Message):

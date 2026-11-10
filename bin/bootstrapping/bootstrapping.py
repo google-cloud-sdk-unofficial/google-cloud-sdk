@@ -74,6 +74,38 @@ def _FullPath(tool_dir, exec_name):
   return os.path.join(SDK_ROOT, tool_dir, exec_name)
 
 
+_GOCLOUD_TOOL_ENTRYPOINTS = {
+    'gsutil': 'gsutil',
+    'bq.py': 'bq',
+}
+
+
+def _IsEmbeddedInGocloudLauncher():
+  """Returns whether we're running in the gocloud launcher's embedded Python."""
+  return (
+      encoding.GetEncodedValue(os.environ, 'CLOUDSDK_FROM_GOCLOUD')
+      and sys.executable
+      and os.path.dirname(os.path.realpath(sys.executable)) == BIN_DIR
+  )
+
+
+def _ExecuteGocloudToolEntrypoint(tool, *args):
+  """Executes a tool by re-executing the gocloud launcher in entrypoint mode.
+
+  Args:
+    tool: str, the GOCLOUD_TOOL_ENTRYPOINT tool name (gsutil or bq).
+    *args: args for the command
+  """
+  extra_popen_kwargs = {}
+  if tool == 'gsutil':
+    extra_popen_kwargs['close_fds'] = False
+  execution_utils.Exec(
+      [sys.executable] + list(args) + sys.argv[1:],
+      env=_GetGocloudToolEnv(tool),
+      **extra_popen_kwargs
+  )
+
+
 def ExecutePythonTool(tool_dir, exec_name, *args):
   """Execute the given python script with the given args and command line.
 
@@ -82,6 +114,11 @@ def ExecutePythonTool(tool_dir, exec_name, *args):
     exec_name: additional path to the executable under the tool_dir
     *args: args for the command
   """
+  gocloud_tool = _GOCLOUD_TOOL_ENTRYPOINTS.get(exec_name)
+  if gocloud_tool and _IsEmbeddedInGocloudLauncher():
+    _ExecuteGocloudToolEntrypoint(gocloud_tool, *args)
+    return
+
   py_path = None  # Let execution_utils resolve the path.
   # Gsutil allows users to set the desired Python interpreter using a separate
   # environment variable, so as to allow users to run gsutil using Python 3
@@ -185,6 +222,14 @@ def _GetToolEnv():
   encoding.SetEncodedValue(env, 'CLOUDSDK_VERSION', config.CLOUD_SDK_VERSION)
   encoding.SetEncodedValue(env, 'CLOUDSDK_PYTHON',
                            execution_utils.GetPythonExecutable())
+  return env
+
+
+def _GetGocloudToolEnv(tool):
+  env = dict(os.environ)
+  encoding.SetEncodedValue(env, 'CLOUDSDK_WRAPPER', '1')
+  encoding.SetEncodedValue(env, 'CLOUDSDK_VERSION', config.CLOUD_SDK_VERSION)
+  encoding.SetEncodedValue(env, 'GOCLOUD_TOOL_ENTRYPOINT', tool)
   return env
 
 

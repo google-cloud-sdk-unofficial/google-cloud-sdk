@@ -201,7 +201,7 @@ SCHEMA = s.Message(
             subnet=s.Value(converter=c.ToJsonString),
             tags=s.RepeatedField(element=s.Value(converter=c.ToJsonString)),
         ),
-        vpc_egress=s.Value(converter=c.ToVpcEgressSettingEnum),
+        vpc_egress=s.Value(converter=c.ToVpcEgressEnum),
     ),
     zones=s.RepeatedField(element=s.Value(converter=c.ToJsonString)),
     app_engine_bundled_services=s.RepeatedField(

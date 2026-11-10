@@ -1,0 +1,124 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha SlurmPartitionConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  allowAccounts:
+    description: |-
+      Comma-separated list of accounts allowed to run jobs in this partition.
+      For more details, see the Slurm documentation for AllowAccounts:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_AllowAccounts
+    type: string
+  allowQos:
+    description: |-
+      Comma-separated list of QOS allowed to run jobs in this partition. For
+      more details, see the Slurm documentation for
+    type: string
+  defMemPerCpu:
+    description: |-
+      Default real memory size available per allocated CPU in megabytes. For
+      more details, see the Slurm documentation for
+    type: string
+  defaultTime:
+    description: |-
+      Default run time limit for jobs submitted to the partition. For more
+      details, see the Slurm documentation for
+    type: string
+  denyAccounts:
+    description: |-
+      Comma-separated list of accounts denied from running jobs in this
+      partition. For more details, see the Slurm documentation for DenyAccounts:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_DenyAccounts
+    type: string
+  denyQos:
+    description: |-
+      Comma-separated list of QOS denied from running jobs in this partition.
+      For more details, see the Slurm documentation for
+    type: string
+  exclusiveUser:
+    description: |-
+      Controls whether nodes are allocated exclusively to single users. For more
+      details, see the Slurm documentation for ExclusiveUser:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_ExclusiveUser
+    type: string
+  graceTime:
+    description: |-
+      Time in seconds allowed for preemption grace period. For more details, see
+      the Slurm documentation for GraceTime:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_GraceTime
+    type: string
+  maxNodes:
+    description: |-
+      Maximum count of nodes which may be allocated to any single job. For more
+      details, see the Slurm documentation for MaxNodes:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_MaxNodes
+    type: string
+  maxTime:
+    description: |-
+      Maximum run time limit for jobs submitted to the partition. For more
+      details, see the Slurm documentation for MaxTime:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_MaxTime
+    type: string
+  overSubscribe:
+    description: |-
+      Controls whether nodes or CPUs can be oversubscribed by multiple jobs. For
+      more details, see the Slurm documentation for OverSubscribe:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_OverSubscribe
+    type: string
+  overTimeLimit:
+    description: |-
+      Number of minutes by which jobs can exceed their time limit. For more
+      details, see the Slurm documentation for OverTimeLimit:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_OverTimeLimit
+    type: string
+  preemptMode:
+    description: |-
+      Preemption mechanism used for jobs in this partition. For more details,
+      see the Slurm documentation for
+    type: string
+  priorityJobFactor:
+    description: |-
+      Priority job factor for the partition. For more details, see the Slurm
+      documentation for PriorityJobFactor:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityJobFactor
+    type: string
+  priorityTier:
+    description: |-
+      Priority tier for the partition. For more details, see the Slurm
+      documentation for PriorityTier:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityTier
+    type: string
+  qos:
+    description: |-
+      Quality of Service (QOS) associated with the partition. For more details,
+      see the Slurm documentation for QOS:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_QOS
+    type: string
+  tresBillingWeights:
+    description: |-
+      TRES billing weights used for calculating job cost in the partition. For
+      more details, see the Slurm documentation for TRESBillingWeights:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_TRESBillingWeights
+    type: string

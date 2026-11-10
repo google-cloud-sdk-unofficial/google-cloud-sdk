@@ -15,14 +15,39 @@
 - release_tracks:
   - ALPHA
   auto_generated: false
-  hidden: true
   help_text:
     brief: Start continuous profiling for a machine learning run.
-    description: Start continuous profiling for a machine learning run.
-    examples: |-
-      To start continuous profiling for a machine learning run, run:
+    description: |-
+      Start continuous profiling on one or more profiler targets of an active
+      machine learning run.
 
-          $ {command} --machine-learning-run=my-run --location=us-central1
+      While continuous profiling is active, the XProf profiler on each target
+      keeps the most recent trace data in an in-memory circular buffer. To save
+      the buffered data as a profiler session, run
+      `gcloud alpha mldiagnostics profiler-session capture` with
+      `--kind=snapshot`. On-demand profiler sessions can't be captured while
+      continuous profiling is active.
+
+      Only one continuous profiling session can be active on a machine learning
+      run at a time. The tracer levels and XProf server port can't be changed
+      while continuous profiling is active. To change them, stop continuous
+      profiling by running
+      `gcloud alpha mldiagnostics machine-learning-run stop-continuous-profiling`,
+      and then start it again.
+    examples: |-
+      To start continuous profiling on the profiler targets `my-node-0` and
+      `my-node-1` of the machine learning run `my-run` in `us-central1`, run:
+
+          $ {command} --machine-learning-run=my-run --location=us-central1 --targets=my-node-0,my-node-1
+
+      To start continuous profiling with the lowest-overhead host tracer level
+      and device tracing disabled, run:
+
+          $ {command} --machine-learning-run=my-run --location=us-central1 --targets=my-node-0 --host-tracer-level=critical --device-tracer-level=disabled
+
+      To list the profiler targets of the machine learning run `my-run`, run:
+
+          $ gcloud alpha mldiagnostics profiler-target list --machine-learning-run=my-run --location=us-central1
 
   request:
     collection: hypercomputecluster.projects.locations.machineLearningRuns
@@ -37,7 +62,9 @@
       required: true
     - arg_name: targets
       help_text: |-
-        Profiler targets on which profiler session to be started.
+        Profiler targets on which to start continuous profiling. To list the
+        profiler targets of a machine learning run, run
+        `gcloud alpha mldiagnostics profiler-target list`.
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.mldiagnostics.machine_learning_run.v1alpha_resources:projects_locations_machine_learning_runs_profiler_targets
@@ -101,6 +128,12 @@
         enum_value: PYTHON_TRACER_LEVEL_ENABLED
         help_text: |-
           Tracer level is enabled.
+    - arg_name: xprof-server-port
+      api_field: startContinuousProfilingRequest.xprofServerPort
+      required: false
+      help_text: |-
+        Port of the XProf profiler server that runs in your workload on each
+        profiler target. If unspecified, port 9999 is used.
 
   async:
     collection: hypercomputecluster.projects.locations.operations

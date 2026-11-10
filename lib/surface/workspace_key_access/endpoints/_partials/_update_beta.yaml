@@ -24,13 +24,15 @@
     brief: Update a Workspace Key Access endpoint.
     description: Update a Workspace Key Access endpoint.
     examples: |-
-      To set label `env=test` on endpoint `my-endpoint`, run:
+      To update endpoint `my-endpoint` to use config `my-new-config`, run:
 
-      $ {command} my-endpoint --location=us-east1 --labels=env=test
+      $ {command} my-endpoint --location=us
+        --config=projects/my-project/locations/us/configs/my-new-config
   arguments:
     params:
     - help_text: |-
-        Identifier. name of resource
+        Identifier. The resource name of the Endpoint.
+        Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.workspace_key_access.v1beta_resources:projects_locations_endpoints
@@ -40,7 +42,7 @@
       required: false
       repeated: true
       help_text: |-
-        Labels as key value pairs
+        Labels as key-value pairs.
       clearable: true
       spec:
       - api_field: key
@@ -50,7 +52,7 @@
       required: false
       repeated: true
       help_text: |-
-        Annotations as key value pairs
+        Annotations as key-value pairs.
       clearable: true
       spec:
       - api_field: key
@@ -60,7 +62,7 @@
       required: false
       repeated: true
       help_text: |-
-        Tag bindings as key value pairs
+        Tag bindings as key-value pairs.
       clearable: true
       spec:
       - api_field: key

@@ -171,8 +171,12 @@ INSTALLATION_CONFIG = InstallationConfig.Load()
 
 CLOUD_SDK_VERSION = INSTALLATION_CONFIG.version
 # TODO(b/35848109): Distribute a clientsecrets.json to avoid putting it in code.
+# LINT.IfChange(auth_client_id)
 CLOUDSDK_CLIENT_ID = '32555940559.apps.googleusercontent.com'
+# LINT.ThenChange(properties/definitions/auth.yaml:auth_client_id)
+# LINT.IfChange(auth_client_secret)
 CLOUDSDK_CLIENT_NOTSOSECRET = 'ZmssLNjJy2998hD4CTg2ejr2'
+# LINT.ThenChange(properties/definitions/auth.yaml:auth_client_secret)
 
 CLOUDSDK_USER_AGENT = INSTALLATION_CONFIG.user_agent
 

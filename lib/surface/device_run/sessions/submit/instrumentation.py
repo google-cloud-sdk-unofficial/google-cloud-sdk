@@ -14,6 +14,8 @@
 # limitations under the License.
 """Command to submit a Device Run instrumentation session."""
 
+import collections
+
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.api_lib.storage import storage_api
@@ -82,6 +84,111 @@ def _ParseLatLng(val):
 
 class SessionNameNotFoundError(exceptions.Error):
   """Raised when the session name cannot be found."""
+
+
+_TEST_TARGET_KEYS = frozenset({
+    'package',
+    'notPackage',
+    'class',
+    'notClass',
+    'annotation',
+    'notAnnotation',
+    'size',
+})
+
+_VALID_TEST_SIZES = ('small', 'medium', 'large')
+
+
+def _AppendTestTarget(arg_dict, key, value):
+  """Appends a new target value to key in arg_dict."""
+  if key not in arg_dict:
+    arg_dict[key] = value
+  elif isinstance(arg_dict[key], list):
+    arg_dict[key].append(value)
+  else:
+    arg_dict[key] = [arg_dict[key], value]
+
+
+def _AppendToLastTestTargetValue(arg_dict, key, value):
+  """Appends a comma-separated continuation token to the last value of key."""
+  if isinstance(arg_dict[key], list):
+    arg_dict[key][-1] = f'{arg_dict[key][-1]},{value}'
+  else:
+    arg_dict[key] = f'{arg_dict[key]},{value}'
+
+
+class _TestTargetsArgDict(arg_parsers.ArgDict):
+  """Parses --test-targets supporting comma-separated values and repeated keys."""
+
+  def __call__(self, arg_value):
+    if not isinstance(arg_value, str):
+      arg_dict = super().__call__(arg_value)
+    else:
+      arg_list = arg_parsers.ArgList.__call__(self, arg_value)
+      arg_dict = collections.OrderedDict()
+      current_key = None
+      for arg in arg_list:
+        stripped_arg = arg.strip()
+        match = self.key_op_value.match(stripped_arg)
+        if match and match.group(2):
+          key, op, value = (
+              match.group(1),
+              match.group(2),
+              match.group(3).strip(),
+          )
+          key, value = self._CleanupAndValidateKeyValue(key, value, op=op)
+          if not value:
+            self._CleanupAndValidateKeyValue(stripped_arg, None, op='')
+          current_key = key
+          _AppendTestTarget(arg_dict, key, value)
+        elif (
+            current_key
+            and stripped_arg
+            and stripped_arg not in _TEST_TARGET_KEYS
+        ):
+          _AppendToLastTestTargetValue(arg_dict, current_key, stripped_arg)
+        else:
+          self._CleanupAndValidateKeyValue(stripped_arg, None, op='')
+
+    for key, value in arg_dict.items():
+      if key not in _TEST_TARGET_KEYS:
+        raise arg_parsers.ArgumentTypeError(
+            f'Invalid test target key [{key}]. Must be one of:'
+            f' {", ".join(sorted(_TEST_TARGET_KEYS))}.'
+        )
+      values = value if isinstance(value, list) else [value]
+      if not values:
+        self._CleanupAndValidateKeyValue(key, None, op='')
+      for item in values:
+        if not item or (isinstance(item, str) and not item.strip()):
+          self._CleanupAndValidateKeyValue(key, None, op='')
+        if key == 'size' and item not in _VALID_TEST_SIZES:
+          raise arg_parsers.ArgumentTypeError(
+              f'Invalid size [{item}]. Must be one of:'
+              f' {", ".join(_VALID_TEST_SIZES)}.'
+          )
+
+    self._CheckRequiredKeys(arg_dict)
+    return arg_dict
+
+
+class _TestTargetsUpdateAction(arg_parsers.UpdateActionWithAppend):
+  """Merges repeated --test-targets flags by appending all values."""
+
+  def OnDuplicateKeyAppend(self, key, existing_value=None, new_value=None):
+    if existing_value is None:
+      return key
+    existing_list = (
+        existing_value if isinstance(existing_value, list) else [existing_value]
+    )
+    new_list = new_value if isinstance(new_value, list) else [new_value]
+    return existing_list + new_list
+
+  def __init__(self, *args, **kwargs):
+    kwargs.setdefault(
+        'onduplicatekey_handler', self.__class__.OnDuplicateKeyAppend
+    )
+    super().__init__(*args, **kwargs)
 
 
 @base.UniverseCompatible
@@ -180,8 +287,8 @@ The Google Cloud Storage bucket layout will be structured as follows:
     parser.add_argument(
         '--test-targets',
         metavar='KEY=VALUE',
-        type=arg_parsers.ArgDict(operators={'=': None, ' ': None}),
-        action=arg_parsers.UpdateActionWithAppend,
+        type=_TestTargetsArgDict(operators={'=': None, ' ': None}),
+        action=_TestTargetsUpdateAction,
         default={},
         help="""\
 A list of test targets or target filters to run. Each target must be fully
@@ -197,8 +304,10 @@ qualified with the package name or class name, in one of these formats:
   * `notAnnotation com.foo.AnnotationToSkip`
   * `size [small|medium|large]`
 
-Formats like `testfile` or `notTestfile` won't be supported. If empty, all
-targets in the module will be run.
+Multiple values for target keys except `size` (such as `notAnnotation A,B` or
+`class A,B`) and repeated keys within or across `--test-targets` flags are
+supported. Formats like `testfile` or `notTestfile` won't be supported. If
+empty, all targets in the module will be run.
 """,
     )
     parser.add_argument(
@@ -361,15 +470,9 @@ targets in the module will be run.
 
   def Run(self, args):
     if args.additional_test_options:
-      invalid_keys = {
-          'package',
-          'notPackage',
-          'class',
-          'notClass',
-          'annotation',
-          'notAnnotation',
-          'size',
-      }.intersection(args.additional_test_options.keys())
+      invalid_keys = _TEST_TARGET_KEYS.intersection(
+          args.additional_test_options.keys()
+      )
       if invalid_keys:
         raise calliope_exceptions.InvalidArgumentException(
             '--additional-test-options',

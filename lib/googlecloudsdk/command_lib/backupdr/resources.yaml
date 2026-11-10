@@ -389,7 +389,7 @@ autoProtectionPolicyBinding:
   - &autoProtectionPolicyBindingsId
     parameter_name: bindingsId
     attribute_name: auto_protection_policy_binding
-    help: The ID of the Auto Protection Policy Binding
+    help: ID of the Auto Protection Policy Binding
   disable_auto_completers: false
 
 autoProtectionPolicyBindingDefault:
@@ -403,7 +403,7 @@ autoProtectionPolicyBindingDefault:
   - &autoProtectionPolicyBindingDefault
     parameter_name: bindingsId
     attribute_name: auto_protection_policy_binding
-    help: The ID of the Auto Protection Policy Binding
+    help: ID of the Auto Protection Policy Binding
     fallthroughs:
     - value: "-"
       hint: |

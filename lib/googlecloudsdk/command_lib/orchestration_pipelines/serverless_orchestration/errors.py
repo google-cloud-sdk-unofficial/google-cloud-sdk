@@ -41,6 +41,10 @@ class UploadError(ServerlessOrchestrationError):
   """Raised when an artifact upload fails or an existing object differs."""
 
 
+class PipelineCompileError(ServerlessOrchestrationError):
+  """Raised when a pipeline and its uploaded artifacts cannot be compiled."""
+
+
 class OrchestrationApiError(ServerlessOrchestrationError):
   """Raised when an Orchestration API call fails.
 

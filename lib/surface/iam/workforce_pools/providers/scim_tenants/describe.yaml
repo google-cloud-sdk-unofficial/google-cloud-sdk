@@ -16,6 +16,8 @@
 
 
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: Describe an IAM workforce identity pool provider SCIM tenant.
     description: |

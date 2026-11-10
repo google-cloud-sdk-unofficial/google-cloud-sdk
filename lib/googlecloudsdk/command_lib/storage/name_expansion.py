@@ -138,7 +138,7 @@ class NameExpansionIterator:
         url,
         fetch_encrypted_object_hashes=(
             properties.VALUES.storage.check_hashes.Get()
-            != properties.CheckHashes.NEVER.value
+            != properties.VALUES.storage.CheckHashes.NEVER.value
         ),
         fields_scope=self._fields_scope,
         ignore_symlinks=self._ignore_symlinks,

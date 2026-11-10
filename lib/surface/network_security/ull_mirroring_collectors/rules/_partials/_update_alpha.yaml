@@ -96,8 +96,8 @@
           required: false
           repeated: true
           help_text: |-
-            Primary IP ranges to match (for the capture point). When unset, matches
-            any primary IP.
+            Primary IP ranges to match (for the capture point).
+            When unset, matches any primary IP.
           clearable: true
   request:
     api_version: v1alpha1

@@ -43,6 +43,7 @@ S3_RESOURCE_ERROR_FIELDS = {
     'default_object_acl_file': 'Setting Default Object ACL',
     'enable_autoclass': 'Enabling Autoclass',
     'enable_hierarchical_namespace': 'Enabling Hierarchical Namespace',
+    'hard_delete_pause': 'Setting Hard Delete Pause',
     'ip_filter_file_path': 'Setting IP Filter',
     'encryption_enforcement_file_path': 'Setting Encryption Enforcement',
     'predefined_default_object_acl': 'Setting Predefined Default ACL',
@@ -202,6 +203,8 @@ class _GcsBucketConfig(_BucketConfig):
       bucket.
     enable_hierarchical_namespace (bool|None): Enable heirarchical namespace
     during bucket creation.
+    hard_delete_pause (bool|None): If True, pauses hard deletion of
+      soft-deleted objects in the bucket. If False, unpauses it.
     placement (list|None): Dual-region of bucket.
     public_access_prevention (bool|None): Blocks public access to bucket.
       See docs for specifics:
@@ -233,6 +236,7 @@ class _GcsBucketConfig(_BucketConfig):
       enable_autoclass=None,
       enable_per_object_retention=None,
       enable_hierarchical_namespace=None,
+      hard_delete_pause=None,
       ip_filter_file_path=None,
       labels_file_path=None,
       labels_to_append=None,
@@ -283,6 +287,7 @@ class _GcsBucketConfig(_BucketConfig):
     self.enable_autoclass = enable_autoclass
     self.enable_per_object_retention = enable_per_object_retention
     self.enable_hierarchical_namespace = enable_hierarchical_namespace
+    self.hard_delete_pause = hard_delete_pause
     self.ip_filter_file_path = ip_filter_file_path
     self.placement = placement
     self.public_access_prevention = public_access_prevention
@@ -314,6 +319,7 @@ class _GcsBucketConfig(_BucketConfig):
         == other.enable_per_object_retention
         and self.enable_hierarchical_namespace
         == other.enable_hierarchical_namespace
+        and self.hard_delete_pause == other.hard_delete_pause
         and self.ip_filter_file_path == other.ip_filter_file_path
         and self.placement == other.placement
         and self.public_access_prevention == other.public_access_prevention
@@ -744,6 +750,9 @@ def _get_request_config_resource_args(
           )
           new_resource_args.enable_hierarchical_namespace = (
               user_resource_args.enable_hierarchical_namespace
+          )
+          new_resource_args.hard_delete_pause = (
+              user_resource_args.hard_delete_pause
           )
           new_resource_args.ip_filter_file_path = (
               user_resource_args.ip_filter_file_path

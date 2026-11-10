@@ -21,6 +21,14 @@ hive_catalog:
     help: |
       Name of the Hive catalog to use.
 
+hive_catalog_v1beta:
+  name: hive_catalog
+  collection: biglake.hive.v1beta.projects.catalogs
+  request_id_field: hiveCatalogId
+  attributes:
+  - *project
+  - *catalog
+
 hive_database:
   name: hive_database
   collection: biglake.hive.v1.projects.catalogs.databases

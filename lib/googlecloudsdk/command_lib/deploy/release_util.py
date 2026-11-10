@@ -141,7 +141,9 @@ def SetBuildArtifacts(images, messages, release_config):
     return release_config
   build_artifacts = []
   for key, value in sorted(six.iteritems(images)):  # Sort for tests
-    build_artifacts.append(messages.BuildArtifact(image=key, tag=value))
+    build_artifacts.append(
+        messages.BuildArtifact(image=key.strip(), tag=value.strip())
+    )
   release_config.buildArtifacts = build_artifacts
 
   return release_config

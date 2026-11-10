@@ -36,6 +36,7 @@ from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.api_lib.app.api import appengine_api_client_base
 from googlecloudsdk.api_lib.cloudbuild import logs as cloudbuild_logs
+from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.appengine.admin.tools.conversion import convert_yaml
 from googlecloudsdk.appengine.api import appinfo
 from googlecloudsdk.calliope import base as calliope_base
@@ -94,7 +95,9 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
       An ExportImageResult object.
 
     Raises:
-      googlecloudsdk.core.exceptions.Error: If the operation fails or times out.
+      googlecloudsdk.core.exceptions.Error: If the export cannot be started,
+        fails, or times out. The message includes the reason reported by the
+        App Engine Admin API.
     """
     version_name = f'apps/{app_id}/services/{service_id}/versions/{version_id}'
     inner_request = self.messages.ExportAppImageRequest(
@@ -115,8 +118,13 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
       operation = self.client.apps_services_versions.ExportAppImage(
           outer_request
       )
+    except apitools_exceptions.HttpError as e:
+      raise exceptions.Error(
+          'Failed to initiate ExportAppImage: '
+          f'{api_exceptions.HttpException(e)}'
+      ) from e
     except apitools_exceptions.Error as e:
-      raise exceptions.Error('Failed to initiate ExportAppImage.') from e
+      raise exceptions.Error(f'Failed to initiate ExportAppImage: {e}') from e
 
     try:
       result_operation = operations_util.WaitForOperation(
@@ -137,12 +145,11 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
       )
     except operations_util.OperationTimeoutError as e:
       raise exceptions.Error(
-          'Timeout: ExportAppImage operation completed, but no response was'
-          ' returned.'
+          f'Timeout: ExportAppImage operation did not complete in time: {e}'
       ) from e
     except operations_util.OperationError as e:
       raise exceptions.Error(
-          'Failure: ExportAppImage operation completed with error.'
+          f'Failure: ExportAppImage operation completed with error: {e}'
       ) from e
 
   def GetApplication(self):

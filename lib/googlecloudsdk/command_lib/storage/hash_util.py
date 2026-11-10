@@ -217,7 +217,7 @@ def validate_composed_hash_matches(source_resources, destination_resource):
     Error: If hash validation is required but cannot be performed.
   """
   check_hashes = properties.VALUES.storage.check_hashes.Get()
-  if check_hashes == properties.CheckHashes.NEVER.value:
+  if check_hashes == properties.VALUES.storage.CheckHashes.NEVER.value:
     return
 
   # 1. Check destination and source resources exist.

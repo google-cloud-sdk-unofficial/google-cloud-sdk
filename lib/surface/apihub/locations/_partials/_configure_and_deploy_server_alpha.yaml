@@ -14,6 +14,8 @@
 # limitations under the License.
 - release_tracks:
   - ALPHA
+  hints:
+    read_only: false
   universe_compatible: false
   help_text:
     brief: Configure and deploy an API Hub server.

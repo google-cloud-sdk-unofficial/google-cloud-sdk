@@ -1121,6 +1121,128 @@ class ExploitPredictionScoringSystem(_messages.Message):
   score = _messages.FloatField(2)
 
 
+class Exploitability(_messages.Message):
+  r"""Exploitability information for a vulnerability. This data can be used
+  across multiple sources, including, but not limited to a top-level
+  vulnerability, a package occurrence, or a package file location.
+
+  Fields:
+    signals: Individual exploitability signals from various sources.
+    summary: Rollup summary of the exploitability signals.
+  """
+
+  signals = _messages.MessageField('ExploitabilitySignal', 1, repeated=True)
+  summary = _messages.MessageField('ExploitabilitySummary', 2)
+
+
+class ExploitabilitySignal(_messages.Message):
+  r"""A single exploitability signal from a specific source (e.g., an upstream
+  advisory, a customer VEX document, or an internal build analysis).
+
+  Enums:
+    VexJustificationValueValuesEnum: Justification for why the vulnerability
+      is not exploitable.
+    VexStatusValueValuesEnum: The VEX status asserted by this signal.
+
+  Fields:
+    rationale: Human-readable explanation of this signal.
+    source: Identifier of the signal source.
+    vexJustification: Justification for why the vulnerability is not
+      exploitable.
+    vexStatus: The VEX status asserted by this signal.
+  """
+
+  class VexJustificationValueValuesEnum(_messages.Enum):
+    r"""Justification for why the vulnerability is not exploitable.
+
+    Values:
+      JUSTIFICATION_TYPE_UNSPECIFIED: JUSTIFICATION_TYPE_UNSPECIFIED.
+      COMPONENT_NOT_PRESENT: The vulnerable component is not present in the
+        product.
+      VULNERABLE_CODE_NOT_PRESENT: The vulnerable code is not present.
+        Typically this case occurs when source code is configured or built in
+        a way that excludes the vulnerable code.
+      VULNERABLE_CODE_NOT_IN_EXECUTE_PATH: The vulnerable code can not be
+        executed. Typically this case occurs when the product includes the
+        vulnerable code but does not call or use the vulnerable code.
+      VULNERABLE_CODE_CANNOT_BE_CONTROLLED_BY_ADVERSARY: The vulnerable code
+        cannot be controlled by an attacker to exploit the vulnerability.
+      INLINE_MITIGATIONS_ALREADY_EXIST: The product includes built-in
+        protections or features that prevent exploitation of the
+        vulnerability. These built-in protections cannot be subverted by the
+        attacker and cannot be configured or disabled by the user. These
+        mitigations completely prevent exploitation based on known attack
+        vectors.
+    """
+    JUSTIFICATION_TYPE_UNSPECIFIED = 0
+    COMPONENT_NOT_PRESENT = 1
+    VULNERABLE_CODE_NOT_PRESENT = 2
+    VULNERABLE_CODE_NOT_IN_EXECUTE_PATH = 3
+    VULNERABLE_CODE_CANNOT_BE_CONTROLLED_BY_ADVERSARY = 4
+    INLINE_MITIGATIONS_ALREADY_EXIST = 5
+
+  class VexStatusValueValuesEnum(_messages.Enum):
+    r"""The VEX status asserted by this signal.
+
+    Values:
+      STATE_UNSPECIFIED: No state is specified.
+      AFFECTED: This product is known to be affected by this vulnerability.
+      NOT_AFFECTED: This product is known to be not affected by this
+        vulnerability.
+      FIXED: This product contains a fix for this vulnerability.
+      UNDER_INVESTIGATION: It is not known yet whether these versions are or
+        are not affected by the vulnerability. However, it is still under
+        investigation.
+    """
+    STATE_UNSPECIFIED = 0
+    AFFECTED = 1
+    NOT_AFFECTED = 2
+    FIXED = 3
+    UNDER_INVESTIGATION = 4
+
+  rationale = _messages.StringField(1)
+  source = _messages.StringField(2)
+  vexJustification = _messages.EnumField('VexJustificationValueValuesEnum', 3)
+  vexStatus = _messages.EnumField('VexStatusValueValuesEnum', 4)
+
+
+class ExploitabilitySummary(_messages.Message):
+  r"""Rollup summary of exploitability across signals.
+
+  Enums:
+    VexStatusValueValuesEnum: The rolled-up VEX status. Usually, this should
+      result in an AFFECTED or NOT_AFFECTED vex status.
+
+  Fields:
+    rationale: Human-readable explanation of the summary.
+    vexStatus: The rolled-up VEX status. Usually, this should result in an
+      AFFECTED or NOT_AFFECTED vex status.
+  """
+
+  class VexStatusValueValuesEnum(_messages.Enum):
+    r"""The rolled-up VEX status. Usually, this should result in an AFFECTED
+    or NOT_AFFECTED vex status.
+
+    Values:
+      STATE_UNSPECIFIED: No state is specified.
+      AFFECTED: This product is known to be affected by this vulnerability.
+      NOT_AFFECTED: This product is known to be not affected by this
+        vulnerability.
+      FIXED: This product contains a fix for this vulnerability.
+      UNDER_INVESTIGATION: It is not known yet whether these versions are or
+        are not affected by the vulnerability. However, it is still under
+        investigation.
+    """
+    STATE_UNSPECIFIED = 0
+    AFFECTED = 1
+    NOT_AFFECTED = 2
+    FIXED = 3
+    UNDER_INVESTIGATION = 4
+
+  rationale = _messages.StringField(1)
+  vexStatus = _messages.EnumField('VexStatusValueValuesEnum', 2)
+
+
 class File(_messages.Message):
   r"""A File object.
 
@@ -2519,6 +2641,8 @@ class PackageIssue(_messages.Message):
     effectiveSeverity: Output only. The distro or language system assigned
       severity for this vulnerability when that is available and note provider
       assigned severity when it is not available.
+    exploitability: Output only. Exploitability signals and summary for this
+      package issue.
     fileLocation: The location at which this package was found.
     fixAvailable: Output only. Whether a fix is available for this package.
     fixedCpeUri: The [CPE URI](https://cpe.mitre.org/specification/) this
@@ -2556,12 +2680,13 @@ class PackageIssue(_messages.Message):
   affectedPackage = _messages.StringField(2)
   affectedVersion = _messages.MessageField('Version', 3)
   effectiveSeverity = _messages.EnumField('EffectiveSeverityValueValuesEnum', 4)
-  fileLocation = _messages.MessageField('GrafeasV1FileLocation', 5, repeated=True)
-  fixAvailable = _messages.BooleanField(6)
-  fixedCpeUri = _messages.StringField(7)
-  fixedPackage = _messages.StringField(8)
-  fixedVersion = _messages.MessageField('Version', 9)
-  packageType = _messages.StringField(10)
+  exploitability = _messages.MessageField('Exploitability', 5)
+  fileLocation = _messages.MessageField('GrafeasV1FileLocation', 6, repeated=True)
+  fixAvailable = _messages.BooleanField(7)
+  fixedCpeUri = _messages.StringField(8)
+  fixedPackage = _messages.StringField(9)
+  fixedVersion = _messages.MessageField('Version', 10)
+  packageType = _messages.StringField(11)
 
 
 class PackageOccurrence(_messages.Message):
@@ -3949,6 +4074,8 @@ class VulnerabilityOccurrence(_messages.Message):
       effective severity on the PackageIssue level. In the case where multiple
       PackageIssues have differing effective severities, this field should be
       the highest severity for any of the PackageIssues.
+    exploitability: Output only. Rollup of exploitability across all
+      PackageIssues in this occurrence.
     extraDetails: Occurrence-specific extra details about the vulnerability.
     fixAvailable: Output only. Whether at least one of the affected packages
       has a fix available.
@@ -4032,16 +4159,17 @@ class VulnerabilityOccurrence(_messages.Message):
   cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 4)
   cvssv3 = _messages.MessageField('CVSS', 5)
   effectiveSeverity = _messages.EnumField('EffectiveSeverityValueValuesEnum', 6)
-  extraDetails = _messages.StringField(7)
-  fixAvailable = _messages.BooleanField(8)
-  longDescription = _messages.StringField(9)
-  packageIssue = _messages.MessageField('PackageIssue', 10, repeated=True)
-  relatedUrls = _messages.MessageField('RelatedUrl', 11, repeated=True)
-  risk = _messages.MessageField('Risk', 12)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 13)
-  shortDescription = _messages.StringField(14)
-  type = _messages.StringField(15)
-  vexAssessment = _messages.MessageField('VexAssessment', 16)
+  exploitability = _messages.MessageField('Exploitability', 7)
+  extraDetails = _messages.StringField(8)
+  fixAvailable = _messages.BooleanField(9)
+  longDescription = _messages.StringField(10)
+  packageIssue = _messages.MessageField('PackageIssue', 11, repeated=True)
+  relatedUrls = _messages.MessageField('RelatedUrl', 12, repeated=True)
+  risk = _messages.MessageField('Risk', 13)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 14)
+  shortDescription = _messages.StringField(15)
+  type = _messages.StringField(16)
+  vexAssessment = _messages.MessageField('VexAssessment', 17)
 
 
 class WindowsUpdate(_messages.Message):

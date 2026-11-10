@@ -61,6 +61,9 @@ class Create(base.CreateCommand):
         include_gke_platform_args=cls.BETA and properties.IsDefaultUniverse(),
         # Driver pools are only supported in the default universe.
         include_driver_pool_args=properties.IsDefaultUniverse(),
+        # Dynamic Workload Scheduler (DWS) is only supported in the default
+        # universe.
+        include_scheduling_args=properties.IsDefaultUniverse(),
     )
     # Add arguments for failure action for primary workers
     if not cls.BETA:

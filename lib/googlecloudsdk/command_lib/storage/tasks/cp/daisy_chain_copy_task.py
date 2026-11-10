@@ -94,7 +94,7 @@ def validate_uploaded_object(
   """
   if (
       properties.VALUES.storage.check_hashes.Get()
-      == properties.CheckHashes.NEVER.value
+      == properties.VALUES.storage.CheckHashes.NEVER.value
   ):
     return
   try:
@@ -613,8 +613,10 @@ class DaisyChainCopyTask(copy_util.ObjectCopyTaskWithExitHandler):
       (str|None): The MD5 hash of the source object if available and applicable
         for validation, otherwise None.
     """
-    if (properties.VALUES.storage.check_hashes.Get() ==
-        properties.CheckHashes.NEVER.value):
+    if (
+        properties.VALUES.storage.check_hashes.Get()
+        == properties.VALUES.storage.CheckHashes.NEVER.value
+    ):
       return None
     if (cloud_api.Capability.APPENDABLE_UPLOAD in
         destination_client.capabilities):
@@ -635,7 +637,7 @@ class DaisyChainCopyTask(copy_util.ObjectCopyTaskWithExitHandler):
     """
     if (
         properties.VALUES.storage.check_hashes.Get()
-        == properties.CheckHashes.NEVER.value
+        == properties.VALUES.storage.CheckHashes.NEVER.value
     ):
       return None
     if (

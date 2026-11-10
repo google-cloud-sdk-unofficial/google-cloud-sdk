@@ -46,6 +46,9 @@ properties:
       matches pattern `projects|organizations/*/locations/{location}/securityP
       rofileGroups/{security_profile_group}`.
     type: string
+  scmProfile:
+    description: Reference to a SecurityProfile with the SCM configuration.
+    type: string
   threatPreventionProfile:
     description: |-
       Reference to a SecurityProfile with the ThreatPrevention configuration.

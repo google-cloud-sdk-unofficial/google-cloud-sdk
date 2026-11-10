@@ -67,10 +67,9 @@ _DETAILED_HELP = {
 
           $ {command} --file=pipeline.yaml --region=us-central1
 
-        To apply a pipeline with an explicit ID and service account:
+        To apply a pipeline with an explicit ID:
 
-          $ {command} main-pipeline --file=pipeline.yaml --region=us-central1 \\
-              --service-account=cb-sa@my-project.iam.gserviceaccount.com
+          $ {command} main-pipeline --file=pipeline.yaml --region=us-central1
 
         To validate a pipeline definition without persisting changes:
 
@@ -118,11 +117,6 @@ class Apply(base.CreateCommand):
     client = cloudbuild_util.GetClientInstance(
         track, location=pipeline_ref.locationsId
     )
-
-    if args.IsSpecified('display_name'):
-      pipeline.displayName = args.display_name
-    if args.IsSpecified('service_account'):
-      pipeline.serviceAccount = args.service_account
 
     mask = pipeline_config.ComputeUpdateMask(pipeline)
     req = messages.CloudbuildProjectsLocationsPipelinesPatchRequest(

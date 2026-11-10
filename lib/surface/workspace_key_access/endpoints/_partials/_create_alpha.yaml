@@ -25,15 +25,17 @@
     brief: Create a Workspace Key Access endpoint.
     description: Create a Workspace Key Access endpoint in a given project and location.
     examples: |-
-      To create endpoint `my-endpoint` in `us-east1`, attached to config `my-config`
+      To create endpoint `my-endpoint` attached to config `my-config`
       and Cloud KMS key `my-key`, run:
 
-      $ {command} my-endpoint --location=us-east1 --config=my-config
+      $ {command} my-endpoint --location=us
+        --config=projects/my-project/locations/us/configs/my-config
         --kms-key=projects/my-project/locations/us-east1/keyRings/my-ring/cryptoKeys/my-key
   arguments:
     params:
     - help_text: |-
-        Identifier. name of resource
+        Identifier. The resource name of the Endpoint.
+        Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`
       is_positional: true
       is_primary_resource: true
       request_id_field: endpointId
@@ -44,7 +46,7 @@
       required: false
       repeated: true
       help_text: |-
-        Labels as key value pairs
+        Labels as key-value pairs.
       spec:
       - api_field: key
       - api_field: value
@@ -53,7 +55,7 @@
       required: false
       repeated: true
       help_text: |-
-        Annotations as key value pairs
+        Annotations as key-value pairs.
       spec:
       - api_field: key
       - api_field: value
@@ -62,7 +64,7 @@
       required: false
       repeated: true
       help_text: |-
-        Tag bindings as key value pairs
+        Tag bindings as key-value pairs.
       spec:
       - api_field: key
       - api_field: value

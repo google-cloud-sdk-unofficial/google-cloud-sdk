@@ -1829,6 +1829,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EndpointMatcher(_messages.Message):
   r"""A definition of a matcher that selects endpoints to which the policies
   should be applied.
@@ -2018,9 +2019,9 @@ class ExpressLink(_messages.Message):
       requests to destination services. Each match is independent with the OR
       semantic, i.e. we consider it matched if ANY one of the matches is
       satisfied. If an ExpressLink has only one Cloud Run service, Match is
-      optional. If not specified, the default hostname `-..run.app` or the
-      short name can be used. If an ExpressLink has multiple Cloud Run
-      services, at least one Match with valid hostname is required.
+      optional. If not specified, only the default hostname `-..run.app` can
+      be used. If an ExpressLink has multiple Cloud Run services, at least one
+      Match with valid hostname is required.
     name: Identifier. Name of the ExpressLink resource. It matches pattern
       `projects/*/locations/*/expressLinks/`.
     pscEndpointInfo: Output only. Private Service Connect (PSC) endpoint
@@ -6732,6 +6733,9 @@ class MulticastDomain(_messages.Message):
     name: Identifier. The resource name of the multicast domain. Use the
       following format: `projects/*/locations/global/multicastDomains/*`
     state: Output only. [Output only] The state of the resource.
+    ullMulticastDomain: Optional. Information for an Ultra-Low-Latency
+      multicast domain. This is only available in specific locations and
+      allowlisted projects.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all multicast domain resources. If
       a multicast domain is deleted and another with the same name is created,
@@ -6772,8 +6776,9 @@ class MulticastDomain(_messages.Message):
   multicastDomainGroup = _messages.StringField(6)
   name = _messages.StringField(7)
   state = _messages.MessageField('MulticastResourceState', 8)
-  uniqueId = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
+  ullMulticastDomain = _messages.MessageField('UllMulticastDomain', 9)
+  uniqueId = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class MulticastDomainActivation(_messages.Message):
@@ -15580,6 +15585,18 @@ class TrafficSpec(_messages.Message):
   avgPacketSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   maxPerGroupIngressPps = _messages.IntegerField(4)
   maxPerGroupSubscribers = _messages.IntegerField(5)
+
+
+class UllMulticastDomain(_messages.Message):
+  r"""Information for an Ultra-Low-Latency multicast domain. This is only
+  available in specific locations and allowlisted projects.
+
+  Fields:
+    preconfiguredUllDomain: Optional. The preconfigured Ultra-Low-Latency
+      domain name.
+  """
+
+  preconfiguredUllDomain = _messages.StringField(1)
 
 
 class UrlRedirect(_messages.Message):

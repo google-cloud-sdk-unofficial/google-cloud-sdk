@@ -373,6 +373,16 @@ def GetEnableEmergentMaintenanceFlag():
   )
 
 
+def GetMachineType(required=True):
+  """Gets the --machine-type flag."""
+  help_text = """\
+  The predefined or custom machine type that you want to reserve. To supply a custom machine type, the string must be formatted precisely with the word custom, a hyphen, the integer number of vCPUs, a hyphen, and the integer amount of memory in megabytes. For example, `custom-32-29440` configures 32 vCPUs and 29440 MB of memory. Only future reservations support custom machine types. Future reservations in calendar mode only support predefined machine types.
+
+  Different reservation types restrict the available machine series. To review the machine series and types that each reservation type supports, see https://docs.cloud.google.com/compute/docs/instances/choose-reservation-type#comparison
+  """
+  return base.Argument('--machine-type', required=required, help=help_text)
+
+
 def AddCreateFlags(
     parser,
     support_location_hint=False,
@@ -419,7 +429,7 @@ def AddCreateFlags(
   instance_properties_group = base.ArgumentGroup(
       'Define individual instance properties for the specific SKU reservation.'
   )
-  instance_properties_group.AddArgument(reservation_flags.GetMachineType())
+  instance_properties_group.AddArgument(GetMachineType())
   instance_properties_group.AddArgument(reservation_flags.GetMinCpuPlatform())
   if support_local_ssd_count:
     instance_properties_group.AddArgument(
@@ -518,7 +528,7 @@ def AddUpdateFlags(
   group = base.ArgumentGroup(
       'Manage the specific SKU reservation properties.', required=False
   )
-  group.AddArgument(reservation_flags.GetMachineType(required=False))
+  group.AddArgument(GetMachineType(required=False))
   group.AddArgument(reservation_flags.GetMinCpuPlatform())
 
   accelerator_group = base.ArgumentGroup(

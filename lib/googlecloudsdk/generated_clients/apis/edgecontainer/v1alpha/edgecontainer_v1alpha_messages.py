@@ -2862,12 +2862,17 @@ class MaintenancePolicy(_messages.Message):
       emergency maintenance should not occur in these windows. Each exclusion
       has a unique name and may be active or expired. The max number of
       maintenance exclusions allowed at a given time is 3.
+    timeZone: Optional. Specifies the time zone to be used in interpreting the
+      maintenance window. The time zone must be a valid time zone name from
+      the IANA Time Zone Database (https://en.wikipedia.org/wiki/Tz_database).
+      If not specified, `UTC` will be used by default.
     window: Specifies the maintenance window in which maintenance may be
       performed.
   """
 
   maintenanceExclusions = _messages.MessageField('MaintenanceExclusionWindow', 1, repeated=True)
-  window = _messages.MessageField('MaintenanceWindow', 2)
+  timeZone = _messages.StringField(2)
+  window = _messages.MessageField('MaintenanceWindow', 3)
 
 
 class MaintenanceWindow(_messages.Message):
@@ -4184,11 +4189,18 @@ class UiprRolloutConfig(_messages.Message):
       migrating stragglers.
 
   Fields:
-    errorBudgetPercent: Optional. The error budget percent for regional
-      rollout failures. If the failure rate of regional rollouts exceeds this
-      budget, the rollout is paused. Represents a percentage from 0 to 100.
+    errorBudgetCount: Optional. The maximum number of units allowed to fail in
+      a wave before the rollout is paused.
+    errorBudgetPercent: Optional. The maximum percentage of units allowed to
+      fail in a wave before the rollout is paused. Represents a percentage
+      from 0 to 100, inclusive.
     labelSelector: Optional. The label selector for units to include in the
       rollout. If empty, all units will be included.
+    minimumCompletionCount: Optional. The minimum number of units in a wave
+      that must complete before automatically proceeding when the wave ends.
+    minimumCompletionPercent: Optional. The minimum percentage of units in a
+      wave that must complete before automatically proceeding when the wave
+      ends. Represents a percentage from 0 to 100, inclusive.
     stragglerMigrationStrategy: Optional. The strategy for migrating
       stragglers.
     waveTemplates: Optional. The waves to be created in the rollout.
@@ -4209,10 +4221,13 @@ class UiprRolloutConfig(_messages.Message):
     STRAGGLER_MIGRATION_STRATEGY_NEXT_WAVE = 1
     STRAGGLER_MIGRATION_STRATEGY_LAST_WAVE = 2
 
-  errorBudgetPercent = _messages.FloatField(1)
-  labelSelector = _messages.MessageField('UiprLabelSelector', 2)
-  stragglerMigrationStrategy = _messages.EnumField('StragglerMigrationStrategyValueValuesEnum', 3)
-  waveTemplates = _messages.MessageField('UiprWaveTemplate', 4, repeated=True)
+  errorBudgetCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  errorBudgetPercent = _messages.FloatField(2)
+  labelSelector = _messages.MessageField('UiprLabelSelector', 3)
+  minimumCompletionCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  minimumCompletionPercent = _messages.FloatField(5)
+  stragglerMigrationStrategy = _messages.EnumField('StragglerMigrationStrategyValueValuesEnum', 6)
+  waveTemplates = _messages.MessageField('UiprWaveTemplate', 7, repeated=True)
 
 
 class UiprRolloutTemplate(_messages.Message):

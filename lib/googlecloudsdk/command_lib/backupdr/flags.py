@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.backupdr import util
+from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
@@ -1561,3 +1562,25 @@ def ParseCriteria(value: str) -> dict[str, str]:
       spec={'key': str, 'values': _ValidateValues},
       required_keys=['key', 'values'],
   )(value)
+
+
+def AddAutoProtectionPolicyBindingResourceArg(parser, verb):
+  """Adds an argument for AutoProtectionPolicyBinding to parser.
+
+  Args:
+    parser: The argparse parser to add the resource arg to.
+    verb: String describing the action being performed on the resource.
+  """
+  resource_data = yaml_data.ResourceYAMLData.FromPath(
+      'backupdr.autoProtectionPolicyBinding'
+  )
+  resource_spec = concepts.ResourceSpec.FromYaml(resource_data.GetData())
+  concept_parsers.ConceptParser.ForResource(
+      'auto_protection_policy_binding',
+      resource_spec,
+      verb,
+      required=True,
+      flag_name_overrides={
+          'auto_protection_policy': '--auto-protection-policy'
+      },
+  ).AddToParser(parser)

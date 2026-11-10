@@ -157,9 +157,26 @@ def ParseErrors(errors):
       filtered_errors.append(CreateQuotaExceededMsg(error))
     elif ShouldUseYaml(error):
       filtered_errors.append(error)
+    elif HasHelpLinks(error):
+      filtered_errors.append(CreateHelpLinksMsg(error))
     else:
       filtered_errors.append(error.message)
   return filtered_errors
+
+
+def CreateHelpLinksMsg(error):
+  """Constructs message to show for error with help links in errorDetails."""
+  if not HasHelpLinks(error):
+    return error.message
+  msg = error.message
+  for detail in error.errorDetails:
+    if hasattr(detail, 'help') and detail.help and detail.help.links:
+      for link in detail.help.links:
+        if link.description and link.url:
+          msg += '\n\t{}: {}'.format(link.description, link.url)
+        elif link.url:
+          msg += '\n\t{}'.format(link.url)
+  return msg
 
 
 def CreateQuotaExceededMsg(error):
@@ -407,6 +424,18 @@ def ShouldUseYaml(error):
 
 def IsQuotaExceededError(error):
   return hasattr(error, 'code') and error.code == 'QUOTA_EXCEEDED'
+
+
+def HasHelpLinks(error):
+  """Returns True if error has help links in errorDetails."""
+  if not hasattr(error, 'errorDetails') or not error.errorDetails:
+    return False
+  for detail in error.errorDetails:
+    if hasattr(detail, 'help') and detail.help and detail.help.links:
+      for link in detail.help.links:
+        if link.url:
+          return True
+  return False
 
 
 def JsonErrorHasDetails(data):

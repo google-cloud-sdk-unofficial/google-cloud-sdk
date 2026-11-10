@@ -293,8 +293,7 @@ class BackupPlansClient(util.BackupDrClientBase):
       updated_backup_plan.backupRules = self._ParseBackupRules(
           new_backup_rules_from_file
       )
-      return updated_backup_plan
-    if update_backup_rules is not None:
+    elif update_backup_rules is not None:
       rule_ids = collections.Counter(
           [rule['rule-id'] for rule in update_backup_rules]
       )

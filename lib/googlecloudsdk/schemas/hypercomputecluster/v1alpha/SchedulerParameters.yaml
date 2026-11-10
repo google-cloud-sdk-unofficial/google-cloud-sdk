@@ -1,0 +1,95 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha SchedulerParameters export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  bfBusyNodes:
+    description: |-
+      Prefer busy nodes during backfill (cons_tres). For more details, see the
+      Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_busy_nodes
+    type: boolean
+  bfContinue:
+    description: |-
+      Resume backfill after lock release. If unset, this is enabled by default
+      in the cluster configuration. For more details, see the Slurm
+      documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_continue
+    type: boolean
+  bfInterval:
+    description: |-
+      Seconds between backfill cycles. For more details, see the Slurm
+      documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_interval
+    type: string
+  bfMaxJobPart:
+    description: |-
+      Per-partition backfill job cap. For more details, see the Slurm
+      documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_max_job_part
+    type: string
+  bfMaxJobTest:
+    description: |-
+      Max jobs evaluated per backfill cycle. For more details, see the Slurm
+      documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_max_job_test
+    type: string
+  bfMaxJobUser:
+    description: |-
+      Per-user backfill job cap. For more details, see the Slurm documentation
+      for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_max_job_user
+    type: string
+  bfMinAgeReserve:
+    description: |-
+      Job age (seconds) before it can reserve resources. For more details, see
+      the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_min_age_reserve
+    type: string
+  bfResolution:
+    description: |-
+      Backfill time resolution (seconds). For more details, see the Slurm
+      documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_resolution
+    type: string
+  bfWindow:
+    description: |-
+      Minutes of backfill scheduling look-ahead. For more details, see the Slurm
+      documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_window
+    type: string
+  defaultQueueDepth:
+    description: |-
+      Main scheduler jobs considered per cycle. For more details, see the Slurm
+      documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_default_queue_depth
+    type: string
+  noholdOnPrologFail:
+    description: |-
+      Don't hold jobs on prolog script failure. If unset, this is enabled by
+      default in the cluster configuration. For more details, see the Slurm
+      documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_nohold_on_prolog_fail
+    type: boolean

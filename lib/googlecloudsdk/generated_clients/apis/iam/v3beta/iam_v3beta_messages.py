@@ -43,41 +43,41 @@ class GoogleIamAdminV1AuditDataPermissionDelta(_messages.Message):
 
 
 class GoogleIamV3betaAccessPolicy(_messages.Message):
-  r"""An IAM access policy resource.
+  r"""An IAM Unified Access Policy resource.
 
   Messages:
-    AnnotationsValue: Optional. User defined annotations. See
+    AnnotationsValue: Optional. User-defined annotations. See
       https://google.aip.dev/148#annotations for more details such as format
-      and size limitations
+      and size limitations.
 
   Fields:
-    annotations: Optional. User defined annotations. See
+    annotations: Optional. User-defined annotations. See
       https://google.aip.dev/148#annotations for more details such as format
-      and size limitations
-    createTime: Output only. The time when the access policy was created.
-    details: Optional. The details for the access policy.
-    displayName: Optional. The description of the access policy. Must be less
-      than or equal to 63 characters.
-    etag: Optional. The etag for the access policy. If this is provided on
-      update, it must match the server's etag.
-    name: Identifier. The resource name of the access policy. The following
-      formats are supported: *
-      `projects/{project_id}/locations/{location}/accessPolicies/{policy_id}`
-      * `projects/{project_number}/locations/{location}/accessPolicies/{policy
-      _id}` *
-      `folders/{folder_id}/locations/{location}/accessPolicies/{policy_id}` *
-      `organizations/{organization_id}/locations/{location}/accessPolicies/{po
-      licy_id}`
-    uid: Output only. The globally unique ID of the access policy.
-    updateTime: Output only. The time when the access policy was most recently
-      updated.
+      and size limitations.
+    createTime: Output only. The time when the Unified Access Policy was
+      created.
+    details: Optional. The details for the Unified Access Policy.
+    displayName: Optional. The description of the Unified Access Policy. This
+      description can be a maximum of 63 characters.
+    etag: Optional. The etag for the Unified Access Policy. If this is
+      provided on update, it must match the server's etag.
+    name: Identifier. The resource name of the Unified Access Policy. The
+      following formats are supported: * `projects/{project_id}/locations/{loc
+      ation}/accessPolicies/{unified_access_policy_id}` * `projects/{project_n
+      umber}/locations/{location}/accessPolicies/{unified_access_policy_id}` *
+      `folders/{folder_id}/locations/{location}/accessPolicies/{unified_access
+      _policy_id}` * `organizations/{organization_id}/locations/{location}/acc
+      essPolicies/{unified_access_policy_id}`
+    uid: Output only. The globally unique ID of the Unified Access Policy.
+    updateTime: Output only. The time when the Unified Access Policy was most
+      recently updated.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
-    r"""Optional. User defined annotations. See
+    r"""Optional. User-defined annotations. See
     https://google.aip.dev/148#annotations for more details such as format and
-    size limitations
+    size limitations.
 
     Messages:
       AdditionalProperty: An additional property for a AnnotationsValue
@@ -111,17 +111,17 @@ class GoogleIamV3betaAccessPolicy(_messages.Message):
 
 
 class GoogleIamV3betaAccessPolicyDetails(_messages.Message):
-  r"""Access policy details.
+  r"""Unified Access Policy details.
 
   Fields:
-    rules: Required. A list of access policy rules.
+    rules: Required. A list of Unified Access Policy rules.
   """
 
   rules = _messages.MessageField('GoogleIamV3betaAccessPolicyRule', 1, repeated=True)
 
 
 class GoogleIamV3betaAccessPolicyRule(_messages.Message):
-  r"""Access Policy Rule that determines the behavior of the policy.
+  r"""Unified Access Policy rule that determines the behavior of the policy.
 
   Enums:
     EffectValueValuesEnum: Required. The effect of the rule.
@@ -130,46 +130,53 @@ class GoogleIamV3betaAccessPolicyRule(_messages.Message):
     ConditionsValue: Optional. The conditions that determine whether this rule
       applies to a request. Conditions are identified by their key, which is
       the FQDN of the service that they are relevant to. For example: ```
-      "conditions": { "iam.googleapis.com": { "expression": } } ``` Each rule
-      is evaluated independently. If this rule does not apply to a request,
-      other rules might still apply. Currently supported keys are as follows:
-      * `eventarc.googleapis.com`: Can use `CEL` functions that evaluate
-      resource fields. * `iam.googleapis.com`: Can use `CEL` functions that
-      evaluate [resource
+      "conditions": { "iam.googleapis.com": { "expression": {cel_expression} }
+      } ``` Each rule is evaluated independently. If this rule does not apply
+      to a request, other rules might still apply. The following keys are
+      supported: * `eventarc.googleapis.com`: Can use `CEL` functions that
+      evaluate resource fields. * `iam.googleapis.com`: Can use `CEL`
+      functions that evaluate [resource
       tags](https://cloud.google.com/iam/help/conditions/resource-tags) and
       combine them using boolean and logical operators. Other functions and
-      operators are not supported.
+      operators are not supported. * `iap.googleapis.com`: Can use `CEL`
+      functions and [attributes](https://docs.cloud.google.com/gemini-
+      enterprise-agent-platform/govern/policies/cel-attributes-uap) that
+      evaluate destination resources for requests that use the
+      `iap.googleapis.com/resources.egressViaIAP` permission.
 
   Fields:
     conditions: Optional. The conditions that determine whether this rule
       applies to a request. Conditions are identified by their key, which is
       the FQDN of the service that they are relevant to. For example: ```
-      "conditions": { "iam.googleapis.com": { "expression": } } ``` Each rule
-      is evaluated independently. If this rule does not apply to a request,
-      other rules might still apply. Currently supported keys are as follows:
-      * `eventarc.googleapis.com`: Can use `CEL` functions that evaluate
-      resource fields. * `iam.googleapis.com`: Can use `CEL` functions that
-      evaluate [resource
+      "conditions": { "iam.googleapis.com": { "expression": {cel_expression} }
+      } ``` Each rule is evaluated independently. If this rule does not apply
+      to a request, other rules might still apply. The following keys are
+      supported: * `eventarc.googleapis.com`: Can use `CEL` functions that
+      evaluate resource fields. * `iam.googleapis.com`: Can use `CEL`
+      functions that evaluate [resource
       tags](https://cloud.google.com/iam/help/conditions/resource-tags) and
       combine them using boolean and logical operators. Other functions and
-      operators are not supported.
-    description: Optional. Customer specified description of the rule. Must be
-      less than or equal to 256 characters.
+      operators are not supported. * `iap.googleapis.com`: Can use `CEL`
+      functions and [attributes](https://docs.cloud.google.com/gemini-
+      enterprise-agent-platform/govern/policies/cel-attributes-uap) that
+      evaluate destination resources for requests that use the
+      `iap.googleapis.com/resources.egressViaIAP` permission.
+    description: Optional. Customer-specified description of the rule. This
+      description can be a maximum of 256 characters.
     effect: Required. The effect of the rule.
-    excludedPrincipals: Optional. The identities that are excluded from the
-      access policy rule, even if they are listed in the `principals`. For
-      example, you could add a Google group to the `principals`, then exclude
-      specific users who belong to that group.
+    excludedPrincipals: Optional. The principals to exclude from the rule,
+      even if they are listed in the `principals`. For example, you could add
+      a Google group to the `principals`, then exclude specific users who
+      belong to that group.
     operation: Required. Attributes that are used to determine whether this
       rule applies to a request.
-    principals: Required. The identities for which this rule's effect governs
-      using one or more permissions on Google Cloud resources. This field can
-      contain the following values: * `principal://goog/subject/{email_id}`: A
-      specific Google Account. Includes Gmail, Cloud Identity, and Google
-      Workspace user accounts. For example,
-      `principal://goog/subject/alice@example.com`. * `principal://iam.googlea
-      pis.com/projects/-/serviceAccounts/{service_account_id}`: A Google Cloud
-      service account. For example,
+    principals: Required. The principals to include in the rule. This field
+      can contain the following values: *
+      `principal://goog/subject/{email_id}`: A specific Google Account.
+      Includes Gmail, Cloud Identity, and Google Workspace user accounts. For
+      example, `principal://goog/subject/alice@example.com`. * `principal://ia
+      m.googleapis.com/projects/-/serviceAccounts/{service_account_id}`: A
+      Google Cloud service account. For example,
       `principal://iam.googleapis.com/projects/-/serviceAccounts/my-service-
       account@iam.gserviceaccount.com`. *
       `principalSet://goog/group/{group_id}`: A Google group. For example,
@@ -180,18 +187,18 @@ class GoogleIamV3betaAccessPolicyRule(_messages.Message):
       `principalSet://goog/cloudIdentityCustomerId/C01Abc35`. *
       `principalSet://goog/public:all`: A special identifier that represents
       any principal that is on the internet, even if they do not have a Google
-      Account or are not logged in. `principalSet://goog/public:all` is only
-      supported in `DENY` effect rule. * `principal://iam.googleapis.com/locat
-      ions/global/workforcePools/{pool_id}/subject/{subject_attribute_value}`:
-      A single identity in a workforce identity pool. * `principalSet://iam.go
-      ogleapis.com/locations/global/workforcePools/{pool_id}/group/{group_id}`
-      : All workforce identities in a group. * `principalSet://iam.googleapis.
-      com/locations/global/workforcePools/{pool_id}/attribute.{attribute_name}
-      /{attribute_value}`: All workforce identities with a specific attribute
-      value. * `principalSet://iam.googleapis.com/locations/global/workforcePo
-      ols/{pool_id}/*`: All identities in a workforce identity pool. * `princi
-      pal://iam.googleapis.com/projects/{project_number}/locations/global/work
-      loadIdentityPools/{pool_id}/subject/{subject_attribute_value}`: A single
+      Account or are not logged in. This value is only supported in rules with
+      the `DENY` effect. * `principal://iam.googleapis.com/locations/global/wo
+      rkforcePools/{pool_id}/subject/{subject_attribute_value}`: A single
+      identity in a workforce identity pool. * `principalSet://iam.googleapis.
+      com/locations/global/workforcePools/{pool_id}/group/{group_id}`: All
+      workforce identities in a group. * `principalSet://iam.googleapis.com/lo
+      cations/global/workforcePools/{pool_id}/attribute.{attribute_name}/{attr
+      ibute_value}`: All workforce identities with a specific attribute value.
+      * `principalSet://iam.googleapis.com/locations/global/workforcePools/{po
+      ol_id}/*`: All identities in a workforce identity pool. * `principal://i
+      am.googleapis.com/projects/{project_number}/locations/global/workloadIde
+      ntityPools/{pool_id}/subject/{subject_attribute_value}`: A single
       identity in a workload identity pool. * `principalSet://iam.googleapis.c
       om/projects/{project_number}/locations/global/workloadIdentityPools/{poo
       l_id}/group/{group_id}`: A workload identity pool group. * `principalSet
@@ -203,11 +210,11 @@ class GoogleIamV3betaAccessPolicyRule(_messages.Message):
       identity pool. *
       `principal://{trust_domain}/{agent_resource_path}/{agent_id}`: A single,
       specific agent identity. * `principalSet://{trust_domain}/*`: All agent
-      identities belonging to a particular trust domain. * `principalSet://{tr
-      ust_domain}/attribute.{attribute_name}/{attribute_value}`: All agents
-      with a particular attribute. If an identifier that was previously set on
-      a policy is soft deleted, then calls to read that policy will return the
-      identifier with a deleted prefix. Users cannot set identifiers with this
+      identities that belong to a particular trust domain. * `principalSet://{
+      trust_domain}/attribute.{attribute_name}/{attribute_value}`: All agents
+      with a particular attribute. If an identifier that was previously used
+      in a rule is soft deleted, then a `deleted` prefix is automatically
+      added to the identifier. Users can't add new identifiers with this
       syntax. * `deleted:principal://goog/subject/{email_id}?uid={uid}`: A
       specific Google Account that was deleted recently. For example,
       `deleted:principal://goog/subject/alice@example.com?uid=1234567890`. If
@@ -237,8 +244,8 @@ class GoogleIamV3betaAccessPolicyRule(_messages.Message):
 
     Values:
       EFFECT_UNSPECIFIED: The effect is unspecified.
-      DENY: The policy will deny access if it evaluates to true.
-      ALLOW: The policy will grant access if it evaluates to true.
+      DENY: The rule will deny access if it evaluates to true.
+      ALLOW: The rule will grant access if it evaluates to true.
     """
     EFFECT_UNSPECIFIED = 0
     DENY = 1
@@ -249,14 +256,18 @@ class GoogleIamV3betaAccessPolicyRule(_messages.Message):
     r"""Optional. The conditions that determine whether this rule applies to a
     request. Conditions are identified by their key, which is the FQDN of the
     service that they are relevant to. For example: ``` "conditions": {
-    "iam.googleapis.com": { "expression": } } ``` Each rule is evaluated
-    independently. If this rule does not apply to a request, other rules might
-    still apply. Currently supported keys are as follows: *
+    "iam.googleapis.com": { "expression": {cel_expression} } } ``` Each rule
+    is evaluated independently. If this rule does not apply to a request,
+    other rules might still apply. The following keys are supported: *
     `eventarc.googleapis.com`: Can use `CEL` functions that evaluate resource
     fields. * `iam.googleapis.com`: Can use `CEL` functions that evaluate
     [resource tags](https://cloud.google.com/iam/help/conditions/resource-
     tags) and combine them using boolean and logical operators. Other
-    functions and operators are not supported.
+    functions and operators are not supported. * `iap.googleapis.com`: Can use
+    `CEL` functions and [attributes](https://docs.cloud.google.com/gemini-
+    enterprise-agent-platform/govern/policies/cel-attributes-uap) that
+    evaluate destination resources for requests that use the
+    `iap.googleapis.com/resources.egressViaIAP` permission.
 
     Messages:
       AdditionalProperty: An additional property for a ConditionsValue object.
@@ -291,17 +302,28 @@ class GoogleIamV3betaAccessPolicyRuleOperation(_messages.Message):
   request.
 
   Fields:
-    excludedPermissions: Optional. Specifies the permissions that this rule
-      excludes from the set of affected permissions given by `permissions`. If
-      a permission appears in `permissions` _and_ in `excluded_permissions`
-      then it will _not_ be subject to the policy effect. The excluded
-      permissions can be specified using the same syntax as `permissions`.
-    permissions: Optional. The permissions that are explicitly affected by
-      this rule. Each permission uses the format
-      `{service_fqdn}/{resource}.{verb}`, where `{service_fqdn}` is the fully
-      qualified domain name for the service. Currently supported permissions
-      are as follows: * `eventarc.googleapis.com/messageBuses.publish`. An
-      empty list doesn't match any `permissions`.
+    excludedPermissions: Optional. Specifies the permissions to exclude from
+      the rule. If a permission appears in `permissions` _and_ in
+      `excluded_permissions`, then it will _not_ be subject to the rule
+      effect. The excluded permissions can be specified using the same syntax
+      as `permissions`.
+    permissions: Optional. The permissions to include in the rule. Rules with
+      the `ALLOW` effect grant the specified permissions. Rules with the
+      `DENY` effect deny the specified permissions. The following formats are
+      supported: * Individual permissions: Individual permissions use the
+      format `{service_fqdn}/{resource}.{verb}`, where `{service_fqdn}` is the
+      fully qualified domain name for the service. For example,
+      `eventarc.googleapis.com/messageBuses.publish`. * Roles: Only supported
+      in rules with the `ALLOW` effect. Roles use the format
+      `role:{role_name}`. For example, `role:roles/logging.logsViewer`. If you
+      include a role name in a rule, then the rule includes all of the
+      permissions in that role. * Permission groups: Sets of permissions, such
+      as `aiplatform.googleapis.com/*.*`. Permission groups are sets of
+      permissions that match a specified pattern. There are some restrictions
+      on the permission groups you can reference and the permissions included
+      in those groups. For more information, see [Permission
+      groups](https://docs.cloud.google.com/iam/help/uap/permission-groups).
+      An empty list doesn't match any `permissions`.
   """
 
   excludedPermissions = _messages.StringField(1, repeated=True)
@@ -312,7 +334,7 @@ class GoogleIamV3betaListAccessPoliciesResponse(_messages.Message):
   r"""Response message for ListAccessPolicies method.
 
   Fields:
-    accessPolicies: The access policies from the specified parent.
+    accessPolicies: The Unified Access Policies from the specified parent.
     nextPageToken: Optional. A token, which can be sent as `page_token` to
       retrieve the next page. If this field is omitted, there are no
       subsequent pages.
@@ -466,7 +488,7 @@ class GoogleIamV3betaPolicyBinding(_messages.Message):
     Values:
       POLICY_KIND_UNSPECIFIED: Unspecified policy kind; Not a valid state
       PRINCIPAL_ACCESS_BOUNDARY: Principal access boundary policy kind
-      ACCESS: Access policy kind.
+      ACCESS: Unified Access Policy kind.
     """
     POLICY_KIND_UNSPECIFIED = 0
     PRINCIPAL_ACCESS_BOUNDARY = 1
@@ -535,8 +557,8 @@ class GoogleIamV3betaPolicyBindingTarget(_messages.Message):
       `//cloudresourcemanager.googleapis.com/projects/PROJECT_ID` * Workload
       Identity Pool: `//iam.googleapis.com/projects/PROJECT_NUMBER/locations/L
       OCATION/workloadIdentityPools/WORKLOAD_POOL_ID`
-    resource: Immutable. The full resource name that's used for access policy
-      bindings. Examples: * Organization:
+    resource: Immutable. The full resource name that's used for Unified Access
+      Policy bindings. Examples: * Organization:
       `//cloudresourcemanager.googleapis.com/organizations/ORGANIZATION_ID` *
       Folder: `//cloudresourcemanager.googleapis.com/folders/FOLDER_ID` *
       Project: *
@@ -819,12 +841,12 @@ class GoogleIamV3betaRegionalAccessBoundaryPolicyRule(_messages.Message):
     locations: Describes the list of authorized locations. It is in the format
       of cloud location groups with the following syntax:
       "//cloudLocationGroups/LOCATION" Where LOCATION can either be "rab-
-      mandatory-version_number_here" (the locations which are required for
-      inclusion for all customers) or a specific country-based location. Note
-      the Mandatory Locations value group will be versioned to allow Google to
-      remove locations from this group without causing breaking changes.
-      Examples: "//cloudLocationGroups/rab-mandatory-v1".
-      "//cloudLocationGroups/us". "//cloudLocationGroups/jp".
+      version_number_here" (the locations which are required for inclusion for
+      all customers) or a specific country-based location. Note the Mandatory
+      Locations value group will be versioned to allow Google to remove
+      locations from this group without causing breaking changes. Examples:
+      "//cloudLocationGroups/rab-v1". "//cloudLocationGroups/us".
+      "//cloudLocationGroups/jp".
   """
 
   description = _messages.StringField(1)
@@ -838,7 +860,8 @@ class GoogleIamV3betaSearchAccessPolicyBindingsResponse(_messages.Message):
     nextPageToken: Optional. A token, which can be sent as `page_token` to
       retrieve the next page. If this field is omitted, there are no
       subsequent pages.
-    policyBindings: The policy bindings that reference the specified policy.
+    policyBindings: The bindings that reference the specified Unified Access
+      Policy.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -1086,17 +1109,18 @@ class IamFoldersLocationsAccessPoliciesCreateRequest(_messages.Message):
   r"""A IamFoldersLocationsAccessPoliciesCreateRequest object.
 
   Fields:
-    accessPolicyId: Required. The ID to use for the access policy, which will
-      become the final component of the access policy's resource name. This
-      value must start with a lowercase letter followed by up to 62 lowercase
-      letters, numbers, hyphens, or dots. Pattern, /a-z{2,62}/. This value
-      must be unique among all access policies with the same parent.
+    accessPolicyId: Required. The ID to use for the Unified Access Policy,
+      which will become the final component of the Unified Access Policy's
+      resource name. This value must start with a lowercase letter followed by
+      up to 62 lowercase letters, numbers, hyphens, or dots (/a-z{2,62}/).
+      This value must be unique among all Unified Access Policies with the
+      same parent.
     googleIamV3betaAccessPolicy: A GoogleIamV3betaAccessPolicy resource to be
       passed as the request body.
-    parent: Required. The parent resource where this access policy will be
-      created. Format: `projects/{project_id}/locations/{location}`
-      `projects/{project_number}/locations/{location}`
-      `folders/{folder_id}/locations/{location}`
+    parent: Required. The parent resource where this Unified Access Policy is
+      created. Format: * `projects/{project_id}/locations/{location}` *
+      `projects/{project_number}/locations/{location}` *
+      `folders/{folder_id}/locations/{location}` *
       `organizations/{organization_id}/locations/{location}`
     validateOnly: Optional. If set, validate the request and preview the
       creation, but do not actually post it.
@@ -1112,16 +1136,19 @@ class IamFoldersLocationsAccessPoliciesDeleteRequest(_messages.Message):
   r"""A IamFoldersLocationsAccessPoliciesDeleteRequest object.
 
   Fields:
-    etag: Optional. The etag of the access policy. If this is provided, it
-      must match the server's etag.
+    etag: Optional. The etag of the Unified Access Policy. If this is
+      provided, it must match the server's etag.
     force: Optional. If set to true, the request will force the deletion of
-      the Policy even if the Policy references PolicyBindings.
-    name: Required. The name of the access policy to delete. Format: `projects
-      /{project_id}/locations/{location}/accessPolicies/{access_policy_id}` `p
-      rojects/{project_number}/locations/{location}/accessPolicies/{access_pol
-      icy_id}` `folders/{folder_id}/locations/{location}/accessPolicies/{acces
-      s_policy_id}` `organizations/{organization_id}/locations/{location}/acce
-      ssPolicies/{access_policy_id}`
+      the Unified Access Policy even if it's referenced in existing bindings.
+      If this value is set to false and the Unified Access Policy is
+      referenced in existing bindings, then the request fails.
+    name: Required. The name of the Unified Access Policy to delete. Format: *
+      `projects/{project_id}/locations/{location}/accessPolicies/{unified_acce
+      ss_policy_id}` * `projects/{project_number}/locations/{location}/accessP
+      olicies/{unified_access_policy_id}` * `folders/{folder_id}/locations/{lo
+      cation}/accessPolicies/{unified_access_policy_id}` * `organizations/{org
+      anization_id}/locations/{location}/accessPolicies/{unified_access_policy
+      _id}`
     validateOnly: Optional. If set, validate the request and preview the
       deletion, but do not actually post it.
   """
@@ -1136,12 +1163,13 @@ class IamFoldersLocationsAccessPoliciesGetRequest(_messages.Message):
   r"""A IamFoldersLocationsAccessPoliciesGetRequest object.
 
   Fields:
-    name: Required. The name of the access policy to retrieve. Format: `projec
-      ts/{project_id}/locations/{location}/accessPolicies/{access_policy_id}`
-      `projects/{project_number}/locations/{location}/accessPolicies/{access_p
-      olicy_id}` `folders/{folder_id}/locations/{location}/accessPolicies/{acc
-      ess_policy_id}` `organizations/{organization_id}/locations/{location}/ac
-      cessPolicies/{access_policy_id}`
+    name: Required. The name of the Unified Access Policy to retrieve. Format:
+      * `projects/{project_id}/locations/{location}/accessPolicies/{unified_ac
+      cess_policy_id}` * `projects/{project_number}/locations/{location}/acces
+      sPolicies/{unified_access_policy_id}` * `folders/{folder_id}/locations/{
+      location}/accessPolicies/{unified_access_policy_id}` * `organizations/{o
+      rganization_id}/locations/{location}/accessPolicies/{unified_access_poli
+      cy_id}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -1152,20 +1180,21 @@ class IamFoldersLocationsAccessPoliciesListRequest(_messages.Message):
 
   Fields:
     filter: Optional. An expression for filtering the results of the request.
-      Example filter query: `display_name:example*` matches access policies
-      whose display name starts with "example".
-    pageSize: Optional. The maximum number of access policies to return. The
-      service may return fewer than this value. If unspecified, at most 50
-      access policies will be returned. Valid value ranges from 1 to 1000;
-      values above 1000 will be coerced to 1000.
+      Example filter query: `display_name:example*` matches Unified Access
+      Policies whose display name starts with "example".
+    pageSize: Optional. The maximum number of Unified Access Policies to
+      return. The service might return a smaller number of bindings. If
+      unspecified, at most 50 Unified Access Policies are returned. Valid
+      value ranges from 1 to 1000; values above 1000 are reduced to 1000.
     pageToken: Optional. A page token, received from a previous
       `ListAccessPolicies` call. Provide this to retrieve the subsequent page.
       When paginating, all other parameters provided to `ListAccessPolicies`
       must match the call that provided the page token.
-    parent: Required. The parent resource, which owns the collection of access
-      policy resources. Format: `projects/{project_id}/locations/{location}`
-      `projects/{project_number}/locations/{location}`
-      `folders/{folder_id}/locations/{location}`
+    parent: Required. The parent resource, which owns the collection of
+      Unified Access Policy resources. Format: *
+      `projects/{project_id}/locations/{location}` *
+      `projects/{project_number}/locations/{location}` *
+      `folders/{folder_id}/locations/{location}` *
       `organizations/{organization_id}/locations/{location}`
   """
 
@@ -1181,14 +1210,13 @@ class IamFoldersLocationsAccessPoliciesPatchRequest(_messages.Message):
   Fields:
     googleIamV3betaAccessPolicy: A GoogleIamV3betaAccessPolicy resource to be
       passed as the request body.
-    name: Identifier. The resource name of the access policy. The following
-      formats are supported: *
-      `projects/{project_id}/locations/{location}/accessPolicies/{policy_id}`
-      * `projects/{project_number}/locations/{location}/accessPolicies/{policy
-      _id}` *
-      `folders/{folder_id}/locations/{location}/accessPolicies/{policy_id}` *
-      `organizations/{organization_id}/locations/{location}/accessPolicies/{po
-      licy_id}`
+    name: Identifier. The resource name of the Unified Access Policy. The
+      following formats are supported: * `projects/{project_id}/locations/{loc
+      ation}/accessPolicies/{unified_access_policy_id}` * `projects/{project_n
+      umber}/locations/{location}/accessPolicies/{unified_access_policy_id}` *
+      `folders/{folder_id}/locations/{location}/accessPolicies/{unified_access
+      _policy_id}` * `organizations/{organization_id}/locations/{location}/acc
+      essPolicies/{unified_access_policy_id}`
     validateOnly: Optional. If set, validate the request and preview the
       update, but do not actually post it.
   """
@@ -1202,16 +1230,16 @@ class IamFoldersLocationsAccessPoliciesSearchPolicyBindingsRequest(_messages.Mes
   r"""A IamFoldersLocationsAccessPoliciesSearchPolicyBindingsRequest object.
 
   Fields:
-    name: Required. The name of the access policy. Format: `organizations/{org
-      anization_id}/locations/{location}/accessPolicies/{access_policy_id}` `f
-      olders/{folder_id}/locations/{location}/accessPolicies/{access_policy_id
-      }` `projects/{project_id}/locations/{location}/accessPolicies/{access_po
-      licy_id}` `projects/{project_number}/locations/{location}/accessPolicies
-      /{access_policy_id}`
-    pageSize: Optional. The maximum number of policy bindings to return. The
-      service may return fewer than this value. If unspecified, at most 50
-      policy bindings will be returned. The maximum value is 1000; values
-      above 1000 will be coerced to 1000.
+    name: Required. The name of the Unified Access Policy. Format: * `organiza
+      tions/{organization_id}/locations/{location}/accessPolicies/{unified_acc
+      ess_policy_id}` * `folders/{folder_id}/locations/{location}/accessPolici
+      es/{unified_access_policy_id}` * `projects/{project_id}/locations/{locat
+      ion}/accessPolicies/{unified_access_policy_id}` * `projects/{project_num
+      ber}/locations/{location}/accessPolicies/{unified_access_policy_id}`
+    pageSize: Optional. The maximum number of Unified Access Policy bindings
+      to return. The service might return a smaller number of bindings. If
+      unspecified, at most 50 bindings are returned. The maximum value is
+      1000; values above 1000 are reduced to 1000.
     pageToken: Optional. A page token, received from a previous
       `SearchAccessPolicyBindingsRequest` call. Provide this to retrieve the
       subsequent page. When paginating, all other parameters provided to
@@ -1400,17 +1428,18 @@ class IamOrganizationsLocationsAccessPoliciesCreateRequest(_messages.Message):
   r"""A IamOrganizationsLocationsAccessPoliciesCreateRequest object.
 
   Fields:
-    accessPolicyId: Required. The ID to use for the access policy, which will
-      become the final component of the access policy's resource name. This
-      value must start with a lowercase letter followed by up to 62 lowercase
-      letters, numbers, hyphens, or dots. Pattern, /a-z{2,62}/. This value
-      must be unique among all access policies with the same parent.
+    accessPolicyId: Required. The ID to use for the Unified Access Policy,
+      which will become the final component of the Unified Access Policy's
+      resource name. This value must start with a lowercase letter followed by
+      up to 62 lowercase letters, numbers, hyphens, or dots (/a-z{2,62}/).
+      This value must be unique among all Unified Access Policies with the
+      same parent.
     googleIamV3betaAccessPolicy: A GoogleIamV3betaAccessPolicy resource to be
       passed as the request body.
-    parent: Required. The parent resource where this access policy will be
-      created. Format: `projects/{project_id}/locations/{location}`
-      `projects/{project_number}/locations/{location}`
-      `folders/{folder_id}/locations/{location}`
+    parent: Required. The parent resource where this Unified Access Policy is
+      created. Format: * `projects/{project_id}/locations/{location}` *
+      `projects/{project_number}/locations/{location}` *
+      `folders/{folder_id}/locations/{location}` *
       `organizations/{organization_id}/locations/{location}`
     validateOnly: Optional. If set, validate the request and preview the
       creation, but do not actually post it.
@@ -1426,16 +1455,19 @@ class IamOrganizationsLocationsAccessPoliciesDeleteRequest(_messages.Message):
   r"""A IamOrganizationsLocationsAccessPoliciesDeleteRequest object.
 
   Fields:
-    etag: Optional. The etag of the access policy. If this is provided, it
-      must match the server's etag.
+    etag: Optional. The etag of the Unified Access Policy. If this is
+      provided, it must match the server's etag.
     force: Optional. If set to true, the request will force the deletion of
-      the Policy even if the Policy references PolicyBindings.
-    name: Required. The name of the access policy to delete. Format: `projects
-      /{project_id}/locations/{location}/accessPolicies/{access_policy_id}` `p
-      rojects/{project_number}/locations/{location}/accessPolicies/{access_pol
-      icy_id}` `folders/{folder_id}/locations/{location}/accessPolicies/{acces
-      s_policy_id}` `organizations/{organization_id}/locations/{location}/acce
-      ssPolicies/{access_policy_id}`
+      the Unified Access Policy even if it's referenced in existing bindings.
+      If this value is set to false and the Unified Access Policy is
+      referenced in existing bindings, then the request fails.
+    name: Required. The name of the Unified Access Policy to delete. Format: *
+      `projects/{project_id}/locations/{location}/accessPolicies/{unified_acce
+      ss_policy_id}` * `projects/{project_number}/locations/{location}/accessP
+      olicies/{unified_access_policy_id}` * `folders/{folder_id}/locations/{lo
+      cation}/accessPolicies/{unified_access_policy_id}` * `organizations/{org
+      anization_id}/locations/{location}/accessPolicies/{unified_access_policy
+      _id}`
     validateOnly: Optional. If set, validate the request and preview the
       deletion, but do not actually post it.
   """
@@ -1450,12 +1482,13 @@ class IamOrganizationsLocationsAccessPoliciesGetRequest(_messages.Message):
   r"""A IamOrganizationsLocationsAccessPoliciesGetRequest object.
 
   Fields:
-    name: Required. The name of the access policy to retrieve. Format: `projec
-      ts/{project_id}/locations/{location}/accessPolicies/{access_policy_id}`
-      `projects/{project_number}/locations/{location}/accessPolicies/{access_p
-      olicy_id}` `folders/{folder_id}/locations/{location}/accessPolicies/{acc
-      ess_policy_id}` `organizations/{organization_id}/locations/{location}/ac
-      cessPolicies/{access_policy_id}`
+    name: Required. The name of the Unified Access Policy to retrieve. Format:
+      * `projects/{project_id}/locations/{location}/accessPolicies/{unified_ac
+      cess_policy_id}` * `projects/{project_number}/locations/{location}/acces
+      sPolicies/{unified_access_policy_id}` * `folders/{folder_id}/locations/{
+      location}/accessPolicies/{unified_access_policy_id}` * `organizations/{o
+      rganization_id}/locations/{location}/accessPolicies/{unified_access_poli
+      cy_id}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -1466,20 +1499,21 @@ class IamOrganizationsLocationsAccessPoliciesListRequest(_messages.Message):
 
   Fields:
     filter: Optional. An expression for filtering the results of the request.
-      Example filter query: `display_name:example*` matches access policies
-      whose display name starts with "example".
-    pageSize: Optional. The maximum number of access policies to return. The
-      service may return fewer than this value. If unspecified, at most 50
-      access policies will be returned. Valid value ranges from 1 to 1000;
-      values above 1000 will be coerced to 1000.
+      Example filter query: `display_name:example*` matches Unified Access
+      Policies whose display name starts with "example".
+    pageSize: Optional. The maximum number of Unified Access Policies to
+      return. The service might return a smaller number of bindings. If
+      unspecified, at most 50 Unified Access Policies are returned. Valid
+      value ranges from 1 to 1000; values above 1000 are reduced to 1000.
     pageToken: Optional. A page token, received from a previous
       `ListAccessPolicies` call. Provide this to retrieve the subsequent page.
       When paginating, all other parameters provided to `ListAccessPolicies`
       must match the call that provided the page token.
-    parent: Required. The parent resource, which owns the collection of access
-      policy resources. Format: `projects/{project_id}/locations/{location}`
-      `projects/{project_number}/locations/{location}`
-      `folders/{folder_id}/locations/{location}`
+    parent: Required. The parent resource, which owns the collection of
+      Unified Access Policy resources. Format: *
+      `projects/{project_id}/locations/{location}` *
+      `projects/{project_number}/locations/{location}` *
+      `folders/{folder_id}/locations/{location}` *
       `organizations/{organization_id}/locations/{location}`
   """
 
@@ -1495,14 +1529,13 @@ class IamOrganizationsLocationsAccessPoliciesPatchRequest(_messages.Message):
   Fields:
     googleIamV3betaAccessPolicy: A GoogleIamV3betaAccessPolicy resource to be
       passed as the request body.
-    name: Identifier. The resource name of the access policy. The following
-      formats are supported: *
-      `projects/{project_id}/locations/{location}/accessPolicies/{policy_id}`
-      * `projects/{project_number}/locations/{location}/accessPolicies/{policy
-      _id}` *
-      `folders/{folder_id}/locations/{location}/accessPolicies/{policy_id}` *
-      `organizations/{organization_id}/locations/{location}/accessPolicies/{po
-      licy_id}`
+    name: Identifier. The resource name of the Unified Access Policy. The
+      following formats are supported: * `projects/{project_id}/locations/{loc
+      ation}/accessPolicies/{unified_access_policy_id}` * `projects/{project_n
+      umber}/locations/{location}/accessPolicies/{unified_access_policy_id}` *
+      `folders/{folder_id}/locations/{location}/accessPolicies/{unified_access
+      _policy_id}` * `organizations/{organization_id}/locations/{location}/acc
+      essPolicies/{unified_access_policy_id}`
     validateOnly: Optional. If set, validate the request and preview the
       update, but do not actually post it.
   """
@@ -1517,16 +1550,16 @@ class IamOrganizationsLocationsAccessPoliciesSearchPolicyBindingsRequest(_messag
   object.
 
   Fields:
-    name: Required. The name of the access policy. Format: `organizations/{org
-      anization_id}/locations/{location}/accessPolicies/{access_policy_id}` `f
-      olders/{folder_id}/locations/{location}/accessPolicies/{access_policy_id
-      }` `projects/{project_id}/locations/{location}/accessPolicies/{access_po
-      licy_id}` `projects/{project_number}/locations/{location}/accessPolicies
-      /{access_policy_id}`
-    pageSize: Optional. The maximum number of policy bindings to return. The
-      service may return fewer than this value. If unspecified, at most 50
-      policy bindings will be returned. The maximum value is 1000; values
-      above 1000 will be coerced to 1000.
+    name: Required. The name of the Unified Access Policy. Format: * `organiza
+      tions/{organization_id}/locations/{location}/accessPolicies/{unified_acc
+      ess_policy_id}` * `folders/{folder_id}/locations/{location}/accessPolici
+      es/{unified_access_policy_id}` * `projects/{project_id}/locations/{locat
+      ion}/accessPolicies/{unified_access_policy_id}` * `projects/{project_num
+      ber}/locations/{location}/accessPolicies/{unified_access_policy_id}`
+    pageSize: Optional. The maximum number of Unified Access Policy bindings
+      to return. The service might return a smaller number of bindings. If
+      unspecified, at most 50 bindings are returned. The maximum value is
+      1000; values above 1000 are reduced to 1000.
     pageToken: Optional. A page token, received from a previous
       `SearchAccessPolicyBindingsRequest` call. Provide this to retrieve the
       subsequent page. When paginating, all other parameters provided to
@@ -2001,17 +2034,18 @@ class IamProjectsLocationsAccessPoliciesCreateRequest(_messages.Message):
   r"""A IamProjectsLocationsAccessPoliciesCreateRequest object.
 
   Fields:
-    accessPolicyId: Required. The ID to use for the access policy, which will
-      become the final component of the access policy's resource name. This
-      value must start with a lowercase letter followed by up to 62 lowercase
-      letters, numbers, hyphens, or dots. Pattern, /a-z{2,62}/. This value
-      must be unique among all access policies with the same parent.
+    accessPolicyId: Required. The ID to use for the Unified Access Policy,
+      which will become the final component of the Unified Access Policy's
+      resource name. This value must start with a lowercase letter followed by
+      up to 62 lowercase letters, numbers, hyphens, or dots (/a-z{2,62}/).
+      This value must be unique among all Unified Access Policies with the
+      same parent.
     googleIamV3betaAccessPolicy: A GoogleIamV3betaAccessPolicy resource to be
       passed as the request body.
-    parent: Required. The parent resource where this access policy will be
-      created. Format: `projects/{project_id}/locations/{location}`
-      `projects/{project_number}/locations/{location}`
-      `folders/{folder_id}/locations/{location}`
+    parent: Required. The parent resource where this Unified Access Policy is
+      created. Format: * `projects/{project_id}/locations/{location}` *
+      `projects/{project_number}/locations/{location}` *
+      `folders/{folder_id}/locations/{location}` *
       `organizations/{organization_id}/locations/{location}`
     validateOnly: Optional. If set, validate the request and preview the
       creation, but do not actually post it.
@@ -2027,16 +2061,19 @@ class IamProjectsLocationsAccessPoliciesDeleteRequest(_messages.Message):
   r"""A IamProjectsLocationsAccessPoliciesDeleteRequest object.
 
   Fields:
-    etag: Optional. The etag of the access policy. If this is provided, it
-      must match the server's etag.
+    etag: Optional. The etag of the Unified Access Policy. If this is
+      provided, it must match the server's etag.
     force: Optional. If set to true, the request will force the deletion of
-      the Policy even if the Policy references PolicyBindings.
-    name: Required. The name of the access policy to delete. Format: `projects
-      /{project_id}/locations/{location}/accessPolicies/{access_policy_id}` `p
-      rojects/{project_number}/locations/{location}/accessPolicies/{access_pol
-      icy_id}` `folders/{folder_id}/locations/{location}/accessPolicies/{acces
-      s_policy_id}` `organizations/{organization_id}/locations/{location}/acce
-      ssPolicies/{access_policy_id}`
+      the Unified Access Policy even if it's referenced in existing bindings.
+      If this value is set to false and the Unified Access Policy is
+      referenced in existing bindings, then the request fails.
+    name: Required. The name of the Unified Access Policy to delete. Format: *
+      `projects/{project_id}/locations/{location}/accessPolicies/{unified_acce
+      ss_policy_id}` * `projects/{project_number}/locations/{location}/accessP
+      olicies/{unified_access_policy_id}` * `folders/{folder_id}/locations/{lo
+      cation}/accessPolicies/{unified_access_policy_id}` * `organizations/{org
+      anization_id}/locations/{location}/accessPolicies/{unified_access_policy
+      _id}`
     validateOnly: Optional. If set, validate the request and preview the
       deletion, but do not actually post it.
   """
@@ -2051,12 +2088,13 @@ class IamProjectsLocationsAccessPoliciesGetRequest(_messages.Message):
   r"""A IamProjectsLocationsAccessPoliciesGetRequest object.
 
   Fields:
-    name: Required. The name of the access policy to retrieve. Format: `projec
-      ts/{project_id}/locations/{location}/accessPolicies/{access_policy_id}`
-      `projects/{project_number}/locations/{location}/accessPolicies/{access_p
-      olicy_id}` `folders/{folder_id}/locations/{location}/accessPolicies/{acc
-      ess_policy_id}` `organizations/{organization_id}/locations/{location}/ac
-      cessPolicies/{access_policy_id}`
+    name: Required. The name of the Unified Access Policy to retrieve. Format:
+      * `projects/{project_id}/locations/{location}/accessPolicies/{unified_ac
+      cess_policy_id}` * `projects/{project_number}/locations/{location}/acces
+      sPolicies/{unified_access_policy_id}` * `folders/{folder_id}/locations/{
+      location}/accessPolicies/{unified_access_policy_id}` * `organizations/{o
+      rganization_id}/locations/{location}/accessPolicies/{unified_access_poli
+      cy_id}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -2067,20 +2105,21 @@ class IamProjectsLocationsAccessPoliciesListRequest(_messages.Message):
 
   Fields:
     filter: Optional. An expression for filtering the results of the request.
-      Example filter query: `display_name:example*` matches access policies
-      whose display name starts with "example".
-    pageSize: Optional. The maximum number of access policies to return. The
-      service may return fewer than this value. If unspecified, at most 50
-      access policies will be returned. Valid value ranges from 1 to 1000;
-      values above 1000 will be coerced to 1000.
+      Example filter query: `display_name:example*` matches Unified Access
+      Policies whose display name starts with "example".
+    pageSize: Optional. The maximum number of Unified Access Policies to
+      return. The service might return a smaller number of bindings. If
+      unspecified, at most 50 Unified Access Policies are returned. Valid
+      value ranges from 1 to 1000; values above 1000 are reduced to 1000.
     pageToken: Optional. A page token, received from a previous
       `ListAccessPolicies` call. Provide this to retrieve the subsequent page.
       When paginating, all other parameters provided to `ListAccessPolicies`
       must match the call that provided the page token.
-    parent: Required. The parent resource, which owns the collection of access
-      policy resources. Format: `projects/{project_id}/locations/{location}`
-      `projects/{project_number}/locations/{location}`
-      `folders/{folder_id}/locations/{location}`
+    parent: Required. The parent resource, which owns the collection of
+      Unified Access Policy resources. Format: *
+      `projects/{project_id}/locations/{location}` *
+      `projects/{project_number}/locations/{location}` *
+      `folders/{folder_id}/locations/{location}` *
       `organizations/{organization_id}/locations/{location}`
   """
 
@@ -2096,14 +2135,13 @@ class IamProjectsLocationsAccessPoliciesPatchRequest(_messages.Message):
   Fields:
     googleIamV3betaAccessPolicy: A GoogleIamV3betaAccessPolicy resource to be
       passed as the request body.
-    name: Identifier. The resource name of the access policy. The following
-      formats are supported: *
-      `projects/{project_id}/locations/{location}/accessPolicies/{policy_id}`
-      * `projects/{project_number}/locations/{location}/accessPolicies/{policy
-      _id}` *
-      `folders/{folder_id}/locations/{location}/accessPolicies/{policy_id}` *
-      `organizations/{organization_id}/locations/{location}/accessPolicies/{po
-      licy_id}`
+    name: Identifier. The resource name of the Unified Access Policy. The
+      following formats are supported: * `projects/{project_id}/locations/{loc
+      ation}/accessPolicies/{unified_access_policy_id}` * `projects/{project_n
+      umber}/locations/{location}/accessPolicies/{unified_access_policy_id}` *
+      `folders/{folder_id}/locations/{location}/accessPolicies/{unified_access
+      _policy_id}` * `organizations/{organization_id}/locations/{location}/acc
+      essPolicies/{unified_access_policy_id}`
     validateOnly: Optional. If set, validate the request and preview the
       update, but do not actually post it.
   """
@@ -2117,16 +2155,16 @@ class IamProjectsLocationsAccessPoliciesSearchPolicyBindingsRequest(_messages.Me
   r"""A IamProjectsLocationsAccessPoliciesSearchPolicyBindingsRequest object.
 
   Fields:
-    name: Required. The name of the access policy. Format: `organizations/{org
-      anization_id}/locations/{location}/accessPolicies/{access_policy_id}` `f
-      olders/{folder_id}/locations/{location}/accessPolicies/{access_policy_id
-      }` `projects/{project_id}/locations/{location}/accessPolicies/{access_po
-      licy_id}` `projects/{project_number}/locations/{location}/accessPolicies
-      /{access_policy_id}`
-    pageSize: Optional. The maximum number of policy bindings to return. The
-      service may return fewer than this value. If unspecified, at most 50
-      policy bindings will be returned. The maximum value is 1000; values
-      above 1000 will be coerced to 1000.
+    name: Required. The name of the Unified Access Policy. Format: * `organiza
+      tions/{organization_id}/locations/{location}/accessPolicies/{unified_acc
+      ess_policy_id}` * `folders/{folder_id}/locations/{location}/accessPolici
+      es/{unified_access_policy_id}` * `projects/{project_id}/locations/{locat
+      ion}/accessPolicies/{unified_access_policy_id}` * `projects/{project_num
+      ber}/locations/{location}/accessPolicies/{unified_access_policy_id}`
+    pageSize: Optional. The maximum number of Unified Access Policy bindings
+      to return. The service might return a smaller number of bindings. If
+      unspecified, at most 50 bindings are returned. The maximum value is
+      1000; values above 1000 are reduced to 1000.
     pageToken: Optional. A page token, received from a previous
       `SearchAccessPolicyBindingsRequest` call. Provide this to retrieve the
       subsequent page. When paginating, all other parameters provided to

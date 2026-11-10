@@ -1,4 +1,6 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: List Backup and DR AutoProtectionPolicies.
@@ -13,6 +15,8 @@
         $ {command} --location=us-central1
 
   request:
+    GA:
+      api_version: v1
     ALPHA:
       api_version: v1alpha
     BETA:

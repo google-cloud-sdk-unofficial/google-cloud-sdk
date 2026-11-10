@@ -43,12 +43,15 @@ _WILDFIRE_ANALYSIS_SUPPORTED = (
     base.ReleaseTrack.GA,
 )
 
+_SCM_SUPPORTED = (base.ReleaseTrack.ALPHA,)
+
 _SUPPORTED_PROFILES = (
     'threat_prevention_profile',
     'url_filtering_profile',
     'wildfire_analysis_profile',
     'custom_mirroring_profile',
     'custom_intercept_profile',
+    'scm_profile',
 )
 
 _INCOMPATIBLE_PAIRS = (
@@ -59,6 +62,11 @@ _INCOMPATIBLE_PAIRS = (
     ('wildfire_analysis_profile', 'custom_mirroring_profile'),
     ('wildfire_analysis_profile', 'custom_intercept_profile'),
     ('custom_mirroring_profile', 'custom_intercept_profile'),
+    ('scm_profile', 'threat_prevention_profile'),
+    ('scm_profile', 'url_filtering_profile'),
+    ('scm_profile', 'wildfire_analysis_profile'),
+    ('scm_profile', 'custom_mirroring_profile'),
+    ('scm_profile', 'custom_intercept_profile'),
 )
 
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
@@ -133,6 +141,16 @@ class CreateProfileGroup(base.CreateCommand):
         help_text='Path to Custom Intercept Profile resource.',
         project_scope_supported=project_scope_supported,
     )
+    if cls.ReleaseTrack() in _SCM_SUPPORTED:
+      spg_flags.AddSecurityProfileResource(
+          parser,
+          cls.ReleaseTrack(),
+          'scm-profile',
+          group=required_group,
+          required=False,
+          help_text='Path to SCM Profile resource.',
+          project_scope_supported=project_scope_supported,
+      )
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
@@ -178,6 +196,7 @@ class CreateProfileGroup(base.CreateCommand):
         custom_intercept_profile=safe_relative_name(
             profiles.custom_intercept_profile
         ),
+        scm_profile=safe_relative_name(profiles.scm_profile),
         labels=labels,
     )
 

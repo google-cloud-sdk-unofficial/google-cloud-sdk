@@ -469,7 +469,6 @@ def AddAutomatedBackupPolicyCreateTableArgs():
   params_group.AddArgument(
       base.Argument(
           '--automated-backup-keep-hot-duration',
-          hidden=True,  # TODO(b/527477650): Unhide for GA.
           help=(
               'The amount of time that automated backups remain hot, in the'
               ' format of `24h` for 24 hours. If specified, the backups created'
@@ -549,15 +548,11 @@ def AddAutomatedBackupPolicyUpdateTableArgs():
           const=True,
       )
   )
-  keep_hot_duration_group = base.ArgumentGroup(
-      mutex=True,
-      hidden=True,  # TODO(b/527477650): Unhide for GA.
-  )
+  keep_hot_duration_group = base.ArgumentGroup(mutex=True)
   params_group.AddArgument(keep_hot_duration_group)
   keep_hot_duration_group.AddArgument(
       base.Argument(
           '--automated-backup-keep-hot-duration',
-          hidden=True,  # TODO(b/527477650): Unhide for GA.
           help=(
               'The amount of time that automated backups remain hot, in the'
               ' format of `24h` for 24 hours. If specified, the backups created'
@@ -572,7 +567,6 @@ def AddAutomatedBackupPolicyUpdateTableArgs():
   keep_hot_duration_group.AddArgument(
       base.Argument(
           '--clear-automated-backup-keep-hot-duration',
-          hidden=True,  # TODO(b/527477650): Unhide for GA.
           help=(
               'Stops keeping automated backups hot. Subsequent backups created'
               ' by the policy are `STANDARD` backups.'

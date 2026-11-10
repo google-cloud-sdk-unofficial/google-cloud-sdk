@@ -14,7 +14,7 @@
 # limitations under the License.
 """Adds an IAM policy binding to a security gateway."""
 
-from googlecloudsdk.api_lib.beyondcorp.app import util as api_util
+from googlecloudsdk.api_lib.beyondcorp import util as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.beyondcorp import resource_args
 from googlecloudsdk.command_lib.iam import iam_util

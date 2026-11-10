@@ -131,7 +131,28 @@ def SecurityPolicyMultiScopeArgumentForTargetResource(
       scope_flags_usage=scope_flags_usage)
 
 
-def EdgeSecurityPolicyArgumentForTargetResource(resource, required=False):
+def EdgeSecurityPolicyArgumentForTargetResource(
+    resource, required=False, short_help_text=None
+):
+  """Returns an edge security policy argument for the given target resource."""
+  if short_help_text:
+    short_help = short_help_text
+  elif resource == 'backend service':
+    short_help = (
+        'The resource name or URI of the Cloud Armor edge security policy to '
+        'assign to this backend service. This flag accepts a single string '
+        'identifier representing an existing policy, rather than a file path '
+        'or complex structured configuration. To remove a currently attached '
+        'policy from this backend service, set the value to an empty string '
+        '(for example, `"`).\n\n'
+    )
+  else:
+    short_help = (
+        'The name or full resource URI of an existing Cloud Armor edge '
+        'security policy to attach to this backend bucket. To remove the '
+        'currently attached policy from the backend bucket, set the value to '
+        'an empty string (for example, `--edge-security-policy="`).\n\n'
+    )
   return compute_flags.ResourceArgument(
       resource_name='security policy',
       name='--edge-security-policy',
@@ -139,10 +160,8 @@ def EdgeSecurityPolicyArgumentForTargetResource(resource, required=False):
       plural=False,
       required=required,
       global_collection='compute.securityPolicies',
-      short_help=(
-          ('The edge security policy that will be set for this {0}. To remove '
-           'the policy from this {0} set the policy to an empty string.'
-          ).format(resource)))
+      short_help=short_help,
+  )
 
 
 def SecurityPolicyArgumentForRules(required=False):

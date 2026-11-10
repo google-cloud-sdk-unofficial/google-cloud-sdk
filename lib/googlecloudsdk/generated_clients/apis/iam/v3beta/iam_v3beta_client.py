@@ -66,7 +66,7 @@ class IamV3beta(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates an access policy, and returns a long running operation.
+      r"""Creates a Unified Access Policy, and returns a long running operation.
 
       Args:
         request: (IamFoldersLocationsAccessPoliciesCreateRequest) input message
@@ -93,7 +93,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an access policy.
+      r"""Deletes a Unified Access Policy.
 
       Args:
         request: (IamFoldersLocationsAccessPoliciesDeleteRequest) input message
@@ -120,7 +120,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an access policy.
+      r"""Gets a Unified Access Policy.
 
       Args:
         request: (IamFoldersLocationsAccessPoliciesGetRequest) input message
@@ -147,7 +147,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists access policies.
+      r"""Lists Unified Access Policies.
 
       Args:
         request: (IamFoldersLocationsAccessPoliciesListRequest) input message
@@ -174,7 +174,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates an access policy.
+      r"""Updates a Unified Access Policy.
 
       Args:
         request: (IamFoldersLocationsAccessPoliciesPatchRequest) input message
@@ -467,7 +467,7 @@ class IamV3beta(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates an access policy, and returns a long running operation.
+      r"""Creates a Unified Access Policy, and returns a long running operation.
 
       Args:
         request: (IamOrganizationsLocationsAccessPoliciesCreateRequest) input message
@@ -494,7 +494,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an access policy.
+      r"""Deletes a Unified Access Policy.
 
       Args:
         request: (IamOrganizationsLocationsAccessPoliciesDeleteRequest) input message
@@ -521,7 +521,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an access policy.
+      r"""Gets a Unified Access Policy.
 
       Args:
         request: (IamOrganizationsLocationsAccessPoliciesGetRequest) input message
@@ -548,7 +548,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists access policies.
+      r"""Lists Unified Access Policies.
 
       Args:
         request: (IamOrganizationsLocationsAccessPoliciesListRequest) input message
@@ -575,7 +575,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates an access policy.
+      r"""Updates a Unified Access Policy.
 
       Args:
         request: (IamOrganizationsLocationsAccessPoliciesPatchRequest) input message
@@ -1239,7 +1239,7 @@ class IamV3beta(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates an access policy, and returns a long running operation.
+      r"""Creates a Unified Access Policy, and returns a long running operation.
 
       Args:
         request: (IamProjectsLocationsAccessPoliciesCreateRequest) input message
@@ -1266,7 +1266,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an access policy.
+      r"""Deletes a Unified Access Policy.
 
       Args:
         request: (IamProjectsLocationsAccessPoliciesDeleteRequest) input message
@@ -1293,7 +1293,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an access policy.
+      r"""Gets a Unified Access Policy.
 
       Args:
         request: (IamProjectsLocationsAccessPoliciesGetRequest) input message
@@ -1320,7 +1320,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists access policies.
+      r"""Lists Unified Access Policies.
 
       Args:
         request: (IamProjectsLocationsAccessPoliciesListRequest) input message
@@ -1347,7 +1347,7 @@ class IamV3beta(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates an access policy.
+      r"""Updates a Unified Access Policy.
 
       Args:
         request: (IamProjectsLocationsAccessPoliciesPatchRequest) input message

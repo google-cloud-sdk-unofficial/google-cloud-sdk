@@ -20,6 +20,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class GoogleCloudLocationListLocationsResponse(_messages.Message):
   r"""The response message for Locations.ListLocations.
 

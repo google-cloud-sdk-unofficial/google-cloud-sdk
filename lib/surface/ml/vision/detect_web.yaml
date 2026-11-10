@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Detect entities in an image from similar images on the web.
@@ -26,6 +28,8 @@
     format: json
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Detect entities in an image from similar images on the web.

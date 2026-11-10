@@ -111,7 +111,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint.
+      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterFoldersAssetsUpdateSecurityMarksRequest) input message
@@ -148,7 +148,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def BulkMute(self, request, global_params=None):
-      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done.
+      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.bulkMuteUpdate`.
 
       Args:
         request: (SecuritycenterFoldersFindingsBulkMuteRequest) input message
@@ -185,7 +185,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a BigQuery export.
+      r"""Creates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.create` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is specified): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterFoldersLocationsBigQueryExportsCreateRequest) input message
@@ -212,7 +212,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing BigQuery export.
+      r"""Deletes an existing BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.delete`.
 
       Args:
         request: (SecuritycenterFoldersLocationsBigQueryExportsDeleteRequest) input message
@@ -239,7 +239,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a BigQuery export.
+      r"""Gets a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.get`.
 
       Args:
         request: (SecuritycenterFoldersLocationsBigQueryExportsGetRequest) input message
@@ -266,7 +266,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned.
+      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.list`.
 
       Args:
         request: (SecuritycenterFoldersLocationsBigQueryExportsListRequest) input message
@@ -293,7 +293,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a BigQuery export.
+      r"""Updates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `big_query_export.name` field: - `securitycenter.bigQueryExports.update` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is updated): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterFoldersLocationsBigQueryExportsPatchRequest) input message
@@ -330,7 +330,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def BulkMute(self, request, global_params=None):
-      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done.
+      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.bulkMuteUpdate`.
 
       Args:
         request: (SecuritycenterFoldersLocationsFindingsBulkMuteRequest) input message
@@ -367,7 +367,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a mute config.
+      r"""Creates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.create`.
 
       Args:
         request: (SecuritycenterFoldersLocationsMuteConfigsCreateRequest) input message
@@ -394,7 +394,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config. If no location is specified, default is global.
+      r"""Deletes an existing mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterFoldersLocationsMuteConfigsDeleteRequest) input message
@@ -421,7 +421,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config. If no location is specified, default is global.
+      r"""Gets a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterFoldersLocationsMuteConfigsGetRequest) input message
@@ -448,7 +448,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists mute configs. If no location is specified, default is global.
+      r"""Lists mute configs. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.list`.
 
       Args:
         request: (SecuritycenterFoldersLocationsMuteConfigsListRequest) input message
@@ -475,7 +475,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config. If no location is specified, default is global.
+      r"""Updates a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterFoldersLocationsMuteConfigsPatchRequest) input message
@@ -512,7 +512,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a notification config.
+      r"""Creates a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.create` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is specified): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterFoldersLocationsNotificationConfigsCreateRequest) input message
@@ -539,7 +539,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a notification config.
+      r"""Deletes a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.delete`.
 
       Args:
         request: (SecuritycenterFoldersLocationsNotificationConfigsDeleteRequest) input message
@@ -566,7 +566,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a notification config.
+      r"""Gets a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.get`.
 
       Args:
         request: (SecuritycenterFoldersLocationsNotificationConfigsGetRequest) input message
@@ -593,7 +593,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists notification configs.
+      r"""Lists notification configs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.list`.
 
       Args:
         request: (SecuritycenterFoldersLocationsNotificationConfigsListRequest) input message
@@ -620,7 +620,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter.
+      r"""Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter # IAM Permissions Requires the following IAM permission on the `notification_config.name` field: - `securitycenter.notificationconfig.update` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is updated): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterFoldersLocationsNotificationConfigsPatchRequest) input message
@@ -667,7 +667,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a mute config.
+      r"""Creates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.create`.
 
       Args:
         request: (SecuritycenterFoldersMuteConfigsCreateRequest) input message
@@ -694,7 +694,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config. If no location is specified, default is global.
+      r"""Deletes an existing mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterFoldersMuteConfigsDeleteRequest) input message
@@ -721,7 +721,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config. If no location is specified, default is global.
+      r"""Gets a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterFoldersMuteConfigsGetRequest) input message
@@ -748,7 +748,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists mute configs. If no location is specified, default is global.
+      r"""Lists mute configs. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.list`.
 
       Args:
         request: (SecuritycenterFoldersMuteConfigsListRequest) input message
@@ -775,7 +775,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config. If no location is specified, default is global.
+      r"""Updates a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterFoldersMuteConfigsPatchRequest) input message
@@ -812,7 +812,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Patch(self, request, global_params=None):
-      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `external_system.name` field: - `securitycenter.findingexternalsystems.update`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsExternalSystemsPatchRequest) input message
@@ -849,7 +849,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings`.
+      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.group`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsGroupRequest) input message
@@ -876,7 +876,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsListRequest) input message
@@ -903,7 +903,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed.
+      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `finding.name` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsPatchRequest) input message
@@ -930,7 +930,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetMute(self, request, global_params=None):
-      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setMute`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsSetMuteRequest) input message
@@ -957,7 +957,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetState(self, request, global_params=None):
-      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setState`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsSetStateRequest) input message
@@ -984,7 +984,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint.
+      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsUpdateSecurityMarksRequest) input message
@@ -1021,7 +1021,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Patch(self, request, global_params=None):
-      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `external_system.name` field: - `securitycenter.findingexternalsystems.update`.
 
       Args:
         request: (SecuritycenterFoldersSourcesLocationsFindingsExternalSystemsPatchRequest) input message
@@ -1058,7 +1058,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Export(self, request, global_params=None):
-      r"""Kicks off an LRO to export findings for an organization to the customer's BigQuery dataset.
+      r"""Kicks off an LRO to export findings for an organization to the customer's BigQuery dataset. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.export`.
 
       Args:
         request: (SecuritycenterFoldersSourcesLocationsFindingsExportRequest) input message
@@ -1085,7 +1085,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings`.
+      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.group`.
 
       Args:
         request: (SecuritycenterFoldersSourcesLocationsFindingsGroupRequest) input message
@@ -1112,7 +1112,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterFoldersSourcesLocationsFindingsListRequest) input message
@@ -1139,7 +1139,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed.
+      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `finding.name` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterFoldersSourcesLocationsFindingsPatchRequest) input message
@@ -1166,7 +1166,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetMute(self, request, global_params=None):
-      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setMute`.
 
       Args:
         request: (SecuritycenterFoldersSourcesLocationsFindingsSetMuteRequest) input message
@@ -1193,7 +1193,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetState(self, request, global_params=None):
-      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setState`.
 
       Args:
         request: (SecuritycenterFoldersSourcesLocationsFindingsSetStateRequest) input message
@@ -1220,7 +1220,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint.
+      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterFoldersSourcesLocationsFindingsUpdateSecurityMarksRequest) input message
@@ -1267,7 +1267,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists all sources belonging to an organization.
+      r"""Lists all sources belonging to an organization. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.sources.list`.
 
       Args:
         request: (SecuritycenterFoldersSourcesListRequest) input message
@@ -1314,7 +1314,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint.
+      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterOrganizationsAssetsUpdateSecurityMarksRequest) input message
@@ -1351,7 +1351,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the attack paths for a set of simulation results or valued resources and filter.
+      r"""Lists the attack paths for a set of simulation results or valued resources and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.attackpaths.list`.
 
       Args:
         request: (SecuritycenterOrganizationsAttackPathsListRequest) input message
@@ -1388,7 +1388,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def BulkMute(self, request, global_params=None):
-      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done.
+      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.bulkMuteUpdate`.
 
       Args:
         request: (SecuritycenterOrganizationsFindingsBulkMuteRequest) input message
@@ -1425,7 +1425,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a BigQuery export.
+      r"""Creates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.create` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is specified): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsBigQueryExportsCreateRequest) input message
@@ -1452,7 +1452,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing BigQuery export.
+      r"""Deletes an existing BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsBigQueryExportsDeleteRequest) input message
@@ -1479,7 +1479,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a BigQuery export.
+      r"""Gets a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.get`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsBigQueryExportsGetRequest) input message
@@ -1506,7 +1506,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned.
+      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.list`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsBigQueryExportsListRequest) input message
@@ -1533,7 +1533,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a BigQuery export.
+      r"""Updates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `big_query_export.name` field: - `securitycenter.bigQueryExports.update` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is updated): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsBigQueryExportsPatchRequest) input message
@@ -1570,7 +1570,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def BulkMute(self, request, global_params=None):
-      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done.
+      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.bulkMuteUpdate`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsFindingsBulkMuteRequest) input message
@@ -1607,7 +1607,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a mute config.
+      r"""Creates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.create`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsMuteConfigsCreateRequest) input message
@@ -1634,7 +1634,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config. If no location is specified, default is global.
+      r"""Deletes an existing mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsMuteConfigsDeleteRequest) input message
@@ -1661,7 +1661,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config. If no location is specified, default is global.
+      r"""Gets a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsMuteConfigsGetRequest) input message
@@ -1688,7 +1688,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists mute configs. If no location is specified, default is global.
+      r"""Lists mute configs. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.list`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsMuteConfigsListRequest) input message
@@ -1715,7 +1715,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config. If no location is specified, default is global.
+      r"""Updates a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsMuteConfigsPatchRequest) input message
@@ -1752,7 +1752,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a notification config.
+      r"""Creates a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.create` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is specified): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsNotificationConfigsCreateRequest) input message
@@ -1779,7 +1779,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a notification config.
+      r"""Deletes a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsNotificationConfigsDeleteRequest) input message
@@ -1806,7 +1806,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a notification config.
+      r"""Gets a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.get`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsNotificationConfigsGetRequest) input message
@@ -1833,7 +1833,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists notification configs.
+      r"""Lists notification configs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.list`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsNotificationConfigsListRequest) input message
@@ -1860,7 +1860,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter.
+      r"""Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter # IAM Permissions Requires the following IAM permission on the `notification_config.name` field: - `securitycenter.notificationconfig.update` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is updated): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsNotificationConfigsPatchRequest) input message
@@ -1897,7 +1897,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def BatchCreate(self, request, global_params=None):
-      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to difference resource values for use by the attack path simulation.
+      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to difference resource values for use by the attack path simulation. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.create`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsResourceValueConfigsBatchCreateRequest) input message
@@ -1924,7 +1924,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a ResourceValueConfig.
+      r"""Deletes a ResourceValueConfig. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.resourcevalueconfigs.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsResourceValueConfigsDeleteRequest) input message
@@ -1951,7 +1951,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a ResourceValueConfig.
+      r"""Gets a ResourceValueConfig. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.resourcevalueconfigs.get`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsResourceValueConfigsGetRequest) input message
@@ -1978,7 +1978,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all ResourceValueConfigs.
+      r"""Lists all ResourceValueConfigs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.list`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsResourceValueConfigsListRequest) input message
@@ -2005,7 +2005,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates an existing ResourceValueConfigs with new rules.
+      r"""Updates an existing ResourceValueConfigs with new rules. # IAM Permissions Requires the following IAM permission on the `resource_value_config.name` field: - `securitycenter.resourcevalueconfigs.update`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsResourceValueConfigsPatchRequest) input message
@@ -2042,7 +2042,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the attack paths for a set of simulation results or valued resources and filter.
+      r"""Lists the attack paths for a set of simulation results or valued resources and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.attackpaths.list`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsSimulationsAttackExposureResultsAttackPathsListRequest) input message
@@ -2089,7 +2089,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the attack paths for a set of simulation results or valued resources and filter.
+      r"""Lists the attack paths for a set of simulation results or valued resources and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.attackpaths.list`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsSimulationsValuedResourcesAttackPathsListRequest) input message
@@ -2126,7 +2126,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get the valued resource by name.
+      r"""Gets the valued resource by name. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.valuedresources.get`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsSimulationsValuedResourcesGetRequest) input message
@@ -2163,7 +2163,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get the simulation by name or the latest simulation for the given organization.
+      r"""Gets the simulation by name or the latest simulation for the given organization. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.simulations.get`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsSimulationsGetRequest) input message
@@ -2210,7 +2210,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a mute config.
+      r"""Creates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.create`.
 
       Args:
         request: (SecuritycenterOrganizationsMuteConfigsCreateRequest) input message
@@ -2237,7 +2237,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config. If no location is specified, default is global.
+      r"""Deletes an existing mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsMuteConfigsDeleteRequest) input message
@@ -2264,7 +2264,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config. If no location is specified, default is global.
+      r"""Gets a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterOrganizationsMuteConfigsGetRequest) input message
@@ -2291,7 +2291,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists mute configs. If no location is specified, default is global.
+      r"""Lists mute configs. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.list`.
 
       Args:
         request: (SecuritycenterOrganizationsMuteConfigsListRequest) input message
@@ -2318,7 +2318,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config. If no location is specified, default is global.
+      r"""Updates a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterOrganizationsMuteConfigsPatchRequest) input message
@@ -2473,7 +2473,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def BatchCreate(self, request, global_params=None):
-      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to difference resource values for use by the attack path simulation.
+      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to difference resource values for use by the attack path simulation. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.create`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsBatchCreateRequest) input message
@@ -2500,7 +2500,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a ResourceValueConfig.
+      r"""Deletes a ResourceValueConfig. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.resourcevalueconfigs.delete`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsDeleteRequest) input message
@@ -2527,7 +2527,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a ResourceValueConfig.
+      r"""Gets a ResourceValueConfig. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.resourcevalueconfigs.get`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsGetRequest) input message
@@ -2554,7 +2554,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all ResourceValueConfigs.
+      r"""Lists all ResourceValueConfigs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.list`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsListRequest) input message
@@ -2581,7 +2581,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates an existing ResourceValueConfigs with new rules.
+      r"""Updates an existing ResourceValueConfigs with new rules. # IAM Permissions Requires the following IAM permission on the `resource_value_config.name` field: - `securitycenter.resourcevalueconfigs.update`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsPatchRequest) input message
@@ -2618,7 +2618,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the attack paths for a set of simulation results or valued resources and filter.
+      r"""Lists the attack paths for a set of simulation results or valued resources and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.attackpaths.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsAttackExposureResultsAttackPathsListRequest) input message
@@ -2655,7 +2655,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the valued resources for a set of simulation results and filter.
+      r"""Lists the valued resources for a set of simulation results and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.valuedresources.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsAttackExposureResultsValuedResourcesListRequest) input message
@@ -2702,7 +2702,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the attack paths for a set of simulation results or valued resources and filter.
+      r"""Lists the attack paths for a set of simulation results or valued resources and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.attackpaths.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsAttackPathsListRequest) input message
@@ -2739,7 +2739,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the attack paths for a set of simulation results or valued resources and filter.
+      r"""Lists the attack paths for a set of simulation results or valued resources and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.attackpaths.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsValuedResourcesAttackPathsListRequest) input message
@@ -2776,7 +2776,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get the valued resource by name.
+      r"""Gets the valued resource by name. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.valuedresources.get`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsValuedResourcesGetRequest) input message
@@ -2803,7 +2803,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists the valued resources for a set of simulation results and filter.
+      r"""Lists the valued resources for a set of simulation results and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.valuedresources.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsValuedResourcesListRequest) input message
@@ -2840,7 +2840,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get the simulation by name or the latest simulation for the given organization.
+      r"""Gets the simulation by name or the latest simulation for the given organization. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.simulations.get`.
 
       Args:
         request: (SecuritycenterOrganizationsSimulationsGetRequest) input message
@@ -2877,7 +2877,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Patch(self, request, global_params=None):
-      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `external_system.name` field: - `securitycenter.findingexternalsystems.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsExternalSystemsPatchRequest) input message
@@ -2914,7 +2914,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a finding in a location. The corresponding source must exist for finding creation to succeed.
+      r"""Creates a finding in a location. The corresponding source must exist for finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsCreateRequest) input message
@@ -2941,7 +2941,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings`.
+      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.group`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsGroupRequest) input message
@@ -2968,7 +2968,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsListRequest) input message
@@ -2995,7 +2995,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed.
+      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `finding.name` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsPatchRequest) input message
@@ -3022,7 +3022,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetMute(self, request, global_params=None):
-      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setMute`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsSetMuteRequest) input message
@@ -3049,7 +3049,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetState(self, request, global_params=None):
-      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setState`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsSetStateRequest) input message
@@ -3076,7 +3076,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint.
+      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsUpdateSecurityMarksRequest) input message
@@ -3113,7 +3113,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Patch(self, request, global_params=None):
-      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `external_system.name` field: - `securitycenter.findingexternalsystems.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesLocationsFindingsExternalSystemsPatchRequest) input message
@@ -3150,7 +3150,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a finding in a location. The corresponding source must exist for finding creation to succeed.
+      r"""Creates a finding in a location. The corresponding source must exist for finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesLocationsFindingsCreateRequest) input message
@@ -3177,7 +3177,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Export(self, request, global_params=None):
-      r"""Kicks off an LRO to export findings for an organization to the customer's BigQuery dataset.
+      r"""Kicks off an LRO to export findings for an organization to the customer's BigQuery dataset. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.export`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesLocationsFindingsExportRequest) input message
@@ -3204,7 +3204,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings`.
+      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.group`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesLocationsFindingsGroupRequest) input message
@@ -3231,7 +3231,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesLocationsFindingsListRequest) input message
@@ -3258,7 +3258,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed.
+      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `finding.name` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesLocationsFindingsPatchRequest) input message
@@ -3285,7 +3285,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetMute(self, request, global_params=None):
-      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setMute`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesLocationsFindingsSetMuteRequest) input message
@@ -3312,7 +3312,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetState(self, request, global_params=None):
-      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setState`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesLocationsFindingsSetStateRequest) input message
@@ -3339,7 +3339,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint.
+      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesLocationsFindingsUpdateSecurityMarksRequest) input message
@@ -3386,7 +3386,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a source.
+      r"""Creates a source. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.sources.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesCreateRequest) input message
@@ -3413,7 +3413,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a source.
+      r"""Gets a source. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.sources.get`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesGetRequest) input message
@@ -3440,7 +3440,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def GetIamPolicy(self, request, global_params=None):
-      r"""Gets the access control policy on the specified Source.
+      r"""Gets the access control policy on the specified Source. # IAM Permissions Requires the following IAM permission on the resource specified in the `resource` field: - `securitycenter.sources.getIamPolicy`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesGetIamPolicyRequest) input message
@@ -3467,7 +3467,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists all sources belonging to an organization.
+      r"""Lists all sources belonging to an organization. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.sources.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesListRequest) input message
@@ -3494,7 +3494,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a source.
+      r"""Updates a source. # IAM Permissions Requires the following IAM permission on the resource specified in the `source.name` field: - `securitycenter.sources.update`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesPatchRequest) input message
@@ -3521,7 +3521,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetIamPolicy(self, request, global_params=None):
-      r"""Sets the access control policy on the specified Source.
+      r"""Sets the access control policy on the specified Source. # IAM Permissions Requires the following IAM permission on the resource specified in the `resource` field: - `securitycenter.sources.setIamPolicy`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesSetIamPolicyRequest) input message
@@ -3585,7 +3585,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists the valued resources for a set of simulation results and filter.
+      r"""Lists the valued resources for a set of simulation results and filter. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.valuedresources.list`.
 
       Args:
         request: (SecuritycenterOrganizationsValuedResourcesListRequest) input message
@@ -3632,7 +3632,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint.
+      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterProjectsAssetsUpdateSecurityMarksRequest) input message
@@ -3669,7 +3669,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def BulkMute(self, request, global_params=None):
-      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done.
+      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.bulkMuteUpdate`.
 
       Args:
         request: (SecuritycenterProjectsFindingsBulkMuteRequest) input message
@@ -3706,7 +3706,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a BigQuery export.
+      r"""Creates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.create` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is specified): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterProjectsLocationsBigQueryExportsCreateRequest) input message
@@ -3733,7 +3733,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing BigQuery export.
+      r"""Deletes an existing BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.delete`.
 
       Args:
         request: (SecuritycenterProjectsLocationsBigQueryExportsDeleteRequest) input message
@@ -3760,7 +3760,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a BigQuery export.
+      r"""Gets a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.bigQueryExports.get`.
 
       Args:
         request: (SecuritycenterProjectsLocationsBigQueryExportsGetRequest) input message
@@ -3787,7 +3787,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned.
+      r"""Lists BigQuery exports. Note that when requesting BigQuery exports at a given level all exports under that level are also returned e.g. if requesting BigQuery exports under a folder, then all BigQuery exports immediately under the folder plus the ones created under the projects within the folder are returned. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.bigQueryExports.list`.
 
       Args:
         request: (SecuritycenterProjectsLocationsBigQueryExportsListRequest) input message
@@ -3814,7 +3814,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a BigQuery export.
+      r"""Updates a BigQuery export. # IAM Permissions Requires the following IAM permission on the resource specified in the `big_query_export.name` field: - `securitycenter.bigQueryExports.update` Also requires the following IAM permissions on the resource specified in the `big_query_export.dataset` field (when `dataset` is updated): - `bigquery.datasets.update` - `bigquery.datasets.get`.
 
       Args:
         request: (SecuritycenterProjectsLocationsBigQueryExportsPatchRequest) input message
@@ -3851,7 +3851,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def BulkMute(self, request, global_params=None):
-      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done.
+      r"""Kicks off an LRO to bulk mute findings for a parent based on a filter. If no location is specified, findings are muted in global. The parent can be either an organization, folder, or project. The findings matched by the filter will be muted after the LRO is done. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.bulkMuteUpdate`.
 
       Args:
         request: (SecuritycenterProjectsLocationsFindingsBulkMuteRequest) input message
@@ -3888,7 +3888,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a mute config.
+      r"""Creates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.create`.
 
       Args:
         request: (SecuritycenterProjectsLocationsMuteConfigsCreateRequest) input message
@@ -3915,7 +3915,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config. If no location is specified, default is global.
+      r"""Deletes an existing mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterProjectsLocationsMuteConfigsDeleteRequest) input message
@@ -3942,7 +3942,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config. If no location is specified, default is global.
+      r"""Gets a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterProjectsLocationsMuteConfigsGetRequest) input message
@@ -3969,7 +3969,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists mute configs. If no location is specified, default is global.
+      r"""Lists mute configs. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.list`.
 
       Args:
         request: (SecuritycenterProjectsLocationsMuteConfigsListRequest) input message
@@ -3996,7 +3996,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config. If no location is specified, default is global.
+      r"""Updates a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterProjectsLocationsMuteConfigsPatchRequest) input message
@@ -4033,7 +4033,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a notification config.
+      r"""Creates a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.create` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is specified): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterProjectsLocationsNotificationConfigsCreateRequest) input message
@@ -4060,7 +4060,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a notification config.
+      r"""Deletes a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.delete`.
 
       Args:
         request: (SecuritycenterProjectsLocationsNotificationConfigsDeleteRequest) input message
@@ -4087,7 +4087,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a notification config.
+      r"""Gets a notification config. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.notificationconfig.get`.
 
       Args:
         request: (SecuritycenterProjectsLocationsNotificationConfigsGetRequest) input message
@@ -4114,7 +4114,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists notification configs.
+      r"""Lists notification configs. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.notificationconfig.list`.
 
       Args:
         request: (SecuritycenterProjectsLocationsNotificationConfigsListRequest) input message
@@ -4141,7 +4141,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter.
+      r"""Updates a notification config. The following update fields are allowed: description, pubsub_topic, streaming_config.filter # IAM Permissions Requires the following IAM permission on the `notification_config.name` field: - `securitycenter.notificationconfig.update` Also requires the following IAM permission on the `notification_config.pubsub_topic` field (when `pubsub_topic` is updated): - `pubsub.topics.setIamPolicy`.
 
       Args:
         request: (SecuritycenterProjectsLocationsNotificationConfigsPatchRequest) input message
@@ -4188,7 +4188,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a mute config.
+      r"""Creates a mute config. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.create`.
 
       Args:
         request: (SecuritycenterProjectsMuteConfigsCreateRequest) input message
@@ -4215,7 +4215,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an existing mute config. If no location is specified, default is global.
+      r"""Deletes an existing mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.delete`.
 
       Args:
         request: (SecuritycenterProjectsMuteConfigsDeleteRequest) input message
@@ -4242,7 +4242,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a mute config. If no location is specified, default is global.
+      r"""Gets a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.muteconfigs.get`.
 
       Args:
         request: (SecuritycenterProjectsMuteConfigsGetRequest) input message
@@ -4269,7 +4269,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists mute configs. If no location is specified, default is global.
+      r"""Lists mute configs. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.muteconfigs.list`.
 
       Args:
         request: (SecuritycenterProjectsMuteConfigsListRequest) input message
@@ -4296,7 +4296,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a mute config. If no location is specified, default is global.
+      r"""Updates a mute config. If no location is specified, default is global. # IAM Permissions Requires the following IAM permission on the resource specified in the `mute_config.name` field: - `securitycenter.muteconfigs.update`.
 
       Args:
         request: (SecuritycenterProjectsMuteConfigsPatchRequest) input message
@@ -4333,7 +4333,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Patch(self, request, global_params=None):
-      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `external_system.name` field: - `securitycenter.findingexternalsystems.update`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsExternalSystemsPatchRequest) input message
@@ -4370,7 +4370,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings`.
+      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.group`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsGroupRequest) input message
@@ -4397,7 +4397,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsListRequest) input message
@@ -4424,7 +4424,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed.
+      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `finding.name` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsPatchRequest) input message
@@ -4451,7 +4451,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetMute(self, request, global_params=None):
-      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setMute`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsSetMuteRequest) input message
@@ -4478,7 +4478,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetState(self, request, global_params=None):
-      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setState`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsSetStateRequest) input message
@@ -4505,7 +4505,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint.
+      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsUpdateSecurityMarksRequest) input message
@@ -4542,7 +4542,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Patch(self, request, global_params=None):
-      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates external system. This is for a given finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `external_system.name` field: - `securitycenter.findingexternalsystems.update`.
 
       Args:
         request: (SecuritycenterProjectsSourcesLocationsFindingsExternalSystemsPatchRequest) input message
@@ -4579,7 +4579,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def Export(self, request, global_params=None):
-      r"""Kicks off an LRO to export findings for an organization to the customer's BigQuery dataset.
+      r"""Kicks off an LRO to export findings for an organization to the customer's BigQuery dataset. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.export`.
 
       Args:
         request: (SecuritycenterProjectsSourcesLocationsFindingsExportRequest) input message
@@ -4606,7 +4606,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Group(self, request, global_params=None):
-      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings`.
+      r"""Filters an organization or source's findings and groups them by their specified properties in a location. If no location is specified, findings are assumed to be in global To group across all sources provide a `-` as the source id. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` + `/v2/folders/{folder_id}/sources/-/findings` + `/v2/folders/{folder_id}/sources/-/locations/{location_id}/findings` + `/v2/projects/{project_id}/sources/-/findings` + `/v2/projects/{project_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.group`.
 
       Args:
         request: (SecuritycenterProjectsSourcesLocationsFindingsGroupRequest) input message
@@ -4633,7 +4633,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterProjectsSourcesLocationsFindingsListRequest) input message
@@ -4660,7 +4660,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed.
+      r"""Creates or updates a finding. If no location is specified, finding is assumed to be in global. The corresponding source must exist for a finding creation to succeed. # IAM Permissions Requires the following IAM permission on the resource specified in the `finding.name` field: - `securitycenter.findings.update`.
 
       Args:
         request: (SecuritycenterProjectsSourcesLocationsFindingsPatchRequest) input message
@@ -4687,7 +4687,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetMute(self, request, global_params=None):
-      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the mute state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setMute`.
 
       Args:
         request: (SecuritycenterProjectsSourcesLocationsFindingsSetMuteRequest) input message
@@ -4714,7 +4714,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def SetState(self, request, global_params=None):
-      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global.
+      r"""Updates the state of a finding. If no location is specified, finding is assumed to be in global # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.findings.setState`.
 
       Args:
         request: (SecuritycenterProjectsSourcesLocationsFindingsSetStateRequest) input message
@@ -4741,7 +4741,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def UpdateSecurityMarks(self, request, global_params=None):
-      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint.
+      r"""Updates security marks. For Finding Security marks, if no location is specified, finding is assumed to be in global. Assets Security Marks can only be accessed through global endpoint. # IAM Permissions Requires one of the following IAM permissions on the resource specified in the `security_marks.name` field (depending on the resource type): - `securitycenter.assetsecuritymarks.update` - `securitycenter.findingsecuritymarks.update`.
 
       Args:
         request: (SecuritycenterProjectsSourcesLocationsFindingsUpdateSecurityMarksRequest) input message
@@ -4788,7 +4788,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists all sources belonging to an organization.
+      r"""Lists all sources belonging to an organization. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.sources.list`.
 
       Args:
         request: (SecuritycenterProjectsSourcesListRequest) input message

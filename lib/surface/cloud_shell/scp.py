@@ -104,37 +104,75 @@ cloudshell:~/REMOTE-DIR
         action='append')
 
   def Run(self, args):
-    connection_info = util.PrepareEnvironment(args)
+    connection_info = util.PrepareEnvironmentNoKey(args)
     if not connection_info.web_host:
       raise FileNotFoundError(
           'Failed to get Cloud Shell web host. Environment might not be fully'
           ' initialized.'
       )
     jwt = util.GenerateAccessToken()
-    tunnel = CloudShellTunnel(host=connection_info.web_host, jwt=jwt)
-    tunnel.Start()
-    remote = ssh.Remote(host='localhost', user=connection_info.user)
-    command = ssh.SCPCommand(
-        sources=[ToFileReference(src, remote) for src in args.sources],
-        destination=ToFileReference(args.destination, remote),
-        recursive=args.recurse,
-        compress=False,
-        port=str(tunnel.local_port),
-        identity_file=connection_info.key,
-        extra_flags=args.scp_flag,
-        options={'StrictHostKeyChecking': 'no'},
+
+    for port in (22, 2222):
+      try:
+        return self._RunAttempt(
+            args=args,
+            connection_info=connection_info,
+            jwt=jwt,
+            port=port,
+            use_key=False,
+        )
+      except (ssh.CommandError, OSError):
+        pass  # no logs
+
+    return self._RunAttempt(
+        args=args,
+        connection_info=connection_info,
+        jwt=jwt,
+        port=22,
+        use_key=True,
     )
-    # TODO(b/513021781): Cleanup AddPublicKey 410 fallback and direct SSH once
-    # passwordless SSH is fully enforced.
+
+  def _RunAttempt(
+      self, args, connection_info, jwt: str, port: int, use_key: bool
+  ):
+    tunnel = CloudShellTunnel(
+        host=connection_info.web_host,
+        jwt=jwt,
+        remote_port=port,
+        log_errors_as_debug=True,
+    )
     try:
+      tunnel.Start()
+      conn_info = util.PrepareEnvironment(args) if use_key else connection_info
+      remote = ssh.Remote(host='localhost', user=conn_info.user)
+      command = ssh.SCPCommand(
+          sources=[ToFileReference(src, remote) for src in args.sources],
+          destination=ToFileReference(args.destination, remote),
+          recursive=args.recurse,
+          compress=False,
+          port=str(tunnel.local_port),
+          identity_file=conn_info.key if use_key else None,
+          extra_flags=args.scp_flag,
+          options={
+              'StrictHostKeyChecking': 'no',
+              'PubkeyAuthentication': 'yes' if use_key else 'no',
+              'PreferredAuthentications': (
+                  'publickey' if use_key else 'password'
+              ),
+              'BatchMode': 'yes',
+              'LogLevel': 'QUIET',
+          },
+      )
       if args.dry_run:
-        log.Print(' '.join(command.Build(connection_info.ssh_env)))
-      else:
-        try:
-          command.Run(connection_info.ssh_env)
-        except ssh.CommandError as exc:
-          if connection_info.add_public_key_error:
-            raise connection_info.add_public_key_error from exc
-          raise
+        log.Print(' '.join(command.Build(conn_info.ssh_env)))
+        return
+      # TODO(b/513021781): Cleanup AddPublicKey 410 fallback and direct SSH
+      # once passwordless SSH is fully enforced.
+      try:
+        command.Run(conn_info.ssh_env)
+      except ssh.CommandError as exc:
+        if conn_info.add_public_key_error:
+          raise conn_info.add_public_key_error from exc
+        raise
     finally:
       tunnel.Stop()

@@ -31,6 +31,8 @@
         updateTime
       )
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: List BigLake Delta Sharing catalogs.
     description: |

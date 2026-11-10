@@ -14,8 +14,10 @@
 # limitations under the License.
 """Get or provision a Starter Tier project for onboarding."""
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.onboarding import session_orchestration
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.onboarding import api_keys
@@ -25,6 +27,25 @@ from googlecloudsdk.core import log
 
 # Experience ID for getting or provisioning a starter-tier project.
 _STARTER_TIER_XP_ID = 'de8dd731-c5da-4669-87e2-318c6142e112'
+
+_EXPERIENCE_DISABLED_ERROR = 'Onboarding experience is disabled'
+_FEATURE_DISABLED_MESSAGE = (
+    'This feature is in private preview for allowlisted accounts only and is'
+    ' not enabled for this account. To create or select a project, use'
+    ' `gcloud projects` commands or visit the Google Cloud Console'
+    ' (https://console.cloud.google.com)'
+)
+
+
+def _IsExperienceDisabledError(error: apitools_exceptions.HttpError) -> bool:
+  """Returns whether `error` indicates the onboarding experience is disabled."""
+  payload = api_exceptions.HttpErrorPayload(error)
+  content = str(payload.content)
+  return (
+      payload.status_code == 500
+      and 'FAILED_PRECONDITION' in content
+      and _EXPERIENCE_DISABLED_ERROR in content
+  )
 
 
 def _GetProject(session):
@@ -85,13 +106,20 @@ class GetProject(base.Command):
           xpId=_STARTER_TIER_XP_ID,
       )
 
-      session = session_orchestration.ResolveAndOrchestrateSession(
-          intent=intent,
-          client=client,
-          messages=messages,
-          auto_accept_tos_ids=args.auto_accept_tos_ids,
-          selected_region_name=args.region,
-      )
+      try:
+        session = session_orchestration.ResolveAndOrchestrateSession(
+            intent=intent,
+            client=client,
+            messages=messages,
+            auto_accept_tos_ids=args.auto_accept_tos_ids,
+            selected_region_name=args.region,
+        )
+      except apitools_exceptions.HttpError as e:
+        if _IsExperienceDisabledError(e):
+          raise onboarding_exceptions.ExperienceDisabledError(
+              _FEATURE_DISABLED_MESSAGE
+          ) from e
+        raise
       project_id = _GetProject(session)
       if not project_id:
         raise onboarding_exceptions.SessionProtocolError(

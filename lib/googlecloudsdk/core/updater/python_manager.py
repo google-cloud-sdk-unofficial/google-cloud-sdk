@@ -16,10 +16,12 @@
 """Python installers for gcloud."""
 
 import os
+import subprocess
 import sys
 
 from googlecloudsdk.core import config
 from googlecloudsdk.core import execution_utils
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
@@ -137,6 +139,21 @@ def _BrewInstallPython():
   return python_to_use
 
 
+def _CanRunSudoWithoutPassword():
+  """Returns True if sudo can run without prompting for a password."""
+  try:
+    result = subprocess.run(
+        ['sudo', '-n', 'true'],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+  except OSError:
+    return False
+  return result.returncode == 0
+
+
 def _MacInstallPython():
   """Optionally install Python on Mac machines."""
 
@@ -144,6 +161,18 @@ def _MacInstallPython():
   if os.path.isfile(python_to_use):
     print(f'Python {PYTHON_VERSION} is already installed.')
     return python_to_use
+
+  sudo_command = ['sudo']
+  if not console_io.CanPrompt() or not sys.stdin.isatty():
+    # Without a terminal, sudo cannot prompt for a password and would hang.
+    # Proceed only when sudo is passwordless (e.g. CI machines), and pass -n so
+    # sudo fails instead of prompting.
+    if not _CanRunSudoWithoutPassword():
+      _PrintPythonInstallError(
+          'Cannot run interactive sudo Python installer in non-interactive mode'
+      )
+      return None
+    sudo_command = ['sudo', '-n']
 
   print(f'Running Python {PYTHON_VERSION} installer, you may be prompted for '
         'sudo password...')
@@ -167,10 +196,17 @@ def _MacInstallPython():
         _PrintPythonInstallError('Failed to extract Python installer')
         return None
 
-      exit_code = execution_utils.Exec([
-          'sudo', 'installer', '-target', '/', '-pkg',
-          './python-3.14.6-macos11.pkg'
-      ], no_exit=True)
+      exit_code = execution_utils.Exec(
+          sudo_command
+          + [
+              'installer',
+              '-target',
+              '/',
+              '-pkg',
+              './python-3.14.6-macos11.pkg',
+          ],
+          no_exit=True,
+      )
       if exit_code != 0:
         _PrintPythonInstallError('Installer failed.')
         return None

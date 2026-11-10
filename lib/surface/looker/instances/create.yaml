@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
 
   help_text:
     brief: |
@@ -141,25 +143,24 @@
       help_text: |
         This specifies whether FIPS is enabled on the Looker instance.
       default: false
-    # Required Flags - OAuth
-    - api_field: instance.oauthConfig.clientId
-      arg_name: oauth-client-id
-      required: true
-      help_text: |
-          The client ID from an external OAuth application.
-
+    # Group for Oauth configuration
+    - group:
+        required: false
+        help_text: |
           OAuth Application Credentials - Looker Instance OAuth login settings. Setup an OAuth
           app that will allow users to authenticate and access the instance. For more
           information see: https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred
-    - api_field: instance.oauthConfig.clientSecret
-      arg_name: oauth-client-secret
-      required: true
-      help_text: |
-          The client secret from an external OAuth application.
-
-          OAuth Application Credentials - Looker Instance OAuth login settings. Setup an OAuth
-          app that will allow users to authenticate and access the instance. For more
-          information see: https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred
+        params:
+        - api_field: instance.oauthConfig.clientId
+          arg_name: oauth-client-id
+          required: true
+          help_text: |
+            The client ID from an external OAuth application.
+        - api_field: instance.oauthConfig.clientSecret
+          arg_name: oauth-client-secret
+          required: true
+          help_text: |
+            The client secret from an external OAuth application.
     # Class Type for PD SSD
     - arg_name: class-type
       required: false
@@ -419,11 +420,13 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.looker.instances_util:SetDefaultReleaseChannel
       - googlecloudsdk.command_lib.looker.instances_util:ValidateReleaseChannelConfig
+      - googlecloudsdk.command_lib.looker.instances_util:ValidateOAuthConfig
     GA:
       api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.looker.instances_util:SetDefaultReleaseChannel
       - googlecloudsdk.command_lib.looker.instances_util:ValidateReleaseChannelConfig
+      - googlecloudsdk.command_lib.looker.instances_util:ValidateOAuthConfig
 
     collection: looker.projects.locations.instances
     regional_endpoint_compatibility: SUPPORTED

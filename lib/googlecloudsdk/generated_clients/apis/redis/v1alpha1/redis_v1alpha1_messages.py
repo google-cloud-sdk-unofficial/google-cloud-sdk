@@ -6099,6 +6099,20 @@ class Tags(_messages.Message):
   tags = _messages.MessageField('TagsValue', 1)
 
 
+class TargetMachineTypes(_messages.Message):
+  r"""TargetMachineTypes specifies the list of machine types that should
+  trigger emulated failure in a zone.
+
+  Fields:
+    machineTypes: Optional. Machine types to emulate failure for in the zone
+      (e.g., ["n4-highmem-2", "n2-highmem-2"]). For a fungible candidate with
+      multiple machine types, failure is emulated in the zone when all of the
+      candidate's machine types are included in `machine_types`.
+  """
+
+  machineTypes = _messages.StringField(1, repeated=True)
+
+
 class TimeOfDay(_messages.Message):
   r"""Represents a time of day. The date and time zone are either not
   significant or are specified elsewhere. An API may choose to allow leap
@@ -6354,6 +6368,12 @@ class ZonalFailureEmulationSpec(_messages.Message):
       failure for. Defaults to DATA_MIGS_ONLY.
 
   Messages:
+    TargetZoneMachineTypesValue: Optional. Per-zone target machine types that
+      should trigger emulated failure. The key is the zone name and the value
+      is the list of target machine types that fail in that zone. If a zone is
+      specified in `zones` but not present in this map (or has an empty
+      `machine_types` list), failure is emulated for all machine types in that
+      zone.
     VmCreationSuccessRatesValue: Optional. Success rate for VM creation in
       each zone. This is used to simulate partial stockout errors in each
       zone. The key is the zone name and the value is the success rate.
@@ -6373,6 +6393,12 @@ class ZonalFailureEmulationSpec(_messages.Message):
       Defaults to ALL_OPERATIONS.
     targetMigType: Optional. The target MIG type to emulate failure for.
       Defaults to DATA_MIGS_ONLY.
+    targetZoneMachineTypes: Optional. Per-zone target machine types that
+      should trigger emulated failure. The key is the zone name and the value
+      is the list of target machine types that fail in that zone. If a zone is
+      specified in `zones` but not present in this map (or has an empty
+      `machine_types` list), failure is emulated for all machine types in that
+      zone.
     vmCreationSuccessRates: Optional. Success rate for VM creation in each
       zone. This is used to simulate partial stockout errors in each zone. The
       key is the zone name and the value is the success rate. Success rate is
@@ -6429,6 +6455,36 @@ class ZonalFailureEmulationSpec(_messages.Message):
     ALL_MIGS = 3
 
   @encoding.MapUnrecognizedFields('additionalProperties')
+  class TargetZoneMachineTypesValue(_messages.Message):
+    r"""Optional. Per-zone target machine types that should trigger emulated
+    failure. The key is the zone name and the value is the list of target
+    machine types that fail in that zone. If a zone is specified in `zones`
+    but not present in this map (or has an empty `machine_types` list),
+    failure is emulated for all machine types in that zone.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        TargetZoneMachineTypesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        TargetZoneMachineTypesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TargetZoneMachineTypesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A TargetMachineTypes attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('TargetMachineTypes', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
   class VmCreationSuccessRatesValue(_messages.Message):
     r"""Optional. Success rate for VM creation in each zone. This is used to
     simulate partial stockout errors in each zone. The key is the zone name
@@ -6464,8 +6520,9 @@ class ZonalFailureEmulationSpec(_messages.Message):
   errorSource = _messages.EnumField('ErrorSourceValueValuesEnum', 2)
   operationScope = _messages.EnumField('OperationScopeValueValuesEnum', 3)
   targetMigType = _messages.EnumField('TargetMigTypeValueValuesEnum', 4)
-  vmCreationSuccessRates = _messages.MessageField('VmCreationSuccessRatesValue', 5)
-  zones = _messages.StringField(6, repeated=True)
+  targetZoneMachineTypes = _messages.MessageField('TargetZoneMachineTypesValue', 5)
+  vmCreationSuccessRates = _messages.MessageField('VmCreationSuccessRatesValue', 6)
+  zones = _messages.StringField(7, repeated=True)
 
 
 class ZoneDistributionConfig(_messages.Message):

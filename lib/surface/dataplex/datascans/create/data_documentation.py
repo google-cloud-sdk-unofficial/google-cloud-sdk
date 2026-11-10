@@ -94,8 +94,14 @@ class DataDocumentation(base.Command):
     )
     data_spec_group.add_argument(
         '--custom-instructions',
-        hidden=True,
         help='Custom instructions to guide the data documentation generation.',
+    )
+    data_spec_group.add_argument(
+        '--sql-dialect',
+        choices=['GOOGLE_SQL', 'SPARK_SQL'],
+        help=(
+            'SQL dialect to use in the generated SQL queries.'
+        ),
     )
     execution_spec = parser.add_group(
         help='Data documentation scan execution settings.'

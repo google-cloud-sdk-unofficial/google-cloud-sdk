@@ -184,6 +184,35 @@ def AddHost(parser):
   )
 
 
+def AddUserView(parser):
+  """Add the hidden '--view' flag for user get and list commands to the parser."""
+  base.ChoiceArgument(
+      '--view',
+      required=False,
+      hidden=True,
+      choices={
+          'basic': (
+              'Returns basic user metadata, without security findings. This'
+              ' is the default.'
+          ),
+          'full': (
+              'Returns full user metadata, including security findings such as'
+              ' credential audit results. Requires the'
+              ' `cloudsql.users.viewSecurityFindings` permission on the'
+              ' instance.'
+          ),
+      },
+      help_str='Specifies which user fields to return.',
+  ).AddToParser(parser)
+
+
+def GetUserView(view, view_enum):
+  """Returns the user view enum value for the '--view' flag value, or None."""
+  if not view:
+    return None
+  return view_enum.lookup_by_name('USER_VIEW_' + view.upper())
+
+
 def AddAvailabilityType(parser, hidden=False):
   """Add the '--availability-type' flag to the parser."""
   availabilty_type_flag = base.ChoiceArgument(
@@ -2625,8 +2654,10 @@ def AddMsdtcEnabled(
       required=False,
       help=(
           'Enable/Disable Microsoft Distributed Transaction Coordinator '
-          '(MSDTC) for SQL Server instances. Enabling MSDTC requires a SQL '
-          'Server restart to take effect.'
+          '(MSDTC) for SQL Server instances. MSDTC is only supported on '
+          'Private Services Access (PSA) instances and opens TCP ports 135 '
+          'and 51999 in the VPC. Enabling or disabling MSDTC restarts SQL '
+          'Server.'
       ),
       hidden=hidden,
   )
@@ -2645,13 +2676,21 @@ def AddMsdtcRpcAuthMode(
       required=False,
       choices={
           'allow-only-secure-rpc-calls': (
-              'Allow only secure RPC calls. Both servers (caller and receiver)'
-              " must successfully verify each other's identities."
+              'Allow only secure RPC calls. Both the caller and the receiver'
+              ' authenticate each other. Requires Active Directory.'
           ),
           'fallback-to-unsecure-rpc-if-necessary': (
-              'The caller authenticates to the receiver, but not vice-versa.'
+              'Allow unsecure RPC calls if mutual authentication fails.'
+              ' Requires Active Directory.'
           ),
-          'turn-off-rpc-security': 'No authentication.',
+          'turn-off-rpc-security': (
+              'Turn off RPC authentication. MSDTC accepts RPC calls without'
+              ' verifying the identity of the caller, so any client that can'
+              ' reach the instance can send MSDTC RPC calls to it. Use this'
+              ' mode only on a trusted network, and use VPC firewall rules to'
+              ' limit which clients can reach TCP ports 135 and 51999 on the'
+              ' instance.'
+          ),
       },
       help_str=help_text,
       hidden=hidden,
@@ -2881,6 +2920,16 @@ ENTRAID_CERTS_FORMAT = """
     ssl_cert.createTime.yesno(no="-"):label=CREATE_TIME,
     ssl_cert.expirationTime.yesno(no="-"):label=EXPIRATION,
     state
+  )
+"""
+
+CUSTOMER_MANAGED_CERTS_FORMAT = """
+  table(
+    bundle,
+    intent,
+    primaryDnsRecord.dns:label=PRIMARY_DNS,
+    primaryDnsRecord.ipv4Address:label=PRIMARY_IPV4_ADDRESS,
+    customerManagedCertificates.*extract(filePath).flatten().list():label=FILE_PATHS
   )
 """
 

@@ -247,6 +247,18 @@ class AppEngineToCloudRun(replace.Replace):
             ' Migration stops without deploying the service.'
         ),
     )
+    parser.add_argument(
+        '--from-image',
+        action='store_true',
+        help='Use image based migration.',
+    )
+    parser.add_argument(
+        '--destination-repository',
+        help=(
+            'The full resource name of the AR repository to export to in the'
+            ' format of projects/*/locations/*/repositories/*.'
+        ),
+    )
 
   def Run(self, args):
     """Overrides the Replace.Run method.
@@ -354,14 +366,14 @@ class AppEngineToCloudRun(replace.Replace):
       or (None, None) if they cannot be determined.
     """
 
-    # Image-based deployment is only supported in ALPHA track with --from-image.
-    if self.ReleaseTrack() is not base.ReleaseTrack.ALPHA:
-      return None, None
     if not getattr(args, 'from_image', False):
       return None, None
 
-    # For Flex environments, extract the existing container image.
+    # For Flex environments, image-based deployment is only supported in ALPHA
+    # track by extracting the existing container image.
     if util.is_flex_env(input_data):
+      if self.ReleaseTrack() is not base.ReleaseTrack.ALPHA:
+        return None, None
       image = util.get_container_image(input_data)
       if image:
         return image, None
@@ -491,6 +503,18 @@ class AppEngineToCloudRun(replace.Replace):
     input_data, input_type = util.get_version_data(
         appyaml=args.appyaml, service=args.service, version=args.version
     )
+    if (
+        input_data
+        and getattr(args, 'from_image', False)
+        and util.is_flex_env(input_data)
+        and self.ReleaseTrack() is not base.ReleaseTrack.ALPHA
+    ):
+      raise core_exceptions.Error(
+          'Image-based migration (--from-image) for App Engine Flexible'
+          ' environment is only supported in the ALPHA track. Use "gcloud'
+          ' alpha app migrate-to-run --from-image", or deploy from source'
+          ' using "gcloud app migrate-to-run" without --from-image.'
+      )
     list_incompatible_features.list_incompatible_features(
         input_data, input_type, args.appyaml, args.service, args.version
     )
@@ -645,7 +669,7 @@ class AppEngineToCloudRun(replace.Replace):
     service = args.SERVICE or 'default'
     project = properties.VALUES.core.project.Get()
 
-    if self.release_track is base.ReleaseTrack.ALPHA and args.from_image:
+    if getattr(args, 'from_image', False):
       log.status.Print(
           'View and edit in Cloud Run console:'
           f' https://console.cloud.google.com/run/detail/{region}/{service}/metrics?project={project}\nDeploy'
@@ -714,24 +738,3 @@ class AppEngineToCloudRun(replace.Replace):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AppEngineToCloudRunAlpha(AppEngineToCloudRun):
   """Migrate a second-generation App Engine app to Cloud Run."""
-
-  @classmethod
-  def CommonArgs(cls, parser) -> None:
-    super().CommonArgs(parser)
-    parser.add_argument(
-        '--from-source',
-        action='store_true',
-        help='Use source based migration.',
-    )
-    parser.add_argument(
-        '--from-image',
-        action='store_true',
-        help='Use image based migration.',
-    )
-    parser.add_argument(
-        '--destination-repository',
-        help=(
-            'The full resource name of the AR repository to export to in the'
-            ' format of projects/*/locations/*/repositories/*.'
-        ),
-    )

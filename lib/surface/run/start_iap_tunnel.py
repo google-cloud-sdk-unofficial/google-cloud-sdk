@@ -51,7 +51,10 @@ class StartIapTunnel(base.Command):
     parser.add_argument(
         "--workload_type",
         required=True,
-        help="The type of the workload. One of service, job, or worker-pool.",
+        help=(
+            "The type of the workload. One of service, job, worker_pool, or"
+            " instance."
+        ),
     )
     parser.add_argument(
         "--deployment_name",

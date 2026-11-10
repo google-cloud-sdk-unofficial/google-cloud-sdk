@@ -812,6 +812,14 @@ def update_bucket_metadata_from_request_config(bucket_metadata, request_config):
             resource_args.soft_delete_duration
         )
     )
+  if resource_args.hard_delete_pause is not None:
+    # Must run after the soft delete duration update above, so that both
+    # settings can be applied in the same request.
+    bucket_metadata.softDeletePolicy = (
+        metadata_field_converters.process_hard_delete_pause(
+            bucket_metadata.softDeletePolicy, resource_args.hard_delete_pause
+        )
+    )
   if resource_args.versioning is not None:
     bucket_metadata.versioning = (
         metadata_field_converters.process_versioning(

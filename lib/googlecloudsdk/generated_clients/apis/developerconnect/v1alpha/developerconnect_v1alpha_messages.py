@@ -295,18 +295,18 @@ class Connection(_messages.Message):
       Bitbucket Clouds.
     bitbucketDataCenterConfig: Configuration for connections to an instance of
       Bitbucket Data Center.
-    createTime: Output only. [Output only] Create timestamp
+    createTime: Output only. Create timestamp.
     cryptoKeyConfig: Optional. The crypto key configuration. This field is
       used by the Customer-Managed Encryption Keys (CMEK) feature.
-    deleteTime: Output only. [Output only] Delete timestamp
+    deleteTime: Output only. Delete timestamp.
     disabled: Optional. If disabled is set to true, functionality is disabled
       for this connection. Repository based API methods and webhooks
       processing for repositories in this connection will be disabled.
     etag: Optional. This checksum is computed by the server based on the value
       of other fields, and may be sent on update and delete requests to ensure
       the client has an up-to-date value before proceeding.
-    gitProxyConfig: Optional. Configuration for the git proxy feature.
-      Enabling the git proxy allows clients to perform git operations on the
+    gitProxyConfig: Optional. Configuration for the Git proxy feature.
+      Enabling the Git proxy allows clients to perform Git operations on the
       repositories linked in the connection. [Learn
       more](https://docs.cloud.google.com/developer-connect/docs/configure-
       git-proxy).
@@ -327,7 +327,7 @@ class Connection(_messages.Message):
     secureSourceManagerInstanceConfig: Configuration for connections to an
       instance of Secure Source Manager.
     uid: Output only. A system-assigned unique identifier for the Connection.
-    updateTime: Output only. [Output only] Update timestamp
+    updateTime: Output only. Update timestamp.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -633,8 +633,8 @@ class DeveloperconnectProjectsLocationsAccountConnectorsListRequest(_messages.Me
   r"""A DeveloperconnectProjectsLocationsAccountConnectorsListRequest object.
 
   Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
@@ -787,8 +787,8 @@ class DeveloperconnectProjectsLocationsAccountConnectorsUsersListRequest(_messag
   object.
 
   Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
@@ -821,9 +821,8 @@ class DeveloperconnectProjectsLocationsConnectionsCreateRequest(_messages.Messag
 
   Fields:
     connection: A Connection resource to be passed as the request body.
-    connectionId: Required. Id of the requesting object If auto-generating Id
-      server-side, remove this field and connection_id from the
-      method_signature of Create RPC
+    connectionId: Required. The ID to use for the connection, which becomes
+      the final component of the connection's resource name.
     parent: Required. Value for parent.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -1064,13 +1063,13 @@ class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksListRequest(
   object.
 
   Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value for ListGitRepositoryLinksRequest
+    parent: Required. Parent value for ListGitRepositoryLinksRequest.
   """
 
   filter = _messages.StringField(1)
@@ -1148,8 +1147,8 @@ class DeveloperconnectProjectsLocationsConnectionsListRequest(_messages.Message)
   r"""A DeveloperconnectProjectsLocationsConnectionsListRequest object.
 
   Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
@@ -1744,8 +1743,8 @@ class GitProxyConfig(_messages.Message):
   `GitProxyConfig`, but it includes settings for both Git and HTTP proxy.
 
   Fields:
-    enabled: Optional. Setting this to true allows the git proxy to be used
-      for performing git operations on the repositories linked in the
+    enabled: Optional. Setting this to true allows the Git proxy to be used
+      for performing Git operations on the repositories linked in the
       connection.
     httpProxyBaseUri: Output only. The base URI for the HTTP proxy endpoint.
       Has the format
@@ -1770,13 +1769,13 @@ class GitRepositoryLink(_messages.Message):
     annotations: Optional. Allows clients to store small amounts of arbitrary
       data.
     cloneUri: Required. Git Clone URI.
-    createTime: Output only. [Output only] Create timestamp
-    deleteTime: Output only. [Output only] Delete timestamp
+    createTime: Output only. Create timestamp.
+    deleteTime: Output only. Delete timestamp.
     etag: Optional. This checksum is computed by the server based on the value
       of other fields, and may be sent on update and delete requests to ensure
       the client has an up-to-date value before proceeding.
     gitProxyUri: Output only. URI to access the linked repository through the
-      Git Proxy. This field is only populated if the git proxy is enabled for
+      Git proxy. This field is only populated if the Git proxy is enabled for
       the connection.
     labels: Optional. Labels as key value pairs
     name: Identifier. Resource name of the repository, in the format
@@ -1785,7 +1784,7 @@ class GitRepositoryLink(_messages.Message):
       or updated in the background.
     uid: Output only. A system-assigned unique identifier for the
       GitRepositoryLink.
-    updateTime: Output only. [Output only] Update timestamp
+    updateTime: Output only. Update timestamp.
     webhookId: Output only. External ID of the webhook created for the
       repository.
   """
@@ -2160,7 +2159,7 @@ class ListConnectionsResponse(_messages.Message):
   r"""Message for response to listing Connections
 
   Fields:
-    connections: The list of Connection
+    connections: The list of Connections.
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Locations that could not be reached.
@@ -2188,7 +2187,7 @@ class ListGitRepositoryLinksResponse(_messages.Message):
   r"""Message for response to listing GitRepositoryLinks
 
   Fields:
-    gitRepositoryLinks: The list of GitRepositoryLinks
+    gitRepositoryLinks: The list of GitRepositoryLinks.
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Locations that could not be reached.

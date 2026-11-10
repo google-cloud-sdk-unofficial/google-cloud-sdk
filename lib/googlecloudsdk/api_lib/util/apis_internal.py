@@ -147,7 +147,8 @@ def _GetClientInstance(api_name,
                        http_client=None,
                        check_response_func=None,
                        http_timeout_sec=None,
-                       region=None):
+                       region=None,
+                       redact_request_body_reason=None):
   """Returns an instance of the API client specified in the args.
 
   Args:
@@ -159,6 +160,8 @@ def _GetClientInstance(api_name,
     check_response_func: error handling callback to give to apitools.
     http_timeout_sec: int, seconds of http timeout to set, defaults if None.
     region: str, Region (or multi-region) for regionalized endpoints (REP).
+    redact_request_body_reason: str, the reason why the request body must be
+      redacted if --log-http is used. If None, the request body is not redacted.
 
   Returns:
     base_api.BaseApiClient, An instance of the specified API client.
@@ -174,7 +177,9 @@ def _GetClientInstance(api_name,
     from googlecloudsdk.core.credentials import transports
     http_client = transports.GetApitoolsTransport(
         response_encoding=transport.ENCODING,
-        timeout=http_timeout_sec if http_timeout_sec else 'unset')
+        timeout=http_timeout_sec if http_timeout_sec else 'unset',
+        redact_request_body_reason=redact_request_body_reason,
+    )
     # Add exception handling for potential DNS resolution failures due to
     # unknown regional endpoints.
     if region and _ShouldUseRegionalEndpoints(api_name, api_version, region):

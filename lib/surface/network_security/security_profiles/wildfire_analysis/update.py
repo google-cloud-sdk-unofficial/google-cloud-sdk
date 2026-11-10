@@ -30,9 +30,9 @@ DETAILED_HELP = {
         """),
     'EXAMPLES': textwrap.dedent("""\
         To update a WildFire Analysis security-profile `my-wildfire-security-profile` with
-        organization 1234, location global, and project my-project, run:
+        organization 1234 and location global, run:
 
-          $ {command} my-wildfire-security-profile --organization=1234 --location=global --project=my-project --no-wildfire-realtime-lookup --analyze-windows-executables --no-analyze-shell
+          $ {command} my-wildfire-security-profile --organization=1234 --location=global --no-wildfire-realtime-lookup --analyze-windows-executables --no-analyze-shell
 
         To update labels of a WildFire Analysis security-profile, run:
 

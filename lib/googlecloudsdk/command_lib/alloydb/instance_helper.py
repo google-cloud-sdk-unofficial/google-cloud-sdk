@@ -14,10 +14,9 @@
 # limitations under the License.
 """Helper functions for constructing and validating AlloyDB instance requests."""
 
-
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope.parser_errors import DetailedArgumentError
+from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import properties
 
@@ -108,7 +107,7 @@ def ConstructCreateMachineConfigFromArgs(alloydb_messages, args):
         cpuCount=args.cpu_count, machineType=args.machine_type
     )
   else:
-    raise DetailedArgumentError(
+    raise parser_errors.DetailedArgumentError(
         'Either --cpu-count or --machine-type must be specified.'
     )
 
@@ -146,9 +145,7 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
   instance_resource.instanceType = _ParseInstanceType(
       alloydb_messages, args.instance_type
   )
-  is_agent_pool = _IsAgentPool(
-      alloydb_messages, instance_resource.instanceType
-  )
+  is_agent_pool = _IsAgentPool(alloydb_messages, instance_resource.instanceType)
 
   # set availability-type if provided
   instance_resource.availabilityType = ParseAvailabilityType(
@@ -157,7 +154,7 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
   if is_agent_pool:
     # Agent pools are sized by the service, not by a machine config.
     if args.cpu_count or args.machine_type:
-      raise DetailedArgumentError(
+      raise parser_errors.DetailedArgumentError(
           '--cpu-count and --machine-type cannot be specified when'
           ' --instance-type=AGENT_POOL.'
       )
@@ -262,8 +259,31 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
         connection_pooling_server_lifetime=args.connection_pooling_server_lifetime,
         connection_pooling_client_connection_idle_timeout=args.connection_pooling_client_connection_idle_timeout,
         connection_pooling_max_prepared_statements=args.connection_pooling_max_prepared_statements,
+        connection_pooling_authproxy_pooler_scaling_type=getattr(
+            args, 'connection_pooling_authproxy_pooler_scaling_type', None
+        ),
         args=args,
     )
+
+  if (
+      args.autoscaler_max_node_count is not None
+      or args.autoscaler_cool_down_period_seconds is not None
+      or args.autoscaler_target_cpu_usage is not None
+      or args.enable_autoscaler is not None
+      or args.autoscaler_set_schedule is not None
+      or args.autoscaler_schedule_cron_exp is not None
+      or args.autoscaler_schedule_duration_seconds is not None
+      or args.autoscaler_schedule_min_node_count is not None
+      or args.autoscaler_schedule_time_zone is not None
+      or args.autoscaler_schedule_description is not None
+      or args.autoscaler_target_connections_count is not None
+  ):
+    auto_scaling_config = ParseAutoScalingConfig(
+        alloydb_messages, None, None, args
+    )
+    if not instance_resource.readPoolConfig:
+      instance_resource.readPoolConfig = alloydb_messages.ReadPoolConfig()
+    instance_resource.readPoolConfig.autoScalingConfig = auto_scaling_config
 
   return instance_resource
 
@@ -281,15 +301,20 @@ def _ConstructInstanceFromArgsBeta(client, alloydb_messages, args):
   """
   instance_resource = _ConstructInstanceFromArgs(client, alloydb_messages, args)
   observability_config_track_active_query_plan = getattr(
-      args, 'observability_config_track_active_query_plan', None)
+      args, 'observability_config_track_active_query_plan', None
+  )
   observability_config_track_client_address = getattr(
-      args, 'observability_config_track_client_address', None)
+      args, 'observability_config_track_client_address', None
+  )
   observability_config_assistive_experiences_enabled = getattr(
-      args, 'observability_config_assistive_experiences_enabled', None)
+      args, 'observability_config_assistive_experiences_enabled', None
+  )
 
-  if (observability_config_track_active_query_plan is not None or
-      observability_config_track_client_address is not None or
-      observability_config_assistive_experiences_enabled is not None):
+  if (
+      observability_config_track_active_query_plan is not None
+      or observability_config_track_client_address is not None
+      or observability_config_assistive_experiences_enabled is not None
+  ):
     if instance_resource.observabilityConfig is None:
       instance_resource.observabilityConfig = (
           alloydb_messages.ObservabilityInstanceConfig()
@@ -307,40 +332,19 @@ def _ConstructInstanceFromArgsBeta(client, alloydb_messages, args):
           observability_config_assistive_experiences_enabled
       )
 
-  if (
-      args.autoscaler_max_node_count is not None
-      or args.autoscaler_cool_down_period_seconds is not None
-      or args.autoscaler_target_cpu_usage is not None
-      or args.enable_autoscaler is not None
-      or args.autoscaler_set_schedule is not None
-      or args.autoscaler_schedule_cron_exp is not None
-      or args.autoscaler_schedule_duration_seconds is not None
-      or args.autoscaler_schedule_min_node_count is not None
-      or args.autoscaler_schedule_time_zone is not None
-      or args.autoscaler_schedule_description is not None
-  ):
-    auto_scaling_config = ParseAutoScalingConfig(
-        alloydb_messages, None, None, args
-    )
-    if not instance_resource.readPoolConfig:
-      instance_resource.readPoolConfig = alloydb_messages.ReadPoolConfig()
-    instance_resource.readPoolConfig.autoScalingConfig = auto_scaling_config
-
-  is_agent_pool = _IsAgentPool(
-      alloydb_messages, instance_resource.instanceType
-  )
+  is_agent_pool = _IsAgentPool(alloydb_messages, instance_resource.instanceType)
   agent_pool_min_size = getattr(args, 'agent_pool_min_size', None)
   agent_pool_max_size = getattr(args, 'agent_pool_max_size', None)
   if not is_agent_pool and (
       agent_pool_min_size is not None or agent_pool_max_size is not None
   ):
-    raise DetailedArgumentError(
+    raise parser_errors.DetailedArgumentError(
         '--agent-pool-min-size and --agent-pool-max-size can only be'
         ' specified when --instance-type=AGENT_POOL.'
     )
   if is_agent_pool:
     if not args.psc_auto_connections:
-      raise DetailedArgumentError(
+      raise parser_errors.DetailedArgumentError(
           '--psc-auto-connections must be specified when'
           ' --instance-type=AGENT_POOL.'
       )
@@ -450,6 +454,9 @@ def _ConstructSecondaryInstanceFromArgs(client, alloydb_messages, args):
         connection_pooling_server_lifetime=args.connection_pooling_server_lifetime,
         connection_pooling_client_connection_idle_timeout=args.connection_pooling_client_connection_idle_timeout,
         connection_pooling_max_prepared_statements=args.connection_pooling_max_prepared_statements,
+        connection_pooling_authproxy_pooler_scaling_type=getattr(
+            args, 'connection_pooling_authproxy_pooler_scaling_type', None
+        ),
         args=args,
     )
 
@@ -469,10 +476,7 @@ def _ConstructSecondaryInstanceFromArgsBeta(client, alloydb_messages, args):
     arguments.
   """
 
-  instance_resource = _ConstructSecondaryInstanceFromArgs(
-      client, alloydb_messages, args
-  )
-  return instance_resource
+  return _ConstructSecondaryInstanceFromArgs(client, alloydb_messages, args)
 
 
 def _ConstructSecondaryInstanceFromArgsAlpha(client, alloydb_messages, args):
@@ -804,7 +808,7 @@ def ConstructInstanceAndUpdatePathsFromArgs(
   # We also need to check that the release track is GA to avoid calling the
   # GetInstance API more than need be when the Beta/Alpha versions call this
   # function.
-  if (release_track == base.ReleaseTrack.GA and (
+  if release_track == base.ReleaseTrack.GA and (
       args.enable_connection_pooling is not None
       or args.connection_pooling_pool_mode is not None
       or args.connection_pooling_min_pool_size is not None
@@ -816,7 +820,8 @@ def ConstructInstanceAndUpdatePathsFromArgs(
       or args.connection_pooling_ignore_startup_parameters is not None
       or args.connection_pooling_server_lifetime is not None
       or args.connection_pooling_client_connection_idle_timeout is not None
-      or args.connection_pooling_max_prepared_statements is not None)):
+      or args.connection_pooling_max_prepared_statements is not None
+  ):
     paths.append('connectionPoolConfig')
 
     instance_resource.connectionPoolConfig = _UpdateConnectionPoolConfig(
@@ -836,6 +841,30 @@ def ConstructInstanceAndUpdatePathsFromArgs(
         connection_pooling_client_connection_idle_timeout=args.connection_pooling_client_connection_idle_timeout,
         connection_pooling_max_prepared_statements=args.connection_pooling_max_prepared_statements,
     )
+
+  if (
+      args.autoscaler_max_node_count is not None
+      or args.autoscaler_cool_down_period_seconds is not None
+      or args.autoscaler_target_cpu_usage is not None
+      or args.enable_autoscaler is not None
+      or args.autoscaler_delete_schedule is not None
+      or args.autoscaler_set_schedule is not None
+      or args.autoscaler_schedule_cron_exp is not None
+      or args.autoscaler_schedule_duration_seconds is not None
+      or args.autoscaler_schedule_min_node_count is not None
+      or args.autoscaler_schedule_time_zone is not None
+      or args.autoscaler_disable_schedule is not None
+      or args.autoscaler_enable_schedule is not None
+      or args.autoscaler_schedule_description is not None
+      or args.autoscaler_target_connections_count is not None
+  ):
+    auto_scaling_config = ParseAutoScalingConfig(
+        alloydb_messages, instance_ref, release_track, args
+    )
+    if not instance_resource.readPoolConfig:
+      instance_resource.readPoolConfig = alloydb_messages.ReadPoolConfig()
+    instance_resource.readPoolConfig.autoScalingConfig = auto_scaling_config
+    paths.append('readPoolConfig.autoScalingConfig')
 
   return instance_resource, paths
 
@@ -890,7 +919,8 @@ def _QueryInsightsConfig(
 
 
 def _ObservabilityConfig(
-    alloydb_messages, *,
+    alloydb_messages,
+    *,
     observability_config_enabled=None,
     observability_config_preserve_comments=None,
     observability_config_track_wait_events=None,
@@ -1055,6 +1085,14 @@ def ParseAutoScalingConfig(alloydb_messages, instance_ref, release_track, args):
     )
   if args.enable_autoscaler is not None:
     auto_scaling_config.policy.enabled = args.enable_autoscaler
+  if args.autoscaler_target_connections_count is not None:
+    if not auto_scaling_config.policy.connectionsCount:
+      auto_scaling_config.policy.connectionsCount = (
+          alloydb_messages.ConnectionsCount()
+      )
+    auto_scaling_config.policy.connectionsCount.targetCount = (
+        args.autoscaler_target_connections_count
+    )
   if instance_ref:
     # Deleting, disabling, and enabling schedules are only for the update
     # command.
@@ -1140,6 +1178,19 @@ def _ParsePoolMode(alloydb_messages, pool_mode):
   return None
 
 
+def _ParseAuthproxyPoolerScalingType(alloydb_messages, scaling_type):
+  """Parses AuthProxy connection pooler scaling type enum value."""
+  if scaling_type == 'NONE':
+    return (
+        alloydb_messages.ConnectionPoolConfig.AuthproxyPoolerScalingTypeValueValuesEnum.POOLER_NONE
+    )
+  elif scaling_type == 'MACHINE_SIZED':
+    return (
+        alloydb_messages.ConnectionPoolConfig.AuthproxyPoolerScalingTypeValueValuesEnum.POOLER_MACHINE_SIZED
+    )
+  return None
+
+
 def NetworkConfig(**kwargs):
   """Generates the network config for the instance."""
   assign_inbound_public_ip = kwargs.get('assign_inbound_public_ip')
@@ -1171,7 +1222,7 @@ def NetworkConfig(**kwargs):
         assign_inbound_public_ip is not None
         and not instance_network_config.enablePublicIp
     ):
-      raise DetailedArgumentError(
+      raise parser_errors.DetailedArgumentError(
           "Cannot update an instance's authorized "
           'networks and disable Public-IP. You must do '
           'one or the other. Note, that disabling '
@@ -1209,19 +1260,24 @@ def _ConnectionPoolConfig(**kwargs):
   ignore_startup_parameters = kwargs.get(
       'connection_pooling_ignore_startup_parameters'
   )
-  server_lifetime = kwargs.get(
-      'connection_pooling_server_lifetime'
-  )
+  server_lifetime = kwargs.get('connection_pooling_server_lifetime')
   client_connection_idle_timeout = kwargs.get(
       'connection_pooling_client_connection_idle_timeout'
   )
   max_prepared_statements = kwargs.get(
       'connection_pooling_max_prepared_statements'
   )
+  authproxy_pooler_scaling_type = kwargs.get(
+      'connection_pooling_authproxy_pooler_scaling_type'
+  )
 
   alloydb_messages = kwargs.get('alloydb_messages')
   config = alloydb_messages.ConnectionPoolConfig()
   config.enabled = enable_connection_pooling
+  if authproxy_pooler_scaling_type is not None:
+    config.authproxyPoolerScalingType = _ParseAuthproxyPoolerScalingType(
+        alloydb_messages, authproxy_pooler_scaling_type
+    )
   flags = {}
   if pool_mode is not None:
     flags['pool_mode'] = pool_mode.lower()
@@ -1242,9 +1298,7 @@ def _ConnectionPoolConfig(**kwargs):
   if server_lifetime is not None:
     flags['server_lifetime'] = server_lifetime
   if client_connection_idle_timeout is not None:
-    flags['client_connection_idle_timeout'] = (
-        client_connection_idle_timeout
-    )
+    flags['client_connection_idle_timeout'] = client_connection_idle_timeout
   if max_prepared_statements is not None:
     flags['max_prepared_statements'] = str(max_prepared_statements)
 
@@ -1282,14 +1336,15 @@ def _UpdateConnectionPoolConfig(instance_ref, release_track, **kwargs):
   ignore_startup_parameters = kwargs.get(
       'connection_pooling_ignore_startup_parameters'
   )
-  server_lifetime = kwargs.get(
-      'connection_pooling_server_lifetime'
-  )
+  server_lifetime = kwargs.get('connection_pooling_server_lifetime')
   client_connection_idle_timeout = kwargs.get(
       'connection_pooling_client_connection_idle_timeout'
   )
   max_prepared_statements = kwargs.get(
       'connection_pooling_max_prepared_statements'
+  )
+  authproxy_pooler_scaling_type = kwargs.get(
+      'connection_pooling_authproxy_pooler_scaling_type'
   )
   alloydb_messages = kwargs.get('alloydb_messages')
 
@@ -1306,6 +1361,7 @@ def _UpdateConnectionPoolConfig(instance_ref, release_track, **kwargs):
       server_lifetime is not None,
       client_connection_idle_timeout is not None,
       max_prepared_statements is not None,
+      authproxy_pooler_scaling_type is not None,
   ])
   if not should_update_config:
     return None
@@ -1347,7 +1403,7 @@ def _UpdateConnectionPoolConfig(instance_ref, release_track, **kwargs):
         'ignore_startup_parameters',
         'server_lifetime',
         'client_connection_idle_timeout',
-        'max_prepared_statements'
+        'max_prepared_statements',
     ]
     for f in flag_names:
       exists, value = _CheckIfConnectionPoolConfigFlagExists(
@@ -1360,6 +1416,27 @@ def _UpdateConnectionPoolConfig(instance_ref, release_track, **kwargs):
     config.enabled = enable_connection_pooling
   elif has_existing_config:
     config.enabled = existing_instance.connectionPoolConfig.enabled
+
+  if (
+      has_existing_config
+      and existing_instance.connectionPoolConfig.poolerScalingType is not None
+  ):
+    config.poolerScalingType = (
+        existing_instance.connectionPoolConfig.poolerScalingType
+    )
+
+  if authproxy_pooler_scaling_type is not None:
+    config.authproxyPoolerScalingType = _ParseAuthproxyPoolerScalingType(
+        alloydb_messages, authproxy_pooler_scaling_type
+    )
+  elif (
+      has_existing_config
+      and existing_instance.connectionPoolConfig.authproxyPoolerScalingType
+      is not None
+  ):
+    config.authproxyPoolerScalingType = (
+        existing_instance.connectionPoolConfig.authproxyPoolerScalingType
+    )
 
   if pool_mode is not None:
     flags['pool_mode'] = pool_mode.lower()
@@ -1404,7 +1481,6 @@ def _CheckIfConnectionPoolConfigFlagExists(instance, flag_name):
 
   Returns:
     True and the value of the flag if the flag exists, False otherwise.
-
   """
   if instance.connectionPoolConfig.flags.additionalProperties is None:
     return False, None
@@ -1501,7 +1577,7 @@ def _PscAutoConnections(
     if config.consumerProject and config.consumerNetwork:
       out_psc_auto_connections.append(config)
     else:
-      raise DetailedArgumentError(
+      raise parser_errors.DetailedArgumentError(
           'Invalid PSC auto connection. Please provide both project and network'
           ' for the PSC auto connection.'
       )
@@ -1525,7 +1601,7 @@ def _ParseAssignInboundPublicIp(assign_inbound_public_ip):
     return False
   if assign_inbound_public_ip == 'ASSIGN_IPV4':
     return True
-  raise DetailedArgumentError(
+  raise parser_errors.DetailedArgumentError(
       'Unrecognized argument. Please use NO_PUBLIC_IP or ASSIGN_IPV4.'
   )
 
@@ -1555,7 +1631,9 @@ def _ParseAuthorizedExternalNetworks(
 def ConstructPatchRequestFromArgsBeta(alloydb_messages, instance_ref, args):
   """Constructs the request to update an AlloyDB instance."""
   instance_resource, paths = ConstructInstanceAndUpdatePathsFromArgsBeta(
-      alloydb_messages, instance_ref, args,
+      alloydb_messages,
+      instance_ref,
+      args,
       release_track=base.ReleaseTrack.BETA,
   )
   mask = ','.join(paths) if paths else None
@@ -1570,7 +1648,9 @@ def ConstructPatchRequestFromArgsBeta(alloydb_messages, instance_ref, args):
 def ConstructPatchRequestFromArgsAlpha(alloydb_messages, instance_ref, args):
   """Constructs the request to update an AlloyDB instance."""
   instance_resource, paths = ConstructInstanceAndUpdatePathsFromArgsAlpha(
-      alloydb_messages, instance_ref, args,
+      alloydb_messages,
+      instance_ref,
+      args,
       release_track=base.ReleaseTrack.ALPHA,
   )
 
@@ -1634,21 +1714,26 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
     paths.append(observability_config_track_client_address_path)
 
   if instance_resource.observabilityConfig is None and (
-      observability_config_track_active_query_plan is not None or
-      observability_config_track_client_address is not None or
-      observability_config_assistive_experiences_enabled is not None):
+      observability_config_track_active_query_plan is not None
+      or observability_config_track_client_address is not None
+      or observability_config_assistive_experiences_enabled is not None
+  ):
     instance_resource.observabilityConfig = (
-        alloydb_messages.ObservabilityInstanceConfig())
+        alloydb_messages.ObservabilityInstanceConfig()
+    )
 
   if observability_config_track_active_query_plan is not None:
     instance_resource.observabilityConfig.trackActiveQueryPlan = (
-        observability_config_track_active_query_plan)
+        observability_config_track_active_query_plan
+    )
   if observability_config_track_client_address is not None:
     instance_resource.observabilityConfig.trackClientAddress = (
-        observability_config_track_client_address)
+        observability_config_track_client_address
+    )
   if observability_config_assistive_experiences_enabled is not None:
     instance_resource.observabilityConfig.assistiveExperiencesEnabled = (
-        observability_config_assistive_experiences_enabled)
+        observability_config_assistive_experiences_enabled
+    )
 
   enable_public_dns = getattr(args, 'enable_public_dns', None)
   if enable_public_dns is not None:
@@ -1665,7 +1750,7 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
   # We also need to check that the release track is Beta to avoid calling the
   # GetInstance API more than need be when the Alpha versions call this
   # function.
-  if (release_track == base.ReleaseTrack.BETA and (
+  if release_track == base.ReleaseTrack.BETA and (
       args.enable_connection_pooling is not None
       or args.connection_pooling_pool_mode is not None
       or args.connection_pooling_min_pool_size is not None
@@ -1677,7 +1762,10 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
       or args.connection_pooling_ignore_startup_parameters is not None
       or args.connection_pooling_server_lifetime is not None
       or args.connection_pooling_client_connection_idle_timeout is not None
-      or args.connection_pooling_max_prepared_statements is not None)):
+      or args.connection_pooling_max_prepared_statements is not None
+      or getattr(args, 'connection_pooling_authproxy_pooler_scaling_type', None)
+      is not None
+  ):
     paths.append('connectionPoolConfig')
 
     instance_resource.connectionPoolConfig = _UpdateConnectionPoolConfig(
@@ -1696,30 +1784,12 @@ def ConstructInstanceAndUpdatePathsFromArgsBeta(
         connection_pooling_server_lifetime=args.connection_pooling_server_lifetime,
         connection_pooling_client_connection_idle_timeout=args.connection_pooling_client_connection_idle_timeout,
         connection_pooling_max_prepared_statements=args.connection_pooling_max_prepared_statements,
+        connection_pooling_authproxy_pooler_scaling_type=(
+            getattr(
+                args, 'connection_pooling_authproxy_pooler_scaling_type', None
+            )
+        ),
     )
-
-  if (
-      args.autoscaler_max_node_count is not None
-      or args.autoscaler_cool_down_period_seconds is not None
-      or args.autoscaler_target_cpu_usage is not None
-      or args.enable_autoscaler is not None
-      or args.autoscaler_delete_schedule is not None
-      or args.autoscaler_set_schedule is not None
-      or args.autoscaler_schedule_cron_exp is not None
-      or args.autoscaler_schedule_duration_seconds is not None
-      or args.autoscaler_schedule_min_node_count is not None
-      or args.autoscaler_schedule_time_zone is not None
-      or args.autoscaler_disable_schedule is not None
-      or args.autoscaler_enable_schedule is not None
-      or args.autoscaler_schedule_description is not None
-  ):
-    auto_scaling_config = ParseAutoScalingConfig(
-        alloydb_messages, instance_ref, release_track, args
-    )
-    if not instance_resource.readPoolConfig:
-      instance_resource.readPoolConfig = alloydb_messages.ReadPoolConfig()
-    instance_resource.readPoolConfig.autoScalingConfig = auto_scaling_config
-    paths.append('readPoolConfig.autoScalingConfig')
 
   return instance_resource, paths
 
@@ -1746,7 +1816,8 @@ def ConstructInstanceAndUpdatePathsFromArgsAlpha(
   # flags are set because we want to preserve any existing flags. But to do so,
   # we need to check what these existing flag values are, and that requires
   # calling the AlloyDB API with the same version as the gcloud release track.
-  if (args.enable_connection_pooling is not None
+  if (
+      args.enable_connection_pooling is not None
       or args.connection_pooling_pool_mode is not None
       or args.connection_pooling_min_pool_size is not None
       or args.connection_pooling_max_pool_size is not None
@@ -1757,7 +1828,10 @@ def ConstructInstanceAndUpdatePathsFromArgsAlpha(
       or args.connection_pooling_ignore_startup_parameters is not None
       or args.connection_pooling_server_lifetime is not None
       or args.connection_pooling_client_connection_idle_timeout is not None
-      or args.connection_pooling_max_prepared_statements is not None):
+      or args.connection_pooling_max_prepared_statements is not None
+      or getattr(args, 'connection_pooling_authproxy_pooler_scaling_type', None)
+      is not None
+  ):
     paths.append('connectionPoolConfig')
 
     instance_resource.connectionPoolConfig = _UpdateConnectionPoolConfig(
@@ -1776,6 +1850,11 @@ def ConstructInstanceAndUpdatePathsFromArgsAlpha(
         connection_pooling_server_lifetime=args.connection_pooling_server_lifetime,
         connection_pooling_client_connection_idle_timeout=args.connection_pooling_client_connection_idle_timeout,
         connection_pooling_max_prepared_statements=args.connection_pooling_max_prepared_statements,
+        connection_pooling_authproxy_pooler_scaling_type=(
+            getattr(
+                args, 'connection_pooling_authproxy_pooler_scaling_type', None
+            )
+        ),
     )
   return instance_resource, paths
 

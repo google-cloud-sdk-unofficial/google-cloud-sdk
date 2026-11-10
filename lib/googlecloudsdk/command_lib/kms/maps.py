@@ -125,6 +125,8 @@ VALID_ALGORITHMS_MAP = {
         'ml-kem-768',
         'ml-kem-1024',
         'kem-xwing',
+        'kem-ecdh-p256',
+        'kem-ecdh-p384',
     ],
     PURPOSE_ENUM.AES_WRAPPING: [
         'aes-256-kwp',

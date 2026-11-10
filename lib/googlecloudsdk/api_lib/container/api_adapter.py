@@ -1053,6 +1053,7 @@ class CreateClusterOptions(object):
       wiz_sensor_proxy_secret_uri=None,
       target_node_version=None,
       enable_granular_nat=None,
+      enable_cdpf=None,
       network_suite=None,
   ):
     self.node_machine_type = node_machine_type
@@ -1398,6 +1399,7 @@ class CreateClusterOptions(object):
     self.wiz_sensor_proxy_secret_uri = wiz_sensor_proxy_secret_uri
     self.target_node_version = target_node_version
     self.enable_granular_nat = enable_granular_nat
+    self.enable_cdpf = enable_cdpf
     self.network_suite = network_suite
 
 
@@ -1621,6 +1623,7 @@ class UpdateClusterOptions(object):
       target_node_version=None,
       clear_target_node_version=None,
       enable_granular_nat=None,
+      enable_cdpf=None,
       network_suite=None,
   ):
     self.version = version
@@ -1891,6 +1894,7 @@ class UpdateClusterOptions(object):
     self.target_node_version = target_node_version
     self.clear_target_node_version = clear_target_node_version
     self.enable_granular_nat = enable_granular_nat
+    self.enable_cdpf = enable_cdpf
     self.network_suite = network_suite
 
 
@@ -3995,6 +3999,13 @@ class APIAdapter(object):
         cluster.networkConfig = self.messages.NetworkConfig()
       cluster.networkConfig.granularNatConfig = self.messages.GranularNATConfig(
           enabled=options.enable_granular_nat
+      )
+
+    if options.enable_cdpf is not None:
+      if cluster.networkConfig is None:
+        cluster.networkConfig = self.messages.NetworkConfig()
+      cluster.networkConfig.cdpfConfig = self.messages.CDPFConfig(
+          enabled=options.enable_cdpf
       )
 
     if options.network_suite is not None:
@@ -6411,6 +6422,12 @@ class APIAdapter(object):
               enabled=options.enable_granular_nat
           )
       )
+    if options.enable_cdpf is not None:
+      update = self.messages.ClusterUpdate(
+          desiredCdpfConfig=self.messages.CDPFConfig(
+              enabled=options.enable_cdpf
+          )
+      )
     if options.enable_dataplane_ebpf_host_routing is not None:
       update = self.messages.ClusterUpdate(
           desiredDataplaneV2Config=self.messages.DataplaneV2Config(
@@ -6430,6 +6447,12 @@ class APIAdapter(object):
       update = self.messages.ClusterUpdate(
           desiredAdaptivePodAllocation=_GetAdaptivePodAllocation(
               options, self.messages
+          )
+      )
+    if options.enable_ambient_networking is not None:
+      update = self.messages.ClusterUpdate(
+          desiredAmbientNetworkingConfig=self.messages.AmbientNetworkingConfig(
+              enabled=options.enable_ambient_networking
           )
       )
 
@@ -10802,6 +10825,12 @@ class V1Beta1Adapter(V1Adapter):
       update = self.messages.ClusterUpdate(
           desiredGranularNatConfig=self.messages.GranularNATConfig(
               enabled=options.enable_granular_nat
+          )
+      )
+    if options.enable_cdpf is not None:
+      update = self.messages.ClusterUpdate(
+          desiredCdpfConfig=self.messages.CDPFConfig(
+              enabled=options.enable_cdpf
           )
       )
     if options.enable_dataplane_ebpf_host_routing is not None:

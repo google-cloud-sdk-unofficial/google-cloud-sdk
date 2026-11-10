@@ -18,6 +18,8 @@
 - release_tracks:
   - GA
   auto_generated: false
+  hints:
+    read_only: true
   help_text:
     brief: Search for agents matching a query.
     description: Search across all accessible agents matching specific filter expressions.

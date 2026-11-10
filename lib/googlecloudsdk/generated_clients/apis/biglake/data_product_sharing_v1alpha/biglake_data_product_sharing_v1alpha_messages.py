@@ -19,6 +19,27 @@ from apitools.base.py import encoding
 package = 'biglake'
 
 
+class BiglakeDataproductsharingV1alphaProjectsCatalogsListPublishedSharesRequest(_messages.Message):
+  r"""A
+  BiglakeDataproductsharingV1alphaProjectsCatalogsListPublishedSharesRequest
+  object.
+
+  Fields:
+    connectionCatalog: Required. The Delta Sharing Catalog containing the SAP
+      BDC enrollment config. Format: projects/{project}/catalogs/{catalog}
+    pageSize: Optional. The maximum number of shares to return. The service
+      may return fewer than this value. If unspecified, at most 100 shares
+      will be returned. The maximum value is 1000; values above 1000 will be
+      coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListPublishedShares` call.
+  """
+
+  connectionCatalog = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+
+
 class BiglakeDataproductsharingV1alphaProjectsCatalogsPublishDataProductRequest(_messages.Message):
   r"""A
   BiglakeDataproductsharingV1alphaProjectsCatalogsPublishDataProductRequest
@@ -81,6 +102,19 @@ class IcebergCatalogReference(_messages.Message):
   title = _messages.StringField(4)
 
 
+class ListPublishedSharesResponse(_messages.Message):
+  r"""Response message for ListPublishedShares.
+
+  Fields:
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    publishedShares: The list of published shares.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  publishedShares = _messages.MessageField('PublishedShare', 2, repeated=True)
+
+
 class PublishDataProductRequest(_messages.Message):
   r"""Request message for PublishDataProduct.
 
@@ -115,6 +149,33 @@ class PublishDataProductRequest(_messages.Message):
 
 class PublishDataProductResponse(_messages.Message):
   r"""Response message for PublishDataProduct."""
+
+
+class PublishedShare(_messages.Message):
+  r"""Represents a share published to SAP BDC.
+
+  Fields:
+    dataProduct: Output only. The fully-qualified Knowledge Catalog Data
+      Product resource name. Format:
+      projects/{project}/locations/{location}/dataProducts/{data_product}
+    icebergCatalog: Output only. The fully-qualified BigLake Iceberg REST
+      Catalog path. Format: projects/{project}/catalogs/{catalog}
+    sapFederatedIdentityProvider: Output only. The Workload Identity
+      Federation (WIF) provider resource name representing SAP's federated
+      identity provider. Format: projects/{project}/locations/{location}/workl
+      oadIdentityPools/{pool}/providers/{provider}
+    share: Output only. The name of the Share published to SAP BDC.
+    shortDescription: Output only. The short, concise description of the
+      published share.
+    title: Output only. The title of the published share.
+  """
+
+  dataProduct = _messages.StringField(1)
+  icebergCatalog = _messages.StringField(2)
+  sapFederatedIdentityProvider = _messages.StringField(3)
+  share = _messages.StringField(4)
+  shortDescription = _messages.StringField(5)
+  title = _messages.StringField(6)
 
 
 class StandardQueryParameters(_messages.Message):

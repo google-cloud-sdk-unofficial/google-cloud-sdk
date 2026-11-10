@@ -5,14 +5,30 @@
     brief: Update a BigLake Hive catalog.
     description: |
       Updates a BigLake Hive catalog.
+    GA:
+      examples: |-
+        To update a BigLake Hive catalog named 'my-catalog' with the following arguments, run:
+
+          $ {command} my-catalog --description="My updated catalog"
     examples: |-
       To update a BigLake Hive catalog named 'my-catalog' with the following arguments, run:
 
         $ {command} my-catalog --description="My updated catalog"
 
+      To update a BigLake Hive catalog named 'my-catalog' with Cloud KMS key `projects/my-project/locations/us-central1/keyRings/my-key-ring/cryptoKeys/my-key`, run:
+
+        $ {command} my-catalog --kms-key=projects/my-project/locations/us-central1/keyRings/my-key-ring/cryptoKeys/my-key
+
   request:
-    collection: biglake.hive.v1.projects.catalogs
-    api_version: v1
+    ALPHA:
+      collection: biglake.hive.v1beta.projects.catalogs
+      api_version: v1beta
+    BETA:
+      collection: biglake.hive.v1beta.projects.catalogs
+      api_version: v1beta
+    GA:
+      collection: biglake.hive.v1.projects.catalogs
+      api_version: v1
     method: patch
     modify_request_hooks:
     - googlecloudsdk.command_lib.biglake.hooks:ValidateCatalogUpdateArgs
@@ -20,7 +36,12 @@
   arguments:
     params:
     - arg_name: catalog
-      resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_catalog
+      ALPHA:
+        resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_catalog_v1beta
+      BETA:
+        resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_catalog_v1beta
+      GA:
+        resource_spec: !REF googlecloudsdk.command_lib.biglake.resources:hive_catalog
       required: true
       is_positional: true
       is_primary_resource: true
@@ -30,3 +51,21 @@
       api_field: hiveCatalog.description
       help_text: |
         Description of the Hive catalog.
+    - group:
+        release_tracks: [ALPHA, BETA]
+        mutex: true
+        params:
+        - arg_name: kms-key
+          api_field: hiveCatalog.encryptionConfig.kmsKeyName
+          help_text: |
+            Cloud KMS key name used to encrypt cached data fetched from the catalog.
+            Format: projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}
+        - arg_name: clear-kms-key
+          api_field: hiveCatalog.encryptionConfig.kmsKeyName
+          action: store_true
+          default: null
+          choices:
+          - arg_value: true
+            enum_value: ''
+          help_text: |
+            Clear the Cloud KMS key from the catalog and revert to Google-managed encryption.

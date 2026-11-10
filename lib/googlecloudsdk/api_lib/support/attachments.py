@@ -16,6 +16,7 @@
 
 import urllib.parse
 
+from googlecloudsdk.api_lib.support import cases
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core.console import progress_tracker
@@ -82,7 +83,8 @@ def UploadFromStream(case_name, filename, source, size_bytes,
       final request. The message includes the HTTP status and the first 500
       characters of the response body.
   """
-  session = creds_requests.GetSession()
+  with cases.UserProjectQuotaWithFallback():
+    session = creds_requests.GetSession()
   start = session.post(BuildUploadStartUrl(case_name, filename), headers={
       'Content-Length': '0',
       'X-Goog-Upload-Protocol': 'resumable',

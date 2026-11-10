@@ -1,0 +1,60 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha SlurmNodeConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  coreSpecCount:
+    description: |-
+      Number of physical cores reserved for system use. Cannot be specified if
+      `cpu_spec_list` is set. For more details, see the Slurm documentation for
+      CoreSpecCount: https://slurm.schedmd.com/slurm.conf.html#OPT_CoreSpecCount
+    type: string
+  cpuSpecList:
+    description: |-
+      Comma-separated list of Slurm abstract CPU IDs reserved for system use.
+      Cannot be specified if `core_spec_count` is set. For more details, see the
+      Slurm documentation for CpuSpecList:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_CpuSpecList
+    type: string
+  features:
+    description: |-
+      Comma-separated list of arbitrary strings indicative of some
+      characteristic associated with the node. For more details, see the Slurm
+      documentation for Features:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_Features
+    type: string
+  memSpecLimit:
+    description: |-
+      Amount of RealMemory, in mebibytes, reserved for system use and not
+      available for user allocations. For more details, see the Slurm
+      documentation for MemSpecLimit:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_MemSpecLimit
+    type: string
+  weight:
+    description: |-
+      Weight of the nodes in the nodeset. For more details, see the Slurm
+      documentation for Weight:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_Weight
+    type: string

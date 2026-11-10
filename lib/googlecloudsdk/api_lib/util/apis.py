@@ -275,6 +275,7 @@ def GetClientInstance(
     location=None,
     should_retry_if_disabled=True,
     enable_by_default=False,
+    redact_request_body_reason=None,
 ):
   """Returns an instance of the API client specified in the args.
 
@@ -289,6 +290,8 @@ def GetClientInstance(
     should_retry_if_disabled: bool, if true, retry the request when the API is
       disabled and skip_activation_prompt is true.
     enable_by_default: bool, The default choice for the enablement prompt.
+    redact_request_body_reason: str, the reason why the request body must be
+      redacted if --log-http is used. If None, the request body is not redacted.
 
   Returns:
     base_api.BaseApiClient, An instance of the specified API client.
@@ -306,6 +309,7 @@ def GetClientInstance(
       ),
       http_timeout_sec=http_timeout_sec,
       region=regional.LocationToRegion(location) if location else None,
+      redact_request_body_reason=redact_request_body_reason,
   )
 
 
@@ -394,12 +398,17 @@ def GetGapicClientInstance(
   )
 
 
-def GetEffectiveApiEndpoint(api_name, api_version, client_class=None):
+def GetEffectiveApiEndpoint(
+    api_name, api_version, client_class=None, location=None
+):
   """Returns effective endpoint for given api."""
   # pylint:disable=protected-access
-  return apis_internal._GetEffectiveApiEndpoint(api_name,
-                                                api_version,
-                                                client_class)
+  return apis_internal._GetEffectiveApiEndpoint(
+      api_name,
+      api_version,
+      client_class,
+      region=regional.LocationToRegion(location) if location else None,
+  )
 
 
 def GetMessagesModule(api_name, api_version):

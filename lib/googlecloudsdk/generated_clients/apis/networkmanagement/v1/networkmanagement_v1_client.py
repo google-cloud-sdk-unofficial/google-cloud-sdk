@@ -810,7 +810,7 @@ class NetworkmanagementV1(base_api.BaseApiClient):
         method_id='networkmanagement.projects.locations.networkMonitoringProviders.monitoringPoints.downloadInstallScript',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['_password', 'hostname', 'monitoringPointType', 'ntpServerAddress', 'ntpServerSecondaryAddress', 'privateConnectivityEnabled', 'staticIpAddress_dnsServerAddress', 'staticIpAddress_dnsServerSecondaryAddress', 'staticIpAddress_domain', 'staticIpAddress_gatewayAddress', 'staticIpAddress_ipAddress', 'staticIpAddress_netmask', 'timeZone_id', 'timeZone_version', 'useDhcp'],
+        query_params=['_password', 'cloudDeploymentType', 'hostname', 'monitoringPointType', 'ntpServerAddress', 'ntpServerSecondaryAddress', 'privateConnectivityEnabled', 'staticIpAddress_dnsServerAddress', 'staticIpAddress_dnsServerSecondaryAddress', 'staticIpAddress_domain', 'staticIpAddress_gatewayAddress', 'staticIpAddress_ipAddress', 'staticIpAddress_netmask', 'timeZone_id', 'timeZone_version', 'useDhcp'],
         relative_path='v1/{+parent}/monitoringPoints:downloadInstallScript',
         request_field='',
         request_type_name='NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest',

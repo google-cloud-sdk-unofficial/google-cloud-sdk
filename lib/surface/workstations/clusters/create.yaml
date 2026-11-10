@@ -87,6 +87,13 @@
       type: str
       help_text: |
         Cloud Console Base URL to be used for workstations in this cluster.
+    - arg_name: direct-access-ports
+      release_tracks: [BETA, ALPHA]
+      api_field: workstationCluster.gatewayConfig.directAccessPorts
+      type: int
+      help_text: |
+        VM ports that can be accessed using the standard `$HOSTNAME:$PORT` format in addition to
+        the service's default `$PORT-$HOSTNAME` format.
   request:
     GA:
       api_version: v1

@@ -22,12 +22,15 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.backupdr import restore_templates
 from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.util import exceptions
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import yaml
 
 
 def _resolve_hook_config(
@@ -78,6 +81,10 @@ class Update(base.UpdateCommand):
         To update a restore template `my-template` with a new description, run:
 
           $ {command} my-template --location=us-central1 --description="Updated template"
+
+        To update the restore properties of a restore template `my-template` from a file, run:
+
+          $ {command} my-template --location=us-central1 --restore-properties=path/to/restore_properties.json
         """
       ),
   }
@@ -101,6 +108,22 @@ class Update(base.UpdateCommand):
     client = restore_templates.RestoreTemplatesClient(api_version=api_version)
     is_async = args.async_
 
+    # Validate and parse restore properties before issuing network requests.
+    parsed_restore_properties = None
+    if args.IsSpecified('restore_properties'):
+      try:
+        parsed_restore_properties = client.ParseRestoreProperties(
+            args.restore_properties
+        )
+      except (
+          ValueError,
+          yaml.YAMLParseError,
+          arg_parsers.ArgumentTypeError,
+      ) as e:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--restore-properties', str(e)
+        ) from e
+
     template_ref = args.CONCEPTS.restore_template.Parse()
     current_template = client.Get(template_ref)
 
@@ -122,9 +145,7 @@ class Update(base.UpdateCommand):
       update_mask.append('labels')
 
     if args.IsSpecified('restore_properties'):
-      template.restoreProperties = client.ParseRestoreProperties(
-          args.restore_properties
-      )
+      template.restoreProperties = parsed_restore_properties
       update_mask.append('restore_properties')
 
     if args.IsSpecified('pre_restore_cloud_run_job') or args.IsSpecified(

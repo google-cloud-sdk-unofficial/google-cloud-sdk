@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 TokenAggregationRule export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- tokenGroup
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  match:
+    description: |-
+      Selection criteria for matching requests into this token group. If omitted
+      or empty, acts as a catch-all rule matching any request.
+    $ref: TokenAggregationMatch.yaml
+  tokenGroup:
+    description: |-
+      The target token group name to assign if this rule matches. Examples:
+      "Engineering", "Finance", "Marketing", "Default".
+    type: string

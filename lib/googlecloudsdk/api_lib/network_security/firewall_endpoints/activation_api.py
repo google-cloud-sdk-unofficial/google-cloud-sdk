@@ -32,6 +32,11 @@ _API_VERSION_FOR_TRACK = {
 _API_NAME = 'networksecurity'
 ORG_OPERATIONS_COLLECTION = 'networksecurity.organizations.locations.operations'
 PROJECT_OPERATIONS_COLLECTION = 'networksecurity.projects.locations.operations'
+_REDACT_REQUEST_BODY_REASON = (
+    'Request body may contain a sensitive Strata Cloud Manager (SCM) '
+    'registration token. Set log_http_show_request_body property to True to '
+    'print the body of this request.'
+)
 
 
 def GetMessagesModule(release_track=base.ReleaseTrack.GA):
@@ -39,9 +44,15 @@ def GetMessagesModule(release_track=base.ReleaseTrack.GA):
   return apis.GetMessagesModule(_API_NAME, api_version)
 
 
-def GetClientInstance(release_track=base.ReleaseTrack.GA):
+def GetClientInstance(
+    release_track=base.ReleaseTrack.GA, redact_request_body_reason=None
+):
   api_version = _API_VERSION_FOR_TRACK.get(release_track)
-  return apis.GetClientInstance(_API_NAME, api_version)
+  return apis.GetClientInstance(
+      _API_NAME,
+      api_version,
+      redact_request_body_reason=redact_request_body_reason,
+  )
 
 
 def GetEffectiveApiEndpoint(release_track=base.ReleaseTrack.GA):
@@ -70,7 +81,15 @@ class Client:
   def __init__(self, release_track, project_scope=False):
     self.release_track = release_track
     self.project_scope = project_scope
-    self._client = GetClientInstance(release_track)
+    redact_request_body_reason = (
+        _REDACT_REQUEST_BODY_REASON
+        if release_track == base.ReleaseTrack.ALPHA
+        else None
+    )
+    self._client = GetClientInstance(
+        release_track,
+        redact_request_body_reason=redact_request_body_reason,
+    )
     self.messages = GetMessagesModule(release_track)
     self._resource_parser = resources.Registry()
     self._resource_parser.RegisterApiByName(
@@ -209,6 +228,24 @@ class Client:
         ),
     )
 
+  def _ParseScmSettings(
+      self, enabled, registration_token=None, label=None, region=None
+  ):
+    """Returns a FirewallEndpointScmSettings message (ALPHA only)."""
+    region_enum = None
+    if region:  # an enum NAME or instance validated by the flag layer
+      region_enum = (
+          self.messages.FirewallEndpointScmSettings.ScmRegionValueValuesEnum(
+              region
+          )
+      )
+    return self.messages.FirewallEndpointScmSettings(
+        enabled=enabled,
+        scmRegistrationToken=registration_token,
+        scmLabel=label,
+        scmRegion=region_enum,
+    )
+
   def CreateEndpoint(
       self,
       name,
@@ -229,6 +266,10 @@ class Client:
       enable_wildfire_analysis_logging=None,
       block_partial_http=None,
       kms_key=None,
+      enable_scm=None,
+      scm_registration_token=None,
+      scm_label=None,
+      scm_region=None,
   ):
     """Calls the CreateEndpoint API.
 
@@ -252,6 +293,13 @@ class Client:
         analysis logging.
       block_partial_http: bool, whether to block partial http.
       kms_key: str, Cloud KMS cryptokey resource name.
+      enable_scm: bool, whether to enable Strata Cloud Manager (SCM), or None if
+        SCM settings are not specified.
+      scm_registration_token: str, SCM registration token, or None if not
+        specified.
+      scm_label: str, SCM label, or None if not specified.
+      scm_region: str, SCM region enum name or instance, or None if not
+        specified.
 
     Returns:
       Operation ref to track the long-running process.
@@ -310,6 +358,13 @@ class Client:
         and kms_key
     ):
       endpoint.kmsKey = kms_key
+    if self.release_track == base.ReleaseTrack.ALPHA and enable_scm is not None:
+      endpoint.scmSettings = self._ParseScmSettings(
+          enabled=enable_scm,
+          registration_token=scm_registration_token,
+          label=scm_label,
+          region=scm_region,
+      )
     create_request = self._create_request(
         firewallEndpoint=endpoint, firewallEndpointId=name, parent=parent
     )

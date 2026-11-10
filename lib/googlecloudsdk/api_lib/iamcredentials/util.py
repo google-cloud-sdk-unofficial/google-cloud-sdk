@@ -18,12 +18,7 @@
 
 import json
 
-from apitools.base.py import exceptions as apitools_exceptions
-from apitools.base.py import http_wrapper
-from googlecloudsdk.api_lib.util import apis_internal
-from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.core import exceptions as core_exceptions
-from googlecloudsdk.core import resources
 from googlecloudsdk.core import transport
 from googlecloudsdk.core.credentials import iam_endpoint
 
@@ -43,6 +38,10 @@ class ImpersonatedCredGoogleAuthRefreshError(Error):
 def GenerateAccessToken(service_account_id, scopes):
   """Generates an access token for the given service account."""
   # pylint: disable=g-import-not-at-top
+  from apitools.base.py import exceptions as apitools_exceptions
+  from googlecloudsdk.api_lib.util import apis_internal
+  from googlecloudsdk.api_lib.util import exceptions
+  from googlecloudsdk.core import resources
   from googlecloudsdk.core.credentials import transports
   # pylint: enable=g-import-not-at-top
   service_account_ref = resources.REGISTRY.Parse(
@@ -83,6 +82,8 @@ def GenerateAccessToken(service_account_id, scopes):
 def GenerateIdToken(service_account_id, audience, include_email=False):
   """Generates an id token for the given service account."""
   # pylint: disable=g-import-not-at-top
+  from googlecloudsdk.api_lib.util import apis_internal
+  from googlecloudsdk.core import resources
   from googlecloudsdk.core.credentials import transports
   # pylint: enable=g-import-not-at-top
   service_account_ref = resources.REGISTRY.Parse(
@@ -121,8 +122,11 @@ class ImpersonationAccessTokenProvider(object):
                                         target_principal, delegates, scopes):
     """Creates a fresh impersonation credential using google-auth library."""
     # pylint: disable=g-import-not-at-top
+    from apitools.base.py import exceptions as apitools_exceptions
+    from apitools.base.py import http_wrapper
     from google.auth import exceptions as google_auth_exceptions
     from google.auth import impersonated_credentials as google_auth_impersonated_credentials
+    from googlecloudsdk.api_lib.util import exceptions
     from googlecloudsdk.core import requests as core_requests
     # pylint: enable=g-import-not-at-top
 

@@ -1,0 +1,57 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha BootDisk export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  image:
+    description: |-
+      Source image family used to create this disk. Must be a [supported image
+      family](https://docs.cloud.google.com/cluster- director/docs/compute#os-
+      images) for the VM instance's machine type. If no family is specified, the
+      system will select a supported image family based on the machine type. If
+      this field is cleared, the system will continue to use the current image
+      family.
+    type: string
+  sizeGb:
+    description: |-
+      The size of the disk in gigabytes (GB), which must be at least 40 GB.
+    type: integer
+  storagePools:
+    description: |-
+      The [storage
+      pools](https://docs.cloud.google.com/compute/docs/disks/storage-pools)
+      used for creating the boot disk, in the format:
+      `projects/{project}/zones/{zone}/storagePools/{storage_pool}`. Currently,
+      only one Hyperdisk Balanced storage pool is supported. The storage pool
+      must reside in the same zone as the compute instance.
+    type: array
+    items:
+      type: string
+  type:
+    description: |-
+      [Persistent disk
+      type](https://cloud.google.com/compute/docs/disks#disk-types), in the
+      format `projects/{project}/zones/{zone}/diskTypes/{disk_type}`.
+    type: string

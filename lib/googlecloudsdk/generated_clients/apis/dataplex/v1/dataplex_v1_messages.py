@@ -8792,6 +8792,9 @@ class GoogleCloudDataplexV1Entry(_messages.Message):
       {project_id_or_number}.{location_id}.{aspect_type_id}@{path}
     createTime: Output only. The time when the entry was created in Dataplex
       Universal Catalog.
+    entryGroupType: Output only. The type of the EntryGroup that this entry
+      belongs to. The default value is an empty string. Recognised values
+      include: * context-set: EntryGroup containing context set data assets.
     entrySource: Optional. Information related to the source system of the
       data resource that is represented by the entry.
     entryType: Required. Immutable. The relative resource name of the entry
@@ -8842,12 +8845,13 @@ class GoogleCloudDataplexV1Entry(_messages.Message):
 
   aspects = _messages.MessageField('AspectsValue', 1)
   createTime = _messages.StringField(2)
-  entrySource = _messages.MessageField('GoogleCloudDataplexV1EntrySource', 3)
-  entryType = _messages.StringField(4)
-  fullyQualifiedName = _messages.StringField(5)
-  name = _messages.StringField(6)
-  parentEntry = _messages.StringField(7)
-  updateTime = _messages.StringField(8)
+  entryGroupType = _messages.StringField(3)
+  entrySource = _messages.MessageField('GoogleCloudDataplexV1EntrySource', 4)
+  entryType = _messages.StringField(5)
+  fullyQualifiedName = _messages.StringField(6)
+  name = _messages.StringField(7)
+  parentEntry = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class GoogleCloudDataplexV1EntryGroup(_messages.Message):
@@ -8876,6 +8880,9 @@ class GoogleCloudDataplexV1EntryGroup(_messages.Message):
       ps/{entry_group_id}.
     transferStatus: Output only. Denotes the transfer status of the Entry
       Group. It is unspecified for Entry Group created from Dataplex API.
+    type: Optional. Immutable. The type of this EntryGroup. The default value
+      is an empty string. Recognised values include: * context-set: EntryGroup
+      containing context set data assets.
     uid: Output only. System generated globally unique ID for the EntryGroup.
       If you delete and recreate the EntryGroup with the same name, this ID
       will be different.
@@ -8932,8 +8939,9 @@ class GoogleCloudDataplexV1EntryGroup(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 6)
   name = _messages.StringField(7)
   transferStatus = _messages.EnumField('TransferStatusValueValuesEnum', 8)
-  uid = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
+  type = _messages.StringField(9)
+  uid = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class GoogleCloudDataplexV1EntryGroupChangeRequestConfig(_messages.Message):

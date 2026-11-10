@@ -25,7 +25,9 @@ AppliedAutoProtectionPoliciesClient = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List Backup and DR applied auto-protection policies."""
 
@@ -61,7 +63,6 @@ class List(base.ListCommand):
     flags.AddLocationResourceArg(
         parser,
         'The location resource.',
-        default='-',
     )
     parser.display_info.AddCacheUpdater(None)
 

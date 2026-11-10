@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
+import dataclasses
 
 from googlecloudsdk.api_lib.network_security.firewall_endpoints import activation_api
 from googlecloudsdk.calliope import arg_parsers
@@ -28,9 +29,12 @@ from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps as deps_lib
 from googlecloudsdk.calliope.concepts import multitype
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import files
 
 
 ENDPOINT_RESOURCE_NAME = "FIREWALL_ENDPOINT"
@@ -428,6 +432,224 @@ def AddBlockPartialHttpArg(
           " `--block-partial-http` to enable. To disable, use"
           " `--no-block-partial-http`."
       ),
+  )
+
+
+_SCM_REGION_UNSPECIFIED = "SCM_REGION_UNSPECIFIED"
+_TOKEN_FLAG = "--scm-registration-token"
+_TOKEN_FILE_FLAG = "--scm-registration-token-file"
+
+
+@dataclasses.dataclass(frozen=True)
+class ScmSettingsArgs:
+  """Validated --scm-* values as plain Python types (no API messages).
+
+  Attributes:
+    enabled: Whether Strata Cloud Manager (SCM) management is enabled.
+    registration_token: Trimmed registration token when enabled is True, or
+      None when enabled is False. Omitted from repr().
+    label: Optional label for the SCM configuration, or None if unspecified.
+    region: Optional API enum name for the SCM region (for example,
+      "UNITED_STATES"), or None if unspecified.
+  """
+
+  enabled: bool
+  # repr=False: the token must never show up in logs, tracebacks or asserts.
+  registration_token: str | None = dataclasses.field(default=None, repr=False)
+  label: str | None = None
+  region: str | None = None
+
+
+def _ScmRegionMapper(
+    release_track: base.ReleaseTrack,
+) -> arg_utils.ChoiceEnumMapper:
+  """Returns the mapper behind --scm-region; choices come from the API enum."""
+  messages = activation_api.GetMessagesModule(release_track)
+  return arg_utils.ChoiceEnumMapper(
+      "--scm-region",
+      messages.FirewallEndpointScmSettings.ScmRegionValueValuesEnum,
+      include_filter=lambda name: name != _SCM_REGION_UNSPECIFIED,
+      help_str=(
+          "Strata Cloud Manager (SCM) region used for data processing. See"
+          " https://docs.paloaltonetworks.com/strata-cloud-manager/aiops/about/regions-aiops-for-ngfw"
+          " for the available regions."
+      ),
+  )
+
+
+def AddScmArgs(
+    parser: parser_arguments.ArgumentInterceptor,
+    release_track: base.ReleaseTrack,
+    hidden: bool = True,
+) -> None:
+  """Adds the Strata Cloud Manager (SCM) flags (ALPHA only).
+
+  They correspond to the proto message
+  google.cloud.networksecurity.v1main.FirewallEndpoint.ScmSettings.
+
+  Args:
+    parser: An argparse parser.
+    release_track: The release track of the command.
+    hidden: Whether to hide the flags.
+  """
+  if release_track != base.ReleaseTrack.ALPHA:
+    return
+  group = parser.add_group(
+      help=(
+          "Strata Cloud Manager (SCM) settings. They can only be specified when"
+          " the endpoint is created and cannot be changed afterwards."
+      ),
+      hidden=hidden,
+  )
+  group.add_argument(
+      "--enable-scm",
+      action="store_true",
+      default=None,  # explicit, so unspecified is None, not False
+      required=True,  # modal group: required once any other SCM flag is given
+      help=(
+          "Enable Strata Cloud Manager (SCM) management of the endpoint. A"
+          " registration token is required (see"
+          " `--scm-registration-token-file`). An endpoint managed by SCM stays"
+          " in the `AWAITING_POLICY` state until SCM provides a security"
+          " policy."
+      ),
+  )
+  token_group = group.add_mutually_exclusive_group()
+  token_group.add_argument(
+      _TOKEN_FLAG,
+      help=(
+          "The registration token that the endpoint uses to connect to Strata"
+          " Cloud Manager (SCM). Treat it as a secret: a value given on the"
+          " command line can end up in your shell history and in gcloud's log"
+          " files, so prefer `--scm-registration-token-file`. The API never"
+          " returns the token."
+      ),
+  )
+  token_group.add_argument(
+      _TOKEN_FILE_FLAG,
+      metavar="PATH",
+      help=(
+          "Path to a file containing the Strata Cloud Manager (SCM)"
+          " registration token, or `-` to read it from standard input. The"
+          " input must be UTF-8 text; leading and trailing whitespace is"
+          " ignored. Preferred over `--scm-registration-token`."
+      ),
+  )
+  group.add_argument(
+      "--scm-label",
+      help="Label for the Strata Cloud Manager (SCM) configuration.",
+  )
+  _ScmRegionMapper(release_track).choice_arg.AddToParser(group)
+
+
+def GetAndValidateScmSettings(
+    args: argparse.Namespace,
+    release_track: base.ReleaseTrack,
+) -> ScmSettingsArgs | None:
+  """Validates the --scm-* flags and returns what to send, or None.
+
+  Args:
+    args: The parsed command-line arguments.
+    release_track: The release track of the command.
+
+  Returns:
+    A ScmSettingsArgs instance with the validated SCM flag values, or None if
+    no SCM flag was given (or the track has no SCM flags).
+
+  Raises:
+    exceptions.RequiredArgumentException: other --scm-* flags without
+      --enable-scm (unreachable from the CLI: the argument group enforces it).
+    exceptions.ConflictingArgumentsException: --no-enable-scm together with
+      other --scm-* flags, or both token flags specified.
+    exceptions.OneOfArgumentsRequiredException: --enable-scm without a token.
+    exceptions.BadFileException: the token file cannot be read or is not UTF-8.
+    exceptions.InvalidArgumentException: the token is empty or the region is
+      not supported.
+  """
+  if release_track != base.ReleaseTrack.ALPHA:
+    return None
+  try:
+    enabled = args.enable_scm
+    token = args.scm_registration_token
+    token_file = args.scm_registration_token_file
+    label = args.scm_label
+    region = args.scm_region
+  except AttributeError:
+    # AddScmArgs was not registered on the parser for this command.
+    return None
+
+  others = [  # flag NAMES only: values (the token) never go into messages
+      flag
+      for flag, value in (
+          (_TOKEN_FLAG, token),
+          (_TOKEN_FILE_FLAG, token_file),
+          ("--scm-label", label),
+          ("--scm-region", region),
+      )
+      if value is not None
+  ]
+  if enabled is None:
+    if others:
+      raise exceptions.RequiredArgumentException(
+          "--enable-scm", f"{', '.join(others)} requires --enable-scm."
+      )
+    return None
+  if not enabled:  # --no-enable-scm; send enabled=false
+    if others:
+      raise exceptions.ConflictingArgumentsException("--no-enable-scm", *others)
+    return ScmSettingsArgs(enabled=False)
+
+  # scm_registration_token is OPTIONAL in the proto because ScmSettings is also
+  # used for enabled=false and GET/LIST responses (where the INPUT_ONLY token is
+  # omitted), but the server rejects enabled=true without a non-empty token.
+  if token is None and token_file is None:
+    raise exceptions.OneOfArgumentsRequiredException(
+        [_TOKEN_FLAG, _TOKEN_FILE_FLAG],
+        "A registration token is required when --enable-scm is specified.",
+    )
+  if token is not None and token_file is not None:
+    raise exceptions.ConflictingArgumentsException(
+        _TOKEN_FLAG, _TOKEN_FILE_FLAG
+    )
+  if token_file is not None:
+    path = token_file
+    if path != "-":  # "-" means standard input
+      path = files.ExpandHomeDir(path)
+    try:
+      token = console_io.ReadFromFileOrStdin(path, binary=False)
+    except files.Error as e:
+      # files.ReadFileContents wraps the OS error as
+      # "Unable to read file [<path>]: <os error>"; use the underlying OS
+      # reason so our prefix and path are not repeated.
+      reason = e.__context__ or str(e).removeprefix(
+          f"Unable to read file [{path}]: "
+      )
+      raise exceptions.BadFileException(
+          f"Unable to read the registration token from [{token_file}]: {reason}"
+      ) from e
+    except UnicodeDecodeError:
+      # Deliberately not chained: the decode error refers to the secret's bytes.
+      raise exceptions.BadFileException(
+          f"Unable to read the registration token from [{token_file}]: the"
+          " contents are not valid UTF-8 text."
+      ) from None
+  # A UTF-8 BOM (written by some Windows tools) is not whitespace to str.strip.
+  token = token.strip().lstrip("\ufeff").strip()
+  if not token:
+    raise exceptions.InvalidArgumentException(
+        _TOKEN_FILE_FLAG if token_file is not None else _TOKEN_FLAG,
+        "The registration token must not be empty.",
+    )
+  region_name = None
+  if region is not None:
+    enum_choice = _ScmRegionMapper(release_track).GetEnumForChoice(region)
+    if enum_choice is None:
+      raise exceptions.InvalidArgumentException(
+          "--scm-region", f"[{region}] is not a supported region."
+      )
+    region_name = enum_choice.name
+  return ScmSettingsArgs(
+      enabled=True, registration_token=token, label=label, region=region_name
   )
 
 

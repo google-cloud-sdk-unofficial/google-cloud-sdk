@@ -67,7 +67,7 @@ def _should_perform_on_fly_checksumming(
   """
   if (
       properties.VALUES.storage.check_hashes.Get()
-      == properties.CheckHashes.NEVER.value
+      == properties.VALUES.storage.CheckHashes.NEVER.value
   ):
     return False
 

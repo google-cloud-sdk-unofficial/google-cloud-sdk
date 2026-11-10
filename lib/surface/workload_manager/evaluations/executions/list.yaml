@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA]
+  hints:
+    read_only: true
+
+  help_text:
+    brief: List Workload Manager evaluation executions.
+    description: List Workload Manager evaluation executions.
+    examples: |
+      To list all executions under evaluation ``my-eval'' in location ``us-central1'', run:
+
+        $ {command} --evaluation=my-eval --location=us-central1
+
+  request:
+    collection: workloadmanager.projects.locations.evaluations.executions
+    regional_endpoint_compatibility: SUPPORTED
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: evaluation for which to list executions.
+      spec: !REF googlecloudsdk.command_lib.workload_manager.resources:evaluation
+
+  output:
+    format: |
+      table(
+        name.scope("executions"):label=ID,
+        name.scope("evaluations").segment(0):label=EVALUATION,
+        name.scope("locations").segment(0):label=LOCATION,
+        state:label=STATE,
+        startTime.date(tz_default=UTC):label=START_TIME,
+        endTime.date(tz_default=UTC):label=END_TIME
+      )

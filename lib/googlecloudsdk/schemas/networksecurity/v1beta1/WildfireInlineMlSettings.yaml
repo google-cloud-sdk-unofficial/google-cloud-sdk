@@ -1,0 +1,38 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1beta1 WildfireInlineMlSettings export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  fileExceptions:
+    description: List of files to exclude from WildFire Inline ML analysis.
+    type: array
+    items:
+      $ref: WildfireInlineMlFileException.yaml
+  inlineMlConfigs:
+    description: |-
+      List of Inline ML configs to enable in WildFire Inline ML analysis.
+    type: array
+    items:
+      $ref: WildfireInlineMlSettingsInlineMlConfig.yaml

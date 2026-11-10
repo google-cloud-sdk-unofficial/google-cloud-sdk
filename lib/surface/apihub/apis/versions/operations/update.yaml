@@ -16,6 +16,8 @@
   - ALPHA
   - GA
   auto_generated: false
+  hints:
+    read_only: false
   help_text:
     brief: Update apiOperations
     description: Update an apiOperation

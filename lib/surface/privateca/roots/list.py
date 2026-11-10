@@ -76,7 +76,8 @@ class List(base.ListCommand):
           state,
           state.regex("ENABLED","YES","NO"):label=INCLUDED_IN_POOL_ISSUANCE,
           ca_certificate_descriptions[0].subject_description.not_before_time():label=NOT_BEFORE,
-          ca_certificate_descriptions[0].subject_description.not_after_time():label=NOT_AFTER)
+          ca_certificate_descriptions[0].subject_description.not_after_time():label=NOT_AFTER,
+          key_spec.protection_level:optional)
         """)
     parser.display_info.AddTransforms({
         'not_before_time': text_utils.TransformNotBeforeTime,

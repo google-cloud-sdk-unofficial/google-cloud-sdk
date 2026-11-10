@@ -20,7 +20,20 @@ evaluation:
   attributes:
   - *project
   - *location
-  - parameter_name: evaluationsId
+  - &evaluation
+    parameter_name: evaluationsId
     attribute_name: evaluation
     help: |
       The evaluation ID.
+
+execution:
+  name: execution
+  collection: workloadmanager.projects.locations.evaluations.executions
+  attributes:
+  - *project
+  - *location
+  - *evaluation
+  - parameter_name: executionsId
+    attribute_name: execution
+    help: |
+      execution ID.

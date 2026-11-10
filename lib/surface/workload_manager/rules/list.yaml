@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA]
+  hints:
+    read_only: true
+
+  help_text:
+    brief: Lists rules in a location.
+    description: Lists rules in a location.
+    examples: |
+      To list rules in location ``us-central1'', run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: workloadmanager.projects.locations.rules
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The location in which to list rules.
+      spec: !REF googlecloudsdk.command_lib.workload_manager.resources:location
+      is_positional: false
+    params:
+    - arg_name: custom-rules-bucket
+      api_field: customRulesBucket
+      help_text: The Cloud Storage bucket name for custom rules.
+    - arg_name: evaluation-type
+      api_field: evaluationType
+      help_text: The evaluation type of the rules.
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        displayName:label=DISPLAY_NAME,
+        ruleType:label=RULE_TYPE,
+        severity:label=SEVERITY,
+        description:label=DESCRIPTION
+      )

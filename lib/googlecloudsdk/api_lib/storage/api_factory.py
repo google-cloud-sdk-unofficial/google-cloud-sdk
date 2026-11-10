@@ -71,7 +71,9 @@ def _get_api_class(provider, is_zonal_bucket):
     # TODO(b/324352239)
     if properties.VALUES.storage.use_grpc_if_available.GetBool() or (
         properties.VALUES.storage.preferred_api.Get()
-        == properties.StoragePreferredApi.GRPC_WITH_JSON_FALLBACK.value
+        == (
+            properties.VALUES.storage.StoragePreferredApi.GRPC_WITH_JSON_FALLBACK.value
+        )
     ):
       log.debug('Using gRPC client with JSON Fallback.')
       return gcs_grpc_client.GrpcClientWithJsonFallback

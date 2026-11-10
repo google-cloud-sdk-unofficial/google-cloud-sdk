@@ -56,6 +56,39 @@ def GetPartnerPermissions(release_track):
   return PARTNER_PERMISSIONS_MAP.get(release_track)
 
 
+def GetViolationViewEnum():
+  return GetMessages(
+      ReleaseTrack.GA
+  ).AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest.ViewValueValuesEnum
+
+
+VIOLATION_VIEW_CUSTOM_MAPPINGS = {
+    'VIOLATION_VIEW_ASSURED_WORKLOADS': (
+        'assured-workloads',
+        'Includes the basic metadata about the violation.',
+    ),
+    'VIOLATION_VIEW_DATA_BOUNDARY': (
+        'data-boundary',
+        (
+            'Includes all information about the violation, including details'
+            ' about the data boundary.'
+        ),
+    ),
+}
+
+VIOLATION_VIEW_MAP = {
+    choice: enum_name
+    for enum_name, (choice, _) in VIOLATION_VIEW_CUSTOM_MAPPINGS.items()
+}
+
+
+def ParseViolationView(view, view_enum):
+  """Converts a violation view choice string to the given ViewValueValuesEnum."""
+  if not view:
+    return None
+  return view_enum(VIOLATION_VIEW_MAP[view])
+
+
 def CreateAssuredParent(organization_id, location):
   return resources.REGISTRY.Parse(
       location,
@@ -319,7 +352,11 @@ def CreateUpdateRequest(
 
 
 def CreateAcknowledgeRequest(
-    name, comment, acknowledge_type=None, release_track=ReleaseTrack.GA
+    name,
+    comment,
+    acknowledge_type=None,
+    release_track=ReleaseTrack.GA,
+    view=None,
 ):
   """Construct an Assured Workload Violation Acknowledgement Request.
 
@@ -334,6 +371,8 @@ def CreateAcknowledgeRequest(
       EXISTING_CHILD_RESOURCE_VIOLATIONS - to acknowledge specified org policy
       violation and all associated child resource violations.
     release_track: ReleaseTrack, gcloud release track being used
+    view: str, the violation view for acknowledging violations, which is one of:
+      assured-workloads or data-boundary.
 
   Returns:
     A populated Assured Workloads Violation Acknowledgement Request.
@@ -344,17 +383,23 @@ def CreateAcknowledgeRequest(
         acknowledge_type
     )
   if release_track == ReleaseTrack.GA:
+    req_cls = messages.GoogleCloudAssuredworkloadsV1AcknowledgeViolationRequest
+    req = req_cls(comment=comment)
+    if view:
+      req.view = ParseViolationView(view, req_cls.ViewValueValuesEnum)
     return messages.AssuredworkloadsOrganizationsLocationsWorkloadsViolationsAcknowledgeRequest(
-        googleCloudAssuredworkloadsV1AcknowledgeViolationRequest=messages.GoogleCloudAssuredworkloadsV1AcknowledgeViolationRequest(
-            comment=comment
-        ),
+        googleCloudAssuredworkloadsV1AcknowledgeViolationRequest=req,
         name=name,
     )
   else:
+    req_cls = (
+        messages.GoogleCloudAssuredworkloadsV1beta1AcknowledgeViolationRequest
+    )
+    req = req_cls(comment=comment, acknowledgeType=acknowledge_type)
+    if view:
+      req.view = ParseViolationView(view, req_cls.ViewValueValuesEnum)
     return messages.AssuredworkloadsOrganizationsLocationsWorkloadsViolationsAcknowledgeRequest(
-        googleCloudAssuredworkloadsV1beta1AcknowledgeViolationRequest=messages.GoogleCloudAssuredworkloadsV1beta1AcknowledgeViolationRequest(
-            comment=comment, acknowledgeType=acknowledge_type
-        ),
+        googleCloudAssuredworkloadsV1beta1AcknowledgeViolationRequest=req,
         name=name,
     )
 

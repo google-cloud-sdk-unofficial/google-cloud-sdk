@@ -1,0 +1,84 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha Cluster export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  computeResources:
+    description: |-
+      Compute resources available to the cluster. Keys specify the ID of the
+      compute resource by which it can be referenced elsewhere, and must conform
+      to [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
+    $ref: ComputeResourcesValue.yaml
+  description:
+    description: |-
+      A description for your cluster. You can use up to 2,048 characters.
+    type: string
+  healthChecks:
+    description: Health checks on the cluster.
+    $ref: HealthChecks.yaml
+  labels:
+    description: |-
+      [Labels](https://cloud.google.com/compute/docs/labeling- resources)
+      applied to the cluster. Labels can be used to organize clusters and to
+      filter them in queries.
+    $ref: LabelsValue.yaml
+  maintenancePolicy:
+    description: |-
+      Policy controlling how system-initiated maintenance should be conducted on
+      the cluster.
+    $ref: MaintenancePolicy.yaml
+  name:
+    description: |-
+      Identifier. [Relative resource name](https://google.aip.dev/122) of the
+      cluster, in the format
+      `projects/{project}/locations/{location}/clusters/{cluster}`.
+    type: string
+  networkResources:
+    description: |-
+      Network resources available to the cluster. Must contain exactly one
+      value. Keys specify the ID of the network resource by which it can be
+      referenced elsewhere, and must conform to
+      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
+    $ref: NetworkResourcesValue.yaml
+  orchestrator:
+    description: |-
+      Orchestrator that is responsible for scheduling and running jobs on the
+      cluster.
+    $ref: Orchestrator.yaml
+  storageResources:
+    description: |-
+      Storage resources available to the cluster. Keys specify the ID of the
+      storage resource by which it can be referenced elsewhere, and must conform
+      to [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
+    $ref: StorageResourcesValue.yaml
+  vmTags:
+    description: |-
+      [Tags](https://docs.cloud.google.com/compute/docs/tag- resources) applied
+      to all provisioned VMs in the cluster. Tags are used to control access to
+      the VMs and to apply policies to them.
+    $ref: VmTagsValue.yaml

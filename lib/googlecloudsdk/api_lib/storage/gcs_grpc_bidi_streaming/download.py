@@ -167,7 +167,7 @@ def _should_validate_chunk_integrity(digesters):
   """Returns true if chunk integrity should be validated."""
   if (
       properties.VALUES.storage.check_hashes.Get()
-      == properties.CheckHashes.NEVER.value
+      == properties.VALUES.storage.CheckHashes.NEVER.value
   ):
     return False
   if not digesters:

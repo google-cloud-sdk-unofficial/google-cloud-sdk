@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Detect dense text in an image.
@@ -36,6 +38,8 @@
     format: json
 
 - release_tracks: [ALPHA, BETA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Detect dense text in an image.

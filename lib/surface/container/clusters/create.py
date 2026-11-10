@@ -669,6 +669,7 @@ def ParseCreateOptionsBase(
           'disable_l4_lb_firewall_reconciliation'
       ),
       enable_granular_nat=get_default('enable_granular_nat'),
+      enable_cdpf=get_default('enable_cdpf'),
       network_suite=get_default('network_suite'),
       tier=get_default('tier'),
       enable_ip_access=get_default('enable_ip_access'),
@@ -835,6 +836,7 @@ flags_to_add = {
         'dataplaneebpfhostrouting': flags.AddDataplaneEbpfHostRoutingFlag,
         'dataplanev2metrics': flags.AddDataplaneV2MetricsFlag,
         'dataplanev2obs': flags.AddDataplaneV2ObservabilityFlags,
+        'enableAmbientNetworking': flags.AddEnableAmbientNetworkingFlag,
         'disksize': flags.AddDiskSizeFlag,
         'disktype': flags.AddDiskTypeFlag,
         'identityservice': flags.AddIdentityServiceFlag,
@@ -1009,6 +1011,7 @@ flags_to_add = {
         ),
         'enableSliceController': flags.AddEnableSliceControllerFlag,
         'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
+        'enableCdpf': flags.AddEnableCDPFFlag,
         'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=False),
         'managedAutoscaling': flags.AddManagedAutoscalingFlags,
     },
@@ -1267,6 +1270,7 @@ flags_to_add = {
         ),
         'enableSliceController': flags.AddEnableSliceControllerFlag,
         'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
+        'enableCdpf': flags.AddEnableCDPFFlag,
         'linkedRunnersMode': lambda p: flags.AddLinkedRunnersModeFlag(
             p, hidden=True
         ),
@@ -1535,6 +1539,7 @@ flags_to_add = {
         ),
         'enableSliceController': flags.AddEnableSliceControllerFlag,
         'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
+        'enableCdpf': flags.AddEnableCDPFFlag,
         'linkedRunnersMode': lambda p: flags.AddLinkedRunnersModeFlag(
             p, hidden=True
         ),
@@ -1937,6 +1942,7 @@ class CreateBeta(Create):
         'disable_l4_lb_firewall_reconciliation'
     )
     ops.enable_granular_nat = get_default('enable_granular_nat')
+    ops.enable_cdpf = get_default('enable_cdpf')
     ops.network_suite = get_default('network_suite')
     ops.tier = get_default('tier')
     ops.anonymous_authentication_config = get_default(
@@ -2129,6 +2135,7 @@ class CreateAlpha(Create):
         'disable_l4_lb_firewall_reconciliation'
     )
     ops.enable_granular_nat = get_default('enable_granular_nat')
+    ops.enable_cdpf = get_default('enable_cdpf')
     ops.network_suite = get_default('network_suite')
     ops.tier = get_default('tier')
     ops.anonymous_authentication_config = get_default(

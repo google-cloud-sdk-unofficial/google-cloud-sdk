@@ -22,11 +22,72 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import times
+
+
+def _TransformCredentialAuditFindings(findings, undefined=""):
+  """Formats credential audit findings as a list of single-line strings.
+
+  Each finding is formatted as `RESULT (STATE, LAST_DETECT_TIME)`, e.g.
+  `CREDENTIALS_LEAKED (ACTIVE, 2026-10-21T10:00:00.500Z)`.
+
+  Args:
+    findings: A list of serialized security findings.
+    undefined: Returns this value if there are no findings.
+
+  Returns:
+    The formatted findings separated by "; ", or undefined if there are none.
+  """
+  if not findings:
+    return undefined
+  formatted = []
+  for finding in findings:
+    result = (finding.get("result") or {}).get(
+        "credentialAuditFinding", "CREDENTIAL_AUDIT_FINDING_UNSPECIFIED"
+    )
+    details = [finding.get("state", "STATE_UNSPECIFIED")]
+    if finding.get("lastDetectTime"):
+      details.append(finding["lastDetectTime"])
+    formatted.append("{} ({})".format(result, ", ".join(details)))
+  return "; ".join(formatted)
 
 
 def AddBaseArgs(parser):
   flags.AddInstance(parser)
+  flags.AddUserView(parser)
   parser.display_info.AddCacheUpdater(flags.UserCompleter)
+  parser.display_info.AddTransforms(
+      {"credential_audit_findings": _TransformCredentialAuditFindings}
+  )
+
+
+def _KeepCredentialAuditFindings(user, sql_messages):
+  """Keeps all of the user's credential audit findings, with their details.
+
+  Findings of all states (active and closed) are kept, ordered from the most
+  recently detected to the least recently detected.
+
+  Args:
+    user: The SQL user resource, modified in place.
+    sql_messages: The SQL API messages module.
+  """
+  credential_audit_type = (
+      sql_messages.SecurityFinding.FindingTypeValueValuesEnum.CREDENTIAL_AUDIT
+  )
+  epoch = times.GetDateTimeFromTimeStamp(0, tzinfo=times.UTC)
+  user.securityFindings = sorted(
+      (
+          finding
+          for finding in user.securityFindings
+          if finding.findingType == credential_audit_type
+      ),
+      key=lambda finding: (
+          times.ParseDateTime(finding.lastDetectTime, tzinfo=times.UTC)
+          if finding.lastDetectTime
+          else epoch
+      ),
+      reverse=True,
+  )
 
 
 def RunBaseListCommand(args, release_track):
@@ -47,7 +108,13 @@ def RunBaseListCommand(args, release_track):
 
   users = sql_client.users.List(
       sql_messages.SqlUsersListRequest(
-          project=project_id, instance=args.instance)).items
+          project=project_id,
+          instance=args.instance,
+          view=flags.GetUserView(
+              args.view, sql_messages.SqlUsersListRequest.ViewValueValuesEnum
+          ),
+      )
+  ).items
 
   # We will not display dual passwords if no user in the instance
   # has information about this field. This an implicit way of saying that we
@@ -67,28 +134,47 @@ def RunBaseListCommand(args, release_track):
       user.iamStatus = None
     if user.iamStatus:
       iam_status = "iamStatus,"
+    if args.view == "full":
+      _KeepCredentialAuditFindings(user, sql_messages)
     if not policy:
       continue
     # Don't display
     policy.enableFailedAttemptsCheck = None
+
+  # Show all of each user's credential audit findings, each flattened to
+  # `RESULT (STATE, LAST_DETECT_TIME)`, when security findings are requested.
+  security_findings = ""
+  if args.view == "full":
+    security_findings = (
+        "securityFindings.credential_audit_findings():"
+        "label=CREDENTIAL_AUDIT_FINDING,"
+    )
 
   # Dual Password types is exposed in all release tracks, but we will not
   # expose the column early to customers, because returning the Dual Password
   # status is gated by a flag upstream.
   if release_track == base.ReleaseTrack.GA:
     # Because there are tests running against Python 3.5, I can't use f-Strings.
-    args.GetDisplayInfo().AddFormat("""
+    args.GetDisplayInfo().AddFormat(
+        """
       table(
         name.yesno(no='(anonymous)'),
         host,
         type.yesno(no='BUILT_IN'),
         {dualPasswordType}
         {iamStatus}
+        {securityFindings}
         passwordPolicy
       )
-    """.format(dualPasswordType=dual_password_type, iamStatus=iam_status))
+    """.format(
+            dualPasswordType=dual_password_type,
+            iamStatus=iam_status,
+            securityFindings=security_findings,
+        )
+    )
   else:
-    args.GetDisplayInfo().AddFormat("""
+    args.GetDisplayInfo().AddFormat(
+        """
       table(
         name.yesno(no='(anonymous)'),
         host,
@@ -96,9 +182,15 @@ def RunBaseListCommand(args, release_track):
         {dualPasswordType}
         {iamStatus}
         iamEmail,
+        {securityFindings}
         passwordPolicy
       )
-    """.format(dualPasswordType=dual_password_type, iamStatus=iam_status))
+    """.format(
+            dualPasswordType=dual_password_type,
+            iamStatus=iam_status,
+            securityFindings=security_findings,
+        )
+    )
 
   return users
 

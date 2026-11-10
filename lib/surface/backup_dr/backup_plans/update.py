@@ -298,12 +298,12 @@ class Update(base.UpdateCommand):
           update_mask.append(
               'compute_instance_backup_plan_properties.disk_exclusion_labels'
           )
-      if any([
-          update_backup_rules,
-          add_backup_rules,
-          remove_backup_rules,
-          new_backup_rules_from_file,
-      ]):
+      if (
+          update_backup_rules
+          or add_backup_rules
+          or remove_backup_rules
+          or new_backup_rules_from_file is not None
+      ):
         update_mask.append('backupRules')
       operation = client.Update(
           backup_plan, updated_backup_plan, ','.join(update_mask)

@@ -77,7 +77,8 @@ class AirflowRbacConfig(_messages.Message):
 
   Fields:
     bindings: Required. Binds the identities (users, groups, service accounts,
-      and workforce identity pool principals) to the Airflow roles.
+      and workforce identity pool principals) to the Airflow roles. Must
+      contain at least one binding.
   """
 
   bindings = _messages.MessageField('AirflowRbacBinding', 1, repeated=True)
@@ -236,6 +237,9 @@ class ComponentBoundary(_messages.Message):
   r"""Resource boundaries for a single workload component.
 
   Fields:
+    allowedMachineSpecs: Optional strict allowlist of fixed (cpu, memory_gb)
+      machine specifications. When populated, only these exact (cpu,
+      memory_gb) pairs are valid for this component.
     count: Allowed count boundaries.
     cpu: Allowed CPU boundaries (vCPU).
     memoryCpuRatio: Memory to CPU ratio constraint.
@@ -243,11 +247,12 @@ class ComponentBoundary(_messages.Message):
     storageGb: Allowed storage boundaries (GB).
   """
 
-  count = _messages.MessageField('IntegerConstraint', 1)
-  cpu = _messages.MessageField('NumericConstraint', 2)
-  memoryCpuRatio = _messages.MessageField('RatioConstraint', 3)
-  memoryGb = _messages.MessageField('NumericConstraint', 4)
-  storageGb = _messages.MessageField('NumericConstraint', 5)
+  allowedMachineSpecs = _messages.MessageField('MachineSpec', 1, repeated=True)
+  count = _messages.MessageField('IntegerConstraint', 2)
+  cpu = _messages.MessageField('NumericConstraint', 3)
+  memoryCpuRatio = _messages.MessageField('RatioConstraint', 4)
+  memoryGb = _messages.MessageField('NumericConstraint', 5)
+  storageGb = _messages.MessageField('NumericConstraint', 6)
 
 
 class ComposerProjectsLocationsEnvironmentsCheckUpgradeRequest(_messages.Message):
@@ -1680,12 +1685,15 @@ class EnvironmentConfig(_messages.Message):
       ENVIRONMENT_SIZE_MEDIUM: The environment size is medium.
       ENVIRONMENT_SIZE_LARGE: The environment size is large.
       ENVIRONMENT_SIZE_EXTRA_LARGE: The environment size is extra large.
+      ENVIRONMENT_SIZE_X_EXTRA_LARGE: The environment size is double extra
+        large.
     """
     ENVIRONMENT_SIZE_UNSPECIFIED = 0
     ENVIRONMENT_SIZE_SMALL = 1
     ENVIRONMENT_SIZE_MEDIUM = 2
     ENVIRONMENT_SIZE_LARGE = 3
     ENVIRONMENT_SIZE_EXTRA_LARGE = 4
+    ENVIRONMENT_SIZE_X_EXTRA_LARGE = 5
 
   class ResilienceModeValueValuesEnum(_messages.Enum):
     r"""Optional. Resilience mode of the Cloud Composer Environment. This
@@ -2172,6 +2180,18 @@ class LoadSnapshotRequest(_messages.Message):
 
 class LoadSnapshotResponse(_messages.Message):
   r"""Response to LoadSnapshotRequest."""
+
+
+class MachineSpec(_messages.Message):
+  r"""Fixed CPU and memory specification for a machine type.
+
+  Fields:
+    cpu: CPU count (vCPU).
+    memoryGb: Memory size (GB).
+  """
+
+  cpu = _messages.FloatField(1)
+  memoryGb = _messages.FloatField(2)
 
 
 class MaintenanceWindow(_messages.Message):
@@ -3875,6 +3895,9 @@ class WorkerBoundary(_messages.Message):
   r"""Resource boundaries for worker workloads.
 
   Fields:
+    allowedMachineSpecs: Optional strict allowlist of fixed (cpu, memory_gb)
+      machine specifications. When populated, only these exact (cpu,
+      memory_gb) pairs are valid for workers.
     cpu: Allowed CPU boundaries (vCPU).
     maxCountBounds: Allowed bounds for worker max_count.
     memoryCpuRatio: Memory to CPU ratio constraint.
@@ -3883,12 +3906,13 @@ class WorkerBoundary(_messages.Message):
     storageGb: Allowed storage boundaries (GB).
   """
 
-  cpu = _messages.MessageField('NumericConstraint', 1)
-  maxCountBounds = _messages.MessageField('IntegerConstraint', 2)
-  memoryCpuRatio = _messages.MessageField('RatioConstraint', 3)
-  memoryGb = _messages.MessageField('NumericConstraint', 4)
-  minCountBounds = _messages.MessageField('IntegerConstraint', 5)
-  storageGb = _messages.MessageField('NumericConstraint', 6)
+  allowedMachineSpecs = _messages.MessageField('MachineSpec', 1, repeated=True)
+  cpu = _messages.MessageField('NumericConstraint', 2)
+  maxCountBounds = _messages.MessageField('IntegerConstraint', 3)
+  memoryCpuRatio = _messages.MessageField('RatioConstraint', 4)
+  memoryGb = _messages.MessageField('NumericConstraint', 5)
+  minCountBounds = _messages.MessageField('IntegerConstraint', 6)
+  storageGb = _messages.MessageField('NumericConstraint', 7)
 
 
 class WorkerResource(_messages.Message):
@@ -3968,12 +3992,15 @@ class WorkloadsConfigPreset(_messages.Message):
       ENVIRONMENT_SIZE_MEDIUM: The environment size is medium.
       ENVIRONMENT_SIZE_LARGE: The environment size is large.
       ENVIRONMENT_SIZE_EXTRA_LARGE: The environment size is extra large.
+      ENVIRONMENT_SIZE_X_EXTRA_LARGE: The environment size is double extra
+        large.
     """
     ENVIRONMENT_SIZE_UNSPECIFIED = 0
     ENVIRONMENT_SIZE_SMALL = 1
     ENVIRONMENT_SIZE_MEDIUM = 2
     ENVIRONMENT_SIZE_LARGE = 3
     ENVIRONMENT_SIZE_EXTRA_LARGE = 4
+    ENVIRONMENT_SIZE_X_EXTRA_LARGE = 5
 
   environmentSize = _messages.EnumField('EnvironmentSizeValueValuesEnum', 1)
   id = _messages.StringField(2)

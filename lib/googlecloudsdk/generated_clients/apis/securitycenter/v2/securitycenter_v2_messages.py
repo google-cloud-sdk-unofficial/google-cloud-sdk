@@ -1149,6 +1149,20 @@ class CloudLoggingEntry(_messages.Message):
   timestamp = _messages.StringField(4)
 
 
+class CloudRun(_messages.Message):
+  r"""Cloud Run workload metadata.
+
+  Fields:
+    revisions: Revisions actively serving traffic (for Services) or processing
+      tasks (for WorkerPools) that contain the finding. Capped at a maximum of
+      5 active revisions. Format: "projects/{project}/locations/{location}/ser
+      vices/{service}/revisions/{revision}" or "projects/{project}/locations/{
+      location}/workerPools/{worker_pool}/revisions/{revision}"
+  """
+
+  revisions = _messages.StringField(1, repeated=True)
+
+
 class Compliance(_messages.Message):
   r"""Contains compliance information about a security standard indicating
   unmet recommendations.
@@ -2309,6 +2323,8 @@ class Finding(_messages.Message):
       finding.
     cloudDlpInspection: Cloud Data Loss Prevention (Cloud DLP) inspection
       results that are associated with the finding.
+    cloudRun: Cloud Run related attributes for Services, WorkerPools, and
+      Jobs.
     complianceDetails: Details about the compliance implications of the
       finding.
     compliances: Contains compliance information for security standards
@@ -2658,62 +2674,63 @@ class Finding(_messages.Message):
   cloudArmor = _messages.MessageField('CloudArmor', 15)
   cloudDlpDataProfile = _messages.MessageField('CloudDlpDataProfile', 16)
   cloudDlpInspection = _messages.MessageField('CloudDlpInspection', 17)
-  complianceDetails = _messages.MessageField('ComplianceDetails', 18)
-  compliances = _messages.MessageField('Compliance', 19, repeated=True)
-  connections = _messages.MessageField('Connection', 20, repeated=True)
-  contacts = _messages.MessageField('ContactsValue', 21)
-  containers = _messages.MessageField('Container', 22, repeated=True)
-  createTime = _messages.StringField(23)
-  dataAccessEvents = _messages.MessageField('DataAccessEvent', 24, repeated=True)
-  dataFlowEvents = _messages.MessageField('DataFlowEvent', 25, repeated=True)
-  dataRetentionDeletionEvents = _messages.MessageField('DataRetentionDeletionEvent', 26, repeated=True)
-  database = _messages.MessageField('Database', 27)
-  description = _messages.StringField(28)
-  discoveredWorkload = _messages.MessageField('DiscoveredWorkload', 29)
-  disk = _messages.MessageField('Disk', 30)
-  eventTime = _messages.StringField(31)
-  exfiltration = _messages.MessageField('Exfiltration', 32)
-  externalExposure = _messages.MessageField('ExternalExposure', 33)
-  externalSystems = _messages.MessageField('ExternalSystemsValue', 34)
-  externalUri = _messages.StringField(35)
-  files = _messages.MessageField('File', 36, repeated=True)
-  findingClass = _messages.EnumField('FindingClassValueValuesEnum', 37)
-  groupMemberships = _messages.MessageField('GroupMembership', 38, repeated=True)
-  iamBindings = _messages.MessageField('IamBinding', 39, repeated=True)
-  iamDetails = _messages.MessageField('GoogleCloudSecuritycenterV1IamDetails', 40)
-  indicator = _messages.MessageField('Indicator', 41)
-  ipRules = _messages.MessageField('IpRules', 42)
-  job = _messages.MessageField('Job', 43)
-  kernelRootkit = _messages.MessageField('KernelRootkit', 44)
-  kubernetes = _messages.MessageField('Kubernetes', 45)
-  loadBalancers = _messages.MessageField('LoadBalancer', 46, repeated=True)
-  logEntries = _messages.MessageField('LogEntry', 47, repeated=True)
-  mitreAttack = _messages.MessageField('MitreAttack', 48)
-  moduleName = _messages.StringField(49)
-  mute = _messages.EnumField('MuteValueValuesEnum', 50)
-  muteAnnotation = _messages.StringField(51)
-  muteInfo = _messages.MessageField('MuteInfo', 52)
-  muteInitiator = _messages.StringField(53)
-  muteUpdateTime = _messages.StringField(54)
-  name = _messages.StringField(55)
-  networks = _messages.MessageField('Network', 56, repeated=True)
-  nextSteps = _messages.StringField(57)
-  notebook = _messages.MessageField('Notebook', 58)
-  orgPolicies = _messages.MessageField('OrgPolicy', 59, repeated=True)
-  parent = _messages.StringField(60)
-  parentDisplayName = _messages.StringField(61)
-  policyViolationSummary = _messages.MessageField('PolicyViolationSummary', 62)
-  processes = _messages.MessageField('Process', 63, repeated=True)
-  resourceName = _messages.StringField(64)
-  secret = _messages.MessageField('Secret', 65)
-  securityMarks = _messages.MessageField('SecurityMarks', 66)
-  securityPosture = _messages.MessageField('SecurityPosture', 67)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 68)
-  sourceProperties = _messages.MessageField('SourcePropertiesValue', 69)
-  state = _messages.EnumField('StateValueValuesEnum', 70)
-  toxicCombination = _messages.MessageField('ToxicCombination', 71)
-  vertexAi = _messages.MessageField('VertexAi', 72)
-  vulnerability = _messages.MessageField('Vulnerability', 73)
+  cloudRun = _messages.MessageField('CloudRun', 18)
+  complianceDetails = _messages.MessageField('ComplianceDetails', 19)
+  compliances = _messages.MessageField('Compliance', 20, repeated=True)
+  connections = _messages.MessageField('Connection', 21, repeated=True)
+  contacts = _messages.MessageField('ContactsValue', 22)
+  containers = _messages.MessageField('Container', 23, repeated=True)
+  createTime = _messages.StringField(24)
+  dataAccessEvents = _messages.MessageField('DataAccessEvent', 25, repeated=True)
+  dataFlowEvents = _messages.MessageField('DataFlowEvent', 26, repeated=True)
+  dataRetentionDeletionEvents = _messages.MessageField('DataRetentionDeletionEvent', 27, repeated=True)
+  database = _messages.MessageField('Database', 28)
+  description = _messages.StringField(29)
+  discoveredWorkload = _messages.MessageField('DiscoveredWorkload', 30)
+  disk = _messages.MessageField('Disk', 31)
+  eventTime = _messages.StringField(32)
+  exfiltration = _messages.MessageField('Exfiltration', 33)
+  externalExposure = _messages.MessageField('ExternalExposure', 34)
+  externalSystems = _messages.MessageField('ExternalSystemsValue', 35)
+  externalUri = _messages.StringField(36)
+  files = _messages.MessageField('File', 37, repeated=True)
+  findingClass = _messages.EnumField('FindingClassValueValuesEnum', 38)
+  groupMemberships = _messages.MessageField('GroupMembership', 39, repeated=True)
+  iamBindings = _messages.MessageField('IamBinding', 40, repeated=True)
+  iamDetails = _messages.MessageField('GoogleCloudSecuritycenterV1IamDetails', 41)
+  indicator = _messages.MessageField('Indicator', 42)
+  ipRules = _messages.MessageField('IpRules', 43)
+  job = _messages.MessageField('Job', 44)
+  kernelRootkit = _messages.MessageField('KernelRootkit', 45)
+  kubernetes = _messages.MessageField('Kubernetes', 46)
+  loadBalancers = _messages.MessageField('LoadBalancer', 47, repeated=True)
+  logEntries = _messages.MessageField('LogEntry', 48, repeated=True)
+  mitreAttack = _messages.MessageField('MitreAttack', 49)
+  moduleName = _messages.StringField(50)
+  mute = _messages.EnumField('MuteValueValuesEnum', 51)
+  muteAnnotation = _messages.StringField(52)
+  muteInfo = _messages.MessageField('MuteInfo', 53)
+  muteInitiator = _messages.StringField(54)
+  muteUpdateTime = _messages.StringField(55)
+  name = _messages.StringField(56)
+  networks = _messages.MessageField('Network', 57, repeated=True)
+  nextSteps = _messages.StringField(58)
+  notebook = _messages.MessageField('Notebook', 59)
+  orgPolicies = _messages.MessageField('OrgPolicy', 60, repeated=True)
+  parent = _messages.StringField(61)
+  parentDisplayName = _messages.StringField(62)
+  policyViolationSummary = _messages.MessageField('PolicyViolationSummary', 63)
+  processes = _messages.MessageField('Process', 64, repeated=True)
+  resourceName = _messages.StringField(65)
+  secret = _messages.MessageField('Secret', 66)
+  securityMarks = _messages.MessageField('SecurityMarks', 67)
+  securityPosture = _messages.MessageField('SecurityPosture', 68)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 69)
+  sourceProperties = _messages.MessageField('SourcePropertiesValue', 70)
+  state = _messages.EnumField('StateValueValuesEnum', 71)
+  toxicCombination = _messages.MessageField('ToxicCombination', 72)
+  vertexAi = _messages.MessageField('VertexAi', 73)
+  vulnerability = _messages.MessageField('Vulnerability', 74)
 
 
 class Folder(_messages.Message):
@@ -4891,6 +4908,20 @@ class GoogleCloudSecuritycenterV2CloudLoggingEntry(_messages.Message):
   timestamp = _messages.StringField(4)
 
 
+class GoogleCloudSecuritycenterV2CloudRun(_messages.Message):
+  r"""Cloud Run workload metadata.
+
+  Fields:
+    revisions: Revisions actively serving traffic (for Services) or processing
+      tasks (for WorkerPools) that contain the finding. Capped at a maximum of
+      5 active revisions. Format: "projects/{project}/locations/{location}/ser
+      vices/{service}/revisions/{revision}" or "projects/{project}/locations/{
+      location}/workerPools/{worker_pool}/revisions/{revision}"
+  """
+
+  revisions = _messages.StringField(1, repeated=True)
+
+
 class GoogleCloudSecuritycenterV2Compliance(_messages.Message):
   r"""Contains compliance information about a security standard indicating
   unmet recommendations.
@@ -6013,6 +6044,8 @@ class GoogleCloudSecuritycenterV2Finding(_messages.Message):
       finding.
     cloudDlpInspection: Cloud Data Loss Prevention (Cloud DLP) inspection
       results that are associated with the finding.
+    cloudRun: Cloud Run related attributes for Services, WorkerPools, and
+      Jobs.
     complianceDetails: Details about the compliance implications of the
       finding.
     compliances: Contains compliance information for security standards
@@ -6369,62 +6402,63 @@ class GoogleCloudSecuritycenterV2Finding(_messages.Message):
   cloudArmor = _messages.MessageField('GoogleCloudSecuritycenterV2CloudArmor', 15)
   cloudDlpDataProfile = _messages.MessageField('GoogleCloudSecuritycenterV2CloudDlpDataProfile', 16)
   cloudDlpInspection = _messages.MessageField('GoogleCloudSecuritycenterV2CloudDlpInspection', 17)
-  complianceDetails = _messages.MessageField('GoogleCloudSecuritycenterV2ComplianceDetails', 18)
-  compliances = _messages.MessageField('GoogleCloudSecuritycenterV2Compliance', 19, repeated=True)
-  connections = _messages.MessageField('GoogleCloudSecuritycenterV2Connection', 20, repeated=True)
-  contacts = _messages.MessageField('ContactsValue', 21)
-  containers = _messages.MessageField('GoogleCloudSecuritycenterV2Container', 22, repeated=True)
-  createTime = _messages.StringField(23)
-  cryptoKeyName = _messages.StringField(24)
-  dataAccessEvents = _messages.MessageField('GoogleCloudSecuritycenterV2DataAccessEvent', 25, repeated=True)
-  dataFlowEvents = _messages.MessageField('GoogleCloudSecuritycenterV2DataFlowEvent', 26, repeated=True)
-  dataRetentionDeletionEvents = _messages.MessageField('GoogleCloudSecuritycenterV2DataRetentionDeletionEvent', 27, repeated=True)
-  database = _messages.MessageField('GoogleCloudSecuritycenterV2Database', 28)
-  description = _messages.StringField(29)
-  discoveredWorkload = _messages.MessageField('GoogleCloudSecuritycenterV2DiscoveredWorkload', 30)
-  disk = _messages.MessageField('GoogleCloudSecuritycenterV2Disk', 31)
-  eventTime = _messages.StringField(32)
-  exfiltration = _messages.MessageField('GoogleCloudSecuritycenterV2Exfiltration', 33)
-  externalExposure = _messages.MessageField('GoogleCloudSecuritycenterV2ExternalExposure', 34)
-  externalSystems = _messages.MessageField('ExternalSystemsValue', 35)
-  externalUri = _messages.StringField(36)
-  files = _messages.MessageField('GoogleCloudSecuritycenterV2File', 37, repeated=True)
-  findingClass = _messages.EnumField('FindingClassValueValuesEnum', 38)
-  groupMemberships = _messages.MessageField('GoogleCloudSecuritycenterV2GroupMembership', 39, repeated=True)
-  iamBindings = _messages.MessageField('GoogleCloudSecuritycenterV2IamBinding', 40, repeated=True)
-  iamDetails = _messages.MessageField('GoogleCloudSecuritycenterV2IamDetails', 41)
-  indicator = _messages.MessageField('GoogleCloudSecuritycenterV2Indicator', 42)
-  ipRules = _messages.MessageField('GoogleCloudSecuritycenterV2IpRules', 43)
-  job = _messages.MessageField('GoogleCloudSecuritycenterV2Job', 44)
-  kernelRootkit = _messages.MessageField('GoogleCloudSecuritycenterV2KernelRootkit', 45)
-  kubernetes = _messages.MessageField('GoogleCloudSecuritycenterV2Kubernetes', 46)
-  loadBalancers = _messages.MessageField('GoogleCloudSecuritycenterV2LoadBalancer', 47, repeated=True)
-  logEntries = _messages.MessageField('GoogleCloudSecuritycenterV2LogEntry', 48, repeated=True)
-  mitreAttack = _messages.MessageField('GoogleCloudSecuritycenterV2MitreAttack', 49)
-  moduleName = _messages.StringField(50)
-  mute = _messages.EnumField('MuteValueValuesEnum', 51)
-  muteInfo = _messages.MessageField('GoogleCloudSecuritycenterV2MuteInfo', 52)
-  muteInitiator = _messages.StringField(53)
-  muteUpdateTime = _messages.StringField(54)
-  name = _messages.StringField(55)
-  networks = _messages.MessageField('GoogleCloudSecuritycenterV2Network', 56, repeated=True)
-  nextSteps = _messages.StringField(57)
-  notebook = _messages.MessageField('GoogleCloudSecuritycenterV2Notebook', 58)
-  orgPolicies = _messages.MessageField('GoogleCloudSecuritycenterV2OrgPolicy', 59, repeated=True)
-  parent = _messages.StringField(60)
-  parentDisplayName = _messages.StringField(61)
-  policyViolationSummary = _messages.MessageField('GoogleCloudSecuritycenterV2PolicyViolationSummary', 62)
-  processes = _messages.MessageField('GoogleCloudSecuritycenterV2Process', 63, repeated=True)
-  resourceName = _messages.StringField(64)
-  secret = _messages.MessageField('GoogleCloudSecuritycenterV2Secret', 65)
-  securityMarks = _messages.MessageField('GoogleCloudSecuritycenterV2SecurityMarks', 66)
-  securityPosture = _messages.MessageField('GoogleCloudSecuritycenterV2SecurityPosture', 67)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 68)
-  sourceProperties = _messages.MessageField('SourcePropertiesValue', 69)
-  state = _messages.EnumField('StateValueValuesEnum', 70)
-  toxicCombination = _messages.MessageField('GoogleCloudSecuritycenterV2ToxicCombination', 71)
-  vertexAi = _messages.MessageField('GoogleCloudSecuritycenterV2VertexAi', 72)
-  vulnerability = _messages.MessageField('GoogleCloudSecuritycenterV2Vulnerability', 73)
+  cloudRun = _messages.MessageField('GoogleCloudSecuritycenterV2CloudRun', 18)
+  complianceDetails = _messages.MessageField('GoogleCloudSecuritycenterV2ComplianceDetails', 19)
+  compliances = _messages.MessageField('GoogleCloudSecuritycenterV2Compliance', 20, repeated=True)
+  connections = _messages.MessageField('GoogleCloudSecuritycenterV2Connection', 21, repeated=True)
+  contacts = _messages.MessageField('ContactsValue', 22)
+  containers = _messages.MessageField('GoogleCloudSecuritycenterV2Container', 23, repeated=True)
+  createTime = _messages.StringField(24)
+  cryptoKeyName = _messages.StringField(25)
+  dataAccessEvents = _messages.MessageField('GoogleCloudSecuritycenterV2DataAccessEvent', 26, repeated=True)
+  dataFlowEvents = _messages.MessageField('GoogleCloudSecuritycenterV2DataFlowEvent', 27, repeated=True)
+  dataRetentionDeletionEvents = _messages.MessageField('GoogleCloudSecuritycenterV2DataRetentionDeletionEvent', 28, repeated=True)
+  database = _messages.MessageField('GoogleCloudSecuritycenterV2Database', 29)
+  description = _messages.StringField(30)
+  discoveredWorkload = _messages.MessageField('GoogleCloudSecuritycenterV2DiscoveredWorkload', 31)
+  disk = _messages.MessageField('GoogleCloudSecuritycenterV2Disk', 32)
+  eventTime = _messages.StringField(33)
+  exfiltration = _messages.MessageField('GoogleCloudSecuritycenterV2Exfiltration', 34)
+  externalExposure = _messages.MessageField('GoogleCloudSecuritycenterV2ExternalExposure', 35)
+  externalSystems = _messages.MessageField('ExternalSystemsValue', 36)
+  externalUri = _messages.StringField(37)
+  files = _messages.MessageField('GoogleCloudSecuritycenterV2File', 38, repeated=True)
+  findingClass = _messages.EnumField('FindingClassValueValuesEnum', 39)
+  groupMemberships = _messages.MessageField('GoogleCloudSecuritycenterV2GroupMembership', 40, repeated=True)
+  iamBindings = _messages.MessageField('GoogleCloudSecuritycenterV2IamBinding', 41, repeated=True)
+  iamDetails = _messages.MessageField('GoogleCloudSecuritycenterV2IamDetails', 42)
+  indicator = _messages.MessageField('GoogleCloudSecuritycenterV2Indicator', 43)
+  ipRules = _messages.MessageField('GoogleCloudSecuritycenterV2IpRules', 44)
+  job = _messages.MessageField('GoogleCloudSecuritycenterV2Job', 45)
+  kernelRootkit = _messages.MessageField('GoogleCloudSecuritycenterV2KernelRootkit', 46)
+  kubernetes = _messages.MessageField('GoogleCloudSecuritycenterV2Kubernetes', 47)
+  loadBalancers = _messages.MessageField('GoogleCloudSecuritycenterV2LoadBalancer', 48, repeated=True)
+  logEntries = _messages.MessageField('GoogleCloudSecuritycenterV2LogEntry', 49, repeated=True)
+  mitreAttack = _messages.MessageField('GoogleCloudSecuritycenterV2MitreAttack', 50)
+  moduleName = _messages.StringField(51)
+  mute = _messages.EnumField('MuteValueValuesEnum', 52)
+  muteInfo = _messages.MessageField('GoogleCloudSecuritycenterV2MuteInfo', 53)
+  muteInitiator = _messages.StringField(54)
+  muteUpdateTime = _messages.StringField(55)
+  name = _messages.StringField(56)
+  networks = _messages.MessageField('GoogleCloudSecuritycenterV2Network', 57, repeated=True)
+  nextSteps = _messages.StringField(58)
+  notebook = _messages.MessageField('GoogleCloudSecuritycenterV2Notebook', 59)
+  orgPolicies = _messages.MessageField('GoogleCloudSecuritycenterV2OrgPolicy', 60, repeated=True)
+  parent = _messages.StringField(61)
+  parentDisplayName = _messages.StringField(62)
+  policyViolationSummary = _messages.MessageField('GoogleCloudSecuritycenterV2PolicyViolationSummary', 63)
+  processes = _messages.MessageField('GoogleCloudSecuritycenterV2Process', 64, repeated=True)
+  resourceName = _messages.StringField(65)
+  secret = _messages.MessageField('GoogleCloudSecuritycenterV2Secret', 66)
+  securityMarks = _messages.MessageField('GoogleCloudSecuritycenterV2SecurityMarks', 67)
+  securityPosture = _messages.MessageField('GoogleCloudSecuritycenterV2SecurityPosture', 68)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 69)
+  sourceProperties = _messages.MessageField('SourcePropertiesValue', 70)
+  state = _messages.EnumField('StateValueValuesEnum', 71)
+  toxicCombination = _messages.MessageField('GoogleCloudSecuritycenterV2ToxicCombination', 72)
+  vertexAi = _messages.MessageField('GoogleCloudSecuritycenterV2VertexAi', 73)
+  vulnerability = _messages.MessageField('GoogleCloudSecuritycenterV2Vulnerability', 74)
 
 
 class GoogleCloudSecuritycenterV2Folder(_messages.Message):

@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: true
   help_text:
     brief: Poll a long-running Bare Metal Solution operation until it completes.
     description: |

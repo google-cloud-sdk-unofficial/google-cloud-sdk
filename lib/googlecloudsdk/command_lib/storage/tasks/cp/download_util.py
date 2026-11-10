@@ -95,13 +95,13 @@ def get_digesters(
   """
   digesters = {}
   check_hashes = properties.VALUES.storage.check_hashes.Get()
-  if check_hashes == properties.CheckHashes.NEVER.value:
+  if check_hashes == properties.VALUES.storage.CheckHashes.NEVER.value:
     return digesters
 
   if component_number is None and resource.md5_hash:
     digesters[hash_util.HashAlgorithm.MD5] = hashing.get_md5()
   elif resource.crc32c_hash and (
-      check_hashes == properties.CheckHashes.ALWAYS.value
+      check_hashes == properties.VALUES.storage.CheckHashes.ALWAYS.value
       or fast_crc32c_util.check_if_will_use_fast_crc32c(install_if_missing=True)
   ):
     digesters[hash_util.HashAlgorithm.CRC32C] = fast_crc32c_util.get_crc32c(

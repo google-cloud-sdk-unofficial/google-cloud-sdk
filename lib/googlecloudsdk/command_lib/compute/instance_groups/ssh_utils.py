@@ -19,12 +19,14 @@ import contextlib
 import copy
 import os
 import sys
+import textwrap
 import threading
 
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
@@ -405,3 +407,69 @@ def RunSshOnInstances(command_instance, args, instance_refs):
   for status in exit_statuses:
     if status:
       sys.exit(status)
+
+
+def AddSshFlags(parser):
+  """Adds SSH flags for multi-SSH commands across instance groups."""
+  parser.add_argument(
+      '--command',
+      required=True,
+      help=textwrap.dedent("""
+        Command to run concurrently on all instances in the specified Instance
+        Group (unless `--batch-size` is specified). Runs the command on each
+        target instance and then exits.
+      """),
+  )
+  parser.add_argument(
+      '--user',
+      help=textwrap.dedent("""
+        Username with which to SSH into the instances. If omitted, the default
+        login user is used.
+      """),
+  )
+  parser.add_argument(
+      '--batch-size',
+      default='all',
+      help=textwrap.dedent("""
+        Batch size for simultaneous command execution on the client's side.
+        This flag takes a value greater than 0 to specify the batch size to
+        control concurrent connections, or the special keyword ``all'' to allow
+        concurrent command execution on all instances in the Instance Group.
+        If the command fails on any instance in a batch, subsequent batches are
+        not executed.
+      """),
+  )
+  parser.add_argument(
+      '--output-directory',
+      help=textwrap.dedent("""
+        Path to the directory to output the logs of the commands.
+
+        The path can be relative or absolute. The directory must already exist.
+
+        If not specified, standard output will be used.
+
+        The logs will be written in files named {INSTANCE_NAME}.log.
+      """),
+  )
+  compute_ssh.AddContainerArg(parser)
+  parser.add_argument(
+      '--ssh-flag',
+      action='append',
+      help=textwrap.dedent("""
+        Additional flags to be passed to *ssh(1)*. It is recommended that flags
+        be passed using an assignment operator and quotes.
+
+        This flag will replace occurrences of ``%USER%'', ``%INSTANCE%'',
+        ``%INTERNAL%'', ``%NAME%'', ``%ZONE%'', and ``%PROJECT%'' with their
+        dereferenced values for each target instance. ``%NAME%'', ``%ZONE%'',
+        and ``%PROJECT%'' are replaced with the instance name, zone, and project
+        ID respectively. If connecting to the instance's external IP, then
+        ``%INSTANCE%'' is replaced with that, otherwise it is replaced with the
+        internal IP. ``%INTERNAL%'' is always replaced with the internal
+        IP of the instance.
+      """),
+  )
+  routing_group = parser.add_mutually_exclusive_group()
+  compute_ssh.AddInternalIPArg(routing_group)
+  iap_tunnel.AddSshTunnelArgs(parser, routing_group)
+

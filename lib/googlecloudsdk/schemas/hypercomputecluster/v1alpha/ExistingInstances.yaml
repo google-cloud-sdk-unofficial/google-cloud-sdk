@@ -1,0 +1,69 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha ExistingInstances export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  instanceGroupManager:
+    description: |-
+      Immutable. Managed instance group containing the instances, in the format
+      `projects/{project}/zones/{zone}
+      /instanceGroupManagers/{instanceGroupManager}`.
+    type: string
+  labels:
+    description: |-
+      Immutable. Labels specifying the instances to include. Instances from the
+      source will be included only if they contain each of these labels. If no
+      labels are specified, all instances from the source will be included.
+      Example: {"env": "prod", "app": "worker"}
+    $ref: LabelsValue.yaml
+  project:
+    description: |-
+      Immutable. Project containing the instances, in the format
+      `projects/{project}`.
+    type: string
+  regionInstanceGroupManager:
+    description: |-
+      Immutable. Regional managed instance group containing the instances, in
+      the format `projects/{project}/region
+      s/{region}/instanceGroupManagers/{instanceGroupManager}`.
+    type: string
+  reservation:
+    description: |-
+      Immutable. Reservation containing the instances, in the format
+      `projects/{project}/zones/{zone}/reservations/{reservation}`.
+    type: string
+  reservationBlock:
+    description: |-
+      Immutable. Reservation block containing the instances, in the format
+      `projects/{project}/zones/{zone}/reservations/{
+      reservation}/reservationBlocks/{reservationBlock}`.
+    type: string
+  reservationSubBlock:
+    description: |-
+      Immutable. Reservation sub block containing the instances, in the format
+      `projects/{project}/zones/{zone}/reservatio
+      ns/{reservation}/reservationBlocks/{reservationBlock}/reservationSubBloc
+      ks/{reservationSubBlock}`.
+    type: string

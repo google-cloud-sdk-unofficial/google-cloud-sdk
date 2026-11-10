@@ -3544,7 +3544,7 @@ class GoogleIamV3PolicyBinding(_messages.Message):
     Values:
       POLICY_KIND_UNSPECIFIED: Unspecified policy kind; Not a valid state
       PRINCIPAL_ACCESS_BOUNDARY: Principal access boundary policy kind
-      ACCESS: Access policy kind.
+      ACCESS: Unified Access Policy kind.
       REGIONAL_ACCESS_BOUNDARY: Regional access boundary policy kind.
     """
     POLICY_KIND_UNSPECIFIED = 0
@@ -3616,8 +3616,8 @@ class GoogleIamV3PolicyBindingTarget(_messages.Message):
       `//cloudresourcemanager.googleapis.com/projects/PROJECT_ID` * Workload
       Identity Pool: `//iam.googleapis.com/projects/PROJECT_NUMBER/locations/L
       OCATION/workloadIdentityPools/WORKLOAD_POOL_ID`
-    resource: Immutable. The full resource name that's used for access policy
-      bindings. Examples: * Organization:
+    resource: Immutable. The full resource name that's used for Unified Access
+      Policy bindings. Examples: * Organization:
       `//cloudresourcemanager.googleapis.com/organizations/ORGANIZATION_ID` *
       Folder: `//cloudresourcemanager.googleapis.com/folders/FOLDER_ID` *
       Project: *
@@ -3899,12 +3899,12 @@ class GoogleIamV3RegionalAccessBoundaryPolicyRule(_messages.Message):
     locations: Describes the list of authorized locations. It is in the format
       of cloud location groups with the following syntax:
       "//cloudLocationGroups/LOCATION" Where LOCATION can either be "rab-
-      mandatory-version_number_here" (the locations which are required for
-      inclusion for all customers) or a specific country-based location. Note
-      the Mandatory Locations value group will be versioned to allow Google to
-      remove locations from this group without causing breaking changes.
-      Examples: "//cloudLocationGroups/rab-mandatory-v1".
-      "//cloudLocationGroups/us". "//cloudLocationGroups/jp".
+      version_number_here" (the locations which are required for inclusion for
+      all customers) or a specific country-based location. Note the Mandatory
+      Locations value group will be versioned to allow Google to remove
+      locations from this group without causing breaking changes. Examples:
+      "//cloudLocationGroups/rab-v1". "//cloudLocationGroups/us".
+      "//cloudLocationGroups/jp".
   """
 
   description = _messages.StringField(1)

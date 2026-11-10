@@ -25,13 +25,14 @@
     brief: Describe a Workspace Key Access endpoint.
     description: Show details of a Workspace Key Access endpoint.
     examples: |-
-      To describe endpoint `my-endpoint` in `us-east1`, run:
+      To describe endpoint `my-endpoint`, run:
 
-      $ {command} my-endpoint --location=us-east1
+      $ {command} my-endpoint --location=us
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        The resource name of the Endpoint to retrieve.
+        Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.workspace_key_access.v1alpha_resources:projects_locations_endpoints

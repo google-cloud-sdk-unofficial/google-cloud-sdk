@@ -1,0 +1,46 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 CostPerTokenPolicyCostOverride export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- model
+- modelProviderEndpoints
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  costDiscount:
+    description: |-
+      Percentage discount (0.0 to 1.0) applied on the default cost for tokens
+      matching this model.
+    type: number
+  costPerToken:
+    description: Alternate cost per token in USD for tokens matching this model.
+    $ref: CostPerTokenPolicyCostPerToken.yaml
+  model:
+    description: Model name.
+    type: string
+  modelProviderEndpoints:
+    description: Provider API services
+    type: array
+    items:
+      type: string

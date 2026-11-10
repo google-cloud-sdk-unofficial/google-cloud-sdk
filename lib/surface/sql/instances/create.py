@@ -201,12 +201,12 @@ def AddBetaArgs(parser):
   flags.AddEnableDbAlignedAtomicWrites(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddUncMappings(parser)
+  flags.AddMsdtcEnabled(parser)
+  flags.AddMsdtcRpcAuthMode(parser)
 
 
 def AddAlphaArgs(parser):
   """Declare alpha flags for this command parser."""
-  flags.AddMsdtcEnabled(parser, hidden=True)
-  flags.AddMsdtcRpcAuthMode(parser, hidden=True)
   flags.AddMsdtcHostMappings(parser, hidden=True)
   flags.AddBackendType(parser, hidden=True)
   flags.AddSemiManagedSqlServer(parser, hidden=True)

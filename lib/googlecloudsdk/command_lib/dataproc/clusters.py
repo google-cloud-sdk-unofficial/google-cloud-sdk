@@ -76,6 +76,7 @@ def ArgsForClusterRef(
     include_ttl_config=False,
     include_gke_platform_args=False,
     include_driver_pool_args=False,
+    include_scheduling_args=False,
 ):
   """Register flags for creating a dataproc cluster.
 
@@ -88,6 +89,8 @@ def ArgsForClusterRef(
     include_ttl_config: whether to include Scheduled Delete and Stop (TTL) args
     include_gke_platform_args: whether to include GKE-based cluster args
     include_driver_pool_args: whether to include driver pool cluster args
+    include_scheduling_args: whether to include Dynamic Workload Scheduler (DWS)
+      scheduled cluster args
   """
   labels_util.AddCreateLabelsFlags(parser)
   # 30m is backend timeout + 5m for safety buffer.
@@ -1104,6 +1107,8 @@ If you want to enable all scopes use the 'cloud-platform' scope.
       group_text='Specifies the reservation for the instance.',
       affinity_text='The type of reservation for the instance.',
   )
+  if include_scheduling_args:
+    _AddSchedulingArgs(gce_platform_group)
   # Note: include_gke_platform_args is only supported in the default universe.
   # The check occurs in create.py.
   if include_gke_platform_args:
@@ -1525,6 +1530,18 @@ def GetClusterConfig(
   # Increase the client timeout for each initialization action.
   args.timeout += args.initialization_action_timeout * len(init_actions)
 
+  scheduling_config = _GetSchedulingConfig(dataproc, args)
+  # A scheduled (DWS) cluster can wait for resources for up to the scheduling
+  # timeout before it is provisioned, so increase the client timeout as well.
+  if args.IsKnownAndSpecified('scheduling_timeout'):
+    args.timeout += args.scheduling_timeout
+  # Scheduled clusters cannot specify a zone because DWS selects a zone in
+  # the region, so ignore the default compute/zone property unless --zone is
+  # explicitly specified.
+  ignore_default_zone_for_scheduled = (
+      scheduling_config is not None and not args.IsKnownAndSpecified('zone')
+  )
+
   expanded_scopes = compute_helpers.ExpandScopeAliases(args.scopes)
 
   software_config = dataproc.messages.SoftwareConfig(
@@ -1606,7 +1623,7 @@ def GetClusterConfig(
       serviceAccountScopes=expanded_scopes,
       zoneUri=(
           ''
-          if (args.multizone or is_ho)
+          if (args.multizone or is_ho or ignore_default_zone_for_scheduled)
           else properties.VALUES.compute.zone.GetOrFail()
       ),
       autoZoneExcludeZoneUris=args.auto_zone_exclude_zones,
@@ -1623,6 +1640,14 @@ def GetClusterConfig(
     gce_cluster_config.internalIpOnly = args.no_address
 
   reservation_affinity = GetReservationAffinity(args, dataproc)
+  if reservation_affinity is None and scheduling_config is not None:
+    # Scheduled clusters cannot consume reservations.
+    type_msgs = (
+        dataproc.messages.ReservationAffinity.ConsumeReservationTypeValueValuesEnum
+    )
+    reservation_affinity = dataproc.messages.ReservationAffinity(
+        consumeReservationType=type_msgs.NO_RESERVATION
+    )
   gce_cluster_config.reservationAffinity = reservation_affinity
 
   if args.tags:
@@ -2160,7 +2185,39 @@ def GetClusterConfig(
 
   if not beta and args.metric_sources:
     _SetDataprocMetricConfig(args, cluster_config, dataproc)
+
+  if scheduling_config is not None:
+    cluster_config.schedulingConfig = scheduling_config
   return cluster_config
+
+
+def _GetSchedulingConfig(dataproc, args):
+  """Returns the scheduling config of a scheduled (DWS) cluster, if requested.
+
+  Args:
+    dataproc: Dataproc object that contains client, messages, and resources.
+    args: Arguments parsed from argparse.ArgParser.
+
+  Returns:
+    A SchedulingConfig message if --scheduling-timeout or
+    --requested-run-duration is specified, otherwise None.
+  """
+  has_scheduling_timeout = args.IsKnownAndSpecified('scheduling_timeout')
+  has_requested_run_duration = args.IsKnownAndSpecified(
+      'requested_run_duration'
+  )
+  if not has_scheduling_timeout and not has_requested_run_duration:
+    return None
+  scheduling_config = dataproc.messages.SchedulingConfig()
+  if has_scheduling_timeout:
+    scheduling_config.schedulingTimeout = (
+        six.text_type(args.scheduling_timeout) + 's'
+    )
+  if has_requested_run_duration:
+    scheduling_config.requestedRunDuration = (
+        six.text_type(args.requested_run_duration) + 's'
+    )
+  return scheduling_config
 
 
 def _GetMetricOverrides(args):
@@ -2907,6 +2964,47 @@ def AddReservationAffinityGroup(parser, group_text, affinity_text):
       help="""
 The name of the reservation, required when `--reservation-affinity=specific`.
 """,
+  )
+
+
+def _AddSchedulingArgs(parser):
+  """Adds args for creating Dynamic Workload Scheduler (DWS) clusters."""
+  scheduling_group = parser.add_argument_group(help="""\
+      Dynamic Workload Scheduler (DWS) options. Specifying any of these flags
+      creates a scheduled cluster, whose creation waits until DWS provisions the
+      requested Compute Engine resources in a zone in the region. Scheduled
+      clusters cannot specify a zone (`--zone`) or consume reservations, so the
+      `compute/zone` property is ignored and `--reservation-affinity` defaults
+      to `none`. Because waiting for resources can take a long time, consider
+      using `--async`.
+      """)
+  scheduling_group.add_argument(
+      '--scheduling-timeout',
+      type=arg_parsers.Duration(),
+      help="""\
+      How long to wait for the requested Compute Engine resources to become
+      available before failing the cluster creation request, such as "30m" or
+      "2h". For clusters with GPU workers (configured via a GPU
+      `--worker-machine-type` or `--worker-accelerator`), the value must be
+      between 1 minute and 13 days, and defaults to 13 days. For other
+      clusters, the value must be between 1 minute and 12 hours, and defaults
+      to 12 hours. Unless `--async` is specified, the time that the command
+      waits for cluster creation to complete is extended by this duration.
+      See $ gcloud topic datetimes for information on duration formats.
+      """,
+  )
+  scheduling_group.add_argument(
+      '--requested-run-duration',
+      type=arg_parsers.Duration(),
+      help="""\
+      How long the cluster can run after it starts running, such as "8h" or
+      "2d". The cluster is deleted when this duration elapses. Only supported
+      for clusters with GPU workers (configured via a GPU
+      `--worker-machine-type` or `--worker-accelerator`), for which the value
+      must be between 10 minutes and 7 days, and defaults to 7 days. Other
+      scheduled clusters are deleted 12 hours after they start running.
+      See $ gcloud topic datetimes for information on duration formats.
+      """,
   )
 
 

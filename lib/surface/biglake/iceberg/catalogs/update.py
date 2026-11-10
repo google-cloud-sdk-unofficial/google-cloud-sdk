@@ -16,6 +16,7 @@
 
 import textwrap
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -62,13 +63,15 @@ class UpdateCatalog(base.UpdateCommand):
   _support_unity_service_principal_application_id = True
   _support_glue_catalog = True
   _support_snowflake_catalog = True
+  _support_workday_api_client_client_id = False
   _support_identity_mode = True
+  _support_generic_iceberg_federation = False
 
   @classmethod
   def Args(cls, parser):
     flags.AddCatalogResourceArg(parser, 'to update')
     arguments.AddDescriptionArg(parser)
-    arguments.AddKmsKeyResourceArg(parser)
+    arguments.AddKmsKeyResourceArg(parser, clearable=True)
     util.GetCredentialModeEnumMapper(cls.ReleaseTrack()).choice_arg.AddToParser(
         parser
     )
@@ -92,8 +95,14 @@ class UpdateCatalog(base.UpdateCommand):
       arguments.AddGlueAwsRoleArnArg(parser)
     if cls._support_snowflake_catalog:
       arguments.AddSnowflakeRoleArg(parser)
+    if cls._support_workday_api_client_client_id:
+      arguments.AddWorkdayApiClientClientIdArg(parser)
     if cls._support_federated_catalog:
       arguments.AddUpdateFederatedCatalogArgs(parser)
+    if cls._support_generic_iceberg_federation:
+      arguments.AddGenericIcebergCatalogArgs(
+          parser, hidden=True, is_update=True
+      )
 
   def _UpdateFederatedCatalogOptions(
       self, args, catalog, messages, update_mask
@@ -112,9 +121,14 @@ class UpdateCatalog(base.UpdateCommand):
       catalog.federated_catalog_options.metadata_service_directory_name = (
           args.metadata_service_directory_name
       )
+    # TODO(b/578987767): Investigate auto-clearing the other flag to make
+    # switching between secret-based and OIDC authentication easier.
     if args.IsKnownAndSpecified('secret_name'):
       update_mask.append('federated_catalog_options.secret_name')
       catalog.federated_catalog_options.secret_name = args.secret_name
+    if args.IsKnownAndSpecified('trust_config'):
+      update_mask.append('federated_catalog_options.trust_config')
+      catalog.federated_catalog_options.trust_config = args.trust_config
     if args.IsKnownAndSpecified('unity_service_principal_application_id'):
       update_mask.append(
           'federated_catalog_options.unity_catalog_info.service_principal_application_id'
@@ -135,6 +149,41 @@ class UpdateCatalog(base.UpdateCommand):
       )
       catalog.federated_catalog_options.snowflake_catalog_info = (
           messages.SnowflakeCatalogInfo(snowflake_role=args.snowflake_role)
+      )
+    if args.IsKnownAndSpecified('workday_api_client_client_id'):
+      update_mask.append(
+          'federated_catalog_options.workday_catalog_info.api_client_client_id'
+      )
+      catalog.federated_catalog_options.workday_catalog_info = (
+          messages.WorkdayCatalogInfo(
+              api_client_client_id=args.workday_api_client_client_id
+          )
+      )
+    allowed_generic_catalog_update_fields = [
+        'custom_headers',
+        'oauth2_server_url',
+    ]
+    if any(
+        args.IsKnownAndSpecified(field)
+        for field in allowed_generic_catalog_update_fields
+    ):
+      catalog.federated_catalog_options.generic_iceberg_catalog_info = (
+          messages.GenericIcebergCatalogInfo()
+      )
+    if args.IsKnownAndSpecified('custom_headers'):
+      update_mask.append(
+          'federated_catalog_options.generic_iceberg_catalog_info.custom_headers'
+      )
+      catalog.federated_catalog_options.generic_iceberg_catalog_info.custom_headers = encoding.DictToAdditionalPropertyMessage(
+          args.custom_headers,
+          messages.GenericIcebergCatalogInfo.CustomHeadersValue,
+      )
+    if args.IsKnownAndSpecified('oauth2_server_url'):
+      update_mask.append(
+          'federated_catalog_options.generic_iceberg_catalog_info.oauth2_server_url'
+      )
+      catalog.federated_catalog_options.generic_iceberg_catalog_info.oauth2_server_url = (
+          args.oauth2_server_url
       )
     if args.IsKnownAndSpecified('refresh_interval') or args.IsKnownAndSpecified(
         'namespace_filters'
@@ -186,7 +235,7 @@ class UpdateCatalog(base.UpdateCommand):
       update_mask.append('description')
       description = args.description
     kms_key = arguments.GetAndValidateKmsKeyName(args)
-    if kms_key:
+    if kms_key is not None:
       update_mask.append('encryption_config.kms_key_name')
     cross_cloud_cache_options = None
     if args.IsSpecified('cross_cloud_cache'):
@@ -220,7 +269,11 @@ class UpdateCatalog(base.UpdateCommand):
         or args.IsKnownAndSpecified('service_directory_name')
         or args.IsKnownAndSpecified('metadata_service_directory_name')
         or args.IsKnownAndSpecified('snowflake_role')
+        or args.IsKnownAndSpecified('workday_api_client_client_id')
         or args.IsKnownAndSpecified('federated_catalog_identity_mode')
+        or args.IsKnownAndSpecified('custom_headers')
+        or args.IsKnownAndSpecified('oauth2_server_url')
+        or args.IsKnownAndSpecified('trust_config')
     ):
       if not is_federated:
         raise exceptions.InvalidArgumentException(
@@ -240,6 +293,14 @@ class UpdateCatalog(base.UpdateCommand):
       is_snowflake = (
           get_response.federated_catalog_options
           and get_response.federated_catalog_options.snowflake_catalog_info
+      )
+      is_workday = (
+          get_response.federated_catalog_options
+          and get_response.federated_catalog_options.workday_catalog_info
+      )
+      is_generic = (
+          get_response.federated_catalog_options
+          and get_response.federated_catalog_options.generic_iceberg_catalog_info
       )
 
       if is_glue and args.IsKnownAndSpecified(
@@ -263,6 +324,13 @@ class UpdateCatalog(base.UpdateCommand):
             '--snowflake-role is not supported for Glue federated catalogs.',
         )
 
+      if is_glue and args.IsKnownAndSpecified('workday_api_client_client_id'):
+        raise exceptions.InvalidArgumentException(
+            '--workday-api-client-client-id',
+            '--workday-api-client-client-id is not supported for Glue'
+            ' federated catalogs.',
+        )
+
       if is_unity and args.IsKnownAndSpecified('glue_aws_role_arn'):
         raise exceptions.InvalidArgumentException(
             '--glue-aws-role-arn',
@@ -274,6 +342,13 @@ class UpdateCatalog(base.UpdateCommand):
         raise exceptions.InvalidArgumentException(
             '--snowflake-role',
             '--snowflake-role is not supported for Unity federated catalogs.',
+        )
+
+      if is_unity and args.IsKnownAndSpecified('workday_api_client_client_id'):
+        raise exceptions.InvalidArgumentException(
+            '--workday-api-client-client-id',
+            '--workday-api-client-client-id is not supported for Unity'
+            ' federated catalogs.',
         )
 
       if is_snowflake and args.IsKnownAndSpecified(
@@ -291,6 +366,99 @@ class UpdateCatalog(base.UpdateCommand):
             'Cannot specify Glue Catalog arguments when updating a Snowflake'
             ' federated catalog.',
         )
+
+      if is_snowflake and args.IsKnownAndSpecified(
+          'workday_api_client_client_id'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--workday-api-client-client-id',
+            '--workday-api-client-client-id is not supported for Snowflake'
+            ' federated catalogs.',
+        )
+
+      if is_workday and args.IsKnownAndSpecified(
+          'unity_service_principal_application_id'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--unity-service-principal-application-id',
+            '--unity-service-principal-application-id is not supported for'
+            ' Workday federated catalogs.',
+        )
+
+      if is_workday and args.IsKnownAndSpecified('glue_aws_role_arn'):
+        raise exceptions.InvalidArgumentException(
+            '--glue-aws-role-arn',
+            'Cannot specify Glue Catalog arguments when updating a Workday'
+            ' federated catalog.',
+        )
+
+      if is_workday and args.IsKnownAndSpecified('snowflake_role'):
+        raise exceptions.InvalidArgumentException(
+            '--snowflake-role',
+            '--snowflake-role is not supported for Workday federated catalogs.',
+        )
+
+      if is_generic and args.IsKnownAndSpecified(
+          'unity_service_principal_application_id'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--unity-service-principal-application-id',
+            '--unity-service-principal-application-id is not supported for'
+            ' Generic Iceberg federated catalogs.',
+        )
+
+      if is_generic and args.IsKnownAndSpecified('glue_aws_role_arn'):
+        raise exceptions.InvalidArgumentException(
+            '--glue-aws-role-arn',
+            '--glue-aws-role-arn is not supported for Generic Iceberg'
+            ' federated catalogs.',
+        )
+
+      if is_generic and args.IsKnownAndSpecified('snowflake_role'):
+        raise exceptions.InvalidArgumentException(
+            '--snowflake-role',
+            '--snowflake-role is not supported for Generic Iceberg federated'
+            ' catalogs.',
+        )
+
+      if is_generic and args.IsKnownAndSpecified(
+          'workday_api_client_client_id'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--workday-api-client-client-id',
+            '--workday-api-client-client-id is not supported for Generic'
+            ' Iceberg federated catalogs.',
+        )
+
+      for generic_arg, generic_flag in (
+          ('custom_headers', '--custom-headers'),
+          ('oauth2_server_url', '--oauth2-server-url'),
+          ('trust_config', '--trust-config'),
+      ):
+        if args.IsKnownAndSpecified(generic_arg):
+          if is_glue:
+            raise exceptions.InvalidArgumentException(
+                generic_flag,
+                f'{generic_flag} is not supported for Glue federated catalogs.',
+            )
+          if is_unity:
+            raise exceptions.InvalidArgumentException(
+                generic_flag,
+                f'{generic_flag} is not supported for Unity federated'
+                ' catalogs.',
+            )
+          if is_snowflake:
+            raise exceptions.InvalidArgumentException(
+                generic_flag,
+                f'{generic_flag} is not supported for Snowflake federated'
+                ' catalogs.',
+            )
+          if is_workday:
+            raise exceptions.InvalidArgumentException(
+                generic_flag,
+                f'{generic_flag} is not supported for Workday federated'
+                ' catalogs.',
+            )
     if args.IsSpecified('catalog_type') and args.catalog_type in (
         'biglake',
         'lakehouse',
@@ -311,7 +479,7 @@ class UpdateCatalog(base.UpdateCommand):
         description=description,
         cross_cloud_cache_options=cross_cloud_cache_options,
     )
-    if kms_key:
+    if kms_key is not None:
       catalog.encryption_config = messages.EncryptionConfig(
           kms_key_name=kms_key
       )
@@ -326,7 +494,11 @@ class UpdateCatalog(base.UpdateCommand):
           or args.IsKnownAndSpecified('refresh_interval')
           or args.IsKnownAndSpecified('namespace_filters')
           or args.IsKnownAndSpecified('snowflake_role')
+          or args.IsKnownAndSpecified('workday_api_client_client_id')
           or args.IsKnownAndSpecified('federated_catalog_identity_mode')
+          or args.IsKnownAndSpecified('custom_headers')
+          or args.IsKnownAndSpecified('oauth2_server_url')
+          or args.IsKnownAndSpecified('trust_config')
       ):
         self._UpdateFederatedCatalogOptions(
             args, catalog, messages, update_mask
@@ -365,6 +537,8 @@ class UpdateCatalog(base.UpdateCommand):
 class UpdateBeta(UpdateCatalog):
   """Update a BigLake Iceberg REST catalog."""
 
+  _support_workday_api_client_client_id = True
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
@@ -372,3 +546,4 @@ class UpdateAlpha(UpdateBeta):
 
   _support_metadata_service_directory_name = True
   _support_identity_mode = True
+  _support_generic_iceberg_federation = True

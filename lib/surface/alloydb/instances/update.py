@@ -117,6 +117,7 @@ class Update(base.UpdateCommand):
     flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
     flags.AddConnectionPoolingMaxPreparedStatements(parser)
     labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddAutoscalerUpdateFlags(parser)
 
     # TODO(b/185795425): Add --ssl-required later once we
     # understand the use cases
@@ -178,10 +179,10 @@ class UpdateBeta(Update):
         parser, show_negated_in_help=True
     )
 
-    flags.AddAutoscalerUpdateFlags(parser)
     flags.AddEnablePscAutoDns(parser)
     flags.AddEnablePscAutoConnectionPolicy(parser)
     flags.AddEnablePublicDns(parser)
+    flags.AddConnectionPoolingAuthproxyPoolerScalingType(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsBeta(

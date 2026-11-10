@@ -14,6 +14,8 @@
 # limitations under the License.
 """Flags and helpers for Cloud Build Pipelines CLI commands."""
 
+from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import resource_args
 
 
@@ -23,25 +25,6 @@ def AddFileFlag(parser):
       '--file',
       default='./pipeline.yaml',
       help='Path to the pipeline definition file (YAML or JSON).',
-  )
-
-
-def AddServiceAccountFlag(parser):
-  """Add the --service-account flag."""
-  parser.add_argument(
-      '--service-account',
-      help=(
-          'Orchestrator Service Account '
-          '(e.g. projects/-/serviceAccounts/sa@... or sa@...).'
-      ),
-  )
-
-
-def AddDisplayNameFlag(parser):
-  """Add the --display-name flag."""
-  parser.add_argument(
-      '--display-name',
-      help='Human-readable title for the pipeline.',
   )
 
 
@@ -55,12 +38,48 @@ def AddDryRunFlag(parser):
   )
 
 
+def AddParamsFlag(parser):
+  """Add the --params flag."""
+  parser.add_argument(
+      '--params',
+      metavar='KEY=VALUE',
+      type=arg_parsers.ArgDict(),
+      help=(
+          'Comma-separated key-value parameter overrides passed to the '
+          'pipeline run (for example, `ENV=staging,IMAGE_TAG=v1.2.0`). These '
+          'values override default parameter definitions in the pipeline '
+          'configuration.'
+      ),
+  )
+
+
+def AddStreamLogsFlag(parser):
+  """Add the --stream-logs flag."""
+  parser.add_argument(
+      '--stream-logs',
+      action='store_true',
+      default=False,
+      help=(
+          'If set, stream raw container build logs from all active stages '
+          'with `[<stage-id>]` prefixes instead of rendering the collapsible '
+          'stage progress tree.'
+      ),
+  )
+
+
 def AddPipelineApplyFlags(parser):
   """Add all flags for the `gcloud builds pipelines apply` command."""
   # Supplies the PIPELINE positional along with --region, and resolves the ID
   # from `name` in the file named by --file when it is omitted.
-  resource_args.AddPipelineResourceArg(parser, 'to apply')
+  resource_args.AddPipelineResourceArg(parser, 'to apply', from_file=True)
   AddFileFlag(parser)
-  AddServiceAccountFlag(parser)
-  AddDisplayNameFlag(parser)
   AddDryRunFlag(parser)
+
+
+def AddPipelineRunFlags(parser):
+  """Add all flags for the `gcloud builds pipelines run` command."""
+  resource_args.AddPipelineResourceArg(parser, 'to run', from_file=False)
+  AddParamsFlag(parser)
+  execution_group = parser.add_group(mutex=True)
+  base.ASYNC_FLAG.AddToParser(execution_group)
+  AddStreamLogsFlag(execution_group)

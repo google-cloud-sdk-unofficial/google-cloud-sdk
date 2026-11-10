@@ -672,3 +672,13 @@ accelerator_interconnect:
   - parameter_name: acceleratorInterconnect
     attribute_name: accelerator_interconnect
     help: The name of the Google Compute Engine accelerator interconnect.
+
+accelerator_pod_controller:
+  name: accelerator pod controller
+  collection: compute.acceleratorPodControllers
+  attributes:
+  - *compute_project
+  - *zone
+  - parameter_name: resourceId
+    attribute_name: accelerator_pod_controller
+    help: The name of the Google Compute Engine accelerator pod controller.

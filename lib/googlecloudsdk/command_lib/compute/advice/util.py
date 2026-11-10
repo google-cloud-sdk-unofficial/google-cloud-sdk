@@ -14,8 +14,8 @@
 # limitations under the License.
 """Utility functions for advice."""
 
+from googlecloudsdk.command_lib.compute.reservations import util as reservation_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
 
@@ -127,29 +127,10 @@ def GetSkuResources(args, messages):
 
 def GetVmFamily(tpu_version, messages):
   """Helper function to get the VM family."""
-
-  # Static mapping of TPU version to VM family.
-  vm_family = (
-      messages.FutureResourcesSpecAggregateResources.VmFamilyValueValuesEnum
+  return reservation_util.GetVmFamilyFromTpuVersion(
+      tpu_version,
+      messages.FutureResourcesSpecAggregateResources.VmFamilyValueValuesEnum,
   )
-
-  # This mapping should be in sync with the future_reservations mapping.
-  tpu_version_to_vm_family = {
-      'V5E': vm_family.VM_FAMILY_CLOUD_TPU_LITE_POD_SLICE_CT5LP,
-      'V5P': vm_family.VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P,
-      'V6E': vm_family.VM_FAMILY_CLOUD_TPU_LITE_POD_SLICE_CT6E,
-      'TPU7X': vm_family.VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU7X,
-  }
-
-  if tpu_version not in tpu_version_to_vm_family:
-    raise exceptions.InvalidArgumentException(
-        '--tpu-version',
-        'Must specify a valid TPU version ({})'.format(
-            ', '.join(tpu_version_to_vm_family.keys())
-        ),
-    )
-
-  return tpu_version_to_vm_family[tpu_version]
 
 
 def GetAggregateResources(args, messages):

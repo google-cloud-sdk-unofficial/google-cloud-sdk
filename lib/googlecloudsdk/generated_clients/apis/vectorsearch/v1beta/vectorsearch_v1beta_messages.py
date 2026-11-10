@@ -627,31 +627,35 @@ class GoogleCloudVectorsearchV1betaDataObject(_messages.Message):
 
 
 class GoogleCloudVectorsearchV1betaDataStore(_messages.Message):
-  r"""Message describing a DataStore object. A DataStore is the top-level
-  ingestion resource of the ASP Ingestion Engine, owned directly by a Project.
-  It is a container for a set of related Documents that share a single,
-  immutable DocumentType.
+  r"""Message describing a DataStore object. A DataStore, owned directly by a
+  Project, holds a set of related Documents that share a single, immutable
+  DocumentType, together with the configuration used to process them. Imported
+  Documents are split into segments, embedded, and stored in the DataStore's
+  backing Collection (see `collection_name`).
 
   Enums:
     DocumentTypeValueValuesEnum: Required. Immutable. The immutable content
       type of all Documents in this DataStore.
-    StateValueValuesEnum: Output only. [Output only] The state of the
-      DataStore.
+    StateValueValuesEnum: Output only. The state of the DataStore.
 
   Messages:
     LabelsValue: Optional. Labels as key value pairs.
 
   Fields:
-    collectionName: Output only. [Output only] The resource name of the
-      Collection backing this DataStore, e.g.
-      "projects/{project}/locations/{location}/collections/{collection_name}".
+    collectionName: Output only. The resource name of the Collection backing
+      this DataStore, in the form
+      `projects/{project}/locations/{location}/collections/{collection_id}`.
+      `collection_id` is `google-{data_store_id}`, or `google-` followed by a
+      hash of the DataStore ID when that would be longer than 63 characters.
       Populated once the backing Collection has been created.
-    createTime: Output only. [Output only] Create time stamp
+    createTime: Output only. Create time stamp
     description: Optional. User-specified description of the DataStore.
     displayName: Optional. User-specified display name of the DataStore.
     documentMetadataSchema: Optional. Schema for user-defined metadata on
       Documents in this DataStore. The schema will be validated against [JSON
-      Schema Draft 7](https://json-schema.org/draft-07/schema).
+      Schema Draft 7](https://json-schema.org/draft-07/schema). The schema can
+      be extended later with UpdateDataStore by adding properties; existing
+      properties can't be removed or changed.
     documentType: Required. Immutable. The immutable content type of all
       Documents in this DataStore.
     labels: Optional. Labels as key value pairs.
@@ -659,9 +663,13 @@ class GoogleCloudVectorsearchV1betaDataStore(_messages.Message):
       Format:
       `projects/{project}/locations/{location}/dataStores/{data_store_id}`
     processingConfig: Optional. Configuration controlling how Documents in
-      this DataStore are ingested (parsed, chunked, enriched, and embedded).
-    state: Output only. [Output only] The state of the DataStore.
-    updateTime: Output only. [Output only] Update time stamp
+      this DataStore are ingested (parsed, segmented and embedded). Can be
+      changed with UpdateDataStore. A change applies only to Documents
+      processed after it: Documents already in the DataStore keep their
+      existing segments, and re-importing a file that hasn't changed doesn't
+      reprocess it.
+    state: Output only. The state of the DataStore.
+    updateTime: Output only. Update time stamp
   """
 
   class DocumentTypeValueValuesEnum(_messages.Enum):
@@ -671,8 +679,8 @@ class GoogleCloudVectorsearchV1betaDataStore(_messages.Message):
     Values:
       DOCUMENT_TYPE_UNSPECIFIED: Default value, the document type is not
         specified.
-      UNSTRUCTURED: Unstructured documents (the text pipeline), optionally
-        with metadata.
+      UNSTRUCTURED: Text documents: PDF, plain text, Word, PowerPoint and
+        Excel files, optionally with metadata.
       VIDEO: Video documents, optionally with metadata.
     """
     DOCUMENT_TYPE_UNSPECIFIED = 0
@@ -680,7 +688,7 @@ class GoogleCloudVectorsearchV1betaDataStore(_messages.Message):
     VIDEO = 2
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. [Output only] The state of the DataStore.
+    r"""Output only. The state of the DataStore.
 
     Values:
       STATE_UNSPECIFIED: The default value. This value is used if the state is
@@ -733,12 +741,15 @@ class GoogleCloudVectorsearchV1betaDataStore(_messages.Message):
 
 class GoogleCloudVectorsearchV1betaDataStoreProcessingConfig(_messages.Message):
   r"""ProcessingConfig controls how Documents in a DataStore are parsed,
-  chunked, enriched, and embedded by the Ingestion Engine.
+  segmented and embedded.
 
   Fields:
     unstructuredProcessingConfig: Optional. Configuration for the unstructured
       document ingestion pipeline. Applies when the DataStore's
-      `document_type` is `UNSTRUCTURED`.
+      `document_type` is `UNSTRUCTURED`. If unset for an `UNSTRUCTURED`
+      DataStore, the pipeline defaults to chunk segmentation with a
+      `chunk_size` of 500, digital parsing, and text-only per-segment
+      embedding generation.
     videoProcessingConfig: Optional. Configuration for the video ingestion
       pipeline. Applies when the DataStore's `document_type` is `VIDEO`. If
       unset for a `VIDEO` DataStore, the pipeline defaults to fixed-window
@@ -865,17 +876,11 @@ class GoogleCloudVectorsearchV1betaDocument(_messages.Message):
   a sub-resource of a DataStore. During ingestion a Document is parsed and
   chunked into one or more Segments.
 
-  Enums:
-    StateValueValuesEnum: Output only. [Output only] The processing state of
-      the Document.
-
   Fields:
-    content: Optional. The unstructured data linked to this Document. Content
-      can only be set and must be set if the parent DataStore has a
-      `document_type` that requires unstructured content (e.g. `UNSTRUCTURED`
-      or `VIDEO`).
-    createTime: Output only. [Output only] Timestamp the Document was created
-      at.
+    content: Optional. The unstructured data linked to this Document: the
+      Cloud Storage file it was imported from. Required in each line of a
+      `SOURCE_FORMAT_DOCUMENT_JSON` input file.
+    createTime: Output only. Timestamp the Document was created at.
     etag: Optional. The etag of the Document.
     metadata: Optional. User-defined metadata for this Document. The metadata
       values must conform to the `document_metadata_schema` defined on the
@@ -884,36 +889,20 @@ class GoogleCloudVectorsearchV1betaDocument(_messages.Message):
       Format: `projects/{project}/locations/{location}/dataStores/{data_store_
       id}/documents/{document_id}` The document_id must be 1-63 characters
       long, and comply with [RFC1035](https://www.ietf.org/rfc/rfc1035.txt).
-    state: Output only. [Output only] The processing state of the Document.
-    updateTime: Output only. [Output only] Timestamp the Document was last
-      updated.
+      When ImportDocuments imports files directly (the default source format),
+      the service derives the document_id from the file's Cloud Storage URI:
+      re-importing the same URI updates the same Document, and a renamed or
+      moved file becomes a new Document. With `SOURCE_FORMAT_DOCUMENT_JSON`,
+      the document_id is taken from the `name` given in the input file.
+    updateTime: Output only. Timestamp the Document was last updated.
   """
-
-  class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. [Output only] The processing state of the Document.
-
-    Values:
-      STATE_UNSPECIFIED: The default value. This value is used if the state is
-        omitted.
-      PENDING: The Document has been received and is pending processing.
-      PROCESSING: The Document is being processed (parsed, chunked, enriched,
-        embedded).
-      SUCCEEDED: The Document has been successfully processed.
-      FAILED: The Document failed to be processed.
-    """
-    STATE_UNSPECIFIED = 0
-    PENDING = 1
-    PROCESSING = 2
-    SUCCEEDED = 3
-    FAILED = 4
 
   content = _messages.MessageField('GoogleCloudVectorsearchV1betaDocumentContent', 1)
   createTime = _messages.StringField(2)
   etag = _messages.StringField(3)
   metadata = _messages.MessageField('GoogleCloudVectorsearchV1betaDocumentMetadata', 4)
   name = _messages.StringField(5)
-  state = _messages.EnumField('StateValueValuesEnum', 6)
-  updateTime = _messages.StringField(7)
+  updateTime = _messages.StringField(6)
 
 
 class GoogleCloudVectorsearchV1betaDocumentContent(_messages.Message):
@@ -975,19 +964,28 @@ class GoogleCloudVectorsearchV1betaDocumentMetadataSchema(_messages.Message):
   Messages:
     SchemaValue: Optional. The JSON schema for Document metadata. The schema
       will be validated against [JSON Schema Draft 7](https://json-
-      schema.org/draft-07/schema).
+      schema.org/draft-07/schema). Property names may contain only letters,
+      digits, `_` and `-`, and must not start with `google` in any letter
+      case; that prefix is reserved. The `additionalProperties` keyword is not
+      supported within `properties`.
 
   Fields:
     schema: Optional. The JSON schema for Document metadata. The schema will
       be validated against [JSON Schema Draft 7](https://json-
-      schema.org/draft-07/schema).
+      schema.org/draft-07/schema). Property names may contain only letters,
+      digits, `_` and `-`, and must not start with `google` in any letter
+      case; that prefix is reserved. The `additionalProperties` keyword is not
+      supported within `properties`.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class SchemaValue(_messages.Message):
     r"""Optional. The JSON schema for Document metadata. The schema will be
     validated against [JSON Schema Draft 7](https://json-
-    schema.org/draft-07/schema).
+    schema.org/draft-07/schema). Property names may contain only letters,
+    digits, `_` and `-`, and must not start with `google` in any letter case;
+    that prefix is reserved. The `additionalProperties` keyword is not
+    supported within `properties`.
 
     Messages:
       AdditionalProperty: An additional property for a SchemaValue object.
@@ -1123,27 +1121,43 @@ class GoogleCloudVectorsearchV1betaGcsSource(_messages.Message):
   r"""Cloud Storage location for the input content.
 
   Enums:
-    SourceFormatValueValuesEnum: Optional. Format of the input files.
+    SourceFormatValueValuesEnum: Optional. Format of the input files. Used by
+      ImportDocuments; PurgeDocuments ignores it.
 
   Fields:
-    inputUris: Required. Cloud Storage URIs to input files. The whole request,
-      including every URI, must not exceed 2,000,000 bytes. Split a larger set
-      of URIs across multiple requests.
-    sourceFormat: Optional. Format of the input files.
+    inputUris: Required. Cloud Storage URIs to input files. How the URIs are
+      read depends on the method: see `ImportDocumentsRequest.gcs_source` and
+      `PurgeDocumentsRequest.gcs_source`. The whole request, including every
+      URI, must not exceed 2,000,000 bytes. Split a larger set of URIs across
+      multiple requests.
+    sourceFormat: Optional. Format of the input files. Used by
+      ImportDocuments; PurgeDocuments ignores it.
   """
 
   class SourceFormatValueValuesEnum(_messages.Enum):
-    r"""Optional. Format of the input files.
+    r"""Optional. Format of the input files. Used by ImportDocuments;
+    PurgeDocuments ignores it.
 
     Values:
-      SOURCE_FORMAT_UNSPECIFIED: Default value. If unspecified, the service
-        will consider each input_uri to be unstructured content (PDF, HTML,
-        etc.). Each matched input_uri will be imported as a separate Document.
-      SOURCE_FORMAT_DOCUMENT_JSON: If specified, each input_uri is a JSON file
-        containing a list of documents. Each document in the JSON file needs
-        to follow the JSON format of the Document proto and will be imported
-        as a separate Document resource. The content of the Document is
-        defined in the content_source field.
+      SOURCE_FORMAT_UNSPECIFIED: Default value. Each input URI names a file to
+        import, or a pattern that matches files to import (see
+        `ImportDocumentsRequest.gcs_source`). Each file is imported as a
+        separate Document. An `UNSTRUCTURED` DataStore accepts PDF (`.pdf`),
+        plain text (`.txt`), Word (`.docx`), PowerPoint (`.pptx`) and Excel
+        (`.xlsx`, `.xlsm`) files of up to 200 MB (200,000,000 bytes). A
+        `VIDEO` DataStore accepts video files of up to 600 GB that the service
+        can decode and that are at most 15 hours long. A file that doesn't
+        meet these requirements is reported in the error report rather than
+        failing the import.
+      SOURCE_FORMAT_DOCUMENT_JSON: Each input URI names a JSON Lines file: one
+        Document per line, in the JSON format of the Document resource. Each
+        line must set `name`, which gives the Document ID, and
+        `content.gcs_uri`, and can set `metadata`, which must conform to the
+        DataStore's `document_metadata_schema`. Patterns are not supported in
+        the input URIs. The files that the lines reference must meet the same
+        requirements as for `SOURCE_FORMAT_UNSPECIFIED`. Lines that can't be
+        parsed or that don't conform are reported in the error report and
+        skipped.
     """
     SOURCE_FORMAT_UNSPECIFIED = 0
     SOURCE_FORMAT_DOCUMENT_JSON = 1
@@ -1186,9 +1200,13 @@ class GoogleCloudVectorsearchV1betaImportDocumentsRequest(_messages.Message):
   r"""Request message for DataStoreService.ImportDocuments.
 
   Fields:
-    gcsSource: Cloud Storage location for the input content.
+    gcsSource: Cloud Storage location for the input content. With the default
+      `source_format`, a URI can be a pattern such as `gs://my-
+      bucket/folder/*`, which matches the objects directly in `folder` but not
+      those in its subfolders. One import can include at most 100,000 files
+      for an `UNSTRUCTURED` DataStore, or 100 for a `VIDEO` DataStore.
     importOutputConfig: Optional. Configuration of destination for import
-      documents output.
+      documents output: where to write the import's error report.
   """
 
   gcsSource = _messages.MessageField('GoogleCloudVectorsearchV1betaGcsSource', 1)
@@ -1200,8 +1218,10 @@ class GoogleCloudVectorsearchV1betaImportOutputConfig(_messages.Message):
 
   Fields:
     errorGcsPrefix: Optional. URI prefix of the Cloud Storage location to
-      write any errors encountered during the import. If this field is empty,
-      no error report is written.
+      write any errors encountered during the import. The prefix must not
+      contain any objects. Errors are written to sharded files under this
+      prefix, one per line, as a JSON-encoded `google.rpc.Status` message. If
+      this field is empty, no error report is written.
   """
 
   errorGcsPrefix = _messages.StringField(1)
@@ -1402,7 +1422,13 @@ class GoogleCloudVectorsearchV1betaPurgeDocumentsRequest(_messages.Message):
   Fields:
     force: Optional. Actually performs the purge. If `force` is set to
       `false`, return the expected purge count without deleting any Documents.
-    gcsSource: Cloud Storage location for the input content.
+    gcsSource: Cloud Storage files that list the Documents to purge, one
+      Document ID per line. Each line holds only the ID, not the full resource
+      name. Each URI must name a single file: patterns and folders are not
+      supported. A line that isn't a valid Document ID is reported as an
+      error, and a file with no valid ID fails the purge. An ID that names no
+      Document is skipped, and counted in `ignored_count` in the operation's
+      metadata. Each file can list at most 100,000 IDs.
     purgeOutputConfig: Optional. Configuration of destination for purge
       documents output.
   """
@@ -1416,10 +1442,10 @@ class GoogleCloudVectorsearchV1betaPurgeOutputConfig(_messages.Message):
   r"""Configuration of destination for Purge related output.
 
   Fields:
-    errorGcsPrefix: Optional. Google Cloud Storage prefix for purge errors.
-      This must be an empty, existing Cloud Storage directory. Purge errors
-      will be written to sharded files in this directory, one per line, as a
-      JSON-encoded `google.rpc.Status` message.
+    errorGcsPrefix: Optional. Cloud Storage prefix for purge errors. The
+      prefix must not contain any objects. Purge errors will be written to
+      sharded files under this prefix, one per line, as a JSON-encoded
+      `google.rpc.Status` message.
   """
 
   errorGcsPrefix = _messages.StringField(1)
@@ -1567,7 +1593,8 @@ class GoogleCloudVectorsearchV1betaRankingSpecRerankingSpec(_messages.Message):
       false: results are returned in RRF-fused order unless the caller opts
       in. When enabled, re-ranking uses `semantic-ranker-fast@latest` on the
       Vertex Ranking Service, and requires the Discovery Engine API to be
-      enabled on the caller's project.
+      enabled on the caller's project. Not supported for a `VIDEO` DataStore:
+      a request that enables it fails with `INVALID_ARGUMENT`.
     rankOversamplingFactor: Optional. The factor by which to oversample
       candidates before re-ranking. The total number of candidates retrieved
       for re-ranking is `min(rank_oversampling_factor * top_k, 200)`. After
@@ -1654,9 +1681,10 @@ class GoogleCloudVectorsearchV1betaSearchDocumentsRequest(_messages.Message):
       `metadata.`: a property declared in the DataStore's
       `document_metadata_schema`, e.g. `metadata.category`. *
       `unstructured_details.page_range.start_page` and `.end_page`: for an
-      `UNSTRUCTURED` DataStore. * `video_details.start_offset` and
-      `.end_offset`: in seconds, for a `VIDEO` DataStore. Comparisons: `$eq`,
-      `$ne`, `$lt`, `$lte`, `$gt`, `$gte`, `$in`, `$nin`, `$all`, and
+      `UNSTRUCTURED` DataStore. Not every segment has a page range; see
+      UnstructuredSegmentDetails.page_range. * `video_details.start_offset`
+      and `.end_offset`: in seconds, for a `VIDEO` DataStore. Comparisons:
+      `$eq`, `$ne`, `$lt`, `$lte`, `$gt`, `$gte`, `$in`, `$nin`, `$all`, and
       `$exists`. Combine them with `$and`, `$or`, and `$not`, nested at most
       two levels deep. For example: {"$and": [{"metadata.year": {"$gte":
       2025}}, {"unstructured_details.page_range.start_page": {"$lte": 20}}]}
@@ -1669,9 +1697,10 @@ class GoogleCloudVectorsearchV1betaSearchDocumentsRequest(_messages.Message):
       `metadata.`: a property declared in the DataStore's
       `document_metadata_schema`, e.g. `metadata.category`. *
       `unstructured_details.page_range.start_page` and `.end_page`: for an
-      `UNSTRUCTURED` DataStore. * `video_details.start_offset` and
-      `.end_offset`: in seconds, for a `VIDEO` DataStore. Comparisons: `$eq`,
-      `$ne`, `$lt`, `$lte`, `$gt`, `$gte`, `$in`, `$nin`, `$all`, and
+      `UNSTRUCTURED` DataStore. Not every segment has a page range; see
+      UnstructuredSegmentDetails.page_range. * `video_details.start_offset`
+      and `.end_offset`: in seconds, for a `VIDEO` DataStore. Comparisons:
+      `$eq`, `$ne`, `$lt`, `$lte`, `$gt`, `$gte`, `$in`, `$nin`, `$all`, and
       `$exists`. Combine them with `$and`, `$or`, and `$not`, nested at most
       two levels deep. For example: {"$and": [{"metadata.year": {"$gte":
       2025}}, {"unstructured_details.page_range.start_page": {"$lte": 20}}]}
@@ -1688,7 +1717,8 @@ class GoogleCloudVectorsearchV1betaSearchDocumentsRequest(_messages.Message):
     JSON object over the field paths of a DocumentSearchResult: * `metadata.`:
     a property declared in the DataStore's `document_metadata_schema`, e.g.
     `metadata.category`. * `unstructured_details.page_range.start_page` and
-    `.end_page`: for an `UNSTRUCTURED` DataStore. *
+    `.end_page`: for an `UNSTRUCTURED` DataStore. Not every segment has a page
+    range; see UnstructuredSegmentDetails.page_range. *
     `video_details.start_offset` and `.end_offset`: in seconds, for a `VIDEO`
     DataStore. Comparisons: `$eq`, `$ne`, `$lt`, `$lte`, `$gt`, `$gte`, `$in`,
     `$nin`, `$all`, and `$exists`. Combine them with `$and`, `$or`, and
@@ -2292,21 +2322,28 @@ class GoogleCloudVectorsearchV1betaUnaryQuery(_messages.Message):
 class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfig(_messages.Message):
   r"""Configuration for the unstructured document ingestion pipeline applied
   to Documents ingested into this DataStore. Segmentation and parsing settings
-  can evolve independently while remaining grouped in this message.
+  can evolve independently while remaining grouped in this message. All sub-
+  configurations are optional; any omitted sub-configuration falls back to the
+  platform default documented on that field.
 
   Fields:
-    defaultParsingConfig: Optional. The default parsing config, applied to all
-      file types for unstructured document parsing. If unset, defaults to
-      digital (native text extraction) parsing, or to layout-aware parsing
-      when `embedding_config.mode` is `MULTIMODAL`.
     embeddingConfig: Optional. Controls how the per-segment embedding is
       generated.
-    segmentationConfig: Required. Controls how unstructured documents are
-      split into segments prior to embedding.
+    parsingConfig: Optional. The parsing config, applied to all file types for
+      unstructured document parsing. Plain-text (`.txt`) files are always
+      parsed digitally. If unset, defaults to digital (native text extraction)
+      parsing, or to layout-aware parsing when `embedding_config.mode` is
+      `MULTIMODAL`. If set, exactly one of `digital_parsing_config` or
+      `layout_parsing_config` must be set; an empty config is rejected.
+    segmentationConfig: Optional. Controls how unstructured documents are
+      split into segments prior to embedding. If unset, defaults to chunk
+      segmentation with a `chunk_size` of 500. If set, exactly one of
+      `chunk_segmentation_config` or `page_segmentation_config` must be set;
+      an empty config is rejected.
   """
 
-  defaultParsingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsingConfig', 1)
-  embeddingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredEmbeddingConfig', 2)
+  embeddingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredEmbeddingConfig', 1)
+  parsingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsingConfig', 2)
   segmentationConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegmentationConfig', 3)
 
 
@@ -2358,11 +2395,21 @@ class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsi
 
 
 class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsingConfigDigitalParsingConfig(_messages.Message):
-  r"""The digital parsing configurations for unstructured documents."""
+  r"""The digital parsing configurations for unstructured documents. Extracts
+  the text stored in the file, without OCR or layout detection: text that
+  appears only in images isn't extracted, and headings and tables aren't
+  detected.
+  """
+
 
 
 class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredParsingConfigLayoutParsingConfig(_messages.Message):
-  r"""The layout parsing configurations for unstructured documents."""
+  r"""The layout parsing configurations for unstructured documents. Detects
+  the document's structure, such as headings and tables, and runs OCR on PDF
+  files. Required for `include_ancestor_headings` to have an effect, and for
+  `MULTIMODAL` embedding.
+  """
+
 
 
 class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegmentationConfig(_messages.Message):
@@ -2385,9 +2432,12 @@ class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegme
   Fields:
     chunkSize: Optional. The token size limit for each chunk. Supported
       values: 100-500 (inclusive). If unset, defaults to 500.
-    includeAncestorHeadings: Optional. Whether to include appending different
-      levels of headings to chunks from the middle of the unstructured
-      document to prevent context loss. If unset, defaults to false.
+    includeAncestorHeadings: Optional. Whether each chunk also includes the
+      headings of the sections it belongs to, so that a chunk taken from the
+      middle of a section keeps its context. Headings are only detected by
+      layout parsing (`layout_parsing_config`). With digital parsing, and for
+      plain-text files, this setting has no effect. If unset, defaults to
+      false.
   """
 
   chunkSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -2396,7 +2446,9 @@ class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegme
 
 class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredSegmentationConfigPageSegmentationConfig(_messages.Message):
   r"""The page segmentation configurations for unstructured documents.
-  Segments are produced at the page level.
+  Segments are produced at the page level. Use with digital parsing. With
+  `layout_parsing_config`, PDF files fail to import, and Word, PowerPoint and
+  Excel files are split into chunks instead.
   """
 
 
@@ -2406,8 +2458,11 @@ class GoogleCloudVectorsearchV1betaUnstructuredSegmentDetails(_messages.Message)
 
   Fields:
     contentSnippet: Output only. Text content of the segment.
-    pageRange: Output only. Where the segment sits in the source document.
-      Unset for formats that do not have pages, e.g. plain text.
+    pageRange: Output only. Where the segment sits in the source document. Set
+      for PDF, PowerPoint and Excel files, where a page is a PDF page, a slide
+      or a sheet. For plain-text and Word files, set only when the file is
+      split into pages (`page_segmentation_config` with digital parsing); the
+      pages are then consecutive sections of the text, numbered in order.
   """
 
   contentSnippet = _messages.StringField(1)
@@ -2710,10 +2765,10 @@ class GoogleCloudVectorsearchV1betaVertexRankerTextRecordSpec(_messages.Message)
 
 
 class GoogleCloudVectorsearchV1betaVideoProcessingConfig(_messages.Message):
-  r"""Configuration for the video ingestion pipeline applied to Documents
-  ingested into this DataStore. Segmentation and embedding settings can evolve
+  r"""Configures the video ingestion pipeline applied to Documents ingested
+  into this DataStore. Segmentation and embedding settings can evolve
   independently while remaining grouped in this message. All sub-
-  configurations are optional; any omitted sub-configuration falls back to the
+  configurations are optional. Any omitted sub-configuration falls back to the
   platform default documented on that field.
 
   Fields:
@@ -2721,8 +2776,8 @@ class GoogleCloudVectorsearchV1betaVideoProcessingConfig(_messages.Message):
       embedding is generated.
     segmentationConfig: Optional. Controls how videos are split into segments
       prior to embedding. If unset, defaults to fixed-window segmentation with
-      a 30s window. If set, `segmentation_mode` must select one of the
-      segmentation modes (an empty VideoSegmentationConfig is rejected).
+      a 30s window. If set, a segmentation mode such as `fixed_window_config`
+      must be set; an empty config is rejected.
   """
 
   embeddingConfig = _messages.MessageField('GoogleCloudVectorsearchV1betaVideoProcessingConfigVideoEmbeddingGenerationConfig', 1)
@@ -2773,13 +2828,13 @@ class GoogleCloudVectorsearchV1betaVideoProcessingConfigVideoSegmentationConfig(
 
 
 class GoogleCloudVectorsearchV1betaVideoProcessingConfigVideoSegmentationConfigFixedWindowConfig(_messages.Message):
-  r"""Configuration for fixed-window segmentation. Segments are produced as
+  r"""Configures fixed-window segmentation. Segments are produced as
   deterministic, non-overlapping windows of `segment_duration` each.
 
   Fields:
-    segmentDuration: Optional. The fixed window size for each emitted segment.
-      If unset, defaults to 30s. When explicitly set, must be greater than 5s
-      and less than or equal to 80s.
+    segmentDuration: Optional. Specifies the fixed window size for each
+      emitted segment. If unset, defaults to 30s. When explicitly set, must be
+      greater than 5s and less than or equal to 80s.
   """
 
   segmentDuration = _messages.StringField(1)
@@ -3565,7 +3620,8 @@ class VectorsearchProjectsLocationsDataStoresDeleteRequest(_messages.Message):
     backingCollectionDeleted: Optional. If set to true, the DataStore's auto-
       created backing Collection is torn down alongside the DataStore, force-
       deleting its DataObjects and Indexes. Defaults to false, retaining the
-      Collection so its DataObjects keep serving.
+      Collection so its DataObjects keep serving. While a retained Collection
+      exists, a DataStore with the same ID can't be created again.
     force: Optional. If set to true, any Documents from this DataStore will
       also be deleted. (Otherwise, the request will only work if the DataStore
       has no Documents.)
@@ -3604,10 +3660,13 @@ class VectorsearchProjectsLocationsDataStoresDocumentsListRequest(_messages.Mess
   r"""A VectorsearchProjectsLocationsDataStoresDocumentsListRequest object.
 
   Fields:
-    filter: Optional. Filtering results.
-    orderBy: Optional. Hint for how to order the results.
+    filter: Optional. Not currently supported. A request that sets this field
+      fails with `INVALID_ARGUMENT`.
+    orderBy: Optional. Not currently supported. A request that sets this field
+      fails with `INVALID_ARGUMENT`.
     pageSize: Optional. Requested page size. Server may return fewer items
-      than requested. If unspecified, server will pick an appropriate default.
+      than requested. If unspecified, at most 10 Documents are returned. The
+      maximum value is 1,000; larger values are coerced to 1,000.
     pageToken: Optional. A token identifying a page of results the server
       should return.
     parent: Required. The resource name of the DataStore to list Documents
@@ -3707,11 +3766,19 @@ class VectorsearchProjectsLocationsDataStoresPatchRequest(_messages.Message):
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the DataStore resource by the update. The fields
       specified in the update_mask are relative to the resource, not the full
-      request. A field will be overwritten if it is in the mask. If the user
-      does not provide a mask then all fields present in the request will be
-      overwritten. The following fields support update: `display_name`,
-      `description`, `labels`, `processing_config`. If `*` is provided in the
-      update_mask, full replacement will be performed.
+      request. A field will be overwritten if it is in the mask. A path that
+      names a message replaces the whole message: subfields omitted from the
+      request are cleared and, under `processing_config`, set back to their
+      defaults. If the user does not provide a mask, every field that the
+      request sets to a non-default value is overwritten. Messages sent empty
+      (for example `layout_parsing_config: {}`) and fields set to their
+      default value (for example `false`) are not applied; name them in the
+      mask instead. The following fields support update: `display_name`,
+      `description`, `labels`, `processing_config` and
+      `document_metadata_schema`. `document_metadata_schema` must be updated
+      as a whole (the mask path is `document_metadata_schema`), and only by
+      adding properties: existing properties can't be removed or changed. If
+      `*` is provided in the update_mask, full replacement will be performed.
   """
 
   googleCloudVectorsearchV1betaDataStore = _messages.MessageField('GoogleCloudVectorsearchV1betaDataStore', 1)

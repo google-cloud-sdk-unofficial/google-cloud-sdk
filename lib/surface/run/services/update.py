@@ -307,7 +307,7 @@ class Update(base.Command):
               is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
               iap_enabled=iap,
               multiregion_regions=multiregion_regions,
-              **kwargs
+              **kwargs,
           )
 
       try:
@@ -386,7 +386,7 @@ class BetaUpdate(Update):
 
   input_flags = (
       '`--update-env-vars`, `--memory`, `--concurrency`, `--timeout`,'
-      ' `--connectivity`, `--image`, `--iap`, `--ssh`'
+      ' `--connectivity`, `--image`, `--iap`, `--ssh`, `--public`'
   )
 
   @classmethod
@@ -394,6 +394,7 @@ class BetaUpdate(Update):
     cls.CommonArgs(parser)
 
     flags.AddSshFlag(parser)
+    flags.AddPublicFlag(parser)
 
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)

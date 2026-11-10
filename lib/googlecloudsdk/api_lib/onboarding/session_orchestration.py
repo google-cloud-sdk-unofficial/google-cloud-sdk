@@ -16,10 +16,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import time
 import types
 from typing import TYPE_CHECKING
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.command_lib.onboarding import exceptions as onboarding_exceptions
 from googlecloudsdk.command_lib.onboarding import telemetry
@@ -34,6 +36,18 @@ if TYPE_CHECKING:
 
 # How long to wait between polls while a session is being processed.
 _POLL_INTERVAL_SECONDS = 2
+# Maximum time to wait for browser-based onboarding to complete.
+_BROWSER_POLL_TIMEOUT_SECONDS = 15 * 60
+# Maximum number of consecutive transient `sessions.Get` failures tolerated
+# while polling before giving up.
+_MAX_CONSECUTIVE_POLL_ERRORS = 5
+# HTTP status codes (in addition to 5xx) treated as transient while polling.
+_TRANSIENT_HTTP_STATUS_CODES = frozenset({429})
+_BROWSER_TIMEOUT_MESSAGE = (
+    'Timed out waiting for onboarding to complete in the browser. To'
+    ' continue, finish onboarding at the following URL if you have not'
+    ' already, then rerun the command to resume onboarding:\n{url}'
+)
 
 
 def _CanonicalSessionName(session_id: str) -> str:
@@ -50,8 +64,9 @@ def _ProcessPendingUserInput(
     pending_input: onboarding_messages.PendingUserInput,
     auto_accept_tos_ids: list[str] | None = None,
     selected_region_name: str | None = None,
+    xp_id: str | None = None,
 ) -> onboarding_messages.Session:
-  """Handles a single pending user input and patches the session.
+  """Handles a single pending user input and updates or polls the session.
 
   Args:
     client: The useronboarding API client.
@@ -62,13 +77,14 @@ def _ProcessPendingUserInput(
       without prompting.
     selected_region_name: Optional name of the Google Cloud region to select
       without prompting, if a region selection is required.
+    xp_id: Optional experience ID (`xpid`) for the onboarding session.
 
   Returns:
-    The updated session object returned from the patch call.
+    The updated session object returned from the patch or browser poll call.
 
   Raises:
-    onboarding_exceptions.OnboardingError: If the user input is unsupported or
-      declined.
+    onboarding_exceptions.OnboardingError: If the user input is unsupported,
+      declined, or times out.
   """
   canonical_name = _CanonicalSessionName(session_id)
   if pending_input.tos:
@@ -165,53 +181,105 @@ def _ProcessPendingUserInput(
     return client.sessions.Patch(patch_request)
 
   else:
-    field_checks = [
+    browser_field_checks = (
         (
             pending_input.billingAccount,
-            'billing account selection',
             telemetry.PENDING_INPUT_BILLING_ACCOUNT,
         ),
         (
             pending_input.paymentInfo,
-            'payment information submission',
             telemetry.PENDING_INPUT_PAYMENT_INFO,
         ),
         (
             pending_input.chargingStrategy,
-            'charging strategy selection',
             telemetry.PENDING_INPUT_CHARGING_STRATEGY,
         ),
         (
             pending_input.makePayment,
-            'prepayment submission',
             telemetry.PENDING_INPUT_MAKE_PAYMENT,
         ),
         (
             pending_input.regionCode,
-            'region code selection',
             telemetry.PENDING_INPUT_REGION_CODE,
         ),
-    ]
-    unsupported = [
-        (label, event) for condition, label, event in field_checks if condition
+    )
+    browser_events = [
+        event for condition, event in browser_field_checks if condition
     ]
 
-    if unsupported:
-      for _, event in unsupported:
-        telemetry.RecordEvent(telemetry.UNSUPPORTED_PENDING_INPUT_KEY, event)
-      fields = ', '.join(label for label, _ in unsupported)
-      raise onboarding_exceptions.UnsupportedUserInputError(
-          f'The session requires {fields}, which is not supported in this'
-          ' version of the CLI.'
+    if browser_events:
+      for event in browser_events:
+        telemetry.RecordEvent(telemetry.PENDING_INPUT_KEY, event)
+      url = user_inputs.HandleUserInputInBrowser(canonical_name, xp_id=xp_id)
+      return _WaitForBrowserCompletion(client, messages, canonical_name, url)
+
+    telemetry.RecordEvent(
+        telemetry.UNSUPPORTED_PENDING_INPUT_KEY,
+        telemetry.PENDING_INPUT_UNKNOWN,
+    )
+    raise onboarding_exceptions.UnsupportedUserInputError(
+        'Unsupported pending user input required.'
+    )
+
+
+def _IsTransientError(error: apitools_exceptions.HttpError) -> bool:
+  """Returns whether an HTTP error is transient and safe to retry."""
+  status_code = error.status_code or 0
+  return status_code >= 500 or status_code in _TRANSIENT_HTTP_STATUS_CODES
+
+
+def _PollSession(
+    client: onboarding_client.UseronboardingV1alpha,
+    messages: types.ModuleType,
+    canonical_name: str,
+    keep_polling: Callable[[onboarding_messages.Session], bool],
+    deadline: float | None = None,
+) -> onboarding_messages.Session | None:
+  """Polls `sessions.Get` until `keep_polling` returns False.
+
+  Transient errors (5xx and 429) are tolerated up to
+  `_MAX_CONSECUTIVE_POLL_ERRORS` consecutive times; the counter resets after
+  every successful `sessions.Get` call.
+
+  Args:
+    client: The useronboarding API client.
+    messages: The useronboarding API messages module.
+    canonical_name: The canonical resource name of the session.
+    keep_polling: Returns True if polling should continue for the session.
+    deadline: Optional `time.monotonic()` value after which polling stops.
+
+  Returns:
+    The first session for which `keep_polling` returns False, or None if
+    `deadline` is reached first.
+
+  Raises:
+    apitools_exceptions.HttpError: If `sessions.Get` fails with a
+      non-transient error, or with `_MAX_CONSECUTIVE_POLL_ERRORS` consecutive
+      transient errors.
+  """
+  get_request = messages.UseronboardingSessionsGetRequest(name=canonical_name)
+  consecutive_errors = 0
+  while deadline is None or time.monotonic() < deadline:
+    time.sleep(_POLL_INTERVAL_SECONDS)
+    try:
+      session = client.sessions.Get(get_request)
+    except apitools_exceptions.HttpError as e:
+      if not _IsTransientError(e):
+        raise
+      consecutive_errors += 1
+      if consecutive_errors >= _MAX_CONSECUTIVE_POLL_ERRORS:
+        raise
+      log.debug(
+          'Transient error polling onboarding session (%d/%d): %s',
+          consecutive_errors,
+          _MAX_CONSECUTIVE_POLL_ERRORS,
+          e,
       )
-    else:
-      telemetry.RecordEvent(
-          telemetry.UNSUPPORTED_PENDING_INPUT_KEY,
-          telemetry.PENDING_INPUT_UNKNOWN,
-      )
-      raise onboarding_exceptions.UnsupportedUserInputError(
-          'Unsupported pending user input required.'
-      )
+      continue
+    consecutive_errors = 0
+    if not keep_polling(session):
+      return session
+  return None
 
 
 def _WaitForProcessing(
@@ -230,21 +298,66 @@ def _WaitForProcessing(
     The session object once it transitions out of PROCESSING.
   """
   canonical_name = _CanonicalSessionName(session_id)
+  processing = messages.SessionStatus.CodeValueValuesEnum.PROCESSING
   with (
       progress_tracker.ProgressTracker('Processing onboarding step'),
       telemetry.RecordProcessingDuration(),
   ):
-    while True:
-      time.sleep(_POLL_INTERVAL_SECONDS)
-      get_request = messages.UseronboardingSessionsGetRequest(
-          name=canonical_name
-      )
-      session = client.sessions.Get(get_request)
-      if (
-          session.status.code
-          != messages.SessionStatus.CodeValueValuesEnum.PROCESSING
-      ):
-        return session
+    return _PollSession(
+        client,
+        messages,
+        canonical_name,
+        keep_polling=lambda session: session.status.code == processing,
+    )
+
+
+def _WaitForBrowserCompletion(
+    client: onboarding_client.UseronboardingV1alpha,
+    messages: types.ModuleType,
+    session_id: str,
+    url: str,
+    timeout_seconds: float = _BROWSER_POLL_TIMEOUT_SECONDS,
+) -> onboarding_messages.Session:
+  """Polls the session until browser onboarding completes or times out.
+
+  Args:
+    client: The useronboarding API client.
+    messages: The useronboarding API messages module.
+    session_id: The resource name of the session.
+    url: The direct-start URL where the user completes onboarding, included in
+      the timeout error so the user can resume.
+    timeout_seconds: Maximum duration in seconds to poll before timing out.
+
+  Returns:
+    The session object once it transitions out of PENDING_USER_INPUT and
+    PROCESSING.
+
+  Raises:
+    onboarding_exceptions.SessionTimeoutError: If the session does not finish
+      within `timeout_seconds`.
+  """
+  canonical_name = _CanonicalSessionName(session_id)
+  status_enum = messages.SessionStatus.CodeValueValuesEnum
+  in_progress = (status_enum.PENDING_USER_INPUT, status_enum.PROCESSING)
+  deadline = time.monotonic() + timeout_seconds
+  with (
+      progress_tracker.ProgressTracker(
+          'Waiting for onboarding to complete in the browser'
+      ),
+      telemetry.RecordBrowserInputDuration(),
+  ):
+    session = _PollSession(
+        client,
+        messages,
+        canonical_name,
+        keep_polling=lambda session: session.status.code in in_progress,
+        deadline=deadline,
+    )
+  if session is None:
+    raise onboarding_exceptions.SessionTimeoutError(
+        _BROWSER_TIMEOUT_MESSAGE.format(url=url)
+    )
+  return session
 
 
 def ResolveSession(
@@ -282,6 +395,7 @@ def OrchestrateSession(
     messages: types.ModuleType | None = None,
     auto_accept_tos_ids: list[str] | None = None,
     selected_region_name: str | None = None,
+    xp_id: str | None = None,
 ) -> onboarding_messages.Session:
   """Orchestrates an onboarding session to completion.
 
@@ -293,6 +407,7 @@ def OrchestrateSession(
       without prompting.
     selected_region_name: Optional name of the Google Cloud region to select
       without prompting, if a region selection is required.
+    xp_id: Optional experience ID (`xpid`) for the onboarding session.
 
   Returns:
     The completed session object.
@@ -339,6 +454,7 @@ def OrchestrateSession(
             pending_input,
             auto_accept_tos_ids=auto_accept_tos_ids,
             selected_region_name=selected_region_name,
+            xp_id=xp_id,
         )
       case unexpected_status:
         raise onboarding_exceptions.SessionProtocolError(
@@ -379,4 +495,5 @@ def ResolveAndOrchestrateSession(
       messages=messages,
       auto_accept_tos_ids=auto_accept_tos_ids,
       selected_region_name=selected_region_name,
+      xp_id=intent.xpId,
   )

@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.command_lib.storage import progress_callbacks
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.tasks import task
+from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import ensure_managed_folders_task
 from googlecloudsdk.core import log
 
 
@@ -32,6 +33,8 @@ class PatchAnywhereCacheTask(task.Task):
       admission_policy=None,
       ttl=None,
       enable_ingest_on_write=None,
+      prefixes_to_enable=None,
+      prefixes_to_disable=None,
   ):
     """Initializes task.
 
@@ -44,6 +47,10 @@ class PatchAnywhereCacheTask(task.Task):
         cache miss, that is whether to insert the missed block or not.
       ttl (str|None): Cache entry time-to-live in seconds
       enable_ingest_on_write (bool|None): Whether to enable ingest on write.
+      prefixes_to_enable (list[str]|None): List of normalized prefixes for which
+        to enable ingest-on-write.
+      prefixes_to_disable (list[str]|None): List of normalized prefixes for
+        which to disable ingest-on-write.
     """
     super(PatchAnywhereCacheTask, self).__init__()
     self._bucket_name = bucket_name
@@ -51,6 +58,8 @@ class PatchAnywhereCacheTask(task.Task):
     self._admission_policy = admission_policy
     self._ttl = ttl
     self._enable_ingest_on_write = enable_ingest_on_write
+    self._prefixes_to_enable = prefixes_to_enable
+    self._prefixes_to_disable = prefixes_to_disable
     self.parallel_processing_key = '{}/{}'.format(
         bucket_name, anywhere_cache_id
     )
@@ -82,6 +91,38 @@ class PatchAnywhereCacheTask(task.Task):
     if task_status_queue:
       progress_callbacks.increment_count_callback(task_status_queue)
 
+    additional_task_iterators = []
+    if self._prefixes_to_disable:
+      disable_tasks = []
+      for prefix in self._prefixes_to_disable:
+        disable_tasks.append(
+            ensure_managed_folders_task.EnsureManagedFoldersTask(
+                self._bucket_name,
+                prefix,
+                self._anywhere_cache_id,
+                enable_ingest_on_write=False,
+            )
+        )
+      additional_task_iterators.append(disable_tasks)
+    if self._prefixes_to_enable:
+      enable_tasks = []
+      for prefix in self._prefixes_to_enable:
+        enable_tasks.append(
+            ensure_managed_folders_task.EnsureManagedFoldersTask(
+                self._bucket_name,
+                prefix,
+                self._anywhere_cache_id,
+                enable_ingest_on_write=True,
+            )
+        )
+      additional_task_iterators.append(enable_tasks)
+
+    if additional_task_iterators:
+      return task.Output(
+          additional_task_iterators=additional_task_iterators,
+          messages=None,
+      )
+
   def __eq__(self, other):
     if not isinstance(other, PatchAnywhereCacheTask):
       return NotImplemented
@@ -91,4 +132,6 @@ class PatchAnywhereCacheTask(task.Task):
         and self._admission_policy == other._admission_policy
         and self._ttl == other._ttl
         and self._enable_ingest_on_write == other._enable_ingest_on_write
+        and self._prefixes_to_enable == other._prefixes_to_enable
+        and self._prefixes_to_disable == other._prefixes_to_disable
     )

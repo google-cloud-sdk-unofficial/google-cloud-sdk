@@ -117,6 +117,7 @@ class Create(base.CreateCommand):
     flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
     flags.AddConnectionPoolingMaxPreparedStatements(parser)
     labels_util.AddCreateLabelsFlags(parser)
+    flags.AddAutoscalerCreateFlags(parser)
 
     # TODO(b/185795425): Add --ssl-required later once we
     # understand the use cases
@@ -176,11 +177,11 @@ class CreateBeta(Create):
         parser, show_negated_in_help=True
     )
 
-    flags.AddAutoscalerCreateFlags(parser)
     flags.AddEnablePscAutoDns(parser)
     flags.AddEnablePscAutoConnectionPolicy(parser)
     flags.AddAgentPoolFlags(parser)
     flags.AddEnablePublicDns(parser)
+    flags.AddConnectionPoolingAuthproxyPoolerScalingType(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

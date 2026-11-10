@@ -1,0 +1,65 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1beta SlurmNodeSet export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- computeId
+- id
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  computeId:
+    description: |-
+      The ID of the compute resource on which this nodeset runs. Must match a
+      key in the cluster's compute_resources.
+    type: string
+  computeInstance:
+    description: |-
+      If set, indicates that the nodeset should be backed by Compute Engine
+      instances.
+    $ref: ComputeInstanceSlurmNodeSet.yaml
+  id:
+    description: |-
+      The ID for the nodeset, which allows it to be referenced by cluster
+      partitions. The nodeset ID must start with a lowercase letter (`a`-`z`),
+      use only lowercase letters or numbers, and contain up to 15 characters.
+      For example, specify `nodeset001`.
+    type: string
+  maxDynamicNodeCount:
+    description: |-
+      Controls how many additional nodes a cluster can bring online to handle
+      workloads. Set this value to enable dynamic node creation and limit the
+      number of additional nodes the cluster can bring online. Leave empty if
+      you do not want the cluster to create nodes dynamically, and instead rely
+      only on static nodes.
+    type: integer
+  staticNodeCount:
+    description: |-
+      Number of nodes to be statically created for this nodeset. The cluster
+      will attempt to ensure that at least this many nodes exist at all times.
+    type: integer
+  storageConfigs:
+    description: How storage resources should be mounted on each compute node.
+    type: array
+    items:
+      $ref: StorageConfig.yaml

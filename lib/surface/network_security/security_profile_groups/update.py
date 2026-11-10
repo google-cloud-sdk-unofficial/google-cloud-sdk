@@ -44,11 +44,20 @@ _WILDFIRE_ANALYSIS_SUPPORTED = (
     base.ReleaseTrack.GA,
 )
 
-_SUPPORTED_PROFILES = [
+_SCM_SUPPORTED = (base.ReleaseTrack.ALPHA,)
+
+_SUPPORTED_PROFILES = (
     'threat_prevention_profile',
     'url_filtering_profile',
     'wildfire_analysis_profile',
-]
+    'scm_profile',
+)
+
+_INCOMPATIBLE_PAIRS = (
+    ('scm_profile', 'threat_prevention_profile'),
+    ('scm_profile', 'url_filtering_profile'),
+    ('scm_profile', 'wildfire_analysis_profile'),
+)
 
 _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA,
@@ -126,6 +135,24 @@ class UpdateProfileGroup(base.UpdateCommand):
           help_text='Path to WildFire Analysis Profile resource.',
           project_scope_supported=project_scope_supported,
       )
+    if cls.ReleaseTrack() in _SCM_SUPPORTED:
+      scm_group = parser.add_group(mutex=True)
+      scm_group.add_argument(
+          '--clear-scm-profile',
+          action='store_true',
+          help=textwrap.dedent("""\
+            Clear the scm-profile field.
+          """),
+      )
+      spg_flags.AddSecurityProfileResource(
+          parser,
+          cls.ReleaseTrack(),
+          'scm-profile',
+          group=scm_group,
+          required=False,
+          help_text='Path to SCM Profile resource.',
+          project_scope_supported=project_scope_supported,
+      )
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
@@ -166,6 +193,10 @@ class UpdateProfileGroup(base.UpdateCommand):
         or self.ReleaseTrack() in _WILDFIRE_ANALYSIS_SUPPORTED
         and args.clear_wildfire_analysis_profile):
       update_mask.append('wildfireAnalysisProfile')
+    if (profiles.scm_profile is not None
+        or self.ReleaseTrack() in _SCM_SUPPORTED
+        and args.clear_scm_profile):
+      update_mask.append('scmProfile')
 
     if description is not None:
       update_mask.append('description')
@@ -192,6 +223,9 @@ class UpdateProfileGroup(base.UpdateCommand):
         else None,
         wildfire_analysis_profile=profiles.wildfire_analysis_profile.RelativeName()
         if profiles.wildfire_analysis_profile is not None
+        else None,
+        scm_profile=profiles.scm_profile.RelativeName()
+        if profiles.scm_profile is not None
         else None,
         update_mask=','.join(update_mask),
         labels=labels_update.GetOrNone(),
@@ -225,6 +259,13 @@ class UpdateProfileGroup(base.UpdateCommand):
         result = getattr(args.CONCEPTS, supported_profile).Parse()
         profiles[supported_profile] = result.result
 
+    for pair in _INCOMPATIBLE_PAIRS:
+      if profiles[pair[0]] and profiles[pair[1]]:
+        profile_names = ', '.join(pair).replace('_', '-')
+        raise core_exceptions.Error(
+            'Only one of the following profiles can be specified at the same'
+            f' time: {profile_names}'
+        )
     return types.SimpleNamespace(**profiles)
 
 

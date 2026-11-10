@@ -141,6 +141,8 @@ NC_KUBELET_READONLY_PORT = 'insecureKubeletReadonlyPortEnabled'
 NC_ALLOWED_UNSAFE_SYSCTLS = 'allowedUnsafeSysctls'
 NC_CONTAINER_LOG_MAX_SIZE = 'containerLogMaxSize'
 NC_CONTAINER_LOG_MAX_FILES = 'containerLogMaxFiles'
+NC_CONTAINER_LOG_MAX_WORKERS = 'containerLogMaxWorkers'
+NC_CONTAINER_LOG_MONITOR_INTERVAL = 'containerLogMonitorInterval'
 NC_IMAGE_GC_HIGH_THRESHOLD_PERCENT = 'imageGcHighThresholdPercent'
 NC_IMAGE_GC_LOW_THRESHOLD_PERCENT = 'imageGcLowThresholdPercent'
 NC_IMAGE_MINIMUM_GC_AGE = 'imageMinimumGcAge'
@@ -954,6 +956,8 @@ def LoadSystemConfigFromYAML(
         NC_ALLOWED_UNSAFE_SYSCTLS: list,
         NC_CONTAINER_LOG_MAX_SIZE: str,
         NC_CONTAINER_LOG_MAX_FILES: int,
+        NC_CONTAINER_LOG_MAX_WORKERS: int,
+        NC_CONTAINER_LOG_MONITOR_INTERVAL: str,
         NC_IMAGE_GC_HIGH_THRESHOLD_PERCENT: int,
         NC_IMAGE_GC_LOW_THRESHOLD_PERCENT: int,
         NC_IMAGE_MINIMUM_GC_AGE: str,
@@ -996,6 +1000,12 @@ def LoadSystemConfigFromYAML(
     )
     node_config.kubeletConfig.containerLogMaxFiles = kubelet_config_opts.get(
         NC_CONTAINER_LOG_MAX_FILES
+    )
+    node_config.kubeletConfig.containerLogMaxWorkers = kubelet_config_opts.get(
+        NC_CONTAINER_LOG_MAX_WORKERS
+    )
+    node_config.kubeletConfig.containerLogMonitorInterval = (
+        kubelet_config_opts.get(NC_CONTAINER_LOG_MONITOR_INTERVAL)
     )
     node_config.kubeletConfig.imageGcLowThresholdPercent = (
         kubelet_config_opts.get(NC_IMAGE_GC_LOW_THRESHOLD_PERCENT)

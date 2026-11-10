@@ -16,31 +16,32 @@ class CancelOperationRequest(_messages.Message):
 
 
 class Config(_messages.Message):
-  r"""Message describing WorkspaceConfig object
+  r"""Message describing Config object.
 
   Messages:
-    AnnotationsValue: Optional. Annotations as key value pairs
-    LabelsValue: Optional. Labels as key value pairs
-    TagsValue: Optional. Tag bindings as key value pairs
+    AnnotationsValue: Optional. Annotations as key-value pairs.
+    LabelsValue: Optional. Labels as key-value pairs.
+    TagsValue: Optional. Tag bindings as key-value pairs.
 
   Fields:
     adminEmails: Required. Email addresses of administrators for this
-      workspace configuration.
-    annotations: Optional. Annotations as key value pairs
+      Workspace Key Access config.
+    annotations: Optional. Annotations as key-value pairs.
     createTime: Output only. [Output only] Create time stamp
     customerId: Required. Immutable. Customer ID.
     idpConfigs: Required. The Identity Provider configurations.
     kaclsOwnerDomains: Required. List of allowed Google Workspace customer
       domains where the KACLS is registered.
-    labels: Optional. Labels as key value pairs
-    name: Identifier. name of resource
-    tags: Optional. Tag bindings as key value pairs
+    labels: Optional. Labels as key-value pairs.
+    name: Identifier. The resource name of the Config. Format:
+      `projects/{project}/locations/{location}/configs/{config}`
+    tags: Optional. Tag bindings as key-value pairs.
     updateTime: Output only. [Output only] Update time stamp
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
-    r"""Optional. Annotations as key value pairs
+    r"""Optional. Annotations as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a AnnotationsValue
@@ -65,7 +66,7 @@ class Config(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -89,7 +90,7 @@ class Config(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class TagsValue(_messages.Message):
-    r"""Optional. Tag bindings as key value pairs
+    r"""Optional. Tag bindings as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a TagsValue object.
@@ -123,6 +124,26 @@ class Config(_messages.Message):
   updateTime = _messages.StringField(10)
 
 
+class DisableEndpointRequest(_messages.Message):
+  r"""Message for disabling an Endpoint
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  requestId = _messages.StringField(1)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -132,8 +153,28 @@ class Empty(_messages.Message):
 
 
 
+class EnableEndpointRequest(_messages.Message):
+  r"""Message for enabling an Endpoint
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  requestId = _messages.StringField(1)
+
+
 class Endpoint(_messages.Message):
-  r"""Message describing KeyServiceEndpoint object
+  r"""Message describing Endpoint object.
 
   Enums:
     DisabledReasonValueValuesEnum: Output only. The reason why the Endpoint is
@@ -141,12 +182,12 @@ class Endpoint(_messages.Message):
     StateValueValuesEnum: Output only. [Output only] State of the Endpoint.
 
   Messages:
-    AnnotationsValue: Optional. Annotations as key value pairs
-    LabelsValue: Optional. Labels as key value pairs
-    TagsValue: Optional. Tag bindings as key value pairs
+    AnnotationsValue: Optional. Annotations as key-value pairs.
+    LabelsValue: Optional. Labels as key-value pairs.
+    TagsValue: Optional. Tag bindings as key-value pairs.
 
   Fields:
-    annotations: Optional. Annotations as key value pairs
+    annotations: Optional. Annotations as key-value pairs.
     config: Required. The relative resource name of the attached Config.
       Format: `projects/{project}/locations/{location}/configs/{config}`
     createTime: Output only. [Output only] Create time stamp
@@ -155,12 +196,13 @@ class Endpoint(_messages.Message):
     kmsKey: Required. Immutable. The Cloud KMS CryptoKey resource name.
       Format: `projects/{project}/locations/{location}/keyRings/{key_ring}/cry
       ptoKeys/{crypto_key}`
-    labels: Optional. Labels as key value pairs
-    name: Identifier. name of resource
+    labels: Optional. Labels as key-value pairs.
+    name: Identifier. The resource name of the Endpoint. Format:
+      `projects/{project}/locations/{location}/endpoints/{endpoint}`
     state: Output only. [Output only] State of the Endpoint.
-    tags: Optional. Tag bindings as key value pairs
+    tags: Optional. Tag bindings as key-value pairs.
     updateTime: Output only. [Output only] Update time stamp
-    uri: Output only. The URI of the KeyServiceEndpoint.
+    uri: Output only. The URI of the Endpoint.
   """
 
   class DisabledReasonValueValuesEnum(_messages.Enum):
@@ -201,7 +243,7 @@ class Endpoint(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
-    r"""Optional. Annotations as key value pairs
+    r"""Optional. Annotations as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a AnnotationsValue
@@ -226,7 +268,7 @@ class Endpoint(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -250,7 +292,7 @@ class Endpoint(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class TagsValue(_messages.Message):
-    r"""Optional. Tag bindings as key value pairs
+    r"""Optional. Tag bindings as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a TagsValue object.
@@ -320,10 +362,10 @@ class IdpConfig(_messages.Message):
 
 
 class ListConfigsResponse(_messages.Message):
-  r"""Message for response to listing WorkspaceConfigs
+  r"""Message for response to listing Configs.
 
   Fields:
-    configs: The list of WorkspaceConfig
+    configs: The list of Configs.
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Unordered list. Locations that could not be reached.
@@ -335,10 +377,10 @@ class ListConfigsResponse(_messages.Message):
 
 
 class ListEndpointsResponse(_messages.Message):
-  r"""Message for response to listing KeyServiceEndpoints
+  r"""Message for response to listing Endpoints.
 
   Fields:
-    endpoints: The list of KeyServiceEndpoint
+    endpoints: The list of Endpoints.
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Unordered list. Locations that could not be reached.
@@ -714,10 +756,13 @@ class WorkspacekeyaccessProjectsLocationsConfigsCreateRequest(_messages.Message)
 
   Fields:
     config: A Config resource to be passed as the request body.
-    configId: Required. Id of the requesting object If auto-generating Id
-      server-side, remove this field and config_id from the method_signature
-      of Create RPC
-    parent: Required. Value for parent.
+    configId: Required. The ID to use for the Config, which will become the
+      final component of the Config's resource name. This value must be 1-63
+      characters long, start with a lowercase letter, contain only lowercase
+      letters (`[a-z]`), numbers (`[0-9]`), and hyphens (`-`), and cannot end
+      with a hyphen (matching `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`).
+    parent: Required. The parent project and location where the Config will be
+      created. Format: `projects/{project}/locations/{location}`
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -741,7 +786,8 @@ class WorkspacekeyaccessProjectsLocationsConfigsDeleteRequest(_messages.Message)
   r"""A WorkspacekeyaccessProjectsLocationsConfigsDeleteRequest object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the Config to delete. Format:
+      `projects/{project}/locations/{location}/configs/{config}`
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -763,7 +809,8 @@ class WorkspacekeyaccessProjectsLocationsConfigsGetRequest(_messages.Message):
   r"""A WorkspacekeyaccessProjectsLocationsConfigsGetRequest object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the Config to retrieve. Format:
+      `projects/{project}/locations/{location}/configs/{config}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -779,7 +826,8 @@ class WorkspacekeyaccessProjectsLocationsConfigsListRequest(_messages.Message):
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value for ListConfigsRequest
+    parent: Required. The project and location to list Configs in. Format:
+      `projects/{project}/locations/{location}`
   """
 
   filter = _messages.StringField(1)
@@ -794,7 +842,8 @@ class WorkspacekeyaccessProjectsLocationsConfigsPatchRequest(_messages.Message):
 
   Fields:
     config: A Config resource to be passed as the request body.
-    name: Identifier. name of resource
+    name: Identifier. The resource name of the Config. Format:
+      `projects/{project}/locations/{location}/configs/{config}`
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -807,10 +856,10 @@ class WorkspacekeyaccessProjectsLocationsConfigsPatchRequest(_messages.Message):
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
-      overwritten in the WorkspaceConfig resource by the update. The fields
-      specified in the update_mask are relative to the resource, not the full
-      request. A field will be overwritten if it is in the mask. If the user
-      does not provide a mask then all fields present in the request will be
+      overwritten in the Config resource by the update. The fields specified
+      in the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask. If the user does not
+      provide a mask then all fields present in the request will be
       overwritten.
   """
 
@@ -825,8 +874,13 @@ class WorkspacekeyaccessProjectsLocationsEndpointsCreateRequest(_messages.Messag
 
   Fields:
     endpoint: A Endpoint resource to be passed as the request body.
-    endpointId: Required. The resource ID being created
-    parent: Required. Value for parent.
+    endpointId: Required. The ID to use for the Endpoint, which will become
+      the final component of the Endpoint's resource name. This value must be
+      1-63 characters long, start with a lowercase letter, contain only
+      lowercase letters (`[a-z]`), numbers (`[0-9]`), and hyphens (`-`), and
+      cannot end with a hyphen (matching `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`).
+    parent: Required. The parent project and location where the Endpoint will
+      be created. Format: `projects/{project}/locations/{location}`
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -846,11 +900,40 @@ class WorkspacekeyaccessProjectsLocationsEndpointsCreateRequest(_messages.Messag
   requestId = _messages.StringField(4)
 
 
+class WorkspacekeyaccessProjectsLocationsEndpointsDisableRequest(_messages.Message):
+  r"""A WorkspacekeyaccessProjectsLocationsEndpointsDisableRequest object.
+
+  Fields:
+    disableEndpointRequest: A DisableEndpointRequest resource to be passed as
+      the request body.
+    name: Required. Name of the resource Format:
+      `projects/{project}/locations/{location}/endpoints/{endpoint}`
+  """
+
+  disableEndpointRequest = _messages.MessageField('DisableEndpointRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class WorkspacekeyaccessProjectsLocationsEndpointsEnableRequest(_messages.Message):
+  r"""A WorkspacekeyaccessProjectsLocationsEndpointsEnableRequest object.
+
+  Fields:
+    enableEndpointRequest: A EnableEndpointRequest resource to be passed as
+      the request body.
+    name: Required. Name of the resource Format:
+      `projects/{project}/locations/{location}/endpoints/{endpoint}`
+  """
+
+  enableEndpointRequest = _messages.MessageField('EnableEndpointRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class WorkspacekeyaccessProjectsLocationsEndpointsGetRequest(_messages.Message):
   r"""A WorkspacekeyaccessProjectsLocationsEndpointsGetRequest object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the Endpoint to retrieve. Format:
+      `projects/{project}/locations/{location}/endpoints/{endpoint}`
   """
 
   name = _messages.StringField(1, required=True)
@@ -866,7 +949,8 @@ class WorkspacekeyaccessProjectsLocationsEndpointsListRequest(_messages.Message)
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server
       should return.
-    parent: Required. Parent value for ListEndpointsRequest
+    parent: Required. The project and location to list Endpoints in. Format:
+      `projects/{project}/locations/{location}`
   """
 
   filter = _messages.StringField(1)
@@ -881,7 +965,8 @@ class WorkspacekeyaccessProjectsLocationsEndpointsPatchRequest(_messages.Message
 
   Fields:
     endpoint: A Endpoint resource to be passed as the request body.
-    name: Identifier. name of resource
+    name: Identifier. The resource name of the Endpoint. Format:
+      `projects/{project}/locations/{location}/endpoints/{endpoint}`
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -894,10 +979,10 @@ class WorkspacekeyaccessProjectsLocationsEndpointsPatchRequest(_messages.Message
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
-      overwritten in the KeyServiceEndpoint resource by the update. The fields
-      specified in the update_mask are relative to the resource, not the full
-      request. A field will be overwritten if it is in the mask. If the user
-      does not provide a mask then all fields present in the request will be
+      overwritten in the Endpoint resource by the update. The fields specified
+      in the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask. If the user does not
+      provide a mask then all fields present in the request will be
       overwritten.
   """
 

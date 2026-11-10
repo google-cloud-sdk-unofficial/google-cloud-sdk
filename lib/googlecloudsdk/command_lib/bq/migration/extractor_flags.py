@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Flags shared by the BigQuery migration extract commands."""
+"""Flags and help text shared by the BigQuery migration extract commands."""
 
 import argparse
 import enum
@@ -41,6 +41,103 @@ _CONNECTOR_HELP = {
     ),
 }
 
+_DESCRIPTION_HELP = """\
+    {description}
+
+    By default (`--run-mode=local`), the extractor runs on this machine and
+    writes its output archive to `--output`, which can be either a local file
+    or directory path or a Cloud Storage URI (`gs://bucket/path`). Writing to
+    Cloud Storage in local mode uses Application Default Credentials (for
+    example, from `gcloud auth application-default login`). Local mode requires
+    Java 11 or later on your `PATH`; the `bqms` component of the gcloud CLI,
+    which contains the extractor, is installed on first use if it is missing. To
+    pass additional options to the Java virtual machine, set the `JAVA_OPTS`
+    environment variable, for example `export JAVA_OPTS=-Xmx8G` (Linux and
+    macOS) or `set JAVA_OPTS=-Xmx8G` (Windows Command Prompt) for large
+    extractions, or `-Djavax.net.ssl.trustStore=...` for a custom trust store.
+
+    With `--run-mode=cloud`, the extractor runs on a Compute Engine instance in
+    your project instead and writes its output archive to the Cloud Storage URI
+    given by `--output`. The forwarded arguments are passed to the instance
+    through a Secret Manager secret (see `--secret`); because the instance
+    cannot prompt for input, include connection credentials such as
+    `--password` in them.
+
+    When `--output` is a Cloud Storage URI (`gs://bucket/path`), the command
+    verifies before running the extractor that the bucket belongs to
+    `--expected-owner` (or the active `core/project` property if
+    `--expected-owner` is not specified) and does not allow public access. This
+    requires `storage.buckets.list` permission (for example,
+    `roles/storage.bucketViewer`) on the owner project, object write
+    permissions (`roles/storage.objectUser` or `roles/storage.objectCreator`) on
+    the bucket, and `storage.buckets.getIamPolicy` permission
+    (`roles/storage.admin`) on the bucket if Public Access Prevention is not
+    enforced on the bucket.
+
+    Arguments after `--` are forwarded to the extractor unchanged. For the
+    available connectors and their arguments, see
+    https://cloud.google.com/bigquery/docs/generate-metadata.
+    """
+
+_EXAMPLES_HELP = {
+    ExtractType.METADATA: (
+        """\
+    To extract Snowflake metadata to `gs://my-bucket/snowflake/` using the
+    extractor on this machine (which prompts for the password), run:
+
+      $ {command} --connector=snowflake \\
+          --output=gs://my-bucket/snowflake/ -- \\
+          --host=my-account.snowflakecomputing.com --user=my-user \\
+          --database=MY_DB --warehouse=MY_WH
+
+    To run the same extraction on a Compute Engine instance in zone
+    `us-central1-a`, run:
+
+      $ {command} --connector=snowflake \\
+          --output=gs://my-bucket/snowflake/ --run-mode=cloud \\
+          --zone=us-central1-a -- \\
+          --host=my-account.snowflakecomputing.com --user=my-user \\
+          --password=my-password --database=MY_DB --warehouse=MY_WH
+    """
+    ),
+    ExtractType.QUERY_LOGS: (
+        """\
+    To extract the last seven days (the default range) of Snowflake query logs
+    to `gs://my-bucket/snowflake-logs/` using the extractor on this machine
+    (which prompts for the password), run:
+
+      $ {command} --connector=snowflake-logs \\
+          --output=gs://my-bucket/snowflake-logs/ -- \\
+          --host=my-account.snowflakecomputing.com --user=my-user \\
+          --database=MY_DB --warehouse=MY_WH
+
+    To run the same extraction on a Compute Engine instance in zone
+    `us-central1-a`, run:
+
+      $ {command} --connector=snowflake-logs \\
+          --output=gs://my-bucket/snowflake-logs/ --run-mode=cloud \\
+          --zone=us-central1-a -- \\
+          --host=my-account.snowflakecomputing.com --user=my-user \\
+          --password=my-password --database=MY_DB --warehouse=MY_WH
+    """
+    ),
+}
+
+
+def GetDetailedHelp(extract_type):
+  """Returns the `detailed_help` dict for a `bq migration * extract` command.
+
+  Args:
+    extract_type: ExtractType, the extraction subcommand type.
+
+  Returns:
+    dict[str, str], Calliope `detailed_help` sections (DESCRIPTION, EXAMPLES).
+  """
+  return {
+      'DESCRIPTION': _DESCRIPTION_HELP,
+      'EXAMPLES': _EXAMPLES_HELP[extract_type],
+  }
+
 
 def AddExtractorFlags(parser, extract_type=ExtractType.METADATA):
   """Adds the flags shared by `bq migration * extract` commands.
@@ -59,7 +156,11 @@ def AddExtractorFlags(parser, extract_type=ExtractType.METADATA):
   parser.add_argument(
       '--output',
       required=True,
-      help='Cloud Storage target (gs://bucket/path).',
+      help=(
+          'Target path for the extracted archive: a Cloud Storage URI'
+          ' (`gs://bucket/path`) or, with `--run-mode=local`, a local file or'
+          ' directory path.'
+      ),
   )
   parser.add_argument(
       '--connector',
@@ -68,7 +169,10 @@ def AddExtractorFlags(parser, extract_type=ExtractType.METADATA):
   )
   parser.add_argument(
       '--expected-owner',
-      help='Expected owner project of Cloud Storage bucket.',
+      help=(
+          'Expected owner project ID of the `--output` Cloud Storage bucket.'
+          ' Defaults to the active `core/project` property.'
+      ),
   )
 
   cloud_group = parser.add_group(
@@ -81,7 +185,7 @@ def AddExtractorFlags(parser, extract_type=ExtractType.METADATA):
   secrets_args.AddSecret(
       parser,
       purpose=(
-          'used to pass the dumper arguments to the Compute Engine instance'
+          'used to pass the extractor arguments to the Compute Engine instance'
       ),
       positional=False,
       required=False,
@@ -119,6 +223,7 @@ def AddExtractorFlags(parser, extract_type=ExtractType.METADATA):
 
   parser.add_argument(
       'dumper_args',
+      metavar='EXTRACTOR_ARGS',
       nargs=argparse.REMAINDER,
-      help='Arguments forwarded to the dumper.',
+      help='Arguments forwarded to the extractor.',
   )

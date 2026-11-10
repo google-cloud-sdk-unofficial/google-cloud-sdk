@@ -11,6 +11,10 @@
 
         $ {command} my-schema-bundle --instance=my-instance --table=my-table --proto-descriptors-file=my-descriptor-file.pb
 
+      To update the same schema bundle using the Avro schema file `my-schema-file.avsc`:
+
+        $ {command} my-schema-bundle --instance=my-instance --table=my-table --avro-schema-path=my-schema-file.avsc
+
   request:
     collection: bigtableadmin.projects.instances.tables.schemaBundles
     method: patch
@@ -41,7 +45,6 @@
         - arg_name: avro-schema-path
           api_field: schemaBundle.avroSchema.jsonSchemas
           repeated: false
-          hidden: true
           help_text: |
             Path to a JSON-formatted Avro schema file (`.avsc` or `.json`), or to a directory that contains one or more of these files.
             If specified, the schema bundle contains the Avro schemas.

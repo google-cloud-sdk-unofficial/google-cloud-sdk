@@ -5,7 +5,8 @@
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
 
-from sqlparse import sql, tokens as T
+from sqlparse import sql
+from sqlparse import tokens as T
 
 
 class StatementSplitter:
@@ -16,50 +17,114 @@ class StatementSplitter:
 
     def _reset(self):
         """Set the filter attributes to its default values"""
-        self._in_declare = False
-        self._in_case = False
+        self._block_stack = []
+        self._parenthesis_level = 0
+        self._unconfirmed_start = None
         self._is_create = False
-        self._begin_depth = 0
         self._seen_begin = False
 
         self.consume_ws = False
         self.tokens = []
         self.level = 0
 
+    def _handle_nested_block(self, unified):
+        """Check for nested loop or control structures inside a block"""
+        if unified == 'FOR':
+            self._unconfirmed_start = 'FOR'
+            return 0
+        if unified == 'WHILE':
+            self._unconfirmed_start = 'WHILE'
+            return 0
+        if unified in ('LOOP', 'DO'):
+            if self._unconfirmed_start in ('FOR', 'WHILE'):
+                self._block_stack.append(self._unconfirmed_start)
+                self._unconfirmed_start = None
+                return 1
+            if unified == 'LOOP':
+                self._block_stack.append('LOOP')
+                return 1
+        if unified in ('IF', 'CASE'):
+            self._block_stack.append(unified)
+            return 1
+        return None
+
+    def _handle_closing_keyword(self, unified):
+        """Handle closing keywords for blocks"""
+        if unified == 'END IF':
+            if self._block_stack and self._block_stack[-1] == 'IF':
+                self._block_stack.pop()
+                return -1
+        elif unified == 'END FOR':
+            if self._block_stack and self._block_stack[-1] == 'FOR':
+                self._block_stack.pop()
+                return -1
+        elif unified == 'END WHILE':
+            if self._block_stack and self._block_stack[-1] == 'WHILE':
+                self._block_stack.pop()
+                return -1
+        elif unified == 'END LOOP':
+            if (self._block_stack and
+                    self._block_stack[-1] in ('LOOP', 'FOR', 'WHILE')):
+                self._block_stack.pop()
+                return -1
+        elif unified == 'END CASE':
+            if self._block_stack and self._block_stack[-1] == 'CASE':
+                self._block_stack.pop()
+                return -1
+        elif unified == 'END':
+            if self._block_stack:
+                self._block_stack.pop()
+            return -1
+        return 0
+
     def _change_splitlevel(self, ttype, value):
         """Get the new split level (increase, decrease or remain equal)"""
 
+        # Semicolon resets unconfirmed loop starters
+        # and handles standalone BEGIN;
+        if ttype is T.Punctuation and value == ';':
+            self._unconfirmed_start = None
+            if self._seen_begin:
+                self._seen_begin = False
+                if self._block_stack and self._block_stack[-1] == 'BEGIN':
+                    self._block_stack.pop()
+                    return -1
+            return 0
+
         # parenthesis increase/decrease a level
         if ttype is T.Punctuation and value == '(':
+            self._parenthesis_level += 1
             return 1
         elif ttype is T.Punctuation and value == ')':
+            self._parenthesis_level = max(0, self._parenthesis_level - 1)
             return -1
         elif ttype not in T.Keyword:  # if normal token return
             return 0
 
         # Everything after here is ttype = T.Keyword
-        # Also to note, once entered an If statement you are done and basically
-        # returning
         unified = value.upper()
 
-        # three keywords begin with CREATE, but only one of them is DDL
         # DDL Create though can contain more words such as "or replace"
         if ttype is T.Keyword.DDL and unified.startswith('CREATE'):
             self._is_create = True
             return 0
 
-        # can have nested declare inside of being...
-        if unified == 'DECLARE' and self._is_create and self._begin_depth == 0:
-            self._in_declare = True
+        # Handle DECLARE block start (only for CREATE statements)
+        if unified == 'DECLARE' and self._is_create and not self._block_stack:
+            self._block_stack.append('DECLARE')
             return 1
 
+        # Handle BEGIN block start
         if unified == 'BEGIN':
-            self._begin_depth += 1
             self._seen_begin = True
-            if self._is_create:
-                # FIXME(andi): This makes no sense.  ## this comment neither
+            # Transition DECLARE to BEGIN if present
+            if self._block_stack and self._block_stack[-1] == 'DECLARE':
+                self._block_stack.pop()
+                self._block_stack.append('BEGIN')
+                return 0
+            else:
+                self._block_stack.append('BEGIN')
                 return 1
-            return 0
 
         # Issue826: If we see a transaction keyword after BEGIN,
         # it's a transaction statement, not a block.
@@ -68,29 +133,20 @@ class StatementSplitter:
                 unified in ('TRANSACTION', 'WORK', 'TRAN',
                             'DISTRIBUTED', 'DEFERRED',
                             'IMMEDIATE', 'EXCLUSIVE'):
-            self._begin_depth = max(0, self._begin_depth - 1)
             self._seen_begin = False
+            if self._block_stack and self._block_stack[-1] == 'BEGIN':
+                self._block_stack.pop()
+                return -1
             return 0
 
-        # BEGIN and CASE/WHEN both end with END
-        if unified == 'END':
-            if not self._in_case:
-                self._begin_depth = max(0, self._begin_depth - 1)
-            else:
-                self._in_case = False
-            return -1
+        # Inside a block, check for nested loop or control structures
+        if 'BEGIN' in self._block_stack:
+            res = self._handle_nested_block(unified)
+            if res is not None:
+                return res
 
-        if (unified in ('IF', 'FOR', 'WHILE', 'CASE')
-                and self._is_create and self._begin_depth > 0):
-            if unified == 'CASE':
-                self._in_case = True
-            return 1
-
-        if unified in ('END IF', 'END FOR', 'END WHILE'):
-            return -1
-
-        # Default
-        return 0
+        # Handle closing keywords
+        return self._handle_closing_keyword(unified)
 
     def process(self, stream):
         """Process the stream"""
@@ -122,13 +178,9 @@ class StatementSplitter:
             # Issue809: Ignore semicolons inside BEGIN...END blocks, but handle
             # standalone BEGIN; as a transaction statement
             if ttype is T.Punctuation and value == ';':
-                # If we just saw BEGIN; then this is a transaction BEGIN,
-                # not a BEGIN...END block, so decrement depth
-                if self._seen_begin:
-                    self._begin_depth = max(0, self._begin_depth - 1)
                 self._seen_begin = False
                 # Split on semicolon if not inside a BEGIN...END block
-                if self.level <= 0 and self._begin_depth == 0:
+                if self.level <= 0 and 'BEGIN' not in self._block_stack:
                     self.consume_ws = True
             elif ttype is T.Keyword and value.split()[0] == 'GO':
                 self.consume_ws = True

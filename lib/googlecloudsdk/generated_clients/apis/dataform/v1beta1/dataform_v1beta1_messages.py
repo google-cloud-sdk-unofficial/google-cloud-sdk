@@ -2905,6 +2905,8 @@ class InvocationConfig(_messages.Message):
       https://cloud.google.com/bigquery/docs/running-queries#queries.
 
   Fields:
+    concurrentActionsLimit: Optional. Maximum number of actions that can be
+      executed concurrently.
     endUserAuthConfig: Optional. Configuration for end user authentication. Do
       not set if `service_account` is used.
     executionMode: Optional. Specifies the execution mode for the workflow
@@ -2957,15 +2959,16 @@ class InvocationConfig(_messages.Message):
     INTERACTIVE = 1
     BATCH = 2
 
-  endUserAuthConfig = _messages.MessageField('EndUserAuthenticationConfig', 1)
-  executionMode = _messages.EnumField('ExecutionModeValueValuesEnum', 2)
-  fullyRefreshIncrementalTablesEnabled = _messages.BooleanField(3)
-  includedTags = _messages.StringField(4, repeated=True)
-  includedTargets = _messages.MessageField('Target', 5, repeated=True)
-  queryPriority = _messages.EnumField('QueryPriorityValueValuesEnum', 6)
-  serviceAccount = _messages.StringField(7)
-  transitiveDependenciesIncluded = _messages.BooleanField(8)
-  transitiveDependentsIncluded = _messages.BooleanField(9)
+  concurrentActionsLimit = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  endUserAuthConfig = _messages.MessageField('EndUserAuthenticationConfig', 2)
+  executionMode = _messages.EnumField('ExecutionModeValueValuesEnum', 3)
+  fullyRefreshIncrementalTablesEnabled = _messages.BooleanField(4)
+  includedTags = _messages.StringField(5, repeated=True)
+  includedTargets = _messages.MessageField('Target', 6, repeated=True)
+  queryPriority = _messages.EnumField('QueryPriorityValueValuesEnum', 7)
+  serviceAccount = _messages.StringField(8)
+  transitiveDependenciesIncluded = _messages.BooleanField(9)
+  transitiveDependentsIncluded = _messages.BooleanField(10)
 
 
 class ListCompilationResultsResponse(_messages.Message):
@@ -4718,6 +4721,8 @@ class WorkflowInvocationAction(_messages.Message):
       SUCCEEDED: The action succeeded. A terminal state.
       CANCELLED: The action was cancelled. A terminal state.
       FAILED: The action failed. A terminal state.
+      QUEUED: Execution of the action was queued waiting for an available
+        concurrency slot.
     """
     PENDING = 0
     RUNNING = 1
@@ -4726,6 +4731,7 @@ class WorkflowInvocationAction(_messages.Message):
     SUCCEEDED = 4
     CANCELLED = 5
     FAILED = 6
+    QUEUED = 7
 
   bigqueryAction = _messages.MessageField('BigQueryAction', 1)
   bigqueryUnitTestAction = _messages.MessageField('BigQueryUnitTestAction', 2)

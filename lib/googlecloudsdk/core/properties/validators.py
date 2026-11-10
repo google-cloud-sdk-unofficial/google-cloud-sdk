@@ -17,6 +17,7 @@
 import os
 import re
 
+from googlecloudsdk.core.properties.exceptions import InvalidProjectError
 from googlecloudsdk.core.properties.exceptions import InvalidValueError
 from googlecloudsdk.core.properties.exceptions import PropertyValue
 from googlecloudsdk.core.util import scaled_integer
@@ -166,51 +167,41 @@ def _BooleanValidator(property_name, property_value):
     )
 
 
-def _IntegerValidator(property_name=None, property_value=None):
-  """Validates integer properties.
-
-  Args:
-    property_name: str, the name of the property
-    property_value: PropertyValue | int | str, the value to validate
-
-  Raises:
-    InvalidValueError: if value is not integer
-  """
-  if property_value is None:
+def _IntegerValidator(value):
+  """Validates non-negative integer properties (>= 0)."""
+  if value is None:
     return
-  if property_name is None:
-    return
-
-  if isinstance(property_value, PropertyValue):
-    value = property_value.value
-  else:
-    value = property_value
-
+  if isinstance(value, PropertyValue):
+    value = value.value
   try:
-    # Attempt to convert the value to an integer.
-    int_value = int(value)
-
-  except (ValueError, TypeError) as exc:
-
+    int_val = int(value)
+  except (TypeError, ValueError) as exc:
     raise InvalidValueError(
-        f'The [{property_name}] value [{value}] is not valid. Only integer'
-        ' values are allowed for this property.'
+        f'The value [{value}] is not valid. Only integer values are allowed.'
     ) from exc
-
-  # Check if the converted value is an integer.
-
-  if not isinstance(int_value, int):
+  if int_val < 0:
     raise InvalidValueError(
-        f'The [{property_name}] value [{value}] is not valid. Only integer'
-        ' values are allowed for this property.'
+        f'The value [{value}] is not valid. Only integer values greater than or'
+        ' equal to 0 are allowed.'
     )
 
-  # Ensure the integer value is positive.
-  if int_value <= 0:
 
+def _PositiveIntegerValidator(value):
+  """Validates positive integer properties (> 0)."""
+  if value is None:
+    return
+  if isinstance(value, PropertyValue):
+    value = value.value
+  try:
+    int_val = int(value)
+  except (TypeError, ValueError) as exc:
     raise InvalidValueError(
-        f'The [{property_name}] value [{value}] is not valid. Only positive'
-        ' integer values are allowed.'
+        f'The value [{value}] is not valid. Only integer values are allowed.'
+    ) from exc
+  if int_val <= 0:
+    raise InvalidValueError(
+        f'The value [{value}] is not valid. Only positive integer values are'
+        ' allowed.'
     )
 
 
@@ -235,27 +226,6 @@ def _HumanReadableByteAmountValidator(size_string):
     scaled_integer.ParseInteger(size_string)
   except ValueError as e:
     raise InvalidValueError(str(e)) from e
-
-
-_VALID_ASSERTIONS = ('readonly',)
-
-
-def _AssertValidator(val):
-  """Validates the assert property value.
-
-  Args:
-    val: str or None, The assert property value to validate.
-
-  Raises:
-    InvalidValueError: If the value is not a valid assertion.
-  """
-  if val is None:
-    return
-  if val not in _VALID_ASSERTIONS:
-    raise InvalidValueError(
-        f'The assert property value [{val}] is not valid. '
-        f'Possible values: [{", ".join(_VALID_ASSERTIONS)}].'
-    )
 
 
 def _UserAgentHeaderValueValidator(value):
@@ -287,3 +257,56 @@ def AccessPolicyValidator(policy):
         'The access_context_manager.policy property must be set '
         'to the policy number, not a string.'
     )
+
+
+def AccessContextManagerOrganizationValidator(org):
+  """Checks to see if the Organization string is valid."""
+  if org is None:
+    return
+  if not org.isdigit():
+    raise InvalidValueError(
+        'The access_context_manager.organization property must be set '
+        'to the organization ID number, not a string.'
+    )
+
+
+def ProjectValidator(project):
+  """Checks to see if the project string is valid."""
+  if project is None:
+    return
+
+  if not isinstance(project, six.string_types):
+    raise InvalidValueError('project must be a string')
+  if project == '':  # pylint: disable=g-explicit-bool-comparison
+    raise InvalidProjectError(
+        'The project property is set to the empty string, which is invalid.'
+    )
+  if _VALID_PROJECT_REGEX.match(project):
+    return
+
+  if _LooksLikeAProjectName(project):
+    raise InvalidProjectError(
+        'The project property must be set to a valid project ID, not the '
+        'project name [{value}]'.format(value=project)
+    )
+  # Non heuristics for a better error message.
+  raise InvalidProjectError(
+      'The project property must be set to a valid project ID, '
+      '[{value}] is not a valid project ID.'.format(value=project)
+  )
+
+
+VALIDATORS = {
+    'AccessContextManagerOrganizationValidator': (
+        AccessContextManagerOrganizationValidator
+    ),
+    'AccessPolicyValidator': AccessPolicyValidator,
+    'BooleanValidator': _BooleanValidator,
+    'BuildTimeoutValidator': _BuildTimeoutValidator,
+    'ExistingAbsoluteFilepathValidator': ExistingAbsoluteFilepathValidator,
+    'HumanReadableByteAmountValidator': _HumanReadableByteAmountValidator,
+    'IntegerValidator': _IntegerValidator,
+    'PositiveIntegerValidator': _PositiveIntegerValidator,
+    'ProjectValidator': ProjectValidator,
+    'UserAgentHeaderValueValidator': _UserAgentHeaderValueValidator,
+}

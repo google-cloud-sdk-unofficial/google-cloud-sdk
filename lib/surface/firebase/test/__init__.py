@@ -27,6 +27,28 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'Firebase Test Lab is deprecated and will be fully shut down on'
+        ' September 30, 2027. To maintain your testing workflows, you can'
+        ' migrate to the Developer Device Platform on Google Cloud. See the'
+        ' Developer Device Platform Migration Guide'
+        ' (https://docs.cloud.google.com/developer-device-platform/device-run/migrate)'
+        ' and FAQ'
+        ' (https://docs.cloud.google.com/developer-device-platform/troubleshooting)'
+        ' for more details.'
+    ),
+    error=(
+        'Firebase Test Lab has been shut down. To maintain your testing'
+        ' workflows, you can migrate to the Developer Device Platform on Google'
+        ' Cloud. See the Developer Device Platform Migration Guide'
+        ' (https://docs.cloud.google.com/developer-device-platform/device-run/migrate)'
+        ' and FAQ'
+        ' (https://docs.cloud.google.com/developer-device-platform/troubleshooting)'
+        ' for more details.'
+    ),
+)
 @base.DefaultUniverseOnly
 class Test(base.Group):
   """Interact with Firebase Test Lab.

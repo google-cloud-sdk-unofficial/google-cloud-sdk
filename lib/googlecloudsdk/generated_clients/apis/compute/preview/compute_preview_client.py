@@ -98,6 +98,7 @@ class ComputePreview(base_api.BaseApiClient):
     self.networkEdgeSecurityServices = self.NetworkEdgeSecurityServicesService(self)
     self.networkEndpointGroups = self.NetworkEndpointGroupsService(self)
     self.networkFirewallPolicies = self.NetworkFirewallPoliciesService(self)
+    self.networkLocationBindings = self.NetworkLocationBindingsService(self)
     self.networkProfiles = self.NetworkProfilesService(self)
     self.networks = self.NetworksService(self)
     self.nodeGroups = self.NodeGroupsService(self)
@@ -14509,6 +14510,70 @@ Replaces any existing policy.
         request_field='testPermissionsRequest',
         request_type_name='ComputeNetworkFirewallPoliciesTestIamPermissionsRequest',
         response_type_name='TestPermissionsResponse',
+        supports_download=False,
+    )
+
+  class NetworkLocationBindingsService(base_api.BaseApiService):
+    """Service class for the networkLocationBindings resource."""
+
+    _NAME = 'networkLocationBindings'
+
+    def __init__(self, client):
+      super(ComputePreview.NetworkLocationBindingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified NetworkLocationBinding resource in the given scope.
+
+      Args:
+        request: (ComputeNetworkLocationBindingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NetworkLocationBinding) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        http_method='GET',
+        method_id='compute.networkLocationBindings.get',
+        ordered_params=['project', 'region', 'networkLocationBinding'],
+        path_params=['networkLocationBinding', 'project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/networkLocationBindings/{networkLocationBinding}',
+        request_field='',
+        request_type_name='ComputeNetworkLocationBindingsGetRequest',
+        response_type_name='NetworkLocationBinding',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists the NetworkLocationBindings for a project in the given scope.
+
+      Args:
+        request: (ComputeNetworkLocationBindingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NetworkLocationBindingList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-10-01-preview',
+        http_method='GET',
+        method_id='compute.networkLocationBindings.list',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken'],
+        relative_path='projects/{project}/regions/{region}/networkLocationBindings',
+        request_field='',
+        request_type_name='ComputeNetworkLocationBindingsListRequest',
+        response_type_name='NetworkLocationBindingList',
         supports_download=False,
     )
 

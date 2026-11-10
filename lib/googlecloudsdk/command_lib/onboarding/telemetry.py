@@ -48,18 +48,23 @@ CLOUD_REGION_DECISION_KEY = 'onboarding_cloud_region_decision'
 # Span name for time spent polling a session in the PROCESSING state. Must
 # match the pattern "[a-zA-Z0-9_]+".
 PROCESSING_SPAN = 'onboarding_session_processing'
+# Span name for time spent waiting for the user to complete onboarding in the
+# browser. This includes any PROCESSING time after the user submits in the
+# browser, since the two cannot be distinguished client-side. Must match the
+# pattern "[a-zA-Z0-9_]+".
+BROWSER_INPUT_DURATION = 'onboarding_browser_user_input'
 
 # Values for PENDING_INPUT_KEY.
 PENDING_INPUT_TOS = 'tos'
 PENDING_INPUT_PROJECT = 'project'
 PENDING_INPUT_CLOUD_REGION = 'cloud_region'
-
-# Values for UNSUPPORTED_PENDING_INPUT_KEY.
 PENDING_INPUT_BILLING_ACCOUNT = 'billing_account'
 PENDING_INPUT_PAYMENT_INFO = 'payment_info'
 PENDING_INPUT_CHARGING_STRATEGY = 'charging_strategy'
 PENDING_INPUT_MAKE_PAYMENT = 'make_payment'
 PENDING_INPUT_REGION_CODE = 'region_code'
+
+# Values for UNSUPPORTED_PENDING_INPUT_KEY.
 PENDING_INPUT_UNKNOWN = 'unknown'
 
 # Values for the *_DECISION_KEY keys, shared by all user inputs. Not every
@@ -159,3 +164,8 @@ def RecordSessionResolved(session_name: str, xp_id: str | None) -> None:
 def RecordProcessingDuration():
   """Returns a context manager that times polling of a processing session."""
   return metrics.RecordDuration(PROCESSING_SPAN)
+
+
+def RecordBrowserInputDuration():
+  """Returns a context manager that times waiting on browser onboarding."""
+  return metrics.RecordDuration(BROWSER_INPUT_DURATION)

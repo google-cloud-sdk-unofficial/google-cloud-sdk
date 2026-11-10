@@ -85,10 +85,9 @@ def GetLocationHint():
 def GetMachineType(required=True):
   """Gets the --machine-type flag."""
   help_text = """\
-  The type of machine (name only) that has a fixed number of vCPUs and a fixed
-  amount of memory. You can also specify a custom machine type by using the
-  pattern `custom-number_of_CPUs-amount_of_memory`-for example,
-  `custom-32-29440`.
+  The predefined or custom machine type that you want to reserve. To supply a custom machine type, the string must be formatted precisely with the word custom, a hyphen, the integer number of vCPUs, a hyphen, and the integer amount of memory in megabytes. For example, `custom-32-29440` configures 32 vCPUs and 29440 MB of memory.
+
+  Different reservation types restrict the available machine series. To review the machine series and types that each reservation type supports, see https://docs.cloud.google.com/compute/docs/instances/choose-reservation-type#comparison
   """
   return base.Argument('--machine-type', required=required, help=help_text)
 

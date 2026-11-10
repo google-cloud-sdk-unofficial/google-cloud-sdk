@@ -5,6 +5,10 @@
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
 
+import re
+from bisect import bisect_left
+from collections import defaultdict
+
 from sqlparse import tokens
 
 # object() only supports "is" and is useful as a marker
@@ -13,12 +17,109 @@ from sqlparse import tokens
 PROCESS_AS_KEYWORD = object()
 
 
+# Dollar-quoted literals (`$tag$...$tag$`) and multiline comments
+# (`/*...*/`, `/*+...*/`) used to be matched with per-position regexes
+# using a lazy dot-all quantifier (`[\s\S]*?`) terminated by a
+# backreference or a literal delimiter. Applied at every text position by
+# the lexer loop, that shape is O(n^2) on adversarial input with many
+# unclosed openers, since each failed attempt re-scans to the end of the
+# remaining text (GHSA-prg7-hcfm-mfcr). find_delimited_spans() collects
+# all opener and closer positions in a single pass instead, so the lexer
+# can pair them with a binary search when it actually reaches an opener.
+#
+# The delimiter regex is wrapped in a lookahead so that overlapping
+# occurrences are reported too: in `$$$$` the closing `$$` starts inside
+# the match of the opening one, and a non-overlapping scan would miss it.
+_DOLLAR_QUOTE_DELIM = re.compile(
+    r'(?=(\$(?:[_A-ZÀ-Ü]\w*)?\$))', re.IGNORECASE | re.UNICODE)
+_DOLLAR_QUOTE_OPENER_OK = re.compile(r'(?<![\w"$])', re.UNICODE)
+_COMMENT_HINT_OPEN = re.compile(r'/\*\+')
+_COMMENT_OPEN = re.compile(r'/\*(?!\+)')
+_COMMENT_CLOSE = re.compile(r'\*/')
+
+# All multiline comments share a single closer (`*/`), so one bucket is
+# enough; dollar-quoted literals are bucketed by their tag.
+_COMMENT_TAG = '/*'
+
+
+class DelimitedSpans:
+    """Opener and closer positions of dollar-quoted literals and multiline
+    comments, resolved on demand by :meth:`resolve`.
+
+    Pairing has to happen at the position the lexer has actually reached,
+    not upfront: a `/*`, `*/` or `$$` inside a string literal or behind a
+    `--` comment is not a delimiter at all, and resolving it eagerly would
+    consume the partner of the next real delimiter.
+    """
+
+    __slots__ = ('_closers', 'openers')
+
+    def __init__(self, openers, closers):
+        #: start offset -> (offset behind the opener, tag, token type)
+        self.openers = openers
+        #: tag -> ([closer start, ...], [closer end, ...]), both ascending
+        self._closers = closers
+
+    def resolve(self, pos):
+        """Return ``(end offset, token type)`` for the span opening at
+        `pos`, or None if its closing delimiter is missing -- just as a
+        regex that never finds its closing delimiter fails to match.
+        """
+        opener_end, tag, ttype = self.openers[pos]
+        starts, ends = self._closers[tag]
+        idx = bisect_left(starts, opener_end)
+        if idx == len(starts):
+            return None
+        return ends[idx], ttype
+
+
+_NO_SPANS = DelimitedSpans({}, {})
+
+
+def find_delimited_spans(text):
+    """Locate the delimiters of dollar-quoted literals and multiline
+    comments in `text` and return them as a :class:`DelimitedSpans`.
+    """
+    has_dollar = '$' in text
+    # A comment can only ever open on "/*"; without it "*/" alone can
+    # never pair with anything, so gating on "/*" alone is sufficient to
+    # skip all three comment-related regex passes below.
+    has_comment_open = '/*' in text
+    if not has_dollar and not has_comment_open:
+        return _NO_SPANS
+
+    openers = {}
+    closers = defaultdict(lambda: ([], []))
+    if has_dollar:
+        for m in _DOLLAR_QUOTE_DELIM.finditer(text):
+            start = m.start()
+            tag = m.group(1)
+            end = start + len(tag)
+            # Every delimiter can close a literal, but one preceded by a
+            # word character, `"` or `$` cannot open one.
+            starts, ends = closers[tag]
+            starts.append(start)
+            ends.append(end)
+            if _DOLLAR_QUOTE_OPENER_OK.match(text, start) is not None:
+                openers[start] = (end, tag, tokens.Literal)
+    if has_comment_open:
+        for m in _COMMENT_HINT_OPEN.finditer(text):
+            openers[m.start()] = (
+                m.end(), _COMMENT_TAG, tokens.Comment.Multiline.Hint)
+        for m in _COMMENT_OPEN.finditer(text):
+            openers[m.start()] = (
+                m.end(), _COMMENT_TAG, tokens.Comment.Multiline)
+        starts, ends = closers[_COMMENT_TAG]
+        for m in _COMMENT_CLOSE.finditer(text):
+            starts.append(m.start())
+            ends.append(m.end())
+    return DelimitedSpans(openers, closers)
+
+
 SQL_REGEX = [
     (r'(--|# )\+.*?(\r\n|\r|\n|$)', tokens.Comment.Single.Hint),
-    (r'/\*\+[\s\S]*?\*/', tokens.Comment.Multiline.Hint),
 
     (r'(--|# ).*?(\r\n|\r|\n|$)', tokens.Comment.Single),
-    (r'/\*[\s\S]*?\*/', tokens.Comment.Multiline),
 
     (r'(\r\n|\r|\n)', tokens.Newline),
     (r'\s+?', tokens.Whitespace),
@@ -30,7 +131,6 @@ SQL_REGEX = [
 
     (r"`(``|[^`])*`", tokens.Name),
     (r"´(´´|[^´])*´", tokens.Name),
-    (r'((?<![\w\"\$])\$(?:[_A-ZÀ-Ü]\w*)?\$)[\s\S]*?\1', tokens.Literal),
 
     (r'\?', tokens.Name.Placeholder),
     (r'%(\(\w+\))?s', tokens.Name.Placeholder),
@@ -49,7 +149,11 @@ SQL_REGEX = [
     # see issue #39
     # Spaces around period `schema . name` are valid identifier
     # TODO: Spaces before period not implemented
-    (r'[A-ZÀ-Ü]\w*(?=\s*\.)', tokens.Name),  # 'Name'.
+    # The negative lookahead ``(?!\d)`` keeps a following floating point
+    # literal such as ``.03`` from being mistaken for a member access, so a
+    # preceding keyword (e.g. ``BETWEEN``) is not reclassified as a name.
+    # See issue #601.
+    (r'[A-ZÀ-Ü]\w*(?=\s*\.(?!\d))', tokens.Name),  # 'Name'.
     # FIXME(atronah): never match,
     # because `re.match` doesn't work with look-behind regexp feature
     (r'(?<=\.)[A-ZÀ-Ü]\w*', tokens.Name),  # .'Name'
@@ -69,7 +173,7 @@ SQL_REGEX = [
     (r'(?<![\w\])])(\[[^\]\[]+\])', tokens.Name),
     (r'((LEFT\s+|RIGHT\s+|FULL\s+)?(INNER\s+|OUTER\s+|STRAIGHT\s+)?'
      r'|(CROSS\s+|NATURAL\s+)?)?JOIN\b', tokens.Keyword),
-    (r'END(\s+IF|\s+LOOP|\s+WHILE)?\b', tokens.Keyword),
+    (r'END(\s+IF|\s+LOOP|\s+WHILE|\s+FOR|\s+CASE)?\b', tokens.Keyword),
     (r'IF\s+(NOT\s+)?EXISTS\b', tokens.Keyword),
     (r'NOT\s+NULL\b', tokens.Keyword),
     (r'(ASC|DESC)(\s+NULLS\s+(FIRST|LAST))?\b', tokens.Keyword.Order),
@@ -359,6 +463,7 @@ KEYWORDS = {
     # 'M': tokens.Keyword,
     'MAP': tokens.Keyword,
     'MATCH': tokens.Keyword,
+    'MATERIALIZED': tokens.Keyword,
     'MAXEXTENTS': tokens.Keyword,
     'MAXVALUE': tokens.Keyword,
     'MESSAGE_LENGTH': tokens.Keyword,
@@ -488,6 +593,7 @@ KEYWORDS = {
     'ROUTINE_SCHEMA': tokens.Keyword,
     'ROWS': tokens.Keyword,
     'ROW_COUNT': tokens.Keyword,
+    'ROW_FORMAT': tokens.Keyword,
     'RULE': tokens.Keyword,
 
     'SAVE_POINT': tokens.Keyword,

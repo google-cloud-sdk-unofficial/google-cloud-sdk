@@ -349,3 +349,66 @@ def ClearScimUsage(
         messages.WorkforcePoolProvider.ScimUsageValueValuesEnum.SCIM_USAGE_UNSPECIFIED
     )
   return None
+
+
+def CreateCustomClaimsList(
+    claims: list[str] | None,
+) -> 'apis.GetMessagesModule("iam", "v1").CustomClaimsList | None':
+  """Wraps the parsed --allowed-custom-claims values in a CustomClaimsList.
+
+  The flag maps to the `allowedCustomClaims` field (a member of the
+  `custom_claims_config` oneof) rather than to `allowedCustomClaims.claims`, so
+  that the update mask names the oneof member itself. Masking the nested
+  `claims` sub-field is not applied by the server when the OAuth client has no
+  allowed custom claims configured yet.
+
+  Args:
+    claims: list of custom claim keys parsed from the flag, or None.
+
+  Returns:
+    A CustomClaimsList message containing the claims, or None if no claims were
+    specified.
+  """
+  if claims is None:
+    return None
+  messages = apis.GetMessagesModule('iam', 'v1')
+  return messages.CustomClaimsList(claims=claims)
+
+
+def ClearUserType(
+    flag_value: bool,
+) -> 'apis.GetMessagesModule("iam", "v1").OauthClient.UserTypeValueValuesEnum | None':
+  """Clears the OAuth client user type by setting it to USER_TYPE_UNSPECIFIED.
+
+  Args:
+    flag_value: bool, if True, returns the USER_TYPE_UNSPECIFIED enum.
+
+  Returns:
+    USER_TYPE_UNSPECIFIED if flag_value is True, else None.
+  """
+  if flag_value:
+    messages = apis.GetMessagesModule('iam', 'v1')
+    return messages.OauthClient.UserTypeValueValuesEnum.USER_TYPE_UNSPECIFIED
+  return None
+
+
+def ArgList(
+    min_length: int | str = 0, max_length: int | str | None = None
+) -> arg_parsers.ArgList:
+  """Returns an ArgList type with length bounds for use in declarative YAML.
+
+  Arguments given to a YAML type hook
+  (`type: ...hooks:ArgList:min_length=1,max_length=100`) are passed as strings,
+  while arg_parsers.ArgList expects integers.
+
+  Args:
+    min_length: The minimum number of list elements.
+    max_length: The maximum number of list elements, or None for no limit.
+
+  Returns:
+    An arg_parsers.ArgList that rejects lists outside the given bounds.
+  """
+  return arg_parsers.ArgList(
+      min_length=int(min_length),
+      max_length=int(max_length) if max_length is not None else None,
+  )

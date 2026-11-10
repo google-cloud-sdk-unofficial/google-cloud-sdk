@@ -1,0 +1,95 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1alpha ManagedInstanceGroup export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- computeId
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  additionalDisks:
+    description: |-
+      Additional disks for the managed instance group. Each VM of the MIG will
+      have its own clone of each disk described in the additional_disks map. The
+      disks themselves live as long as the MIG and if a VM is replaced by a new
+      VM of the same name then the replacement VM attaches to the same disks as
+      the VM it replaced. Each disk has a custom device name matching the key in
+      the map.
+    $ref: AdditionalDisksValue.yaml
+  bootDisk:
+    description: Boot disk for the managed instance group.
+    $ref: BootDisk.yaml
+  computeId:
+    description: |-
+      ID of the compute resource used to create this managed instance group.
+    type: string
+  enableOsLogin:
+    description: |-
+      Whether [OS Login](https://cloud.google.com/compute/docs/oslogin) should
+      be enabled on instances in this managed instance group.
+    type: boolean
+  enablePublicIps:
+    description: |-
+      Whether to enable public IPs for the instances in the managed instance
+      group.
+    type: boolean
+  labels:
+    description: |-
+      [Labels](https://cloud.google.com/compute/docs/labeling- resources) that
+      should be applied to each VM instance in the managed instance group.
+    $ref: LabelsValue.yaml
+  metadata:
+    description: |-
+      Custom [metadata](https://cloud.google.com/compute/docs/metadata/overview)
+      key- value pairs to be applied to each VM instance in the managed instance
+      group.
+    $ref: MetadataValue.yaml
+  resourcePolicyConfig:
+    description: Resource policy configuration for this managed instance group.
+    $ref: ResourcePolicyConfig.yaml
+  serviceAccount:
+    description: |-
+      Immutable. Service account to be used by the instances in the managed
+      instance group.
+    $ref: ServiceAccount.yaml
+  startupScript:
+    description: Startup script to be run on each VM instance in the nodeset.
+    type: string
+  startupScriptTimeout:
+    description: |-
+      The maximum time to wait for the startup script to complete. If the script
+      exceeds this duration, the instance setup will be considered failed. This
+      value must be positive. If this value is unset, a default timeout of 5
+      minutes (300 seconds) will be used by the system.
+    type: string
+  storageConfigs:
+    description: |-
+      How storage resources should be mounted on each instance in this managed
+      instance group.
+    type: array
+    items:
+      $ref: StorageConfig.yaml
+  targetSize:
+    description: |-
+      Target number of running instances for this managed instance group.
+    type: integer

@@ -1,0 +1,73 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1 SlurmOrchestrator export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- loginNodes
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  defaultPartition:
+    description: |-
+      Default partition to use for submitted jobs that do not explicitly specify
+      a partition. Required if and only if there is more than one partition, in
+      which case it must match the id of one of the partitions.
+    type: string
+  epilogBashScripts:
+    description: |-
+      Slurm [epilog scripts](https://slurm.schedmd.com/prolog_epilog.html),
+      which will be executed by compute nodes whenever a node finishes running a
+      job. Values must not be empty.
+    type: array
+    items:
+      type: string
+  loginNodes:
+    description: |-
+      Configuration for login nodes, which allow users to access the cluster
+      over SSH.
+    $ref: SlurmLoginNodes.yaml
+  nodeSets:
+    description: |-
+      Compute resource configuration for the Slurm nodesets in your cluster.
+      If not specified, the cluster won't create any nodes.
+    type: array
+    items:
+      $ref: SlurmNodeSet.yaml
+  partitions:
+    description: |-
+      Configuration for the Slurm partitions in your cluster. Each
+      partition can contain one or more nodesets, and you can submit
+      separate jobs on each partition. If you don't specify at least one
+      partition in your cluster, you can't submit jobs to the cluster.
+    type: array
+    items:
+      $ref: SlurmPartition.yaml
+  prologBashScripts:
+    description: |-
+      Slurm [prolog
+      scripts](https://slurm.schedmd.com/prolog_epilog.html), which
+      will be executed by compute nodes before a node begins running
+      a new job. Values must not be empty.
+    type: array
+    items:
+      type: string

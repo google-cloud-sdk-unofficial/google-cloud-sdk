@@ -750,12 +750,15 @@ class AccesscontextmanagerOrganizationsGcpUserAccessBindingsListRequest(_message
   object.
 
   Fields:
-    filter: Optional. The literal filter to apply to the results returned. See
-      https://google.aip.dev/160 for more details. Accepts values: *
-      `principal:group_key` * `principal:service_account` OR
-      `principal:service_account_project_number` *
-      `principal:federated_principal`. If this field is empty or not one of
-      the above, the default value is `"principal:group_key"`.
+    filter: Optional. Filters the results by principal type. Uses the
+      [AIP-160](https://google.aip.dev/160) filter syntax. Only the following
+      filters are supported: * `principal:group_key`: bindings for groups.
+      This is the default when the filter is empty. *
+      `principal:service_account OR principal:service_account_project_number`:
+      bindings for service accounts. * `principal:federated_principal`:
+      bindings for federated principals. Values can be in snake_case or
+      camelCase. Whitespace and the order of `OR` terms don't matter. Any
+      other filter returns an `INVALID_ARGUMENT` error.
     pageSize: Optional. Maximum number of items to return. The server may
       return fewer items. If left blank, the server may return any number of
       items.

@@ -513,6 +513,14 @@ def _MakeSlurmNodeSet(
         node_set.get("config"), message_module.SlurmNodeConfig
     )
 
+  resource_policy_config = node_set.get("resourcePolicyConfig")
+  if resource_policy_config and hasattr(message_module, "ResourcePolicyConfig"):
+    slurm_node_set.resourcePolicyConfig = (
+        messages_util.DictToMessageWithErrorCheck(
+            resource_policy_config, message_module.ResourcePolicyConfig
+        )
+    )
+
   return slurm_node_set
 
 
@@ -664,6 +672,32 @@ def _PatchBootDiskForNodeSet(
     )
   else:
     existing_node_set.computeInstance.bootDisk = boot_disk
+
+
+def _PatchResourcePolicyConfigForNodeSet(
+    message_module, *, existing_node_set, resource_policy_config_patch
+):
+  """Patches the resourcePolicyConfig of a SlurmNodeSet.
+
+  An empty patch clears the resourcePolicyConfig. Otherwise, the specified
+  fields are merged into the existing resourcePolicyConfig, and fields set to
+  an empty value are cleared.
+
+  Args:
+    message_module: The API messages module.
+    existing_node_set: The SlurmNodeSet message to patch in place.
+    resource_policy_config_patch: The parsed resourcePolicyConfig flag value.
+  """
+  if not resource_policy_config_patch:
+    existing_node_set.resourcePolicyConfig = None
+    return
+  resource_policy_config = (
+      existing_node_set.resourcePolicyConfig
+      or message_module.ResourcePolicyConfig()
+  )
+  for key, value in resource_policy_config_patch.items():
+    setattr(resource_policy_config, key, value or None)
+  existing_node_set.resourcePolicyConfig = resource_policy_config
 
 
 def MakeClusterSlurmOrchestratorPatch(
@@ -843,6 +877,13 @@ def MakeClusterSlurmOrchestratorPatch(
             for k, v in node_config.items():
               if hasattr(existing_node_set.config, k):
                 setattr(existing_node_set.config, k, v if v else None)
+
+      if "resourcePolicyConfig" in node_set:
+        _PatchResourcePolicyConfigForNodeSet(
+            message_module,
+            existing_node_set=existing_node_set,
+            resource_policy_config_patch=node_set.get("resourcePolicyConfig"),
+        )
 
       slurm_node_sets[node_set_id] = existing_node_set
       is_node_sets_updated = True
@@ -1286,6 +1327,7 @@ def _MakeManagedInstanceGroup(
       targetSize=mig.get("targetSize"),
       enablePublicIps=mig.get("enablePublicIps"),
       startupScript=_GetBashScript(mig.get("startupScript")),
+      startupScriptTimeout=mig.get("startupScriptTimeout") or None,
       storageConfigs=storage_configs,
   )
   if mig.get("acceleratorTopology"):
@@ -1449,6 +1491,10 @@ def MakeClusterComputeEngineOrchestratorPatch(
         existing_mig.enablePublicIps = mig.get("enablePublicIps")
       if "startupScript" in mig:
         existing_mig.startupScript = _GetBashScript(mig.get("startupScript"))
+      if "startupScriptTimeout" in mig:
+        existing_mig.startupScriptTimeout = (
+            mig.get("startupScriptTimeout") or None
+        )
       if "acceleratorTopology" in mig:
         if not existing_mig.resourcePolicyConfig:
           existing_mig.resourcePolicyConfig = (

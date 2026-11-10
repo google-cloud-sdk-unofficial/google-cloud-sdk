@@ -31,6 +31,9 @@ from googlecloudsdk.command_lib.util import crc32c
 from googlecloudsdk.core import log
 
 _READ_CHUNK_SIZE = 64 * 1024
+# Directory, next to the deployed versions of a pipeline, where its runs write
+# their output artifacts.
+_OUTPUT_ARTIFACTS_DIRECTORY = "outputs"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -64,13 +67,22 @@ def BuildVersionedArtifactPrefix(
   Returns:
     The joined GCS object prefix without leading or trailing slashes.
   """
-  prefix_segments = (
-      path_prefix.strip("/"),
-      "pipelines",
-      pipeline_id,
-      version_id,
+  return _BuildPipelineObjectPrefix(pipeline_id, version_id, path_prefix)
+
+
+def BuildOutputArtifactPrefix(pipeline_id: str, path_prefix: str = "") -> str:
+  """Returns the GCS object prefix where runs of `pipeline_id` write outputs.
+
+  Args:
+    pipeline_id: The pipeline identifier.
+    path_prefix: Optional leading object prefix from `deployment.yaml`.
+
+  Returns:
+    The joined GCS object prefix without leading or trailing slashes.
+  """
+  return _BuildPipelineObjectPrefix(
+      pipeline_id, _OUTPUT_ARTIFACTS_DIRECTORY, path_prefix
   )
-  return "/".join(segment for segment in prefix_segments if segment)
 
 
 class GcsClient:
@@ -177,6 +189,19 @@ class GcsClient:
       )
     log.info("Skipping %s: it already exists with the same content.", gcs_uri)
     return existing
+
+
+def _BuildPipelineObjectPrefix(
+    pipeline_id: str, directory: str, path_prefix: str
+) -> str:
+  """Joins `[<path_prefix>/]pipelines/<pipeline_id>/<directory>`."""
+  prefix_segments = (
+      path_prefix.strip("/"),
+      "pipelines",
+      pipeline_id,
+      directory,
+  )
+  return "/".join(segment for segment in prefix_segments if segment)
 
 
 def _ParseGcsUri(gcs_uri: str) -> storage_util.ObjectReference:

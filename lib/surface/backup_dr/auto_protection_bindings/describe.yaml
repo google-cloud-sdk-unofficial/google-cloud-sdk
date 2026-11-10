@@ -1,4 +1,6 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Describe a Backup and DR auto-protection binding.
@@ -9,6 +11,8 @@
         $ {command} my-binding-id --auto-protection-policy=my-auto-protection-policy --location=us-central1
 
   request:
+    GA:
+      api_version: v1
     ALPHA:
       api_version: v1alpha
     BETA:

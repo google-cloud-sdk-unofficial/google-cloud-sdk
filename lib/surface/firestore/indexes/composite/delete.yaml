@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: Delete the given composite index.
     description: Delete the given composite index.

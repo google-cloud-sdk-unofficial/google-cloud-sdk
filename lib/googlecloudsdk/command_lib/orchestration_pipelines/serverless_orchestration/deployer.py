@@ -15,26 +15,46 @@
 """Deployer for Serverless Orchestration API pipelines."""
 
 import argparse
-from collections.abc import Sequence
+from collections.abc import Iterator, Mapping, Sequence
+import contextlib
 import dataclasses
 import datetime
+import itertools
 import pathlib
 from typing import Any
+import uuid
 
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration import errors
+from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration import pipeline_compiler
 from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration import pipeline_loader
 from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration.clients import gcs_client
+from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration.clients import orchestration_client
 from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration.packagers import dbt
 from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration.packagers import models
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
+
+# `Pipeline` fields that `pipeline_compiler.CompilePipeline` owns; listing them
+# clears any the new body omits.
+_PIPELINE_UPDATE_MASK = "spec,execution_identity,output_artifact_storage"
 
 
 @dataclasses.dataclass(frozen=True)
 class DeployResult:
-  """Result of deploying a Serverless Orchestration pipeline."""
+  """Result of deploying a Serverless Orchestration pipeline.
+
+  Attributes:
+    pipeline_name: `projects/*/locations/*/pipelines/*` name of the pipeline.
+    version_id: Version ID of this deployment (`vYYYYmmdd-HHMMSS`).
+    artifacts: `gs://` URIs of the artifacts uploaded for all actions.
+    operation: Name of the create or update long-running operation, or None if
+      the API response omits it.
+    status: `SUCCEEDED` once the operation completed; `PENDING` with `--async`
+      or when the wait was interrupted.
+  """
 
   pipeline_name: str
   version_id: str
@@ -79,6 +99,7 @@ def Deploy(
     *,
     packager: dbt.DbtPackager | None = None,
     storage_client: gcs_client.GcsClient | None = None,
+    api_client: orchestration_client.OrchestrationClient | None = None,
 ) -> dict[str, Any]:
   """Packages local action artifacts, uploads them, and deploys the pipeline.
 
@@ -86,6 +107,7 @@ def Deploy(
     args: The parsed command-line arguments.
     packager: Optional dbt packager (injected in tests).
     storage_client: Optional Cloud Storage client (injected in tests).
+    api_client: Optional Orchestration service client (injected in tests).
 
   Returns:
     The deployment result as a dict (see `DeployResult`).
@@ -94,27 +116,21 @@ def Deploy(
     calliope_exceptions.InvalidArgumentException: If a Cloud Composer-only
       `deploy` flag is set.
     errors.PipelineLoadError: If the pipeline YAML cannot be loaded.
-    errors.PackagingError: If the dbt project cannot be packaged.
+    errors.PackagingError: If a dbt project cannot be packaged.
     errors.UploadError: If an artifact upload fails.
-    errors.NotImplementedYetError: Until the rest of the deployment flow is
-      implemented.
+    errors.OrchestrationApiError: If an Orchestration API call fails.
+    errors.PipelineCompileError: If pipeline compilation fails.
   """
   _VerifyComposerOnlyFlagsAreUnset(args)
   loaded_pipeline = pipeline_loader.LoadPipeline(args)
-  version_id = _GenerateVersionId()
-  packager = packager or dbt.DbtPackager()
-  storage_client = storage_client or gcs_client.GcsClient()
-
-  uploaded_artifacts_by_action = _PackageAndUploadActions(
-      loaded_pipeline, version_id, packager, storage_client
-  )
-  # TODO(b/567520802): pipeline_compiler.CompilePipeline ->
-  # clients.orchestration_client.OrchestrationClient Create/UpdatePipeline ->
-  # DeployResult.
-  del uploaded_artifacts_by_action
-  raise errors.NotImplementedYetError(
-      "Serverless Orchestration pipeline compilation is not yet implemented."
-  )
+  with _UseProjectForApiCalls(loaded_pipeline.project):
+    return _DeployLoadedPipeline(
+        args,
+        loaded_pipeline,
+        packager or dbt.DbtPackager(),
+        storage_client or gcs_client.GcsClient(),
+        api_client or orchestration_client.OrchestrationClient(),
+    )
 
 
 def _GetRunnerFieldsFromPipelineFiles(
@@ -160,7 +176,8 @@ def _VerifyComposerOnlyFlagsAreUnset(args: argparse.Namespace) -> None:
       "--rollback": args.rollback,
       "--version": args.version,
       "--local": args.local,
-      "--paused": args.paused,
+      # `--no-paused` sets `paused` to False, so only None means it is unset.
+      "--paused": args.paused is not None,
   }
   for flag_name, flag_value in composer_only_flag_values.items():
     if flag_value:
@@ -169,6 +186,52 @@ def _VerifyComposerOnlyFlagsAreUnset(args: argparse.Namespace) -> None:
           "This flag is not supported for `runner: orchestration_service`"
           " pipelines.",
       )
+
+
+@contextlib.contextmanager
+def _UseProjectForApiCalls(project: str) -> Iterator[None]:
+  """Sets `core/project` to `project` inside the block, over `--project`."""
+  # An invocation value outranks `--project`, whereas `Property.Set()` only
+  # sets an environment variable. `billing/quota_project` is left as is: its
+  # `CURRENT_PROJECT` default already makes `core/project` the quota project
+  # for user credentials, and an explicit `--billing-project` still applies.
+  properties.VALUES.PushInvocationValues()
+  try:
+    properties.VALUES.SetInvocationValue(
+        properties.VALUES.core.project, project, None
+    )
+    yield
+  finally:
+    properties.VALUES.PopInvocationValues()
+
+
+def _DeployLoadedPipeline(
+    args: argparse.Namespace,
+    loaded_pipeline: pipeline_loader.LoadedPipeline,
+    packager: dbt.DbtPackager,
+    storage_client: gcs_client.GcsClient,
+    api_client: orchestration_client.OrchestrationClient,
+) -> dict[str, Any]:
+  """Packages and uploads `loaded_pipeline`, then creates or updates it."""
+  pipeline_name = pipeline_compiler.BuildPipelineResourceName(loaded_pipeline)
+  # Looked up first so auth and IAM errors surface before anything is uploaded.
+  existing_pipeline = api_client.GetPipeline(pipeline_name)
+  version_id = _GenerateVersionId()
+  uploaded_artifacts_by_action = _PackageAndUploadActions(
+      loaded_pipeline, version_id, packager, storage_client
+  )
+  compiled_pipeline = pipeline_compiler.CompilePipeline(
+      loaded_pipeline, uploaded_artifacts_by_action, version_id
+  )
+  operation = _CreateOrUpdatePipeline(
+      api_client, compiled_pipeline, update=existing_pipeline is not None
+  )
+  status = _WaitForDeployment(
+      api_client, compiled_pipeline.pipeline_id, operation, args.async_
+  )
+  return _BuildDeployResult(
+      compiled_pipeline, uploaded_artifacts_by_action, operation, status
+  )
 
 
 def _GenerateVersionId() -> str:
@@ -237,3 +300,75 @@ def _UploadPackagedArtifacts(
         )
     )
   return uploaded_artifacts_by_action
+
+
+def _CreateOrUpdatePipeline(
+    api_client: orchestration_client.OrchestrationClient,
+    compiled_pipeline: pipeline_compiler.CompiledPipeline,
+    update: bool,
+) -> Mapping[str, Any]:
+  """Creates or updates `compiled_pipeline` and returns the LRO."""
+  log.status.Print(f"Deploying pipeline '{compiled_pipeline.pipeline_id}'...")
+  # Lets the API ignore a duplicate of this request if the first one timed out.
+  request_id = str(uuid.uuid4())
+  if update:
+    return api_client.UpdatePipeline(
+        name=compiled_pipeline.name,
+        body=compiled_pipeline.body,
+        update_mask=_PIPELINE_UPDATE_MASK,
+        request_id=request_id,
+    )
+  return api_client.CreatePipeline(
+      parent=compiled_pipeline.parent,
+      pipeline_id=compiled_pipeline.pipeline_id,
+      body=compiled_pipeline.body,
+      request_id=request_id,
+  )
+
+
+def _WaitForDeployment(
+    api_client: orchestration_client.OrchestrationClient,
+    pipeline_id: str,
+    operation: Mapping[str, Any],
+    async_: bool,
+) -> str:
+  """Waits for `operation` unless `async_`; returns `DeployResult.status`."""
+  operation_name = operation.get("name")
+  if async_:
+    log.status.Print(
+        f"Deployment of pipeline '{pipeline_id}' started (operation"
+        f" {operation_name}). Exiting due to --async flag."
+    )
+    return "PENDING"
+  try:
+    api_client.WaitOperation(operation)
+  except KeyboardInterrupt:
+    log.status.Print(
+        f"Interrupted; the deployment of pipeline '{pipeline_id}' continues in"
+        f" the background (operation {operation_name})."
+    )
+    return "PENDING"
+  return "SUCCEEDED"
+
+
+def _BuildDeployResult(
+    compiled_pipeline: pipeline_compiler.CompiledPipeline,
+    uploaded_artifacts_by_action: Mapping[
+        str, Sequence[gcs_client.UploadedArtifact]
+    ],
+    operation: Mapping[str, Any],
+    status: str,
+) -> dict[str, Any]:
+  """Builds the `DeployResult` dict returned by the `deploy` command."""
+  uploaded_artifacts = itertools.chain.from_iterable(
+      uploaded_artifacts_by_action.values()
+  )
+  return dataclasses.asdict(
+      DeployResult(
+          pipeline_name=compiled_pipeline.name,
+          version_id=compiled_pipeline.version_id,
+          artifacts=tuple(artifact.gcs_uri for artifact in uploaded_artifacts),
+          operation=operation.get("name"),
+          status=status,
+      )
+  )

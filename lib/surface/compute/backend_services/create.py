@@ -135,6 +135,7 @@ class CreateHelper(object):
       support_external_passthrough,
       support_iap_alpha=False,
       support_connect_timeout=False,
+      support_network_attachment=False,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -222,6 +223,8 @@ class CreateHelper(object):
     flags.AddZonalAffinity(parser)
     if support_allow_multinetwork:
       flags.AddAllowMultinetwork(parser)
+    if support_network_attachment:
+      flags.AddNetworkAttachmentGroup(parser)
     flags.AddResourceManagerTags(parser)
     flags.AddHaPolicyCreateFlags(parser)
 
@@ -233,6 +236,7 @@ class CreateHelper(object):
       support_forward_proxy,
       support_allow_multinetwork,
       support_external_passthrough,
+      support_network_attachment=False,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_ip_port_dynamic_forwarding = (
@@ -242,10 +246,18 @@ class CreateHelper(object):
     self._support_allow_multinetwork = support_allow_multinetwork
     self._release_track = release_track
     self._support_external_passthrough = support_external_passthrough
+    self._support_network_attachment = support_network_attachment
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
 
+    if self._support_network_attachment:
+      if args.IsSpecified('network_attachment'):
+        raise exceptions.BadArgumentException(
+            '--network-attachment',
+            '[--network-attachment] may not be specified for global backend'
+            ' services.',
+        )
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.RequiredArgumentException(
           '--region', 'Must specify --region for internal load balancer.')
@@ -481,6 +493,25 @@ class CreateHelper(object):
     if args.port_name is not None:
       backend_service.portName = args.port_name
 
+    if self._support_network_attachment:
+      if args.IsSpecified('network_attachment'):
+        if args.IsSpecified('network'):
+          raise exceptions.InvalidArgumentException(
+              '--network-attachment',
+              '--network-attachment cannot be specified with --network.',
+          )
+        network_attachment_ref = holder.resources.Parse(
+            args.network_attachment,
+            collection='compute.networkAttachments',
+            params={
+                'project': backend_services_ref.project,
+                'region': backend_services_ref.region,
+            },
+        )
+        backend_service.networkAttachment = network_attachment_ref.SelfLink()
+      if args.IsSpecified('service_class_id'):
+        backend_service.serviceClassId = args.service_class_id
+
     if args.IsSpecified('network'):
       backend_service.network = flags.NETWORK_ARG.ResolveAsResource(
           args, holder.resources).SelfLink()
@@ -685,6 +716,7 @@ class CreateGA(base.CreateCommand):
   _support_external_passthrough = False
   _support_iap_alpha = False
   _support_connect_timeout = False
+  _support_network_attachment = False
 
   @classmethod
   def Args(cls, parser):
@@ -697,6 +729,7 @@ class CreateGA(base.CreateCommand):
         support_external_passthrough=cls._support_external_passthrough,
         support_iap_alpha=cls._support_iap_alpha,
         support_connect_timeout=cls._support_connect_timeout,
+        support_network_attachment=cls._support_network_attachment,
     )
 
   def Run(self, args):
@@ -710,6 +743,7 @@ class CreateGA(base.CreateCommand):
         support_allow_multinetwork=self._support_allow_multinetwork,
         release_track=self.ReleaseTrack(),
         support_external_passthrough=self._support_external_passthrough,
+        support_network_attachment=self._support_network_attachment,
     ).Run(args, holder)
 
 
@@ -737,6 +771,7 @@ class CreateBeta(CreateGA):
   _support_allow_multinetwork = False
   _support_external_passthrough = True
   _support_connect_timeout = True
+  _support_network_attachment = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -763,3 +798,4 @@ class CreateAlpha(CreateBeta):
   _support_allow_multinetwork = True
   _support_external_passthrough = True
   _support_iap_alpha = True
+  _support_network_attachment = True

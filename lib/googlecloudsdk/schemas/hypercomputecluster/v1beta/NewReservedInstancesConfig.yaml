@@ -1,0 +1,53 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: hypercomputecluster v1beta NewReservedInstancesConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  networkTags:
+    description: |-
+      Immutable. A list of network tags to attach to the VM instances. A maximum
+      of 64 network tags are allowed.
+    type: array
+    items:
+      type: string
+  reservation:
+    description: |-
+      Immutable. Name of the reservation from which VM instances should be
+      created, in the format
+      `projects/{project}/zones/{zone}/reservations/{reservation}`.
+    type: string
+  reservationBlock:
+    description: |-
+      Immutable. Name of the reservation block from which VM instances
+      should be created, in the format `projects/{project}/ zones/{zone}/res
+      ervations/{reservation}/reservationBlocks/{reservation_b lock}`.
+    type: string
+  reservationSubBlock:
+    description: |-
+      Immutable. Name of the reservation sub block from which VM instances
+      should be created, in the format `projects /{project}/zones/{zone}/res
+      ervations/{reservation}/reservationBlocks/{re
+      servation_block}/reservationSubBlocks/{reservation_sub_block}`.
+    type: string

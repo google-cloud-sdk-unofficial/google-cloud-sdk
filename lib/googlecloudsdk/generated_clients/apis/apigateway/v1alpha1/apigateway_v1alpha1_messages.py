@@ -545,6 +545,9 @@ class ApigatewayGateway(_messages.Message):
     LabelsValue: Optional. Resource labels to represent user-provided
       metadata. Refer to cloud documentation on labels for more details.
       https://cloud.google.com/compute/docs/labeling-resources
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to the Gateway resource. For example: `"123/environment": "production"`,
+      `"123/costCenter": "marketing"`
 
   Fields:
     apiConfig: Required. Resource name of the API Config for this Gateway.
@@ -570,6 +573,9 @@ class ApigatewayGateway(_messages.Message):
       selects the mode. This field records only what was requested and is
       never modified by the service; read `effective_streaming_mode` for the
       mode the gateway is served with.
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      the Gateway resource. For example: `"123/environment": "production"`,
+      `"123/costCenter": "marketing"`
     uniqueId: Output only. The unique resource ID.
     updateTime: Output only. Updated time.
   """
@@ -667,6 +673,32 @@ class ApigatewayGateway(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to the
+    Gateway resource. For example: `"123/environment": "production"`,
+    `"123/costCenter": "marketing"`
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   apiConfig = _messages.StringField(1)
   createTime = _messages.StringField(2)
   defaultHostname = _messages.StringField(3)
@@ -676,8 +708,9 @@ class ApigatewayGateway(_messages.Message):
   name = _messages.StringField(7)
   state = _messages.EnumField('StateValueValuesEnum', 8)
   streamingMode = _messages.EnumField('StreamingModeValueValuesEnum', 9)
-  uniqueId = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
+  tags = _messages.MessageField('TagsValue', 10)
+  uniqueId = _messages.StringField(11)
+  updateTime = _messages.StringField(12)
 
 
 class ApigatewayGatewayConfig(_messages.Message):

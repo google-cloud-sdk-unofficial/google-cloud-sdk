@@ -296,10 +296,27 @@ def AddDescribeWorkloadFlags(
   AddWorkloadResourceArgToParser(parser, verb='describe')
 
 
+def AddViolationViewFlag(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds the --view flag to assured workloads violations commands."""
+  arg_utils.ChoiceEnumMapper(
+      '--view',
+      message_util.GetViolationViewEnum(),
+      custom_mappings=message_util.VIOLATION_VIEW_CUSTOM_MAPPINGS,
+      hidden=True,
+      help_str=(
+          'The violation view for fetching or acknowledging Assured Workloads'
+          ' violations. Defaults to `assured-workloads`.'
+      ),
+  ).choice_arg.AddToParser(parser)
+
+
 def AddDescribeViolationFlags(
     parser: parser_arguments.ArgumentInterceptor,
 ) -> None:
   AddViolationResourceArgToParser(parser, verb='describe')
+  AddViolationViewFlag(parser)
 
 
 def AddEnableResourceMonitoringFlags(
@@ -390,6 +407,7 @@ def AddListViolationsFlags(
           'provided as workload ID.'
       ),
   )
+  AddViolationViewFlag(parser)
 
 
 def AddAcknowledgeViolationsFlags(
@@ -409,6 +427,7 @@ def AddAcknowledgeViolationsFlags(
       EXISTING_CHILD_RESOURCE_VIOLATIONS - to acknowledge specified org policy
       violation and all associated child resource violations.""",
   )
+  AddViolationViewFlag(parser)
 
 
 def AddCreateWorkloadV2Flags(
@@ -1283,3 +1302,112 @@ def AddUnifiedDeleteWorkloadFlags(
       help='The etag acquired by reading the Assured Workloads environment.',
   )
   calliope_base.ASYNC_FLAG.AddToParser(parser)
+
+
+def AddDataBoundaryLocationResourceArg(
+    parser: parser_arguments.ArgumentInterceptor,
+    verb: str,
+) -> None:
+  """Adds an organization scoped `--location` resource argument."""
+  concept_parsers.ConceptParser.ForResource(
+      '--location',
+      resource_args.GetDataBoundaryLocationResourceSpec(),
+      'The Data Boundary location {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+def AddComplianceReportResourceArg(
+    parser: parser_arguments.ArgumentInterceptor,
+    verb: str,
+    positional: bool = True,
+) -> None:
+  """Adds an organization scoped compliance report resource argument."""
+  concept_parsers.ConceptParser.ForResource(
+      'compliance_report' if positional else '--compliance-report',
+      resource_args.GetComplianceReportResourceSpec(),
+      'The Data Boundary framework compliance report {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+def AddListFrameworkComplianceSummariesFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds flags for listing framework compliance summaries.
+
+  Args:
+    parser: The argparse parser to add the flags to.
+  """
+  AddDataBoundaryLocationResourceArg(
+      parser, 'to list framework compliance summaries for'
+  )
+  parser.add_argument(
+      '--view',
+      choices={
+          'basic': (
+              'Basic compliance metadata and control assessment details.'
+          ),
+          'full': 'All available information for each summary.',
+      },
+      help='The level of detail to return for each summary.',
+  )
+
+
+def AddListFindingSummariesFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds flags for listing finding summaries.
+
+  Args:
+    parser: The argparse parser to add the flags to.
+  """
+  AddDataBoundaryLocationResourceArg(parser, 'to list finding summaries for')
+
+
+def AddListControlComplianceSummariesFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds flags for listing control compliance summaries.
+
+  Args:
+    parser: The argparse parser to add the flags to.
+  """
+  AddComplianceReportResourceArg(
+      parser, 'to list control compliance summaries for', positional=False
+  )
+
+
+def AddDescribeComplianceReportFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds flags for describing a framework compliance report.
+
+  Args:
+    parser: The argparse parser to add the flags to.
+  """
+  AddComplianceReportResourceArg(parser, 'to describe')
+
+
+def AddAggregateComplianceReportFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds flags for aggregating a compliance report over a time interval."""
+  AddComplianceReportResourceArg(parser, 'to aggregate')
+  parser.add_argument(
+      '--start-time',
+      type=arg_parsers.Datetime.Parse,
+      help=(
+          'The start of the aggregation interval. Defaults to 30 days before '
+          '`--end-time`. See $ gcloud topic datetimes for information on time '
+          'formats.'
+      ),
+  )
+  parser.add_argument(
+      '--end-time',
+      type=arg_parsers.Datetime.Parse,
+      help=(
+          'The end of the aggregation interval. Defaults to the current time. '
+          'See $ gcloud topic datetimes for information on time formats.'
+      ),
+  )

@@ -968,6 +968,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_AGENTS_TASKS = (
+      'projects.locations.agents.tasks',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/agents/'
+              '{agentsId}/tasks/{tasksId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_APPS = (
       'projects.locations.apps',
       'projects/{projectsId}/locations/{locationsId}/apps/{appsId}',
@@ -2787,6 +2798,16 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/taskStores/'
               '{taskStoresId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_TASKS = (
+      'projects.locations.tasks',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/tasks/{tasksId}',
       },
       ['name'],
       True

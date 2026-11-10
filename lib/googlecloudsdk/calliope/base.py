@@ -378,12 +378,12 @@ FLATTEN_FLAG = Argument(
     type=arg_parsers.ArgList(),
     category=COMMONLY_USED_FLAGS,
     help="""\
-        Flatten _name_[] output resource slices in _KEY_ into separate records
+        Flatten output resource slices in _KEY_ into separate records
         for each item in each slice. Multiple keys and slices may be specified.
         This also flattens keys for *--format* and *--filter*. For example,
         *--flatten=abc.def* flattens *abc.def[].ghi* references to
         *abc.def.ghi*. A resource record containing *abc.def[]* with N elements
-        will expand to N records in the flattened output. This allows us to
+        will expand to N records in the flattened output. This allows you to
         specify what `resource-key` the `filter` will operate on. This flag
         interacts with other flags that are applied in this order: *--flatten*,
         *--sort-by*, *--filter*, *--limit*.""",
@@ -400,7 +400,7 @@ FORMAT_FLAG = Argument(
         and `core/format` both take precedence over `core/default_format`. The
         supported formats are limited to: `{0}`. For more details run $ gcloud
         topic formats. Run `$ gcloud config set --help` to see more information
-        about `core/format`""".format(
+        about `core/format`.""".format(
         '`, `'.join(resource_printer.SupportedFormats())
     ),
 )

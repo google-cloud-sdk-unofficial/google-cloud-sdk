@@ -18,6 +18,8 @@
 - release_tracks:
   - ALPHA
   auto_generated: false
+  hints:
+    read_only: false
   hidden: true
   help_text:
     brief: Add an Agent to an AI Application.

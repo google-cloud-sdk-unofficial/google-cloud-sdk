@@ -73,7 +73,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective ContainerThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective ContainerThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.containerthreatdetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterFoldersContainerThreatDetectionSettingsCalculateRequest) input message
@@ -110,7 +110,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective EventThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective EventThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterFoldersEventThreatDetectionSettingsCalculateRequest) input message
@@ -147,7 +147,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective RapidVulnerabilityDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective RapidVulnerabilityDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.rapidvulnerabilitydetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterFoldersRapidVulnerabilityDetectionSettingsCalculateRequest) input message
@@ -184,7 +184,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective SecurityHealthAnalyticsSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective SecurityHealthAnalyticsSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticssettings.calculate`.
 
       Args:
         request: (SecuritycenterFoldersSecurityHealthAnalyticsSettingsCalculateRequest) input message
@@ -221,7 +221,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective VirtualMachineThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective VirtualMachineThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.virtualmachinethreatdetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterFoldersVirtualMachineThreatDetectionSettingsCalculateRequest) input message
@@ -258,7 +258,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective WebSecurityScannerSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective WebSecurityScannerSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.websecurityscannersettings.calculate`.
 
       Args:
         request: (SecuritycenterFoldersWebSecurityScannerSettingsCalculateRequest) input message
@@ -295,7 +295,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def GetContainerThreatDetectionSettings(self, request, global_params=None):
-      r"""Get the ContainerThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetContainerThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateContainerThreatDetectionSettings for this purpose.
+      r"""Gets the ContainerThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetContainerThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateContainerThreatDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.containerthreatdetectionsettings.get`.
 
       Args:
         request: (SecuritycenterFoldersGetContainerThreatDetectionSettingsRequest) input message
@@ -322,7 +322,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetEventThreatDetectionSettings(self, request, global_params=None):
-      r"""Get the EventThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetEventThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateEventThreatDetectionSettings for this purpose.
+      r"""Gets the EventThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetEventThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateEventThreatDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectionsettings.get`.
 
       Args:
         request: (SecuritycenterFoldersGetEventThreatDetectionSettingsRequest) input message
@@ -349,7 +349,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetRapidVulnerabilityDetectionSettings(self, request, global_params=None):
-      r"""Get the RapidVulnerabilityDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetRapidVulnerabilityDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateRapidVulnerabilityDetectionSettings for this purpose.
+      r"""Gets the RapidVulnerabilityDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetRapidVulnerabilityDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateRapidVulnerabilityDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.rapidvulnerabilitydetectionsettings.get`.
 
       Args:
         request: (SecuritycenterFoldersGetRapidVulnerabilityDetectionSettingsRequest) input message
@@ -376,7 +376,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetSecurityCenterSettings(self, request, global_params=None):
-      r"""Get the SecurityCenterSettings resource.
+      r"""Gets the SecurityCenterSettings resource. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securitycentersettings.get`.
 
       Args:
         request: (SecuritycenterFoldersGetSecurityCenterSettingsRequest) input message
@@ -403,7 +403,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetSecurityHealthAnalyticsSettings(self, request, global_params=None):
-      r"""Get the SecurityHealthAnalyticsSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetSecurityHealthAnalyticsSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateSecurityHealthAnalyticsSettings for this purpose.
+      r"""Gets the SecurityHealthAnalyticsSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetSecurityHealthAnalyticsSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateSecurityHealthAnalyticsSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticssettings.get`.
 
       Args:
         request: (SecuritycenterFoldersGetSecurityHealthAnalyticsSettingsRequest) input message
@@ -430,7 +430,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetVirtualMachineThreatDetectionSettings(self, request, global_params=None):
-      r"""Get the VirtualMachineThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetVirtualMachineThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateVirtualMachineThreatDetectionSettings for this purpose.
+      r"""Gets the VirtualMachineThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetVirtualMachineThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateVirtualMachineThreatDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.virtualmachinethreatdetectionsettings.get`.
 
       Args:
         request: (SecuritycenterFoldersGetVirtualMachineThreatDetectionSettingsRequest) input message
@@ -457,7 +457,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetWebSecurityScannerSettings(self, request, global_params=None):
-      r"""Get the WebSecurityScannerSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetWebSecurityScannerSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateWebSecurityScannerSettings for this purpose.
+      r"""Gets the WebSecurityScannerSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetWebSecurityScannerSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateWebSecurityScannerSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.websecurityscannersettings.get`.
 
       Args:
         request: (SecuritycenterFoldersGetWebSecurityScannerSettingsRequest) input message
@@ -484,7 +484,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateContainerThreatDetectionSettings(self, request, global_params=None):
-      r"""Update the ContainerThreatDetectionSettings resource.
+      r"""Updates the ContainerThreatDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `container_threat_detection_settings.name` field: - `securitycenter.containerthreatdetectionsettings.update`.
 
       Args:
         request: (SecuritycenterFoldersUpdateContainerThreatDetectionSettingsRequest) input message
@@ -511,7 +511,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateEventThreatDetectionSettings(self, request, global_params=None):
-      r"""Update the EventThreatDetectionSettings resource.
+      r"""Updates the EventThreatDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `event_threat_detection_settings.name` field: - `securitycenter.eventthreatdetectionsettings.update`.
 
       Args:
         request: (SecuritycenterFoldersUpdateEventThreatDetectionSettingsRequest) input message
@@ -538,7 +538,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateRapidVulnerabilityDetectionSettings(self, request, global_params=None):
-      r"""Update the RapidVulnerabilityDetectionSettings resource.
+      r"""Updates the RapidVulnerabilityDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `rapid_vulnerability_detection_settings.name` field: - `securitycenter.rapidvulnerabilitydetectionsettings.update`.
 
       Args:
         request: (SecuritycenterFoldersUpdateRapidVulnerabilityDetectionSettingsRequest) input message
@@ -565,7 +565,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateSecurityHealthAnalyticsSettings(self, request, global_params=None):
-      r"""Update the SecurityHealthAnalyticsSettings resource.
+      r"""Updates the SecurityHealthAnalyticsSettings resource. # IAM Permissions Requires the following IAM permission on the `security_health_analytics_settings.name` field: - `securitycenter.securityhealthanalyticssettings.update`.
 
       Args:
         request: (SecuritycenterFoldersUpdateSecurityHealthAnalyticsSettingsRequest) input message
@@ -592,7 +592,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateVirtualMachineThreatDetectionSettings(self, request, global_params=None):
-      r"""Update the VirtualMachineThreatDetectionSettings resource.
+      r"""Updates the VirtualMachineThreatDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `virtual_machine_threat_detection_settings.name` field: - `securitycenter.virtualmachinethreatdetectionsettings.update`.
 
       Args:
         request: (SecuritycenterFoldersUpdateVirtualMachineThreatDetectionSettingsRequest) input message
@@ -619,7 +619,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateWebSecurityScannerSettings(self, request, global_params=None):
-      r"""Update the WebSecurityScannerSettings resource.
+      r"""Updates the WebSecurityScannerSettings resource. # IAM Permissions Requires the following IAM permission on the `web_security_scanner_settings.name` field: - `securitycenter.websecurityscannersettings.update`.
 
       Args:
         request: (SecuritycenterFoldersUpdateWebSecurityScannerSettingsRequest) input message
@@ -656,7 +656,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective ContainerThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective ContainerThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.containerthreatdetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterOrganizationsContainerThreatDetectionSettingsCalculateRequest) input message
@@ -693,7 +693,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective EventThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective EventThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterOrganizationsEventThreatDetectionSettingsCalculateRequest) input message
@@ -730,7 +730,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective RapidVulnerabilityDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective RapidVulnerabilityDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.rapidvulnerabilitydetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterOrganizationsRapidVulnerabilityDetectionSettingsCalculateRequest) input message
@@ -767,7 +767,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective SecurityHealthAnalyticsSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective SecurityHealthAnalyticsSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticssettings.calculate`.
 
       Args:
         request: (SecuritycenterOrganizationsSecurityHealthAnalyticsSettingsCalculateRequest) input message
@@ -804,7 +804,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective VirtualMachineThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective VirtualMachineThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.virtualmachinethreatdetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterOrganizationsVirtualMachineThreatDetectionSettingsCalculateRequest) input message
@@ -841,7 +841,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective WebSecurityScannerSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective WebSecurityScannerSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.websecurityscannersettings.calculate`.
 
       Args:
         request: (SecuritycenterOrganizationsWebSecurityScannerSettingsCalculateRequest) input message
@@ -878,7 +878,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def GetContainerThreatDetectionSettings(self, request, global_params=None):
-      r"""Get the ContainerThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetContainerThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateContainerThreatDetectionSettings for this purpose.
+      r"""Gets the ContainerThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetContainerThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateContainerThreatDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.containerthreatdetectionsettings.get`.
 
       Args:
         request: (SecuritycenterOrganizationsGetContainerThreatDetectionSettingsRequest) input message
@@ -905,7 +905,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetEventThreatDetectionSettings(self, request, global_params=None):
-      r"""Get the EventThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetEventThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateEventThreatDetectionSettings for this purpose.
+      r"""Gets the EventThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetEventThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateEventThreatDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectionsettings.get`.
 
       Args:
         request: (SecuritycenterOrganizationsGetEventThreatDetectionSettingsRequest) input message
@@ -932,7 +932,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetRapidVulnerabilityDetectionSettings(self, request, global_params=None):
-      r"""Get the RapidVulnerabilityDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetRapidVulnerabilityDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateRapidVulnerabilityDetectionSettings for this purpose.
+      r"""Gets the RapidVulnerabilityDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetRapidVulnerabilityDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateRapidVulnerabilityDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.rapidvulnerabilitydetectionsettings.get`.
 
       Args:
         request: (SecuritycenterOrganizationsGetRapidVulnerabilityDetectionSettingsRequest) input message
@@ -959,7 +959,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetSecurityCenterSettings(self, request, global_params=None):
-      r"""Get the SecurityCenterSettings resource.
+      r"""Gets the SecurityCenterSettings resource. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securitycentersettings.get`.
 
       Args:
         request: (SecuritycenterOrganizationsGetSecurityCenterSettingsRequest) input message
@@ -986,7 +986,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetSecurityHealthAnalyticsSettings(self, request, global_params=None):
-      r"""Get the SecurityHealthAnalyticsSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetSecurityHealthAnalyticsSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateSecurityHealthAnalyticsSettings for this purpose.
+      r"""Gets the SecurityHealthAnalyticsSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetSecurityHealthAnalyticsSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateSecurityHealthAnalyticsSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticssettings.get`.
 
       Args:
         request: (SecuritycenterOrganizationsGetSecurityHealthAnalyticsSettingsRequest) input message
@@ -1013,7 +1013,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetSubscription(self, request, global_params=None):
-      r"""Get the Subscription resource.
+      r"""Gets the Subscription resource. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.subscription.get`.
 
       Args:
         request: (SecuritycenterOrganizationsGetSubscriptionRequest) input message
@@ -1040,7 +1040,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetVirtualMachineThreatDetectionSettings(self, request, global_params=None):
-      r"""Get the VirtualMachineThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetVirtualMachineThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateVirtualMachineThreatDetectionSettings for this purpose.
+      r"""Gets the VirtualMachineThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetVirtualMachineThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateVirtualMachineThreatDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.virtualmachinethreatdetectionsettings.get`.
 
       Args:
         request: (SecuritycenterOrganizationsGetVirtualMachineThreatDetectionSettingsRequest) input message
@@ -1067,7 +1067,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetWebSecurityScannerSettings(self, request, global_params=None):
-      r"""Get the WebSecurityScannerSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetWebSecurityScannerSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateWebSecurityScannerSettings for this purpose.
+      r"""Gets the WebSecurityScannerSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetWebSecurityScannerSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateWebSecurityScannerSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.websecurityscannersettings.get`.
 
       Args:
         request: (SecuritycenterOrganizationsGetWebSecurityScannerSettingsRequest) input message
@@ -1094,7 +1094,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateContainerThreatDetectionSettings(self, request, global_params=None):
-      r"""Update the ContainerThreatDetectionSettings resource.
+      r"""Updates the ContainerThreatDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `container_threat_detection_settings.name` field: - `securitycenter.containerthreatdetectionsettings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsUpdateContainerThreatDetectionSettingsRequest) input message
@@ -1121,7 +1121,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateEventThreatDetectionSettings(self, request, global_params=None):
-      r"""Update the EventThreatDetectionSettings resource.
+      r"""Updates the EventThreatDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `event_threat_detection_settings.name` field: - `securitycenter.eventthreatdetectionsettings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsUpdateEventThreatDetectionSettingsRequest) input message
@@ -1148,7 +1148,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateRapidVulnerabilityDetectionSettings(self, request, global_params=None):
-      r"""Update the RapidVulnerabilityDetectionSettings resource.
+      r"""Updates the RapidVulnerabilityDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `rapid_vulnerability_detection_settings.name` field: - `securitycenter.rapidvulnerabilitydetectionsettings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsUpdateRapidVulnerabilityDetectionSettingsRequest) input message
@@ -1175,7 +1175,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateSecurityHealthAnalyticsSettings(self, request, global_params=None):
-      r"""Update the SecurityHealthAnalyticsSettings resource.
+      r"""Updates the SecurityHealthAnalyticsSettings resource. # IAM Permissions Requires the following IAM permission on the `security_health_analytics_settings.name` field: - `securitycenter.securityhealthanalyticssettings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsUpdateSecurityHealthAnalyticsSettingsRequest) input message
@@ -1202,7 +1202,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateVirtualMachineThreatDetectionSettings(self, request, global_params=None):
-      r"""Update the VirtualMachineThreatDetectionSettings resource.
+      r"""Updates the VirtualMachineThreatDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `virtual_machine_threat_detection_settings.name` field: - `securitycenter.virtualmachinethreatdetectionsettings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsUpdateVirtualMachineThreatDetectionSettingsRequest) input message
@@ -1229,7 +1229,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateWebSecurityScannerSettings(self, request, global_params=None):
-      r"""Update the WebSecurityScannerSettings resource.
+      r"""Updates the WebSecurityScannerSettings resource. # IAM Permissions Requires the following IAM permission on the `web_security_scanner_settings.name` field: - `securitycenter.websecurityscannersettings.update`.
 
       Args:
         request: (SecuritycenterOrganizationsUpdateWebSecurityScannerSettingsRequest) input message
@@ -1266,7 +1266,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective ContainerThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective ContainerThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.containerthreatdetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterProjectsContainerThreatDetectionSettingsCalculateRequest) input message
@@ -1303,7 +1303,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective EventThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective EventThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterProjectsEventThreatDetectionSettingsCalculateRequest) input message
@@ -1340,7 +1340,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective ContainerThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective ContainerThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.containerthreatdetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterProjectsLocationsClustersContainerThreatDetectionSettingsCalculateRequest) input message
@@ -1377,7 +1377,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def GetContainerThreatDetectionSettings(self, request, global_params=None):
-      r"""Get the ContainerThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetContainerThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateContainerThreatDetectionSettings for this purpose.
+      r"""Gets the ContainerThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetContainerThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateContainerThreatDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.containerthreatdetectionsettings.get`.
 
       Args:
         request: (SecuritycenterProjectsLocationsClustersGetContainerThreatDetectionSettingsRequest) input message
@@ -1404,7 +1404,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateContainerThreatDetectionSettings(self, request, global_params=None):
-      r"""Update the ContainerThreatDetectionSettings resource.
+      r"""Updates the ContainerThreatDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `container_threat_detection_settings.name` field: - `securitycenter.containerthreatdetectionsettings.update`.
 
       Args:
         request: (SecuritycenterProjectsLocationsClustersUpdateContainerThreatDetectionSettingsRequest) input message
@@ -1451,7 +1451,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective RapidVulnerabilityDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective RapidVulnerabilityDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.rapidvulnerabilitydetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterProjectsRapidVulnerabilityDetectionSettingsCalculateRequest) input message
@@ -1488,7 +1488,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective SecurityHealthAnalyticsSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective SecurityHealthAnalyticsSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticssettings.calculate`.
 
       Args:
         request: (SecuritycenterProjectsSecurityHealthAnalyticsSettingsCalculateRequest) input message
@@ -1525,7 +1525,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective VirtualMachineThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective VirtualMachineThreatDetectionSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.virtualmachinethreatdetectionsettings.calculate`.
 
       Args:
         request: (SecuritycenterProjectsVirtualMachineThreatDetectionSettingsCalculateRequest) input message
@@ -1562,7 +1562,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def Calculate(self, request, global_params=None):
-      r"""Calculates the effective WebSecurityScannerSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail.
+      r"""Calculates the effective WebSecurityScannerSettings based on its level in the resource hierarchy and its settings. Settings provided closer to the target resource take precedence over those further away (e.g. folder will override organization level settings). The default SCC setting for the detector service defaults can be overridden at organization, folder and project levels. No assumptions should be made about the SCC defaults as it is considered an internal implementation detail. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.websecurityscannersettings.calculate`.
 
       Args:
         request: (SecuritycenterProjectsWebSecurityScannerSettingsCalculateRequest) input message
@@ -1599,7 +1599,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
           }
 
     def GetContainerThreatDetectionSettings(self, request, global_params=None):
-      r"""Get the ContainerThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetContainerThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateContainerThreatDetectionSettings for this purpose.
+      r"""Gets the ContainerThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetContainerThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateContainerThreatDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.containerthreatdetectionsettings.get`.
 
       Args:
         request: (SecuritycenterProjectsGetContainerThreatDetectionSettingsRequest) input message
@@ -1626,7 +1626,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetEventThreatDetectionSettings(self, request, global_params=None):
-      r"""Get the EventThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetEventThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateEventThreatDetectionSettings for this purpose.
+      r"""Gets the EventThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetEventThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateEventThreatDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.eventthreatdetectionsettings.get`.
 
       Args:
         request: (SecuritycenterProjectsGetEventThreatDetectionSettingsRequest) input message
@@ -1653,7 +1653,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetRapidVulnerabilityDetectionSettings(self, request, global_params=None):
-      r"""Get the RapidVulnerabilityDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetRapidVulnerabilityDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateRapidVulnerabilityDetectionSettings for this purpose.
+      r"""Gets the RapidVulnerabilityDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetRapidVulnerabilityDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateRapidVulnerabilityDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.rapidvulnerabilitydetectionsettings.get`.
 
       Args:
         request: (SecuritycenterProjectsGetRapidVulnerabilityDetectionSettingsRequest) input message
@@ -1680,7 +1680,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetSecurityCenterSettings(self, request, global_params=None):
-      r"""Get the SecurityCenterSettings resource.
+      r"""Gets the SecurityCenterSettings resource. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securitycentersettings.get`.
 
       Args:
         request: (SecuritycenterProjectsGetSecurityCenterSettingsRequest) input message
@@ -1707,7 +1707,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetSecurityHealthAnalyticsSettings(self, request, global_params=None):
-      r"""Get the SecurityHealthAnalyticsSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetSecurityHealthAnalyticsSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateSecurityHealthAnalyticsSettings for this purpose.
+      r"""Gets the SecurityHealthAnalyticsSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetSecurityHealthAnalyticsSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateSecurityHealthAnalyticsSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.securityhealthanalyticssettings.get`.
 
       Args:
         request: (SecuritycenterProjectsGetSecurityHealthAnalyticsSettingsRequest) input message
@@ -1734,7 +1734,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetVirtualMachineThreatDetectionSettings(self, request, global_params=None):
-      r"""Get the VirtualMachineThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetVirtualMachineThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateVirtualMachineThreatDetectionSettings for this purpose.
+      r"""Gets the VirtualMachineThreatDetectionSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetVirtualMachineThreatDetectionSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateVirtualMachineThreatDetectionSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.virtualmachinethreatdetectionsettings.get`.
 
       Args:
         request: (SecuritycenterProjectsGetVirtualMachineThreatDetectionSettingsRequest) input message
@@ -1761,7 +1761,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def GetWebSecurityScannerSettings(self, request, global_params=None):
-      r"""Get the WebSecurityScannerSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetWebSecurityScannerSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateWebSecurityScannerSettings for this purpose.
+      r"""Gets the WebSecurityScannerSettings resource. In the returned settings response, a missing field only indicates that it was not explicitly set, so no assumption should be made about these fields. In other words, GetWebSecurityScannerSettings does not calculate the effective service settings for the resource, which accounts for inherited settings and defaults. Instead, use CalculateWebSecurityScannerSettings for this purpose. # IAM Permissions Requires the following IAM permission on the resource specified in the `name` field: - `securitycenter.websecurityscannersettings.get`.
 
       Args:
         request: (SecuritycenterProjectsGetWebSecurityScannerSettingsRequest) input message
@@ -1788,7 +1788,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateContainerThreatDetectionSettings(self, request, global_params=None):
-      r"""Update the ContainerThreatDetectionSettings resource.
+      r"""Updates the ContainerThreatDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `container_threat_detection_settings.name` field: - `securitycenter.containerthreatdetectionsettings.update`.
 
       Args:
         request: (SecuritycenterProjectsUpdateContainerThreatDetectionSettingsRequest) input message
@@ -1815,7 +1815,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateEventThreatDetectionSettings(self, request, global_params=None):
-      r"""Update the EventThreatDetectionSettings resource.
+      r"""Updates the EventThreatDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `event_threat_detection_settings.name` field: - `securitycenter.eventthreatdetectionsettings.update`.
 
       Args:
         request: (SecuritycenterProjectsUpdateEventThreatDetectionSettingsRequest) input message
@@ -1842,7 +1842,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateRapidVulnerabilityDetectionSettings(self, request, global_params=None):
-      r"""Update the RapidVulnerabilityDetectionSettings resource.
+      r"""Updates the RapidVulnerabilityDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `rapid_vulnerability_detection_settings.name` field: - `securitycenter.rapidvulnerabilitydetectionsettings.update`.
 
       Args:
         request: (SecuritycenterProjectsUpdateRapidVulnerabilityDetectionSettingsRequest) input message
@@ -1869,7 +1869,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateSecurityHealthAnalyticsSettings(self, request, global_params=None):
-      r"""Update the SecurityHealthAnalyticsSettings resource.
+      r"""Updates the SecurityHealthAnalyticsSettings resource. # IAM Permissions Requires the following IAM permission on the `security_health_analytics_settings.name` field: - `securitycenter.securityhealthanalyticssettings.update`.
 
       Args:
         request: (SecuritycenterProjectsUpdateSecurityHealthAnalyticsSettingsRequest) input message
@@ -1896,7 +1896,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateVirtualMachineThreatDetectionSettings(self, request, global_params=None):
-      r"""Update the VirtualMachineThreatDetectionSettings resource.
+      r"""Updates the VirtualMachineThreatDetectionSettings resource. # IAM Permissions Requires the following IAM permission on the `virtual_machine_threat_detection_settings.name` field: - `securitycenter.virtualmachinethreatdetectionsettings.update`.
 
       Args:
         request: (SecuritycenterProjectsUpdateVirtualMachineThreatDetectionSettingsRequest) input message
@@ -1923,7 +1923,7 @@ class SecuritycenterV1beta2(base_api.BaseApiClient):
     )
 
     def UpdateWebSecurityScannerSettings(self, request, global_params=None):
-      r"""Update the WebSecurityScannerSettings resource.
+      r"""Updates the WebSecurityScannerSettings resource. # IAM Permissions Requires the following IAM permission on the `web_security_scanner_settings.name` field: - `securitycenter.websecurityscannersettings.update`.
 
       Args:
         request: (SecuritycenterProjectsUpdateWebSecurityScannerSettingsRequest) input message

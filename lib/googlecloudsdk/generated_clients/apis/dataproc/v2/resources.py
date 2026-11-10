@@ -81,6 +81,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_SERVERLESSRUNTIMEPROFILES = (
+      'projects.locations.serverlessRuntimeProfiles',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'serverlessRuntimeProfiles/{serverlessRuntimeProfilesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_WORKLOADS = (
       'projects.locations.workloads',
       '{+name}',

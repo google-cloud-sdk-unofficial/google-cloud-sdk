@@ -3930,6 +3930,9 @@ class Project(_messages.Message):
   ACLs, APIs, App Engine Apps, VMs, and other Google Cloud Platform resources.
 
   Enums:
+    ManagementTypeValueValuesEnum: Output only. The type of Management
+      Project. This field is only populated if `is_management_project` is
+      `true`.
     StateValueValuesEnum: Output only. The project lifecycle state.
 
   Messages:
@@ -3974,6 +3977,8 @@ class Project(_messages.Message):
       a representation such as JSON that does not depend on specific
       characters being disallowed. Example: `"myBusinessDimension" :
       "businessValue"`
+    managementType: Output only. The type of Management Project. This field is
+      only populated if `is_management_project` is `true`.
     name: Output only. The unique resource name of the project. It is an int64
       generated number prefixed by "projects/". Example:
       `projects/415104041262`
@@ -3990,6 +3995,21 @@ class Project(_messages.Message):
       "marketing" Note: Currently this field is in Preview.
     updateTime: Output only. The most recent time this resource was modified.
   """
+
+  class ManagementTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of Management Project. This field is only
+    populated if `is_management_project` is `true`.
+
+    Values:
+      MANAGEMENT_TYPE_UNSPECIFIED: Unspecified type.
+      SELF_MANAGED: The Management Project is a self-managed project that
+        constitutes its own boundary.
+      HUB: The Management Project is a hub project that manages resources
+        across a boundary.
+    """
+    MANAGEMENT_TYPE_UNSPECIFIED = 0
+    SELF_MANAGED = 1
+    HUB = 2
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The project lifecycle state.
@@ -4071,12 +4091,13 @@ class Project(_messages.Message):
   etag = _messages.StringField(5)
   isManagementProject = _messages.BooleanField(6)
   labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  parent = _messages.StringField(9)
-  projectId = _messages.StringField(10)
-  state = _messages.EnumField('StateValueValuesEnum', 11)
-  tags = _messages.MessageField('TagsValue', 12)
-  updateTime = _messages.StringField(13)
+  managementType = _messages.EnumField('ManagementTypeValueValuesEnum', 8)
+  name = _messages.StringField(9)
+  parent = _messages.StringField(10)
+  projectId = _messages.StringField(11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  tags = _messages.MessageField('TagsValue', 13)
+  updateTime = _messages.StringField(14)
 
 
 class ProjectCreationStatus(_messages.Message):
@@ -4209,6 +4230,9 @@ class SemanticTagKey(_messages.Message):
       requested with the `SEMANTIC_TAG_KEY_VIEW_FULL` view.
     compositeValueConstraint: Constraints on a composite value.
     createTime: Output only. Creation timestamp.
+    customValuesSupported: Output only. Whether users can create custom
+      `SemanticTagValue` resources for this key. Applicable to `SCALAR` nodes.
+      Always `false` for `COMPOSITE` nodes.
     description: Optional. Description of the semantic tag key. Maximum length
       is 1024 characters.
     displayName: Optional. User-friendly display name. Maximum length is 63
@@ -4248,15 +4272,16 @@ class SemanticTagKey(_messages.Message):
   childSemanticTagKeys = _messages.StringField(1, repeated=True)
   compositeValueConstraint = _messages.MessageField('CompositeValueConstraint', 2)
   createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  displayName = _messages.StringField(5)
-  keyType = _messages.EnumField('KeyTypeValueValuesEnum', 6)
-  multipleValuesAllowed = _messages.BooleanField(7)
-  name = _messages.StringField(8)
-  parentSemanticTagKey = _messages.StringField(9)
-  shortId = _messages.StringField(10)
-  stringConstraint = _messages.MessageField('StringConstraint', 11)
-  updateTime = _messages.StringField(12)
+  customValuesSupported = _messages.BooleanField(4)
+  description = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  keyType = _messages.EnumField('KeyTypeValueValuesEnum', 7)
+  multipleValuesAllowed = _messages.BooleanField(8)
+  name = _messages.StringField(9)
+  parentSemanticTagKey = _messages.StringField(10)
+  shortId = _messages.StringField(11)
+  stringConstraint = _messages.MessageField('StringConstraint', 12)
+  updateTime = _messages.StringField(13)
 
 
 class SemanticTagValue(_messages.Message):

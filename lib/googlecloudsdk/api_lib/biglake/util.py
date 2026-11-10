@@ -377,6 +377,15 @@ def CheckValidUnityArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         '--workday-tenant is not supported for Unity federated catalogs.'
     )
+  if args.IsKnownAndSpecified('workday_api_client_client_id'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-api-client-client-id is not supported for Unity federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('catalog_url'):
+    raise arg_parsers.ArgumentTypeError(
+        '--catalog-url is not supported for Unity federated catalogs.'
+    )
 
 
 def CheckValidGlueArgCombinations(args):
@@ -441,6 +450,15 @@ def CheckValidGlueArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         '--workday-tenant is not supported for Glue federated catalogs.'
     )
+  if args.IsKnownAndSpecified('workday_api_client_client_id'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-api-client-client-id is not supported for Glue federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('catalog_url'):
+    raise arg_parsers.ArgumentTypeError(
+        '--catalog-url is not supported for Glue federated catalogs.'
+    )
 
 
 def CheckValidSnowflakeArgCombinations(args):
@@ -502,6 +520,15 @@ def CheckValidSnowflakeArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         '--workday-tenant is not supported for Snowflake federated catalogs.'
     )
+  if args.IsKnownAndSpecified('workday_api_client_client_id'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-api-client-client-id is not supported for Snowflake'
+        ' federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('catalog_url'):
+    raise arg_parsers.ArgumentTypeError(
+        '--catalog-url is not supported for Snowflake federated catalogs.'
+    )
 
 
 def CheckValidWorkdayArgCombinations(args):
@@ -523,11 +550,23 @@ def CheckValidWorkdayArgCombinations(args):
         '--workday-tenant must be specified when federated catalog type is'
         ' workday.'
     )
-  if not args.IsSpecified('secret_name'):
-    raise arg_parsers.ArgumentTypeError(
-        '--secret-name must be specified when federated catalog type is'
-        ' workday.'
-    )
+  if not (
+      args.IsSpecified('secret_name')
+      ^ args.IsKnownAndSpecified('workday_api_client_client_id')
+  ):
+    # TODO(b/578094323): Remove conditional error message once
+    # --workday-api-client-client-id is promoted to GA.
+    if hasattr(args, 'workday_api_client_client_id'):
+      msg = (
+          'Exactly one of --secret-name or --workday-api-client-client-id'
+          ' must be specified when federated catalog type is workday.'
+      )
+    else:
+      msg = (
+          '--secret-name must be specified when federated catalog type is'
+          ' workday.'
+      )
+    raise arg_parsers.ArgumentTypeError(msg)
   if args.IsSpecified('unity_instance_name'):
     raise arg_parsers.ArgumentTypeError(
         '--unity-instance-name is not supported for Workday federated catalogs.'
@@ -566,6 +605,112 @@ def CheckValidWorkdayArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         '--snowflake-role is not supported for Workday federated catalogs.'
     )
+  if args.IsKnownAndSpecified('catalog_url'):
+    raise arg_parsers.ArgumentTypeError(
+        '--catalog-url is not supported for Workday federated catalogs.'
+    )
+
+
+def CheckValidGenericIcebergArgCombinations(args):
+  """Checks for valid combinations of generic Iceberg catalog arguments.
+
+  Args:
+    args: The parsed command-line arguments.
+
+  Raises:
+    arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
+  """
+  if (
+      not args.IsSpecified('catalog_url')
+      or not args.IsSpecified('warehouse')
+      or not args.IsSpecified('auth_type')
+  ):
+    raise arg_parsers.ArgumentTypeError(
+        '--catalog-url, --warehouse, and --auth-type must be specified when'
+        ' federated catalog type is generic.'
+    )
+  if args.auth_type == 'oidc':
+    if not args.IsSpecified('oidc_audience'):
+      raise arg_parsers.ArgumentTypeError(
+          '--oidc-audience must be specified when --auth-type is oidc.'
+      )
+    if args.IsSpecified('secret_name'):
+      raise arg_parsers.ArgumentTypeError(
+          '--secret-name is not supported when --auth-type is oidc.'
+      )
+    if args.IsSpecified('oauth2_server_url'):
+      raise arg_parsers.ArgumentTypeError(
+          '--oauth2-server-url is not supported when --auth-type is oidc.'
+      )
+  elif args.auth_type == 'secret-based':
+    if not args.IsSpecified('secret_name'):
+      raise arg_parsers.ArgumentTypeError(
+          '--secret-name must be specified when --auth-type is secret-based.'
+      )
+    if args.IsSpecified('oidc_audience'):
+      raise arg_parsers.ArgumentTypeError(
+          '--oidc-audience is not supported when --auth-type is secret-based.'
+      )
+  if args.IsSpecified('unity_instance_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-instance-name is not supported for Generic Iceberg federated'
+        ' catalogs.'
+    )
+  if args.IsSpecified('unity_catalog_name'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-catalog-name is not supported for Generic Iceberg federated'
+        ' catalogs.'
+    )
+  if args.IsSpecified('unity_service_principal_application_id'):
+    raise arg_parsers.ArgumentTypeError(
+        '--unity-service-principal-application-id is not supported for Generic'
+        ' Iceberg federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_warehouse'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-warehouse is not supported for Generic Iceberg federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_aws_region'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-aws-region is not supported for Generic Iceberg federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_aws_role_arn'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-aws-role-arn is not supported for Generic Iceberg federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('snowflake_warehouse'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-warehouse is not supported for Generic Iceberg federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('snowflake_account_identifier'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-account-identifier is not supported for Generic Iceberg'
+        ' federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('snowflake_role'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-role is not supported for Generic Iceberg federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('workday_base_url'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-base-url is not supported for Generic Iceberg federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('workday_tenant'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-tenant is not supported for Generic Iceberg federated'
+        ' catalogs.'
+    )
+  if args.IsKnownAndSpecified('workday_api_client_client_id'):
+    raise arg_parsers.ArgumentTypeError(
+        '--workday-api-client-client-id is not supported for Generic Iceberg'
+        ' federated catalogs.'
+    )
 
 
 def CheckValidFederatedArgCombinations(args):
@@ -598,6 +743,8 @@ def CheckValidFederatedArgCombinations(args):
       'snowflake_role',
       'workday_base_url',
       'workday_tenant',
+      'workday_api_client_client_id',
+      'catalog_url',
   ]
   is_federated = args.catalog_type == 'federated'
   if is_federated:
@@ -619,6 +766,8 @@ def CheckValidFederatedArgCombinations(args):
       CheckValidSnowflakeArgCombinations(args)
     if args.federated_catalog_type == 'workday':
       CheckValidWorkdayArgCombinations(args)
+    if args.federated_catalog_type == 'generic':
+      CheckValidGenericIcebergArgCombinations(args)
   else:
     # Check that federated flags are not specified for non-federated catalogs.
     for flag in federated_flags:
@@ -775,8 +924,41 @@ def _BuildWorkdayCatalogInfo(
   workday_catalog_info = {
       'base-url': getattr(workday_catalog_info_option, 'base_url', None),
       'tenant': getattr(workday_catalog_info_option, 'tenant', None),
+      'api-client-client-id': getattr(
+          workday_catalog_info_option, 'api_client_client_id', None
+      ),
   }
   return {k: v for k, v in workday_catalog_info.items() if v}
+
+
+def _BuildGenericIcebergCatalogInfo(
+    generic_iceberg_catalog_info_option: Any,
+) -> Dict[str, Any]:
+  """Builds the generic Iceberg catalog info for the request body."""
+  custom_headers = None
+  if getattr(generic_iceberg_catalog_info_option, 'custom_headers', None):
+    custom_headers = {
+        prop.key: prop.value
+        for prop in (
+            generic_iceberg_catalog_info_option.custom_headers.additionalProperties
+        )
+    }
+  generic_iceberg_catalog_info = {
+      'base-url': getattr(
+          generic_iceberg_catalog_info_option, 'base_url', None
+      ),
+      'warehouse': getattr(
+          generic_iceberg_catalog_info_option, 'warehouse', None
+      ),
+      'custom-headers': custom_headers,
+      'oidc-audience': getattr(
+          generic_iceberg_catalog_info_option, 'oidc_audience', None
+      ),
+      'oauth2-server-url': getattr(
+          generic_iceberg_catalog_info_option, 'oauth2_server_url', None
+      ),
+  }
+  return {k: v for k, v in generic_iceberg_catalog_info.items() if v}
 
 
 def _BuildFederatedCatalogOptions(options):
@@ -800,6 +982,8 @@ def _BuildFederatedCatalogOptions(options):
     federated_catalog_options['metadata-service-directory-name'] = (
         options.metadata_service_directory_name
     )
+  if hasattr(options, 'trust_config') and options.trust_config:
+    federated_catalog_options['trust-config'] = options.trust_config
   if hasattr(options, 'unity_catalog_info') and options.unity_catalog_info:
     unity_catalog_info = _BuildUnityCatalogInfo(options.unity_catalog_info)
     if unity_catalog_info:
@@ -825,6 +1009,17 @@ def _BuildFederatedCatalogOptions(options):
     )
     if workday_catalog_info:
       federated_catalog_options['workday-catalog-info'] = workday_catalog_info
+  if (
+      hasattr(options, 'generic_iceberg_catalog_info')
+      and options.generic_iceberg_catalog_info
+  ):
+    generic_iceberg_catalog_info = _BuildGenericIcebergCatalogInfo(
+        options.generic_iceberg_catalog_info
+    )
+    if generic_iceberg_catalog_info:
+      federated_catalog_options['generic-iceberg-catalog-info'] = (
+          generic_iceberg_catalog_info
+      )
   if hasattr(options, 'refresh_options') and options.refresh_options:
     refresh_options = _BuildRefreshOptions(options.refresh_options)
     if refresh_options:

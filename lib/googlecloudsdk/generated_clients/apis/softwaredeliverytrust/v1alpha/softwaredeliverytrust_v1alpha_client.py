@@ -111,7 +111,7 @@ class SoftwaredeliverytrustV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists Attestations (typically filtered by subject digest).
+      r"""Lists Attestations (typically filtered by subject digest). Returned Attestation resources omit `attestation_payload`; use `GetAttestation` to retrieve the raw payload.
 
       Args:
         request: (SoftwaredeliverytrustProjectsLocationsAttestationsListRequest) input message

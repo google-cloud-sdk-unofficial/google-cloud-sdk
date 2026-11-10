@@ -291,9 +291,18 @@ def log_or_raise_crc32c_issues(warn_for_always=True):
     return
 
   check_hashes = properties.VALUES.storage.check_hashes.Get()
-  if check_hashes == properties.CheckHashes.ALWAYS.value and warn_for_always:
+  if (
+      check_hashes == properties.VALUES.storage.CheckHashes.ALWAYS.value
+      and warn_for_always
+  ):
     log.warning(_SLOW_HASH_CHECK_WARNING)
-  elif check_hashes == properties.CheckHashes.IF_FAST_ELSE_SKIP.value:
+  elif (
+      check_hashes
+      == properties.VALUES.storage.CheckHashes.IF_FAST_ELSE_SKIP.value
+  ):
     log.warning(_NO_HASH_CHECK_WARNING)
-  elif check_hashes == properties.CheckHashes.IF_FAST_ELSE_FAIL.value:
+  elif (
+      check_hashes
+      == properties.VALUES.storage.CheckHashes.IF_FAST_ELSE_FAIL.value
+  ):
     raise errors.Error(_NO_HASH_CHECK_ERROR)

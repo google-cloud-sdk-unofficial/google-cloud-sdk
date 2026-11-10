@@ -84,22 +84,22 @@ class Gcloud(base.Group):
         '--impersonate-service-account',
         metavar='SERVICE_ACCOUNT_EMAILS',
         help="""\
-        For this `gcloud` invocation, all API requests will be
-        made as the given service account or target service account in an
-        impersonation delegation chain instead of the currently selected
-        account. You can specify either a single service account as the
-        impersonator, or a comma-separated list of service accounts to
-        create an impersonation delegation chain. The impersonation is done
-        without needing to create, download, and activate a key for the
-        service account or accounts.
+        All API requests for this `gcloud` invocation, instead of
+        using the currently selected account, will be made as the given
+        service account or target service account in an impersonation
+        delegation chain. You can specify either a single service account
+        as the impersonator, or a comma-separated list of service
+        accounts to create an impersonation delegation chain. The
+        impersonation is done without needing to create, download, or
+        activate a key for the service account(s).
 
         In order to make API requests as a service account, your
         currently selected account must have an IAM role that includes
         the `iam.serviceAccounts.getAccessToken` permission for the
-        service account or accounts.
+        service account(s).
 
         The `roles/iam.serviceAccountTokenCreator` role has
-        the `iam.serviceAccounts.getAccessToken permission`. You can
+        the `iam.serviceAccounts.getAccessToken` permission. You can
         also create a custom role.
 
         You can specify a list of service accounts, separated with
@@ -115,7 +115,7 @@ class Gcloud(base.Group):
         ``SERVICE_ACCOUNT_1'', which must have the
         `roles/iam.serviceAccountTokenCreator` role on
         ``SERVICE_ACCOUNT_2''.
-        ``SERVICE_ACCOUNT_1'' is the impersonated service
+        In this case, ``SERVICE_ACCOUNT_1'' is the impersonated service
         account and ``SERVICE_ACCOUNT_2'' is the delegate.
         """,
         action=property_actions.StoreProperty(
@@ -126,9 +126,9 @@ class Gcloud(base.Group):
         '--access-token-file',
         metavar='ACCESS_TOKEN_FILE',
         help="""\
-        A file path to read the access token. Use this flag to
-        authenticate `gcloud` with an access token. The credentials of
-        the active account (if exists) will be ignored. The file should
+        A file path to read the access token. This flag is used to
+        authenticate `gcloud` with an access token. Any existing
+        credentials for the active account will be ignored. The file should
         only contain an access token with no other information.
         """,
         action=property_actions.StoreProperty(
@@ -142,9 +142,9 @@ class Gcloud(base.Group):
         category=base.COMMONLY_USED_FLAGS,
         help="""\
              The Google Cloud project that will be charged quota for
-             operations performed in `gcloud`. If you need to operate on one
-             project, but need quota against a different project, you can use
-             this flag to specify the billing project. If both
+             operations performed in `gcloud`. You can use this flag to
+             specify the billing project when you need to operate on one
+             project, but need quota against a different project. If both
              `billing/quota_project` and `--billing-project` are specified,
              `--billing-project` takes precedence.
              Run `$ gcloud config set --help` to see more information about

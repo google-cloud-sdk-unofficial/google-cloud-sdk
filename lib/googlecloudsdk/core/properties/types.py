@@ -492,19 +492,28 @@ class _Property(object):
 
     Raises:
       InvalidValueError: If the value was invalid according to the property's
-          validator.
+          choices or validator.
     """
+    if isinstance(property_value, PropertyValue):
+      value = property_value.value
+    else:
+      value = property_value
+
     if self.__validator:
-      if isinstance(property_value, PropertyValue):
-        value = property_value.value
-      else:
-        value = property_value
       try:
         self.__validator(value)
       except InvalidValueError as e:
         prop = '{}/{}'.format(self.section, self.name)
         error = 'Invalid value for property [{}]: {}'.format(prop, e)
         raise InvalidValueError(error) from e
+    elif self.__choices and value is not None:
+      if value not in self.__choices and str(value) not in self.__choices:
+        prop = '{}/{}'.format(self.section, self.name)
+        choices_str = ', '.join(repr(c) for c in self.__choices)
+        raise InvalidValueError(
+            f'Invalid value for property [{prop}]: [{value}] is not one of'
+            f' [{choices_str}].'
+        )
 
   def GetBool(self, required=False, validate=True):
     """Gets the boolean value for this property.

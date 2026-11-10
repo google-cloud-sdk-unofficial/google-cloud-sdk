@@ -39,6 +39,18 @@ _OPEN_TAG_MASK = "__OPEN_TAG__"
 _CLOSE_TAG_MASK = "__CLOSE_TAG__"
 _TEMPLATE_TAG_RE = re.compile(r"\{\{(.*?)\}\}")
 
+# Format that the Orchestration service requires of `DataModel.id`, which is
+# the name of the action.
+_ACTION_NAME_RE = re.compile(r"[a-zA-Z0-9_.-]{1,64}")
+# Keys that `runner: orchestration_service` supports in an action, its
+# `framework` and its `framework.dbt`; any other key is rejected rather than
+# silently ignored. For example, dbt `command`, `select` and `vars` are not
+# supported: the Orchestration service always runs `dbt build` on the whole dbt
+# project.
+_SUPPORTED_ACTION_KEYS = ("name", "framework")
+_SUPPORTED_FRAMEWORK_KEYS = ("dbt",)
+_SUPPORTED_DBT_KEYS = ("projectDirectoryPath", "dbtVersion", "profileConfig")
+
 
 @dataclasses.dataclass(frozen=True)
 class DbtAction:
@@ -49,12 +61,8 @@ class DbtAction:
   project_directory: pathlib.Path
   # Version of the Google-managed dbt runtime, e.g. `1.9`.
   dbt_version: str
-  command: str = "build"
-  select: tuple[str, ...] = ()
-  variables: Mapping[str, Any] = dataclasses.field(default_factory=dict)
   # Literal `profileConfig` values, rendered into `profiles.yml` when packaging.
   profile_config: Mapping[str, Any] = dataclasses.field(default_factory=dict)
-  full_refresh: bool = False
 
 
 @dataclasses.dataclass(frozen=True)
@@ -66,8 +74,8 @@ class LoadedPipeline:
   location: str
   # The deployment environment (`--environment`); also the dbt target name.
   target: str
-  # Email of the service account the pipeline runs as, when configured.
-  service_account: str | None
+  # Email of the service account the pipeline runs as.
+  service_account: str
   # Bucket name without `gs://`, from `deployment.yaml` `artifact_storage` or
   # the `dcs-artifacts-<projectNumber>-<location>` default.
   artifact_bucket: str
@@ -199,6 +207,9 @@ def LoadPipeline(args: argparse.Namespace) -> LoadedPipeline:
   )
   project = _GetProjectId(environment, defaults, source_description)
   location = _GetLocation(environment, defaults, source_description)
+  service_account = _GetServiceAccountEmail(
+      environment, defaults, source_description
+  )
   artifact_bucket, artifact_path_prefix = _GetArtifactBucketAndPathPrefix(
       environment, project, location
   )
@@ -207,9 +218,7 @@ def LoadPipeline(args: argparse.Namespace) -> LoadedPipeline:
       project=project,
       location=location,
       target=environment_name or "default",
-      service_account=_GetServiceAccountEmail(
-          environment, defaults, source_description
-      ),
+      service_account=service_account,
       artifact_bucket=artifact_bucket,
       base_dir=pipeline_file_path.parent,
       actions=(dbt_action,),
@@ -439,8 +448,11 @@ def _GetDbtActionFromPipelineYaml(
 ) -> DbtAction:
   """Parses and validates the single dbt action from `raw_actions`."""
   action_entry = _GetSingleActionFromPipelineYaml(raw_actions)
-  name = _GetNonEmptyStringFromMapping(action_entry, "name", "The dbt action")
+  name = _GetActionName(action_entry)
   source_description = f"Action '{name}'"
+  _VerifyNoUnsupportedKeys(
+      action_entry, _SUPPORTED_ACTION_KEYS, source_description
+  )
   dbt_config = _GetDbtConfigFromActionEntry(action_entry, source_description)
   return DbtAction(
       name=name,
@@ -451,15 +463,6 @@ def _GetDbtActionFromPipelineYaml(
       dbt_version=_GetNonEmptyStringFromMapping(
           dbt_config, "dbtVersion", source_description
       ),
-      command=_GetNonEmptyStringFromMapping(
-          dbt_config, "command", source_description, default="build"
-      ),
-      select=_GetSelectModelsFromDbtConfig(dbt_config, source_description),
-      variables=dict(
-          _GetTypedFieldFromMapping(
-              dbt_config, "vars", Mapping, source_description, default={}
-          )
-      ),
       profile_config=dict(
           _GetTypedFieldFromMapping(
               dbt_config,
@@ -468,9 +471,6 @@ def _GetDbtActionFromPipelineYaml(
               source_description,
               default={},
           )
-      ),
-      full_refresh=_GetTypedFieldFromMapping(
-          dbt_config, "fullRefresh", bool, source_description, default=False
       ),
   )
 
@@ -488,12 +488,38 @@ def _GetSingleActionFromPipelineYaml(raw_actions: Any) -> Mapping[str, Any]:
   return raw_actions[0]
 
 
+def _GetActionName(action_entry: Mapping[str, Any]) -> str:
+  """Returns the validated `name` of `action_entry`.
+
+  The name is the `DataModel.id` of the action and part of the local and Cloud
+  Storage paths of its archive, so it is validated before anything is packaged
+  or uploaded.
+
+  Args:
+    action_entry: The single action mapping of the pipeline YAML.
+
+  Raises:
+    errors.PipelineLoadError: If the name is missing or not a valid
+      `DataModel.id`.
+  """
+  name = _GetNonEmptyStringFromMapping(action_entry, "name", "The dbt action")
+  if not _ACTION_NAME_RE.fullmatch(name) or name in (".", ".."):
+    raise errors.PipelineLoadError(
+        f"Action name '{name}' must consist of 1 to 64 ASCII letters, digits,"
+        " `_`, `.` or `-`, and cannot be `.` or `..`."
+    )
+  return name
+
+
 def _GetDbtConfigFromActionEntry(
     action_entry: Mapping[str, Any], source_description: str
 ) -> Mapping[str, Any]:
   """Returns the validated `framework.dbt` mapping from `action_entry`."""
   framework = _GetTypedFieldFromMapping(
       action_entry, "framework", Mapping, source_description, default={}
+  )
+  _VerifyNoUnsupportedKeys(
+      framework, _SUPPORTED_FRAMEWORK_KEYS, source_description, "framework"
   )
   dbt_config = _GetTypedFieldFromMapping(
       framework, "dbt", Mapping, source_description
@@ -502,7 +528,45 @@ def _GetDbtConfigFromActionEntry(
     raise errors.PipelineLoadError(
         f"{source_description} must define `framework.dbt`."
     )
+  _VerifyNoUnsupportedKeys(
+      dbt_config, _SUPPORTED_DBT_KEYS, source_description, "framework.dbt"
+  )
   return dbt_config
+
+
+def _VerifyNoUnsupportedKeys(
+    mapping: Mapping[Any, Any],
+    supported_keys: Sequence[str],
+    source_description: str,
+    field_name: str | None = None,
+) -> None:
+  """Verifies that `mapping` sets no key outside `supported_keys`.
+
+  Args:
+    mapping: The action entry, or its field at `field_name`.
+    supported_keys: The keys that `runner: orchestration_service` supports in
+      `mapping`.
+    source_description: Description of the action for error messages.
+    field_name: Path of `mapping` in the action entry, or None if `mapping` is
+      the action entry itself.
+
+  Raises:
+    errors.PipelineLoadError: If `mapping` sets any other key.
+  """
+  unsupported_keys = [key for key in mapping if key not in supported_keys]
+  if unsupported_keys:
+    location = f" in `{field_name}`" if field_name else ""
+    raise errors.PipelineLoadError(
+        f"{source_description} specifies {_FormatKeys(unsupported_keys)}"
+        f"{location}, which is not supported for"
+        f" `runner: {ORCHESTRATION_SERVICE_RUNNER}` yet; supported keys:"
+        f" {_FormatKeys(supported_keys)}."
+    )
+
+
+def _FormatKeys(keys: Sequence[Any]) -> str:
+  """Formats `keys` as a comma-separated list of code spans."""
+  return ", ".join(f"`{key}`" for key in keys)
 
 
 def _GetDbtProjectDirectory(
@@ -520,20 +584,6 @@ def _GetDbtProjectDirectory(
         " does not exist."
     )
   return project_directory
-
-
-def _GetSelectModelsFromDbtConfig(
-    dbt_config: Mapping[str, Any], source_description: str
-) -> tuple[str, ...]:
-  """Returns the validated `select` model selectors from `dbt_config`."""
-  select = _GetTypedFieldFromMapping(
-      dbt_config, "select", list, source_description, default=[]
-  )
-  if not all(isinstance(item, str) and item.strip() for item in select):
-    raise errors.PipelineLoadError(
-        f"{source_description}: `select` must list strings."
-    )
-  return tuple(select)
 
 
 def _GetEnvironmentModelFromDeploymentFile(
@@ -651,8 +701,8 @@ def _GetServiceAccountEmail(
     environment: deployment_model.EnvironmentModel | None,
     defaults: Mapping[str, Any],
     source_description: str,
-) -> str | None:
-  """Returns the pipeline execution service account email, when configured."""
+) -> str:
+  """Returns the pipeline execution service account email."""
   environment_service_account = (
       environment.service_account if environment else None
   )
@@ -662,7 +712,15 @@ def _GetServiceAccountEmail(
   _LogIgnoredPipelineDefault(
       "serviceAccount", default_service_account, environment_service_account
   )
-  return environment_service_account or default_service_account
+  service_account = environment_service_account or default_service_account
+  # The Orchestration service rejects pipelines without an execution identity.
+  if not service_account or not service_account.strip():
+    raise errors.PipelineLoadError(
+        "Service account must be set via `deployment.yaml`"
+        " (`service_account`) or `defaults.serviceAccount`; the Orchestration"
+        " service runs the pipeline as this account."
+    )
+  return service_account
 
 
 def _GetArtifactBucketAndPathPrefix(
@@ -673,9 +731,34 @@ def _GetArtifactBucketAndPathPrefix(
   """Returns `(artifact_bucket, artifact_path_prefix)` for the deployment."""
   artifact_storage = environment.artifact_storage if environment else None
   if artifact_storage:
-    return artifact_storage.bucket, artifact_storage.path_prefix or ""
+    return (
+        _GetArtifactBucketName(artifact_storage.bucket),
+        artifact_storage.path_prefix or "",
+    )
   project_number = _GetProjectNumber(project)
   return f"dcs-artifacts-{project_number}-{location}", ""
+
+
+def _GetArtifactBucketName(bucket: str) -> str:
+  """Returns `artifact_storage.bucket` without outer whitespace.
+
+  `yaml_processor` accepts a `/` in the bucket name, but callers build
+  `gs://<bucket>/<object>` URIs from it, so e.g. `my-bucket/` would yield `//`.
+
+  Args:
+    bucket: `artifact_storage.bucket` of `deployment.yaml`.
+
+  Raises:
+    errors.PipelineLoadError: If `bucket` contains a `/`.
+  """
+  bucket_name = bucket.strip()
+  if "/" in bucket_name:
+    raise errors.PipelineLoadError(
+        f"`artifact_storage.bucket` '{bucket}' of `deployment.yaml` cannot"
+        " contain `/`; set only the bucket name, e.g. 'my-bucket', and put"
+        " object paths in `artifact_storage.path_prefix`."
+    )
+  return bucket_name
 
 
 def _GetProjectNumber(project: str) -> str:

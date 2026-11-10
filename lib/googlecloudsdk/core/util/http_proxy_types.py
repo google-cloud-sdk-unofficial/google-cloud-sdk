@@ -19,11 +19,13 @@ from six.moves import urllib
 import socks
 
 PROXY_TYPE_MAP = {
+    # LINT.IfChange(proxy_types)
     'socks4': socks.PROXY_TYPE_SOCKS4,
     'socks5': socks.PROXY_TYPE_SOCKS5,
     'http': socks.PROXY_TYPE_HTTP,
     # For https requests, http_no_tunnel is equivalent to http
     'http_no_tunnel': socks.PROXY_TYPE_HTTP,
+    # LINT.ThenChange(../properties/definitions/proxy.yaml:proxy_types)
 }
 
 REVERSE_PROXY_TYPE_MAP = {

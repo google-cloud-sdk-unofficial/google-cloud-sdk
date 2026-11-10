@@ -1949,7 +1949,6 @@ class DatabaseConnection(_messages.Message):
       FAILED: Indicates that the resource is in a failed state.
       DELETING: Indicates that the resource is in a deleting state.
     """
-
     STATE_UNSPECIFIED = 0
     CREATING = 1
     ACTIVE = 2
@@ -1958,9 +1957,8 @@ class DatabaseConnection(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional.
-
-    Optional: Labels as key-value pairs to organize the resource.
+    r"""Optional. Optional: Labels as key-value pairs to organize the
+    resource.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -1980,9 +1978,7 @@ class DatabaseConnection(_messages.Message):
       key = _messages.StringField(1)
       value = _messages.StringField(2)
 
-    additionalProperties = _messages.MessageField(
-        'AdditionalProperty', 1, repeated=True
-    )
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   connectionString = _messages.StringField(1)
   createTime = _messages.StringField(2)
@@ -2985,6 +2981,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EncryptionKey(_messages.Message):
   r"""The encryption key used to encrypt the Autonomous Database.
 
@@ -3505,7 +3502,6 @@ class ExecuteSqlMetadata(_messages.Message):
         Authentication failures, database availability errors, network errors,
         and timeouts are returned as API errors (AIP-193), not as ERROR.
     """
-
     STATUS_UNSPECIFIED = 0
     OK = 1
     PARTIAL = 2
@@ -6491,9 +6487,7 @@ class ListDatabaseConnectionsResponse(_messages.Message):
       locations using wildcard location '-'.
   """
 
-  databaseConnections = _messages.MessageField(
-      'DatabaseConnection', 1, repeated=True
-  )
+  databaseConnections = _messages.MessageField('DatabaseConnection', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -7285,9 +7279,7 @@ class OdbNetwork(_messages.Message):
   name = _messages.StringField(5)
   network = _messages.StringField(6)
   reconciling = _messages.BooleanField(7)
-  serviceConnectivityConfig = _messages.MessageField(
-      'ServiceConnectivityConfig', 8
-  )
+  serviceConnectivityConfig = _messages.MessageField('ServiceConnectivityConfig', 8)
   state = _messages.EnumField('StateValueValuesEnum', 9)
 
 
@@ -8157,11 +8149,8 @@ class OracledatabaseProjectsLocationsDatabaseCharacterSetsListRequest(_messages.
   parent = _messages.StringField(4, required=True)
 
 
-class OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest(
-    _messages.Message
-):
+class OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest
-
   object.
 
   Fields:
@@ -8188,11 +8177,8 @@ class OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest(
   requestId = _messages.StringField(4)
 
 
-class OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest(
-    _messages.Message
-):
+class OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest
-
   object.
 
   Fields:
@@ -8212,11 +8198,8 @@ class OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest(
   requestId = _messages.StringField(2)
 
 
-class OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest(
-    _messages.Message
-):
+class OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest
-
   object.
 
   Fields:
@@ -8231,9 +8214,7 @@ class OracledatabaseProjectsLocationsDatabaseConnectionsExecuteSqlRequest(
   name = _messages.StringField(2, required=True)
 
 
-class OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest(
-    _messages.Message
-):
+class OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest object.
 
   Fields:
@@ -8245,9 +8226,7 @@ class OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest(
   name = _messages.StringField(1, required=True)
 
 
-class OracledatabaseProjectsLocationsDatabaseConnectionsListRequest(
-    _messages.Message
-):
+class OracledatabaseProjectsLocationsDatabaseConnectionsListRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsDatabaseConnectionsListRequest object.
 
   Fields:
@@ -8269,9 +8248,7 @@ class OracledatabaseProjectsLocationsDatabaseConnectionsListRequest(
   parent = _messages.StringField(5, required=True)
 
 
-class OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest(
-    _messages.Message
-):
+class OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest object.
 
   Fields:
@@ -8299,9 +8276,7 @@ class OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest(
   updateMask = _messages.StringField(4)
 
 
-class OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest(
-    _messages.Message
-):
+class OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest object.
 
   Fields:
@@ -8313,9 +8288,7 @@ class OracledatabaseProjectsLocationsDatabaseConnectionsTestRequest(
   """
 
   name = _messages.StringField(1, required=True)
-  testDatabaseConnectionRequest = _messages.MessageField(
-      'TestDatabaseConnectionRequest', 2
-  )
+  testDatabaseConnectionRequest = _messages.MessageField('TestDatabaseConnectionRequest', 2)
 
 
 class OracledatabaseProjectsLocationsDatabasesGetRequest(_messages.Message):
@@ -10112,7 +10085,6 @@ class PolarisIcebergCatalog(_messages.Message):
 
 class PscInterfaceConfig(_messages.Message):
   r"""Configuration for a Private Service Connect (PSC) interface used by
-
   Oracledatabase@Google Cloud to establish private connectivity to the
   database.
 
@@ -10237,7 +10209,6 @@ class ScheduledOperationDetails(_messages.Message):
 
 class ServiceConnectivityConfig(_messages.Message):
   r"""Configuration to enable the service (Oracledatabase@Google Cloud) to
-
   establish connectivity to the database. This should be specified if you
   intend to associate this OdbNetwork with a DatabaseConnection resource to
   `ExecuteSQL` on the database, or to create a ServiceIntegration with the
@@ -10379,16 +10350,12 @@ class SqlResult(_messages.Message):
   r"""SqlResult represents the result for the execution of a sql statement.
 
   Fields:
-    affectedRowCount: Optional. The number of rows affected by DML statements
-      (e.g., INSERT, UPDATE, DELETE, MERGE). Unset or 0 for SELECT / DDL
-      statements.
     columns: List of columns included in the result, including data type.
     rows: Rows returned by the SQL statement.
   """
 
-  affectedRowCount = _messages.IntegerField(1)
-  columns = _messages.MessageField('Column', 2, repeated=True)
-  rows = _messages.MessageField('Row', 3, repeated=True)
+  columns = _messages.MessageField('Column', 1, repeated=True)
+  rows = _messages.MessageField('Row', 2, repeated=True)
 
 
 class StandardQueryParameters(_messages.Message):

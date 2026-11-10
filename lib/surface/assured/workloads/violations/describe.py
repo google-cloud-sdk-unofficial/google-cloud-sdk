@@ -37,6 +37,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe an Assured Workloads compliance violation."""
 
@@ -54,4 +55,4 @@ class Describe(base.DescribeCommand):
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
         release_track=self.ReleaseTrack(), region=region):
       client = apis.ViolationsClient(release_track=self.ReleaseTrack())
-      return client.Describe(name=violation)
+      return client.Describe(name=violation, view=args.view)

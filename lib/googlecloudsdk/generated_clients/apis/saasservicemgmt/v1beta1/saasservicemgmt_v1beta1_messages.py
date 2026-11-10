@@ -1351,11 +1351,30 @@ class ListUnitsResponse(_messages.Message):
 class Location(_messages.Message):
   r"""Location information that the service is available in.
 
+  Enums:
+    TypeValueValuesEnum: Type of location.
+
   Fields:
     name: Optional. Name of location.
+    type: Type of location.
   """
 
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Type of location.
+
+    Values:
+      LOCATION_TYPE_UNSPECIFIED: Unspecified location type.
+      CLOUD_GLOBAL: Cloud global.
+      CLOUD_REGION: Cloud region.
+      CLOUD_ZONE: Cloud zone.
+    """
+    LOCATION_TYPE_UNSPECIFIED = 0
+    CLOUD_GLOBAL = 1
+    CLOUD_REGION = 2
+    CLOUD_ZONE = 3
+
   name = _messages.StringField(1)
+  type = _messages.EnumField('TypeValueValuesEnum', 2)
 
 
 class MaintenanceSettings(_messages.Message):
@@ -4125,6 +4144,9 @@ class Unit(_messages.Message):
       Maximum 10.
     dependents: Optional. Output only. List of Units that depend on this unit.
       Unit can only be deprovisioned if this list is empty. Maximum 1000.
+    deploymentLocation: Optional. Deployment location of the unit. Deployment
+      location is used to determine which cloud_zone, prod_zone or prod_region
+      to use for the unit.
     engine: Optional. Output only. Metadata about the underlying actuation
       engine instance managing this Unit.
     etag: Output only. An opaque value that uniquely identifies a version or
@@ -4303,31 +4325,32 @@ class Unit(_messages.Message):
   createTime = _messages.StringField(4)
   dependencies = _messages.MessageField('UnitDependency', 5, repeated=True)
   dependents = _messages.MessageField('UnitDependency', 6, repeated=True)
-  engine = _messages.MessageField('Engine', 7)
-  etag = _messages.StringField(8)
-  flagConfigName = _messages.StringField(9)
-  flagRevisions = _messages.StringField(10, repeated=True)
-  inputVariables = _messages.MessageField('UnitVariable', 11, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 12)
-  maintenance = _messages.MessageField('MaintenanceSettings', 13)
-  managementMode = _messages.EnumField('ManagementModeValueValuesEnum', 14)
-  name = _messages.StringField(15)
-  ongoingOperations = _messages.StringField(16, repeated=True)
-  outputVariables = _messages.MessageField('UnitVariable', 17, repeated=True)
-  pendingOperations = _messages.StringField(18, repeated=True)
-  release = _messages.StringField(19)
-  satisfiesPzi = _messages.BooleanField(20)
-  satisfiesPzs = _messages.BooleanField(21)
-  scheduledOperations = _messages.StringField(22, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 23)
-  systemCleanupAt = _messages.StringField(24)
-  systemManagedState = _messages.EnumField('SystemManagedStateValueValuesEnum', 25)
-  tenant = _messages.StringField(26)
-  trafficAllocations = _messages.MessageField('TrafficAllocation', 27, repeated=True)
-  uid = _messages.StringField(28)
-  unitGroup = _messages.StringField(29)
-  unitKind = _messages.StringField(30)
-  updateTime = _messages.StringField(31)
+  deploymentLocation = _messages.MessageField('Location', 7)
+  engine = _messages.MessageField('Engine', 8)
+  etag = _messages.StringField(9)
+  flagConfigName = _messages.StringField(10)
+  flagRevisions = _messages.StringField(11, repeated=True)
+  inputVariables = _messages.MessageField('UnitVariable', 12, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 13)
+  maintenance = _messages.MessageField('MaintenanceSettings', 14)
+  managementMode = _messages.EnumField('ManagementModeValueValuesEnum', 15)
+  name = _messages.StringField(16)
+  ongoingOperations = _messages.StringField(17, repeated=True)
+  outputVariables = _messages.MessageField('UnitVariable', 18, repeated=True)
+  pendingOperations = _messages.StringField(19, repeated=True)
+  release = _messages.StringField(20)
+  satisfiesPzi = _messages.BooleanField(21)
+  satisfiesPzs = _messages.BooleanField(22)
+  scheduledOperations = _messages.StringField(23, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 24)
+  systemCleanupAt = _messages.StringField(25)
+  systemManagedState = _messages.EnumField('SystemManagedStateValueValuesEnum', 26)
+  tenant = _messages.StringField(27)
+  trafficAllocations = _messages.MessageField('TrafficAllocation', 28, repeated=True)
+  uid = _messages.StringField(29)
+  unitGroup = _messages.StringField(30)
+  unitKind = _messages.StringField(31)
+  updateTime = _messages.StringField(32)
 
 
 class UnitCondition(_messages.Message):
@@ -4649,7 +4672,7 @@ class UnitKind(_messages.Message):
       default for creating new units of this UnitKind (optional). If not
       specified, a new unit must explicitly reference which release to use for
       its creation.
-    defaultTrafficAllocations: Optional. Global-only default traffic
+    defaultTrafficAllocations: Optional. Global and Regional default traffic
       allocations for units in this UnitKind.
     deleteTime: Output only. The timestamp when the resource was marked for
       deletion (deletion is an asynchronous operation).

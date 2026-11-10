@@ -37,6 +37,9 @@ class NetworkmanagementV1alpha1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.organizations_locations_operations = self.OrganizationsLocationsOperationsService(self)
+    self.organizations_locations = self.OrganizationsLocationsService(self)
+    self.organizations = self.OrganizationsService(self)
     self.projects_locations_appliances = self.ProjectsLocationsAppliancesService(self)
     self.projects_locations_deployments = self.ProjectsLocationsDeploymentsService(self)
     self.projects_locations_networkMonitoringProviders_monitoringPoints = self.ProjectsLocationsNetworkMonitoringProvidersMonitoringPointsService(self)
@@ -46,6 +49,252 @@ class NetworkmanagementV1alpha1(base_api.BaseApiClient):
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class OrganizationsLocationsOperationsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_operations resource."""
+
+    _NAME = 'organizations_locations_operations'
+
+    def __init__(self, client):
+      super(NetworkmanagementV1alpha1.OrganizationsLocationsOperationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`.
+
+      Args:
+        request: (NetworkmanagementOrganizationsLocationsOperationsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/organizations/{organizationsId}/locations/{locationsId}/operations/{operationsId}:cancel',
+        http_method='POST',
+        method_id='networkmanagement.organizations.locations.operations.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:cancel',
+        request_field='cancelOperationRequest',
+        request_type_name='NetworkmanagementOrganizationsLocationsOperationsCancelRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`.
+
+      Args:
+        request: (NetworkmanagementOrganizationsLocationsOperationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/organizations/{organizationsId}/locations/{locationsId}/operations/{operationsId}',
+        http_method='DELETE',
+        method_id='networkmanagement.organizations.locations.operations.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkmanagementOrganizationsLocationsOperationsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+
+      Args:
+        request: (NetworkmanagementOrganizationsLocationsOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/organizations/{organizationsId}/locations/{locationsId}/operations/{operationsId}',
+        http_method='GET',
+        method_id='networkmanagement.organizations.locations.operations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkmanagementOrganizationsLocationsOperationsGetRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`.
+
+      Args:
+        request: (NetworkmanagementOrganizationsLocationsOperationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListOperationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/organizations/{organizationsId}/locations/{locationsId}/operations',
+        http_method='GET',
+        method_id='networkmanagement.organizations.locations.operations.list',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'pageSize', 'pageToken', 'returnPartialSuccess'],
+        relative_path='v1alpha1/{+name}/operations',
+        request_field='',
+        request_type_name='NetworkmanagementOrganizationsLocationsOperationsListRequest',
+        response_type_name='ListOperationsResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsService(base_api.BaseApiService):
+    """Service class for the organizations_locations resource."""
+
+    _NAME = 'organizations_locations'
+
+    def __init__(self, client):
+      super(NetworkmanagementV1alpha1.OrganizationsLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets information about a location.
+
+      Args:
+        request: (NetworkmanagementOrganizationsLocationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Location) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/organizations/{organizationsId}/locations/{locationsId}',
+        http_method='GET',
+        method_id='networkmanagement.organizations.locations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkmanagementOrganizationsLocationsGetRequest',
+        response_type_name='Location',
+        supports_download=False,
+    )
+
+    def GetOrganizationCloudNetworkInsightsConfig(self, request, global_params=None):
+      r"""Gets the OrganizationCloudNetworkInsightsConfig singleton resource.
+
+      Args:
+        request: (NetworkmanagementOrganizationsLocationsGetOrganizationCloudNetworkInsightsConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (OrganizationCloudNetworkInsightsConfig) The response message.
+      """
+      config = self.GetMethodConfig('GetOrganizationCloudNetworkInsightsConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetOrganizationCloudNetworkInsightsConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/organizations/{organizationsId}/locations/{locationsId}/organizationCloudNetworkInsightsConfig',
+        http_method='GET',
+        method_id='networkmanagement.organizations.locations.getOrganizationCloudNetworkInsightsConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkmanagementOrganizationsLocationsGetOrganizationCloudNetworkInsightsConfigRequest',
+        response_type_name='OrganizationCloudNetworkInsightsConfig',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+
+      Args:
+        request: (NetworkmanagementOrganizationsLocationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListLocationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/organizations/{organizationsId}/locations',
+        http_method='GET',
+        method_id='networkmanagement.organizations.locations.list',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['extraLocationTypes', 'filter', 'includeUnrevealedLocations', 'pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+name}/locations',
+        request_field='',
+        request_type_name='NetworkmanagementOrganizationsLocationsListRequest',
+        response_type_name='ListLocationsResponse',
+        supports_download=False,
+    )
+
+    def UpdateOrganizationCloudNetworkInsightsConfig(self, request, global_params=None):
+      r"""Updates the OrganizationCloudNetworkInsightsConfig singleton resource.
+
+      Args:
+        request: (NetworkmanagementOrganizationsLocationsUpdateOrganizationCloudNetworkInsightsConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('UpdateOrganizationCloudNetworkInsightsConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateOrganizationCloudNetworkInsightsConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/organizations/{organizationsId}/locations/{locationsId}/organizationCloudNetworkInsightsConfig',
+        http_method='PATCH',
+        method_id='networkmanagement.organizations.locations.updateOrganizationCloudNetworkInsightsConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='organizationCloudNetworkInsightsConfig',
+        request_type_name='NetworkmanagementOrganizationsLocationsUpdateOrganizationCloudNetworkInsightsConfigRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class OrganizationsService(base_api.BaseApiService):
+    """Service class for the organizations resource."""
+
+    _NAME = 'organizations'
+
+    def __init__(self, client):
+      super(NetworkmanagementV1alpha1.OrganizationsService, self).__init__(client)
+      self._upload_configs = {
+          }
 
   class ProjectsLocationsAppliancesService(base_api.BaseApiService):
     """Service class for the projects_locations_appliances resource."""
@@ -285,7 +534,7 @@ class NetworkmanagementV1alpha1(base_api.BaseApiClient):
         method_id='networkmanagement.projects.locations.networkMonitoringProviders.monitoringPoints.downloadInstallScript',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['_password', 'hostname', 'monitoringPointType', 'ntpServerAddress', 'ntpServerSecondaryAddress', 'privateConnectivityEnabled', 'staticIpAddress_dnsServerAddress', 'staticIpAddress_dnsServerSecondaryAddress', 'staticIpAddress_domain', 'staticIpAddress_gatewayAddress', 'staticIpAddress_ipAddress', 'staticIpAddress_netmask', 'timeZone_id', 'timeZone_version', 'useDhcp'],
+        query_params=['_password', 'cloudDeploymentType', 'hostname', 'monitoringPointType', 'ntpServerAddress', 'ntpServerSecondaryAddress', 'privateConnectivityEnabled', 'staticIpAddress_dnsServerAddress', 'staticIpAddress_dnsServerSecondaryAddress', 'staticIpAddress_domain', 'staticIpAddress_gatewayAddress', 'staticIpAddress_ipAddress', 'staticIpAddress_netmask', 'timeZone_id', 'timeZone_version', 'useDhcp'],
         relative_path='v1alpha1/{+parent}/monitoringPoints:downloadInstallScript',
         request_field='',
         request_type_name='NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPointsDownloadInstallScriptRequest',
@@ -725,6 +974,33 @@ class NetworkmanagementV1alpha1(base_api.BaseApiClient):
         request_field='',
         request_type_name='NetworkmanagementProjectsLocationsNetworkMonitoringProvidersListRequest',
         response_type_name='ListNetworkMonitoringProvidersResponse',
+        supports_download=False,
+    )
+
+    def QueryOrgCloudNetworkInsightsConfig(self, request, global_params=None):
+      r"""Queries the organization-level Cloud Network Insights configuration applicable to the specified project.
+
+      Args:
+        request: (NetworkmanagementProjectsLocationsNetworkMonitoringProvidersQueryOrgCloudNetworkInsightsConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (QueryOrgCloudNetworkInsightsConfigResponse) The response message.
+      """
+      config = self.GetMethodConfig('QueryOrgCloudNetworkInsightsConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    QueryOrgCloudNetworkInsightsConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/networkMonitoringProviders:queryOrgCloudNetworkInsightsConfig',
+        http_method='GET',
+        method_id='networkmanagement.projects.locations.networkMonitoringProviders.queryOrgCloudNetworkInsightsConfig',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha1/{+parent}/networkMonitoringProviders:queryOrgCloudNetworkInsightsConfig',
+        request_field='',
+        request_type_name='NetworkmanagementProjectsLocationsNetworkMonitoringProvidersQueryOrgCloudNetworkInsightsConfigRequest',
+        response_type_name='QueryOrgCloudNetworkInsightsConfigResponse',
         supports_download=False,
     )
 
